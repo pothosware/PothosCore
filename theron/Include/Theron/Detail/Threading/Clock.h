@@ -13,6 +13,8 @@
 
 #if THERON_WINDOWS
 #include <windows.h>
+#elif __MACH__
+#include <mach/mach_time.h>
 #elif THERON_POSIX
 #include <time.h>
 #include <sys/time.h>
@@ -48,6 +50,10 @@ public:
         LARGE_INTEGER counter;
         QueryPerformanceCounter(&counter);
         return (uint64_t) counter.QuadPart;
+
+#elif __MACH__
+
+        return mach_absolute_time();
 
 #elif THERON_POSIX
 

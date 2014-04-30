@@ -26,6 +26,12 @@ Clock::Static::Static() : mTicksPerSecond(NANOSECONDS_PER_SECOND)
     QueryPerformanceFrequency(&counter);
     mTicksPerSecond = (uint64_t) counter.QuadPart;
 
+#elif __MACH__
+
+    mach_timebase_info_data_t timebase;
+    mach_timebase_info(&timebase);
+    mTicksPerSecond = (NANOSECONDS_PER_SECOND*timebase.numer) / timebase.denom;
+
 #endif
 }
 
