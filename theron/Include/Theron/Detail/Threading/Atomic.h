@@ -23,7 +23,9 @@
 #elif THERON_CPP11
 
 #if THERON_GCC
-#if __GNUC__ >= 4 && __GNUC_MINOR__ > 4
+#if __clang__
+#include <atomic>
+#elif __GNUC__ >= 4 && __GNUC_MINOR__ > 4
 #include <atomic>
 #else
 #include <cstdatomic>
