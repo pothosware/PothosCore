@@ -54,6 +54,7 @@ list(APPEND POTHOS_SOURCES
     Object/Allocator.cpp
     Object/Serialize.cpp
     Object/Exception.cpp
+
     Object/Builtin/Compare.cpp
     Object/Builtin/ConvertVecs.cpp
     Object/Builtin/ConvertNums.cpp
@@ -86,6 +87,15 @@ list(APPEND POTHOS_SOURCES
     Framework/BufferAccumulator.cpp
     Framework/BlockRegistry.cpp
     Framework/Exception.cpp
+
+    Framework/Builtin/CircularBufferManager.cpp
+    Framework/Builtin/TestBufferChunkSerialization.cpp
+    Framework/Builtin/TestDType.cpp
+    Framework/Builtin/TestSharedBuffer.cpp
+    Framework/Builtin/GenericBufferManager.cpp
+    Framework/Builtin/TestCircularBufferManager.cpp
+    Framework/Builtin/TestGenericBufferManager.cpp
+    Framework/Builtin/TestWorker.cpp
 
     Plugin/Path.cpp
     Plugin/Plugin.cpp
