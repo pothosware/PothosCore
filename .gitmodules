@@ -31,3 +31,9 @@
 [submodule "pothos-widgets"]
 	path = pothos-widgets
 	url = https://github.com/pothosware/pothos-widgets.git
+[submodule "pothos-util"]
+	path = pothos-util
+	url = https://github.com/pothosware/pothos-util.git
+[submodule "pothos-managed"]
+	path = pothos-managed
+	url = https://github.com/pothosware/pothos-managed.git
