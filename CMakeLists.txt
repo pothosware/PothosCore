@@ -5,11 +5,11 @@ cmake_minimum_required(VERSION 2.8.9)
 project(PothosGui)
 enable_language(CXX)
 
-#the following is a real include when this is a real external submodule
-#include(${CMAKE_INSTALL_PREFIX}/share/Pothos/cmake/Modules/PothosUtil.cmake)
+if (NOT POTHOS_MODULE_PATH)
+    set(POTHOS_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/share/Pothos/cmake/Modules")
+endif()
 
-#for in-tree build hack:
-include(PothosUtil)
+include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
 
 ########################################################################
 # Support module
