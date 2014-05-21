@@ -210,7 +210,10 @@ void PothosGuiMainWindow::createActions(void)
     _actionMap["saveAll"] = _saveAllAction;
 
     _reloadAction = new QAction(makeIconFromTheme("view-refresh"), tr("&Reload"), this);
-    _reloadAction->setShortcuts({QKeySequence("CTRL+R"), QKeySequence::Refresh});
+    QList<QKeySequence> reloadShortcuts;
+        reloadShortcuts.push_back(QKeySequence("CTRL+R"));
+        reloadShortcuts.push_back(QKeySequence::Refresh);
+    _reloadAction->setShortcuts(reloadShortcuts);
     _actionMap["reload"] = _reloadAction;
 
     _closeAction = new QAction(makeIconFromTheme("document-close"), tr("&Close"), this);
@@ -227,7 +230,10 @@ void PothosGuiMainWindow::createActions(void)
     _actionMap["undo"] = _undoAction;
 
     _redoAction = new QAction(makeIconFromTheme("edit-redo"), tr("&Redo"), this);
-    _redoAction->setShortcuts({QKeySequence("CTRL+Y"), QKeySequence::Redo});
+    QList<QKeySequence> redoShortcuts;
+        redoShortcuts.push_back(QKeySequence("CTRL+Y"));
+        redoShortcuts.push_back(QKeySequence::Redo);
+    _redoAction->setShortcuts(redoShortcuts);
     _actionMap["redo"] = _redoAction;
 
     _cutAction = new QAction(makeIconFromTheme("edit-cut"), tr("Cu&t"), this);
