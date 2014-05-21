@@ -139,6 +139,13 @@ set(INCLUDED_FIND_POTHOS_CMAKE TRUE) #avoids FindPothos
 get_target_property(POTHOS_UTIL_EXE PothosUtil LOCATION_${CMAKE_BUILD_TYPE})
 
 if(MSVC)
+    unset(built_dll_paths)
+    foreach(target sigar ${POTHOS_LIBRARIES})
+        get_target_property(library_location ${target} LOCATION_${CMAKE_BUILD_TYPE})
+        get_filename_component(library_location ${library_location} PATH)
+        file(TO_NATIVE_PATH ${library_location} library_location)
+        set(built_dll_paths "${built_dll_paths}\\;${library_location}")
+    endforeach(target)
     file(WRITE ${POTHOS_BINARY_DIR}/PothosUtil.bat
         "set PATH=%PATH%${built_dll_paths}\n"
         "${POTHOS_UTIL_EXE} %*\n"
