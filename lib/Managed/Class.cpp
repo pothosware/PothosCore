@@ -10,6 +10,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <cctype> //isalnum, tolower
 
 struct Pothos::ManagedClass::Impl
 {
