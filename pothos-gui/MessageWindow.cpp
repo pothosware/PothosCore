@@ -57,11 +57,6 @@ public:
             _channel, SIGNAL(receivedLogMessage(const Poco::Message &)),
             this, SLOT(handleLogMessage(const Poco::Message &)),
             Qt::QueuedConnection);
-
-        poco_information(Poco::Logger::get("Test"), "this is a test info message");
-        poco_notice(Poco::Logger::get("Test"), "this is a test notice message");
-        poco_warning(Poco::Logger::get("Test"), "this is a test warning message");
-        poco_error(Poco::Logger::get("Test"), "this is a test error message");
     }
 
 private slots:
