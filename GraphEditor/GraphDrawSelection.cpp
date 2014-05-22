@@ -5,6 +5,7 @@
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/Constants.hpp"
 #include "GraphObjects/GraphConnection.hpp"
+#include <Poco/Logger.h>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QApplication> //control modifier
@@ -266,6 +267,12 @@ void GraphDraw::doClickSelection(const QPointF &point)
                     conn->getInputEndpoint().getObj()->getId(),
                     conn->getInputEndpoint().getKey().id
                 )));
+            }
+            else
+            {
+                poco_warning_f2(Poco::Logger::get("PothosGui.GraphDraw.connect"), "Cannot connect %s to %s",
+                    std::string(lastAttrs.isInput?"input":"output"),
+                    std::string(thisAttrs.isInput?"input":"output"));
             }
         }
 

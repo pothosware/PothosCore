@@ -10,6 +10,7 @@
 #include <QCloseEvent>
 #include <QAction>
 #include <QStandardPaths>
+#include <Poco/Logger.h>
 #include <iostream>
 #include <cassert>
 

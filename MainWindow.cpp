@@ -15,6 +15,7 @@
 #include <QSplitter>
 #include <QMap>
 #include <Poco/SingletonHolder.h>
+#include <Poco/Logger.h>
 #include <iostream>
 
 QMap<QString, QAction *> &getActionMap(void)
@@ -99,6 +100,7 @@ public:
         this->createMenus();
 
         //we do this last so all of the connections and logging is setup
+        poco_information(Poco::Logger::get("PothosGui.MainWindow"), "Initialization complete");
         emit this->initDone();
     }
 

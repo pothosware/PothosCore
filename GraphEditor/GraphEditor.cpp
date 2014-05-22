@@ -7,6 +7,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
+#include <Poco/Logger.h>
 #include <QTabBar>
 #include <QInputDialog>
 #include <QAction>
@@ -676,6 +677,7 @@ void GraphEditor::load(void)
 
     try
     {
+        poco_information_f1(Poco::Logger::get("PothosGui.GraphEditor.load"), "Loading %s from file", fileName);
         std::ifstream inFile(fileName.c_str());
         this->loadState(inFile);
         _stateManager->resetToDefault();
