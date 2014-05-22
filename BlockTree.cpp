@@ -201,10 +201,10 @@ public:
         renderBlock->setBlockDesc(blockItem->getBlockDesc());
         QPixmap pixmap(200,200); //TODO this doesn't account for the size of the block
         pixmap.fill(Qt::transparent);
-        auto painter = new QPainter(&pixmap);
+        QPainter painter(&pixmap);
         renderBlock->setPosition(QPointF(pixmap.width()/2, pixmap.height()/2));
-        renderBlock->render(*painter);
-        painter->end();
+        renderBlock->render(painter);
+        painter.end();
         drag->setPixmap(pixmap);
         drag->setHotSpot(QPoint(pixmap.width()/2, pixmap.height()/2));
 
