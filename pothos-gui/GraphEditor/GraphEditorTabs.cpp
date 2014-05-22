@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QAction>
+#include <QStandardPaths>
 #include <iostream>
 #include <cassert>
 
@@ -64,15 +65,24 @@ void GraphEditorTabs::doReloadDialog(GraphEditor *editor)
 
 void GraphEditorTabs::handleOpen(void)
 {
+/*
     auto fileDialog = new QFileDialog(this);
     fileDialog->setAcceptMode(QFileDialog::AcceptOpen);
     fileDialog->setFileMode(QFileDialog::ExistingFiles);
     fileDialog->setNameFilter(tr("Pothos Topologies (*.pth)"));
     fileDialog->setDirectory(getSettings().value("GraphEditorTabs/lastFile").toString());
+*/
+    auto lastPath = getSettings().value("GraphEditorTabs/lastFile").toString();
+    if(lastPath.isEmpty()) {
+        lastPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    }
+    assert(!lastPath.isEmpty());
+    auto filePaths = QFileDialog::getOpenFileNames(this,
+                        "Open Files",
+                        lastPath,
+                        "Pothos Topologies (.pth)");
 
-    if (not fileDialog->exec()) return;
-
-    for (const auto &filePath : fileDialog->selectedFiles())
+    for (const auto &filePath : filePaths)
     {
         getSettings().setValue("GraphEditorTabs/lastFile", filePath);
         this->handleOpen(filePath);
@@ -118,23 +128,22 @@ void GraphEditorTabs::handleSaveAs(void)
     auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
     assert(editor != nullptr);
 
-    auto fileDialog = new QFileDialog(this);
-    fileDialog->setAcceptMode(QFileDialog::AcceptSave);
-    fileDialog->setFileMode(QFileDialog::AnyFile);
-    fileDialog->setNameFilter(tr("Pothos Topologies (*.pth)"));
-    fileDialog->setConfirmOverwrite(true);
-    fileDialog->setDefaultSuffix("pth");
-    if (editor->getCurrentFilePath().isEmpty())
+    QString lastPath;
+    if(editor->getCurrentFilePath().isEmpty())
     {
-        fileDialog->setDirectory(getSettings().value("GraphEditorTabs/lastFile").toString());
+        auto defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + "/untitled.pth";
+        assert(!defaultPath.isEmpty());
+        lastPath = defaultPath;
     }
     else
     {
-        fileDialog->setDirectory(editor->getCurrentFilePath());
+        lastPath = editor->getCurrentFilePath();
     }
-    if (not fileDialog->exec()) return;
-
-    const auto &filePath = fileDialog->selectedFiles().at(0);
+    auto filePath = QFileDialog::getSaveFileName(this,
+                        tr("Save As"),
+                        lastPath,
+                        tr("Pothos Topologies (*.pth)"));
+    if(filePath.isEmpty()) return;
     getSettings().setValue("GraphEditorTabs/lastFile", filePath);
     editor->setCurrentFilePath(filePath);
     editor->save();
