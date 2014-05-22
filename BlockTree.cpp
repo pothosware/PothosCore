@@ -172,8 +172,16 @@ public:
 
     void mouseMoveEvent(QMouseEvent *event)
     {
-        if(!(event->buttons() & Qt::LeftButton)) QTreeWidget::mouseMoveEvent(event);
-        if((event->pos() - _dragStartPos).manhattanLength() < QApplication::startDragDistance()) QTreeWidget::mouseMoveEvent(event);
+        if(!(event->buttons() & Qt::LeftButton))
+        {
+            QTreeWidget::mouseMoveEvent(event);
+            return;
+        }
+        if((event->pos() - _dragStartPos).manhattanLength() < QApplication::startDragDistance()) 
+        {
+            QTreeWidget::mouseMoveEvent(event);
+            return;
+        }
         auto drag = new QDrag(this);
         //get the block data
         auto blockItem = dynamic_cast<BlockTreeWidgetItem *>(itemAt(_dragStartPos));
