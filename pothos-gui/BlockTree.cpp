@@ -163,6 +163,11 @@ public:
         this->setFocus();
         //if the item under the mouse is the bottom of the tree (a block, not category)
         //then we set a dragstartpos
+        if(!itemAt(event->pos())) 
+        {
+            QTreeWidget::mousePressEvent(event);
+            return;
+        }
         if(itemAt(event->pos())->childCount() == 0 and event->button() == Qt::LeftButton) {
             _dragStartPos = event->pos();
         }
