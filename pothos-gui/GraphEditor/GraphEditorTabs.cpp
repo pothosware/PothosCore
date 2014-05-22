@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QAction>
+#include <QStandardPaths>
 #include <iostream>
 #include <cassert>
 
@@ -118,23 +119,27 @@ void GraphEditorTabs::handleSaveAs(void)
     auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
     assert(editor != nullptr);
 
-    auto fileDialog = new QFileDialog(this);
-    fileDialog->setAcceptMode(QFileDialog::AcceptSave);
-    fileDialog->setFileMode(QFileDialog::AnyFile);
-    fileDialog->setNameFilter(tr("Pothos Topologies (*.pth)"));
-    fileDialog->setConfirmOverwrite(true);
-    fileDialog->setDefaultSuffix("pth");
-    if (editor->getCurrentFilePath().isEmpty())
+    QString lastPath;
+    if(editor->getCurrentFilePath().isEmpty())
     {
-        fileDialog->setDirectory(getSettings().value("GraphEditorTabs/lastFile").toString());
+        QString lastFile;
+        if(lastFile.isEmpty())
+        {
+            lastFile = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+            std::cout << lastFile.toStdString() << std::endl;
+        }
+        assert(!lastFile.isEmpty());
+        lastPath = lastFile;
     }
     else
     {
-        fileDialog->setDirectory(editor->getCurrentFilePath());
+          lastPath = editor->getCurrentFilePath();
     }
-    if (not fileDialog->exec()) return;
-
-    const auto &filePath = fileDialog->selectedFiles().at(0);
+    auto filePath = QFileDialog::getSaveFileName(this,
+                        tr("Save As"),
+                        lastPath,
+                        tr("Pothos Topologies (*.pth)"));
+    if(filePath.isEmpty()) return;
     getSettings().setValue("GraphEditorTabs/lastFile", filePath);
     editor->setCurrentFilePath(filePath);
     editor->save();
