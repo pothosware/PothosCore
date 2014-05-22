@@ -5,12 +5,18 @@
 #include <QTreeWidget>
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
+#include "GraphObjects/GraphBlock.hpp"
+#include "GraphEditor/Constants.hpp"
 #include <QMimeData>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
+#include <QMouseEvent>
+#include <QApplication>
+#include <QDrag>
+#include <QPainter>
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
@@ -150,10 +156,42 @@ public:
         //nodeKeys cannot be a temporary because QtConcurrent will reference them
         _allNodeKeys = Pothos::RemoteNode::listRegistryKeys();
         _watcher->setFuture(QtConcurrent::mapped(_allNodeKeys, &queryJSONDocs));
+    }
 
-        //enable drag from the tree
-        this->setDragDropMode(QAbstractItemView::DragOnly);
-        this->setDragEnabled(true);
+    void mousePressEvent(QMouseEvent *event)
+    {
+        this->setFocus();
+        //if the item under the mouse is the bottom of the tree (a block, not category)
+        //then we set a dragstartpos
+        if(itemAt(event->pos())->childCount() == 0 and event->button() == Qt::LeftButton) {
+            _dragStartPos = event->pos();
+        }
+        //pass the event along
+        QTreeWidget::mousePressEvent(event);
+    }
+
+    void mouseMoveEvent(QMouseEvent *event)
+    {
+        if(!(event->buttons() & Qt::LeftButton)) QTreeWidget::mouseMoveEvent(event);
+        if((event->pos() - _dragStartPos).manhattanLength() < QApplication::startDragDistance()) QTreeWidget::mouseMoveEvent(event);
+        auto drag = new QDrag(this);
+        //get the block data
+        auto blockItem = dynamic_cast<BlockTreeWidgetItem *>(itemAt(_dragStartPos));
+        if(blockItem->getBlockDesc().isEmpty()) return;
+        auto mimeData = new QMimeData();
+        mimeData->setData("text/json/pothos_block", blockItem->getBlockDesc());
+        drag->setMimeData(mimeData);
+        auto renderBlock = new GraphBlock(this);
+        renderBlock->setBlockDesc(blockItem->getBlockDesc());
+        auto pixmap = new QPixmap(200,200); //TODO this doesn't account for the size of the block
+        pixmap->fill(Qt::transparent);
+        auto painter = new QPainter(pixmap);
+        renderBlock->setPosition(QPointF(pixmap->width()/2, pixmap->height()/2));
+        renderBlock->render(*painter);
+        painter->end();
+        drag->setPixmap(*pixmap);
+        drag->setHotSpot(QPoint(pixmap->width()/2, pixmap->height()/2));
+        drag->exec(Qt::CopyAction | Qt::MoveAction);
     }
 
 signals:
@@ -226,6 +264,7 @@ private:
         return QTreeWidget::mimeData(items);
     }
 
+    QPoint _dragStartPos;
     std::vector<std::string> _allNodeKeys;
     QFutureWatcher<std::string> *_watcher;
     std::map<std::string, BlockTreeWidgetItem *> _rootNodes;
