@@ -188,22 +188,27 @@ public:
             return;
         }
         auto drag = new QDrag(this);
+
         //get the block data
         auto blockItem = dynamic_cast<BlockTreeWidgetItem *>(itemAt(_dragStartPos));
         if(blockItem->getBlockDesc().isEmpty()) return;
         auto mimeData = new QMimeData();
         mimeData->setData("text/json/pothos_block", blockItem->getBlockDesc());
         drag->setMimeData(mimeData);
+
+        //draw the block's preview onto a mini pixmap
         auto renderBlock = new GraphBlock(this);
         renderBlock->setBlockDesc(blockItem->getBlockDesc());
-        auto pixmap = new QPixmap(200,200); //TODO this doesn't account for the size of the block
-        pixmap->fill(Qt::transparent);
-        auto painter = new QPainter(pixmap);
-        renderBlock->setPosition(QPointF(pixmap->width()/2, pixmap->height()/2));
+        QPixmap pixmap(200,200); //TODO this doesn't account for the size of the block
+        pixmap.fill(Qt::transparent);
+        auto painter = new QPainter(&pixmap);
+        renderBlock->setPosition(QPointF(pixmap.width()/2, pixmap.height()/2));
         renderBlock->render(*painter);
         painter->end();
-        drag->setPixmap(*pixmap);
-        drag->setHotSpot(QPoint(pixmap->width()/2, pixmap->height()/2));
+        drag->setPixmap(pixmap);
+        drag->setHotSpot(QPoint(pixmap.width()/2, pixmap.height()/2));
+
+        //execute the drag event
         drag->exec(Qt::CopyAction | Qt::MoveAction);
     }
 
