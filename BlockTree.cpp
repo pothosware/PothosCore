@@ -197,7 +197,7 @@ public:
         drag->setMimeData(mimeData);
 
         //draw the block's preview onto a mini pixmap
-        auto renderBlock = new GraphBlock(this);
+        std::shared_ptr<GraphBlock> renderBlock(new GraphBlock(nullptr));
         renderBlock->setBlockDesc(blockItem->getBlockDesc());
         QPixmap pixmap(200,200); //TODO this doesn't account for the size of the block
         pixmap.fill(Qt::transparent);
