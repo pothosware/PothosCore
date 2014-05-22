@@ -122,18 +122,13 @@ void GraphEditorTabs::handleSaveAs(void)
     QString lastPath;
     if(editor->getCurrentFilePath().isEmpty())
     {
-        QString lastFile;
-        if(lastFile.isEmpty())
-        {
-            lastFile = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-            std::cout << lastFile.toStdString() << std::endl;
-        }
-        assert(!lastFile.isEmpty());
-        lastPath = lastFile;
+        auto defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + "/untitled.pth";
+        assert(!defaultPath.isEmpty());
+        lastPath = defaultPath;
     }
     else
     {
-          lastPath = editor->getCurrentFilePath();
+        lastPath = editor->getCurrentFilePath();
     }
     auto filePath = QFileDialog::getSaveFileName(this,
                         tr("Save As"),
