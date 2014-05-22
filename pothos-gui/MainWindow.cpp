@@ -206,7 +206,7 @@ void PothosGuiMainWindow::createActions(void)
     _actionMap["saveAs"] = _saveAsAction;
 
     _saveAllAction = new QAction(makeIconFromTheme("document-save-all"), tr("Save A&ll"), this);
-    _saveAllAction->setShortcut(QKeySequence("CTRL+SHIFT+S"));
+    _saveAllAction->setShortcut(QKeySequence("CTRL+SHIFT+A"));
     _actionMap["saveAll"] = _saveAllAction;
 
     _reloadAction = new QAction(makeIconFromTheme("view-refresh"), tr("&Reload"), this);
