@@ -71,6 +71,11 @@ bool GraphObject::isPointing(const QRectF &) const
     return false;
 }
 
+QRectF GraphObject::getBoundingRect(void) const
+{
+    return QRectF(this->getPosition(), this->getPosition());
+}
+
 void GraphObject::render(QPainter &)
 {
     return;
