@@ -238,57 +238,24 @@ private slots:
 
     void handleFilterTimerExpired(void)
     {
-        if(!_watcher->isFinished()) _watcher->cancel();
-        _watcher->waitForFinished();
         this->clear();
         _rootNodes.clear();
-        _watcher->setFuture(QtConcurrent::mapped(_allNodeKeys, &queryJSONDocs));
+        this->populate();
     }
 
     void handleFilter(const QString &filter)
     {
         _filter = filter;
-        _filttimer->start(500);
+        //use the timer if search gets expensive.
+        //otherwise just call handleFilterTimerExpired here.
+        //_filttimer->start(500);
+        handleFilterTimerExpired();
     }
 
     void handleWatcherDone(const int which)
     {
-        auto json = _watcher->resultAt(which);
-        Poco::JSON::Parser p; p.parse(json);
-        auto array = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
-        for (size_t i = 0; i < array->size(); i++)
-        {
-            try
-            {
-                const auto blockDesc = array->getObject(i);
-                if (not blockDesc) continue;
-                const auto path = blockDesc->get("path").extract<std::string>();
-                const auto name = blockDesc->get("name").extract<std::string>();
-                const auto categories = blockDesc->getArray("categories");
-                if (not categories) continue;
-                //construct a candidate string from path, name, categories, and keywords.
-                std::string candidate = path+name;
-                for(auto category : *categories) candidate += category.extract<std::string>();
-                if(blockDesc->isArray("keywords"))
-                {
-                    const auto keywords = blockDesc->getArray("keywords");
-                    for(auto keyword : *keywords) candidate += keyword.extract<std::string>();
-                }
-                //reject if filter string not found in candidate
-                if(candidate.find(_filter.toStdString()) == std::string::npos) continue;
-                for (size_t ci = 0; ci < categories->size(); ci++)
-                {
-                    const auto category = categories->get(ci).extract<std::string>().substr(1);
-                    const auto key = category.substr(0, category.find("/"));
-                    if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
-                    _rootNodes[key]->load(_allNodeKeys[which], blockDesc, category + "/" + name);
-                }
-            }
-            catch (const Poco::Exception &ex)
-            {
-                poco_error_f1(Poco::Logger::get("PothosGui.BlockTree"), "Failed JSON Doc parse %s", ex.displayText());
-            }
-        }
+        _allNodeBlocks[which] = _watcher->resultAt(which);
+        populate();
     }
 
     void handleSelectionChange(void)
@@ -308,6 +275,51 @@ private slots:
 
 private:
 
+    void populate(void)
+    {
+        if(_allNodeBlocks.empty()) return;
+        for(auto node : _allNodeBlocks)
+        {
+            if(node.second.empty()) continue;
+            Poco::JSON::Parser p; p.parse(node.second);
+            auto array = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
+            for(size_t i = 0; i < array->size(); i++)
+            {
+                try
+                {
+                    const auto blockDesc = array->getObject(i);
+                    if (not blockDesc) continue;
+                    const auto path = blockDesc->get("path").extract<std::string>();
+                    const auto name = blockDesc->get("name").extract<std::string>();
+                    const auto categories = blockDesc->getArray("categories");
+                    if (not categories) continue;
+                    //construct a candidate string from path, name, categories, and keywords.
+                    std::string candidate = path+name;
+                    for(auto category : *categories) candidate += category.extract<std::string>();
+                    if(blockDesc->isArray("keywords"))
+                    {
+                        const auto keywords = blockDesc->getArray("keywords");
+                        for(auto keyword : *keywords) candidate += keyword.extract<std::string>();
+                    }
+                    //reject if filter string not found in candidate
+                    if(candidate.find(_filter.toStdString()) == std::string::npos) continue;
+                    for (size_t ci = 0; ci < categories->size(); ci++)
+                    {
+                        const auto category = categories->get(ci).extract<std::string>().substr(1);
+                        const auto key = category.substr(0, category.find("/"));
+                        if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
+                        _rootNodes[key]->load(_allNodeKeys[node.first], blockDesc, category + "/" + name);
+                    }
+                }
+                catch (const Poco::Exception &ex)
+                {
+                    poco_error_f1(Poco::Logger::get("PothosGui.BlockTree"), "Failed JSON Doc parse %s", ex.displayText());
+                }
+            }
+        }
+    }
+
+
     QMimeData *mimeData(const QList<QTreeWidgetItem *> items) const
     {
         for (auto item : items)
@@ -325,6 +337,7 @@ private:
     QTimer *_filttimer;
     QPoint _dragStartPos;
     std::vector<std::string> _allNodeKeys;
+    std::map<size_t, std::string> _allNodeBlocks;
     QFutureWatcher<std::string> *_watcher;
     std::map<std::string, BlockTreeWidgetItem *> _rootNodes;
 };
