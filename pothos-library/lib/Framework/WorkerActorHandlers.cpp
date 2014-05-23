@@ -179,7 +179,7 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
     try
     {
         this->block->activate();
-        this->block->_activeState = true;
+        this->activeState = true;
         this->Send(std::string(""), from);
     }
     catch (const Pothos::Exception &ex)
@@ -205,7 +205,7 @@ void Pothos::WorkerActor::handleDeactivateWorkMessage(const DeactivateWorkMessag
 {
     try
     {
-        this->block->_activeState = false;
+        this->activeState = false;
         this->block->deactivate();
         this->Send(std::string(""), from);
     }

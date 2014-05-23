@@ -92,7 +92,8 @@ class Pothos::WorkerActor : public Theron::Actor
 public:
     WorkerActor(Block *block):
         Theron::Actor(*(block->_framework)),
-        block(block)
+        block(block),
+        activeState(false)
     {
         this->RegisterHandler(this, &WorkerActor::handleAsyncPortNameMessage);
         this->RegisterHandler(this, &WorkerActor::handleAsyncPortIndexMessage);
@@ -149,7 +150,10 @@ public:
         }
     }
 
+    ///////////////////// WorkerActor storage ///////////////////////
     Block *block;
+    bool activeState;
+    WorkerStats workStats;
 
     ///////////////////// port setup methods ///////////////////////
     void allocateInput(const std::string &name, const DType &dtype);
@@ -164,11 +168,10 @@ public:
     InputPort &getInput(const size_t index, const char *fcn);
 
     ///////////////////// work helper methods ///////////////////////
-    WorkerStats workStats; //TODO move
     inline void notify(void)
     {
         //only call when we handle the only message in the actor's queue
-        if (not block->_activeState or this->GetNumQueuedMessages() > 1) return;
+        if (not activeState or this->GetNumQueuedMessages() > 1) return;
 
         //prework
         {

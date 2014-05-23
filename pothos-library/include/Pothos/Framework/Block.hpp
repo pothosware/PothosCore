@@ -202,7 +202,6 @@ private:
     std::map<std::string, std::unique_ptr<InputPort>> _inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> _outputs;
     std::map<std::string, Callable> _calls;
-    bool _activeState;
     std::shared_ptr<Theron::Framework> _framework;
 public:
     std::shared_ptr<WorkerActor> _actor;

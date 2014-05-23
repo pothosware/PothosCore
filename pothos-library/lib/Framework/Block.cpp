@@ -2,13 +2,33 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
+#include <Poco/SingletonHolder.h>
 
+/***********************************************************************
+ * Reusable threadpool for configuration purposes
+ **********************************************************************/
+struct ConfigThreadPool
+{
+    ConfigThreadPool(void)
+    {
+        framework.reset(new Theron::Framework());
+    }
+    std::shared_ptr<Theron::Framework> framework;
+};
+
+static ConfigThreadPool &getConfigThreadPool(void)
+{
+    static Poco::SingletonHolder<ConfigThreadPool> sh;
+    return *sh.get();
+}
+
+/***********************************************************************
+ * Block member implementation
+ **********************************************************************/
 Pothos::Block::Block(void):
-    _activeState(false),
-    _framework(new Theron::Framework(1)),
+    _framework(getConfigThreadPool().framework),
     _actor(new WorkerActor(this))
 {
-    std::cout << "new Actor " << _actor->GetAddress().AsString() << std::endl;
     return;
 }
 
