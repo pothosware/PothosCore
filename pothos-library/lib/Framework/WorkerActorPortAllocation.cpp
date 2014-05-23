@@ -19,19 +19,6 @@ int portNameToIndex(const std::string &name)
     return -1;
 }
 
-static void bufferManagerPushExternal(
-    Pothos::BufferManager *mgr,
-    std::shared_ptr<Theron::Framework> framework,
-    const Theron::Address &addr,
-    const Pothos::ManagedBuffer &buff
-)
-{
-    BufferReturnMessage message;
-    message.mgr = mgr;
-    message.buff = buff;
-    framework->Send(message, Theron::Address::Null(), addr);
-}
-
 /***********************************************************************
  * Port allocation implementation
  **********************************************************************/
@@ -85,13 +72,4 @@ void Pothos::WorkerActor::allocateOutput(const std::string &name, const DType &d
     setupPorts(block->_outputs, block->_namedOutputs, block->_indexedOutputs);
     block->_workInfo.outputPointers.resize(block->_indexedOutputs.size());
     block->_outputPortNames.push_back(name);
-
-    //setup the buffer return callback on the manager
-    for (auto &entry : block->_outputs)
-    {
-        auto &port = *entry.second;
-        auto &mgr = port._impl->bufferManager;
-        mgr->setCallback(std::bind(&bufferManagerPushExternal,
-            mgr.get(), block->_framework, this->GetAddress(), std::placeholders::_1));
-    }
 }

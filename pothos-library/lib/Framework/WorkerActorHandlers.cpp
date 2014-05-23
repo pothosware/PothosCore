@@ -152,8 +152,30 @@ void Pothos::WorkerActor::handleBumpWorkMessage(const BumpWorkMessage &, const T
     this->notify();
 }
 
+static void bufferManagerPushExternal(
+    Pothos::BufferManager *mgr,
+    std::shared_ptr<Theron::Framework> framework,
+    const Theron::Address &addr,
+    const Pothos::ManagedBuffer &buff
+)
+{
+    BufferReturnMessage message;
+    message.mgr = mgr;
+    message.buff = buff;
+    framework->Send(message, Theron::Address::Null(), addr);
+}
+
 void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &, const Theron::Address from)
 {
+    //setup the buffer return callback on the manager
+    for (auto &entry : block->_outputs)
+    {
+        auto &port = *entry.second;
+        auto &mgr = port._impl->bufferManager;
+        mgr->setCallback(std::bind(&bufferManagerPushExternal,
+            mgr.get(), block->_framework, this->GetAddress(), std::placeholders::_1));
+    }
+
     try
     {
         this->block->activate();
@@ -213,6 +235,7 @@ void Pothos::WorkerActor::handleShutdownActorMessage(const ShutdownActorMessage 
     block->_indexedInputs.clear();
     block->_namedOutputs.clear();
     block->_namedInputs.clear();
+    //TODO make a deallocate call for a port
 
     if (from != Theron::Address::Null()) this->Send(message, from);
 }
