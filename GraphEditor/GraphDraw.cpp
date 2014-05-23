@@ -31,6 +31,8 @@ GraphDraw::GraphDraw(QWidget *parent):
 
     this->setZoomScale(1.0);
 
+    this->setFocusPolicy(Qt::ClickFocus);
+
     this->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
         this, SLOT(handleCustomContextMenuRequested(const QPoint &)));
@@ -89,6 +91,7 @@ void GraphDraw::showEvent(QShowEvent *event)
     this->render();
     QWidget::showEvent(event);
 }
+
 
 void GraphDraw::updateEnabledActions(void)
 {
@@ -186,6 +189,8 @@ void GraphDraw::handleCustomContextMenuRequested(const QPoint &pos)
     menu->addAction(getActionMap()["delete"]);
     menu->addSeparator();
     menu->addAction(getActionMap()["selectAll"]);
+    menu->addSeparator();
+    menu->addAction(getActionMap()["find"]);
     menu->addSeparator();
     menu->addAction(getActionMap()["createGraphPage"]);
     menu->addAction(getActionMap()["renameGraphPage"]);
