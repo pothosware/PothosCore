@@ -17,6 +17,8 @@
 #include <QApplication>
 #include <QDrag>
 #include <QPainter>
+#include <QLineEdit>
+#include <QAction>
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
@@ -141,6 +143,7 @@ public:
 
     BlockTreeWidget(QWidget *parent):
         QTreeWidget(parent),
+        _filttimer(new QTimer(this)),
         _watcher(new QFutureWatcher<std::string>(this))
     {
         QStringList columnNames;
@@ -148,10 +151,14 @@ public:
         this->setColumnCount(columnNames.size());
         this->setHeaderLabels(columnNames);
 
+        _filttimer->setSingleShot(true);
+        _filttimer->setInterval(500);
+
         connect(_watcher, SIGNAL(resultReadyAt(int)), this, SLOT(handleWatcherDone(int)));
         connect(_watcher, SIGNAL(finished()), this, SLOT(handleWatcherFinished()));
         connect(this, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleSelectionChange(void)));
         connect(this, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(handleItemDoubleClicked(QTreeWidgetItem *, int)));
+        connect(_filttimer, SIGNAL(timeout()), this, SLOT(handleFilterTimerExpired(void)));
 
         //nodeKeys cannot be a temporary because QtConcurrent will reference them
         _allNodeKeys = Pothos::RemoteNode::listRegistryKeys();
@@ -163,7 +170,7 @@ public:
         this->setFocus();
         //if the item under the mouse is the bottom of the tree (a block, not category)
         //then we set a dragstartpos
-        if(!itemAt(event->pos())) 
+        if(!itemAt(event->pos()))
         {
             QTreeWidget::mousePressEvent(event);
             return;
@@ -182,7 +189,7 @@ public:
             QTreeWidget::mouseMoveEvent(event);
             return;
         }
-        if((event->pos() - _dragStartPos).manhattanLength() < QApplication::startDragDistance()) 
+        if((event->pos() - _dragStartPos).manhattanLength() < QApplication::startDragDistance())
         {
             QTreeWidget::mouseMoveEvent(event);
             return;
@@ -197,10 +204,10 @@ public:
         renderBlock->setBlockDesc(blockItem->getBlockDesc());
         renderBlock->prerender(); //precalculate so we can get bounds
         const auto bounds = renderBlock->getBoundingRect();
-        renderBlock->setPosition(-bounds.topLeft());
+        renderBlock->setPosition(-bounds.topLeft()+QPoint(1,1));
 
         //draw the block's preview onto a mini pixmap
-        QPixmap pixmap(bounds.size().toSize());
+        QPixmap pixmap(bounds.size().toSize()+QSize(2,2));
         pixmap.fill(Qt::transparent);
         QPainter painter(&pixmap);
         //painter.scale(zoomScale, zoomScale); //TODO get zoomscale from draw
@@ -224,40 +231,31 @@ signals:
     void blockDescEvent(const QByteArray &, bool);
 
 private slots:
-
     void handleWatcherFinished(void)
     {
         this->resizeColumnToContents(0);
     }
 
+    void handleFilterTimerExpired(void)
+    {
+        this->clear();
+        _rootNodes.clear();
+        this->populate();
+    }
+
+    void handleFilter(const QString &filter)
+    {
+        _filter = filter;
+        //use the timer if search gets expensive.
+        //otherwise just call handleFilterTimerExpired here.
+        //_filttimer->start(500);
+        handleFilterTimerExpired();
+    }
+
     void handleWatcherDone(const int which)
     {
-        auto json = _watcher->resultAt(which);
-        Poco::JSON::Parser p; p.parse(json);
-        auto array = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
-        for (size_t i = 0; i < array->size(); i++)
-        {
-            try
-            {
-                const auto blockDesc = array->getObject(i);
-                if (not blockDesc) continue;
-                const auto path = blockDesc->get("path").extract<std::string>();
-                const auto name = blockDesc->get("name").extract<std::string>();
-                const auto categories = blockDesc->getArray("categories");
-                if (not categories) continue;
-                for (size_t ci = 0; ci < categories->size(); ci++)
-                {
-                    const auto category = categories->get(ci).extract<std::string>().substr(1);
-                    const auto key = category.substr(0, category.find("/"));
-                    if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
-                    _rootNodes[key]->load(_allNodeKeys[which], blockDesc, category + "/" + name);
-                }
-            }
-            catch (const Poco::Exception &ex)
-            {
-                poco_error_f1(Poco::Logger::get("PothosGui.BlockTree"), "Failed JSON Doc parse %s", ex.displayText());
-            }
-        }
+        _allNodeBlocks[which] = _watcher->resultAt(which);
+        populate();
     }
 
     void handleSelectionChange(void)
@@ -277,6 +275,51 @@ private slots:
 
 private:
 
+    void populate(void)
+    {
+        if(_allNodeBlocks.empty()) return;
+        for(auto node : _allNodeBlocks)
+        {
+            if(node.second.empty()) continue;
+            Poco::JSON::Parser p; p.parse(node.second);
+            auto array = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
+            for(size_t i = 0; i < array->size(); i++)
+            {
+                try
+                {
+                    const auto blockDesc = array->getObject(i);
+                    if (not blockDesc) continue;
+                    const auto path = blockDesc->get("path").extract<std::string>();
+                    const auto name = blockDesc->get("name").extract<std::string>();
+                    const auto categories = blockDesc->getArray("categories");
+                    if (not categories) continue;
+                    //construct a candidate string from path, name, categories, and keywords.
+                    std::string candidate = path+name;
+                    for(auto category : *categories) candidate += category.extract<std::string>();
+                    if(blockDesc->isArray("keywords"))
+                    {
+                        const auto keywords = blockDesc->getArray("keywords");
+                        for(auto keyword : *keywords) candidate += keyword.extract<std::string>();
+                    }
+                    //reject if filter string not found in candidate
+                    if(candidate.find(_filter.toStdString()) == std::string::npos) continue;
+                    for (size_t ci = 0; ci < categories->size(); ci++)
+                    {
+                        const auto category = categories->get(ci).extract<std::string>().substr(1);
+                        const auto key = category.substr(0, category.find("/"));
+                        if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
+                        _rootNodes[key]->load(_allNodeKeys[node.first], blockDesc, category + "/" + name);
+                    }
+                }
+                catch (const Poco::Exception &ex)
+                {
+                    poco_error_f1(Poco::Logger::get("PothosGui.BlockTree"), "Failed JSON Doc parse %s", ex.displayText());
+                }
+            }
+        }
+    }
+
+
     QMimeData *mimeData(const QList<QTreeWidgetItem *> items) const
     {
         for (auto item : items)
@@ -290,8 +333,11 @@ private:
         return QTreeWidget::mimeData(items);
     }
 
+    QString _filter;
+    QTimer *_filttimer;
     QPoint _dragStartPos;
     std::vector<std::string> _allNodeKeys;
+    std::map<size_t, std::string> _allNodeBlocks;
     QFutureWatcher<std::string> *_watcher;
     std::map<std::string, BlockTreeWidgetItem *> _rootNodes;
 };
@@ -309,15 +355,27 @@ public:
         auto layout = new QVBoxLayout(this);
         this->setLayout(layout);
 
+        auto search = new QLineEdit(this);
+        search->setPlaceholderText("Filter blocks");
+#if QT_VERSION > 0x050200
+        search->setClearButtonEnabled(true);
+#endif
+        layout->addWidget(search);
+
         auto tree = new BlockTreeWidget(this);
         connect(tree, SIGNAL(blockDescEvent(const QByteArray &, bool)),
             this, SLOT(handleBlockDescEvent(const QByteArray &, bool)));
+        connect(search, SIGNAL(textChanged(const QString &)), tree, SLOT(handleFilter(const QString &)));
         layout->addWidget(tree);
 
         _addButton = new QPushButton(makeIconFromTheme("list-add"), "Add Block", this);
         layout->addWidget(_addButton);
         connect(_addButton, SIGNAL(released(void)), this, SLOT(handleAdd(void)));
         _addButton->setEnabled(false); //default disabled
+
+        //on ctrl-f or edit:find, set focus on search window and select all text
+        connect(getActionMap()["find"], SIGNAL(triggered(void)), search, SLOT(setFocus(void)));
+        connect(getActionMap()["find"], SIGNAL(triggered(void)), search, SLOT(selectAll(void)));
     }
 
 signals:

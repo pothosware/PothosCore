@@ -172,6 +172,7 @@ private:
     QAction *_showMainToolBarAction;
     QAction *_showAboutAction;
     QAction *_showAboutQtAction;
+    QAction *_findAction;
     QMap<QString, QAction *> &_actionMap;
 
     void createMenus(void);
@@ -297,6 +298,10 @@ void PothosGuiMainWindow::createActions(void)
     _zoomOriginalAction->setShortcut(QKeySequence("CTRL+0"));
     _actionMap["zoomOriginal"] = _zoomOriginalAction;
 
+    _findAction = new QAction(makeIconFromTheme("edit-find"), tr("&Find"), this);
+    _findAction->setShortcut(QKeySequence("CTRL+F"));
+    _actionMap["find"] = _findAction;
+
     _showAboutAction = new QAction(makeIconFromTheme("help-about"), tr("&About Pothos"), this);
     _showAboutAction->setStatusTip(tr("Information about this version of Pothos"));
     connect(_showAboutAction, SIGNAL(triggered(void)), this, SLOT(handleShowAbout(void)));
@@ -331,6 +336,8 @@ void PothosGuiMainWindow::createMenus(void)
     _editMenu->addAction(_deleteAction);
     _editMenu->addSeparator();
     _editMenu->addAction(_selectAllAction);
+    _editMenu->addSeparator();
+    _editMenu->addAction(_findAction);
     _editMenu->addSeparator();
     _editMenu->addAction(_createGraphPageAction);
     _editMenu->addAction(_renameGraphPageAction);
@@ -390,6 +397,8 @@ void PothosGuiMainWindow::createMainToolBar(void)
     _mainToolBar->addAction(_deleteAction);
     _mainToolBar->addSeparator();
     _mainToolBar->addAction(_selectAllAction);
+    _mainToolBar->addSeparator();
+    _mainToolBar->addAction(_findAction);
     _mainToolBar->addSeparator();
     _mainToolBar->addAction(_rotateLeftAction);
     _mainToolBar->addAction(_rotateRightAction);
