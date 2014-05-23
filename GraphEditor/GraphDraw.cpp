@@ -173,6 +173,7 @@ void GraphDraw::render(void)
         painter.drawRect(QRectF(_mouseLeftDownFirstPoint, _mouseLeftDownLastPoint));
     }
 
+    painter.end();
     this->repaint();
 }
 
