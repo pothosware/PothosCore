@@ -198,6 +198,18 @@ public:
     void registerCallable(const std::string &name, const Callable &call);
 
 private:
+    WorkInfo _workInfo;
+    std::vector<PortInfo> _inputPortInfo;
+    std::vector<PortInfo> _outputPortInfo;
+    //TODO remove port infos that have names that dont exist
+    std::vector<InputPort*> _indexedInputs;
+    std::vector<OutputPort*> _indexedOutputs;
+    std::map<std::string, InputPort*> _namedInputs;
+    std::map<std::string, OutputPort*> _namedOutputs;
+    std::map<std::string, std::unique_ptr<InputPort>> _inputs;
+    std::map<std::string, std::unique_ptr<OutputPort>> _outputs;
+    std::map<std::string, Callable> _calls;
+    bool _activeState;
     std::shared_ptr<Theron::Framework> _framework;
 public:
     std::shared_ptr<WorkerActor> _actor;
@@ -206,3 +218,28 @@ public:
 };
 
 } //namespace Pothos
+
+inline const Pothos::WorkInfo &Pothos::Block::workInfo(void) const
+{
+    return _workInfo;
+}
+
+inline const std::vector<Pothos::InputPort*> &Pothos::Block::inputs(void) const
+{
+    return _indexedInputs;
+}
+
+inline const std::vector<Pothos::OutputPort*> &Pothos::Block::outputs(void) const
+{
+    return _indexedOutputs;
+}
+
+inline const std::map<std::string, Pothos::InputPort*> &Pothos::Block::allInputs(void) const
+{
+    return _namedInputs;
+}
+
+inline const std::map<std::string, Pothos::OutputPort*> &Pothos::Block::allOutputs(void) const
+{
+    return _namedOutputs;
+}

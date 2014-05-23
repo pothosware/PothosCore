@@ -4,6 +4,7 @@
 #include "Framework/WorkerActor.hpp"
 
 Pothos::Block::Block(void):
+    _activeState(false),
     _framework(new Theron::Framework(1)),
     _actor(new WorkerActor(this))
 {
@@ -57,31 +58,6 @@ Pothos::OutputPort *Pothos::Block::output(const size_t index) const
     return &_actor->getOutput(index, __FUNCTION__);
 }
 
-const std::vector<Pothos::InputPort*> &Pothos::Block::inputs(void) const
-{
-    return _actor->indexedInputs;
-}
-
-const std::vector<Pothos::OutputPort*> &Pothos::Block::outputs(void) const
-{
-    return _actor->indexedOutputs;
-}
-
-const std::map<std::string, Pothos::InputPort*> &Pothos::Block::allInputs(void) const
-{
-    return _actor->namedInputs;
-}
-
-const std::map<std::string, Pothos::OutputPort*> &Pothos::Block::allOutputs(void) const
-{
-    return _actor->namedOutputs;
-}
-
-const Pothos::WorkInfo &Pothos::Block::workInfo(void) const
-{
-    return _actor->workInfo;
-}
-
 void Pothos::Block::propagateLabels(const InputPort *input, const LabelIteratorRange &labels)
 {
     const auto numConsumed = input->totalElements();
@@ -122,7 +98,7 @@ void Pothos::Block::setupOutput(const size_t index, const DType &dtype)
 
 void Pothos::Block::registerCallable(const std::string &name, const Callable &call)
 {
-    _actor->calls[name] = call;
+    _calls[name] = call;
 }
 
 std::vector<Pothos::PortInfo> Pothos::Block::inputPortInfo(void)
@@ -145,8 +121,8 @@ std::vector<Pothos::PortInfo> Pothos::Block::outputPortInfo(void)
 
 Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
 {
-    auto it = _actor->calls.find(name);
-    if (it == _actor->calls.end())
+    auto it = _calls.find(name);
+    if (it == _calls.end())
     {
         throw Pothos::BlockCallNotFound("Pothos::Block::call("+name+")", "method does not exist in registry");
     }

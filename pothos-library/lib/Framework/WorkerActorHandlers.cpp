@@ -67,11 +67,11 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
         {
             //indexed port does not exist, look for a lower index port and allocate
             const int index = portNameToIndex(message.id);
-            if (index != -1 and outputs.count(message.id) == 0)
+            if (index != -1 and block->_outputs.count(message.id) == 0)
             {
                 for (int i = index-1; i >= 0; i--)
                 {
-                    if (outputs.count(std::to_string(i)) == 0) continue;
+                    if (block->_outputs.count(std::to_string(i)) == 0) continue;
                     const auto dtype = getOutput(std::to_string(i), __FUNCTION__).dtype();
                     this->allocateOutput(message.id, dtype);
                     break;
@@ -91,11 +91,11 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
         {
             //indexed port does not exist, look for a lower index port and allocate
             const int index = portNameToIndex(message.id);
-            if (index != -1 and inputs.count(message.id) == 0)
+            if (index != -1 and block->_inputs.count(message.id) == 0)
             {
                 for (int i = index-1; i >= 0; i--)
                 {
-                    if (inputs.count(std::to_string(i)) == 0) continue;
+                    if (block->_inputs.count(std::to_string(i)) == 0) continue;
                     const auto dtype = getInput(std::to_string(i), __FUNCTION__).dtype();
                     this->allocateInput(message.id, dtype);
                     break;
@@ -153,7 +153,7 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
     try
     {
         this->block->activate();
-        this->active = true;
+        this->block->_activeState = true;
         this->Send(std::string(""), from);
     }
     catch (const Pothos::Exception &ex)
@@ -179,7 +179,7 @@ void Pothos::WorkerActor::handleDeactivateWorkMessage(const DeactivateWorkMessag
 {
     try
     {
-        this->active = false;
+        this->block->_activeState = false;
         this->block->deactivate();
         this->Send(std::string(""), from);
     }
@@ -203,12 +203,12 @@ void Pothos::WorkerActor::handleDeactivateWorkMessage(const DeactivateWorkMessag
 
 void Pothos::WorkerActor::handleShutdownActorMessage(const ShutdownActorMessage &message, const Theron::Address from)
 {
-    outputs.clear();
-    inputs.clear();
-    indexedOutputs.clear();
-    indexedInputs.clear();
-    namedOutputs.clear();
-    namedInputs.clear();
+    block->_outputs.clear();
+    block->_inputs.clear();
+    block->_indexedOutputs.clear();
+    block->_indexedInputs.clear();
+    block->_namedOutputs.clear();
+    block->_namedInputs.clear();
 
     if (from != Theron::Address::Null()) this->Send(message, from);
 }
@@ -218,7 +218,7 @@ void Pothos::WorkerActor::handleRequestPortInfoMessage(const RequestPortInfoMess
     //empty name is all ports
     if (message.name.empty())
     {
-        this->Send(message.isInput?inputPortInfo:outputPortInfo, from);
+        this->Send(message.isInput?block->_inputPortInfo:block->_outputPortInfo, from);
     }
 
     //otherwise just one port

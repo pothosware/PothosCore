@@ -73,21 +73,21 @@ void setupPorts(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &
 
 void Pothos::WorkerActor::allocateInput(const std::string &name, const DType &dtype)
 {
-    __allocatePort<InputPortImpl>(inputs, name, dtype);
-    setupPorts(inputs, namedInputs, indexedInputs);
-    workInfo.inputPointers.resize(indexedInputs.size());
-    inputPortInfo.emplace_back(name, inputs.at(name)->dtype());
+    __allocatePort<InputPortImpl>(block->_inputs, name, dtype);
+    setupPorts(block->_inputs, block->_namedInputs, block->_indexedInputs);
+    block->_workInfo.inputPointers.resize(block->_indexedInputs.size());
+    block->_inputPortInfo.emplace_back(name, block->_inputs.at(name)->dtype());
 }
 
 void Pothos::WorkerActor::allocateOutput(const std::string &name, const DType &dtype)
 {
-    __allocatePort<OutputPortImpl>(outputs, name, dtype);
-    setupPorts(outputs, namedOutputs, indexedOutputs);
-    workInfo.outputPointers.resize(indexedOutputs.size());
-    outputPortInfo.emplace_back(name, outputs.at(name)->dtype());
+    __allocatePort<OutputPortImpl>(block->_outputs, name, dtype);
+    setupPorts(block->_outputs, block->_namedOutputs, block->_indexedOutputs);
+    block->_workInfo.outputPointers.resize(block->_indexedOutputs.size());
+    block->_outputPortInfo.emplace_back(name, block->_outputs.at(name)->dtype());
 
     //setup the buffer return callback on the manager
-    for (auto &entry : this->outputs)
+    for (auto &entry : block->_outputs)
     {
         auto &port = *entry.second;
         auto &mgr = port._impl->bufferManager;
