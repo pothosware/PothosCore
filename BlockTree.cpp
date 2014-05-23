@@ -187,28 +187,32 @@ public:
             QTreeWidget::mouseMoveEvent(event);
             return;
         }
-        auto drag = new QDrag(this);
 
         //get the block data
         auto blockItem = dynamic_cast<BlockTreeWidgetItem *>(itemAt(_dragStartPos));
         if(blockItem->getBlockDesc().isEmpty()) return;
-        auto mimeData = new QMimeData();
-        mimeData->setData("text/json/pothos_block", blockItem->getBlockDesc());
-        drag->setMimeData(mimeData);
 
-        //draw the block's preview onto a mini pixmap
+        //create a block object to render the image
         std::shared_ptr<GraphBlock> renderBlock(new GraphBlock(nullptr));
         renderBlock->setBlockDesc(blockItem->getBlockDesc());
-        QPixmap pixmap(200,200); //TODO this doesn't account for the size of the block
+        renderBlock->prerender(); //precalculate so we can get bounds
+        const auto bounds = renderBlock->getBoundingRect();
+        renderBlock->setPosition(-bounds.topLeft());
+
+        //draw the block's preview onto a mini pixmap
+        QPixmap pixmap(bounds.size().toSize());
         pixmap.fill(Qt::transparent);
         QPainter painter(&pixmap);
-        renderBlock->setPosition(QPointF(pixmap.width()/2, pixmap.height()/2));
         renderBlock->render(painter);
         painter.end();
-        drag->setPixmap(pixmap);
-        drag->setHotSpot(QPoint(pixmap.width()/2, pixmap.height()/2));
 
-        //execute the drag event
+        //create the drag object
+        auto mimeData = new QMimeData();
+        mimeData->setData("text/json/pothos_block", blockItem->getBlockDesc());
+        auto drag = new QDrag(this);
+        drag->setMimeData(mimeData);
+        drag->setPixmap(pixmap);
+        drag->setHotSpot(-bounds.topLeft().toPoint());
         drag->exec(Qt::CopyAction | Qt::MoveAction);
     }
 

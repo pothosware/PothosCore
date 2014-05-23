@@ -36,6 +36,8 @@ public:
     virtual bool isPointing(const QRectF &pos) const;
     virtual QRectF getBoundingRect(void) const;
 
+    //! render without a painter to do-precalculations
+    void prerender(void);
     virtual void render(QPainter &painter);
 
     virtual void setZIndex(const int index);

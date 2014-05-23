@@ -76,6 +76,13 @@ QRectF GraphObject::getBoundingRect(void) const
     return QRectF(this->getPosition(), this->getPosition());
 }
 
+void GraphObject::prerender(void)
+{
+    QImage i0(1, 1, QImage::Format_ARGB32);
+    QPainter p0(&i0);
+    this->render(p0);
+}
+
 void GraphObject::render(QPainter &)
 {
     return;
