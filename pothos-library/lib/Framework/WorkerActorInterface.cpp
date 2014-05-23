@@ -75,10 +75,10 @@ struct WorkerActorInterface
         message.isInput = isInput;
         message.name = name;
 
-        InfoReceiver<Pothos::PortInfo> receiver;
+        InfoReceiver<Pothos::DType> receiver;
         actor->GetFramework().Send(message, receiver.GetAddress(), actor->GetAddress());
 
-        return receiver.WaitInfo().dtype();
+        return receiver.WaitInfo();
     }
 
     WorkerStats getWorkerStats(void)

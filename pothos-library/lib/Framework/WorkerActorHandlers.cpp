@@ -66,6 +66,7 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
         if (message.contents.action == "SUBINPUT")
         {
             //indexed port does not exist, look for a lower index port and allocate
+            //FIXME allocateOutput is adding to port names at the end, but this should be inserted at index(i)
             const int index = portNameToIndex(message.id);
             if (index != -1 and block->_outputs.count(message.id) == 0)
             {
@@ -90,6 +91,7 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
         if (message.contents.action == "SUBOUTPUT")
         {
             //indexed port does not exist, look for a lower index port and allocate
+            //FIXME allocateInput is adding to port names at the end, but this should be inserted at index(i)
             const int index = portNameToIndex(message.id);
             if (index != -1 and block->_inputs.count(message.id) == 0)
             {
@@ -129,6 +131,8 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
             if (it == port._impl->subscribers.end()) throw Poco::format("output %s subscription missing from input port %s", sub.name, message.id);
             port._impl->subscribers.erase(it);
         }
+
+        //TODO erase automatic ports that have 0 subscribers
 
         if (from != Theron::Address::Null()) this->Send(std::string(""), from);
     }
@@ -215,20 +219,8 @@ void Pothos::WorkerActor::handleShutdownActorMessage(const ShutdownActorMessage 
 
 void Pothos::WorkerActor::handleRequestPortInfoMessage(const RequestPortInfoMessage &message, const Theron::Address from)
 {
-    //empty name is all ports
-    if (message.name.empty())
-    {
-        this->Send(message.isInput?block->_inputPortInfo:block->_outputPortInfo, from);
-    }
-
-    //otherwise just one port
-    else
-    {
-        PortInfo info;
-        if (message.isInput) info = PortInfo(message.name, getInput(message.name, __FUNCTION__).dtype());
-        else                 info = PortInfo(message.name, getOutput(message.name, __FUNCTION__).dtype());
-        this->Send(info, from);
-    }
+    if (message.isInput) this->Send(getInput(message.name, __FUNCTION__).dtype(), from);
+    else                 this->Send(getOutput(message.name, __FUNCTION__).dtype(), from);
     this->bump();
 }
 

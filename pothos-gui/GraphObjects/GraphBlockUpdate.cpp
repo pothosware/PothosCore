@@ -92,29 +92,29 @@ void GraphBlock::initPropertiesFromDesc(void)
 
 static void initGraphBlockPortsFromBlock(GraphBlock *self, Pothos::Block *b)
 {
-    for (const auto &portInfo : b->inputPortInfo())
+    for (const auto &portKey : b->inputPortNames())
     {
-        std::string portName = portInfo.name();
+        std::string portName = portKey;
         unsigned value = 0;
-        if (Poco::NumberParser::tryParseUnsigned(portInfo.name(), value))
+        if (Poco::NumberParser::tryParseUnsigned(portKey, value))
         {
             portName = "in" + portName;
         }
         self->addInputPort(GraphBlockPort(
-            QString::fromStdString(portInfo.name()),
+            QString::fromStdString(portKey),
             QString::fromStdString(portName)));
     }
 
-    for (const auto &portInfo : b->outputPortInfo())
+    for (const auto &portKey : b->outputPortNames())
     {
-        std::string portName = portInfo.name();
+        std::string portName = portKey;
         unsigned value = 0;
-        if (Poco::NumberParser::tryParseUnsigned(portInfo.name(), value))
+        if (Poco::NumberParser::tryParseUnsigned(portKey, value))
         {
             portName = "out" + portName;
         }
         self->addOutputPort(GraphBlockPort(
-            QString::fromStdString(portInfo.name()),
+            QString::fromStdString(portKey),
             QString::fromStdString(portName)));
     }
 }

@@ -101,24 +101,6 @@ void Pothos::Block::registerCallable(const std::string &name, const Callable &ca
     _calls[name] = call;
 }
 
-std::vector<Pothos::PortInfo> Pothos::Block::inputPortInfo(void)
-{
-    InfoReceiver<std::vector<PortInfo>> receiver;
-    RequestPortInfoMessage message;
-    message.isInput = true;
-    _actor->GetFramework().Send(message, receiver.GetAddress(), _actor->GetAddress());
-    return receiver.WaitInfo();
-}
-
-std::vector<Pothos::PortInfo> Pothos::Block::outputPortInfo(void)
-{
-    InfoReceiver<std::vector<PortInfo>> receiver;
-    RequestPortInfoMessage message;
-    message.isInput = false;
-    _actor->GetFramework().Send(message, receiver.GetAddress(), _actor->GetAddress());
-    return receiver.WaitInfo();
-}
-
 Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
 {
     auto it = _calls.find(name);
@@ -162,8 +144,8 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod("uid", &getUid)
     .registerMethod("actor", &getActor)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputPortInfo))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, outputPortInfo))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputPortNames))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, outputPortNames))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))

@@ -74,7 +74,6 @@ list(APPEND POTHOS_SOURCES
     Framework/Block.cpp
     Framework/Topology.cpp
     Framework/WorkInfo.cpp
-    Framework/PortInfo.cpp
     Framework/WorkerActor.cpp
     Framework/WorkerActorInterface.cpp
     Framework/WorkerActorPortAllocation.cpp

@@ -76,7 +76,7 @@ void Pothos::WorkerActor::allocateInput(const std::string &name, const DType &dt
     __allocatePort<InputPortImpl>(block->_inputs, name, dtype);
     setupPorts(block->_inputs, block->_namedInputs, block->_indexedInputs);
     block->_workInfo.inputPointers.resize(block->_indexedInputs.size());
-    block->_inputPortInfo.emplace_back(name, block->_inputs.at(name)->dtype());
+    block->_inputPortNames.push_back(name);
 }
 
 void Pothos::WorkerActor::allocateOutput(const std::string &name, const DType &dtype)
@@ -84,7 +84,7 @@ void Pothos::WorkerActor::allocateOutput(const std::string &name, const DType &d
     __allocatePort<OutputPortImpl>(block->_outputs, name, dtype);
     setupPorts(block->_outputs, block->_namedOutputs, block->_indexedOutputs);
     block->_workInfo.outputPointers.resize(block->_indexedOutputs.size());
-    block->_outputPortInfo.emplace_back(name, block->_outputs.at(name)->dtype());
+    block->_outputPortNames.push_back(name);
 
     //setup the buffer return callback on the manager
     for (auto &entry : block->_outputs)

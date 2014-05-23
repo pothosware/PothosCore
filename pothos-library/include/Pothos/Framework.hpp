@@ -14,7 +14,6 @@
 #include <Pothos/Framework/WorkInfo.hpp>
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
-#include <Pothos/Framework/PortInfo.hpp>
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/OutputPort.hpp>
 #include <Pothos/Framework/Block.hpp>
