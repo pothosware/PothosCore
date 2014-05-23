@@ -123,12 +123,7 @@ void GraphDraw::render(void)
 
     //pre-render to perform connection calculations
     const auto allObjs = this->getGraphObjects();
-    for (auto obj : allObjs)
-    {
-        painter.save();
-        obj->render(painter);
-        painter.restore();
-    }
+    for (auto obj : allObjs) obj->prerender();
 
     //draw background
     painter.setPen(Qt::NoPen);
