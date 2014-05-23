@@ -38,26 +38,6 @@ void Pothos::Block::deactivate(void)
     return;
 }
 
-Pothos::InputPort *Pothos::Block::input(const std::string &name) const
-{
-    return &_actor->getInput(name, __FUNCTION__);
-}
-
-Pothos::InputPort *Pothos::Block::input(const size_t index) const
-{
-    return &_actor->getInput(index, __FUNCTION__);
-}
-
-Pothos::OutputPort *Pothos::Block::output(const std::string &name) const
-{
-    return &_actor->getOutput(name, __FUNCTION__);
-}
-
-Pothos::OutputPort *Pothos::Block::output(const size_t index) const
-{
-    return &_actor->getOutput(index, __FUNCTION__);
-}
-
 void Pothos::Block::propagateLabels(const InputPort *input, const LabelIteratorRange &labels)
 {
     const auto numConsumed = input->totalElements();

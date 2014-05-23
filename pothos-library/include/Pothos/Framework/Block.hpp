@@ -211,38 +211,3 @@ public:
 };
 
 } //namespace Pothos
-
-inline const Pothos::WorkInfo &Pothos::Block::workInfo(void) const
-{
-    return _workInfo;
-}
-
-inline std::vector<std::string> Pothos::Block::inputPortNames(void)
-{
-    return _inputPortNames;
-}
-
-inline std::vector<std::string> Pothos::Block::outputPortNames(void)
-{
-    return _outputPortNames;
-}
-
-inline const std::vector<Pothos::InputPort*> &Pothos::Block::inputs(void) const
-{
-    return _indexedInputs;
-}
-
-inline const std::vector<Pothos::OutputPort*> &Pothos::Block::outputs(void) const
-{
-    return _indexedOutputs;
-}
-
-inline const std::map<std::string, Pothos::InputPort*> &Pothos::Block::allInputs(void) const
-{
-    return _namedInputs;
-}
-
-inline const std::map<std::string, Pothos::OutputPort*> &Pothos::Block::allOutputs(void) const
-{
-    return _namedOutputs;
-}

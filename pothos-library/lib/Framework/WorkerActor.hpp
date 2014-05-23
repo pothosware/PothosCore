@@ -5,7 +5,7 @@
 #include "Framework/InputPortImpl.hpp"
 #include "Framework/OutputPortImpl.hpp"
 #include "Framework/WorkerStats.hpp"
-#include <Pothos/Framework/Block.hpp>
+#include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Theron/Actor.h>
 #include <Theron/Framework.h>
