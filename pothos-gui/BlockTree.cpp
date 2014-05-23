@@ -203,6 +203,10 @@ public:
         QPixmap pixmap(bounds.size().toSize());
         pixmap.fill(Qt::transparent);
         QPainter painter(&pixmap);
+        //painter.scale(zoomScale, zoomScale); //TODO get zoomscale from draw
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setRenderHint(QPainter::HighQualityAntialiasing);
+        painter.setRenderHint(QPainter::SmoothPixmapTransform);
         renderBlock->render(painter);
         painter.end();
 
