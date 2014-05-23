@@ -121,17 +121,15 @@ void GraphDraw::render(void)
     //its convenient to always update this here
     this->updateEnabledActions();
 
+    //draw background
+    _image.fill(QColor(GraphDrawBackgroundColor));
+
     //setup painter
     QPainter painter(&_image);
 
     //pre-render to perform connection calculations
     const auto allObjs = this->getGraphObjects();
     for (auto obj : allObjs) obj->prerender();
-
-    //draw background
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(QBrush(QColor(GraphDrawBackgroundColor)));
-    painter.drawRect(QRect(QPoint(), _image.size()));
 
     //set high quality rendering after drawing the background
     painter.setRenderHint(QPainter::Antialiasing);
