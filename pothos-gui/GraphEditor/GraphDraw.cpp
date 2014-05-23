@@ -156,6 +156,17 @@ void GraphDraw::render(void)
         obj->renderConnectablePoints(painter);
         painter.restore();
         //*/
+
+        //draw bounding boxes (for debug)
+        /*
+        painter.save();
+        painter.scale(this->zoomScale(), this->zoomScale());
+        auto boundingRect = obj->getBoundingRect();
+        painter.setPen(QPen(QColor("red")));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRect(boundingRect);
+        painter.restore();
+        //*/
     }
 
     if (_selectionState == "highlight")

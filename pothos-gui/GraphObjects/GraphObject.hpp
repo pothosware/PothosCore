@@ -34,6 +34,7 @@ public:
 
     virtual bool isPointing(const QPointF &pos) const;
     virtual bool isPointing(const QRectF &pos) const;
+    virtual QRectF getBoundingRect(void) const;
 
     virtual void render(QPainter &painter);
 

@@ -7,6 +7,7 @@
 #include "GraphEditor/Constants.hpp"
 #include <Pothos/Exception.hpp>
 #include <QPainter>
+#include <QPolygonF>
 #include <iostream>
 #include <cassert>
 
@@ -15,7 +16,7 @@ struct GraphConnection::Impl
     GraphConnectionEndpoint inputEp;
     GraphConnectionEndpoint outputEp;
 
-    QList<QPointF> points;
+    QVector<QPointF> points;
     QPolygonF arrowHead;
 };
 
@@ -73,6 +74,17 @@ bool GraphConnection::isPointing(const QRectF &rect) const
     return not _impl->arrowHead.intersected(rect).isEmpty();
 }
 
+QRectF GraphConnection::getBoundingRect(void) const
+{
+    QVector<QPointF> points = _impl->points;
+    const auto arrowRect = _impl->arrowHead.boundingRect();
+    points.push_back(arrowRect.topLeft());
+    points.push_back(arrowRect.topRight());
+    points.push_back(arrowRect.bottomRight());
+    points.push_back(arrowRect.bottomLeft());
+    return QPolygonF(points).boundingRect();
+}
+
 static int getAngle(const QPointF &p0_, const QPointF &p1_)
 {
     //invert y for the vertical flip to fix angle
@@ -87,7 +99,7 @@ static int deltaAcuteAngle(const int a0, const int a1)
     return (a > 180)? (a - 180) : a;
 }
 
-static void makeLines(QList<QPointF> &points, const QPointF p0, const int a0, const QPointF p1, const int a1)
+static void makeLines(QVector<QPointF> &points, const QPointF p0, const int a0, const QPointF p1, const int a1)
 {
     //this case uses three line connections
     if (deltaAcuteAngle(a0, a1) == 180)
@@ -170,7 +182,7 @@ void GraphConnection::render(QPainter &painter)
     const auto ip1 = inputAttrs.point + itrans.map(QPointF(GraphConnectionMinPling+GraphConnectionArrowLen, 0));
 
     //create a path for the connection lines
-    QList<QPointF> points;
+    QVector<QPointF> points;
     points.push_back(op0);
     points.push_back(op1);
     makeLines(points, op1, outputAttrs.rotation, ip1, inputAttrs.rotation + 180);

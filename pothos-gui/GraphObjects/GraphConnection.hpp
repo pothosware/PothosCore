@@ -22,6 +22,8 @@ public:
 
     bool isPointing(const QRectF &rect) const;
 
+    QRectF getBoundingRect(void) const;
+
     void render(QPainter &painter);
 
     Poco::JSON::Object::Ptr serialize(void) const;

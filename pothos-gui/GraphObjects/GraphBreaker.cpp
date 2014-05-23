@@ -65,6 +65,11 @@ bool GraphBreaker::isPointing(const QRectF &rect) const
     return not _impl->polygon.intersected(rect).isEmpty();
 }
 
+QRectF GraphBreaker::getBoundingRect(void) const
+{
+    return _impl->polygon.boundingRect();
+}
+
 std::vector<GraphConnectableKey> GraphBreaker::getConnectableKeys(void) const
 {
     std::vector<GraphConnectableKey> keys;

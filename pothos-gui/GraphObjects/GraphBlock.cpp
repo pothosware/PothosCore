@@ -114,6 +114,30 @@ bool GraphBlock::isPointing(const QRectF &rect) const
     return _impl->mainBlockRect.intersects(rect);
 }
 
+QRectF GraphBlock::getBoundingRect(void) const
+{
+    QVector<QPointF> points;
+    for (const auto &portRect : _impl->inputPortRects)
+    {
+        points.push_back(portRect.topLeft());
+        points.push_back(portRect.topRight());
+        points.push_back(portRect.bottomRight());
+        points.push_back(portRect.bottomLeft());
+    }
+    for (const auto &portRect : _impl->outputPortRects)
+    {
+        points.push_back(portRect.topLeft());
+        points.push_back(portRect.topRight());
+        points.push_back(portRect.bottomRight());
+        points.push_back(portRect.bottomLeft());
+    }
+    points.push_back(_impl->mainBlockRect.topLeft());
+    points.push_back(_impl->mainBlockRect.topRight());
+    points.push_back(_impl->mainBlockRect.bottomRight());
+    points.push_back(_impl->mainBlockRect.bottomLeft());
+    return QPolygonF(points).boundingRect();
+}
+
 std::vector<GraphConnectableKey> GraphBlock::getConnectableKeys(void) const
 {
     std::vector<GraphConnectableKey> keys;
