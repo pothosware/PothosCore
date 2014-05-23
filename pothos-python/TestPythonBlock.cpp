@@ -26,7 +26,7 @@ POTHOS_TEST_BLOCK("/proxy/python/tests", test_python_block)
 
     auto reg = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
     auto feeder = reg.callProxy("/blocks/sources/feeder_source", "int");
-    auto collector = reg.callProxy("/blocks/sources/collector_sink", "int");
+    auto collector = reg.callProxy("/blocks/sinks/collector_sink", "int");
 
     //feed some msgs
     feeder.callProxy("feedMessage", Pothos::Object("msg0"));

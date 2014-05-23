@@ -74,5 +74,5 @@ private:
     std::vector<Pothos::Object> _messages;
 };
 
-static Pothos::BlockRegistry registerSocketSink(
-    "/blocks/sources/collector_sink", &CollectorSink::make);
+static Pothos::BlockRegistry registerCollectorSink(
+    "/blocks/sinks/collector_sink", &CollectorSink::make);

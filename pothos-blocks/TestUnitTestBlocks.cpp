@@ -10,7 +10,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_unit_test_blocks)
 {
     auto env = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
     auto feeder = env.callProxy("/blocks/sources/feeder_source", "int");
-    auto collector = env.callProxy("/blocks/sources/collector_sink", "int");
+    auto collector = env.callProxy("/blocks/sinks/collector_sink", "int");
 
     //feed some msgs
     feeder.callProxy("feedMessage", Pothos::Object("msg0"));

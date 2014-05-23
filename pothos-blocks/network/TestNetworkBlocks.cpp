@@ -33,7 +33,7 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
 
     //tester blocks
     auto feeder = env.callProxy("/blocks/sources/feeder_source", "int");
-    auto collector = env.callProxy("/blocks/sources/collector_sink", "int");
+    auto collector = env.callProxy("/blocks/sinks/collector_sink", "int");
 
     //feed buffer
     auto b0 = Pothos::BufferChunk(10000*sizeof(int));
