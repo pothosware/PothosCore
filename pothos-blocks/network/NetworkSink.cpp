@@ -20,7 +20,7 @@
  * or UDT - udt://host:port
  *
  * |category /Network
- * |keywords source network
+ * |keywords sink network
  *
  * |param uri[URI] The bind or connection uri string.
  * |default "udt://192.168.10.2:1234"
