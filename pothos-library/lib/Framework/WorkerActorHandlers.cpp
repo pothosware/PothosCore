@@ -65,19 +65,7 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
         //subscriber is an input, add to the outputs subscribers list
         if (message.contents.action == "SUBINPUT")
         {
-            //indexed port does not exist, look for a lower index port and allocate
-            const int index = portNameToIndex(message.id);
-            if (index != -1 and outputs.count(message.id) == 0)
-            {
-                for (int i = index-1; i >= 0; i--)
-                {
-                    if (outputs.count(std::to_string(i)) == 0) continue;
-                    const auto dtype = getOutput(std::to_string(i), __FUNCTION__).dtype();
-                    this->allocateOutput(message.id, dtype);
-                    break;
-                }
-            }
-
+            this->autoAllocateOutput(message.id);
             auto &port = getOutput(message.id, __FUNCTION__);
             auto sub = message.contents.port;
             auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
@@ -89,19 +77,7 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
         //subscriber is an output, add to the input subscribers list
         if (message.contents.action == "SUBOUTPUT")
         {
-            //indexed port does not exist, look for a lower index port and allocate
-            const int index = portNameToIndex(message.id);
-            if (index != -1 and inputs.count(message.id) == 0)
-            {
-                for (int i = index-1; i >= 0; i--)
-                {
-                    if (inputs.count(std::to_string(i)) == 0) continue;
-                    const auto dtype = getInput(std::to_string(i), __FUNCTION__).dtype();
-                    this->allocateInput(message.id, dtype);
-                    break;
-                }
-            }
-
+            this->autoAllocateInput(message.id);
             auto &port = getInput(message.id, __FUNCTION__);
             auto sub = message.contents.port;
             auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
@@ -130,6 +106,10 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
             port._impl->subscribers.erase(it);
         }
 
+        //TODO delete unsubscribed automatic ports
+
+        this->updatePorts();
+
         if (from != Theron::Address::Null()) this->Send(std::string(""), from);
     }
     catch (const Pothos::Exception &ex)
@@ -148,12 +128,34 @@ void Pothos::WorkerActor::handleBumpWorkMessage(const BumpWorkMessage &, const T
     this->notify();
 }
 
+static void bufferManagerPushExternal(
+    Pothos::BufferManager *mgr,
+    std::shared_ptr<Theron::Framework> framework,
+    const Theron::Address &addr,
+    const Pothos::ManagedBuffer &buff
+)
+{
+    BufferReturnMessage message;
+    message.mgr = mgr;
+    message.buff = buff;
+    framework->Send(message, Theron::Address::Null(), addr);
+}
+
 void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &, const Theron::Address from)
 {
+    //setup the buffer return callback on the manager
+    for (auto &entry : block->_outputs)
+    {
+        auto &port = *entry.second;
+        auto &mgr = port._impl->bufferManager;
+        mgr->setCallback(std::bind(&bufferManagerPushExternal,
+            mgr.get(), block->_framework, this->GetAddress(), std::placeholders::_1));
+    }
+
     try
     {
         this->block->activate();
-        this->active = true;
+        this->activeState = true;
         this->Send(std::string(""), from);
     }
     catch (const Pothos::Exception &ex)
@@ -179,7 +181,7 @@ void Pothos::WorkerActor::handleDeactivateWorkMessage(const DeactivateWorkMessag
 {
     try
     {
-        this->active = false;
+        this->activeState = false;
         this->block->deactivate();
         this->Send(std::string(""), from);
     }
@@ -203,32 +205,17 @@ void Pothos::WorkerActor::handleDeactivateWorkMessage(const DeactivateWorkMessag
 
 void Pothos::WorkerActor::handleShutdownActorMessage(const ShutdownActorMessage &message, const Theron::Address from)
 {
-    outputs.clear();
-    inputs.clear();
-    indexedOutputs.clear();
-    indexedInputs.clear();
-    namedOutputs.clear();
-    namedInputs.clear();
+    block->_outputs.clear();
+    block->_inputs.clear();
+    this->updatePorts();
 
     if (from != Theron::Address::Null()) this->Send(message, from);
 }
 
 void Pothos::WorkerActor::handleRequestPortInfoMessage(const RequestPortInfoMessage &message, const Theron::Address from)
 {
-    //empty name is all ports
-    if (message.name.empty())
-    {
-        this->Send(message.isInput?inputPortInfo:outputPortInfo, from);
-    }
-
-    //otherwise just one port
-    else
-    {
-        PortInfo info;
-        if (message.isInput) info = PortInfo(message.name, getInput(message.name, __FUNCTION__).dtype());
-        else                 info = PortInfo(message.name, getOutput(message.name, __FUNCTION__).dtype());
-        this->Send(info, from);
-    }
+    if (message.isInput) this->Send(getInput(message.name, __FUNCTION__).dtype(), from);
+    else                 this->Send(getOutput(message.name, __FUNCTION__).dtype(), from);
     this->bump();
 }
 

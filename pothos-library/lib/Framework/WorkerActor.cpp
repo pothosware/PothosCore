@@ -17,9 +17,9 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     bool hasInputMessage = false;
 
     //////////////// output state calculation ///////////////////
-    workInfo.minOutElements = BIG;
-    workInfo.minAllOutElements = BIG;
-    for (auto &entry : this->outputs)
+    block->_workInfo.minOutElements = BIG;
+    block->_workInfo.minAllOutElements = BIG;
+    for (auto &entry : block->_outputs)
     {
         auto &port = *entry.second;
         if (port._impl->bufferManager->empty()) port._buffer = BufferChunk();
@@ -29,17 +29,17 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         port._pendingElements = 0;
         if (port.index() != -1)
         {
-            assert(workInfo.outputPointers.size() > size_t(port.index()));
-            workInfo.outputPointers[port.index()] = port._buffer.as<void *>();
-            workInfo.minOutElements = std::min(workInfo.minOutElements, port._elements);
+            assert(block->_workInfo.outputPointers.size() > size_t(port.index()));
+            block->_workInfo.outputPointers[port.index()] = port._buffer.as<void *>();
+            block->_workInfo.minOutElements = std::min(block->_workInfo.minOutElements, port._elements);
         }
-        workInfo.minAllOutElements = std::min(workInfo.minAllOutElements, port._elements);
+        block->_workInfo.minAllOutElements = std::min(block->_workInfo.minAllOutElements, port._elements);
     }
 
     //////////////// input state calculation ///////////////////
-    workInfo.minInElements = BIG;
-    workInfo.minAllInElements = BIG;
-    for (auto &entry : this->inputs)
+    block->_workInfo.minInElements = BIG;
+    block->_workInfo.minAllInElements = BIG;
+    for (auto &entry : block->_inputs)
     {
         auto &port = *entry.second;
         const size_t reserveBytes = port._reserveElements*port.dtype().size();
@@ -52,19 +52,19 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         port._labelIter = port._impl->inlineMessages;
         if (port.index() != -1)
         {
-            assert(workInfo.inputPointers.size() > size_t(port.index()));
-            workInfo.inputPointers[port.index()] = port._buffer.as<const void *>();
-            workInfo.minInElements = std::min(workInfo.minInElements, port._elements);
+            assert(block->_workInfo.inputPointers.size() > size_t(port.index()));
+            block->_workInfo.inputPointers[port.index()] = port._buffer.as<const void *>();
+            block->_workInfo.minInElements = std::min(block->_workInfo.minInElements, port._elements);
         }
-        workInfo.minAllInElements = std::min(workInfo.minAllInElements, port._elements);
+        block->_workInfo.minAllInElements = std::min(block->_workInfo.minAllInElements, port._elements);
     }
 
     //calculate overall minimums
-    workInfo.minElements = std::min(workInfo.minInElements, workInfo.minOutElements);
-    workInfo.minAllElements = std::min(workInfo.minAllInElements, workInfo.minAllOutElements);
+    block->_workInfo.minElements = std::min(block->_workInfo.minInElements, block->_workInfo.minOutElements);
+    block->_workInfo.minAllElements = std::min(block->_workInfo.minAllInElements, block->_workInfo.minAllOutElements);
 
     //arbitrary time, but its small
-    workInfo.maxTimeoutNs = 1000000; //1 millisecond
+    block->_workInfo.maxTimeoutNs = 1000000; //1 millisecond
 
     return allOutputsReady and (allInputsReady or hasInputMessage);
 }
@@ -79,7 +79,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     unsigned long long bytesConsumed = 0;
     unsigned long long msgsConsumed = 0;
 
-    for (auto &entry : this->inputs)
+    for (auto &entry : block->_inputs)
     {
         auto &port = *entry.second;
         const size_t bytes = port._pendingElements*port.dtype().size();
@@ -145,7 +145,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     unsigned long long bytesProduced = 0;
     unsigned long long msgsProduced = 0;
 
-    for (auto &entry : this->outputs)
+    for (auto &entry : block->_outputs)
     {
         auto &port = *entry.second;
         const size_t bytes = port._pendingElements*port.dtype().size();

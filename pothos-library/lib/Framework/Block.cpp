@@ -2,12 +2,33 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
+#include <Poco/SingletonHolder.h>
 
+/***********************************************************************
+ * Reusable threadpool for configuration purposes
+ **********************************************************************/
+struct ConfigThreadPool
+{
+    ConfigThreadPool(void)
+    {
+        framework.reset(new Theron::Framework());
+    }
+    std::shared_ptr<Theron::Framework> framework;
+};
+
+static ConfigThreadPool &getConfigThreadPool(void)
+{
+    static Poco::SingletonHolder<ConfigThreadPool> sh;
+    return *sh.get();
+}
+
+/***********************************************************************
+ * Block member implementation
+ **********************************************************************/
 Pothos::Block::Block(void):
-    _framework(new Theron::Framework(1)),
+    _framework(getConfigThreadPool().framework),
     _actor(new WorkerActor(this))
 {
-    std::cout << "new Actor " << _actor->GetAddress().AsString() << std::endl;
     return;
 }
 
@@ -37,51 +58,6 @@ void Pothos::Block::deactivate(void)
     return;
 }
 
-Pothos::InputPort *Pothos::Block::input(const std::string &name) const
-{
-    return &_actor->getInput(name, __FUNCTION__);
-}
-
-Pothos::InputPort *Pothos::Block::input(const size_t index) const
-{
-    return &_actor->getInput(index, __FUNCTION__);
-}
-
-Pothos::OutputPort *Pothos::Block::output(const std::string &name) const
-{
-    return &_actor->getOutput(name, __FUNCTION__);
-}
-
-Pothos::OutputPort *Pothos::Block::output(const size_t index) const
-{
-    return &_actor->getOutput(index, __FUNCTION__);
-}
-
-const std::vector<Pothos::InputPort*> &Pothos::Block::inputs(void) const
-{
-    return _actor->indexedInputs;
-}
-
-const std::vector<Pothos::OutputPort*> &Pothos::Block::outputs(void) const
-{
-    return _actor->indexedOutputs;
-}
-
-const std::map<std::string, Pothos::InputPort*> &Pothos::Block::allInputs(void) const
-{
-    return _actor->namedInputs;
-}
-
-const std::map<std::string, Pothos::OutputPort*> &Pothos::Block::allOutputs(void) const
-{
-    return _actor->namedOutputs;
-}
-
-const Pothos::WorkInfo &Pothos::Block::workInfo(void) const
-{
-    return _actor->workInfo;
-}
-
 void Pothos::Block::propagateLabels(const InputPort *input, const LabelIteratorRange &labels)
 {
     const auto numConsumed = input->totalElements();
@@ -107,7 +83,7 @@ void Pothos::Block::setupInput(const std::string &name, const DType &dtype)
 
 void Pothos::Block::setupInput(const size_t index, const DType &dtype)
 {
-    _actor->allocateInput(std::to_string(index), dtype);
+    this->setupInput(std::to_string(index), dtype);
 }
 
 void Pothos::Block::setupOutput(const std::string &name, const DType &dtype)
@@ -117,36 +93,18 @@ void Pothos::Block::setupOutput(const std::string &name, const DType &dtype)
 
 void Pothos::Block::setupOutput(const size_t index, const DType &dtype)
 {
-    _actor->allocateOutput(std::to_string(index), dtype);
+    this->setupOutput(std::to_string(index), dtype);
 }
 
 void Pothos::Block::registerCallable(const std::string &name, const Callable &call)
 {
-    _actor->calls[name] = call;
-}
-
-std::vector<Pothos::PortInfo> Pothos::Block::inputPortInfo(void)
-{
-    InfoReceiver<std::vector<PortInfo>> receiver;
-    RequestPortInfoMessage message;
-    message.isInput = true;
-    _actor->GetFramework().Send(message, receiver.GetAddress(), _actor->GetAddress());
-    return receiver.WaitInfo();
-}
-
-std::vector<Pothos::PortInfo> Pothos::Block::outputPortInfo(void)
-{
-    InfoReceiver<std::vector<PortInfo>> receiver;
-    RequestPortInfoMessage message;
-    message.isInput = false;
-    _actor->GetFramework().Send(message, receiver.GetAddress(), _actor->GetAddress());
-    return receiver.WaitInfo();
+    _calls[name] = call;
 }
 
 Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
 {
-    auto it = _actor->calls.find(name);
-    if (it == _actor->calls.end())
+    auto it = _calls.find(name);
+    if (it == _calls.end())
     {
         throw Pothos::BlockCallNotFound("Pothos::Block::call("+name+")", "method does not exist in registry");
     }
@@ -186,8 +144,8 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod("uid", &getUid)
     .registerMethod("actor", &getActor)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputPortInfo))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, outputPortInfo))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputPortNames))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, outputPortNames))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))

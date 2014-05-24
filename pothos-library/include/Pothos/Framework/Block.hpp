@@ -12,7 +12,6 @@
 #include <Pothos/Util/UID.hpp>
 #include <Pothos/Framework/CallRegistry.hpp>
 #include <Pothos/Framework/WorkInfo.hpp>
-#include <Pothos/Framework/PortInfo.hpp>
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/OutputPort.hpp>
 #include <memory>
@@ -44,22 +43,6 @@ public:
 
     //! Virtual destructor
     virtual ~Block(void);
-
-    /*!
-     * Get a vector representing all allocated input ports.
-     * The port info is presented in a vector to preserve creation order;
-     * therefore, the index of the port info is not the port index number.
-     */
-    std::vector<PortInfo> inputPortInfo(void);
-
-    /*!
-     * Get a vector representing all allocated output ports.
-     * The port info is presented in a vector to preserve creation order;
-     * therefore, the index of the port info is not the port index number.
-     */
-    std::vector<PortInfo> outputPortInfo(void);
-
-    //TODO make a public API to post to input?
 
 protected:
 
@@ -116,6 +99,17 @@ protected:
     virtual Object opaqueCallHandler(const std::string &name, const Object *inputArgs, const size_t numArgs);
 
 public:
+
+    /*!
+     * Get the names of the input ports in the order they were allocated.
+     */
+    std::vector<std::string> inputPortNames(void);
+
+    /*!
+     * Get the names of the output ports in the order they were allocated.
+     */
+    std::vector<std::string> outputPortNames(void);
+
     /*!
      * Get the input port at the specified port name.
      */
@@ -198,6 +192,16 @@ public:
     void registerCallable(const std::string &name, const Callable &call);
 
 private:
+    WorkInfo _workInfo;
+    std::vector<std::string> _inputPortNames;
+    std::vector<std::string> _outputPortNames;
+    std::vector<InputPort*> _indexedInputs;
+    std::vector<OutputPort*> _indexedOutputs;
+    std::map<std::string, InputPort*> _namedInputs;
+    std::map<std::string, OutputPort*> _namedOutputs;
+    std::map<std::string, std::unique_ptr<InputPort>> _inputs;
+    std::map<std::string, std::unique_ptr<OutputPort>> _outputs;
+    std::map<std::string, Callable> _calls;
     std::shared_ptr<Theron::Framework> _framework;
 public:
     std::shared_ptr<WorkerActor> _actor;

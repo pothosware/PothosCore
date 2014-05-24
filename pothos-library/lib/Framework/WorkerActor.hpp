@@ -5,7 +5,7 @@
 #include "Framework/InputPortImpl.hpp"
 #include "Framework/OutputPortImpl.hpp"
 #include "Framework/WorkerStats.hpp"
-#include <Pothos/Framework/Block.hpp>
+#include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Theron/Actor.h>
 #include <Theron/Framework.h>
@@ -93,7 +93,7 @@ public:
     WorkerActor(Block *block):
         Theron::Actor(*(block->_framework)),
         block(block),
-        active(false)
+        activeState(false)
     {
         this->RegisterHandler(this, &WorkerActor::handleAsyncPortNameMessage);
         this->RegisterHandler(this, &WorkerActor::handleAsyncPortIndexMessage);
@@ -150,26 +150,28 @@ public:
         }
     }
 
-    ///////////////////// port and state storage ///////////////////////
+    ///////////////////// WorkerActor storage ///////////////////////
     Block *block;
-    WorkInfo workInfo;
-    std::vector<PortInfo> inputPortInfo;
-    std::vector<PortInfo> outputPortInfo;
-    //TODO remove port infos that have names that dont exist
-    std::vector<InputPort*> indexedInputs;
-    std::vector<OutputPort*> indexedOutputs;
-    std::map<std::string, InputPort*> namedInputs;
-    std::map<std::string, OutputPort*> namedOutputs;
-    std::map<std::string, std::unique_ptr<InputPort>> inputs;
-    std::map<std::string, std::unique_ptr<OutputPort>> outputs;
-    std::map<std::string, Callable> calls;
-    bool active;
+    bool activeState;
+    WorkerStats workStats;
 
     ///////////////////// port setup methods ///////////////////////
     void allocateInput(const std::string &name, const DType &dtype);
     void allocateOutput(const std::string &name, const DType &dtype);
-    template <typename ImplType, typename PortsType>
-    void __allocatePort(PortsType &ports, const std::string &name, const DType &dtype);
+    template <typename ImplType, typename PortsType, typename PortNamesType>
+    void allocatePort(PortsType &ports, PortNamesType &portNames, const std::string &name, const DType &dtype);
+
+    void autoAllocateInput(const std::string &name);
+    void autoAllocateOutput(const std::string &name);
+    template <typename ImplType, typename PortsType, typename IndexedPortsType, typename PortNamesType>
+    void autoAllocatePort(PortsType &ports, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name);
+
+    /*!
+     * updatePorts() called after making changes to ports.
+     * Reallocate and fill the indexed and named port structures.
+     * Delete unsubscribed automatic ports.
+     */
+    void updatePorts(void);
 
     ///////////////////// convenience getters ///////////////////////
     OutputPort &getOutput(const std::string &name, const char *fcn);
@@ -178,11 +180,10 @@ public:
     InputPort &getInput(const size_t index, const char *fcn);
 
     ///////////////////// work helper methods ///////////////////////
-    WorkerStats workStats;
     inline void notify(void)
     {
         //only call when we handle the only message in the actor's queue
-        if (not active or this->GetNumQueuedMessages() > 1) return;
+        if (not activeState or this->GetNumQueuedMessages() > 1) return;
 
         //prework
         {
@@ -231,6 +232,7 @@ public:
  **********************************************************************/
 inline Pothos::OutputPort &Pothos::WorkerActor::getOutput(const std::string &name, const char *fcn)
 {
+    auto &outputs = block->_outputs;
     auto it = outputs.find(name);
     if (it == outputs.end()) throw PortAccessError(
         Poco::format("%s(%s)", std::string(fcn), name), "output port name out of range");
@@ -239,6 +241,7 @@ inline Pothos::OutputPort &Pothos::WorkerActor::getOutput(const std::string &nam
 
 inline Pothos::InputPort &Pothos::WorkerActor::getInput(const std::string &name, const char *fcn)
 {
+    auto &inputs = block->_inputs;
     auto it = inputs.find(name);
     if (it == inputs.end()) throw PortAccessError(
         Poco::format("%s(%s)", std::string(fcn), name), "input port name out of range");
@@ -247,6 +250,7 @@ inline Pothos::InputPort &Pothos::WorkerActor::getInput(const std::string &name,
 
 inline Pothos::OutputPort &Pothos::WorkerActor::getOutput(const size_t index, const char *fcn)
 {
+    auto &indexedOutputs = block->_indexedOutputs;
     if (index >= indexedOutputs.size()) throw PortAccessError(
         Poco::format("%s(%d)", std::string(fcn), int(index)), "output port index out of range");
     return *indexedOutputs[index];
@@ -254,6 +258,7 @@ inline Pothos::OutputPort &Pothos::WorkerActor::getOutput(const size_t index, co
 
 inline Pothos::InputPort &Pothos::WorkerActor::getInput(const size_t index, const char *fcn)
 {
+    auto &indexedInputs = block->_indexedInputs;
     if (index >= indexedInputs.size()) throw PortAccessError(
         Poco::format("%s(%d)", std::string(fcn), int(index)), "input port index out of range");
     return *indexedInputs[index];
