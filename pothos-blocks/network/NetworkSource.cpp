@@ -10,7 +10,32 @@
 #include <iostream>
 
 /***********************************************************************
- * NetworkSource Implementation
+ * |PothosDoc Network Source
+ *
+ * The network source deserializes data from the socket and produces on its output port.
+ * Socket data encompasses stream buffers, inline labels, and async messages.
+ *
+ * The underlying supports two transport options:
+ * TCP - tcp://host:port
+ * or UDT - udt://host:port
+ *
+ * |category /Network
+ * |keywords source network
+ *
+ * |param uri[URI] The bind or connection uri string.
+ * |default "udt://192.168.10.2:1234"
+ *
+ * |param opt[Option] Control if the socket is a server (BIND) or client (CONNECT).
+ * The "DISCONNECT" option is used to make a disconnected endpoint for object inspection.
+ * |option [Disconnect] "DISCONNECT"
+ * |option [Connect] "CONNECT"
+ * |option [Bind] "BIND"
+ * |default "DISCONNECT"
+ *
+ * |param dtype[Data Type] The datatype produced by the network source.
+ * |default "int"
+ *
+ * |factory /blocks/network/network_source(uri, opt, dtype)
  **********************************************************************/
 class NetworkSource : public Pothos::Block
 {

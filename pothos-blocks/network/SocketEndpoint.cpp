@@ -282,7 +282,8 @@ struct PothosPacketSocketEndpoint::Impl
         state(EP_STATE_CLOSED),
         lastSentPacketCount(0),
         nextRecvPacketCount(0),
-        bytesLeftInStream(0)
+        bytesLeftInStream(0),
+        iface(nullptr)
     {
         return;
     }
@@ -314,6 +315,7 @@ struct PothosPacketSocketEndpoint::Impl
 PothosPacketSocketEndpoint::PothosPacketSocketEndpoint(const std::string &uri, const std::string &opt):
     _impl(new Impl())
 {
+    if (opt == "DISCONNECT") return;
     if (opt == "BIND") _impl->state = EP_STATE_LISTEN;
     if (opt == "CONNECT") _impl->state = EP_STATE_CLOSED;
     try

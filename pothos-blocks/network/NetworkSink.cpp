@@ -10,7 +10,32 @@
 #include <cassert>
 
 /***********************************************************************
- * NetworkSink Implementation
+ * |PothosDoc Network Sink
+ *
+ * The network sink accepts data on its input port and serializes it over a socket.
+ * All input port data is serialized, which includes stream buffers, inline labels, and async messages.
+ *
+ * The underlying supports two transport options:
+ * TCP - tcp://host:port
+ * or UDT - udt://host:port
+ *
+ * |category /Network
+ * |keywords source network
+ *
+ * |param uri[URI] The bind or connection uri string.
+ * |default "udt://192.168.10.2:1234"
+ *
+ * |param opt[Option] Control if the socket is a server (BIND) or client (CONNECT).
+ * The "DISCONNECT" option is used to make a disconnected endpoint for object inspection.
+ * |option [Disconnect] "DISCONNECT"
+ * |option [Connect] "CONNECT"
+ * |option [Bind] "BIND"
+ * |default "DISCONNECT"
+ *
+ * |param dtype[Data Type] The datatype consumed by the network sink.
+ * |default "int"
+ *
+ * |factory /blocks/network/network_sink(uri, opt, dtype)
  **********************************************************************/
 class NetworkSink : public Pothos::Block
 {
