@@ -98,13 +98,16 @@ public:
         if (not blocDesc or not blocDesc->isArray("docs")) return "";
         const auto docsArray = blocDesc->getArray("docs");
         QString output;
-        output += "<b>" + QString::fromStdString(blocDesc->get("name").convert<std::string>()) + "</b><br />";
+        output += "<b>" + QString::fromStdString(blocDesc->get("name").convert<std::string>()) + "</b>";
+        output += "<p>";
         for (size_t i = 0; i < docsArray->size(); i++)
         {
             const auto line = docsArray->get(i).convert<std::string>();
-            if (line.empty()) output += "<br />";
+            if (line.empty()) output += "<p /><p>";
             else output += QString::fromStdString(line);
+            output += "\n";
         }
+        output += "</p>";
         return "<div>" + output + "</div>";
     }
 
