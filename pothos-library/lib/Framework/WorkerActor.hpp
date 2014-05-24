@@ -158,8 +158,20 @@ public:
     ///////////////////// port setup methods ///////////////////////
     void allocateInput(const std::string &name, const DType &dtype);
     void allocateOutput(const std::string &name, const DType &dtype);
-    template <typename ImplType, typename PortsType>
-    void __allocatePort(PortsType &ports, const std::string &name, const DType &dtype);
+    template <typename ImplType, typename PortsType, typename PortNamesType>
+    void allocatePort(PortsType &ports, PortNamesType &portNames, const std::string &name, const DType &dtype);
+
+    void autoAllocateInput(const std::string &name);
+    void autoAllocateOutput(const std::string &name);
+    template <typename ImplType, typename PortsType, typename IndexedPortsType, typename PortNamesType>
+    void autoAllocatePort(PortsType &ports, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name);
+
+    /*!
+     * updatePorts() called after making changes to ports.
+     * Reallocate and fill the indexed and named port structures.
+     * Delete unsubscribed automatic ports.
+     */
+    void updatePorts(void);
 
     ///////////////////// convenience getters ///////////////////////
     OutputPort &getOutput(const std::string &name, const char *fcn);

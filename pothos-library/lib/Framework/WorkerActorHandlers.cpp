@@ -65,20 +65,7 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
         //subscriber is an input, add to the outputs subscribers list
         if (message.contents.action == "SUBINPUT")
         {
-            //indexed port does not exist, look for a lower index port and allocate
-            //FIXME allocateOutput is adding to port names at the end, but this should be inserted at index(i)
-            const int index = portNameToIndex(message.id);
-            if (index != -1 and block->_outputs.count(message.id) == 0)
-            {
-                for (int i = index-1; i >= 0; i--)
-                {
-                    if (block->_outputs.count(std::to_string(i)) == 0) continue;
-                    const auto dtype = getOutput(std::to_string(i), __FUNCTION__).dtype();
-                    this->allocateOutput(message.id, dtype);
-                    break;
-                }
-            }
-
+            this->autoAllocateOutput(message.id);
             auto &port = getOutput(message.id, __FUNCTION__);
             auto sub = message.contents.port;
             auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
@@ -90,20 +77,7 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
         //subscriber is an output, add to the input subscribers list
         if (message.contents.action == "SUBOUTPUT")
         {
-            //indexed port does not exist, look for a lower index port and allocate
-            //FIXME allocateInput is adding to port names at the end, but this should be inserted at index(i)
-            const int index = portNameToIndex(message.id);
-            if (index != -1 and block->_inputs.count(message.id) == 0)
-            {
-                for (int i = index-1; i >= 0; i--)
-                {
-                    if (block->_inputs.count(std::to_string(i)) == 0) continue;
-                    const auto dtype = getInput(std::to_string(i), __FUNCTION__).dtype();
-                    this->allocateInput(message.id, dtype);
-                    break;
-                }
-            }
-
+            this->autoAllocateInput(message.id);
             auto &port = getInput(message.id, __FUNCTION__);
             auto sub = message.contents.port;
             auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
@@ -132,7 +106,9 @@ void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std
             port._impl->subscribers.erase(it);
         }
 
-        //TODO erase automatic ports that have 0 subscribers
+        //TODO delete unsubscribed automatic ports
+
+        this->updatePorts();
 
         if (from != Theron::Address::Null()) this->Send(std::string(""), from);
     }
@@ -231,11 +207,7 @@ void Pothos::WorkerActor::handleShutdownActorMessage(const ShutdownActorMessage 
 {
     block->_outputs.clear();
     block->_inputs.clear();
-    block->_indexedOutputs.clear();
-    block->_indexedInputs.clear();
-    block->_namedOutputs.clear();
-    block->_namedInputs.clear();
-    //TODO make a deallocate call for a port
+    this->updatePorts();
 
     if (from != Theron::Address::Null()) this->Send(message, from);
 }

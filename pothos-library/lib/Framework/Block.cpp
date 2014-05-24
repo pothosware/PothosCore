@@ -83,7 +83,7 @@ void Pothos::Block::setupInput(const std::string &name, const DType &dtype)
 
 void Pothos::Block::setupInput(const size_t index, const DType &dtype)
 {
-    _actor->allocateInput(std::to_string(index), dtype);
+    this->setupInput(std::to_string(index), dtype);
 }
 
 void Pothos::Block::setupOutput(const std::string &name, const DType &dtype)
@@ -93,7 +93,7 @@ void Pothos::Block::setupOutput(const std::string &name, const DType &dtype)
 
 void Pothos::Block::setupOutput(const size_t index, const DType &dtype)
 {
-    _actor->allocateOutput(std::to_string(index), dtype);
+    this->setupOutput(std::to_string(index), dtype);
 }
 
 void Pothos::Block::registerCallable(const std::string &name, const Callable &call)
