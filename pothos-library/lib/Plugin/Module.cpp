@@ -64,7 +64,7 @@ Pothos::PluginModule::PluginModule(const std::string &path):
     }
     catch(const Poco::LibraryLoadException &ex)
     {
-        throw PluginModuleError("Pothos::PluginModule("+path+")", ex.what());
+        throw PluginModuleError("Pothos::PluginModule("+path+")", ex.displayText());
     }
 }
 

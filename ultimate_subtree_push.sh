@@ -4,7 +4,6 @@ BRANCH=$1
 
 COMPONENTS="
 pothos-opencl
-pothos-managed
 pothos-widgets
 pothos-gui
 pothos-library

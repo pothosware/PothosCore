@@ -123,6 +123,13 @@ list(APPEND POTHOS_SOURCES
     Managed/Registry.cpp
     Managed/Exception.cpp
 
+    Managed/Builtin/ManagedHandle.cpp
+    Managed/Builtin/ManagedProxy.cpp
+    Managed/Builtin/ManagedProxy.hpp
+    Managed/Builtin/TestManaged.cpp
+    Managed/Builtin/TestManagedOpaque.cpp
+    Managed/Builtin/TestManagedWildcard.cpp
+
     Util/UID.cpp
     Util/RefHolder.cpp
     Util/TypeInfo.cpp
