@@ -33,7 +33,7 @@ namespace Pothos {
  * The shape attribute describes the shape or dimensionality of the type.
  * An empty shape means that the DType represents a single element.
  * To represent a vector of size N elements, shape should be [N].
- * To represent a matric of size NxM elements, shape should be [N, M].
+ * To represent a matrix of size NxM elements, shape should be [N, M].
  *
  * The size of a DType represents the size of an element times its shape.
  * Size in bytes = element size * shape[0] * shape[1]... and so on.

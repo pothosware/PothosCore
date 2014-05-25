@@ -36,6 +36,7 @@ Callable &Callable::bind(ValueType &&val, const size_t argNo)
     return this->bind(Object::make(std::forward<ValueType>(val)), argNo);
 }
 
+namespace Detail {
 #for $NARGS in range($MAX_ARGS+1)
 /***********************************************************************
  * Function specialization for return type with $(NARGS) args
@@ -92,7 +93,27 @@ struct CallableFunctionContainer$(NARGS) : Detail::CallableContainer
 
     std::function<ReturnType($expand('A%d', $NARGS))> _fcn;
 };
+
+template <typename ClassType, $expand('typename A%d', $NARGS)>
+ClassType CallableFactoryWrapper($expand('const A%d &a%d', $NARGS))
+{
+    return ClassType($expand('a%d', $NARGS));
+}
+
+template <typename ClassType, $expand('typename A%d', $NARGS)>
+ClassType *CallableFactoryNewWrapper($expand('const A%d &a%d', $NARGS))
+{
+    return new ClassType($expand('a%d', $NARGS));
+}
+
+template <typename ClassType, $expand('typename A%d', $NARGS)>
+std::shared_ptr<ClassType> CallableFactorySharedWrapper($expand('const A%d &a%d', $NARGS))
+{
+    return std::shared_ptr<ClassType>(new ClassType($expand('a%d', $NARGS)));
+}
 #end for
+
+} //namespace Detail
 
 #for $NARGS in range($MAX_ARGS)
 /***********************************************************************
@@ -100,21 +121,21 @@ struct CallableFunctionContainer$(NARGS) : Detail::CallableContainer
  **********************************************************************/
 template <typename ReturnType, typename ClassType, $expand('typename A%d', $NARGS)>
 Callable::Callable(ReturnType(ClassType::*fcn)($expand('A%d', $NARGS))):
-    _impl(new CallableFunctionContainer$(NARGS+1)<ReturnType, ClassType &, $expand('A%d', $NARGS)>(fcn))
+    _impl(new Detail::CallableFunctionContainer$(NARGS+1)<ReturnType, ClassType &, $expand('A%d', $NARGS)>(fcn))
 {
     return;
 }
 
 template <typename ReturnType, typename ClassType, $expand('typename A%d', $NARGS)>
 Callable::Callable(ReturnType(ClassType::*fcn)($expand('A%d', $NARGS)) const):
-    _impl(new CallableFunctionContainer$(NARGS+1)<ReturnType, const ClassType &, $expand('A%d', $NARGS)>(fcn))
+    _impl(new Detail::CallableFunctionContainer$(NARGS+1)<ReturnType, const ClassType &, $expand('A%d', $NARGS)>(fcn))
 {
     return;
 }
 
 template <typename ReturnType, $expand('typename A%d', $NARGS)>
 Callable::Callable(ReturnType(*fcn)($expand('A%d', $NARGS))):
-    _impl(new CallableFunctionContainer$(NARGS)<ReturnType, $expand('A%d', $NARGS)>(fcn))
+    _impl(new Detail::CallableFunctionContainer$(NARGS)<ReturnType, $expand('A%d', $NARGS)>(fcn))
 {
     return;
 }
@@ -138,39 +159,21 @@ Callable Callable::make(ReturnType(*fcn)($expand('A%d', $NARGS)))
 }
 
 template <typename ClassType, $expand('typename A%d', $NARGS)>
-ClassType CallableFactoryWrapper($expand('const A%d &a%d', $NARGS))
-{
-    return ClassType($expand('a%d', $NARGS));
-}
-
-template <typename ClassType, $expand('typename A%d', $NARGS)>
 Callable Callable::factory(void)
 {
-    return Callable(&CallableFactoryWrapper<ClassType, $expand('A%d', $NARGS)>);
-}
-
-template <typename ClassType, $expand('typename A%d', $NARGS)>
-ClassType *CallableFactoryNewWrapper($expand('const A%d &a%d', $NARGS))
-{
-    return new ClassType($expand('a%d', $NARGS));
+    return Callable(&Detail::CallableFactoryWrapper<ClassType, $expand('A%d', $NARGS)>);
 }
 
 template <typename ClassType, $expand('typename A%d', $NARGS)>
 Callable Callable::factoryNew(void)
 {
-    return Callable(&CallableFactoryNewWrapper<ClassType, $expand('A%d', $NARGS)>);
-}
-
-template <typename ClassType, $expand('typename A%d', $NARGS)>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper($expand('const A%d &a%d', $NARGS))
-{
-    return std::shared_ptr<ClassType>(new ClassType($expand('a%d', $NARGS)));
+    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, $expand('A%d', $NARGS)>);
 }
 
 template <typename ClassType, $expand('typename A%d', $NARGS)>
 Callable Callable::factoryShared(void)
 {
-    return Callable(&CallableFactorySharedWrapper<ClassType, $expand('A%d', $NARGS)>);
+    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, $expand('A%d', $NARGS)>);
 }
 
 /***********************************************************************
