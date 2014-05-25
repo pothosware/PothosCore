@@ -1,0 +1,13 @@
+<map id="include/Pothos/Remote.hpp" name="include/Pothos/Remote.hpp">
+<area shape="rect" id="node2" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="369,453,499,480"/>
+<area shape="rect" id="node4" href="$Node_8hpp.html" title="Pothos/Remote/Node.hpp" alt="" coords="667,80,840,107"/>
+<area shape="rect" id="node5" href="$Client_8hpp.html" title="Pothos/Remote/Client.hpp" alt="" coords="801,155,977,181"/>
+<area shape="rect" id="node18" href="$Server_8hpp.html" title="Pothos/Remote/Server.hpp" alt="" coords="1503,229,1683,256"/>
+<area shape="rect" id="node19" href="$Remote_2Exception_8hpp.html" title="Pothos/Remote/Exception.hpp" alt="" coords="45,304,244,331"/>
+<area shape="rect" id="node6" href="$RefHolder_8hpp.html" title="Pothos/Util/RefHolder.hpp" alt="" coords="595,304,769,331"/>
+<area shape="rect" id="node12" href="$Environment_8hpp.html" title="Pothos/Proxy/Environment.hpp" alt="" coords="788,229,991,256"/>
+<area shape="rect" id="node7" href="$Object_2Object_8hpp.html" title="Pothos/Object/Object.hpp" alt="" coords="879,379,1051,405"/>
+<area shape="rect" id="node13" href="$Proxy_2Proxy_8hpp.html" title="Pothos/Proxy/Proxy.hpp" alt="" coords="1061,304,1224,331"/>
+<area shape="rect" id="node15" href="$Callable_2Callable_8hpp.html" title="Pothos/Callable/Callable.hpp" alt="" coords="794,304,984,331"/>
+<area shape="rect" id="node20" href="$Exception_8hpp.html" title="Pothos/Exception.hpp" alt="" coords="94,379,244,405"/>
+</map>

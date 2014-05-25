@@ -1,0 +1,15 @@
+<map id="include/Pothos/Framework/Block.hpp" name="include/Pothos/Framework/Block.hpp">
+<area shape="rect" id="node2" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="1052,411,1181,437"/>
+<area shape="rect" id="node4" href="$UID_8hpp.html" title="Pothos/Util/UID.hpp" alt="" coords="5,253,144,280"/>
+<area shape="rect" id="node6" href="$CallRegistry_8hpp.html" title="Pothos/Framework/CallRegistry.hpp" alt="" coords="1325,96,1557,123"/>
+<area shape="rect" id="node13" href="$WorkInfo_8hpp.html" title="Pothos/Framework/WorkInfo.hpp" alt="" coords="1642,171,1856,197"/>
+<area shape="rect" id="node15" href="$InputPort_8hpp.html" title="Pothos/Framework/InputPort.hpp" alt="" coords="733,96,947,123"/>
+<area shape="rect" id="node21" href="$OutputPort_8hpp.html" title="Pothos/Framework/OutputPort.hpp" alt="" coords="439,96,661,123"/>
+<area shape="rect" id="node7" href="$Callable_2Callable_8hpp.html" title="Pothos/Callable/Callable.hpp" alt="" coords="1375,171,1565,197"/>
+<area shape="rect" id="node8" href="$Object_2Object_8hpp.html" title="Pothos/Object/Object.hpp" alt="" coords="741,253,912,280"/>
+<area shape="rect" id="node16" href="$DType_8hpp.html" title="Pothos/Framework/DType.hpp" alt="" coords="740,171,939,197"/>
+<area shape="rect" id="node17" href="$Label_8hpp.html" title="Pothos/Framework/Label.hpp" alt="" coords="321,171,513,197"/>
+<area shape="rect" id="node18" href="$BufferChunk_8hpp.html" title="Pothos/Framework/BufferChunk.hpp" alt="" coords="1015,171,1248,197"/>
+<area shape="rect" id="node19" href="$SharedBuffer_8hpp.html" title="Pothos/Framework/SharedBuffer.hpp" alt="" coords="1408,336,1644,363"/>
+<area shape="rect" id="node20" href="$ManagedBuffer_8hpp.html" title="Pothos/Framework/Managed\lBuffer.hpp" alt="" coords="1365,246,1555,287"/>
+</map>
