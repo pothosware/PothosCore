@@ -53,7 +53,7 @@ public:
     /*!
      * Create a compiler instance given the name of the compiler.
      * Plugins for custom Compilers should be located in
-     * the plugin registry: /util/compiler/<name>
+     * the plugin registry: /util/compiler/[name]
      * \throws Exception if the factory function fails.
      * \param name the name of a compilier factory in the plugin tree
      * \return a new shared pointer to a compiler interface

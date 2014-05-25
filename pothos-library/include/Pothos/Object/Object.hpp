@@ -45,11 +45,11 @@ public:
  * When an Object instance is copied, the internal data is not copied.
  * The internal data is only deleted when all Object copies are gone.
  *
- * Making a new object: int MyValue = 42; Object foo(myValue);
- * Extracting an object (reference): const int &val = foo.extract<int>();
- * Converting an object (safe): const int long = foo.convert<long>();
- * Check if an object is null: myObj.null() or myObj == Object();
- * Check if an object is a type: myObj.type() == typeid(someType);
+ * - Making a new object: int MyValue = 42; Object foo(myValue);
+ * - Extracting an object (reference): const int &val = foo.extract<int>();
+ * - Converting an object (safe): const int long = foo.convert<long>();
+ * - Check if an object is null: myObj.null() or myObj == Object();
+ * - Check if an object is a type: myObj.type() == typeid(someType);
  */
 class POTHOS_API Object
 {

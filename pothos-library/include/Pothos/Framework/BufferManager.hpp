@@ -60,7 +60,7 @@ public:
     /*!
      * The BufferManager factory -- makes a new BufferManager given the factory name.
      * Plugins for custom BufferManagers should be located in
-     * the plugin registry: /framework/buffer_manager/<name>
+     * the plugin registry: /framework/buffer_manager/[name]
      * \throws BufferManagerFactoryError if the factory function fails.
      * \param name the name of a BufferManager factory in the plugin tree
      * \param args the buffer manager init arguments

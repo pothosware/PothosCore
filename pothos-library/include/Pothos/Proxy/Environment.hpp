@@ -45,7 +45,7 @@ public:
     /*!
      * Create a new environment given the name of the factory.
      * Plugins for custom BufferManagers should be located in
-     * the plugin registry: /proxy/environment/<name>
+     * the plugin registry: /proxy/environment/[name]
      * \throws ProxyEnvironmentFactoryError if the factory function fails.
      * \param name the name of a ProxyEnvironment factory in the plugin tree
      * \param args the proxy environment init arguments

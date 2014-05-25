@@ -49,7 +49,7 @@ public:
 
     /*!
      * Is this Proxy null?
-     * \param true if the handle is not set.
+     * \return true if the handle is not set.
      */
     bool null(void) const;
 

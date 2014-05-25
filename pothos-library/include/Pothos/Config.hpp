@@ -63,7 +63,7 @@
  * this->register(POTHOS_FCN_TUPLE(MyNamespace::MyClass, foo));
  *
  * \param classPath the colon separated namespace and class name
- * \param the name of a function within the specified classPath
+ * \param functionName the name of a function within the specified classPath
  */
 #define POTHOS_FCN_TUPLE(classPath, functionName) \
     #functionName, &classPath::functionName
