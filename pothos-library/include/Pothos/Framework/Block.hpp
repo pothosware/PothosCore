@@ -175,7 +175,7 @@ public:
     /*!
      * Configure an input port with the given data type.
      */
-    void setupInput(const size_t index, const DType &dtype);
+    void setupInput(const size_t index, const DType &dtype = "byte");
 
     /*!
      * Configure an output port with the given data type.
@@ -185,7 +185,7 @@ public:
     /*!
      * Configure an output port with the given data type.
      */
-    void setupOutput(const size_t index, const DType &dtype);
+    void setupOutput(const size_t index, const DType &dtype = "byte");
 
     /*!
      * Export a function call on this block to set/get parameters.

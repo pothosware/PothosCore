@@ -12,6 +12,7 @@ void Pothos::WorkerActor::handleAsyncPortNameMessage(const PortMessage<std::stri
     if (input._impl->asyncMessages.full()) input._impl->asyncMessages.set_capacity(input._impl->asyncMessages.capacity()*2);
     if (input._impl->isSlot)
     {
+        //TODO try/catch/log
         const auto &args = message.contents.extract<ObjectVector>();
         block->opaqueCallHandler(message.id, args.data(), args.size());
         this->bump();
