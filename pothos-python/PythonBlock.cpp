@@ -11,6 +11,7 @@ public:
     PythonBlock(void)
     {
         this->registerCall(POTHOS_FCN_TUPLE(PythonBlock, _setPyBlock));
+        this->registerCall(POTHOS_FCN_TUPLE(PythonBlock, _emitSignalArgs));
     }
 
     static Block *make(void)
@@ -46,6 +47,7 @@ public:
     Pothos::Object opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
     {
         if (name == "_setPyBlock") return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
+        if (name == "_emitSignalArgs") return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
         auto env = _block.getEnvironment();
         Pothos::ProxyVector args(numArgs);
         for (size_t i = 0; i < numArgs; i++)
@@ -54,6 +56,17 @@ public:
         }
         auto result = _block.getHandle()->call(name, args.data(), args.size());
         return env->convertProxyToObject(result);
+    }
+
+    void _emitSignalArgs(const std::string &name, const Pothos::ProxyVector &args)
+    {
+        std::vector<Pothos::Object> objArgs;
+        for (const auto &arg : args)
+        {
+            auto o = arg.getEnvironment()->convertProxyToObject(arg);
+            objArgs.push_back(o);
+        }
+        this->emitSignalArgs(name, objArgs.data(), objArgs.size());
     }
 
     Pothos::Proxy _block;
