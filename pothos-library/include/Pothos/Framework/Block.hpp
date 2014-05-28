@@ -11,6 +11,7 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Util/UID.hpp>
 #include <Pothos/Framework/CallRegistry.hpp>
+#include <Pothos/Framework/SignalEmitter.hpp>
 #include <Pothos/Framework/WorkInfo.hpp>
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/OutputPort.hpp>
@@ -34,7 +35,7 @@ namespace Pothos {
  * Any resources produced at the Block's output ports will be
  * make available to the other Block's connected input ports.
  */
-class POTHOS_API Block : protected CallRegistry, public Util::UID
+class POTHOS_API Block : protected CallRegistry, protected SignalEmitter, public Util::UID
 {
 public:
 
@@ -190,6 +191,11 @@ public:
      * Export a function call on this block to set/get parameters.
      */
     void registerCallable(const std::string &name, const Callable &call);
+
+    /*!
+     * Emit a signal given the args as an array of opaque objects.
+     */
+    void emitSignalArgs(const std::string &name, const Object *args, const size_t numArgs);
 
 private:
     WorkInfo _workInfo;

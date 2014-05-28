@@ -101,6 +101,11 @@ void Pothos::Block::registerCallable(const std::string &name, const Callable &ca
     _calls[name] = call;
 }
 
+void Pothos::Block::emitSignalArgs(const std::string &name, const Object *args, const size_t numArgs)
+{
+    
+}
+
 Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
 {
     auto it = _calls.find(name);
