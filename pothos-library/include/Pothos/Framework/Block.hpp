@@ -189,11 +189,25 @@ public:
 
     /*!
      * Export a function call on this block to set/get parameters.
+     * The name should not overlap with the name of an input port.
+     * \param name the name of the callable
+     * \param call the bound callable method
      */
     void registerCallable(const std::string &name, const Callable &call);
 
     /*!
+     * Register that this block can emit a signal of the given name.
+     * The name should not overlap with the name of an output port.
+     * \param name the name of the signal
+     */
+    void registerSignal(const std::string &name);
+
+    /*!
      * Emit a signal given the args as an array of opaque objects.
+     * \param name the name of the signal to emit
+     * \param args the opaque args array
+     * \param numArgs the size of the array
+     * \throws BlockCallNotFound when no signal registered for the provided name
      */
     void emitSignalArgs(const std::string &name, const Object *args, const size_t numArgs);
 

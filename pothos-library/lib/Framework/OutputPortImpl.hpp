@@ -11,8 +11,12 @@
 class Pothos::OutputPortImpl
 {
 public:
+    OutputPortImpl(void):
+        actor(nullptr),
+        isSignal(false){}
     BufferManager::Sptr bufferManager;
     Util::RingDeque<BufferChunk> postedBuffers;
     std::vector<PortSubscriber> subscribers;
     WorkerActor *actor;
+    bool isSignal;
 };

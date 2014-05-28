@@ -50,6 +50,12 @@ void Pothos::InputPort::removeLabel(const Label &label)
     }
 }
 
+bool Pothos::InputPort::isSlot(void) const
+{
+    assert(_impl);
+    return _impl->isSlot;
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedInputPort = Pothos::ManagedClass()
@@ -67,4 +73,5 @@ static auto managedInputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, consume))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, popMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, setReserve))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, isSlot))
     .commit("Pothos/InputPort");

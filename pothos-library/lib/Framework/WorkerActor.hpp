@@ -7,6 +7,7 @@
 #include "Framework/WorkerStats.hpp"
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
+#include <Pothos/Object/Containers.hpp>
 #include <Theron/Actor.h>
 #include <Theron/Framework.h>
 #include <Theron/Receiver.h>
@@ -158,6 +159,8 @@ public:
     ///////////////////// port setup methods ///////////////////////
     void allocateInput(const std::string &name, const DType &dtype);
     void allocateOutput(const std::string &name, const DType &dtype);
+    void allocateSignal(const std::string &name);
+    void allocateSlot(const std::string &name);
     template <typename ImplType, typename PortsType, typename PortNamesType>
     void allocatePort(PortsType &ports, PortNamesType &portNames, const std::string &name, const DType &dtype);
 

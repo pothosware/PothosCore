@@ -49,6 +49,12 @@ void Pothos::OutputPort::postBuffer(const BufferChunk &buffer)
     queue.push_back(buffer);
 }
 
+bool Pothos::OutputPort::isSignal(void) const
+{
+    assert(_impl);
+    return _impl->isSignal;
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedOutputPort = Pothos::ManagedClass()
@@ -65,4 +71,5 @@ static auto managedOutputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postLabel))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postBuffer))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, isSignal))
     .commit("Pothos/OutputPort");

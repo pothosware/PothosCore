@@ -11,9 +11,13 @@
 class Pothos::InputPortImpl
 {
 public:
+    InputPortImpl(void):
+        actor(nullptr),
+        isSlot(false){}
     Util::RingDeque<Object> asyncMessages;
     std::vector<Label> inlineMessages;
     BufferAccumulator bufferAccumulator;
     std::vector<PortSubscriber> subscribers;
     WorkerActor *actor;
+    bool isSlot;
 };
