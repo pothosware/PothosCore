@@ -30,7 +30,7 @@ public:
         _slotName(name)
     {
         this->setupOutput(0);
-        this->registerCallable(name, Pothos::Callable()); //dummy registration, opaqueCallHandler does it
+        this->registerSlot(name); //see opaqueCallHandler comment below
     }
 
     //Pothos is cool because you can have advanced overload hooks like this,

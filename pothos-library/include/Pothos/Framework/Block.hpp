@@ -189,18 +189,29 @@ public:
 
     /*!
      * Export a function call on this block to set/get parameters.
-     * The name should not overlap with the name of an input port.
+     * This call will automatically register a slot of the same name.
      * \param name the name of the callable
      * \param call the bound callable method
      */
     void registerCallable(const std::string &name, const Callable &call);
 
     /*!
-     * Register that this block can emit a signal of the given name.
+     * Register that this block has a signal of the given name.
+     * A signal is capable of emitting messages to a slot.
      * The name should not overlap with the name of an output port.
      * \param name the name of the signal
      */
     void registerSignal(const std::string &name);
+
+    /*!
+     * Register that this block has a slot of the given name.
+     * A slot is capable of accepting messages from a signal.
+     * The name should not overlap with the name of an input port.
+     * Note: do not call the registerSlot function in C++,
+     * as registerCallable() automatically registers a slot.
+     * \param name the name of the slot
+     */
+    void registerSlot(const std::string &name);
 
     /*!
      * Emit a signal given the args as an array of opaque objects.

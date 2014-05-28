@@ -98,13 +98,18 @@ void Pothos::Block::setupOutput(const size_t index, const DType &dtype)
 
 void Pothos::Block::registerCallable(const std::string &name, const Callable &call)
 {
-    _actor->allocateSlot(name);
     _calls[name] = call;
+    if (call.getNumArgs() > 0) this->registerSlot(name);
 }
 
 void Pothos::Block::registerSignal(const std::string &name)
 {
     _actor->allocateSignal(name);
+}
+
+void Pothos::Block::registerSlot(const std::string &name)
+{
+    _actor->allocateSlot(name);
 }
 
 void Pothos::Block::emitSignalArgs(const std::string &name, const Object *args, const size_t numArgs)
