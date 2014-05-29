@@ -216,11 +216,10 @@ public:
     /*!
      * Emit a signal given the args as an array of opaque objects.
      * \param name the name of the signal to emit
-     * \param args the opaque args array
-     * \param numArgs the size of the array
+     * \param args the opaque array of signal args
      * \throws BlockCallNotFound when no signal registered for the provided name
      */
-    void emitSignalArgs(const std::string &name, const Object *args, const size_t numArgs);
+    void emitSignalArgs(const std::string &name, const std::vector<Object> &args);
 
 private:
     WorkInfo _workInfo;

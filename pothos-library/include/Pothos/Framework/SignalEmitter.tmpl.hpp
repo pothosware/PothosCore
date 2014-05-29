@@ -10,6 +10,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Object.hpp>
+#include <vector>
 #include <string>
 
 namespace Pothos {
@@ -35,15 +36,14 @@ public:
     /*!
      * Emit a signal given the args as an array of opaque objects.
      * \param name the name of the signal
-     * \param args a pointer to an args array
-     * \param numArgs the number of args in the array
+     * \param args the opaque array of signal args
      */
-    virtual void emitSignalArgs(const std::string &name, const Object *args, const size_t numArgs) = 0;
+    virtual void emitSignalArgs(const std::string &name, const std::vector<Object> &args) = 0;
 };
 
 } //namespace Pothos
 
 inline void Pothos::SignalEmitter::emitSignal(const std::string &name)
 {
-    this->emitSignalArgs(name, nullptr, 0);
+    this->emitSignalArgs(name, std::vector<Object>());
 }

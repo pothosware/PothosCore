@@ -112,14 +112,14 @@ void Pothos::Block::registerSlot(const std::string &name)
     _actor->allocateSlot(name);
 }
 
-void Pothos::Block::emitSignalArgs(const std::string &name, const Object *args, const size_t numArgs)
+void Pothos::Block::emitSignalArgs(const std::string &name, const std::vector<Object> &args)
 {
     auto it = _outputs.find(name);
     if (it == _outputs.end() or not it->second->isSignal())
     {
         throw Pothos::BlockCallNotFound("Pothos::Block::emitSignal("+name+")", "signal does not exist in registry");
     }
-    it->second->postMessage(Object(ObjectVector(args, args+numArgs)));
+    it->second->postMessage(Object(args));
 }
 
 Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
@@ -173,6 +173,7 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSignal))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSlot))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, emitSignalArgs))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputs))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, allInputs))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, input))

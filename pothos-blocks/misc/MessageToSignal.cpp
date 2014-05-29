@@ -40,7 +40,7 @@ public:
         if (input->hasMessage())
         {
             auto msg = input->popMessage();
-            this->emitSignalArgs(_emitName, &msg, 1);
+            this->emitSignalArgs(_emitName, std::vector<Pothos::Object>(1, msg));
         }
     }
 

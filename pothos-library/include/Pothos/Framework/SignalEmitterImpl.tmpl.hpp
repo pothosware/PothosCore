@@ -17,11 +17,11 @@ namespace Pothos {
 template <$expand('typename A%d', $NARGS)>
 void SignalEmitter::emitSignal(const std::string &name, $expand('const A%d &a%d', $NARGS))
 {
-    Object args[$(max(1, $NARGS))];
+    std::vector<Object> args($(max(1, $NARGS)));
     #for $i in range($NARGS):
     args[$i] = Object::make(std::forward<A$i>(a$i));
     #end for
-    this->emitSignalArgs(name, args, $NARGS);
+    this->emitSignalArgs(name, args);
 }
 
 #end for

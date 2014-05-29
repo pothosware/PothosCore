@@ -76,4 +76,4 @@ class Block(object):
         self.propagateLabels(InputPort(input), LabelIteratorRange(labels))
 
     def emitSignal(self, name, *args):
-        self._block._emitSignalArgs(name, list(args))
+        self._block.emitSignalArgs(name, args)
