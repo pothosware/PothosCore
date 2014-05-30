@@ -114,6 +114,11 @@ public:
      */
     void setReserve(const size_t numElements);
 
+    /*!
+     * Is this port used for signal handling in a signals + slots paradigm?
+     */
+    bool isSlot(void) const;
+
 private:
     InputPortImpl *_impl;
     int _index;

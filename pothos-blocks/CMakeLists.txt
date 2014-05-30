@@ -17,11 +17,14 @@ include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
 set(SOURCES
     TestUnitTestBlocks.cpp
     TestNetworkTopology.cpp
+    TestSignalsAndSlots.cpp
     sources/WaveformSource.cpp
     sources/FeederSource.cpp
     sinks/CollectorSink.cpp
     sinks/BlackHole.cpp
     misc/Delay.cpp
+    misc/MessageToSignal.cpp
+    misc/SlotToMessage.cpp
     network/NetworkSource.cpp
     network/NetworkSink.cpp
     network/SocketEndpoint.cpp

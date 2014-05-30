@@ -59,6 +59,7 @@ list(APPEND POTHOS_SOURCES
     Object/Builtin/ConvertVecs.cpp
     Object/Builtin/ConvertNums.cpp
     Object/Builtin/ConvertString.cpp
+    Object/Builtin/ConvertContainers.cpp
     Object/Builtin/Hash.cpp
     Object/Builtin/Serialize.cpp
     Object/Builtin/Tests.cpp
@@ -71,6 +72,7 @@ list(APPEND POTHOS_SOURCES
     Framework/InputPort.cpp
     Framework/OutputPort.cpp
     Framework/CallRegistry.cpp
+    Framework/SignalEmitter.cpp
     Framework/Block.cpp
     Framework/Topology.cpp
     Framework/WorkInfo.cpp

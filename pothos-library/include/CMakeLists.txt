@@ -37,6 +37,8 @@ if(GEN_ENABLED AND PYTHON_EXECUTABLE)
     gen_tmpl(${CMAKE_CURRENT_SOURCE_DIR}/Pothos/Managed/ClassImpl.tmpl.hpp)
     gen_tmpl(${CMAKE_CURRENT_SOURCE_DIR}/Pothos/Framework/CallRegistry.tmpl.hpp)
     gen_tmpl(${CMAKE_CURRENT_SOURCE_DIR}/Pothos/Framework/CallRegistryImpl.tmpl.hpp)
+    gen_tmpl(${CMAKE_CURRENT_SOURCE_DIR}/Pothos/Framework/SignalEmitter.tmpl.hpp)
+    gen_tmpl(${CMAKE_CURRENT_SOURCE_DIR}/Pothos/Framework/SignalEmitterImpl.tmpl.hpp)
     add_custom_target(gen_tmpl ALL DEPENDS ${gen_tmpl_outputs})
 endif()
 

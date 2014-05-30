@@ -111,6 +111,11 @@ public:
      */
     void postBuffer(const BufferChunk &buffer);
 
+    /*!
+     * Is this port used for signaling in a signals + slots paradigm?
+     */
+    bool isSignal(void) const;
+
 private:
     OutputPortImpl *_impl;
     int _index;

@@ -88,3 +88,22 @@ POTHOS_TEST_BLOCK("/proxy/python/tests", test_python_block)
 
     std::cout << "run done\n";
 }
+
+POTHOS_TEST_BLOCK("/proxy/python/tests", test_signals_and_slots)
+{
+    auto env = Pothos::ProxyEnvironment::make("python");
+    auto emitter = env->findProxy("TestBlocks").callProxy("SimpleSignalEmitter");
+    auto handler = env->findProxy("TestBlocks").callProxy("SimpleSlotHandler");
+
+    //run the topology
+    {
+        Pothos::Topology topology;
+        topology.connect(emitter, "activateCalled", handler, "activateHandler");
+        std::cout << "topology commit\n";
+        topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+    }
+
+    auto lastWord = handler.call<std::string>("getLastWord");
+    POTHOS_TEST_EQUAL(lastWord, "hello");
+}

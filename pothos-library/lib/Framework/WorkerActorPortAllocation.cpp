@@ -112,6 +112,18 @@ void Pothos::WorkerActor::allocateOutput(const std::string &name, const DType &d
     this->allocatePort<OutputPortImpl>(block->_outputs, block->_outputPortNames, name, dtype);
 }
 
+void Pothos::WorkerActor::allocateSignal(const std::string &name)
+{
+    this->allocateOutput(name, "byte");
+    block->_outputs[name]->_impl->isSignal = true;
+}
+
+void Pothos::WorkerActor::allocateSlot(const std::string &name)
+{
+    this->allocateInput(name, "byte");
+    block->_inputs[name]->_impl->isSlot = true;
+}
+
 void Pothos::WorkerActor::autoAllocateInput(const std::string &name)
 {
     this->autoAllocatePort<InputPortImpl>(block->_inputs, block->_indexedInputs, block->_inputPortNames, name);

@@ -11,6 +11,7 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Util/UID.hpp>
 #include <Pothos/Framework/CallRegistry.hpp>
+#include <Pothos/Framework/SignalEmitter.hpp>
 #include <Pothos/Framework/WorkInfo.hpp>
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/OutputPort.hpp>
@@ -34,7 +35,7 @@ namespace Pothos {
  * Any resources produced at the Block's output ports will be
  * make available to the other Block's connected input ports.
  */
-class POTHOS_API Block : protected CallRegistry, public Util::UID
+class POTHOS_API Block : protected CallRegistry, protected SignalEmitter, public Util::UID
 {
 public:
 
@@ -174,7 +175,7 @@ public:
     /*!
      * Configure an input port with the given data type.
      */
-    void setupInput(const size_t index, const DType &dtype);
+    void setupInput(const size_t index, const DType &dtype = "byte");
 
     /*!
      * Configure an output port with the given data type.
@@ -184,12 +185,41 @@ public:
     /*!
      * Configure an output port with the given data type.
      */
-    void setupOutput(const size_t index, const DType &dtype);
+    void setupOutput(const size_t index, const DType &dtype = "byte");
 
     /*!
      * Export a function call on this block to set/get parameters.
+     * This call will automatically register a slot of the same name.
+     * \param name the name of the callable
+     * \param call the bound callable method
      */
     void registerCallable(const std::string &name, const Callable &call);
+
+    /*!
+     * Register that this block has a signal of the given name.
+     * A signal is capable of emitting messages to a slot.
+     * The name should not overlap with the name of an output port.
+     * \param name the name of the signal
+     */
+    void registerSignal(const std::string &name);
+
+    /*!
+     * Register that this block has a slot of the given name.
+     * A slot is capable of accepting messages from a signal.
+     * The name should not overlap with the name of an input port.
+     * Note: do not call the registerSlot function in C++,
+     * as registerCallable() automatically registers a slot.
+     * \param name the name of the slot
+     */
+    void registerSlot(const std::string &name);
+
+    /*!
+     * Emit a signal given the args as an array of opaque objects.
+     * \param name the name of the signal to emit
+     * \param args the opaque array of signal args
+     * \throws BlockCallNotFound when no signal registered for the provided name
+     */
+    void emitSignalArgs(const std::string &name, const std::vector<Object> &args);
 
 private:
     WorkInfo _workInfo;

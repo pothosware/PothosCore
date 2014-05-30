@@ -59,3 +59,22 @@ class Forwarder(Pothos.Block):
             print(l.index)
             print(l.data)
             #self.output(0).postLabel(l)
+
+class SimpleSignalEmitter(Pothos.Block):
+    def __init__(self):
+        Pothos.Block.__init__(self)
+        self.registerSignal("activateCalled")
+
+    def activate(self):
+        self.emitSignal("activateCalled", "hello")
+
+class SimpleSlotHandler(Pothos.Block):
+    def __init__(self):
+        Pothos.Block.__init__(self)
+        self.registerSlot("activateHandler")
+
+    def activateHandler(self, word):
+        self._lastWord = word
+
+    def getLastWord(self):
+        return self._lastWord
