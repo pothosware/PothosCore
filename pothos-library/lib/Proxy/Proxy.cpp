@@ -30,6 +30,7 @@ std::shared_ptr<Pothos::ProxyHandle> Pothos::Proxy::getHandle(void) const
 
 std::shared_ptr<Pothos::ProxyEnvironment> Pothos::Proxy::getEnvironment(void) const
 {
+    assert(_handle);
     return _handle->getEnvironment();
 }
 
@@ -40,21 +41,25 @@ bool Pothos::Proxy::null(void) const
 
 int Pothos::Proxy::compareTo(const Proxy &other) const
 {
+    assert(_handle);
     return _handle->compareTo(other);
 }
 
 size_t Pothos::Proxy::hashCode(void) const
 {
+    assert(_handle);
     return _handle->hashCode();
 }
 
 std::string Pothos::Proxy::toString(void) const
 {
+    assert(_handle);
     return _handle->toString();
 }
 
 std::string Pothos::Proxy::getClassName(void) const
 {
+    assert(_handle);
     return _handle->getClassName();
 }
 

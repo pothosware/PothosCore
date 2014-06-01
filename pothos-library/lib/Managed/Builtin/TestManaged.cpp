@@ -93,8 +93,8 @@ static void test_simple_runner(Pothos::ProxyEnvironment::Sptr env)
     POTHOS_TEST_EQUAL(superBarInstance0.call<int>("getBar"), 123);
 
     //test field access
-    superBarInstance0.call("_bar", 321);
-    POTHOS_TEST_EQUAL(superBarInstance0.call<int>("_bar"), 321);
+    superBarInstance0.call("set:_bar", 321);
+    POTHOS_TEST_EQUAL(superBarInstance0.call<int>("get:_bar"), 321);
 
     //make an instance and test
     auto superBarInstance1 = superBarProxy.callProxy("new", 21);

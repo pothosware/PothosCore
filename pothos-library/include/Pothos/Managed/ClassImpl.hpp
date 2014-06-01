@@ -72,8 +72,8 @@ template <typename ClassType, typename ValueType>
 ManagedClass &ManagedClass::registerField(const std::string &name, ValueType ClassType::*member)
 {
     std::function<ValueType &(ClassType *)> getRef = std::mem_fn(member);
-    this->registerMethod(name, Callable(&Detail::getField<ClassType, ValueType>).bind(getRef, 1));
-    this->registerMethod(name, Callable(&Detail::setField<ClassType, ValueType>).bind(getRef, 1));
+    this->registerMethod("get:"+name, Callable(&Detail::getField<ClassType, ValueType>).bind(getRef, 1));
+    this->registerMethod("set:"+name, Callable(&Detail::setField<ClassType, ValueType>).bind(getRef, 1));
     return *this;
 }
 

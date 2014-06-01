@@ -69,6 +69,33 @@ Pothos::Proxy PythonProxyHandle::call(const std::string &name, const Pothos::Pro
         "PythonProxyHandle::call("+name+")", "cant call on a null object");
 
     /*******************************************************************
+     * Step 0) handle field accessors and mutators
+     ******************************************************************/
+    const auto colon = name.find(":");
+    if (colon != std::string::npos)
+    {
+        PyObjectRef result(Py_None, REF_BORROWED);
+
+        if (name.substr(0, colon) == "set" and numArgs == 1)
+        {
+            PyObject_SetAttrString(this->obj, name.substr(colon+1).c_str(), env->getHandle(args[0])->obj);
+        }
+        else if (name.substr(0, colon) == "get" and numArgs == 0)
+        {
+            result = PyObjectRef(PyObject_GetAttrString(this->obj, name.substr(colon+1).c_str()), REF_NEW);
+        }
+        else throw Pothos::ProxyHandleCallError(
+            "PythonProxyHandle::call("+name+")", "unknown operation");
+
+        auto errorMsg = getErrorString();
+        if (not errorMsg.empty())
+        {
+            throw Pothos::ProxyExceptionMessage(errorMsg);
+        }
+        return env->makeHandle(result);
+    }
+
+    /*******************************************************************
      * Step 1) locate the callable object
      ******************************************************************/
     PyObjectRef attrObj;

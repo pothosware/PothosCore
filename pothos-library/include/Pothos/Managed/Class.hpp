@@ -303,11 +303,12 @@ public:
 
     /*!
      * Register an accessor and mutator method for the field.
+     * The accessor and mutator are registered under the names "get:name" and "set:name".
      * Example usage: myManagedClass.registerField(&MyClass:myField);
      * The accessor method can be called on a class instance and takes no arguments.
      * The mutator method can be called on a class instance and takes the new value as the first argument.
      * \throws ManagedClassTypeError if the class type differs from the registered type
-     * \param name the name of the field (and registered methods)
+     * \param name the name of the field
      * \param member a pointer to a data member of Class
      */
     template <typename ClassType, typename ValueType>

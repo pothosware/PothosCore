@@ -112,20 +112,14 @@ Pothos::ProxyEnvironment::Sptr makePythonProxyEnvironment(const Pothos::ProxyEnv
 
     getPythonInterpWrapper();
 
-    #if PY_MAJOR_VERSION >= 3
-    auto builtin = env->findProxy("builtins");
-    #else
-    auto builtin = env->findProxy("__builtin__");
-    #endif
-
     auto sys = env->findProxy("sys");
-    builtin.callProxy("setattr", sys, "dont_write_bytecode", true);
+    sys.callProxy("set:dont_write_bytecode", true);
 
     Poco::Path pythonPath(Pothos::System::getPothosDevLibraryPath());
     pythonPath.append("Pothos");
     pythonPath.append("python");
 
-    auto sysPath = builtin.callProxy("getattr", sys, "path");
+    auto sysPath = sys.callProxy("get:path");
     sysPath.callProxy("append", pythonPath.toString());
 
     return env;
