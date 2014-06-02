@@ -214,8 +214,9 @@ void PothosGuiMainWindow::createActions(void)
 
     _reloadAction = new QAction(makeIconFromTheme("view-refresh"), tr("&Reload"), this);
     QList<QKeySequence> reloadShortcuts;
-        reloadShortcuts.push_back(QKeySequence("CTRL+R"));
-        reloadShortcuts.push_back(QKeySequence::Refresh);
+    reloadShortcuts.push_back(QKeySequence::Refresh);
+    reloadShortcuts.push_back(QKeySequence("CTRL+R"));
+    if (reloadShortcuts.front().matches(reloadShortcuts.back()) == QKeySequence::ExactMatch) reloadShortcuts.pop_back();
     _reloadAction->setShortcuts(reloadShortcuts);
     _actionMap["reload"] = _reloadAction;
 
@@ -234,8 +235,9 @@ void PothosGuiMainWindow::createActions(void)
 
     _redoAction = new QAction(makeIconFromTheme("edit-redo"), tr("&Redo"), this);
     QList<QKeySequence> redoShortcuts;
-        redoShortcuts.push_back(QKeySequence("CTRL+Y"));
-        redoShortcuts.push_back(QKeySequence::Redo);
+    redoShortcuts.push_back(QKeySequence::Redo);
+    redoShortcuts.push_back(QKeySequence("CTRL+Y"));
+    if (redoShortcuts.front().matches(redoShortcuts.back()) == QKeySequence::ExactMatch) redoShortcuts.pop_back();
     _redoAction->setShortcuts(redoShortcuts);
     _actionMap["redo"] = _redoAction;
 
