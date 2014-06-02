@@ -80,10 +80,15 @@ Pothos::PluginModule Pothos::PluginModule::safeLoad(const std::string &path)
     args.push_back(std::to_string(success));
 
     //launch
+    Poco::Pipe outPipe, errPipe;
     Poco::Process::Env env;
     Poco::ProcessHandle ph(Poco::Process::launch(
         Pothos::System::getPothosUtilExecutablePath(),
-        args, nullptr, nullptr, nullptr, env));
+        args, nullptr, &outPipe, &errPipe, env));
+
+    //close pipes to not overfill and backup
+    outPipe.close();
+    errPipe.close();
 
     //wait, check error condition, and throw
     if (ph.wait() != success)
