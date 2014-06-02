@@ -292,23 +292,13 @@ private:
                 {
                     const auto blockDesc = array->getObject(i);
                     if (not blockDesc) continue;
+                    if (not this->blockDescMatchesFilter(blockDesc)) continue;
                     const auto path = blockDesc->get("path").extract<std::string>();
                     const auto name = blockDesc->get("name").extract<std::string>();
                     const auto categories = blockDesc->getArray("categories");
-                    if (not categories) continue;
-                    //construct a candidate string from path, name, categories, and keywords.
-                    std::string candidate = path+name;
-                    for(auto category : *categories) candidate += category.extract<std::string>();
-                    if(blockDesc->isArray("keywords"))
+                    if (categories) for (auto categoryObj : *categories)
                     {
-                        const auto keywords = blockDesc->getArray("keywords");
-                        for(auto keyword : *keywords) candidate += keyword.extract<std::string>();
-                    }
-                    //reject if filter string not found in candidate
-                    if(candidate.find(_filter.toStdString()) == std::string::npos) continue;
-                    for (size_t ci = 0; ci < categories->size(); ci++)
-                    {
-                        const auto category = categories->get(ci).extract<std::string>().substr(1);
+                        const auto category = categoryObj.extract<std::string>().substr(1);
                         const auto key = category.substr(0, category.find("/"));
                         if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
                         _rootNodes[key]->load(_allNodeKeys[node.first], blockDesc, category + "/" + name);
@@ -322,6 +312,29 @@ private:
         }
     }
 
+    bool blockDescMatchesFilter(const Poco::JSON::Object::Ptr &blockDesc)
+    {
+        if (_filter.isEmpty()) return true;
+
+        const auto path = blockDesc->get("path").extract<std::string>();
+        const auto name = blockDesc->get("name").extract<std::string>();
+        const auto categories = blockDesc->getArray("categories");
+
+        //construct a candidate string from path, name, categories, and keywords.
+        std::string candidate = path+name;
+        if (categories) for(auto category : *categories)
+        {
+            candidate += category.extract<std::string>();
+        }
+        if(blockDesc->isArray("keywords"))
+        {
+            const auto keywords = blockDesc->getArray("keywords");
+            for(auto keyword : *keywords) candidate += keyword.extract<std::string>();
+        }
+
+        //reject if filter string not found in candidate
+        return (candidate.find(_filter.toStdString()) != std::string::npos);
+    }
 
     QMimeData *mimeData(const QList<QTreeWidgetItem *> items) const
     {
@@ -359,7 +372,7 @@ public:
         this->setLayout(layout);
 
         auto search = new QLineEdit(this);
-        search->setPlaceholderText("Filter blocks");
+        search->setPlaceholderText(tr("Search blocks"));
 #if QT_VERSION > 0x050200
         search->setClearButtonEnabled(true);
 #endif
