@@ -3,6 +3,7 @@
 
 #include <Pothos/Framework.hpp>
 #include <Pothos/Util/MathCompat.hpp>
+#include <Poco/Types.h>
 #include <iostream>
 #include <complex>
 #include "sources/RandomUtils.hpp"
@@ -20,8 +21,18 @@ static const size_t waveTableSize = 4096;
  * |keywords noise random source pseudorandom gaussian
  *
  * |param dtype[Data Type] The datatype produced by the noise source.
- * |option [Float32] "float32"
+ * |option [Complex128] "complex128"
+ * |option [Float64] "float64"
  * |option [Complex64] "complex64"
+ * |option [Float32] "float32"
+ * |option [Complex Int64] "int64, 2"
+ * |option [Int64] "int64"
+ * |option [Complex Int32] "int32, 2"
+ * |option [Int32] "int32"
+ * |option [Complex Int16] "int16, 2"
+ * |option [Int16] "int16"
+ * |option [Complex Int8] "int8, 2"
+ * |option [Int8] "int8"
  * |preview disable
  *
  * |param seed A seed value for the random number generators.
@@ -196,10 +207,15 @@ private:
 static Pothos::Block *noiseSourceFactory(const Pothos::DType &dtype, const long seed)
 {
     #define ifTypeDeclareFactory(type) \
-        if (dtype == Pothos::DType(typeid(type))) return new NoiseSource<type>(seed)
-    ifTypeDeclareFactory(std::complex<float>);
+        if (dtype == Pothos::DType(typeid(type))) return new NoiseSource<type>(seed); \
+        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new NoiseSource<std::complex<type>>(seed);
+    ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
-    throw dtype;
+    ifTypeDeclareFactory(Poco::Int64);
+    ifTypeDeclareFactory(Poco::Int32);
+    ifTypeDeclareFactory(Poco::Int16);
+    ifTypeDeclareFactory(Poco::Int8);
+    throw Pothos::InvalidArgumentException("noiseSourceFactory("+dtype.toString()+")", "unsupported type");
 }
 
 static Pothos::BlockRegistry registerNoiseSource(
