@@ -152,7 +152,7 @@ static void bufferManagerPushExternal(
 void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &, const Theron::Address from)
 {
     //setup the buffer return callback on the manager
-    for (auto &entry : block->_outputs)
+    for (auto &entry : this->outputs)
     {
         auto &port = *entry.second;
         auto &mgr = port._impl->bufferManager;
@@ -213,8 +213,8 @@ void Pothos::WorkerActor::handleDeactivateWorkMessage(const DeactivateWorkMessag
 
 void Pothos::WorkerActor::handleShutdownActorMessage(const ShutdownActorMessage &message, const Theron::Address from)
 {
-    block->_outputs.clear();
-    block->_inputs.clear();
+    this->outputs.clear();
+    this->inputs.clear();
     this->updatePorts();
 
     if (from != Theron::Address::Null()) this->Send(message, from);

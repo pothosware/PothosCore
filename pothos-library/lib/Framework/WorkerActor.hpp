@@ -155,6 +155,8 @@ public:
     Block *block;
     bool activeState;
     WorkerStats workStats;
+    std::map<std::string, std::unique_ptr<InputPort>> inputs;
+    std::map<std::string, std::unique_ptr<OutputPort>> outputs;
 
     ///////////////////// port setup methods ///////////////////////
     void allocateInput(const std::string &name, const DType &dtype);
@@ -235,7 +237,6 @@ public:
  **********************************************************************/
 inline Pothos::OutputPort &Pothos::WorkerActor::getOutput(const std::string &name, const char *fcn)
 {
-    auto &outputs = block->_outputs;
     auto it = outputs.find(name);
     if (it == outputs.end()) throw PortAccessError(
         Poco::format("%s(%s)", std::string(fcn), name), "output port name out of range");
@@ -244,7 +245,6 @@ inline Pothos::OutputPort &Pothos::WorkerActor::getOutput(const std::string &nam
 
 inline Pothos::InputPort &Pothos::WorkerActor::getInput(const std::string &name, const char *fcn)
 {
-    auto &inputs = block->_inputs;
     auto it = inputs.find(name);
     if (it == inputs.end()) throw PortAccessError(
         Poco::format("%s(%s)", std::string(fcn), name), "input port name out of range");

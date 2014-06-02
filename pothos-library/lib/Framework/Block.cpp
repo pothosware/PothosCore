@@ -114,8 +114,8 @@ void Pothos::Block::registerSlot(const std::string &name)
 
 void Pothos::Block::emitSignalArgs(const std::string &name, const std::vector<Object> &args)
 {
-    auto it = _outputs.find(name);
-    if (it == _outputs.end() or not it->second->isSignal())
+    auto it = _actor->outputs.find(name);
+    if (it == _actor->outputs.end() or not it->second->isSignal())
     {
         throw Pothos::BlockCallNotFound("Pothos::Block::emitSignal("+name+")", "signal does not exist in registry");
     }

@@ -19,7 +19,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     //////////////// output state calculation ///////////////////
     block->_workInfo.minOutElements = BIG;
     block->_workInfo.minAllOutElements = BIG;
-    for (auto &entry : block->_outputs)
+    for (auto &entry : this->outputs)
     {
         auto &port = *entry.second;
         if (port._impl->bufferManager->empty()) port._buffer = BufferChunk();
@@ -39,7 +39,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     //////////////// input state calculation ///////////////////
     block->_workInfo.minInElements = BIG;
     block->_workInfo.minAllInElements = BIG;
-    for (auto &entry : block->_inputs)
+    for (auto &entry : this->inputs)
     {
         auto &port = *entry.second;
         const size_t reserveBytes = port._reserveElements*port.dtype().size();
@@ -79,7 +79,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     unsigned long long bytesConsumed = 0;
     unsigned long long msgsConsumed = 0;
 
-    for (auto &entry : block->_inputs)
+    for (auto &entry : this->inputs)
     {
         auto &port = *entry.second;
         const size_t bytes = port._pendingElements*port.dtype().size();
@@ -145,7 +145,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     unsigned long long bytesProduced = 0;
     unsigned long long msgsProduced = 0;
 
-    for (auto &entry : block->_outputs)
+    for (auto &entry : this->outputs)
     {
         auto &port = *entry.second;
         const size_t bytes = port._pendingElements*port.dtype().size();

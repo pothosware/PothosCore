@@ -229,8 +229,6 @@ private:
     std::vector<OutputPort*> _indexedOutputs;
     std::map<std::string, InputPort*> _namedInputs;
     std::map<std::string, OutputPort*> _namedOutputs;
-    std::map<std::string, std::unique_ptr<InputPort>> _inputs;
-    std::map<std::string, std::unique_ptr<OutputPort>> _outputs;
     std::map<std::string, Callable> _calls;
     std::shared_ptr<Theron::Framework> _framework;
 public:

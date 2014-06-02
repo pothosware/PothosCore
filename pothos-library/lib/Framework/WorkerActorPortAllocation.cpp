@@ -104,34 +104,34 @@ void updatePortsT(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType
  **********************************************************************/
 void Pothos::WorkerActor::allocateInput(const std::string &name, const DType &dtype)
 {
-    this->allocatePort<InputPortImpl>(block->_inputs, block->_inputPortNames, name, dtype);
+    this->allocatePort<InputPortImpl>(this->inputs, block->_inputPortNames, name, dtype);
 }
 
 void Pothos::WorkerActor::allocateOutput(const std::string &name, const DType &dtype)
 {
-    this->allocatePort<OutputPortImpl>(block->_outputs, block->_outputPortNames, name, dtype);
+    this->allocatePort<OutputPortImpl>(this->outputs, block->_outputPortNames, name, dtype);
 }
 
 void Pothos::WorkerActor::allocateSignal(const std::string &name)
 {
     this->allocateOutput(name, "byte");
-    block->_outputs[name]->_impl->isSignal = true;
+    this->outputs[name]->_impl->isSignal = true;
 }
 
 void Pothos::WorkerActor::allocateSlot(const std::string &name)
 {
     this->allocateInput(name, "byte");
-    block->_inputs[name]->_impl->isSlot = true;
+    this->inputs[name]->_impl->isSlot = true;
 }
 
 void Pothos::WorkerActor::autoAllocateInput(const std::string &name)
 {
-    this->autoAllocatePort<InputPortImpl>(block->_inputs, block->_indexedInputs, block->_inputPortNames, name);
+    this->autoAllocatePort<InputPortImpl>(this->inputs, block->_indexedInputs, block->_inputPortNames, name);
 }
 
 void Pothos::WorkerActor::autoAllocateOutput(const std::string &name)
 {
-    this->autoAllocatePort<OutputPortImpl>(block->_outputs, block->_indexedOutputs, block->_outputPortNames, name);
+    this->autoAllocatePort<OutputPortImpl>(this->outputs, block->_indexedOutputs, block->_outputPortNames, name);
 }
 
 void Pothos::WorkerActor::updatePorts(void)
@@ -139,6 +139,6 @@ void Pothos::WorkerActor::updatePorts(void)
     block->_workInfo.inputPointers.resize(block->_indexedInputs.size());
     block->_workInfo.outputPointers.resize(block->_indexedOutputs.size());
 
-    updatePortsT(block->_inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames);
-    updatePortsT(block->_outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames);
+    updatePortsT(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames);
+    updatePortsT(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames);
 }
