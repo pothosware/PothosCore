@@ -301,7 +301,7 @@ void PothosGuiMainWindow::createActions(void)
     _actionMap["zoomOriginal"] = _zoomOriginalAction;
 
     _findAction = new QAction(makeIconFromTheme("edit-find"), tr("&Find"), this);
-    _findAction->setShortcut(QKeySequence("CTRL+F"));
+    _findAction->setShortcut(QKeySequence::Find);
     _actionMap["find"] = _findAction;
 
     _showAboutAction = new QAction(makeIconFromTheme("help-about"), tr("&About Pothos"), this);
