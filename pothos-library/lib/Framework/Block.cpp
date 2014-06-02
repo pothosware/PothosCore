@@ -134,6 +134,12 @@ Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const P
 
 Pothos::Object Pothos::Block::opaqueCall(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
 {
+    auto it = _calls.find(name);
+    if (it == _calls.end())
+    {
+        throw Pothos::BlockCallNotFound("Pothos::Block::call("+name+")", "method does not exist in registry");
+    }
+
     OpaqueCallMessage message;
     message.name = name;
     message.inputArgs = inputArgs;

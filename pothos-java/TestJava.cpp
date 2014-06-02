@@ -196,3 +196,12 @@ POTHOS_TEST_BLOCK("/proxy/java/tests", test_primitive)
     auto myDouble = env->findProxy("java.lang.Double").callProxy("new", -20.0);
     POTHOS_TEST_EQUAL(myDouble.convert<double>(), -20.0);
 }
+
+POTHOS_TEST_BLOCK("/proxy/java/tests", test_fields)
+{
+    auto env = Pothos::ProxyEnvironment::make("java");
+
+    auto myInteger = env->findProxy("java.lang.Integer").callProxy("new", 42);
+    std::cout << myInteger.call<int>("get:MAX_VALUE") << std::endl;
+    //TODO try to set and get a non static field when we find an example object to try it on
+}

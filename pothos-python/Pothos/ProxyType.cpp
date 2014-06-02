@@ -38,13 +38,65 @@ static int Proxy_init(ProxyObject *self, PyObject *args, PyObject *)
 static PyObject* Proxy_getattr(PyObject *self, PyObject *attr_name)
 {
     auto callable = PyObject_GenericGetAttr(self, attr_name);
-    if (callable == nullptr)
+    if (callable != nullptr) return callable;
+
+    PyErr_Clear(); //PyObject_GenericGetAttr sets an error when not found
+
+    try
     {
-        PyErr_Clear(); //PyObject_GenericGetAttr sets an error when not found
-        auto args = PyObjectRef(PyTuple_Pack(2, self, attr_name), REF_NEW);
-        return makeProxyCallObject(args.obj);
+        //extract string name
+        const auto name = "get:"+PyObjectToProxy(attr_name).convert<std::string>();
+
+        //empty args
+        Pothos::ProxyVector proxyArgs;
+
+        auto handle = reinterpret_cast<ProxyObject *>(self)->proxy->getHandle();
+        Pothos::Proxy proxy;
+        {
+            PyThreadStateLock lock; //proxy call could be potentially blocking
+            proxy = handle->call(name, proxyArgs.data(), proxyArgs.size());
+        }
+
+        //convert the result into a pyobject
+        return ProxyToPyObject(proxyEnvTranslate(proxy, getPythonProxyEnv()));
     }
-    return callable;
+    catch (const Pothos::Exception &) {}
+
+    auto args = PyObjectRef(PyTuple_Pack(2, self, attr_name), REF_NEW);
+    return makeProxyCallObject(args.obj);
+}
+
+int Proxy_setattr(PyObject *self, PyObject *attr_name, PyObject *v)
+{
+    int r = PyObject_GenericSetAttr(self, attr_name, v);
+    if (r == -1)
+    {
+        PyErr_Clear(); //PyObject_GenericSetAttr sets an error when not found
+    }
+
+    try
+    {
+        //extract string name
+        const auto name = "set:"+PyObjectToProxy(attr_name).convert<std::string>();
+
+        //convert args
+        Pothos::ProxyVector proxyArgs;
+        proxyArgs.push_back(PyObjectToProxyInspect(v));
+
+        auto handle = reinterpret_cast<ProxyObject *>(self)->proxy->getHandle();
+        Pothos::Proxy proxy;
+        {
+            PyThreadStateLock lock; //proxy call could be potentially blocking
+            proxy = handle->call(name, proxyArgs.data(), proxyArgs.size());
+        }
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        PyErr_SetString(PyExc_RuntimeError, ex.displayText().c_str());
+        return -1;
+    }
+
+    return 0;
 }
 
 static PyObject *Proxy_convert(ProxyObject *self)
@@ -195,6 +247,7 @@ void registerProxyType(PyObject *m)
     ProxyType.tp_methods = Proxy_methods;
     ProxyType.tp_init = (initproc)Proxy_init;
     ProxyType.tp_getattro = (getattrofunc)Proxy_getattr;
+    ProxyType.tp_setattro = (setattrofunc)Proxy_setattr;
 
     if (PyType_Ready(&ProxyType) < 0) return;
 

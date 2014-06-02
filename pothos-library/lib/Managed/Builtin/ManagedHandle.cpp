@@ -4,6 +4,7 @@
 #include "ManagedProxy.hpp"
 #include <Pothos/Managed.hpp>
 #include <Pothos/Object.hpp>
+#include <Pothos/Util/TypeInfo.hpp>
 #include <Poco/Format.h>
 #include <cassert>
 #include <iostream>
@@ -210,5 +211,5 @@ std::string ManagedProxyHandle::toString(void) const
 
 std::string ManagedProxyHandle::getClassName(void) const
 {
-    return this->obj.type().name();
+    return Pothos::Util::typeInfoToString(this->obj.type());
 }

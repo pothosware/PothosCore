@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSL-1.0
 
 from . PothosModule import *
-from . Label import Label, LabelProxy, LabelIteratorRange
+from . Label import Label, LabelIteratorRange
 from . Buffer import pointer_to_ndarray
 import numpy
 
@@ -21,12 +21,12 @@ class InputPort(object):
         return numpy.dtype((dtype.name(), tuple(dtype.shape())))
 
     def buffer(self):
-        addr = self._port.buffer().address()
+        addr = self._port.buffer().address
         nitems = self._port.elements()
         dtype = self.dtype()
         return pointer_to_ndarray(addr, nitems, dtype, readonly=True)
 
     def removeLabel(self, label):
-        if not isinstance(label, LabelProxy):
-            raise Exception('InputPort.removeLabel - label must come from a label iterator')
-        self._port.removeLabel(label.proxy())
+        if isinstance(label, Proxy) and label.getClassName() == "Pothos::Label":
+            return self._port.removeLabel(label)
+        raise Exception('InputPort.removeLabel - label must come from a label iterator')

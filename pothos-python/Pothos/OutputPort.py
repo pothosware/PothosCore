@@ -3,7 +3,7 @@
 
 from . PothosModule import *
 from . Buffer import pointer_to_ndarray
-from . Label import Label, LabelProxy
+from . Label import Label
 import numpy
 
 class OutputPort(object):
@@ -18,17 +18,17 @@ class OutputPort(object):
         return numpy.dtype((dtype.name(), tuple(dtype.shape())))
 
     def buffer(self):
-        addr = self._port.buffer().address()
+        addr = self._port.buffer().address
         nitems = self._port.elements()
         dtype = self.dtype()
         return pointer_to_ndarray(addr, nitems, dtype, readonly=False)
 
     def postBuffer(self, buffer):
-        pass
+        raise NotImplementedError("postBuffer not implemented")
 
     def postLabel(self, label):
-        if isinstance(label, LabelProxy):
-            self._port.postLabel(label.proxy())
+        if isinstance(label, Proxy) and label.getClassName() == "Pothos::Label":
+            self._port.postLabel(label)
         elif isinstance(label, Label):
             cls = self._port.getEnvironment().findProxy("Pothos/Label")
             label = cls.new(label.data, label.index)

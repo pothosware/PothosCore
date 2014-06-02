@@ -7,22 +7,6 @@ from . OutputPort import OutputPort
 from . Label import Label, LabelIteratorRange
 import weakref
 
-class WorkInfoProxy(object):
-    """
-    WorkInfoProxy is a wrapper for a ProxyObject holding a WorkInfo
-    that provides the familiar field access min/max number of elements.
-    """
-
-    def __init__(self, info):
-        self._info = info
-
-    def __getattr__(self, name):
-        """
-        WorkInfo in C++ has only fields.
-        This call emulates field access.
-        """
-        return self._info.call(name)
-
 class Block(object):
     def __init__(self):
         env = ProxyEnvironment("managed")
@@ -32,9 +16,6 @@ class Block(object):
 
     def __getattr__(self, name):
         return lambda *args: self._block.call(name, *args)
-
-    def workInfo(self):
-        return WorkInfoProxy(self._block.workInfo())
 
     def setupInput(self, name, dtype="byte"):
         self._block.setupInput(name, dtype)

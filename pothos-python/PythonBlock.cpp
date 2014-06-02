@@ -46,6 +46,7 @@ public:
     Pothos::Object opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
     {
         if (name == "_setPyBlock") return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
+        if (_block.null()) throw name;
         auto env = _block.getEnvironment();
         Pothos::ProxyVector args(numArgs);
         for (size_t i = 0; i < numArgs; i++)
