@@ -130,6 +130,25 @@ Pothos::Proxy JavaProxyHandle::call(const std::string &name, const Pothos::Proxy
     }
 
     /*******************************************************************
+     * Step 0) handle field accessors and mutators
+     ******************************************************************/
+    const auto colon = name.find(":");
+    if (colon != std::string::npos)
+    {
+        auto self = env->makeHandle(this->toJobject());
+        if (name.substr(0, colon) == "set" and numArgs == 1)
+        {
+            return self.callProxy("class").callProxy("getField", name.substr(colon+1)).callProxy("set", self, args[0]);
+        }
+        else if (name.substr(0, colon) == "get" and numArgs == 0)
+        {
+            return self.callProxy("class").callProxy("getField", name.substr(colon+1)).callProxy("get", self);
+        }
+        else throw Pothos::ProxyHandleCallError(
+            "PythonProxyHandle::call("+name+")", "unknown operation");
+    }
+
+    /*******************************************************************
      * Step 1) create vector of JavaProxyHandles from the args
      ******************************************************************/
     #define maxNumArgs 13
