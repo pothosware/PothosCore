@@ -327,7 +327,7 @@ public:
         layout->addWidget(search);
 
         _blockTree = new BlockTreeWidget(this);
-        connect(getWidgetMap()["blockCache"], SIGNAL(blockDescUpdate(const Poco::JSON::Array::Ptr &)),
+        connect(getObjectMap()["blockCache"], SIGNAL(blockDescUpdate(const Poco::JSON::Array::Ptr &)),
             _blockTree, SLOT(handleBlockDescUpdate(const Poco::JSON::Array::Ptr &)));
         connect(_blockTree, SIGNAL(blockDescEvent(const Poco::JSON::Object::Ptr &, bool)),
             this, SLOT(handleBlockDescEvent(const Poco::JSON::Object::Ptr &, bool)));

@@ -40,7 +40,7 @@ GraphDraw::GraphDraw(QWidget *parent):
     connect(this, SIGNAL(stateChanged(const GraphState &)),
         parent, SLOT(handleStateChange(const GraphState &)));
     connect(this, SIGNAL(modifyProperties(GraphObject *)),
-        getWidgetMap()["propertiesPanel"], SLOT(handleGraphModifyProperties(GraphObject *)));
+        getObjectMap()["propertiesPanel"], SLOT(handleGraphModifyProperties(GraphObject *)));
 }
 
 void GraphDraw::dragEnterEvent(QDragEnterEvent *event)

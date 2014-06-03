@@ -30,7 +30,7 @@ QMap<QString, QMenu *> &getMenuMap(void)
     return *sh.get();
 }
 
-QMap<QString, QObject *> &getWidgetMap(void)
+QMap<QString, QObject *> &getObjectMap(void)
 {
     static Poco::SingletonHolder<QMap<QString, QObject *>> sh;
     return *sh.get();
@@ -47,7 +47,7 @@ public:
         _menuMap(getMenuMap()),
         _topLevelSplitter(new QSplitter(this))
     {
-        getWidgetMap()["mainWindow"] = this;
+        getObjectMap()["mainWindow"] = this;
 
         this->setMinimumSize(800, 600);
         this->setWindowTitle("Pothos GUI");
@@ -69,7 +69,7 @@ public:
         _graphActionsDock->setObjectName("_graphActionsDock");
         _graphActionsDock->setWindowTitle(tr("Graph Actions"));
         this->addDockWidget(Qt::BottomDockWidgetArea, _graphActionsDock);
-        getWidgetMap()["graphActionsDock"] = _graphActionsDock;
+        getObjectMap()["graphActionsDock"] = _graphActionsDock;
 
         //create remote nodes dock
         _remoteNodesDock = new QDockWidget(this);
@@ -81,16 +81,16 @@ public:
 
         //block cache (make before block tree)
         auto blockCache = makeBlockCache(this);
-        getWidgetMap()["blockCache"] = blockCache;
+        getObjectMap()["blockCache"] = blockCache;
         connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
 
         //create topology editor tabbed widget
         auto editorTabs = makeGraphEditorTabs(_topLevelSplitter);
-        getWidgetMap()["editorTabs"] = editorTabs;
+        getObjectMap()["editorTabs"] = editorTabs;
 
         //create properties panel (make after block cache)
         auto propertiesPanel = makePropertiesPanel(this);
-        getWidgetMap()["propertiesPanel"] = propertiesPanel;
+        getObjectMap()["propertiesPanel"] = propertiesPanel;
 
         //load the splitter between editor and properties
         _topLevelSplitter->addWidget(editorTabs);

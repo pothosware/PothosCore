@@ -60,7 +60,7 @@ public:
         _propertiesPanel(nullptr),
         _blockTree(makeBlockTree(this))
     {
-        getWidgetMap()["blockTree"] = _blockTree;
+        getObjectMap()["blockTree"] = _blockTree;
         this->addWidget(_blockTree);
     }
 

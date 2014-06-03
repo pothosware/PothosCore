@@ -26,8 +26,8 @@ GraphEditorTabs::GraphEditorTabs(QWidget *parent):
         QString("QTabBar::close-button:hover {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-hover-16.png"))+
         QString("QTabBar::close-button:pressed {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-down-16.png")));
 
-    connect(getWidgetMap()["mainWindow"], SIGNAL(initDone(void)), this, SLOT(handleInit(void)));
-    connect(getWidgetMap()["mainWindow"], SIGNAL(exitBegin(QCloseEvent *)), this, SLOT(handleExit(QCloseEvent *)));
+    connect(getObjectMap()["mainWindow"], SIGNAL(initDone(void)), this, SLOT(handleInit(void)));
+    connect(getObjectMap()["mainWindow"], SIGNAL(exitBegin(QCloseEvent *)), this, SLOT(handleExit(QCloseEvent *)));
     connect(getActionMap()["new"], SIGNAL(triggered(void)), this, SLOT(handleNew(void)));
     connect(getActionMap()["open"], SIGNAL(triggered(void)), this, SLOT(handleOpen(void)));
     connect(getActionMap()["save"], SIGNAL(triggered(void)), this, SLOT(handleSave(void)));

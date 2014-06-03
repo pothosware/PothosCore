@@ -16,7 +16,7 @@ class QMenu;
 QSettings &getSettings(void);
 QMap<QString, QAction *> &getActionMap(void);
 QMap<QString, QMenu *> &getMenuMap(void);
-QMap<QString, QObject *> &getWidgetMap(void);
+QMap<QString, QObject *> &getObjectMap(void);
 
 //--- main factories --//
 QString makeIconPath(const QString &name);

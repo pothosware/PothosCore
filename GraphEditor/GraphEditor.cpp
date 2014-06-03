@@ -54,7 +54,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["cut"], SIGNAL(triggered(void)), this, SLOT(handleCut(void)));
     connect(getActionMap()["copy"], SIGNAL(triggered(void)), this, SLOT(handleCopy(void)));
     connect(getActionMap()["paste"], SIGNAL(triggered(void)), this, SLOT(handlePaste(void)));
-    connect(getWidgetMap()["blockTree"], SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
+    connect(getObjectMap()["blockTree"], SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
     connect(getActionMap()["selectAll"], SIGNAL(triggered(void)), this, SLOT(handleSelectAll(void)));
     connect(getActionMap()["delete"], SIGNAL(triggered(void)), this, SLOT(handleDelete(void)));
     connect(getActionMap()["rotateLeft"], SIGNAL(triggered(void)), this, SLOT(handleRotateLeft(void)));
@@ -66,7 +66,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["undo"], SIGNAL(triggered(void)), this, SLOT(handleUndo(void)));
     connect(getActionMap()["redo"], SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
-    connect(this, SIGNAL(newTitleSubtext(const QString &)), getWidgetMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
+    connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
 }
 
 QString GraphEditor::newId(const QString &hint) const
@@ -102,7 +102,7 @@ QString GraphEditor::newId(const QString &hint) const
 void GraphEditor::showEvent(QShowEvent *event)
 {
     //load our state monitor into the actions dock
-    auto actionsDock = dynamic_cast<QDockWidget *>(getWidgetMap()["graphActionsDock"]);
+    auto actionsDock = dynamic_cast<QDockWidget *>(getObjectMap()["graphActionsDock"]);
     assert(actionsDock != nullptr);
     actionsDock->setWidget(_stateManager);
 
