@@ -3,6 +3,7 @@
 
 #include "GraphObjects/GraphBlockImpl.hpp"
 #include "GraphEditor/Constants.hpp"
+#include "BlockCache.hpp"
 #include <QPainter>
 #include <QPen>
 #include <QBrush>
@@ -17,11 +18,9 @@ GraphBlock::GraphBlock(QObject *parent):
     return;
 }
 
-void GraphBlock::setBlockDesc(const QByteArray &blockDesc)
+void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
 {
-    assert(not blockDesc.isEmpty());
-    Poco::JSON::Parser p; p.parse(std::string(blockDesc.constData(), blockDesc.size()));
-    _impl->blockDesc = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    _impl->blockDesc = blockDesc;
     assert(_impl->blockDesc);
     this->initPropertiesFromDesc();
 }
@@ -399,15 +398,13 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     return obj;
 }
 
-QByteArray blockDescFromPath(const std::string &path);
-
 void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
 {
     auto path = obj->getValue<std::string>("path");
     auto properties = obj->getArray("properties");
 
     //init the block with the description
-    this->setBlockDesc(blockDescFromPath(path));
+    this->setBlockDesc(getBlockDescFromPath(path));
 
     assert(properties);
     for (size_t i = 0; i < properties->size(); i++)

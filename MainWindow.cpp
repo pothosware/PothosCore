@@ -30,9 +30,9 @@ QMap<QString, QMenu *> &getMenuMap(void)
     return *sh.get();
 }
 
-QMap<QString, QWidget *> &getWidgetMap(void)
+QMap<QString, QObject *> &getWidgetMap(void)
 {
-    static Poco::SingletonHolder<QMap<QString, QWidget *>> sh;
+    static Poco::SingletonHolder<QMap<QString, QObject *>> sh;
     return *sh.get();
 }
 
@@ -79,11 +79,16 @@ public:
         this->addDockWidget(Qt::TopDockWidgetArea, _remoteNodesDock);
         _remoteNodesDock->hide(); //default is hidden
 
+        //block cache (make before block tree)
+        auto blockCache = makeBlockCache(this);
+        getWidgetMap()["blockCache"] = blockCache;
+        connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
+
         //create topology editor tabbed widget
         auto editorTabs = makeGraphEditorTabs(_topLevelSplitter);
         getWidgetMap()["editorTabs"] = editorTabs;
 
-        //create properties panel
+        //create properties panel (make after block cache)
         auto propertiesPanel = makePropertiesPanel(this);
         getWidgetMap()["propertiesPanel"] = propertiesPanel;
 

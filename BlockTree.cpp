@@ -3,25 +3,18 @@
 
 #include "PothosGui.hpp"
 #include <QTreeWidget>
-#include <Pothos/Remote.hpp>
-#include <Pothos/Proxy.hpp>
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphEditor/Constants.hpp"
 #include <QMimeData>
 #include <QVBoxLayout>
 #include <QPushButton>
-#include <QFuture>
-#include <QFutureWatcher>
-#include <QtConcurrent/QtConcurrent>
 #include <QMouseEvent>
 #include <QApplication>
+#include <QTimer>
 #include <QDrag>
 #include <QPainter>
 #include <QLineEdit>
 #include <QAction>
-#include <Poco/JSON/Parser.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Object.h>
 #include <Poco/Logger.h>
 #include <iostream>
 #include <sstream>
@@ -40,13 +33,13 @@ public:
         return;
     }
 
-    void load(const std::string &nodeKey, const Poco::JSON::Object::Ptr &blockDesc, const std::string &category, const size_t depth = 0)
+    void load(const Poco::JSON::Object::Ptr &blockDesc, const std::string &category, const size_t depth = 0)
     {
         const auto slashIndex = category.find("/");
         const auto catName = category.substr(0, slashIndex);
         if (slashIndex == std::string::npos)
         {
-            _nodeKeyToBlockDesc[nodeKey] = blockDesc;
+            _blockDesc = blockDesc;
         }
         else
         {
@@ -57,7 +50,7 @@ public:
                 _subNodes[key] = new BlockTreeWidgetItem(this, key);
                 _subNodes[key]->setExpanded(depth < 2);
             }
-            _subNodes[key]->load(nodeKey, blockDesc, catRest, depth+1);
+            _subNodes[key]->load(blockDesc, catRest, depth+1);
         }
     }
 
@@ -74,23 +67,14 @@ public:
 
     void setToolTipOnRequest(void)
     {
-        for (const auto &elem : _nodeKeyToBlockDesc)
-        {
-            if (not elem.second) continue;
-            const auto doc = extractDocString(elem.second);
-            if (not doc.isEmpty()) {this->setToolTip(0, doc); return;}
-        }
+        const auto doc = extractDocString(_blockDesc);
+        if (doc.isEmpty()) return;
+        this->setToolTip(0, doc);
     }
 
-    QByteArray getBlockDesc(void) const
+    Poco::JSON::Object::Ptr getBlockDesc(void) const
     {
-        for (const auto &elem : _nodeKeyToBlockDesc)
-        {
-            if (not elem.second) continue;
-            std::ostringstream oss; elem.second->stringify(oss);
-            return QByteArray(oss.str().c_str(), oss.str().size());
-        }
-        return QByteArray();
+        return _blockDesc;
     }
 
     static QString extractDocString(Poco::JSON::Object::Ptr blocDesc)
@@ -113,28 +97,8 @@ public:
 
 private:
     std::map<std::string, BlockTreeWidgetItem *> _subNodes;
-    std::map<std::string, Poco::JSON::Object::Ptr> _nodeKeyToBlockDesc;
+    Poco::JSON::Object::Ptr _blockDesc;
 };
-
-/***********************************************************************
- * Query JSON docs from node
- **********************************************************************/
-static std::string queryJSONDocs(const std::string &nodeKey)
-{
-    try
-    {
-        auto node = Pothos::RemoteNode::fromKey(nodeKey);
-        auto env = node.makeClient("json").makeEnvironment("managed");
-        return env->findProxy("Pothos/Gui/DocUtils").call<std::string>("dumpJson");
-    }
-    catch (const Pothos::Exception &ex)
-    {
-        const auto uri = Pothos::RemoteNode::fromKey(nodeKey).getUri();
-        poco_error_f2(Poco::Logger::get("PothosGui.BlockTree"), "Failed to query JSON Docs from %s - %s", uri, ex.displayText());
-    }
-
-    return "[]"; //empty JSON array
-}
 
 /***********************************************************************
  * Block Tree widget builder
@@ -146,8 +110,7 @@ public:
 
     BlockTreeWidget(QWidget *parent):
         QTreeWidget(parent),
-        _filttimer(new QTimer(this)),
-        _watcher(new QFutureWatcher<std::string>(this))
+        _filttimer(new QTimer(this))
     {
         QStringList columnNames;
         columnNames.push_back(tr("Available Blocks"));
@@ -157,15 +120,9 @@ public:
         _filttimer->setSingleShot(true);
         _filttimer->setInterval(500);
 
-        connect(_watcher, SIGNAL(resultReadyAt(int)), this, SLOT(handleWatcherDone(int)));
-        connect(_watcher, SIGNAL(finished()), this, SLOT(handleWatcherFinished()));
         connect(this, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleSelectionChange(void)));
         connect(this, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(handleItemDoubleClicked(QTreeWidgetItem *, int)));
         connect(_filttimer, SIGNAL(timeout()), this, SLOT(handleFilterTimerExpired(void)));
-
-        //nodeKeys cannot be a temporary because QtConcurrent will reference them
-        _allNodeKeys = Pothos::RemoteNode::listRegistryKeys();
-        _watcher->setFuture(QtConcurrent::mapped(_allNodeKeys, &queryJSONDocs));
     }
 
     void mousePressEvent(QMouseEvent *event)
@@ -200,7 +157,7 @@ public:
 
         //get the block data
         auto blockItem = dynamic_cast<BlockTreeWidgetItem *>(itemAt(_dragStartPos));
-        if(blockItem->getBlockDesc().isEmpty()) return;
+        if (not blockItem->getBlockDesc()) return;
 
         //create a block object to render the image
         std::shared_ptr<GraphBlock> renderBlock(new GraphBlock(nullptr));
@@ -222,7 +179,9 @@ public:
 
         //create the drag object
         auto mimeData = new QMimeData();
-        mimeData->setData("text/json/pothos_block", blockItem->getBlockDesc());
+        std::ostringstream oss; blockItem->getBlockDesc()->stringify(oss);
+        QByteArray byteArray(oss.str().c_str(), oss.str().size());
+        mimeData->setData("text/json/pothos_block", byteArray);
         auto drag = new QDrag(this);
         drag->setMimeData(mimeData);
         drag->setPixmap(pixmap);
@@ -231,14 +190,17 @@ public:
     }
 
 signals:
-    void blockDescEvent(const QByteArray &, bool);
+    void blockDescEvent(const Poco::JSON::Object::Ptr &, bool);
 
-private slots:
-    void handleWatcherFinished(void)
+public slots:
+    void handleBlockDescUpdate(const Poco::JSON::Array::Ptr &blockDescs)
     {
+        _blockDescs = blockDescs;
+        this->populate();
         this->resizeColumnToContents(0);
     }
 
+private slots:
     void handleFilterTimerExpired(void)
     {
         this->clear();
@@ -253,12 +215,6 @@ private slots:
         //otherwise just call handleFilterTimerExpired here.
         //_filttimer->start(500);
         handleFilterTimerExpired();
-    }
-
-    void handleWatcherDone(const int which)
-    {
-        _allNodeBlocks[which] = _watcher->resultAt(which);
-        populate();
     }
 
     void handleSelectionChange(void)
@@ -280,34 +236,26 @@ private:
 
     void populate(void)
     {
-        if(_allNodeBlocks.empty()) return;
-        for(auto node : _allNodeBlocks)
+        for (const auto &blockDescObj : *_blockDescs)
         {
-            if(node.second.empty()) continue;
-            Poco::JSON::Parser p; p.parse(node.second);
-            auto array = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
-            for(size_t i = 0; i < array->size(); i++)
+            try
             {
-                try
+                const auto blockDesc = blockDescObj.extract<Poco::JSON::Object::Ptr>();
+                if (not this->blockDescMatchesFilter(blockDesc)) continue;
+                const auto path = blockDesc->get("path").extract<std::string>();
+                const auto name = blockDesc->get("name").extract<std::string>();
+                const auto categories = blockDesc->getArray("categories");
+                if (categories) for (auto categoryObj : *categories)
                 {
-                    const auto blockDesc = array->getObject(i);
-                    if (not blockDesc) continue;
-                    if (not this->blockDescMatchesFilter(blockDesc)) continue;
-                    const auto path = blockDesc->get("path").extract<std::string>();
-                    const auto name = blockDesc->get("name").extract<std::string>();
-                    const auto categories = blockDesc->getArray("categories");
-                    if (categories) for (auto categoryObj : *categories)
-                    {
-                        const auto category = categoryObj.extract<std::string>().substr(1);
-                        const auto key = category.substr(0, category.find("/"));
-                        if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
-                        _rootNodes[key]->load(_allNodeKeys[node.first], blockDesc, category + "/" + name);
-                    }
+                    const auto category = categoryObj.extract<std::string>().substr(1);
+                    const auto key = category.substr(0, category.find("/"));
+                    if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
+                    _rootNodes[key]->load(blockDesc, category + "/" + name);
                 }
-                catch (const Poco::Exception &ex)
-                {
-                    poco_error_f1(Poco::Logger::get("PothosGui.BlockTree"), "Failed JSON Doc parse %s", ex.displayText());
-                }
+            }
+            catch (const Poco::Exception &ex)
+            {
+                poco_error_f1(Poco::Logger::get("PothosGui.BlockTree"), "Failed JSON Doc parse %s", ex.displayText());
             }
         }
     }
@@ -343,7 +291,9 @@ private:
             auto b = dynamic_cast<BlockTreeWidgetItem *>(item);
             if (b == nullptr) continue;
             auto mimeData = new QMimeData();
-            mimeData->setData("text/json/pothos_block", b->getBlockDesc());
+            std::ostringstream oss; b->getBlockDesc()->stringify(oss);
+            QByteArray byteArray(oss.str().c_str(), oss.str().size());
+            mimeData->setData("text/json/pothos_block", byteArray);
             return mimeData;
         }
         return QTreeWidget::mimeData(items);
@@ -352,9 +302,7 @@ private:
     QString _filter;
     QTimer *_filttimer;
     QPoint _dragStartPos;
-    std::vector<std::string> _allNodeKeys;
-    std::map<size_t, std::string> _allNodeBlocks;
-    QFutureWatcher<std::string> *_watcher;
+    Poco::JSON::Array::Ptr _blockDescs;
     std::map<std::string, BlockTreeWidgetItem *> _rootNodes;
 };
 
@@ -378,11 +326,13 @@ public:
 #endif
         layout->addWidget(search);
 
-        auto tree = new BlockTreeWidget(this);
-        connect(tree, SIGNAL(blockDescEvent(const QByteArray &, bool)),
-            this, SLOT(handleBlockDescEvent(const QByteArray &, bool)));
-        connect(search, SIGNAL(textChanged(const QString &)), tree, SLOT(handleFilter(const QString &)));
-        layout->addWidget(tree);
+        _blockTree = new BlockTreeWidget(this);
+        connect(getWidgetMap()["blockCache"], SIGNAL(blockDescUpdate(const Poco::JSON::Array::Ptr &)),
+            _blockTree, SLOT(handleBlockDescUpdate(const Poco::JSON::Array::Ptr &)));
+        connect(_blockTree, SIGNAL(blockDescEvent(const Poco::JSON::Object::Ptr &, bool)),
+            this, SLOT(handleBlockDescEvent(const Poco::JSON::Object::Ptr &, bool)));
+        connect(search, SIGNAL(textChanged(const QString &)), _blockTree, SLOT(handleFilter(const QString &)));
+        layout->addWidget(_blockTree);
 
         _addButton = new QPushButton(makeIconFromTheme("list-add"), "Add Block", this);
         layout->addWidget(_addButton);
@@ -395,7 +345,7 @@ public:
     }
 
 signals:
-    void addBlockEvent(const QByteArray &);
+    void addBlockEvent(const Poco::JSON::Object::Ptr &);
 
 private slots:
     void handleAdd(void)
@@ -403,16 +353,17 @@ private slots:
         emit addBlockEvent(_blockDesc);
     }
 
-    void handleBlockDescEvent(const QByteArray &blockDesc, bool add)
+    void handleBlockDescEvent(const Poco::JSON::Object::Ptr &blockDesc, bool add)
     {
         _blockDesc = blockDesc;
-        _addButton->setEnabled(not blockDesc.isEmpty());
+        _addButton->setEnabled(bool(blockDesc));
         if (add) emit addBlockEvent(_blockDesc);
     }
 
 private:
     QPushButton *_addButton;
-    QByteArray _blockDesc;
+    Poco::JSON::Object::Ptr _blockDesc;
+    BlockTreeWidget *_blockTree;
 };
 
 QWidget *makeBlockTree(QWidget *parent)

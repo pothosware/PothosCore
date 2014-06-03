@@ -6,6 +6,7 @@
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphEditor/Constants.hpp"
+#include <Poco/JSON/Parser.h>
 #include <QMenu>
 #include <QPainter>
 #include <QPen>
@@ -54,7 +55,11 @@ void GraphDraw::dragEnterEvent(QDragEnterEvent *event)
 
 void GraphDraw::dropEvent(QDropEvent *event)
 {
-    this->getGraphEditor()->handleAddBlock(event->mimeData()->data("text/json/pothos_block"), event->pos());
+    const auto &byteArray = event->mimeData()->data("text/json/pothos_block");
+    Poco::JSON::Parser p; p.parse(std::string(byteArray.constData(), byteArray.size()));
+    const auto blockDesc = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+
+    this->getGraphEditor()->handleAddBlock(blockDesc, event->pos());
     QWidget::dropEvent(event);
 }
 
