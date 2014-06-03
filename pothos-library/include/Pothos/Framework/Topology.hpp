@@ -73,7 +73,7 @@ public:
         DstType &&dst, const DstPortType &dstPort);
 
     /*!
-     * Disconnect a connection between a source port and a destination port.
+     * Remove a connection between a source port and a destination port.
      * \param src the data source (local/remote block/topology)
      * \param srcPort an identifier for the source port (string or index)
      * \param dst the data destination (local/remote block/topology)
@@ -94,10 +94,12 @@ public:
      */
     void disconnectAll(void);
 
-private:
+    //! Create a connection between a source port and a destination port.
     void _connect(
         const Object &src, const std::string &srcPort,
         const Object &dst, const std::string &dstPort);
+
+    //! Remove a connection between a source port and a destination port.
     void _disconnect(
         const Object &src, const std::string &srcPort,
         const Object &dst, const std::string &dstPort);

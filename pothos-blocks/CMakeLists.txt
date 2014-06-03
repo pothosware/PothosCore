@@ -18,6 +18,7 @@ set(SOURCES
     TestUnitTestBlocks.cpp
     TestNetworkTopology.cpp
     TestSignalsAndSlots.cpp
+    TestProxyTopology.cpp
     sources/WaveformSource.cpp
     sources/FeederSource.cpp
     sinks/CollectorSink.cpp

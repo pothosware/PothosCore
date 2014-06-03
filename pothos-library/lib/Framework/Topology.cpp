@@ -470,3 +470,17 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
 
     return false; //timeout
 }
+
+#include <Pothos/Managed.hpp>
+
+static auto managedTopology = Pothos::ManagedClass()
+    .registerConstructor<Pothos::Topology>()
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, commit))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, disconnectAll))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, waitInactive))
+    //and bind defaults into waitInactive for optional trailing arguments
+    .registerMethod("waitInactive", Pothos::Callable(&Pothos::Topology::waitInactive).bind(1.0, 2))
+    .registerMethod("waitInactive", Pothos::Callable(&Pothos::Topology::waitInactive).bind(1.0, 2).bind(0.1, 1))
+    .registerMethod("connect", &Pothos::Topology::_connect)
+    .registerMethod("disconnect", &Pothos::Topology::_disconnect)
+    .commit("Pothos/Topology");
