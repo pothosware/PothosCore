@@ -75,7 +75,7 @@ size_t Pothos::Callable::getNumArgs(void) const
     size_t numArgs = _impl->getNumArgs();
 
     //remove bound args from the count
-    for (size_t i = 0; i < std::min(numArgs, _boundArgs.size()); i++)
+    for (size_t i = 0; i < std::min(_impl->getNumArgs(), _boundArgs.size()); i++)
     {
         if (not _boundArgs[i].null()) numArgs--;
     }
