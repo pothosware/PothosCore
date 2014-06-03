@@ -54,7 +54,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["cut"], SIGNAL(triggered(void)), this, SLOT(handleCut(void)));
     connect(getActionMap()["copy"], SIGNAL(triggered(void)), this, SLOT(handleCopy(void)));
     connect(getActionMap()["paste"], SIGNAL(triggered(void)), this, SLOT(handlePaste(void)));
-    connect(getWidgetMap()["blockTree"], SIGNAL(addBlockEvent(const QByteArray &)), this, SLOT(handleAddBlock(const QByteArray &)));
+    connect(getWidgetMap()["blockTree"], SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
     connect(getActionMap()["selectAll"], SIGNAL(triggered(void)), this, SLOT(handleSelectAll(void)));
     connect(getActionMap()["delete"], SIGNAL(triggered(void)), this, SLOT(handleDelete(void)));
     connect(getActionMap()["rotateLeft"], SIGNAL(triggered(void)), this, SLOT(handleRotateLeft(void)));
@@ -306,7 +306,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
     handleStateChange(GraphState("transform-move", desc));
 }
 
-void GraphEditor::handleAddBlock(const QByteArray &json)
+void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc)
 {
     if (not this->isVisible()) return;
     QPoint where(std::rand()%100, std::rand()%100);
@@ -317,12 +317,12 @@ void GraphEditor::handleAddBlock(const QByteArray &json)
         scrollArea->horizontalScrollBar()->value() + scrollArea->size().width()/4,
         scrollArea->verticalScrollBar()->value() + scrollArea->size().height()/4);
 
-    this->handleAddBlock(json, where);
+    this->handleAddBlock(blockDesc, where);
 }
 
-void GraphEditor::handleAddBlock(const QByteArray &blockDesc, const QPoint &where)
+void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const QPoint &where)
 {
-    if (blockDesc.isEmpty()) return;
+    if (not blockDesc) return;
     auto draw = this->getGraphDraw(this->currentIndex());
     auto block = new GraphBlock(draw);
     block->setBlockDesc(blockDesc);

@@ -70,6 +70,7 @@ set(SOURCES
     WindowSettings.cpp
     MainWindow.cpp
     BlockTree.cpp
+    BlockCache.cpp
     MessageWindow.cpp
     PropertiesPanel.cpp
 

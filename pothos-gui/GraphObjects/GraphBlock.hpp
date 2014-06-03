@@ -63,7 +63,7 @@ class GraphBlock : public GraphObject
 public:
     GraphBlock(QObject *parent);
 
-    void setBlockDesc(const QByteArray &);
+    void setBlockDesc(const Poco::JSON::Object::Ptr &);
     std::string getBlockDescPath(void) const;
 
     void setTitle(const QString &title);

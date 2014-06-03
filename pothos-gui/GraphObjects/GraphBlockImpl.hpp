@@ -3,9 +3,6 @@
 
 #pragma once
 #include "GraphObjects/GraphBlock.hpp"
-#include <Poco/JSON/Parser.h>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
 #include <QRectF>
 #include <QPointF>
 #include <QStaticText>

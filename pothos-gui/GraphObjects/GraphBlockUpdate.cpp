@@ -16,42 +16,8 @@
 #include <fstream>
 #include <iostream>
 
-//cache blockdesc from path
 //cache expression to obj
 //cache objarray+path to block
-
-QByteArray blockDescFromPath(const std::string &path)
-{
-    static std::map<std::string, QByteArray> cache;
-    auto it = cache.find(path);
-    if (it != cache.end()) return it->second;
-
-    for (const auto &key : Pothos::RemoteNode::listRegistryKeys())
-    {
-        try
-        {
-            auto node = Pothos::RemoteNode::fromKey(key);
-            auto client = node.makeClient("json");
-            auto env = client.makeEnvironment("managed");
-            auto plugin = env->findProxy("Pothos/PluginRegistry").callProxy("get", "/blocks/docs"+path);
-            auto obj = plugin.call<Pothos::Object>("getObject");
-            const auto &json = obj.convert<std::string>();
-            const auto bytes = QByteArray(json.data(), json.size());
-            cache[path] = bytes;
-            return bytes;
-        }
-        catch (const Pothos::Exception &ex)
-        {
-            std::cerr << ex.displayText() << std::endl;
-            continue;
-        }
-        catch (...)
-        {
-            continue;
-        }
-    }
-    throw Pothos::Exception("blockDescFromPath("+path+")", "cant find block description for path");
-};
 
 void GraphBlock::initPropertiesFromDesc(void)
 {

@@ -46,7 +46,7 @@ public:
         return not _stateManager->isCurrentSaved();
     }
 
-    void handleAddBlock(const QByteArray &, const QPoint &);
+    void handleAddBlock(const Poco::JSON::Object::Ptr &, const QPoint &);
 
     //! force a re-rendering of the graph page
     void render(void);
@@ -72,7 +72,7 @@ private slots:
     void handleRenameGraphPage(void);
     void handleDeleteGraphPage(void);
     void handleMoveGraphObjects(const int index);
-    void handleAddBlock(const QByteArray &);
+    void handleAddBlock(const Poco::JSON::Object::Ptr &);
     void handleCreateBreaker(const bool isInput);
     void handleCreateInputBreaker(void);
     void handleCreateOutputBreaker(void);

@@ -16,7 +16,7 @@ class QMenu;
 QSettings &getSettings(void);
 QMap<QString, QAction *> &getActionMap(void);
 QMap<QString, QMenu *> &getMenuMap(void);
-QMap<QString, QWidget *> &getWidgetMap(void);
+QMap<QString, QObject *> &getWidgetMap(void);
 
 //--- main factories --//
 QString makeIconPath(const QString &name);
@@ -25,6 +25,7 @@ QWidget *makeMainWindow(QWidget *parent);
 QWidget *makeBlockTree(QWidget *parent);
 QWidget *makePropertiesPanel(QWidget *parent);
 QWidget *makeMessageWindow(QWidget *parent);
+QObject *makeBlockCache(QObject *parent);
 
 //--- remote node factories --//
 QWidget *makeRemoteNodesWindow(QWidget *parent);
