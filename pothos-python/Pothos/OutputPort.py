@@ -27,7 +27,7 @@ class OutputPort(object):
         raise NotImplementedError("postBuffer not implemented")
 
     def postLabel(self, label):
-        if isinstance(label, Proxy) and label.getClassName() == "Pothos::Label":
+        if isinstance(label, Proxy):# and label.getClassName() == "Pothos::Label":
             self._port.postLabel(label)
         elif isinstance(label, Label):
             cls = self._port.getEnvironment().findProxy("Pothos/Label")

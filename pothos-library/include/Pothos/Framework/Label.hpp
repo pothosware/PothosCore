@@ -18,8 +18,9 @@ namespace Pothos {
  * The label's data is an Object with arbitrary contents.
  * The label's index indentifies an element in a stream.
  */
-struct POTHOS_API Label
+class POTHOS_API Label
 {
+public:
     //! Create an empty label with null data and zero index.
     Label(void);
 

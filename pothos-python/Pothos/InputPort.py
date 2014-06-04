@@ -27,6 +27,6 @@ class InputPort(object):
         return pointer_to_ndarray(addr, nitems, dtype, readonly=True)
 
     def removeLabel(self, label):
-        if isinstance(label, Proxy) and label.getClassName() == "Pothos::Label":
+        if isinstance(label, Proxy):# and label.getClassName() == "Pothos::Label":
             return self._port.removeLabel(label)
         raise Exception('InputPort.removeLabel - label must come from a label iterator')
