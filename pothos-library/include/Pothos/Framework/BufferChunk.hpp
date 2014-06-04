@@ -94,10 +94,10 @@ public:
     ElementType as(void) const;
 
     /*!
-     * Is this buffer chunk null?
-     * \return true when there is no underlying memory
+     * Is this buffer chunk valid?
+     * \return true when there is underlying memory
      */
-    bool null(void) const;
+    pothos_explicit operator bool(void) const;
 
 private:
     SharedBuffer _buffer;
@@ -134,7 +134,7 @@ ElementType Pothos::BufferChunk::as(void) const
     return reinterpret_cast<ElementType>(address);
 }
 
-inline bool Pothos::BufferChunk::null(void) const
+inline Pothos::BufferChunk::operator bool(void) const
 {
-    return (address == 0) and _buffer.null() and _managedBuffer.null();
+    return (address != 0) or _buffer or _managedBuffer;
 }

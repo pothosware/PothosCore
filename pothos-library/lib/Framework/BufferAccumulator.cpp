@@ -96,8 +96,8 @@ void Pothos::BufferAccumulator::push(const BufferChunk &buffer)
     {
         BufferChunk &b = queue[i+0]; //closer to back
         BufferChunk &f = queue[i-1]; //closer to front
-        assert(not b.null());
-        assert(not f.null());
+        assert(b);
+        assert(f);
         const size_t fEnd = f.getEnd();
 
         if (b.address == fEnd or b.getAlias() == fEnd)
@@ -114,8 +114,8 @@ void Pothos::BufferAccumulator::push(const BufferChunk &buffer)
     {
         BufferChunk &b = queue[backIndex+0];
         BufferChunk &f = queue[backIndex-1];
-        assert(not b.null());
-        assert(not f.null());
+        assert(b);
+        assert(f);
         if (b.getManagedBuffer() == f.getManagedBuffer() and b.length == 0)
         {
             queue.pop_back();
@@ -165,8 +165,8 @@ void Pothos::BufferAccumulator::pop(const size_t numBytes)
     {
         BufferChunk &f = queue[0];
         BufferChunk &b = queue[1];
-        assert(not b.null());
-        assert(not f.null());
+        assert(b);
+        assert(f);
         const bool fOverBounds = f.address >= (f.getBuffer().getEnd());
         if (fOverBounds and f.getEnd() == b.address)
         {

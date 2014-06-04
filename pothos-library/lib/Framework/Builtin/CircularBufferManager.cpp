@@ -81,7 +81,7 @@ public:
         _pushedBuffers[buff.getSlabIndex()] = buff;
 
         //look for pushed buffers -- but in order
-        while (not _pushedBuffers[_indexToAck].null())
+        while (_pushedBuffers[_indexToAck])
         {
             //move the buffer into the queue
             assert(not _readyBuffs.full());

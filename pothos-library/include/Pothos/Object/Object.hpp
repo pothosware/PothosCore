@@ -149,10 +149,10 @@ public:
     Object &operator=(Object &&rhs);
 
     /*!
-     * Is the Object null?
-     * \return true if the container is empty
+     * Does the object hold a value?
+     * \return true if the container is non-empty
      */
-    bool null(void) const;
+    pothos_explicit operator bool(void) const;
 
     /*!
      * Is the Object unique?

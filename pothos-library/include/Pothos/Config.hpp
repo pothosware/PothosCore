@@ -69,3 +69,17 @@
     #functionName, &classPath::functionName
 
 #include <ciso646>
+
+/*!
+ * Define explicit operator casts on systems that support it.
+ * For visual studios older than 2013 this is not supported.
+ * Basically we use explcit conversions for boolean operators;
+ * and without explicit, everything should work correctly,
+ * however misused code would be able to compile.
+ * Someday, remove this section and replace pothos_explicit.
+ */
+#if defined(_MSC_VER) && _MSC_VER < 1800
+    #define pothos_explicit
+#else
+    #define pothos_explicit explicit
+#endif

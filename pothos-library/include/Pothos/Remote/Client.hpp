@@ -37,8 +37,8 @@ public:
      */
     RemoteClient(const std::string &uri, const long timeoutUs = 100000);
 
-    //! Is this remote client object null (true when empty)
-    bool null(void) const;
+    //! Is this remote client connected?
+    pothos_explicit operator bool(void) const;
 
     /*!
      * Get the iostream to interact with the client handle.

@@ -73,7 +73,7 @@ void Pothos::Detail::ObjectContainer::throwExtract(const Pothos::Object &obj, co
 Pothos::Object::Object(void):
     _impl(nullptr)
 {
-    assert(this->null());
+    assert(not *this);
 }
 
 Pothos::Object Pothos::Object::make(const char *s)
@@ -116,9 +116,9 @@ Pothos::Object::~Object(void)
     if (decr(_impl)) delete _impl;
 }
 
-bool Pothos::Object::null(void) const
+Pothos::Object::operator bool(void) const
 {
-    return _impl == nullptr;
+    return _impl != nullptr;
 }
 
 Pothos::Object &Pothos::Object::operator=(const Object &rhs)
@@ -197,7 +197,6 @@ bool Pothos::operator==(const Object &lhs, const Object &rhs)
 
 static auto managedObject = Pothos::ManagedClass()
     .registerConstructor<Pothos::Object>()
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Object, null))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Object, unique))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Object, toString))
     .commit("Pothos/Object");

@@ -51,7 +51,7 @@ POTHOS_TEST_BLOCK("/object/tests", test_serialize_null)
     Pothos::Object null1;
     null1.deserialize(ss);
 
-    POTHOS_TEST_TRUE(null1.null());
+    POTHOS_TEST_TRUE(not null1);
 }
 
 POTHOS_TEST_BLOCK("/object/tests", test_serialize_int)
@@ -63,7 +63,7 @@ POTHOS_TEST_BLOCK("/object/tests", test_serialize_int)
     Pothos::Object int1;
     int1.deserialize(ss);
 
-    POTHOS_TEST_TRUE(not int1.null());
+    POTHOS_TEST_TRUE(int1);
     POTHOS_TEST_TRUE(int1.type() == typeid(int));
     POTHOS_TEST_EQUAL(int1.extract<int>(), 42);
 }
@@ -77,11 +77,11 @@ POTHOS_TEST_BLOCK("/object/tests", test_serialize_obj)
 
     Pothos::Object intObj1;
     intObj1.deserialize(ss);
-    POTHOS_TEST_TRUE(not intObj1.null());
+    POTHOS_TEST_TRUE(intObj1);
     POTHOS_TEST_TRUE(intObj1.type() == typeid(Pothos::Object));
 
     Pothos::Object int1 = intObj1.extract<Pothos::Object>();
-    POTHOS_TEST_TRUE(not int1.null());
+    POTHOS_TEST_TRUE(int1);
     POTHOS_TEST_TRUE(int1.type() == typeid(int));
     POTHOS_TEST_EQUAL(int1.extract<int>(), 42);
 }

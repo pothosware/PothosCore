@@ -54,7 +54,7 @@ static bool canObjectHandleEvent(const Pothos::Object &obj)
 {
     if (obj.type() != typeid(Pothos::Callable)) return false; //its not a call
     const Pothos::Callable &call = obj.extract<Pothos::Callable>();
-    if (call.null()) return false; //its null
+    if (not call) return false; //its null
     //check the signature
     if (call.type(-1) != typeid(void)) return false;
     if (call.getNumArgs() != 2) return false;
@@ -312,7 +312,7 @@ static void loadInfoDump(const Pothos::PluginPath &path, const RegistryEntry &en
     {
         assert(path == entry.plugin.getPath());
         const auto &obj = entry.plugin.getObject();
-        if (not obj.null()) dump.objectType = obj.toString();
+        if (obj) dump.objectType = obj.toString();
         dump.modulePath = entry.plugin.getModule().getFilePath();
     }
     for (const auto &name : entry.nodeNamesOrdered)

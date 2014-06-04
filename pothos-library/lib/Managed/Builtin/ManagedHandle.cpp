@@ -80,7 +80,7 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         wildcardCall = cls.getWildcardMethod();
     }
 
-    if (calls.empty() and opaqueCall.null() and wildcardCall.null())
+    if (calls.empty() and not opaqueCall and not wildcardCall)
     {
         throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "no available calls");
     }
@@ -143,17 +143,17 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         call = c;
         failMatch: continue;
     }
-    if (call.null() and not opaqueCall.null())
+    if (not call and opaqueCall)
     {
         doOpaqueCall = true;
         call = opaqueCall;
     }
-    if (call.null() and not wildcardCall.null())
+    if (not call and wildcardCall)
     {
         doWildcardCall = true;
         call = wildcardCall;
     }
-    if (call.null()) throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "method match failed");
+    if (not call) throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "method match failed");
 
     /*******************************************************************
      * Step 4) make the call

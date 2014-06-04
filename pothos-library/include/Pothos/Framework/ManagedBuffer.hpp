@@ -34,10 +34,10 @@ public:
     ManagedBuffer(void);
 
     /*!
-     * Is this managed buffer null?
+     * Is this managed buffer valid?
      * \return true if it holds an allocation.
      */
-    bool null(void) const;
+    pothos_explicit operator bool(void) const;
 
     /*!
      * Reset any reference held by the managed buffer.
@@ -92,7 +92,7 @@ POTHOS_API bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
 
 } //namespace Pothos
 
-inline bool Pothos::ManagedBuffer::null(void) const
+inline Pothos::ManagedBuffer::operator bool(void) const
 {
-    return _impl == nullptr;
+    return _impl != nullptr;
 }

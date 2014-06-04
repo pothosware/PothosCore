@@ -38,7 +38,7 @@ Pothos::ManagedClass::ManagedClass(void):
 
 const std::type_info &Pothos::ManagedClass::type(void) const
 {
-    if (_impl->referenceToWrapper.null())
+    if (not _impl->referenceToWrapper)
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::type()", "cant access without constructors");
     }
@@ -47,7 +47,7 @@ const std::type_info &Pothos::ManagedClass::type(void) const
 
 const std::type_info &Pothos::ManagedClass::pointerType(void) const
 {
-    if (_impl->pointerToWrapper.null())
+    if (not _impl->pointerToWrapper)
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::pointerType()", "cant access without init");
     }
@@ -56,7 +56,7 @@ const std::type_info &Pothos::ManagedClass::pointerType(void) const
 
 const std::type_info &Pothos::ManagedClass::sharedType(void) const
 {
-    if (_impl->sharedToWrapper.null())
+    if (not _impl->sharedToWrapper)
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::pointerType()", "cant access without init");
     }
@@ -65,7 +65,7 @@ const std::type_info &Pothos::ManagedClass::sharedType(void) const
 
 Pothos::ManagedClass &Pothos::ManagedClass::registerReferenceToWrapper(const Callable &toWrapper)
 {
-    if (not _impl->referenceToWrapper.null() and toWrapper.type(0) != _impl->referenceToWrapper.type(0))
+    if (_impl->referenceToWrapper and toWrapper.type(0) != _impl->referenceToWrapper.type(0))
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::registerReferenceToWrapper()", "class type mismatch");
     }
@@ -75,7 +75,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerReferenceToWrapper(const Cal
 
 Pothos::ManagedClass &Pothos::ManagedClass::registerPointerToWrapper(const Callable &toWrapper)
 {
-    if (not _impl->pointerToWrapper.null() and toWrapper.type(0) != _impl->pointerToWrapper.type(0))
+    if (_impl->pointerToWrapper and toWrapper.type(0) != _impl->pointerToWrapper.type(0))
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::registerPointerToWrapper()", "class type mismatch");
     }
@@ -85,7 +85,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerPointerToWrapper(const Calla
 
 Pothos::ManagedClass &Pothos::ManagedClass::registerSharedToWrapper(const Callable &toWrapper)
 {
-    if (not _impl->sharedToWrapper.null() and toWrapper.type(0) != _impl->sharedToWrapper.type(0))
+    if (_impl->sharedToWrapper and toWrapper.type(0) != _impl->sharedToWrapper.type(0))
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::registerSharedToWrapper()", "class type mismatch");
     }
@@ -95,7 +95,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerSharedToWrapper(const Callab
 
 Pothos::ManagedClass &Pothos::ManagedClass::registerConstructor(const Callable &constructor)
 {
-    if (not _impl->referenceToWrapper.null() and constructor.type(-1) != _impl->referenceToWrapper.type(0))
+    if (_impl->referenceToWrapper and constructor.type(-1) != _impl->referenceToWrapper.type(0))
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::registerConstructor()", "class type mismatch");
     }
@@ -111,7 +111,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerStaticMethod(const std::stri
 
 Pothos::ManagedClass &Pothos::ManagedClass::registerMethod(const std::string &name, const Callable &method)
 {
-    if (not _impl->referenceToWrapper.null() and method.getNumArgs() > 0 and method.type(0) != _impl->referenceToWrapper.type(0))
+    if (_impl->referenceToWrapper and method.getNumArgs() > 0 and method.type(0) != _impl->referenceToWrapper.type(0))
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::registerMethod()", "class type mismatch");
     }
@@ -121,7 +121,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerMethod(const std::string &na
 
 Pothos::ManagedClass &Pothos::ManagedClass::registerOpaqueConstructor(const Callable &constructor)
 {
-    if (not _impl->referenceToWrapper.null() and constructor.type(-1) != _impl->referenceToWrapper.type(0))
+    if (_impl->referenceToWrapper and constructor.type(-1) != _impl->referenceToWrapper.type(0))
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::registerOpaqueConstructor()", "class type mismatch");
     }
@@ -155,7 +155,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerWildcardStaticMethod(const C
 
 Pothos::ManagedClass &Pothos::ManagedClass::registerOpaqueMethod(const std::string &name, const Callable &method)
 {
-    if (not _impl->referenceToWrapper.null() and method.getNumArgs() > 0 and method.type(0) != _impl->referenceToWrapper.type(0))
+    if (_impl->referenceToWrapper and method.getNumArgs() > 0 and method.type(0) != _impl->referenceToWrapper.type(0))
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::registerOpaqueMethod()", "class type mismatch");
     }
@@ -169,7 +169,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerOpaqueMethod(const std::stri
 
 Pothos::ManagedClass &Pothos::ManagedClass::registerWildcardMethod(const Callable &method)
 {
-    if (not _impl->referenceToWrapper.null() and method.getNumArgs() > 0 and method.type(0) != _impl->referenceToWrapper.type(0))
+    if (_impl->referenceToWrapper and method.getNumArgs() > 0 and method.type(0) != _impl->referenceToWrapper.type(0))
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::registerWildcardOpaqueMethod()", "class type mismatch");
     }

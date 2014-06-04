@@ -54,7 +54,7 @@ void serialize(Archive &ar, Pothos::Detail::ObjectContainerT<ValueType> &t, cons
 template<class Archive>
 void save(Archive & ar, const Pothos::Object &t, const unsigned int)
 {
-    const bool is_null = t.null();
+    const bool is_null = not t;
     ar << is_null;
     if (not is_null) ar << t._impl;
 }
@@ -62,7 +62,7 @@ void save(Archive & ar, const Pothos::Object &t, const unsigned int)
 template<class Archive>
 void load(Archive & ar, Pothos::Object &t, const unsigned int)
 {
-    assert(t.null());
+    assert(not t);
     bool is_null = false;
     ar >> is_null;
     if (not is_null) ar >> t._impl;

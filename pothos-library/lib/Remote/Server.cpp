@@ -36,7 +36,7 @@ struct Pothos::RemoteServer::Impl
 
 Pothos::RemoteServer::RemoteServer(void)
 {
-    assert(this->null());
+    assert(not *this);
 }
 
 Pothos::RemoteServer::RemoteServer(const std::string &uriStr)
@@ -106,9 +106,9 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr)
     }
 }
 
-bool Pothos::RemoteServer::null(void) const
+Pothos::RemoteServer::operator bool(void) const
 {
-    return not _impl;
+    return bool(_impl);
 }
 
 std::string Pothos::RemoteServer::getActualPort(void) const

@@ -6,7 +6,7 @@
 
 Pothos::ObjectM::ObjectM(void)
 {
-    assert(this->null());
+    assert(not *this);
 }
 
 Pothos::ObjectM::ObjectM(const ObjectM &obj):

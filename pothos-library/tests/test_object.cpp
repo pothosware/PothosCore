@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_CASE(test_object_equals)
 {
     Pothos::Object nullObj;
     BOOST_CHECK(nullObj == nullObj);
-    BOOST_CHECK(nullObj.null());
+    BOOST_CHECK(not nullObj);
     BOOST_CHECK(nullObj == Pothos::Object());
 
     Pothos::Object intObj(int(42));
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(test_object_throw)
 BOOST_AUTO_TEST_CASE(test_object_mutable)
 {
     Pothos::ObjectM nullObj;
-    BOOST_CHECK(nullObj.null());
+    BOOST_CHECK(not nullObj);
     BOOST_CHECK(nullObj == Pothos::Object());
 
     Pothos::ObjectM intObj(int(42));

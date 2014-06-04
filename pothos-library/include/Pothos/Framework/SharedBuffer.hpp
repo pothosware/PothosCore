@@ -95,9 +95,9 @@ public:
     bool unique(void) const;
 
     /*!
-     * Is this shared buffer null?
+     * Is this shared buffer valid?
      */
-    bool null(void) const;
+    pothos_explicit operator bool(void) const;
 
 private:
     static SharedBuffer makeCircUnprotected(const size_t numBytes, const long nodeAffinity);
@@ -134,7 +134,7 @@ inline bool Pothos::SharedBuffer::unique(void) const
     return _container.unique();
 }
 
-inline bool Pothos::SharedBuffer::null(void) const
+inline Pothos::SharedBuffer::operator bool(void) const
 {
-    return not _container;
+    return bool(_container);
 }

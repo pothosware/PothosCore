@@ -37,8 +37,8 @@ public:
      */
     RemoteServer(const std::string &uri);
 
-    //! Is this remote server object null (true when empty)
-    bool null(void) const;
+    //! Is this remove server active?
+    pothos_explicit operator bool(void) const;
 
     /*!
      * The locator port is the default port for running and locating a remote server.

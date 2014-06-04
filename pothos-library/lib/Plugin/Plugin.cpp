@@ -34,7 +34,7 @@ const Pothos::PluginModule &Pothos::Plugin::getModule(void) const
 std::string Pothos::Plugin::toString(void) const
 {
     std::string output = this->getPath().toString();
-    if (not this->getObject().null())
+    if (this->getObject())
     {
         output += " {" + std::string(this->getObject().type().name()) + "}";
     }

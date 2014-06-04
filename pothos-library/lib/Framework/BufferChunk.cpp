@@ -52,7 +52,7 @@ namespace Pothos { namespace serialization {
 template <class Archive>
 void save(Archive & ar, const Pothos::BufferChunk &t, const unsigned int)
 {
-    const bool is_null = t.null();
+    const bool is_null = not t;
     ar << is_null;
     if (is_null) return;
     const Poco::UInt32 length = Poco::UInt32(t.length);

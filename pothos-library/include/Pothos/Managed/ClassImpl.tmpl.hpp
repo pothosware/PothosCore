@@ -58,7 +58,7 @@ static void setField(ClassType &i, const std::function<ValueType &(ClassType *)>
 template <typename ClassType>
 ManagedClass &ManagedClass::registerClass(void)
 {
-    if (getReferenceToWrapper().null() or getPointerToWrapper().null() or getSharedToWrapper().null())
+    if (not getReferenceToWrapper() or not getPointerToWrapper() or not getSharedToWrapper())
     {
         registerReferenceToWrapper(Callable(&Detail::referenceToWrapper<ClassType>));
         registerPointerToWrapper(Callable(&Detail::pointerToWrapper<ClassType>));

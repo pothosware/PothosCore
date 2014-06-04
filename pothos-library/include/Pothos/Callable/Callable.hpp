@@ -36,10 +36,10 @@ public:
     Callable(void);
 
     /*!
-     * Is the Callable null?
-     * \return true if callable does not hold a function
+     * Does the Callable hold a bound function?
+     * \return true if callable holds a bound function
      */
-    bool null(void) const;
+    pothos_explicit operator bool(void) const;
 
     /*!
      * Call into the function/method with opaque input and return types.

@@ -8,7 +8,7 @@
 
 Pothos::Proxy::Proxy(void)
 {
-    assert(this->null());
+    assert(not *this);
 }
 
 Pothos::Proxy::Proxy(const std::shared_ptr<ProxyHandle> &handle):
@@ -34,9 +34,9 @@ std::shared_ptr<Pothos::ProxyEnvironment> Pothos::Proxy::getEnvironment(void) co
     return _handle->getEnvironment();
 }
 
-bool Pothos::Proxy::null(void) const
+Pothos::Proxy::operator bool(void) const
 {
-    return not _handle;
+    return bool(_handle);
 }
 
 int Pothos::Proxy::compareTo(const Proxy &other) const

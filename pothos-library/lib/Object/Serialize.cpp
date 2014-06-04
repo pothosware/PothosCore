@@ -26,7 +26,7 @@ std::ostream &Pothos::Object::serialize(std::ostream &os) const
 
 std::istream &Pothos::Object::deserialize(std::istream &is)
 {
-    assert(this->null());
+    assert(not *this);
 
     try
     {

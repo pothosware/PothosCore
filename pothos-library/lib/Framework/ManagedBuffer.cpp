@@ -84,13 +84,13 @@ Pothos::ManagedBuffer &Pothos::ManagedBuffer::operator=(ManagedBuffer &&obj)
 
 const Pothos::SharedBuffer &Pothos::ManagedBuffer::getBuffer(void) const
 {
-    assert(not this->null());
+    assert(*this);
     return _impl->buffer;
 }
 
 size_t Pothos::ManagedBuffer::getSlabIndex(void) const
 {
-    assert(not this->null());
+    assert(*this);
     return _impl->slabIndex;
 }
 

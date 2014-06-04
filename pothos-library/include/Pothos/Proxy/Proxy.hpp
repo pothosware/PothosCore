@@ -48,10 +48,10 @@ public:
     Proxy(ProxyHandle *handle);
 
     /*!
-     * Is this Proxy null?
-     * \return true if the handle is not set.
+     * Is this Proxy have a handle?
+     * \return true if the handle is set.
      */
-    bool null(void) const;
+    pothos_explicit operator bool(void) const;
 
     //! Get the handle held in this proxy object.
     std::shared_ptr<ProxyHandle> getHandle(void) const;

@@ -50,7 +50,7 @@ std::string getUid(const Pothos::Object &o)
  **********************************************************************/
 static Pothos::Proxy getWorkerActorInterface(const Pothos::Object &o)
 {
-    assert(not o.null());
+    assert(o);
     if (o.type() == typeid(Pothos::Block *))
     {
         auto cls = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/WorkerActorInterface");
@@ -124,11 +124,11 @@ static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
     {
         //recurse through sub topology flows
         std::vector<Port> subPorts;
-        if (isSource and flow.dst.name == port.name and flow.dst.obj.null())
+        if (isSource and flow.dst.name == port.name and not flow.dst.obj)
         {
             subPorts = resolvePorts(flow.src, isSource);
         }
-        if (not isSource and flow.src.name == port.name and flow.src.obj.null())
+        if (not isSource and flow.src.name == port.name and not flow.src.obj)
         {
             subPorts = resolvePorts(flow.dst, isSource);
         }
@@ -145,8 +145,8 @@ static std::vector<Flow> squashFlows(const std::vector<Flow> &flows)
     for (const auto &flow : flows)
     {
         //ignore external flows
-        if (flow.src.obj.null()) continue;
-        if (flow.dst.obj.null()) continue;
+        if (not flow.src.obj) continue;
+        if (not flow.dst.obj) continue;
 
         //gather a list of sources and destinations on either end of this flow
         std::vector<Port> srcs = resolvePorts(flow.src, true);

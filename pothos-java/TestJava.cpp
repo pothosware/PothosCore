@@ -13,7 +13,7 @@ POTHOS_TEST_BLOCK("/proxy/java/tests", test_basic_types)
 
     auto noneProxy = env->convertObjectToProxy(Pothos::Object());
     auto nullObject = env->convertProxyToObject(noneProxy);
-    POTHOS_TEST_TRUE(nullObject.null());
+    POTHOS_TEST_TRUE(not nullObject);
 
     POTHOS_TEST_EQUAL(env->makeProxy(true).convert<bool>(), true);
     POTHOS_TEST_EQUAL(env->makeProxy(false).convert<bool>(), false);

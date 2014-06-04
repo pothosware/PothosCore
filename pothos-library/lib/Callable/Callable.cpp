@@ -12,7 +12,7 @@
 
 Pothos::Callable::Callable(void)
 {
-    assert(this->null());
+    assert(not *this);
 }
 
 Pothos::Object Pothos::Callable::opaqueCall(const Object *inputArgs, const size_t numArgs) const
@@ -34,7 +34,7 @@ Pothos::Object Pothos::Callable::opaqueCall(const Object *inputArgs, const size_
     for (size_t i = 0; i < numCallArgs; i++)
     {
         //is there a binding? if so use it
-        if (_boundArgs.size() > i and not _boundArgs[i].null())
+        if (_boundArgs.size() > i and _boundArgs[i])
         {
             callArgs[i] = _boundArgs[i];
         }
@@ -77,7 +77,7 @@ size_t Pothos::Callable::getNumArgs(void) const
     //remove bound args from the count
     for (size_t i = 0; i < std::min(_impl->getNumArgs(), _boundArgs.size()); i++)
     {
-        if (not _boundArgs[i].null()) numArgs--;
+        if (_boundArgs[i]) numArgs--;
     }
 
     return numArgs;
@@ -107,7 +107,7 @@ const std::type_info &Pothos::Callable::type(const int argNo) const
     int skippedIndexes = 0;
     for (size_t i = 0; i < _boundArgs.size(); i++)
     {
-        if (not _boundArgs[i].null()) skippedIndexes++;
+        if (_boundArgs[i]) skippedIndexes++;
         else if (int(i) == argNo + skippedIndexes) break;
     }
 
@@ -152,9 +152,9 @@ Pothos::Detail::CallableContainer::~CallableContainer(void)
     return;
 }
 
-bool Pothos::Callable::null(void) const
+Pothos::Callable::operator bool(void) const
 {
-    return not _impl;
+    return bool(_impl);
 }
 
 bool Pothos::operator==(const Callable &lhs, const Callable &rhs)

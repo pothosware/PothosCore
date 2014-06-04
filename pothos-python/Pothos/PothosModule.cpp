@@ -39,7 +39,7 @@ Pothos::Proxy PyObjectToProxy(PyObject *obj)
 
 PyObject *ProxyToPyObject(const Pothos::Proxy &proxy)
 {
-    assert(not proxy.null());
+    assert(proxy);
     PyThreadStateLock lock;
     return myProxyToPyObjectFcn(proxy);
 }

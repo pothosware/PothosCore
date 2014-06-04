@@ -43,7 +43,7 @@ struct Pothos::RemoteClient::Impl
 
 Pothos::RemoteClient::RemoteClient(void)
 {
-    assert(this->null());
+    assert(not *this);
 }
 
 Pothos::RemoteClient::RemoteClient(const std::string &uri, const long timeoutUs):
@@ -52,9 +52,9 @@ Pothos::RemoteClient::RemoteClient(const std::string &uri, const long timeoutUs)
     return;
 }
 
-bool Pothos::RemoteClient::null(void) const
+Pothos::RemoteClient::operator bool(void) const
 {
-    return not _impl;
+    return bool(_impl);
 }
 
 std::iostream &Pothos::RemoteClient::getIoStream(void) const
