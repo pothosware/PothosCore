@@ -13,15 +13,15 @@ class TestPothosModule(unittest.TestCase):
     def test_basic(self):
         #create null/empty proxy
         p0 = Pothos.Proxy()
-        self.assertTrue(p0.null())
+        self.assertFalse(p0)
 
         #the proxy for empty object (is non null)
         p1 = self.env.convertObjectToProxy(None)
-        self.assertFalse(p1.null())
+        self.assertTrue(p1)
 
         #make a proxy that wraps a python obj
         p2 = Pothos.Proxy(True)
-        self.assertTrue(not p2.null())
+        self.assertTrue(p2)
         self.assertTrue(p2.convert())
 
         #check that the same env can be retrieved
@@ -30,9 +30,9 @@ class TestPothosModule(unittest.TestCase):
     def test_compare_to(self):
         #create integer proxies
         oneProxy = self.env.convertObjectToProxy(1)
-        self.assertFalse(oneProxy.null())
+        self.assertTrue(oneProxy)
         twoProxy = self.env.convertObjectToProxy(2)
-        self.assertFalse(twoProxy.null())
+        self.assertTrue(twoProxy)
 
         #exercise rich-comparisons
         self.assertLess(oneProxy, twoProxy)
@@ -50,7 +50,7 @@ class TestPothosModule(unittest.TestCase):
 
     def test_block(self):
         reg = self.env.findProxy("Pothos/BlockRegistry")
-        self.assertFalse(reg.null())
+        self.assertTrue(reg)
         print(reg.callProxy("/blocks/sources/feeder_source", "int"))
         print(hash(reg))
 

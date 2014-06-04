@@ -159,9 +159,9 @@ static PyObject *Proxy_call(ProxyObject *self, PyObject *args)
     }
 }
 
-static PyObject *Proxy_null(ProxyObject *self)
+static PyObject *Proxy_bool(ProxyObject *self)
 {
-    return PyBool_FromLong(bool(self->proxy)? 0 : 1);
+    return PyBool_FromLong(bool(self->proxy));
 }
 
 static PyObject *Proxy_getEnvironment(ProxyObject *self)
@@ -180,7 +180,8 @@ static PyMethodDef Proxy_methods[] = {
     {"convert", (PyCFunction)Proxy_convert, METH_NOARGS, "Pothos::Proxy::convert()"},
     {"callProxy", (PyCFunction)Proxy_callProxy, METH_VARARGS, "Pothos::Proxy::callProxy(name, args...)"},
     {"call", (PyCFunction)Proxy_call, METH_VARARGS, "Pothos::Proxy::call(name, args...)"},
-    {"null", (PyCFunction)Proxy_null, METH_NOARGS, "Pothos::Proxy::null()"},
+    {"__bool__", (PyCFunction)Proxy_bool, METH_NOARGS, "Pothos::Proxy::bool()"},
+    {"__nonzero__", (PyCFunction)Proxy_bool, METH_NOARGS, "Pothos::Proxy::bool()"}, //2.7
     {"getEnvironment", (PyCFunction)Proxy_getEnvironment, METH_NOARGS, "Pothos::Proxy::getEnvironment()"},
     {"getClassName", (PyCFunction)Proxy_getClassName, METH_NOARGS, "Pothos::Proxy::getClassName()"},
     {nullptr}  /* Sentinel */
