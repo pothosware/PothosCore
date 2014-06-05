@@ -18,69 +18,14 @@
 #include <set>
 
 /***********************************************************************
- * Extract UID for arbitrary object
- **********************************************************************/
-std::string getUid(const Pothos::Object &o)
-{
-    if (o.type() == typeid(Pothos::Block *))
-    {
-        return o.extract<Pothos::Block *>()->uid();
-    }
-    if (o.type() == typeid(std::shared_ptr<Pothos::Block>))
-    {
-        return o.extract<std::shared_ptr<Pothos::Block>>()->uid();
-    }
-    if (o.type() == typeid(Pothos::Topology *))
-    {
-        return o.extract<Pothos::Topology *>()->uid();
-    }
-    if (o.type() == typeid(std::shared_ptr<Pothos::Topology>))
-    {
-        return o.extract<std::shared_ptr<Pothos::Topology>>()->uid();
-    }
-    if (o.type() == typeid(Pothos::Proxy))
-    {
-        return o.extract<Pothos::Proxy>().call<std::string>("uid");
-    }
-    return "";
-}
-
-/***********************************************************************
- * Extract Actor for arbitrary object
- **********************************************************************/
-static Pothos::Proxy getWorkerActorInterface(const Pothos::Object &o)
-{
-    assert(o);
-    if (o.type() == typeid(Pothos::Block *))
-    {
-        auto cls = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/WorkerActorInterface");
-        return cls.callProxy("new", o.extract<Pothos::Block *>()->_actor);
-    }
-    if (o.type() == typeid(std::shared_ptr<Pothos::Block>))
-    {
-        auto cls = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/WorkerActorInterface");
-        return cls.callProxy("new", o.extract<std::shared_ptr<Pothos::Block>>()->_actor);
-    }
-    if (o.type() == typeid(Pothos::Proxy))
-    {
-        auto block = o.extract<Pothos::Proxy>();
-        auto actor = block.callProxy("actor");
-        //TODO FIXME unwrap a proxy in a proxy
-        //This happens when PythonBlock actor call returns a proxy to the actor
-        //There must be a better way to deal with metaproxy stuff.
-        if (actor.getClassName() == "PothosProxy") actor = actor.convert<Pothos::Proxy>();
-        assert(actor.getEnvironment()->getName() == "managed");
-        auto cls = actor.getEnvironment()->findProxy("Pothos/WorkerActorInterface");
-        return cls.callProxy("new", actor);
-    }
-    throw Pothos::InvalidArgumentException("Pothos::Topology::getWorkerActorInterface", "unknown type: " + o.toString());
-}
-
-/***********************************************************************
  * Extract Topology for arbitrary object
  **********************************************************************/
-static Pothos::Topology *getTopology(const Pothos::Object &o)
+static const Pothos::Topology *getTopology(const Pothos::Object &o)
 {
+    if (o.type() == typeid(Pothos::Topology))
+    {
+        return &o.extract<Pothos::Topology>();
+    }
     if (o.type() == typeid(Pothos::Topology *))
     {
         return o.extract<Pothos::Topology *>();
@@ -93,16 +38,41 @@ static Pothos::Topology *getTopology(const Pothos::Object &o)
 }
 
 /***********************************************************************
+ * Extract UID for arbitrary object
+ **********************************************************************/
+static Pothos::Proxy getProxy(const Pothos::Object &o)
+{
+    if (o.type() == typeid(Pothos::Proxy)) return o.extract<Pothos::Proxy>();
+    return Pothos::ProxyEnvironment::make("managed")->convertObjectToProxy(o);
+}
+
+std::string getUid(const Pothos::Object &o)
+{
+    return getProxy(o).call<std::string>("uid");
+}
+
+/***********************************************************************
+ * Extract Actor for arbitrary object
+ **********************************************************************/
+static Pothos::Proxy getWorkerActorInterface(const Pothos::Object &o)
+{
+    auto block = getProxy(o);
+    auto actor = block.callProxy("actor");
+    //TODO FIXME unwrap a proxy in a proxy
+    //This happens when PythonBlock actor call returns a proxy to the actor
+    //There must be a better way to deal with metaproxy stuff.
+    if (actor.getClassName() == "PothosProxy") actor = actor.convert<Pothos::Proxy>();
+    assert(actor.getEnvironment()->getName() == "managed");
+    auto cls = actor.getEnvironment()->findProxy("Pothos/WorkerActorInterface");
+    return cls.callProxy("new", actor);
+}
+
+/***********************************************************************
  * Avoid taking copies of self
  **********************************************************************/
 static Pothos::Object getInternalObject(const Pothos::Object &o, const Pothos::Topology &t)
 {
-    if (
-        (o.type() == typeid(std::shared_ptr<Pothos::Topology>)) and
-        (o.extract<std::shared_ptr<Pothos::Topology>>()->uid() == t.uid()))
-    {
-        return Pothos::Object();
-    }
+    if (getUid(o) == t.uid()) return Pothos::Object();
     return o;
 }
 
@@ -114,7 +84,7 @@ static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
     std::vector<Port> ports;
 
     //extract the topology
-    Pothos::Topology *topology = getTopology(port.obj);
+    auto topology = getTopology(port.obj);
 
     //its just a block, no ports to resolve
     if (topology == nullptr) ports.push_back(port);
@@ -232,7 +202,6 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
             //save it in the cache
             flowToNetgressCache[flow] = std::make_pair(srcFlow, dstFlow);
         }
-
     }
 
     return networkAwareFlows;
@@ -428,10 +397,15 @@ void Pothos::Topology::disconnectAll(void)
     //call disconnect all on the sub-topologies
     for (const auto &flow : _impl->flows)
     {
-        auto srcTopology = getTopology(flow.src.obj);
-        if (srcTopology != nullptr) srcTopology->disconnectAll();
-        auto dstTopology = getTopology(flow.dst.obj);
-        if (dstTopology != nullptr) dstTopology->disconnectAll();
+        if (getTopology(flow.src.obj) != nullptr)
+        {
+            getProxy(flow.src.obj).call("disconnectAll");
+        }
+
+        if (getTopology(flow.dst.obj) != nullptr)
+        {
+            getProxy(flow.dst.obj).call("disconnectAll");
+        }
     }
 
     //clear our own local flows
@@ -473,8 +447,14 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
 
 #include <Pothos/Managed.hpp>
 
+static const std::string &getUidFromTopology(const Pothos::Topology &t)
+{
+    return t.uid();
+}
+
 static auto managedTopology = Pothos::ManagedClass()
     .registerConstructor<Pothos::Topology>()
+    .registerMethod("uid", &getUidFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, commit))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, disconnectAll))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, waitInactive))
@@ -484,3 +464,15 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod("connect", &Pothos::Topology::_connect)
     .registerMethod("disconnect", &Pothos::Topology::_disconnect)
     .commit("Pothos/Topology");
+
+static auto managedPort = Pothos::ManagedClass()
+    .registerClass<Port>()
+    .registerField(POTHOS_FCN_TUPLE(Port, obj))
+    .registerField(POTHOS_FCN_TUPLE(Port, name))
+    .commit("Pothos/Topology/Port");
+
+static auto managedFlow = Pothos::ManagedClass()
+    .registerClass<Flow>()
+    .registerField(POTHOS_FCN_TUPLE(Flow, src))
+    .registerField(POTHOS_FCN_TUPLE(Flow, dst))
+    .commit("Pothos/Topology/Flow");
