@@ -8,11 +8,12 @@
 #include <Poco/Format.h>
 
 Pothos::Util::UID::UID(void):
+    _unique(new int(0)),
     _uid(Poco::URI("pothos", Poco::Environment::nodeName(), Poco::format(
         "%s/%s/%s",
         Poco::Environment::nodeId(),
         std::to_string(Poco::Process::id()),
-        std::to_string(size_t(this))
+        std::to_string(size_t(_unique.get()))
     )).toString())
 {
     return;
