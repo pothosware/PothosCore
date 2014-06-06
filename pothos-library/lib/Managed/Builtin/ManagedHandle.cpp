@@ -29,6 +29,12 @@ int ManagedProxyHandle::compareTo(const Pothos::Proxy &proxy) const
 
 Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Proxy *args, const size_t numArgs)
 {
+    if (obj.type() == typeid(Pothos::Proxy))
+    {
+        auto proxy = obj.extract<Pothos::Proxy>();
+        return proxy.getHandle()->call(name, args, numArgs);
+    }
+
     const bool isManagedClass = obj.type() == typeid(Pothos::ManagedClass);
     const bool callConstructor = isManagedClass and name == "new";
     const bool callStaticMethod = isManagedClass and not callConstructor;

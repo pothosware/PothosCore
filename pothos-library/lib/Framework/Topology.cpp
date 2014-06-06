@@ -17,44 +17,6 @@
 #include <cassert>
 #include <set>
 
-/***********************************************************************
- * Extract Topology for arbitrary object
- **********************************************************************/
-/*
-static const Pothos::Topology *getTopology(const Pothos::Object &o)
-{
-    if (o.type() == typeid(Pothos::Topology))
-    {
-        return &o.extract<Pothos::Topology>();
-    }
-    if (o.type() == typeid(Pothos::Topology *))
-    {
-        return o.extract<Pothos::Topology *>();
-    }
-    if (o.type() == typeid(std::shared_ptr<Pothos::Topology>))
-    {
-        return o.extract<std::shared_ptr<Pothos::Topology>>().get();
-    }
-    return nullptr;
-}
-*/
-
-/***********************************************************************
- * Extract UID for arbitrary object
- **********************************************************************/
-/*
-static Pothos::Proxy getProxy(const Pothos::Object &o)
-{
-    if (o.type() == typeid(Pothos::Proxy)) return o.extract<Pothos::Proxy>();
-    return Pothos::ProxyEnvironment::make("managed")->convertObjectToProxy(o);
-}
-
-std::string getUid(const Pothos::Object &o)
-{
-    return getProxy(o).call<std::string>("uid");
-}
-*/
-
 static Pothos::Proxy getProxy(const Pothos::Object &o)
 {
     if (o.type() == typeid(Pothos::Proxy)) return o.extract<Pothos::Proxy>();
@@ -89,45 +51,44 @@ static Pothos::Proxy getInternalObject(const Pothos::Object &o, const Pothos::To
 /***********************************************************************
  * helpers to deal with recursive topology comprehension
  **********************************************************************/
-static std::vector<Flow> getFlows(const Pothos::Proxy &o)
+static std::vector<Port> resolvePorts(const Port &port, const bool isSource);
+
+static std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std::string &portName, const bool isSource)
 {
-    std::vector<Flow> flows;
-    for (const auto &proxyFlow : o.call<Pothos::ProxyVector>("getFlows"))
+    std::vector<Port> ports;
+    for (const auto &flow : t._impl->flows)
     {
-        Flow flow;
-        flow.src.obj = proxyFlow.callProxy("get:src").callProxy("get:obj");
-        flow.dst.obj = proxyFlow.callProxy("get:dst").callProxy("get:obj");
-        flow.src.name = proxyFlow.callProxy("get:src").call<std::string>("get:name");
-        flow.dst.name = proxyFlow.callProxy("get:dst").call<std::string>("get:name");
-        flows.push_back(flow);
+        //recurse through sub topology flows
+        std::vector<Port> subPorts;
+        if (isSource and flow.dst.name == portName and not flow.dst.obj)
+        {
+            subPorts = resolvePorts(flow.src, isSource);
+        }
+        if (not isSource and flow.src.name == portName and not flow.src.obj)
+        {
+            subPorts = resolvePorts(flow.dst, isSource);
+        }
+        ports.insert(ports.end(), subPorts.begin(), subPorts.end());
     }
-    return flows;
+    return ports;
 }
+
 
 static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
 {
-    std::cout << "resolvePorts " << port.obj.toString() << " is source " << isSource << std::endl;
     std::vector<Port> ports;
 
     //resolve ports connected to the topology
     try
     {
-        for (const auto &flow : getFlows(port.obj))
+        auto subPorts = port.obj.callProxy("resolvePorts", port.name, isSource);
+        for (size_t i = 0; i < subPorts.call<size_t>("size"); i++)
         {
-            std::cout << "recurse through sub topology flows\n";
-            std::cout << "flow.src.obj " << flow.src.obj.toString() << std::endl;
-            std::cout << "flow.dst.obj " << flow.dst.obj.toString() << std::endl;
-            //recurse through sub topology flows
-            std::vector<Port> subPorts;
-            if (isSource and flow.dst.name == port.name and not flow.dst.obj)
-            {
-                subPorts = resolvePorts(flow.src, isSource);
-            }
-            if (not isSource and flow.src.name == port.name and not flow.src.obj)
-            {
-                subPorts = resolvePorts(flow.dst, isSource);
-            }
-            ports.insert(ports.end(), subPorts.begin(), subPorts.end());
+            auto portProxy = subPorts.callProxy("at", i);
+            Port port;
+            port.name = portProxy.call<std::string>("get:name");
+            port.obj = portProxy.callProxy("get:obj");
+            ports.push_back(port);
         }
     }
     catch (const Pothos::Exception &)
@@ -135,30 +96,6 @@ static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
         //its just a block, no ports to resolve
         ports.push_back(port);
     }
-
-    //extract the topology
-    /*
-    auto topology = getTopology(port.obj);
-
-    //its just a block, no ports to resolve
-    if (topology == nullptr) ports.push_back(port);
-
-    //resolve ports connected to the topology
-    else for (const auto &flow : topology->_impl->flows)
-    {
-        //recurse through sub topology flows
-        std::vector<Port> subPorts;
-        if (isSource and flow.dst.name == port.name and not flow.dst.obj)
-        {
-            subPorts = resolvePorts(flow.src, isSource);
-        }
-        if (not isSource and flow.src.name == port.name and not flow.src.obj)
-        {
-            subPorts = resolvePorts(flow.dst, isSource);
-        }
-        ports.insert(ports.end(), subPorts.begin(), subPorts.end());
-    }
-    */
 
     return ports;
 }
@@ -169,7 +106,6 @@ static std::vector<Flow> squashFlows(const std::vector<Flow> &flows)
 
     for (const auto &flow : flows)
     {
-        std::cout << "squash flow " << flow.src.obj.toString() << flow.src.name << " " << flow.dst.obj.toString() << flow.dst.name << std::endl;
         //ignore external flows
         if (not flow.src.obj) continue;
         if (not flow.dst.obj) continue;
@@ -177,8 +113,6 @@ static std::vector<Flow> squashFlows(const std::vector<Flow> &flows)
         //gather a list of sources and destinations on either end of this flow
         std::vector<Port> srcs = resolvePorts(flow.src, true);
         std::vector<Port> dsts = resolvePorts(flow.dst, false);
-        std::cout << "srcs " << srcs.size() << std::endl;
-        std::cout << "dsts " << dsts.size() << std::endl;
 
         //all combinations of srcs + dsts are flows
         for (const auto &src : srcs)
@@ -188,7 +122,6 @@ static std::vector<Flow> squashFlows(const std::vector<Flow> &flows)
                 Flow flatFlow;
                 flatFlow.src = src;
                 flatFlow.dst = dst;
-                std::cout << "making flat flow " << flatFlow.src.obj.toString() << flatFlow.src.name << " " << flatFlow.dst.obj.toString() << flatFlow.dst.name << std::endl;
                 flatFlows.push_back(flatFlow);
             }
         }
@@ -419,8 +352,11 @@ void Pothos::Topology::_connect(
         */
 
     Flow flow;
+    std::cout << __LINE__ << std::endl;
     flow.src.obj = getInternalObject(src, *this);
+    std::cout << __LINE__ << std::endl;
     flow.dst.obj = getInternalObject(dst, *this);
+    std::cout << __LINE__ << std::endl;
     flow.src.name = srcName;
     flow.dst.name = dstName;
 
@@ -532,6 +468,7 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerConstructor<Pothos::Topology>()
     .registerMethod("uid", &getUidFromTopology)
     .registerMethod("getFlows", &getFlowsFromTopology)
+    .registerMethod("resolvePorts", &resolvePortsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, commit))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, disconnectAll))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, waitInactive))
@@ -547,6 +484,22 @@ static auto managedPort = Pothos::ManagedClass()
     .registerField(POTHOS_FCN_TUPLE(Port, obj))
     .registerField(POTHOS_FCN_TUPLE(Port, name))
     .commit("Pothos/Topology/Port");
+
+static size_t portVectorSize(const std::vector<Port> &vec)
+{
+    return vec.size();
+}
+
+static Port portVectorAt(const std::vector<Port> &vec, const size_t index)
+{
+    return vec.at(index);
+}
+
+static auto managedPortVector = Pothos::ManagedClass()
+    .registerClass<std::vector<Port>>()
+    .registerMethod("size", &portVectorSize)
+    .registerMethod("at", &portVectorAt)
+    .commit("Pothos/Topology/PortVector");
 
 static auto managedFlow = Pothos::ManagedClass()
     .registerClass<Flow>()
