@@ -1,6 +1,7 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include <Poco/Process.h>
 #include <Pothos/System/Info.hpp>
 #include <Pothos/Managed.hpp>
 #include <Pothos/Object/Serialize.hpp>
@@ -41,6 +42,7 @@ Pothos::System::NodeInfo Pothos::System::NodeInfo::get(void)
     info.osArchitecture = Poco::Environment::osArchitecture();
     info.nodeName = Poco::Environment::nodeName();
     info.nodeId = Poco::Environment::nodeId();
+    info.pid = std::to_string(Poco::Process::id());
     return info;
 }
 
@@ -58,6 +60,7 @@ void serialize(Archive &ar, Pothos::System::NodeInfo &t, const unsigned int)
     ar & t.osArchitecture;
     ar & t.nodeName;
     ar & t.nodeId;
+    ar & t.pid;
 }
 }}
 

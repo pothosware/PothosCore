@@ -36,6 +36,9 @@ public:
     std::string osArchitecture;
     std::string nodeName;
     std::string nodeId;
+
+    //! The process id of the caller
+    std::string pid;
 };
 
 /*!
