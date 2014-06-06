@@ -250,6 +250,24 @@ static std::map<std::string, Pothos::Proxy> getActorInterfacesInFlowList(const s
     return interfaces;
 }
 
+static std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> &flows, const std::vector<Flow> &excludes = std::vector<Flow>())
+{
+    std::map<std::string, Pothos::Proxy> uniques;
+    for (const auto &flow : flows)
+    {
+        uniques[flow.src.obj.call<std::string>("uid")] = flow.src.obj;
+        uniques[flow.dst.obj.call<std::string>("uid")] = flow.dst.obj;
+    }
+    for (const auto &flow : excludes)
+    {
+        uniques.erase(flow.src.obj.call<std::string>("uid"));
+        uniques.erase(flow.dst.obj.call<std::string>("uid"));
+    }
+    std::vector<Pothos::Proxy> set;
+    for (const auto &pair : uniques) set.push_back(pair.second);
+    return set;
+}
+
 /***********************************************************************
  * Topology implementation
  **********************************************************************/
@@ -352,11 +370,8 @@ void Pothos::Topology::_connect(
         */
 
     Flow flow;
-    std::cout << __LINE__ << std::endl;
     flow.src.obj = getInternalObject(src, *this);
-    std::cout << __LINE__ << std::endl;
     flow.dst.obj = getInternalObject(dst, *this);
-    std::cout << __LINE__ << std::endl;
     flow.src.name = srcName;
     flow.dst.name = dstName;
 
@@ -419,17 +434,17 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
     //how long to sleep between idle checks?
     const double pollSleepTime = idleDuration/3;
 
-    //get a list of actor interfaces to poll for idle time
-    const auto interfaces = getActorInterfacesInFlowList(_impl->activeFlatFlows);
+    //get a list of blocks to poll for idle time
+    const auto blocks = getObjSetFromFlowList(_impl->activeFlatFlows);
 
     //loop until exit time
     const Poco::Timestamp exitTime = Poco::Timestamp() + Poco::Timespan(Poco::Timespan::TimeDiff(timeout*1e6));
     do
     {
         //check each worker for idle time from the stats
-        for (auto pair : interfaces)
+        for (auto block : blocks)
         {
-            const auto stats = pair.second.call<WorkerStats>("getWorkerStats");
+            const auto stats = block.call<WorkerStats>("getWorkerStats");
             const auto consumptionIdle = stats.ticksStatsQuery - stats.ticksLastConsumed;
             const auto productionIdle = stats.ticksStatsQuery - stats.ticksLastProduced;
             const auto workerIdleDuration = std::min(consumptionIdle, productionIdle);

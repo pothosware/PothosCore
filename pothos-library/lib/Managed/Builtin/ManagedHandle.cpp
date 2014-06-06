@@ -29,6 +29,7 @@ int ManagedProxyHandle::compareTo(const Pothos::Proxy &proxy) const
 
 Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Proxy *args, const size_t numArgs)
 {
+    //the object is a proxy - solve the meta-issue with inception
     if (obj.type() == typeid(Pothos::Proxy))
     {
         auto proxy = obj.extract<Pothos::Proxy>();
