@@ -91,3 +91,35 @@ bool Pothos::operator==(const Proxy &lhs, const Proxy &rhs)
 {
     return lhs.getHandle() == rhs.getHandle();
 }
+
+#include <Pothos/Object/Serialize.hpp>
+#include <Pothos/Proxy.hpp>
+#include <sstream>
+
+namespace Pothos { namespace serialization {
+template<class Archive>
+void save(Archive & ar, const Pothos::Proxy &t, const unsigned int)
+{
+    auto name = t.getEnvironment()->getName();
+    ar << name;
+    std::ostringstream oss;
+    t.getEnvironment()->serialize(t, oss);
+    auto data = oss.str();
+    ar << data;
+}
+
+template<class Archive>
+void load(Archive & ar, Pothos::Proxy &t, const unsigned int)
+{
+    std::string name;
+    ar >> name;
+    auto env = Pothos::ProxyEnvironment::make(name);
+    std::string data;
+    ar >> data;
+    std::istringstream iss(data);
+    t = env->deserialize(iss);
+}
+}}
+
+POTHOS_SERIALIZATION_SPLIT_FREE(Pothos::Proxy)
+POTHOS_OBJECT_SERIALIZE(Pothos::Proxy)

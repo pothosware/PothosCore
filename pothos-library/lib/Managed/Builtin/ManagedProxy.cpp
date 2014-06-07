@@ -4,6 +4,7 @@
 #include "ManagedProxy.hpp"
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Managed.hpp>
+#include <Pothos/Object/Serialize.hpp>
 
 ManagedProxyEnvironment::ManagedProxyEnvironment(const Pothos::ProxyEnvironmentArgs &)
 {
@@ -26,7 +27,7 @@ std::shared_ptr<ManagedProxyHandle> ManagedProxyEnvironment::getHandle(const Pot
             auto local = proxy.getEnvironment()->convertProxyToObject(proxy);
             myProxy = this->convertObjectToProxy(local);
         }
-        catch (const Pothos::ProxyEnvironmentConvertError &ex)
+        catch (const Pothos::ProxyEnvironmentConvertError &)
         {
             myProxy = this->makeProxy(proxy);
         }
@@ -63,6 +64,33 @@ Pothos::Object ManagedProxyEnvironment::convertProxyToObject(const Pothos::Proxy
 {
     auto handle = this->getHandle(proxy);
     return handle->obj;
+}
+
+void ManagedProxyEnvironment::serialize(const Pothos::Proxy &proxy, std::ostream &os)
+{
+    try
+    {
+        auto handle = this->getHandle(proxy);
+        handle->obj.serialize(os);
+    }
+    catch (const Pothos::archive::archive_exception &ex)
+    {
+        throw Pothos::ProxySerializeError("ManagedProxyEnvironment::serialize()", ex.what());
+    }
+}
+
+Pothos::Proxy ManagedProxyEnvironment::deserialize(std::istream &is)
+{
+    try
+    {
+        Pothos::Object obj;
+        obj.deserialize(is);
+        return this->makeHandle(obj);
+    }
+    catch (const Pothos::archive::archive_exception &ex)
+    {
+        throw Pothos::ProxySerializeError("ManagedProxyEnvironment::deserialize()", ex.what());
+    }
 }
 
 /***********************************************************************
