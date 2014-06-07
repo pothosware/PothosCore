@@ -59,9 +59,6 @@ PyObject *makeProxyObject(const Pothos::Proxy &proxy);
 //! utility for c api to check if a proxy
 bool isProxyObject(PyObject *obj);
 
-//! TODO only exposed for converters
-Pothos::Proxy convertProxyToPyProxy(Pothos::ProxyEnvironment::Sptr env, const Pothos::Proxy &proxy);
-
 /***********************************************************************
  * Pothos::ProxyCall support
  **********************************************************************/

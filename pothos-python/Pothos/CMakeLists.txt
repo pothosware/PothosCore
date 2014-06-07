@@ -6,7 +6,6 @@ set(MODULE_SOURCES
     ProxyEnvironmentType.cpp
     ProxyType.cpp
     ProxyCallType.cpp
-    Converters.cpp
 )
 
 #field initializer warnings are unavoidable with PyTypeObject initialization
