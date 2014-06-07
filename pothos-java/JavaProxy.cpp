@@ -6,6 +6,7 @@
 #include <Pothos/Plugin.hpp>
 #include <iostream>
 #include <Poco/SingletonHolder.h>
+#include <Poco/Types.h>
 #include <mutex>
 
 /***********************************************************************
@@ -110,6 +111,40 @@ Pothos::Proxy JavaProxyEnvironment::findProxy(const std::string &name)
         throw Pothos::ProxyEnvironmentFindError("JavaProxyEnvironment::findProxy("+name+")");
     }
     return this->makeHandle(value, 'L');
+}
+
+void JavaProxyEnvironment::serialize(const Pothos::Proxy &proxy, std::ostream &os)
+{
+    try
+    {
+        auto b = this->findProxy("java.io.ByteArrayOutputStream").callProxy("new");
+        auto o = this->findProxy("java.io.ObjectOutputStream").callProxy("new", b);
+        o.call("writeObject", proxy);
+        auto bytes = b.callProxy("toByteArray");
+        auto data = this->findProxy("java.lang.String").call<std::string>("new", bytes);
+        os << data;
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        throw Pothos::ProxySerializeError("JavaProxyEnvironment::serialize()", ex);
+    }
+}
+
+Pothos::Proxy JavaProxyEnvironment::deserialize(std::istream &is)
+{
+    try
+    {
+        std::string data;
+        is >> data;
+        auto bytes = this->makeProxy(data).callProxy("getBytes");
+        auto b = this->findProxy("java.io.ByteArrayInputStream").callProxy("new", bytes);
+        auto o = this->findProxy("java.io.ObjectInputStream").callProxy("new", b);
+        return o.callProxy("readObject");
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        throw Pothos::ProxySerializeError("JavaProxyEnvironment::deserialize()", ex);
+    }
 }
 
 /***********************************************************************
