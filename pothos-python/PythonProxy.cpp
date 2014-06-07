@@ -107,7 +107,7 @@ void PythonProxyEnvironment::serialize(const Pothos::Proxy &proxy, std::ostream 
     }
     catch (const Pothos::Exception &ex)
     {
-        throw Pothos::ProxySerializeError("PythonProxyEnvironment::serialize()", ex.what());
+        throw Pothos::ProxySerializeError("PythonProxyEnvironment::serialize()", ex);
     }
 }
 
@@ -122,7 +122,7 @@ Pothos::Proxy PythonProxyEnvironment::deserialize(std::istream &is)
     }
     catch (const Pothos::Exception &ex)
     {
-        throw Pothos::ProxySerializeError("PythonProxyEnvironment::deserialize()", ex.what());
+        throw Pothos::ProxySerializeError("PythonProxyEnvironment::deserialize()", ex);
     }
 }
 
