@@ -98,6 +98,34 @@ Pothos::Object PythonProxyEnvironment::convertProxyToObject(const Pothos::Proxy 
     return Pothos::ProxyEnvironment::convertProxyToObject(proxy);
 }
 
+void PythonProxyEnvironment::serialize(const Pothos::Proxy &proxy, std::ostream &os)
+{
+    try
+    {
+        auto marshal = this->findProxy("marshal");
+        os << marshal.call<std::string>("dumps", proxy);
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        throw Pothos::ProxySerializeError("PythonProxyEnvironment::serialize()", ex.what());
+    }
+}
+
+Pothos::Proxy PythonProxyEnvironment::deserialize(std::istream &is)
+{
+    try
+    {
+        auto marshal = this->findProxy("marshal");
+        std::string data;
+        is >> data;
+        return marshal.callProxy("loads", data);
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        throw Pothos::ProxySerializeError("PythonProxyEnvironment::deserialize()", ex.what());
+    }
+}
+
 /***********************************************************************
  * factory registration
  **********************************************************************/
