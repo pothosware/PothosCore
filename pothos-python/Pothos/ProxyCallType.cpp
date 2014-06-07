@@ -33,7 +33,7 @@ PyObject* ProxyCall_call(ProxyCallObject *self, PyObject *args, PyObject *)
         Pothos::ProxyVector proxyArgs;
         for (int i = 0; i < PyTuple_Size(args); i++)
         {
-            proxyArgs.push_back(PyObjectToProxyInspect(PyTuple_GetItem(args, i)));
+            proxyArgs.push_back(PyObjectToProxy(PyTuple_GetItem(args, i)));
         }
 
         //make proxy call

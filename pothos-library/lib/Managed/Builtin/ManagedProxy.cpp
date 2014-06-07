@@ -21,8 +21,15 @@ std::shared_ptr<ManagedProxyHandle> ManagedProxyEnvironment::getHandle(const Pot
     Pothos::Proxy myProxy = proxy;
     if (proxy.getEnvironment() != this->shared_from_this())
     {
-        auto local = proxy.getEnvironment()->convertProxyToObject(proxy);
-        myProxy = this->convertObjectToProxy(local);
+        try
+        {
+            auto local = proxy.getEnvironment()->convertProxyToObject(proxy);
+            myProxy = this->convertObjectToProxy(local);
+        }
+        catch (const Pothos::ProxyEnvironmentConvertError &ex)
+        {
+            myProxy = this->makeProxy(proxy);
+        }
     }
     return std::dynamic_pointer_cast<ManagedProxyHandle>(myProxy.getHandle());
 }

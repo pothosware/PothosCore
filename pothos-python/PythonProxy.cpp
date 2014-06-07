@@ -45,14 +45,12 @@ PythonProxyEnvironment::PythonProxyEnvironment(const Pothos::ProxyEnvironmentArg
 
 Pothos::Proxy PythonProxyEnvironment::makeHandle(PyObject *obj, const bool borrowed)
 {
-    PyGilStateLock lock;
     auto env = std::dynamic_pointer_cast<PythonProxyEnvironment>(this->shared_from_this());
     return Pothos::Proxy(new PythonProxyHandle(env, obj, borrowed));
 }
 
 Pothos::Proxy PythonProxyEnvironment::makeHandle(const PyObjectRef &ref)
 {
-    PyGilStateLock lock;
     return this->makeHandle(ref.obj, REF_BORROWED);
 }
 

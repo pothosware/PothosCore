@@ -33,8 +33,16 @@ static void initPyObjectUtilityConverters(void)
 Pothos::Proxy PyObjectToProxy(PyObject *obj)
 {
     assert(obj != nullptr);
+    if (isProxyObject(obj)) return *reinterpret_cast<ProxyObject *>(obj)->proxy;
     PyThreadStateLock lock;
     return myPyObjectToProxyFcn(myPythonProxyEnv, obj);
+}
+
+Pothos::Proxy convertProxyToPyProxy(Pothos::ProxyEnvironment::Sptr env, const Pothos::Proxy &proxy)
+{
+    PyObjectRef ref(makeProxyObject(proxy), REF_NEW);
+    PyThreadStateLock lock;
+    return myPyObjectToProxyFcn(env, ref.obj);
 }
 
 PyObject *ProxyToPyObject(const Pothos::Proxy &proxy)

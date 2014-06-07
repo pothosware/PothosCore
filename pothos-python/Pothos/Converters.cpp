@@ -7,12 +7,6 @@
 /***********************************************************************
  * Proxy conversions
  **********************************************************************/
-static Pothos::Proxy convertProxyToPyProxy(Pothos::ProxyEnvironment::Sptr, const Pothos::Proxy &proxy)
-{
-    PyObjectRef ref(makeProxyObject(proxy), REF_NEW);
-    return PyObjectToProxy(ref.obj);
-}
-
 static Pothos::Proxy convertPyProxyToProxy(const Pothos::Proxy &proxy)
 {
     PyObjectRef ref(ProxyToPyObject(proxy), REF_NEW);
