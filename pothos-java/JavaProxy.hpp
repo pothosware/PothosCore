@@ -47,6 +47,9 @@ public:
     jvalue CallMethodA(const char retType, jobject obj, jmethodID method, jvalue *args);
     jvalue CallStaticMethodA(const char retType, jclass cls, jmethodID method, jvalue *args);
 
+    void serialize(const Pothos::Proxy &, std::ostream &);
+    Pothos::Proxy deserialize(std::istream &);
+
     JavaVM *jvm;       /* pointer to open virtual machine */
     JNIEnv *env;       /* pointer to native method interface */
 };

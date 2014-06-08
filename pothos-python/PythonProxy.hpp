@@ -69,6 +69,8 @@ public:
 
     Pothos::Proxy convertObjectToProxy(const Pothos::Object &local);
     Pothos::Object convertProxyToObject(const Pothos::Proxy &proxy);
+    void serialize(const Pothos::Proxy &, std::ostream &);
+    Pothos::Proxy deserialize(std::istream &);
 };
 
 /***********************************************************************

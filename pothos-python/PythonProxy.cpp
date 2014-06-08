@@ -45,14 +45,12 @@ PythonProxyEnvironment::PythonProxyEnvironment(const Pothos::ProxyEnvironmentArg
 
 Pothos::Proxy PythonProxyEnvironment::makeHandle(PyObject *obj, const bool borrowed)
 {
-    PyGilStateLock lock;
     auto env = std::dynamic_pointer_cast<PythonProxyEnvironment>(this->shared_from_this());
     return Pothos::Proxy(new PythonProxyHandle(env, obj, borrowed));
 }
 
 Pothos::Proxy PythonProxyEnvironment::makeHandle(const PyObjectRef &ref)
 {
-    PyGilStateLock lock;
     return this->makeHandle(ref.obj, REF_BORROWED);
 }
 
@@ -98,6 +96,34 @@ Pothos::Object PythonProxyEnvironment::convertProxyToObject(const Pothos::Proxy 
 {
     PyGilStateLock lock;
     return Pothos::ProxyEnvironment::convertProxyToObject(proxy);
+}
+
+void PythonProxyEnvironment::serialize(const Pothos::Proxy &proxy, std::ostream &os)
+{
+    try
+    {
+        auto marshal = this->findProxy("marshal");
+        os << marshal.call<std::string>("dumps", proxy);
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        throw Pothos::ProxySerializeError("PythonProxyEnvironment::serialize()", ex);
+    }
+}
+
+Pothos::Proxy PythonProxyEnvironment::deserialize(std::istream &is)
+{
+    try
+    {
+        auto marshal = this->findProxy("marshal");
+        std::string data;
+        is >> data;
+        return marshal.callProxy("loads", data);
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        throw Pothos::ProxySerializeError("PythonProxyEnvironment::deserialize()", ex);
+    }
 }
 
 /***********************************************************************

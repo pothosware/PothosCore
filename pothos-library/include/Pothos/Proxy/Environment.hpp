@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iosfwd>
 
 namespace Pothos {
 
@@ -97,6 +98,22 @@ public:
      * \return a new Object that contains something in local memory
      */
     virtual Object convertProxyToObject(const Proxy &proxy);
+
+    /*!
+     * Serialize the contents of the proxy into a stream.
+     * \throws ProxySerializeError is the operation cant complete
+     * \param proxy the input proxy object to serialize
+     * \param os the output stream for the serialized data
+     */
+    virtual void serialize(const Proxy &proxy, std::ostream &os) = 0;
+
+    /*!
+     * Deserialize the stream into the contents of a Proxy.
+     * \throws ProxySerializeError is the operation cant complete
+     * \param is the input stream holding serialized data
+     * \return a new proxy from the serialized data
+     */
+    virtual Proxy deserialize(std::istream &is) = 0;
 };
 
 } //namespace Pothos

@@ -36,6 +36,16 @@ public:
 
     Pothos::Object convertProxyToObject(const Pothos::Proxy &proxy);
 
+    void serialize(const Pothos::Proxy &, std::ostream &)
+    {
+        throw Pothos::ProxySerializeError("RemoteProxyEnvironment::serialize()", "not supported");
+    }
+
+    Pothos::Proxy deserialize(std::istream &)
+    {
+        throw Pothos::ProxySerializeError("RemoteProxyEnvironment::deserialize()", "not supported");
+    }
+
     Pothos::ObjectKwargs transact(const Pothos::ObjectKwargs &request);
 
     size_t remoteID;

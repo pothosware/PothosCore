@@ -12,7 +12,7 @@ class Block(object):
         env = ProxyEnvironment("managed")
         reg = env.findProxy("Pothos/BlockRegistry")
         self._block = reg.callProxy("/blocks/python/python_block")
-        self._block._setPyBlock(Proxy(Proxy(weakref.proxy(self))))
+        self._block._setPyBlock(weakref.proxy(self))
 
     def __getattr__(self, name):
         return lambda *args: self._block.call(name, *args)
