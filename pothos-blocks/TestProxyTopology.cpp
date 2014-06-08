@@ -68,12 +68,12 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
     //run the topology
     std::cout << "run the topology\n";
     {
-        auto topology = Pothos::Topology();//env->findProxy("Pothos/Topology").callProxy("new");
-        //POTHOS_TEST_TRUE(subtopology.call<std::string>("uid") != topology.call<std::string>("uid"));
-        topology.connect(feeder, "0", subtopology, "0");
-        topology.connect(subtopology, "0", collector, "0");
-        topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
+        auto topology = env->findProxy("Pothos/Topology").callProxy("new");
+        POTHOS_TEST_TRUE(subtopology.call<std::string>("uid") != topology.call<std::string>("uid"));
+        topology.call("connect", feeder, "0", subtopology, "0");
+        topology.call("connect", subtopology, "0", collector, "0");
+        topology.call("commit");
+        POTHOS_TEST_TRUE(topology.call<bool>("waitInactive"));
     }
 
     //check msgs
