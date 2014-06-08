@@ -6,6 +6,7 @@
 #include <iostream>
 #include <complex>
 #include <cstdlib>
+#include <sstream>
 
 POTHOS_TEST_BLOCK("/proxy/python/tests", test_basic_types)
 {
@@ -125,4 +126,35 @@ POTHOS_TEST_BLOCK("/proxy/python/tests", test_call_module)
     Pothos::ProxyMap myDict;
     myDict[env->makeProxy("hi")] = env->makeProxy("bye");
     myDict[env->makeProxy(1)] = env->makeProxy(2);
+}
+
+POTHOS_TEST_BLOCK("/proxy/python/tests", test_serialization)
+{
+    auto env = Pothos::ProxyEnvironment::make("python");
+
+    //make test dictionary
+    Pothos::ProxyMap testDict;
+    testDict[env->makeProxy("hi")] = env->makeProxy("bye");
+    testDict[env->makeProxy(1)] = env->makeProxy(2);
+    auto proxyDict = env->makeProxy(testDict);
+
+    //serialize
+    Pothos::Object serializeMe(proxyDict);
+    std::stringstream ss;
+    serializeMe.serialize(ss);
+    std::cout << ss.str() << std::endl;
+
+    //deserialize
+    Pothos::Object deserializeMe;
+    deserializeMe.deserialize(ss);
+    POTHOS_TEST_TRUE(deserializeMe);
+    auto resultDict = proxyDict.convert<Pothos::ProxyMap>();
+
+    //check result
+    auto findHi = resultDict.find(env->makeProxy("hi"));
+    POTHOS_TEST_TRUE(findHi != resultDict.end());
+    POTHOS_TEST_EQUAL(findHi->second.convert<std::string>(), "bye");
+    auto find1 = resultDict.find(env->makeProxy(1));
+    POTHOS_TEST_TRUE(find1 != resultDict.end());
+    POTHOS_TEST_EQUAL(find1->second.convert<int>(), 2);
 }

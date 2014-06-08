@@ -29,10 +29,6 @@ static Pothos::Proxy getProxy(const Pothos::Object &o)
 static Pothos::Proxy getWorkerActorInterface(const Pothos::Proxy &block)
 {
     auto actor = block.callProxy("actor");
-    //TODO FIXME unwrap a proxy in a proxy
-    //This happens when PythonBlock actor call returns a proxy to the actor
-    //There must be a better way to deal with metaproxy stuff.
-    if (actor.getClassName() == "PothosProxy") actor = actor.convert<Pothos::Proxy>();
     assert(actor.getEnvironment()->getName() == "managed");
     auto cls = actor.getEnvironment()->findProxy("Pothos/WorkerActorInterface");
     return cls.callProxy("new", actor);

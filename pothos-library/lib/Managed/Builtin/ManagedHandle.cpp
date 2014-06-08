@@ -207,6 +207,7 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         throw Pothos::ProxyExceptionMessage("unknown");
     }
 
+    if (result.type() == typeid(Pothos::Proxy)) return result.extract<Pothos::Proxy>();
     return env->makeHandle(result);
 }
 

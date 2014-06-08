@@ -46,4 +46,9 @@ POTHOS_DECLARE_EXCEPTION(POTHOS_API, ProxyExceptionMessage, RuntimeException);
  */
 POTHOS_DECLARE_EXCEPTION(POTHOS_API, ProxyCompareError, RuntimeException);
 
+/*!
+ * A ProxySerializeError is thrown when de/serialize fails.
+ */
+POTHOS_DECLARE_EXCEPTION(POTHOS_API, ProxySerializeError, RuntimeException);
+
 } //namespace Pothos
