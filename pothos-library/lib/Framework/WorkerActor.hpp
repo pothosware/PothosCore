@@ -14,6 +14,11 @@
 #include <Poco/Format.h>
 #include <iostream>
 
+int portNameToIndex(const std::string &name);
+
+/***********************************************************************
+ * Helpful Theron::Receiver derived class for a specific value
+ **********************************************************************/
 template <typename InfoType>
 class InfoReceiver : public Theron::Receiver
 {
@@ -52,9 +57,6 @@ public:
 private:
     std::vector<InfoType> _infos;
 };
-
-
-int portNameToIndex(const std::string &name);
 
 /***********************************************************************
  * Messages that will be sent to the actor
@@ -224,7 +226,7 @@ public:
     OutputPort &getOutput(const size_t index, const char *fcn);
     InputPort &getInput(const size_t index, const char *fcn);
 
-    ///////////////////// work helper methods ///////////////////////
+    ///////////////////// topology helper methods ///////////////////////
     std::shared_ptr<InfoReceiver<std::string>> sendActivateMessage(void)
     {
         auto receiver = InfoReceiver<std::string>::make();
@@ -260,7 +262,7 @@ public:
         return receiver;
     }
 
-
+    ///////////////////// work helper methods ///////////////////////
     inline void notify(void)
     {
         //only call when we handle the only message in the actor's queue
