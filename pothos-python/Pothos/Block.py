@@ -17,6 +17,13 @@ class Block(object):
     def __getattr__(self, name):
         return lambda *args: self._block.call(name, *args)
 
+    def getInternalBlock(self):
+        """
+        Get access to the underlying Pothos::Block handle.
+        Topology uses this call to speak directly to the block.
+        """
+        return self._block
+
     def setupInput(self, name, dtype="byte"):
         self._block.setupInput(name, dtype)
 

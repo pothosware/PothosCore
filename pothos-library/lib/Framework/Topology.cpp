@@ -7,6 +7,7 @@
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object.hpp>
 #include <Pothos/Proxy.hpp>
+#include <Pothos/System/Info.hpp>
 #include <Poco/Environment.h>
 #include <Poco/Format.h>
 #include <Poco/Timestamp.h>
@@ -18,117 +19,114 @@
 #include <set>
 
 /***********************************************************************
- * Extract UID for arbitrary object
+ * Make a proxy if not already
  **********************************************************************/
-std::string getUid(const Pothos::Object &o)
+static Pothos::Proxy getProxy(const Pothos::Object &o)
 {
-    if (o.type() == typeid(Pothos::Block *))
-    {
-        return o.extract<Pothos::Block *>()->uid();
-    }
-    if (o.type() == typeid(std::shared_ptr<Pothos::Block>))
-    {
-        return o.extract<std::shared_ptr<Pothos::Block>>()->uid();
-    }
-    if (o.type() == typeid(Pothos::Topology *))
-    {
-        return o.extract<Pothos::Topology *>()->uid();
-    }
-    if (o.type() == typeid(std::shared_ptr<Pothos::Topology>))
-    {
-        return o.extract<std::shared_ptr<Pothos::Topology>>()->uid();
-    }
-    if (o.type() == typeid(Pothos::Proxy))
-    {
-        return o.extract<Pothos::Proxy>().call<std::string>("uid");
-    }
-    return "";
-}
-
-/***********************************************************************
- * Extract Actor for arbitrary object
- **********************************************************************/
-static Pothos::Proxy getWorkerActorInterface(const Pothos::Object &o)
-{
-    assert(o);
-    if (o.type() == typeid(Pothos::Block *))
-    {
-        auto cls = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/WorkerActorInterface");
-        return cls.callProxy("new", o.extract<Pothos::Block *>()->_actor);
-    }
-    if (o.type() == typeid(std::shared_ptr<Pothos::Block>))
-    {
-        auto cls = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/WorkerActorInterface");
-        return cls.callProxy("new", o.extract<std::shared_ptr<Pothos::Block>>()->_actor);
-    }
-    if (o.type() == typeid(Pothos::Proxy))
-    {
-        auto block = o.extract<Pothos::Proxy>();
-        auto actor = block.callProxy("actor");
-        assert(actor.getEnvironment()->getName() == "managed");
-        auto cls = actor.getEnvironment()->findProxy("Pothos/WorkerActorInterface");
-        return cls.callProxy("new", actor);
-    }
-    throw Pothos::InvalidArgumentException("Pothos::Topology::getWorkerActorInterface", "unknown type: " + o.toString());
-}
-
-/***********************************************************************
- * Extract Topology for arbitrary object
- **********************************************************************/
-static Pothos::Topology *getTopology(const Pothos::Object &o)
-{
-    if (o.type() == typeid(Pothos::Topology *))
-    {
-        return o.extract<Pothos::Topology *>();
-    }
-    if (o.type() == typeid(std::shared_ptr<Pothos::Topology>))
-    {
-        return o.extract<std::shared_ptr<Pothos::Topology>>().get();
-    }
-    return nullptr;
+    if (o.type() == typeid(Pothos::Proxy)) return o.extract<Pothos::Proxy>();
+    return Pothos::ProxyEnvironment::make("managed")->convertObjectToProxy(o);
 }
 
 /***********************************************************************
  * Avoid taking copies of self
  **********************************************************************/
-static Pothos::Object getInternalObject(const Pothos::Object &o, const Pothos::Topology &t)
+static Pothos::Proxy getInternalObject(const Pothos::Object &o, const Pothos::Topology &t)
 {
-    if (
-        (o.type() == typeid(std::shared_ptr<Pothos::Topology>)) and
-        (o.extract<std::shared_ptr<Pothos::Topology>>()->uid() == t.uid()))
+    auto proxy = getProxy(o);
+    if (proxy.call<std::string>("uid") == t.uid()) return Pothos::Proxy();
+    return proxy;
+}
+
+/***********************************************************************
+ * Want the internal block - for language bindings
+ **********************************************************************/
+static Pothos::Proxy getInternalBlock(const Pothos::Proxy &block)
+{
+    Pothos::Proxy internal;
+    try
     {
-        return Pothos::Object();
+        internal = block.callProxy("getInternalBlock");
     }
-    return o;
+    catch (const Pothos::Exception &)
+    {
+        internal = block;
+    }
+    assert(internal.getEnvironment()->getName() == "managed");
+    return internal;
+}
+
+/***********************************************************************
+ * can this object be connected with -- can we get a uid?
+ **********************************************************************/
+static bool checkObj(const Pothos::Object &o)
+{
+    try
+    {
+        getProxy(o).call<std::string>("uid");
+    }
+    catch(...)
+    {
+        return false;
+    }
+    return true;
+}
+
+/***********************************************************************
+ * get a unique process identifier for an environment
+ **********************************************************************/
+static std::string getUpid(const Pothos::ProxyEnvironment::Sptr &env)
+{
+    assert(env->getName() == "managed");
+    auto info = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
+    return info.nodeName + "/" + info.nodeId + "/" + info.pid;
 }
 
 /***********************************************************************
  * helpers to deal with recursive topology comprehension
  **********************************************************************/
-static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
+static std::vector<Port> resolvePorts(const Port &port, const bool isSource);
+
+static std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std::string &portName, const bool isSource)
 {
     std::vector<Port> ports;
-
-    //extract the topology
-    Pothos::Topology *topology = getTopology(port.obj);
-
-    //its just a block, no ports to resolve
-    if (topology == nullptr) ports.push_back(port);
-
-    //resolve ports connected to the topology
-    else for (const auto &flow : topology->_impl->flows)
+    for (const auto &flow : t._impl->flows)
     {
         //recurse through sub topology flows
         std::vector<Port> subPorts;
-        if (isSource and flow.dst.name == port.name and not flow.dst.obj)
+        if (isSource and flow.dst.name == portName and not flow.dst.obj)
         {
             subPorts = resolvePorts(flow.src, isSource);
         }
-        if (not isSource and flow.src.name == port.name and not flow.src.obj)
+        if (not isSource and flow.src.name == portName and not flow.src.obj)
         {
             subPorts = resolvePorts(flow.dst, isSource);
         }
         ports.insert(ports.end(), subPorts.begin(), subPorts.end());
+    }
+    return ports;
+}
+
+static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
+{
+    std::vector<Port> ports;
+
+    //resolve ports connected to the topology
+    try
+    {
+        auto subPorts = port.obj.callProxy("resolvePorts", port.name, isSource);
+        for (size_t i = 0; i < subPorts.call<size_t>("size"); i++)
+        {
+            auto portProxy = subPorts.callProxy("at", i);
+            Port port;
+            port.name = portProxy.call<std::string>("get:name");
+            port.obj = portProxy.callProxy("get:obj");
+            ports.push_back(port);
+        }
+    }
+    catch (const Pothos::Exception &)
+    {
+        //its just a block, no ports to resolve
+        ports.push_back(port);
     }
 
     return ports;
@@ -161,6 +159,13 @@ static std::vector<Flow> squashFlows(const std::vector<Flow> &flows)
         }
     }
 
+    //only store the actual blocks
+    for (auto &flow : flatFlows)
+    {
+        flow.src.obj = getInternalBlock(flow.src.obj);
+        flow.dst.obj = getInternalBlock(flow.dst.obj);
+    }
+
     return flatFlows;
 }
 
@@ -176,15 +181,8 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
     std::vector<Flow> networkAwareFlows;
     for (const auto &flow : flatFlows)
     {
-        auto srcActorIface = getWorkerActorInterface(flow.src.obj);
-        auto dstActorIface = getWorkerActorInterface(flow.dst.obj);
-
-        //get unique process ids
-        const auto srcUpid = srcActorIface.call<std::string>("upid");
-        const auto dstUpid = dstActorIface.call<std::string>("upid");
-
         //same process, keep this flow as-is
-        if (srcUpid == dstUpid)
+        if (getUpid(flow.src.obj.getEnvironment()) == getUpid(flow.dst.obj.getEnvironment()))
         {
             networkAwareFlows.push_back(flow);
             continue;
@@ -202,22 +200,26 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
         else
         {
             //create source and sink blocks
-            auto srcEnvReg = srcActorIface.getEnvironment()->findProxy("Pothos/BlockRegistry");
-            auto dstEnvReg = dstActorIface.getEnvironment()->findProxy("Pothos/BlockRegistry");
+            auto srcEnvReg = flow.src.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
+            auto dstEnvReg = flow.dst.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
 
-            auto netSink = srcEnvReg.callProxy("/blocks/network/network_sink", "udt://"+Poco::Environment::nodeName(), "BIND", srcActorIface.callProxy("getPortDType", false, flow.src.name));
+            //determine port types
+            auto srcDType = flow.src.obj.callProxy("output", flow.src.name).callProxy("dtype");
+            auto dstDType = flow.dst.obj.callProxy("input", flow.dst.name).callProxy("dtype");
+
+            auto netSink = srcEnvReg.callProxy("/blocks/network/network_sink", "udt://"+Poco::Environment::nodeName(), "BIND", srcDType);
             auto connectPort = netSink.call<std::string>("getActualPort");
             auto connectUri = Poco::format("udt://%s:%s", Poco::Environment::nodeName(), connectPort);
-            auto netSource = dstEnvReg.callProxy("/blocks/network/network_source", connectUri, "CONNECT", dstActorIface.callProxy("getPortDType", true, flow.dst.name));
+            auto netSource = dstEnvReg.callProxy("/blocks/network/network_source", connectUri, "CONNECT", dstDType);
 
             //create the flows
             Flow srcFlow;
             srcFlow.src = flow.src;
-            srcFlow.dst.obj = Pothos::Object(netSink);
+            srcFlow.dst.obj = netSink;
             srcFlow.dst.name = "0";
 
             Flow dstFlow;
-            dstFlow.src.obj = Pothos::Object(netSource);
+            dstFlow.src.obj = netSource;
             dstFlow.src.name = "0";
             dstFlow.dst = flow.dst;
 
@@ -228,7 +230,6 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
             //save it in the cache
             flowToNetgressCache[flow] = std::make_pair(srcFlow, dstFlow);
         }
-
     }
 
     return networkAwareFlows;
@@ -240,49 +241,52 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
 static void updateFlows(const std::vector<Flow> &flows, const std::string &action)
 {
     //result list is used to ack all subscribe messages
-    std::vector<Pothos::Proxy> resultActorIfaces;
+    std::vector<Pothos::Proxy> infoReceivers;
 
     //add new data acceptors
     for (const auto &flow : flows)
     {
-        auto srcActorIface = getWorkerActorInterface(flow.src.obj);
-        auto dstActorIface = getWorkerActorInterface(flow.dst.obj);
-
         if (action == "SUBINPUT" or action == "UNSUBINPUT")
         {
-            srcActorIface.call("sendPortSubscriberMessage", action, flow.src.name, flow.dst.name, dstActorIface.callProxy("getAddress"));
-            resultActorIfaces.push_back(srcActorIface);
+            auto actor = flow.src.obj.callProxy("getActor");
+            auto addr = flow.dst.obj.callProxy("getActor").callProxy("getAddress");
+            auto result = actor.callProxy("sendPortSubscriberMessage", action, flow.src.name, flow.dst.name, addr);
+            infoReceivers.push_back(result);
         }
         if (action == "SUBOUTPUT" or action == "UNSUBOUTPUT")
         {
-            dstActorIface.call("sendPortSubscriberMessage", action, flow.dst.name, flow.src.name, srcActorIface.callProxy("getAddress"));
-            resultActorIfaces.push_back(dstActorIface);
+            auto actor = flow.dst.obj.callProxy("getActor");
+            auto addr = flow.src.obj.callProxy("getActor").callProxy("getAddress");
+            auto result = actor.callProxy("sendPortSubscriberMessage", action, flow.dst.name, flow.src.name, addr);
+            infoReceivers.push_back(result);
         }
     }
 
     //check all subscribe message results
-    for (auto actorIface : resultActorIfaces)
+    for (auto infoReceiver : infoReceivers)
     {
-        const auto &msg = actorIface.call<std::string>("waitStringResult");
+        const auto &msg = infoReceiver.call<std::string>("WaitInfo");
         if (msg.empty()) continue;
         throw Pothos::TopologyConnectError("Pothos::Exectutor::commit()", msg);
     }
 }
 
-static std::map<std::string, Pothos::Proxy> getActorInterfacesInFlowList(const std::vector<Flow> &flows, const std::vector<Flow> &excludes = std::vector<Flow>())
+static std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> &flows, const std::vector<Flow> &excludes = std::vector<Flow>())
 {
-    std::map<std::string, Pothos::Proxy> interfaces;
+    std::map<std::string, Pothos::Proxy> uniques;
     for (const auto &flow : flows)
     {
-        interfaces[getUid(flow.src.obj)] = getWorkerActorInterface(flow.src.obj);
-        interfaces[getUid(flow.dst.obj)] = getWorkerActorInterface(flow.dst.obj);
+        uniques[flow.src.obj.call<std::string>("uid")] = flow.src.obj;
+        uniques[flow.dst.obj.call<std::string>("uid")] = flow.dst.obj;
     }
     for (const auto &flow : excludes)
     {
-        interfaces.erase(getUid(flow.src.obj));
-        interfaces.erase(getUid(flow.dst.obj));
+        uniques.erase(flow.src.obj.call<std::string>("uid"));
+        uniques.erase(flow.dst.obj.call<std::string>("uid"));
     }
-    return interfaces;
+    std::vector<Pothos::Proxy> set;
+    for (const auto &pair : uniques) set.push_back(pair.second);
+    return set;
 }
 
 /***********************************************************************
@@ -334,29 +338,29 @@ void Pothos::Topology::commit(void)
     updateFlows(oldFlows, "UNSUBINPUT");
 
     //result list is used to ack all de/activate messages
-    std::vector<Pothos::Proxy> resultActorIfaces;
+    std::vector<Pothos::Proxy> infoReceivers;
 
     //send activate to all new blocks not already in active flows
-    for (auto pair : getActorInterfacesInFlowList(newFlows, activeFlatFlows))
+    for (auto block : getObjSetFromFlowList(newFlows, activeFlatFlows))
     {
-        pair.second.call("sendActivateMessage");
-        resultActorIfaces.push_back(pair.second);
+        auto actor = block.callProxy("getActor");
+        infoReceivers.push_back(actor.callProxy("sendActivateMessage"));
     }
 
     //update current flows
     _impl->activeFlatFlows = flatFlows;
 
     //send deactivate to all old blocks not in current active flows
-    for (auto pair : getActorInterfacesInFlowList(oldFlows, _impl->activeFlatFlows))
+    for (auto block : getObjSetFromFlowList(oldFlows, _impl->activeFlatFlows))
     {
-        pair.second.call("sendDeactivateMessage");
-        resultActorIfaces.push_back(pair.second);
+        auto actor = block.callProxy("getActor");
+        infoReceivers.push_back(actor.callProxy("sendDeactivateMessage"));
     }
 
     //check all de/activate message results
-    for (auto actorIface : resultActorIfaces)
+    for (auto infoReceiver : infoReceivers)
     {
-        const auto &msg = actorIface.call<std::string>("waitStringResult");
+        const auto &msg = infoReceiver.call<std::string>("WaitInfo");
         if (msg.empty()) continue;
         throw Pothos::TopologyConnectError("Pothos::Exectutor::commit()", msg);
     }
@@ -379,9 +383,9 @@ void Pothos::Topology::_connect(
     const Object &src, const std::string &srcName,
     const Object &dst, const std::string &dstName)
 {
-    if (getUid(src).empty()) throw Pothos::TopologyConnectError("Pothos::Topology::connect()",
+    if (not checkObj(src)) throw Pothos::TopologyConnectError("Pothos::Topology::connect()",
         "source port of type " + src.toString());
-    if (getUid(dst).empty()) throw Pothos::TopologyConnectError("Pothos::Topology::connect()",
+    if (not checkObj(dst)) throw Pothos::TopologyConnectError("Pothos::Topology::connect()",
         "destination port of type " + dst.toString());
 
     Flow flow;
@@ -401,9 +405,9 @@ void Pothos::Topology::_disconnect(
     const Object &src, const std::string &srcName,
     const Object &dst, const std::string &dstName)
 {
-    if (getUid(src).empty()) throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()",
+    if (not checkObj(src)) throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()",
         "source port of type " + src.toString());
-    if (getUid(dst).empty()) throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()",
+    if (not checkObj(dst)) throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()",
         "destination port of type " + dst.toString());
 
     Flow flow;
@@ -424,10 +428,18 @@ void Pothos::Topology::disconnectAll(void)
     //call disconnect all on the sub-topologies
     for (const auto &flow : _impl->flows)
     {
-        auto srcTopology = getTopology(flow.src.obj);
-        if (srcTopology != nullptr) srcTopology->disconnectAll();
-        auto dstTopology = getTopology(flow.dst.obj);
-        if (dstTopology != nullptr) dstTopology->disconnectAll();
+        //throws ProxyHandleCallError on non topologies (aka blocks)
+        if (flow.src.obj) try
+        {
+            flow.src.obj.call("disconnectAll");
+        }
+        catch (const Pothos::Exception &){}
+
+        if (flow.dst.obj) try
+        {
+            flow.dst.obj.call("disconnectAll");
+        }
+        catch (const Pothos::Exception &){}
     }
 
     //clear our own local flows
@@ -439,17 +451,17 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
     //how long to sleep between idle checks?
     const double pollSleepTime = idleDuration/3;
 
-    //get a list of actor interfaces to poll for idle time
-    const auto interfaces = getActorInterfacesInFlowList(_impl->activeFlatFlows);
+    //get a list of blocks to poll for idle time
+    const auto blocks = getObjSetFromFlowList(_impl->activeFlatFlows);
 
     //loop until exit time
     const Poco::Timestamp exitTime = Poco::Timestamp() + Poco::Timespan(Poco::Timespan::TimeDiff(timeout*1e6));
     do
     {
         //check each worker for idle time from the stats
-        for (auto pair : interfaces)
+        for (auto block : blocks)
         {
-            const auto stats = pair.second.call<WorkerStats>("getWorkerStats");
+            const auto stats = block.call<WorkerStats>("getWorkerStats");
             const auto consumptionIdle = stats.ticksStatsQuery - stats.ticksLastConsumed;
             const auto productionIdle = stats.ticksStatsQuery - stats.ticksLastProduced;
             const auto workerIdleDuration = std::min(consumptionIdle, productionIdle);
@@ -469,8 +481,27 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
 
 #include <Pothos/Managed.hpp>
 
+//FIXME see issue #37
+static const std::string &getUidFromTopology(const Pothos::Topology &t)
+{
+    return t.uid();
+}
+
+static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
+{
+    Pothos::ProxyVector flows;
+    for (const auto &flow : t._impl->flows)
+    {
+        flows.push_back(Pothos::ProxyEnvironment::make("managed")->makeProxy(flow));
+    }
+    return flows;
+}
+
 static auto managedTopology = Pothos::ManagedClass()
     .registerConstructor<Pothos::Topology>()
+    .registerMethod("uid", &getUidFromTopology)
+    .registerMethod("getFlows", &getFlowsFromTopology)
+    .registerMethod("resolvePorts", &resolvePortsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, commit))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, disconnectAll))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, waitInactive))
@@ -480,3 +511,31 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod("connect", &Pothos::Topology::_connect)
     .registerMethod("disconnect", &Pothos::Topology::_disconnect)
     .commit("Pothos/Topology");
+
+static auto managedPort = Pothos::ManagedClass()
+    .registerClass<Port>()
+    .registerField(POTHOS_FCN_TUPLE(Port, obj))
+    .registerField(POTHOS_FCN_TUPLE(Port, name))
+    .commit("Pothos/Topology/Port");
+
+static size_t portVectorSize(const std::vector<Port> &vec)
+{
+    return vec.size();
+}
+
+static Port portVectorAt(const std::vector<Port> &vec, const size_t index)
+{
+    return vec.at(index);
+}
+
+static auto managedPortVector = Pothos::ManagedClass()
+    .registerClass<std::vector<Port>>()
+    .registerMethod("size", &portVectorSize)
+    .registerMethod("at", &portVectorAt)
+    .commit("Pothos/Topology/PortVector");
+
+static auto managedFlow = Pothos::ManagedClass()
+    .registerClass<Flow>()
+    .registerField(POTHOS_FCN_TUPLE(Flow, src))
+    .registerField(POTHOS_FCN_TUPLE(Flow, dst))
+    .commit("Pothos/Topology/Flow");

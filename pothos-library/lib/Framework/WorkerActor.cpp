@@ -191,3 +191,25 @@ void Pothos::WorkerActor::postWorkTasks(void)
     //if (this->inputs.size() == 0)
     this->bump();
 }
+
+#include <Pothos/Managed.hpp>
+
+//FIXME see issue #37
+static Theron::Address getAddress(const Pothos::WorkerActor &actor)
+{
+    return actor.GetAddress();
+}
+
+static auto managedWorkerActor = Pothos::ManagedClass()
+    .registerClass<Pothos::WorkerActor>()
+    .registerMethod("getAddress", &getAddress)
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendActivateMessage))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendDeactivateMessage))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendPortSubscriberMessage))
+    .commit("Pothos/WorkerActor");
+
+static auto managedInfoReceiverString = Pothos::ManagedClass()
+    .registerClass<InfoReceiver<std::string>>()
+    .registerMethod(POTHOS_FCN_TUPLE(InfoReceiver<std::string>, make))
+    .registerMethod(POTHOS_FCN_TUPLE(InfoReceiver<std::string>, WaitInfo))
+    .commit("Pothos/InfoReceiverString");

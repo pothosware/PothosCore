@@ -2,25 +2,27 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include <Pothos/Proxy.hpp>
 #include <Pothos/Framework/Topology.hpp>
 #include <unordered_map>
 #include <vector>
 #include <functional> //std::hash
-
-std::string getUid(const Pothos::Object &o);
 
 /***********************************************************************
  * A port contains a worker object and a port name
  **********************************************************************/
 struct Port
 {
-    Pothos::Object obj;
+    Pothos::Proxy obj;
     std::string name;
 };
 
 bool operator==(const Port &lhs, const Port &rhs)
 {
-    if (getUid(lhs.obj) != getUid(rhs.obj)) return false;
+    if (not lhs.obj and not rhs.obj) return true; //both null
+    if (not lhs.obj) return false;
+    if (not rhs.obj) return false;
+    if (lhs.obj.call<std::string>("uid") != rhs.obj.call<std::string>("uid")) return false;
     if (lhs.name != rhs.name) return false;
     return true;
 }
@@ -35,7 +37,7 @@ namespace std
 
         value_type operator()(argument_type const& s) const
         {
-            return std::hash<std::string>()(getUid(s.obj)) ^
+            return std::hash<std::string>()(s.obj.call<std::string>("uid")) ^
             (std::hash<std::string>()(s.name) << 1);
         }
     };

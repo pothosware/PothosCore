@@ -153,16 +153,25 @@ static std::shared_ptr<Pothos::WorkerActor> getActor(const Pothos::Block &block)
     return block._actor;
 }
 
+//FIXME see issue #37
 static const std::string &getUid(const Pothos::Block &b)
 {
     return b.uid();
+}
+
+static WorkerStats getWorkerStats(const Pothos::Block &block)
+{
+    InfoReceiver<WorkerStats> receiver;
+    block._actor->GetFramework().Send(RequestWorkerStatsMessage(), receiver.GetAddress(), block._actor->GetAddress());
+    return receiver.WaitInfo();
 }
 
 static auto managedBlock = Pothos::ManagedClass()
     .registerClass<Pothos::Block>()
     .registerWildcardMethod(&Pothos::Block::opaqueCall)
     .registerMethod("uid", &getUid)
-    .registerMethod("actor", &getActor)
+    .registerMethod("getActor", &getActor)
+    .registerMethod("getWorkerStats", &getWorkerStats)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputPortNames))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, outputPortNames))
