@@ -14,6 +14,46 @@
 #include <Poco/Format.h>
 #include <iostream>
 
+template <typename InfoType>
+class InfoReceiver : public Theron::Receiver
+{
+public:
+    static std::shared_ptr<InfoReceiver<InfoType>> make(void)
+    {
+        return std::shared_ptr<InfoReceiver<InfoType>>(new InfoReceiver());
+    }
+
+    InfoReceiver(void)
+    {
+        this->RegisterHandler(this, &InfoReceiver::handle);
+    }
+
+    void handle(const InfoType &message, const Theron::Address)
+    {
+        this->_infos.push_back(message);
+    }
+
+    const InfoType &Info(void) const
+    {
+        return _infos.back();
+    }
+
+    const InfoType &WaitInfo(void)
+    {
+        this->Wait();
+        return this->Info();
+    }
+
+    const std::vector<InfoType> &infos(void)
+    {
+        return _infos;
+    }
+
+private:
+    std::vector<InfoType> _infos;
+};
+
+
 int portNameToIndex(const std::string &name);
 
 /***********************************************************************
@@ -185,6 +225,42 @@ public:
     InputPort &getInput(const size_t index, const char *fcn);
 
     ///////////////////// work helper methods ///////////////////////
+    std::shared_ptr<InfoReceiver<std::string>> sendActivateMessage(void)
+    {
+        auto receiver = InfoReceiver<std::string>::make();
+        this->GetFramework().Send(ActivateWorkMessage(), receiver->GetAddress(), this->GetAddress());
+        return receiver;
+    }
+
+    std::shared_ptr<InfoReceiver<std::string>> sendDeactivateMessage(void)
+    {
+        auto receiver = InfoReceiver<std::string>::make();
+        this->GetFramework().Send(DeactivateWorkMessage(), receiver->GetAddress(), this->GetAddress());
+        return receiver;
+    }
+
+    std::shared_ptr<InfoReceiver<std::string>> sendPortSubscriberMessage(
+        const std::string &action,
+        const std::string &myPortName,
+        const std::string &subscriberPortName,
+        const Theron::Address &subscriberPortAddr
+    )
+    {
+        //create a new receiver to handle async reply
+        auto receiver = InfoReceiver<std::string>::make();
+
+        //create the message
+        PortSubscriberMessage message;
+        message.action = action;
+        message.port.name = subscriberPortName;
+        message.port.address = subscriberPortAddr;
+
+        //send it to the actor
+        this->GetFramework().Send(makePortMessage(myPortName, message), receiver->GetAddress(), this->GetAddress());
+        return receiver;
+    }
+
+
     inline void notify(void)
     {
         //only call when we handle the only message in the actor's queue
@@ -266,37 +342,3 @@ inline Pothos::InputPort &Pothos::WorkerActor::getInput(const size_t index, cons
         Poco::format("%s(%d)", std::string(fcn), int(index)), "input port index out of range");
     return *indexedInputs[index];
 }
-
-template <typename InfoType>
-class InfoReceiver : public Theron::Receiver
-{
-public:
-    InfoReceiver(void)
-    {
-        this->RegisterHandler(this, &InfoReceiver::handle);
-    }
-
-    void handle(const InfoType &message, const Theron::Address)
-    {
-        this->_infos.push_back(message);
-    }
-
-    const InfoType &Info(void) const
-    {
-        return _infos.back();
-    }
-
-    const InfoType &WaitInfo(void)
-    {
-        this->Wait();
-        return this->Info();
-    }
-
-    const std::vector<InfoType> &infos(void)
-    {
-        return _infos;
-    }
-
-private:
-    std::vector<InfoType> _infos;
-};
