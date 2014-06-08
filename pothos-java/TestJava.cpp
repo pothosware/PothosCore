@@ -205,3 +205,34 @@ POTHOS_TEST_BLOCK("/proxy/java/tests", test_fields)
     std::cout << myInteger.call<int>("get:MAX_VALUE") << std::endl;
     //TODO try to set and get a non static field when we find an example object to try it on
 }
+
+POTHOS_TEST_BLOCK("/proxy/java/tests", test_serialization)
+{
+    auto env = Pothos::ProxyEnvironment::make("java");
+
+    //make test dictionary
+    Pothos::ProxyMap testDict;
+    testDict[env->makeProxy("hi")] = env->makeProxy("bye");
+    testDict[env->makeProxy(1)] = env->makeProxy(2);
+    auto proxyDict = env->makeProxy(testDict);
+
+    //serialize
+    Pothos::Object serializeMe(proxyDict);
+    std::stringstream ss;
+    serializeMe.serialize(ss);
+    std::cout << ss.str() << std::endl;
+
+    //deserialize
+    Pothos::Object deserializeMe;
+    deserializeMe.deserialize(ss);
+    POTHOS_TEST_TRUE(deserializeMe);
+    auto resultDict = proxyDict.convert<Pothos::ProxyMap>();
+
+    //check result
+    auto findHi = resultDict.find(env->makeProxy("hi"));
+    POTHOS_TEST_TRUE(findHi != resultDict.end());
+    POTHOS_TEST_EQUAL(findHi->second.convert<std::string>(), "bye");
+    auto find1 = resultDict.find(env->makeProxy(1));
+    POTHOS_TEST_TRUE(find1 != resultDict.end());
+    POTHOS_TEST_EQUAL(find1->second.convert<int>(), 2);
+}

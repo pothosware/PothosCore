@@ -7,9 +7,10 @@
 #include "PythonProxy.hpp"
 
 PythonProxyHandle::PythonProxyHandle(std::shared_ptr<PythonProxyEnvironment> env, PyObject *obj, const bool borrowed):
-    env(env), obj(obj), ref(PyObjectRef(obj, borrowed))
+    env(env), obj(obj)
 {
-    return;
+    PyGilStateLock lock;
+    ref = PyObjectRef(obj, borrowed);
 }
 
 PythonProxyHandle::~PythonProxyHandle(void)
@@ -143,5 +144,7 @@ Pothos::Proxy PythonProxyHandle::call(const std::string &name, const Pothos::Pro
         throw Pothos::ProxyExceptionMessage(errorMsg);
     }
 
-    return env->makeHandle(result);
+    auto x = env->makeHandle(result);
+    if (x.getClassName() == "PothosProxy") return x.convert<Pothos::Proxy>();
+    return x;
 }

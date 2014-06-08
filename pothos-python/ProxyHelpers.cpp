@@ -3,6 +3,7 @@
 
 #include "PythonProxy.hpp"
 #include <Pothos/Plugin.hpp>
+#include <cassert>
 
 /***********************************************************************
  * PyObject helpers - used in python bindings
@@ -14,6 +15,8 @@ static Pothos::Proxy convertPyObjectToProxy(Pothos::ProxyEnvironment::Sptr env, 
 
 static PyObject *convertProxyToPyObject(const Pothos::Proxy &proxy)
 {
+    assert(proxy);
+    assert(std::dynamic_pointer_cast<PythonProxyHandle>(proxy.getHandle()));
     return std::dynamic_pointer_cast<PythonProxyHandle>(proxy.getHandle())->ref.newRef();
 }
 

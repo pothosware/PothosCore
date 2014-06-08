@@ -81,7 +81,7 @@ int Proxy_setattr(PyObject *self, PyObject *attr_name, PyObject *v)
 
         //convert args
         Pothos::ProxyVector proxyArgs;
-        proxyArgs.push_back(PyObjectToProxyInspect(v));
+        proxyArgs.push_back(PyObjectToProxy(v));
 
         auto handle = reinterpret_cast<ProxyObject *>(self)->proxy->getHandle();
         Pothos::Proxy proxy;
@@ -124,7 +124,7 @@ static Pothos::Proxy Proxy_callProxyHelper(ProxyObject *self, PyObject *args)
     const auto name = PyObjectToProxy(PyTuple_GetItem(args, 0)).convert<std::string>();
     for (int i = 1; i < PyTuple_Size(args); i++)
     {
-        proxyArgs.push_back(PyObjectToProxyInspect(PyTuple_GetItem(args, i)));
+        proxyArgs.push_back(PyObjectToProxy(PyTuple_GetItem(args, i)));
     }
 
     PyThreadStateLock lock; //proxy call could be potentially blocking
@@ -203,7 +203,7 @@ PyObject* Proxy_Compare(PyObject *o1, PyObject *o2, int opid)
 {
     try
     {
-        const int cmp = PyObjectToProxyInspect(o1).compareTo(PyObjectToProxyInspect(o2));
+        const int cmp = PyObjectToProxy(o1).compareTo(PyObjectToProxy(o2));
         return richCompareFromSimple(cmp, opid);
     }
     catch (const Pothos::Exception &ex)

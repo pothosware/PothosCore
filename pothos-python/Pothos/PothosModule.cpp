@@ -33,6 +33,7 @@ static void initPyObjectUtilityConverters(void)
 Pothos::Proxy PyObjectToProxy(PyObject *obj)
 {
     assert(obj != nullptr);
+    if (isProxyObject(obj)) return *reinterpret_cast<ProxyObject *>(obj)->proxy;
     PyThreadStateLock lock;
     return myPyObjectToProxyFcn(myPythonProxyEnv, obj);
 }
@@ -47,6 +48,30 @@ PyObject *ProxyToPyObject(const Pothos::Proxy &proxy)
 Pothos::ProxyEnvironment::Sptr getPythonProxyEnv(void)
 {
     return myPythonProxyEnv;
+}
+
+/***********************************************************************
+ * converters to and from pothos proxy type
+ **********************************************************************/
+static Pothos::Proxy convertPyProxyToProxy(const Pothos::Proxy &proxy)
+{
+    PyObjectRef ref(ProxyToPyObject(proxy), REF_NEW);
+    return *reinterpret_cast<ProxyObject *>(ref.obj)->proxy;
+}
+
+static Pothos::Proxy convertProxyToPyProxy(Pothos::ProxyEnvironment::Sptr env, const Pothos::Proxy &proxy)
+{
+    PyObjectRef ref(makeProxyObject(proxy), REF_NEW);
+    PyThreadStateLock lock;
+    return myPyObjectToProxyFcn(env, ref.obj);
+}
+
+void registerPothosModuleConverters(void)
+{
+    Pothos::PluginRegistry::addCall("/proxy/converters/python/proxy_to_pyproxy",
+        &convertProxyToPyProxy);
+    Pothos::PluginRegistry::add("/proxy/converters/python/pyproxy_to_proxy",
+        Pothos::ProxyConvertPair("PothosProxy", &convertPyProxyToProxy));
 }
 
 /***********************************************************************

@@ -59,14 +59,6 @@ PyObject *makeProxyObject(const Pothos::Proxy &proxy);
 //! utility for c api to check if a proxy
 bool isProxyObject(PyObject *obj);
 
-//! Unwrap an already proxied object -- otherwise call PyObjectToProxy()
-inline Pothos::Proxy PyObjectToProxyInspect(PyObject *obj)
-{
-    assert(obj != nullptr);
-    if (isProxyObject(obj)) return *reinterpret_cast<ProxyObject *>(obj)->proxy;
-    return PyObjectToProxy(obj);
-}
-
 /***********************************************************************
  * Pothos::ProxyCall support
  **********************************************************************/

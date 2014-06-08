@@ -91,3 +91,53 @@ bool Pothos::operator==(const Proxy &lhs, const Proxy &rhs)
 {
     return lhs.getHandle() == rhs.getHandle();
 }
+
+#include <Pothos/Object/Serialize.hpp>
+#include <Pothos/serialization/binary_object.hpp>
+#include <Pothos/Proxy.hpp>
+#include <Poco/Types.h>
+#include <sstream>
+#include <vector>
+
+namespace Pothos { namespace serialization {
+template<class Archive>
+void save(Archive & ar, const Pothos::Proxy &t, const unsigned int)
+{
+    auto name = t.getEnvironment()->getName();
+    ar << name;
+
+    //serialize to stringstream
+    std::stringstream ss;
+    t.getEnvironment()->serialize(t, ss);
+    const auto buff = ss.str();
+
+    //save length and buffer
+    const Poco::UInt32 length = Poco::UInt32(buff.size());
+    ar << length;
+    Pothos::serialization::binary_object bo((void *)buff.data(), buff.size());
+    ar << bo;
+}
+
+template<class Archive>
+void load(Archive & ar, Pothos::Proxy &t, const unsigned int)
+{
+    std::string name;
+    ar >> name;
+    auto env = Pothos::ProxyEnvironment::make(name);
+
+    //extract length and buffer
+    Poco::UInt32 length = 0;
+    ar >> length;
+    auto buff = std::vector<char>(size_t(length));
+    Pothos::serialization::binary_object bo((void *)buff.data(), buff.size());
+    ar >> bo;
+
+    //deserialize from stringstream
+    std::stringstream ss;
+    ss.write((const char *)buff.data(), buff.size());
+    t = env->deserialize(ss);
+}
+}}
+
+POTHOS_SERIALIZATION_SPLIT_FREE(Pothos::Proxy)
+POTHOS_OBJECT_SERIALIZE(Pothos::Proxy)
