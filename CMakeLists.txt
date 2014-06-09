@@ -73,6 +73,7 @@ set(SOURCES
     BlockCache.cpp
     MessageWindow.cpp
     PropertiesPanel.cpp
+    ExecutionEngine.cpp
 
     RemoteNodes/RemoteNodesWindow.cpp
     RemoteNodes/PluginRegistryTree.cpp
