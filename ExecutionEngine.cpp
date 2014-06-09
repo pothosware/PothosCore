@@ -1,7 +1,7 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
+#include "ExecutionEngine.hpp"
 #include <GraphObjects/GraphBlock.hpp>
 #include <GraphObjects/GraphBreaker.hpp>
 #include <GraphObjects/GraphConnection.hpp>
@@ -11,6 +11,7 @@
 #include <QString>
 #include <map>
 #include <tuple>
+#include <iostream>
 
 //TODO temporary - replace w/ JIT
 static Pothos::Object parseOne(const std::string &val)
@@ -129,7 +130,7 @@ static std::vector<std::tuple<QString, QString, QString, QString>> getConnection
 
         //ignore connections from output breakers
         //we will come back to them from the block to breaker to block path
-        if (outputBreaker == nullptr) continue;
+        if (outputBreaker != nullptr) continue;
 
         for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
         {
@@ -142,25 +143,34 @@ static std::vector<std::tuple<QString, QString, QString, QString>> getConnection
     return connections;
 }
 
-class ExecutionEngine
+ExecutionEngine::~ExecutionEngine(void)
+{
+    return;
+}
+
+class ExecutionEngineImpl : public ExecutionEngine
 {
 public:
-    ExecutionEngine(void)
+    ExecutionEngineImpl(void)
     {
-        
-    };
+        return;
+    }
 
     void update(const GraphObjectList &graphObjects)
     {
+        std::cout << "update called with " << graphObjects.size() << "objects\n";
         _graphObjects = graphObjects;
     }
 
     void activate(void)
     {
+        std::cout << "activate called \n";
         this->updateBlocks(_graphObjects);
+        std::cout << "num blocks " << _idToBlock.size() << std::endl;
         _topology.disconnectAll();
         for (const auto &t : getConnectionTuples(_graphObjects))
         {
+            std::cout << "make connection \n";
             _topology.connect(
                 _idToBlock[std::get<0>(t)],
                 std::get<1>(t).toStdString(),
@@ -197,3 +207,8 @@ private:
     Pothos::Topology _topology;
     GraphObjectList _graphObjects;
 };
+
+ExecutionEngine *ExecutionEngine::make(void)
+{
+    return new ExecutionEngineImpl();
+}
