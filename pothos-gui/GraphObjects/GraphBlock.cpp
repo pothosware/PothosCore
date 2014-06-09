@@ -30,6 +30,12 @@ std::string GraphBlock::getBlockDescPath(void) const
     return _impl->blockDesc->getValue<std::string>("path");
 }
 
+const Poco::JSON::Object::Ptr &GraphBlock::getBlockDesc(void) const
+{
+    assert(_impl);
+    return _impl->blockDesc;
+}
+
 void GraphBlock::setTitle(const QString &title)
 {
     _impl->title = title;
