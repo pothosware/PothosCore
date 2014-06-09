@@ -70,18 +70,73 @@ Pothos::Proxy graphBlockToProxyBlock(GraphBlock *block)
     return proxyBlock;
 }
 
+/*!
+ * Given an input endpoint, discover all of the "resolved" input endpoints by traversing breakers of the same node name.
+ */
+static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnectionEndpoint &inputEp, const GraphObjectList &graphObjects)
+{
+    std::vector<GraphConnectionEndpoint> inputEndpoints;
+    auto inputBlock = dynamic_cast<GraphBlock *>(inputEp.getObj().data());
+    auto inputBreaker = dynamic_cast<GraphBreaker *>(inputEp.getObj().data());
+
+
+    if (inputBlock != nullptr)
+    {
+        inputEndpoints.push_back(inputEp);
+    }
+
+    if (inputBreaker != nullptr)
+    {
+        auto nodeName = inputBreaker->getNodeName();
+        for (auto graphObject : graphObjects)
+        {
+            auto breaker = dynamic_cast<GraphBreaker *>(graphObject);
+            if (breaker == nullptr) continue;
+            if (breaker->getNodeName() != nodeName) continue;
+            if (breaker == inputBreaker) continue;
+            //follow all connections from this breaker to an input
+            //this is the recursive part
+            for (auto graphSubObject : graphObjects)
+            {
+                auto connection = dynamic_cast<GraphConnection *>(graphSubObject);
+                if (connection == nullptr) continue;
+                if (connection->getOutputEndpoint().getObj() != breaker) continue;
+                for (const auto &subEp : traverseInputEps(connection->getOutputEndpoint(), graphObjects))
+                {
+                    inputEndpoints.push_back(subEp);
+                }
+            }
+        }
+    }
+
+    return inputEndpoints;
+}
 
 static std::vector<std::tuple<QString, QString, QString, QString>> getConnectionTuples(const GraphObjectList &graphObjects)
 {
-    std::tuple<QString, QString, QString, QString> connections;
+    std::vector<std::tuple<QString, QString, QString, QString>> connections;
     for (auto graphObject : graphObjects)
     {
-        auto connection = dynamic_cast<GraphBlock *>(graphConnection);
+        auto connection = dynamic_cast<GraphConnection *>(graphObject);
         if (connection == nullptr) continue;
         auto outputEp = connection->getOutputEndpoint();
         auto inputEp = connection->getInputEndpoint();
 
-        
+        //auto outputBlock = dynamic_cast<GraphBlock *>(outputEp.getObj().data());
+        auto outputBreaker = dynamic_cast<GraphBreaker *>(outputEp.getObj().data());
+        //auto inputBlock = dynamic_cast<GraphBlock *>(inputEp.getObj().data());
+        //auto inputBreaker = dynamic_cast<GraphBreaker *>(inputEp.getObj().data());
+
+        //ignore connections from output breakers
+        //we will come back to them from the block to breaker to block path
+        if (outputBreaker == nullptr) continue;
+
+        for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
+        {
+            connections.emplace_back(
+                outputEp.getObj()->getId(), outputEp.getKey().id,
+                subEp.getObj()->getId(), subEp.getKey().id);
+        }
 
     }
     return connections;
@@ -97,11 +152,21 @@ public:
 
     void update(const GraphObjectList &graphObjects)
     {
-        this->updateBlocks(graphObjects);
+        _graphObjects = graphObjects;
     }
 
     void activate(void)
     {
+        this->updateBlocks(_graphObjects);
+        _topology.disconnectAll();
+        for (const auto &t : getConnectionTuples(_graphObjects))
+        {
+            _topology.connect(
+                _idToBlock[std::get<0>(t)],
+                std::get<1>(t).toStdString(),
+                _idToBlock[std::get<2>(t)],
+                std::get<3>(t).toStdString());
+        }
         _topology.commit();
     }
 
@@ -109,11 +174,6 @@ public:
     {
         _topology.disconnectAll();
         _topology.commit();
-    }
-
-    bool isActive(void)
-    {
-        
     }
 
 private:
@@ -135,4 +195,5 @@ private:
 
     QObject *_graph;
     Pothos::Topology _topology;
+    GraphObjectList _graphObjects;
 };
