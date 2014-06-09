@@ -3,6 +3,7 @@
 
 #pragma once
 #include "PothosGui.hpp"
+#include "ExecutionEngine.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
 #include <QTabWidget>
@@ -109,4 +110,7 @@ private:
 
     //! update enabled actions based on state - after a change or when editor becomes visible
     void updateEnabledActions(void);
+
+    void updateExecutionEngine(void);
+    std::shared_ptr<ExecutionEngine> _ee;
 };

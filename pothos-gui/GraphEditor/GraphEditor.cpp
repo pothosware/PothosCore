@@ -28,12 +28,14 @@
 #include <Poco/UUID.h>
 #include <Poco/UUIDGenerator.h>
 #include <Poco/JSON/Parser.h>
+#include <Pothos/Exception.hpp>
 
 GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
     _parentTabWidget(dynamic_cast<QTabWidget *>(parent)),
     _moveGraphObjectsMapper(new QSignalMapper(this)),
-    _stateManager(new GraphStateManager(this))
+    _stateManager(new GraphStateManager(this)),
+    _ee(ExecutionEngine::make())
 {
     this->setMovable(true);
     this->setUsesScrollButtons(true);
@@ -631,6 +633,8 @@ void GraphEditor::handleResetState(int stateNo)
     this->loadState(iss);
     this->setupMoveGraphObjectsMenu();
     this->render();
+
+    this->updateExecutionEngine();
 }
 
 void GraphEditor::handleStateChange(const GraphState &state)
@@ -642,6 +646,22 @@ void GraphEditor::handleStateChange(const GraphState &state)
     stateWithDump.dump = QByteArray(oss.str().data(), oss.str().size());
     _stateManager->post(stateWithDump);
     this->render();
+
+    this->updateExecutionEngine();
+}
+
+void GraphEditor::updateExecutionEngine(void)
+{
+    //update the execution engine state
+    try
+    {
+        _ee->update(this->getGraphObjects());
+        _ee->activate();
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        poco_error_f1(Poco::Logger::get("PothosGui.GraphEditor.handleStateChange"), "Execution engine error: %s", ex.displayText());
+    }
 }
 
 void GraphEditor::save(void)
