@@ -504,6 +504,17 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
     return false; //timeout
 }
 
+static std::string getDotEscapedString(const Pothos::Proxy &elem)
+{
+    std::string out;
+    for (const char ch : elem.call<std::string>("getName"))
+    {
+        if (std::isalnum(ch) or ch == '_') out.push_back(ch);
+        else out.push_back('_');
+    }
+    return out;
+}
+
 std::string Pothos::Topology::toDotMarkup(const bool flat)
 {
     std::ostringstream os;
@@ -516,28 +527,30 @@ std::string Pothos::Topology::toDotMarkup(const bool flat)
 
     for (const auto &block : blocks)
     {
-        os << "    " << block.callProxy("uid").hashCode();
+        os << "    ";
+        os << block.callProxy("uid").hashCode();
         os << " [shape=record, label=\"{ ";
         std::string inPortsStr;
         for (const auto &name : block.call<std::vector<std::string>>("inputPortNames"))
         {
             if (not inPortsStr.empty()) inPortsStr += " | ";
-            inPortsStr += name;
+            inPortsStr += "<"+name+"> "+name;
         }
         std::string outPortsStr;
         for (const auto &name : block.call<std::vector<std::string>>("outputPortNames"))
         {
             if (not outPortsStr.empty()) outPortsStr += " | ";
-            outPortsStr += name;
+            outPortsStr += "<"+name+"> "+name;
         }
         if (not inPortsStr.empty()) os << " { " << inPortsStr << " } | ";
-        os << " " << block.call<std::string>("uid") << " "; //TODO getname/title?
+        os << " " << getDotEscapedString(block) << " ";
         if (not outPortsStr.empty()) os << " | { " << outPortsStr << " } ";
         os << " }\" style=filled, fillcolor=\"azure\"];" << std::endl;
     }
 
     for (const auto &flow : flows)
     {
+        os << "    ";
         os << flow.src.obj.callProxy("uid").hashCode() << ":" << flow.src.name;
         os << " -> ";
         os << flow.dst.obj.callProxy("uid").hashCode() << ":" << flow.dst.name;
