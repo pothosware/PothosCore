@@ -13,6 +13,7 @@
 #include <Pothos/Object/Object.hpp>
 #include <string>
 #include <memory>
+#include <iosfwd>
 
 namespace Pothos {
 
@@ -36,6 +37,19 @@ public:
      * This call simply disconnects all data flows and commits the changes.
      */
     ~Topology(void);
+
+    /*!
+     * Set a displayable name for this topology.
+     * The name is a string to be used in debug outputs.
+     * \param name a new displayable name
+     */
+    void setName(const std::string &name);
+
+    /*!
+     * Get the displayable name for this topology.
+     * \return the displayable name string
+     */
+    const std::string &getName(void) const;
 
     /*!
      * Commit changes made to the topology.
@@ -103,6 +117,17 @@ public:
     void _disconnect(
         const Object &src, const std::string &srcPort,
         const Object &dst, const std::string &dstPort);
+
+    /*!
+     * Convert the topology to a string containing dot markup.
+     * This markup can be passed into the dot tool to create a visual graph.
+     * The markup can represent the connections as specified by the user,
+     * or if flat is true, the complete flattened topology with
+     * network blocks for crossing process/computer boundaries.
+     * \param flat true to show the flattened topology with network iogress
+     * \return the dot markup as a string
+     */
+    std::string toDotMarkup(const bool flat = true);
 
 public:
     struct Impl;
