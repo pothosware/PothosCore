@@ -173,17 +173,18 @@ private:
     QAction *_zoomInAction;
     QAction *_zoomOutAction;
     QAction *_zoomOriginalAction;
-    QAction *_showMessageWindowAction;
-    QAction *_showMainToolBarAction;
     QAction *_showAboutAction;
     QAction *_showAboutQtAction;
     QAction *_findAction;
+    QAction *_showGraphConnectionPointsAction;
+    QAction *_showGraphBoundingBoxesAction;
     QMap<QString, QAction *> &_actionMap;
 
     void createMenus(void);
     QMenu *_fileMenu;
     QMenu *_editMenu;
     QMenu *_viewMenu;
+    QMenu *_debugMenu;
     QMenu *_helpMenu;
     QMap<QString, QMenu *> &_menuMap;
 
@@ -309,6 +310,14 @@ void PothosGuiMainWindow::createActions(void)
     _findAction->setShortcut(QKeySequence::Find);
     _actionMap["find"] = _findAction;
 
+    _showGraphConnectionPointsAction = new QAction(tr("Show graph &connection points"), this);
+    _showGraphConnectionPointsAction->setCheckable(true);
+    _actionMap["showGraphConnectionPoints"] = _showGraphConnectionPointsAction;
+
+    _showGraphBoundingBoxesAction = new QAction(tr("Show graph &bounding boxes"), this);
+    _showGraphBoundingBoxesAction->setCheckable(true);
+    _actionMap["showGraphBoundingBoxes"] = _showGraphBoundingBoxesAction;
+
     _showAboutAction = new QAction(makeIconFromTheme("help-about"), tr("&About Pothos"), this);
     _showAboutAction->setStatusTip(tr("Information about this version of Pothos"));
     connect(_showAboutAction, SIGNAL(triggered(void)), this, SLOT(handleShowAbout(void)));
@@ -368,6 +377,11 @@ void PothosGuiMainWindow::createMenus(void)
     _viewMenu->addAction(_zoomInAction);
     _viewMenu->addAction(_zoomOutAction);
     _viewMenu->addAction(_zoomOriginalAction);
+    _fileMenu->addSeparator();
+
+    _debugMenu = _viewMenu->addMenu(tr("&Debug"));
+    _debugMenu->addAction(_showGraphConnectionPointsAction);
+    _debugMenu->addAction(_showGraphBoundingBoxesAction);
 
     _helpMenu = menuBar()->addMenu(tr("&Help"));
     _menuMap["help"] = _helpMenu;

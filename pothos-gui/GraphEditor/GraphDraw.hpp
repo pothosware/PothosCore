@@ -62,6 +62,7 @@ protected:
 
 private slots:
     void handleCustomContextMenuRequested(const QPoint &);
+    void handleGraphDebugViewChange(void);
 
 signals:
     void stateChanged(const GraphState &);
@@ -90,4 +91,7 @@ private:
     QPointF _lastContextMenuPos;
 
     GraphConnectionEndpoint _lastClickSelectEp;
+
+    bool _showGraphConnectionPoints;
+    bool _showGraphBoundingBoxes;
 };
