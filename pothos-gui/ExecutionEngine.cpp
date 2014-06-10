@@ -51,6 +51,7 @@ Pothos::Proxy graphBlockToProxyBlock(GraphBlock *block)
 
     //create the block
     auto proxyBlock = registry.getHandle()->call(block->getBlockDescPath(), ctorArgs.data(), ctorArgs.size());
+    proxyBlock.call("setName", block->getId().toStdString());
 
     //make the calls
     for (auto call : *blockDesc->getArray("calls"))
