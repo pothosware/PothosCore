@@ -111,22 +111,26 @@ void Pothos::WorkerActor::postWorkTasks(void)
             {
                 block->propagateLabels(&port, iter);
             }
-            //TODO need to identify the block by name
             catch (const Pothos::Exception &ex)
             {
-                poco_error_f1(Poco::Logger::get("Pothos.WorkerActor.propagateLabels"),
-                    "Block TODO threw in overloaded call to propagateLabels() - %s", ex.displayText());
+                workError = ex.displayText();
             }
             catch (const std::exception &ex)
             {
-                poco_error_f1(Poco::Logger::get("Pothos.WorkerActor.propagateLabels"),
-                    "Block TODO threw in overloaded call to propagateLabels() - %s", std::string(ex.what()));
+                workError = ex.what();
             }
             catch (...)
             {
-                poco_error_f1(Poco::Logger::get("Pothos.WorkerActor.propagateLabels"),
-                    "Block TODO threw in overloaded call to propagateLabels() - %s", std::string("unknown"));
+                workError = "unknown error";
             }
+
+            //log errors
+            if (not workError.empty())
+            {
+                poco_error_f2(Poco::Logger::get("Pothos.Block.propagateLabels"), "%s: %s", block->getName(), workError);
+                workError.clear();
+            }
+
             allLabels.erase(allLabels.begin(), allLabels.begin()+numLabels);
         }
     }
