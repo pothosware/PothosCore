@@ -14,6 +14,7 @@
 #include <Poco/Timestamp.h>
 #include <Poco/Timespan.h>
 #include <Poco/Thread.h> //sleep
+#include <Poco/NumberParser.h>
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
@@ -534,6 +535,7 @@ std::string Pothos::Topology::toDotMarkup(const bool flat)
 
     for (const auto &block : blocks)
     {
+        unsigned value = 0;
         os << "    ";
         os << block.callProxy("uid").hashCode();
         os << " [shape=record, label=\"{ ";
@@ -541,13 +543,17 @@ std::string Pothos::Topology::toDotMarkup(const bool flat)
         for (const auto &name : block.call<std::vector<std::string>>("inputPortNames"))
         {
             if (not inPortsStr.empty()) inPortsStr += " | ";
-            inPortsStr += "<"+name+"> "+name;
+            inPortsStr += "<__in__"+name+"> ";
+            if (Poco::NumberParser::tryParseUnsigned(name, value)) inPortsStr += "in";
+            inPortsStr += name;
         }
         std::string outPortsStr;
         for (const auto &name : block.call<std::vector<std::string>>("outputPortNames"))
         {
             if (not outPortsStr.empty()) outPortsStr += " | ";
-            outPortsStr += "<"+name+"> "+name;
+            outPortsStr += "<__out__"+name+"> ";
+            if (Poco::NumberParser::tryParseUnsigned(name, value)) outPortsStr += "out";
+            outPortsStr += name;
         }
         if (not inPortsStr.empty()) os << " { " << inPortsStr << " } | ";
         os << " " << getDotEscapedString(block) << " ";
@@ -558,9 +564,9 @@ std::string Pothos::Topology::toDotMarkup(const bool flat)
     for (const auto &flow : flows)
     {
         os << "    ";
-        os << flow.src.obj.callProxy("uid").hashCode() << ":" << flow.src.name;
+        os << flow.src.obj.callProxy("uid").hashCode() << ":__out__" << flow.src.name;
         os << " -> ";
-        os << flow.dst.obj.callProxy("uid").hashCode() << ":" << flow.dst.name;
+        os << flow.dst.obj.callProxy("uid").hashCode() << ":__in__" << flow.dst.name;
         os << ";" << std::endl;
     }
 
