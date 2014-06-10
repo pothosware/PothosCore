@@ -261,15 +261,15 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
     {
         if (action == "SUBINPUT" or action == "UNSUBINPUT")
         {
-            auto actor = flow.src.obj.callProxy("getActor");
-            auto addr = flow.dst.obj.callProxy("getActor").callProxy("getAddress");
+            auto actor = flow.src.obj.callProxy("get:_actor");
+            auto addr = flow.dst.obj.callProxy("get:_actor").callProxy("getAddress");
             auto result = actor.callProxy("sendPortSubscriberMessage", action, flow.src.name, flow.dst.name, addr);
             infoReceivers.push_back(result);
         }
         if (action == "SUBOUTPUT" or action == "UNSUBOUTPUT")
         {
-            auto actor = flow.dst.obj.callProxy("getActor");
-            auto addr = flow.src.obj.callProxy("getActor").callProxy("getAddress");
+            auto actor = flow.dst.obj.callProxy("get:_actor");
+            auto addr = flow.src.obj.callProxy("get:_actor").callProxy("getAddress");
             auto result = actor.callProxy("sendPortSubscriberMessage", action, flow.dst.name, flow.src.name, addr);
             infoReceivers.push_back(result);
         }
@@ -356,7 +356,7 @@ void Pothos::Topology::commit(void)
     //send activate to all new blocks not already in active flows
     for (auto block : getObjSetFromFlowList(newFlows, activeFlatFlows))
     {
-        auto actor = block.callProxy("getActor");
+        auto actor = block.callProxy("get:_actor");
         infoReceivers.push_back(actor.callProxy("sendActivateMessage"));
     }
 
@@ -366,7 +366,7 @@ void Pothos::Topology::commit(void)
     //send deactivate to all old blocks not in current active flows
     for (auto block : getObjSetFromFlowList(oldFlows, _impl->activeFlatFlows))
     {
-        auto actor = block.callProxy("getActor");
+        auto actor = block.callProxy("get:_actor");
         infoReceivers.push_back(actor.callProxy("sendDeactivateMessage"));
     }
 

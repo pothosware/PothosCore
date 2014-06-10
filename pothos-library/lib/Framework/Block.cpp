@@ -148,11 +148,6 @@ Pothos::Object Pothos::Block::opaqueCall(const std::string &name, const Pothos::
 
 #include <Pothos/Managed.hpp>
 
-static std::shared_ptr<Pothos::WorkerActor> getActor(const Pothos::Block &block)
-{
-    return block._actor;
-}
-
 //FIXME see issue #37
 static const std::string &getUid(const Pothos::Block &b)
 {
@@ -170,7 +165,7 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerClass<Pothos::Block>()
     .registerWildcardMethod(&Pothos::Block::opaqueCall)
     .registerMethod("uid", &getUid)
-    .registerMethod("getActor", &getActor)
+    .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod("getWorkerStats", &getWorkerStats)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputPortNames))
