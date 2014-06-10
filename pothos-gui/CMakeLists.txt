@@ -73,7 +73,6 @@ set(SOURCES
     BlockCache.cpp
     MessageWindow.cpp
     PropertiesPanel.cpp
-    ExecutionEngine.cpp
 
     RemoteNodes/RemoteNodesWindow.cpp
     RemoteNodes/PluginRegistryTree.cpp
@@ -86,9 +85,11 @@ set(SOURCES
     GraphEditor/GraphEditor.cpp
     GraphEditor/GraphEditorSerialization.cpp
     GraphEditor/GraphEditorDeserialization.cpp
+    GraphEditor/GraphEditorFlattenedDialog.cpp
     GraphEditor/GraphPage.cpp
     GraphEditor/GraphDraw.cpp
     GraphEditor/GraphDrawSelection.cpp
+    GraphEditor/ExecutionEngine.cpp
 
     GraphObjects/GraphEndpoint.cpp
     GraphObjects/GraphObject.cpp

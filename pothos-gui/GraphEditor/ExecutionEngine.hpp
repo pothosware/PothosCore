@@ -17,5 +17,5 @@ public:
 
     virtual void deactivate(void) = 0;
 
-    virtual void debugDialog(QWidget *parent) = 0;
+    virtual std::string toDotMarkup(void) = 0;
 };
