@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <GraphObjects/GraphObject.hpp>
+#include <QImage>
 
 class ExecutionEngine
 {
@@ -15,4 +16,6 @@ public:
     virtual void activate(void) = 0;
 
     virtual void deactivate(void) = 0;
+
+    virtual void debugDialog(QWidget *parent) = 0;
 };
