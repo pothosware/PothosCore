@@ -3,7 +3,7 @@
 
 #pragma once
 #include "PothosGui.hpp"
-#include "ExecutionEngine.hpp"
+#include "GraphEditor/ExecutionEngine.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
 #include <QTabWidget>
@@ -93,6 +93,7 @@ private slots:
     void handleRedo(void);
     void handleResetState(int);
     void handleStateChange(const GraphState &state);
+    void handleShowFlattenedDialog(void);
 
 private:
     QTabWidget *_parentTabWidget;
