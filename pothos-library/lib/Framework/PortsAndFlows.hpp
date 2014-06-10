@@ -3,9 +3,6 @@
 
 #pragma once
 #include <Pothos/Proxy.hpp>
-#include <Pothos/Framework/Topology.hpp>
-#include <unordered_map>
-#include <vector>
 #include <functional> //std::hash
 
 /***********************************************************************
@@ -74,15 +71,3 @@ namespace std
         }
     };
 }
-
-/***********************************************************************
- * implementation guts
- **********************************************************************/
-struct Pothos::Topology::Impl
-{
-    std::string name;
-    std::vector<Flow> flows;
-    std::vector<Flow> activeFlatFlows;
-    std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
-    std::vector<Flow> createNetworkFlows(void);
-};
