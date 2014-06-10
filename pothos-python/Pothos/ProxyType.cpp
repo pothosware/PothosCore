@@ -161,7 +161,7 @@ static PyObject *Proxy_call(ProxyObject *self, PyObject *args)
 
 static PyObject *Proxy_bool(ProxyObject *self)
 {
-    return PyBool_FromLong(bool(self->proxy));
+    return PyBool_FromLong(bool(*self->proxy));
 }
 
 static PyObject *Proxy_getEnvironment(ProxyObject *self)
