@@ -56,6 +56,7 @@ void GraphDraw::handleGraphDebugViewChange(void)
 {
     _showGraphConnectionPoints = getActionMap()["showGraphConnectionPoints"]->isChecked();
     _showGraphBoundingBoxes = getActionMap()["showGraphBoundingBoxes"]->isChecked();
+    if (not this->isVisible()) return;
     this->render();
 }
 
@@ -113,7 +114,6 @@ void GraphDraw::showEvent(QShowEvent *event)
     QWidget::showEvent(event);
 }
 
-
 void GraphDraw::updateEnabledActions(void)
 {
     auto selectedObjsNoC = this->getObjectsSelected(false/*NC*/);
@@ -139,6 +139,8 @@ void GraphDraw::updateEnabledActions(void)
 
 void GraphDraw::render(void)
 {
+    if (not this->isVisible()) return;
+
     //its convenient to always update this here
     this->updateEnabledActions();
 
