@@ -1,8 +1,9 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Framework/TopologyComprehension.hpp"
-#include "Framework/WorkerActor.hpp"
+#include <Pothos/Framework/Topology.hpp>
+#include "Framework/PortsAndFlows.hpp"
+#include "Framework/WorkerStats.hpp"
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object.hpp>
@@ -14,9 +15,21 @@
 #include <Poco/Timespan.h>
 #include <Poco/Thread.h> //sleep
 #include <algorithm>
+#include <unordered_map>
 #include <vector>
 #include <cassert>
 #include <set>
+
+/***********************************************************************
+ * implementation guts
+ **********************************************************************/
+struct Pothos::Topology::Impl
+{
+    std::vector<Flow> flows;
+    std::vector<Flow> activeFlatFlows;
+    std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
+    std::vector<Flow> createNetworkFlows(void);
+};
 
 /***********************************************************************
  * Make a proxy if not already
