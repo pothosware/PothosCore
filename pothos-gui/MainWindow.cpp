@@ -178,6 +178,7 @@ private:
     QAction *_findAction;
     QAction *_showGraphConnectionPointsAction;
     QAction *_showGraphBoundingBoxesAction;
+    QAction *_showGraphFlattenedViewAction;
     QMap<QString, QAction *> &_actionMap;
 
     void createMenus(void);
@@ -318,6 +319,9 @@ void PothosGuiMainWindow::createActions(void)
     _showGraphBoundingBoxesAction->setCheckable(true);
     _actionMap["showGraphBoundingBoxes"] = _showGraphBoundingBoxesAction;
 
+    _showGraphFlattenedViewAction = new QAction(tr("Show graph &flattened view"), this);
+    _actionMap["showGraphFlattenedView"] = _showGraphFlattenedViewAction;
+
     _showAboutAction = new QAction(makeIconFromTheme("help-about"), tr("&About Pothos"), this);
     _showAboutAction->setStatusTip(tr("Information about this version of Pothos"));
     connect(_showAboutAction, SIGNAL(triggered(void)), this, SLOT(handleShowAbout(void)));
@@ -382,6 +386,7 @@ void PothosGuiMainWindow::createMenus(void)
     _debugMenu = _viewMenu->addMenu(tr("&Debug"));
     _debugMenu->addAction(_showGraphConnectionPointsAction);
     _debugMenu->addAction(_showGraphBoundingBoxesAction);
+    _debugMenu->addAction(_showGraphFlattenedViewAction);
 
     _helpMenu = menuBar()->addMenu(tr("&Help"));
     _menuMap["help"] = _helpMenu;

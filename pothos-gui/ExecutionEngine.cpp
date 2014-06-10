@@ -8,6 +8,14 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Object/Containers.hpp>
+#include <Poco/Pipe.h>
+#include <Poco/PipeStream.h>
+#include <Poco/Process.h>
+#include <Poco/Environment.h>
+#include <Poco/TemporaryFile.h>
+#include <QDialog>
+#include <QFile>
+#include <QImage>
 #include <QString>
 #include <map>
 #include <tuple>
@@ -185,6 +193,55 @@ public:
     {
         _topology.disconnectAll();
         _topology.commit();
+    }
+
+    void debugDialog(QWidget *parent)
+    {
+        //temp file
+        auto tempFile = Poco::TemporaryFile::tempName();
+        Poco::TemporaryFile::registerForDeletion(tempFile);
+
+        //create args
+        Poco::Process::Args args;
+        args.push_back("-T"); //yes png
+        args.push_back(tempFile);
+
+        //launch
+        Poco::Pipe inPipe, outPipe, errPipe;
+        Poco::Process::Env env;
+        try
+        {
+            Poco::ProcessHandle ph(Poco::Process::launch(
+                Poco::Environment::get("DOT_EXECUTABLE", "dot"),
+                args, &inPipe, &outPipe, &errPipe, env));
+        }
+        catch (const Poco::Exception &ex)
+        {
+            throw Pothos::Exception("PothosGui.ExecutionEngine.debugDialog()", ex.displayText());
+        }
+
+        //write the markup into dot
+        Poco::PipeOutputStream os(inPipe);
+        os << _topology.toDotMarkup();
+        os.close();
+        outPipe.close();
+
+        //check for errors
+        if (not QFile(QString::fromStdString(tempFile)).exists())
+        {
+            Poco::PipeInputStream es(errPipe);
+            std::string errMsg;
+            es >> errMsg;
+            throw Pothos::Exception("PothosGui.ExecutionEngine.debugDialog()", errMsg);
+        }
+
+        //create the image from file
+        QImage image(QString::fromStdString(tempFile), "png");
+
+        auto dialog = new QDialog(parent);
+        //dialog->setPixmap(QPixmap::fromImage(image));
+        dialog->exec();
+        delete dialog;
     }
 
 private:
