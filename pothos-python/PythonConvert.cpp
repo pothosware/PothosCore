@@ -207,6 +207,35 @@ pothos_static_block(pothosRegisterPythonStringConversions)
 }
 
 /***********************************************************************
+ * bytes
+ **********************************************************************/
+template <typename ByteType>
+Pothos::Proxy convertByteVectorToPyBytes(Pothos::ProxyEnvironment::Sptr env, const std::vector<ByteType> &vec)
+{
+    auto o = PyBytes_FromStringAndSize(reinterpret_cast<const char *>(vec.data()), vec.size());
+    return std::dynamic_pointer_cast<PythonProxyEnvironment>(env)->makeHandle(o, REF_NEW);
+}
+
+static std::vector<char> convertPyBytesToString(const Pothos::Proxy &proxy)
+{
+    auto obj = std::dynamic_pointer_cast<PythonProxyHandle>(proxy.getHandle())->obj;
+    auto c = PyBytes_AsString(obj);
+    return std::vector<char>(c, c+PyBytes_Size(obj));
+}
+
+pothos_static_block(pothosRegisterPythonBytesConversions)
+{
+    Pothos::PluginRegistry::addCall("/proxy/converters/python/vecchar_to_pybytes",
+        &convertByteVectorToPyBytes<char>);
+    Pothos::PluginRegistry::addCall("/proxy/converters/python/vecschar_to_pybytes",
+        &convertByteVectorToPyBytes<signed char>);
+    Pothos::PluginRegistry::addCall("/proxy/converters/python/vecuchar_to_pybytes",
+        &convertByteVectorToPyBytes<unsigned char>);
+    Pothos::PluginRegistry::add("/proxy/converters/python/pybytes_to_string",
+        Pothos::ProxyConvertPair("bytes", &convertPyBytesToString));
+}
+
+/***********************************************************************
  * numeric
  **********************************************************************/
 template <typename T>
@@ -263,12 +292,6 @@ static Pothos::Proxy convertComplexVectorToPyList(Pothos::ProxyEnvironment::Sptr
 
 pothos_static_block(pothosRegisterPythonNumericConversions)
 {
-    Pothos::PluginRegistry::addCall("/proxy/converters/python/vecchar_to_pylist",
-        &convertIntVectorToPyList<char>);
-    Pothos::PluginRegistry::addCall("/proxy/converters/python/vecschar_to_pylist",
-        &convertIntVectorToPyList<signed char>);
-    Pothos::PluginRegistry::addCall("/proxy/converters/python/vecuchar_to_pylist",
-        &convertIntVectorToPyList<unsigned char>);
     Pothos::PluginRegistry::addCall("/proxy/converters/python/vecsshort_to_pylist",
         &convertIntVectorToPyList<signed short>);
     Pothos::PluginRegistry::addCall("/proxy/converters/python/vecushort_to_pylist",

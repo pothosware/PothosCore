@@ -103,7 +103,8 @@ void PythonProxyEnvironment::serialize(const Pothos::Proxy &proxy, std::ostream 
     try
     {
         auto marshal = this->findProxy("marshal");
-        os << marshal.call<std::string>("dumps", proxy);
+        const auto data = marshal.call<std::vector<char>>("dumps", proxy);
+        os.write(data.data(), data.size());
     }
     catch (const Pothos::Exception &ex)
     {
@@ -113,12 +114,16 @@ void PythonProxyEnvironment::serialize(const Pothos::Proxy &proxy, std::ostream 
 
 Pothos::Proxy PythonProxyEnvironment::deserialize(std::istream &is)
 {
+    is.seekg (0, std::ios_base::end);
+    const auto length = is.tellg();
+    is.seekg (0, std::ios_base::beg);
+    std::vector<char> bytes(length);
+    is.read(bytes.data(), bytes.size());
+
     try
     {
         auto marshal = this->findProxy("marshal");
-        std::string data;
-        is >> data;
-        return marshal.callProxy("loads", data);
+        return marshal.callProxy("loads", bytes);
     }
     catch (const Pothos::Exception &ex)
     {
