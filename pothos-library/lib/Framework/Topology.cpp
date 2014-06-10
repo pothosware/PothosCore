@@ -20,6 +20,7 @@
 #include <cassert>
 #include <set>
 #include <sstream>
+#include <cctype>
 
 /***********************************************************************
  * implementation guts
