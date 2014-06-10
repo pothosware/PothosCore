@@ -12,6 +12,7 @@
 #include <Theron/Framework.h>
 #include <Theron/Receiver.h>
 #include <Poco/Format.h>
+#include <Poco/Logger.h>
 #include <iostream>
 
 int portNameToIndex(const std::string &name);
@@ -197,6 +198,7 @@ public:
     Block *block;
     std::string name;
     bool activeState;
+    std::string workError;
     WorkerStats workStats;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
@@ -284,19 +286,19 @@ public:
         }
         catch (const Pothos::Exception &ex)
         {
-            std::cerr << "work fail: " << ex.displayText() << std::endl;
+            workError = ex.displayText();
         }
         catch (const Poco::Exception &ex)
         {
-            std::cerr << "work fail: " << ex.displayText() << std::endl;
+            workError = ex.displayText();
         }
         catch (const std::runtime_error &ex)
         {
-            std::cerr << "work fail: " << ex.what() << std::endl;
+            workError = ex.what();
         }
         catch (...)
         {
-            std::cerr << "work fail: " << "unknown error" << std::endl;
+            workError = "unknown error";
         }
 
         //postwork
@@ -306,6 +308,13 @@ public:
         }
 
         workStats.ticksLastWork = Theron::Detail::Clock::GetTicks();
+
+        //log errors
+        if (not workError.empty())
+        {
+            poco_error_f2(Poco::Logger::get("Pothos.Block.work"), "%s: %s", block->getName(), workError);
+            workError.clear();
+        }
     }
     bool preWorkTasks(void);
     void postWorkTasks(void);

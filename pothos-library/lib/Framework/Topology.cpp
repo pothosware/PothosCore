@@ -278,12 +278,14 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
     }
 
     //check all subscribe message results
+    std::string errors;
     for (auto infoReceiver : infoReceivers)
     {
         const auto &msg = infoReceiver.call<std::string>("WaitInfo");
         if (msg.empty()) continue;
-        throw Pothos::TopologyConnectError("Pothos::Exectutor::commit()", msg);
+        errors.append(infoReceiver.call<std::string>("getName")+": "+msg+"\n");
     }
+    if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
 }
 
 static std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> &flows, const std::vector<Flow> &excludes = std::vector<Flow>())
@@ -383,12 +385,14 @@ void Pothos::Topology::commit(void)
     }
 
     //check all de/activate message results
+    std::string errors;
     for (auto infoReceiver : infoReceivers)
     {
         const auto &msg = infoReceiver.call<std::string>("WaitInfo");
         if (msg.empty()) continue;
-        throw Pothos::TopologyConnectError("Pothos::Exectutor::commit()", msg);
+        errors.append(infoReceiver.call<std::string>("getName")+": "+msg+"\n");
     }
+    if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
 
     //remove disconnections from the cache if present
     for (auto flow : oldFlows)
