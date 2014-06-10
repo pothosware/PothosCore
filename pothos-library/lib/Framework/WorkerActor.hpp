@@ -195,6 +195,7 @@ public:
 
     ///////////////////// WorkerActor storage ///////////////////////
     Block *block;
+    std::string name;
     bool activeState;
     WorkerStats workStats;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;

@@ -80,6 +80,7 @@ namespace std
  **********************************************************************/
 struct Pothos::Topology::Impl
 {
+    std::string name;
     std::vector<Flow> flows;
     std::vector<Flow> activeFlatFlows;
     std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;

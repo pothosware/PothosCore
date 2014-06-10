@@ -296,7 +296,7 @@ static std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> 
 Pothos::Topology::Topology(void):
     _impl(new Impl())
 {
-    return;
+    this->setName("Topology");
 }
 
 Pothos::Topology::~Topology(void)
@@ -305,6 +305,16 @@ Pothos::Topology::~Topology(void)
     this->commit();
     assert(_impl->activeFlatFlows.empty());
     assert(_impl->flowToNetgressCache.empty());
+}
+
+void Pothos::Topology::setName(const std::string &name)
+{
+    _impl->name = name;
+}
+
+const std::string &Pothos::Topology::getName(void) const
+{
+    return _impl->name;
 }
 
 void Pothos::Topology::commit(void)
@@ -544,6 +554,8 @@ static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 
 static auto managedTopology = Pothos::ManagedClass()
     .registerConstructor<Pothos::Topology>()
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setName))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, getName))
     .registerMethod("uid", &getUidFromTopology)
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)

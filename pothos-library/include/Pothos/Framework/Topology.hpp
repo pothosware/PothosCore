@@ -39,6 +39,19 @@ public:
     ~Topology(void);
 
     /*!
+     * Set a displayable name for this topology.
+     * The name is a string to be used in debug outputs.
+     * \param name a new displayable name
+     */
+    void setName(const std::string &name);
+
+    /*!
+     * Get the displayable name for this topology.
+     * \return the displayable name string
+     */
+    const std::string &getName(void) const;
+
+    /*!
      * Commit changes made to the topology.
      * Actual data flows created by connect and disconnect
      * are not changed until a call to commit() is performed.

@@ -22,7 +22,7 @@ Pothos::Block::Block(void):
     _framework(getGlobalFramework()),
     _actor(new WorkerActor(this))
 {
-    return;
+    this->setName("Block");
 }
 
 Pothos::Block::~Block(void)
@@ -34,6 +34,16 @@ Pothos::Block::~Block(void)
     _framework->Send(message, receiver.GetAddress(), _actor->GetAddress());
     receiver.Wait();
     _actor.reset();
+}
+
+void Pothos::Block::setName(const std::string &name)
+{
+    _actor->name = name;
+}
+
+const std::string &Pothos::Block::getName(void) const
+{
+    return _actor->name;
 }
 
 void Pothos::Block::work(void)
@@ -169,6 +179,8 @@ static WorkerStats getWorkerStats(const Pothos::Block &block)
 static auto managedBlock = Pothos::ManagedClass()
     .registerClass<Pothos::Block>()
     .registerWildcardMethod(&Pothos::Block::opaqueCall)
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setName))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, getName))
     .registerMethod("uid", &getUid)
     .registerMethod("getActor", &getActor)
     .registerMethod("getWorkerStats", &getWorkerStats)
