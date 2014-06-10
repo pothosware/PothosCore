@@ -45,6 +45,19 @@ public:
     //! Virtual destructor
     virtual ~Block(void);
 
+    /*!
+     * Set a displayable name for this topology.
+     * The name is a string to be used in debug outputs.
+     * \param name a new displayable name
+     */
+    void setName(const std::string &name);
+
+    /*!
+     * Get the displayable name for this topology.
+     * \return the displayable name string
+     */
+    const std::string &getName(void) const;
+
 protected:
 
     /*!

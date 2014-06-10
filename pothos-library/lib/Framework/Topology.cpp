@@ -1,8 +1,9 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Framework/TopologyComprehension.hpp"
-#include "Framework/WorkerActor.hpp"
+#include <Pothos/Framework/Topology.hpp>
+#include "Framework/PortsAndFlows.hpp"
+#include "Framework/WorkerStats.hpp"
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object.hpp>
@@ -14,9 +15,24 @@
 #include <Poco/Timespan.h>
 #include <Poco/Thread.h> //sleep
 #include <algorithm>
+#include <unordered_map>
 #include <vector>
 #include <cassert>
 #include <set>
+#include <sstream>
+#include <cctype>
+
+/***********************************************************************
+ * implementation guts
+ **********************************************************************/
+struct Pothos::Topology::Impl
+{
+    std::string name;
+    std::vector<Flow> flows;
+    std::vector<Flow> activeFlatFlows;
+    std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
+    std::vector<Flow> createNetworkFlows(void);
+};
 
 /***********************************************************************
  * Make a proxy if not already
@@ -248,27 +264,29 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
     {
         if (action == "SUBINPUT" or action == "UNSUBINPUT")
         {
-            auto actor = flow.src.obj.callProxy("getActor");
-            auto addr = flow.dst.obj.callProxy("getActor").callProxy("getAddress");
+            auto actor = flow.src.obj.callProxy("get:_actor");
+            auto addr = flow.dst.obj.callProxy("get:_actor").callProxy("getAddress");
             auto result = actor.callProxy("sendPortSubscriberMessage", action, flow.src.name, flow.dst.name, addr);
             infoReceivers.push_back(result);
         }
         if (action == "SUBOUTPUT" or action == "UNSUBOUTPUT")
         {
-            auto actor = flow.dst.obj.callProxy("getActor");
-            auto addr = flow.src.obj.callProxy("getActor").callProxy("getAddress");
+            auto actor = flow.dst.obj.callProxy("get:_actor");
+            auto addr = flow.src.obj.callProxy("get:_actor").callProxy("getAddress");
             auto result = actor.callProxy("sendPortSubscriberMessage", action, flow.dst.name, flow.src.name, addr);
             infoReceivers.push_back(result);
         }
     }
 
     //check all subscribe message results
+    std::string errors;
     for (auto infoReceiver : infoReceivers)
     {
         const auto &msg = infoReceiver.call<std::string>("WaitInfo");
         if (msg.empty()) continue;
-        throw Pothos::TopologyConnectError("Pothos::Exectutor::commit()", msg);
+        errors.append(infoReceiver.call<std::string>("getName")+": "+msg+"\n");
     }
+    if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
 }
 
 static std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> &flows, const std::vector<Flow> &excludes = std::vector<Flow>())
@@ -295,7 +313,7 @@ static std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> 
 Pothos::Topology::Topology(void):
     _impl(new Impl())
 {
-    return;
+    this->setName("Topology");
 }
 
 Pothos::Topology::~Topology(void)
@@ -304,6 +322,16 @@ Pothos::Topology::~Topology(void)
     this->commit();
     assert(_impl->activeFlatFlows.empty());
     assert(_impl->flowToNetgressCache.empty());
+}
+
+void Pothos::Topology::setName(const std::string &name)
+{
+    _impl->name = name;
+}
+
+const std::string &Pothos::Topology::getName(void) const
+{
+    return _impl->name;
 }
 
 void Pothos::Topology::commit(void)
@@ -343,7 +371,7 @@ void Pothos::Topology::commit(void)
     //send activate to all new blocks not already in active flows
     for (auto block : getObjSetFromFlowList(newFlows, activeFlatFlows))
     {
-        auto actor = block.callProxy("getActor");
+        auto actor = block.callProxy("get:_actor");
         infoReceivers.push_back(actor.callProxy("sendActivateMessage"));
     }
 
@@ -353,17 +381,19 @@ void Pothos::Topology::commit(void)
     //send deactivate to all old blocks not in current active flows
     for (auto block : getObjSetFromFlowList(oldFlows, _impl->activeFlatFlows))
     {
-        auto actor = block.callProxy("getActor");
+        auto actor = block.callProxy("get:_actor");
         infoReceivers.push_back(actor.callProxy("sendDeactivateMessage"));
     }
 
     //check all de/activate message results
+    std::string errors;
     for (auto infoReceiver : infoReceivers)
     {
         const auto &msg = infoReceiver.call<std::string>("WaitInfo");
         if (msg.empty()) continue;
-        throw Pothos::TopologyConnectError("Pothos::Exectutor::commit()", msg);
+        errors.append(infoReceiver.call<std::string>("getName")+": "+msg+"\n");
     }
+    if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
 
     //remove disconnections from the cache if present
     for (auto flow : oldFlows)
@@ -479,6 +509,63 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
     return false; //timeout
 }
 
+static std::string getDotEscapedString(const Pothos::Proxy &elem)
+{
+    std::string out;
+    for (const char ch : elem.call<std::string>("getName"))
+    {
+        if (std::isalnum(ch) or ch == '_') out.push_back(ch);
+        else out.push_back('_');
+    }
+    return out;
+}
+
+std::string Pothos::Topology::toDotMarkup(const bool flat)
+{
+    std::ostringstream os;
+    auto flows = (flat)? _impl->activeFlatFlows : _impl->flows;
+    auto blocks = getObjSetFromFlowList(flows);
+
+    os << "digraph flat_flows {" << std::endl;
+    os << "    rankdir=LR;" << std::endl;
+    os << "    node [shape=record, fontsize=10];" << std::endl;
+
+    for (const auto &block : blocks)
+    {
+        os << "    ";
+        os << block.callProxy("uid").hashCode();
+        os << " [shape=record, label=\"{ ";
+        std::string inPortsStr;
+        for (const auto &name : block.call<std::vector<std::string>>("inputPortNames"))
+        {
+            if (not inPortsStr.empty()) inPortsStr += " | ";
+            inPortsStr += "<"+name+"> "+name;
+        }
+        std::string outPortsStr;
+        for (const auto &name : block.call<std::vector<std::string>>("outputPortNames"))
+        {
+            if (not outPortsStr.empty()) outPortsStr += " | ";
+            outPortsStr += "<"+name+"> "+name;
+        }
+        if (not inPortsStr.empty()) os << " { " << inPortsStr << " } | ";
+        os << " " << getDotEscapedString(block) << " ";
+        if (not outPortsStr.empty()) os << " | { " << outPortsStr << " } ";
+        os << " }\" style=filled, fillcolor=\"azure\"];" << std::endl;
+    }
+
+    for (const auto &flow : flows)
+    {
+        os << "    ";
+        os << flow.src.obj.callProxy("uid").hashCode() << ":" << flow.src.name;
+        os << " -> ";
+        os << flow.dst.obj.callProxy("uid").hashCode() << ":" << flow.dst.name;
+        os << ";" << std::endl;
+    }
+
+    os << "}" << std::endl;
+    return os.str();
+}
+
 #include <Pothos/Managed.hpp>
 
 //FIXME see issue #37
@@ -499,6 +586,8 @@ static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 
 static auto managedTopology = Pothos::ManagedClass()
     .registerConstructor<Pothos::Topology>()
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setName))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, getName))
     .registerMethod("uid", &getUidFromTopology)
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
@@ -510,6 +599,7 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod("waitInactive", Pothos::Callable(&Pothos::Topology::waitInactive).bind(1.0, 2).bind(0.1, 1))
     .registerMethod("connect", &Pothos::Topology::_connect)
     .registerMethod("disconnect", &Pothos::Topology::_disconnect)
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, toDotMarkup))
     .commit("Pothos/Topology");
 
 static auto managedPort = Pothos::ManagedClass()

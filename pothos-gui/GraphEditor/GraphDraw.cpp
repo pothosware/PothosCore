@@ -25,7 +25,9 @@ GraphDraw::GraphDraw(QWidget *parent):
     QWidget(parent),
     _graphEditor(dynamic_cast<GraphEditor *>(parent)),
     _zoomScale(1.0),
-    _mouseLeftDown(false)
+    _mouseLeftDown(false),
+    _showGraphConnectionPoints(false),
+    _showGraphBoundingBoxes(false)
 {
     assert(this->getGraphEditor() != nullptr);
     this->setAcceptDrops(true);
@@ -41,6 +43,20 @@ GraphDraw::GraphDraw(QWidget *parent):
         parent, SLOT(handleStateChange(const GraphState &)));
     connect(this, SIGNAL(modifyProperties(GraphObject *)),
         getObjectMap()["propertiesPanel"], SLOT(handleGraphModifyProperties(GraphObject *)));
+
+    //debug view - connect and initialize
+    connect(getActionMap()["showGraphConnectionPoints"], SIGNAL(triggered(void)),
+        this, SLOT(handleGraphDebugViewChange(void)));
+    connect(getActionMap()["showGraphBoundingBoxes"], SIGNAL(triggered(void)),
+        this, SLOT(handleGraphDebugViewChange(void)));
+    this->handleGraphDebugViewChange();
+}
+
+void GraphDraw::handleGraphDebugViewChange(void)
+{
+    _showGraphConnectionPoints = getActionMap()["showGraphConnectionPoints"]->isChecked();
+    _showGraphBoundingBoxes = getActionMap()["showGraphBoundingBoxes"]->isChecked();
+    this->render();
 }
 
 void GraphDraw::dragEnterEvent(QDragEnterEvent *event)
@@ -151,23 +167,25 @@ void GraphDraw::render(void)
         painter.restore();
 
         //draw connection points (for debug)
-        /*
-        painter.save();
-        painter.scale(this->zoomScale(), this->zoomScale());
-        obj->renderConnectablePoints(painter);
-        painter.restore();
-        //*/
+        if (_showGraphConnectionPoints)
+        {
+            painter.save();
+            painter.scale(this->zoomScale(), this->zoomScale());
+            obj->renderConnectablePoints(painter);
+            painter.restore();
+        }
 
         //draw bounding boxes (for debug)
-        /*
-        painter.save();
-        painter.scale(this->zoomScale(), this->zoomScale());
-        auto boundingRect = obj->getBoundingRect();
-        painter.setPen(QPen(QColor("red")));
-        painter.setBrush(Qt::NoBrush);
-        painter.drawRect(boundingRect);
-        painter.restore();
-        //*/
+        if (_showGraphBoundingBoxes)
+        {
+            painter.save();
+            painter.scale(this->zoomScale(), this->zoomScale());
+            auto boundingRect = obj->getBoundingRect();
+            painter.setPen(QPen(QColor("red")));
+            painter.setBrush(Qt::NoBrush);
+            painter.drawRect(boundingRect);
+            painter.restore();
+        }
     }
 
     if (_selectionState == "highlight")

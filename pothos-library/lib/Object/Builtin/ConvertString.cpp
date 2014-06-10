@@ -5,6 +5,21 @@
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Callable.hpp>
 #include <sstream>
+#include <vector>
+
+/***********************************************************************
+ * byte vector to from string
+ **********************************************************************/
+template <typename ByteType>
+std::string convertByteVectorToString(const std::vector<ByteType> &vec)
+{
+    return std::string(reinterpret_cast<const char *>(vec.data()), vec.size());
+}
+
+static std::vector<char> convertStringToByteVector(const std::string &s)
+{
+    return std::vector<char>(s.begin(), s.end());
+}
 
 /***********************************************************************
  * templated conversions to/from string
@@ -48,6 +63,10 @@ static void registerConvertString(const std::string &inName, const std::string &
  **********************************************************************/
 pothos_static_block(pothosObjectRegisterConvertStrings)
 {
+    registerConvertString("byte_vector", "string", &convertByteVectorToString<char>);
+    registerConvertString("signed_byte_vector", "string", &convertByteVectorToString<signed char>);
+    registerConvertString("unsigned_byte_vector", "string", &convertByteVectorToString<unsigned char>);
+    registerConvertString("string", "byte_vector", &convertStringToByteVector);
     declare_string_conversion2(char);
     declare_string_conversion2(schar);
     declare_string_conversion2(uchar);
