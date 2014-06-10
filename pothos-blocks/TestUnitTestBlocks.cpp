@@ -37,6 +37,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_unit_test_blocks)
         topology.connect(feeder, 0, collector, 0);
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());
+        std::cout << topology.toDotMarkup() << std::endl;
     }
 
     //collect the output

@@ -17,6 +17,7 @@
 #include <vector>
 #include <cassert>
 #include <set>
+#include <sstream>
 
 /***********************************************************************
  * Make a proxy if not already
@@ -479,6 +480,50 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
     return false; //timeout
 }
 
+std::string Pothos::Topology::toDotMarkup(const bool flat)
+{
+    std::ostringstream os;
+    auto flows = (flat)? _impl->activeFlatFlows : _impl->flows;
+    auto blocks = getObjSetFromFlowList(flows);
+
+    os << "digraph flat_flows {" << std::endl;
+    os << "    rankdir=LR;" << std::endl;
+    os << "    node [shape=record, fontsize=10];" << std::endl;
+
+    for (const auto &block : blocks)
+    {
+        os << "    " << block.callProxy("uid").hashCode();
+        os << " [shape=record, label=\"{ ";
+        std::string inPortsStr;
+        for (const auto &name : block.call<std::vector<std::string>>("inputPortNames"))
+        {
+            if (not inPortsStr.empty()) inPortsStr += " | ";
+            inPortsStr += name;
+        }
+        std::string outPortsStr;
+        for (const auto &name : block.call<std::vector<std::string>>("outputPortNames"))
+        {
+            if (not outPortsStr.empty()) outPortsStr += " | ";
+            outPortsStr += name;
+        }
+        if (not inPortsStr.empty()) os << " { " << inPortsStr << " } | ";
+        os << " " << block.call<std::string>("uid") << " "; //TODO getname/title?
+        if (not outPortsStr.empty()) os << " | { " << outPortsStr << " } ";
+        os << " }\" style=filled, fillcolor=\"azure\"];" << std::endl;
+    }
+
+    for (const auto &flow : flows)
+    {
+        os << flow.src.obj.callProxy("uid").hashCode() << ":" << flow.src.name;
+        os << " -> ";
+        os << flow.dst.obj.callProxy("uid").hashCode() << ":" << flow.dst.name;
+        os << ";" << std::endl;
+    }
+
+    os << "}" << std::endl;
+    return os.str();
+}
+
 #include <Pothos/Managed.hpp>
 
 //FIXME see issue #37
@@ -510,6 +555,7 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod("waitInactive", Pothos::Callable(&Pothos::Topology::waitInactive).bind(1.0, 2).bind(0.1, 1))
     .registerMethod("connect", &Pothos::Topology::_connect)
     .registerMethod("disconnect", &Pothos::Topology::_disconnect)
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, toDotMarkup))
     .commit("Pothos/Topology");
 
 static auto managedPort = Pothos::ManagedClass()

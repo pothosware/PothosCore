@@ -13,6 +13,7 @@
 #include <Pothos/Object/Object.hpp>
 #include <string>
 #include <memory>
+#include <iosfwd>
 
 namespace Pothos {
 
@@ -103,6 +104,17 @@ public:
     void _disconnect(
         const Object &src, const std::string &srcPort,
         const Object &dst, const std::string &dstPort);
+
+    /*!
+     * Convert the topology to a string containing dot markup.
+     * This markup can be passed into the dot tool to create a visual graph.
+     * The markup can represent the connections as specified by the user,
+     * or if flat is true, the complete flattened topology with
+     * network blocks for crossing process/computer boundaries.
+     * \param flat true to show the flattened topology with network iogress
+     * \return the dot markup as a string
+     */
+    std::string toDotMarkup(const bool flat = true);
 
 public:
     struct Impl;
