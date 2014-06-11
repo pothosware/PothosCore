@@ -77,9 +77,11 @@ public:
 
         //otherwise just forward the buffer
         auto buffer = in0->buffer();
-        assert(buffer.length != 0);
-        out0->postBuffer(buffer);
-        in0->consume(in0->elements());
+        if (buffer.length > 0)
+        {
+            out0->postBuffer(buffer);
+            in0->consume(in0->elements());
+        }
     }
 
 private:

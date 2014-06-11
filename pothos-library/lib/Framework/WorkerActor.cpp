@@ -111,22 +111,26 @@ void Pothos::WorkerActor::postWorkTasks(void)
             {
                 block->propagateLabels(&port, iter);
             }
-            //TODO need to identify the block by name
             catch (const Pothos::Exception &ex)
             {
-                poco_error_f1(Poco::Logger::get("Pothos.WorkerActor.propagateLabels"),
-                    "Block TODO threw in overloaded call to propagateLabels() - %s", ex.displayText());
+                workError = ex.displayText();
             }
             catch (const std::exception &ex)
             {
-                poco_error_f1(Poco::Logger::get("Pothos.WorkerActor.propagateLabels"),
-                    "Block TODO threw in overloaded call to propagateLabels() - %s", std::string(ex.what()));
+                workError = ex.what();
             }
             catch (...)
             {
-                poco_error_f1(Poco::Logger::get("Pothos.WorkerActor.propagateLabels"),
-                    "Block TODO threw in overloaded call to propagateLabels() - %s", std::string("unknown"));
+                workError = "unknown error";
             }
+
+            //log errors
+            if (not workError.empty())
+            {
+                poco_error_f2(Poco::Logger::get("Pothos.Block.propagateLabels"), "%s: %s", block->getName(), workError);
+                workError.clear();
+            }
+
             allLabels.erase(allLabels.begin(), allLabels.begin()+numLabels);
         }
     }
@@ -137,7 +141,8 @@ void Pothos::WorkerActor::postWorkTasks(void)
         this->workStats.ticksLastConsumed = Theron::Detail::Clock::GetTicks();
     }
     this->workStats.bytesConsumed += bytesConsumed;
-    this->workStats.msgsConsumed = msgsConsumed;
+    msgsConsumed -= this->workStats.msgsConsumed;
+    this->workStats.msgsConsumed += msgsConsumed;
 
     ///////////////////// output handling ////////////////////////
     //Note: output buffer production must come after propagateLabels()
@@ -182,13 +187,13 @@ void Pothos::WorkerActor::postWorkTasks(void)
         this->workStats.ticksLastProduced = Theron::Detail::Clock::GetTicks();
     }
     this->workStats.bytesProduced += bytesProduced;
-    this->workStats.msgsProduced = msgsProduced;
+    msgsProduced -= this->workStats.msgsProduced;
+    this->workStats.msgsProduced += msgsProduced;
 
-    //TODO bump for blocks that did work
-    //actually probably just blocks that marked a fail and the framework tried to solve it with buffer popping or accumulation
-
-    //always bump for sources
-    //if (this->inputs.size() == 0)
+    //postwork bump logic
+    const bool hadConsumption = (bytesConsumed !=0 or msgsConsumed != 0);
+    const bool hadProduction = (bytesProduced != 0 or msgsProduced != 0);
+    if (this->isSource or hadConsumption or hadProduction)
     this->bump();
 }
 
