@@ -81,7 +81,6 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnecti
     auto inputBlock = dynamic_cast<GraphBlock *>(inputEp.getObj().data());
     auto inputBreaker = dynamic_cast<GraphBreaker *>(inputEp.getObj().data());
 
-
     if (inputBlock != nullptr)
     {
         inputEndpoints.push_back(inputEp);
@@ -103,7 +102,7 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnecti
                 auto connection = dynamic_cast<GraphConnection *>(graphSubObject);
                 if (connection == nullptr) continue;
                 if (connection->getOutputEndpoint().getObj() != breaker) continue;
-                for (const auto &subEp : traverseInputEps(connection->getOutputEndpoint(), graphObjects))
+                for (const auto &subEp : traverseInputEps(connection->getInputEndpoint(), graphObjects))
                 {
                     inputEndpoints.push_back(subEp);
                 }
