@@ -10,6 +10,7 @@
  **********************************************************************/
 bool Pothos::WorkerActor::preWorkTasks(void)
 {
+    block->_yield = false;
     const size_t BIG = (1 << 30);
 
     bool allOutputsReady = true;
@@ -193,8 +194,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     //postwork bump logic
     const bool hadConsumption = (bytesConsumed !=0 or msgsConsumed != 0);
     const bool hadProduction = (bytesProduced != 0 or msgsProduced != 0);
-    if (this->isSource or hadConsumption or hadProduction)
-    this->bump();
+    if (block->_yield or hadConsumption or hadProduction) this->bump();
 }
 
 #include <Pothos/Managed.hpp>

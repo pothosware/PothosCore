@@ -75,3 +75,8 @@ inline const std::map<std::string, Pothos::OutputPort*> &Pothos::Block::allOutpu
 {
     return _namedOutputs;
 }
+
+inline void Pothos::Block::yield(void)
+{
+    _yield = true;
+}

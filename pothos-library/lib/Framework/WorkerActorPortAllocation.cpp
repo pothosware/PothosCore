@@ -141,12 +141,4 @@ void Pothos::WorkerActor::updatePorts(void)
 
     updatePortsT(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames);
     updatePortsT(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames);
-
-    //determine if this is a source block
-    size_t numNonSlotInputs = 0;
-    for (const auto &pair : this->inputs)
-    {
-        if (not pair.second->isSlot()) numNonSlotInputs++;
-    }
-    this->isSource = (numNonSlotInputs == 0);
 }

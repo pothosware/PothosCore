@@ -20,7 +20,8 @@ static std::shared_ptr<Theron::Framework> getGlobalFramework(void)
  **********************************************************************/
 Pothos::Block::Block(void):
     _framework(getGlobalFramework()),
-    _actor(new WorkerActor(this))
+    _actor(new WorkerActor(this)),
+    _yield(false)
 {
     this->setName("Block");
 }
@@ -197,6 +198,7 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, allOutputs))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, output))
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, output))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, yield))
     .commit("Pothos/Block");
 
 template <typename PortType>
