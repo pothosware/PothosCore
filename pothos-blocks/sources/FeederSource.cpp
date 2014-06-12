@@ -43,7 +43,7 @@ public:
         {
             this->outputs()[0]->postLabel(_labels.front());
             _labels.pop();
-            return;
+            return this->yield(); //must inform yield, inline messages without buffers != production
         }
         if (not _buffers.empty())
         {
@@ -57,7 +57,10 @@ public:
             _messages.pop();
             return;
         }
+
+        //enter backoff + wait for additional user stimulus
         Poco::Thread::sleep(this->workInfo().maxTimeoutNs/1000000); //ms
+        this->yield();
     }
 
 private:

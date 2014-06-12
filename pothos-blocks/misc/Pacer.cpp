@@ -85,8 +85,7 @@ public:
         {
             auto minTimeSleepMs = this->workInfo().maxTimeoutNs/1e6;
             Poco::Thread::sleep(std::min(minTimeSleepMs, expectedTime-actualTime));
-            //TODO needs yeild
-            return;
+            return this->yield();
         }
 
         if (inputPort->hasMessage())
