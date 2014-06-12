@@ -20,8 +20,7 @@ static std::shared_ptr<Theron::Framework> getGlobalFramework(void)
  **********************************************************************/
 Pothos::Block::Block(void):
     _framework(getGlobalFramework()),
-    _actor(new WorkerActor(this)),
-    _yield(false)
+    _actor(new WorkerActor(this))
 {
     this->setName("Block");
 }
@@ -155,6 +154,11 @@ Pothos::Object Pothos::Block::opaqueCall(const std::string &name, const Pothos::
     OpaqueCallResultMessage result = receiver.WaitInfo();
     if (result.error) result.error->rethrow();
     return result.obj;
+}
+
+void Pothos::Block::yield(void)
+{
+    _actor->workBump = true;
 }
 
 #include <Pothos/Managed.hpp>

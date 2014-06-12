@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/InputPortImpl.hpp"
+#include "Framework/WorkerActor.hpp"
 
 Pothos::InputPort::InputPort(InputPortImpl *impl):
     _impl(impl),
@@ -33,6 +34,7 @@ Pothos::Object Pothos::InputPort::popMessage(void)
     auto msg = _impl->asyncMessages.front();
     _impl->asyncMessages.pop_front();
     _totalMessages++;
+    _impl->actor->workBump = true;
     return msg;
 }
 
@@ -45,9 +47,16 @@ void Pothos::InputPort::removeLabel(const Label &label)
         {
             _impl->inlineMessages.erase(it);
             _labelIter = _impl->inlineMessages;
+            _impl->actor->workBump = true;
             return;
         }
     }
+}
+
+void Pothos::InputPort::setReserve(const size_t numElements)
+{
+    _reserveElements = numElements;
+    _impl->actor->workBump = true;
 }
 
 bool Pothos::InputPort::isSlot(void) const

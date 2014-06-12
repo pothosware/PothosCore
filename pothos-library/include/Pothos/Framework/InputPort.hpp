@@ -183,8 +183,3 @@ inline void Pothos::InputPort::consume(const size_t numElements)
 {
     _pendingElements += numElements;
 }
-
-inline void Pothos::InputPort::setReserve(const size_t numElements)
-{
-    _reserveElements = numElements;
-}

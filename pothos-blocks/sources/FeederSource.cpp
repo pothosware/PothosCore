@@ -43,7 +43,7 @@ public:
         {
             this->outputs()[0]->postLabel(_labels.front());
             _labels.pop();
-            return this->yield(); //must inform yield, inline messages without buffers != production
+            return;
         }
         if (not _buffers.empty())
         {

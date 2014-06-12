@@ -24,6 +24,7 @@ void Pothos::OutputPort::popBuffer(const size_t numBytes)
 {
     assert(_impl);
     _impl->bufferManager->pop(numBytes);
+    _impl->actor->workBump = true;
 }
 
 void Pothos::OutputPort::postLabel(const Label &label)
@@ -31,6 +32,7 @@ void Pothos::OutputPort::postLabel(const Label &label)
     assert(_impl);
     assert(_impl->actor != nullptr);
     _impl->actor->sendPortMessage(_impl->subscribers, label);
+    _impl->actor->workBump = true;
 }
 
 void Pothos::OutputPort::postMessage(const Object &message)
@@ -39,6 +41,7 @@ void Pothos::OutputPort::postMessage(const Object &message)
     assert(_impl->actor != nullptr);
     _impl->actor->sendPortMessage(_impl->subscribers, message);
     _totalMessages++;
+    _impl->actor->workBump = true;
 }
 
 void Pothos::OutputPort::postBuffer(const BufferChunk &buffer)
@@ -47,6 +50,7 @@ void Pothos::OutputPort::postBuffer(const BufferChunk &buffer)
     auto &queue = _impl->postedBuffers;
     if (queue.full()) queue.set_capacity(queue.size()*2);
     queue.push_back(buffer);
+    _impl->actor->workBump = true;
 }
 
 bool Pothos::OutputPort::isSignal(void) const

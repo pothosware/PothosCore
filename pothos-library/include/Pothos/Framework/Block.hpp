@@ -247,7 +247,6 @@ public:
 
 private:
     WorkInfo _workInfo;
-    bool _yield;
     std::vector<std::string> _inputPortNames;
     std::vector<std::string> _outputPortNames;
     std::vector<InputPort*> _indexedInputs;

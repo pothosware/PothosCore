@@ -137,6 +137,7 @@ public:
     WorkerActor(Block *block):
         Theron::Actor(*(block->_framework)),
         block(block),
+        workBump(false),
         activeState(false)
     {
         this->RegisterHandler(this, &WorkerActor::handleAsyncPortNameMessage);
@@ -196,6 +197,7 @@ public:
 
     ///////////////////// WorkerActor storage ///////////////////////
     Block *block;
+    bool workBump;
     std::string name;
     bool activeState;
     std::string workError;
