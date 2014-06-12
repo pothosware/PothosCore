@@ -123,13 +123,9 @@ static std::vector<std::tuple<QString, QString, QString, QString>> getConnection
         auto outputEp = connection->getOutputEndpoint();
         auto inputEp = connection->getInputEndpoint();
 
-        //auto outputBlock = dynamic_cast<GraphBlock *>(outputEp.getObj().data());
-        auto outputBreaker = dynamic_cast<GraphBreaker *>(outputEp.getObj().data());
-        //auto inputBlock = dynamic_cast<GraphBlock *>(inputEp.getObj().data());
-        //auto inputBreaker = dynamic_cast<GraphBreaker *>(inputEp.getObj().data());
-
         //ignore connections from output breakers
         //we will come back to them from the block to breaker to block path
+        auto outputBreaker = dynamic_cast<GraphBreaker *>(outputEp.getObj().data());
         if (outputBreaker != nullptr) continue;
 
         for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
@@ -138,7 +134,6 @@ static std::vector<std::tuple<QString, QString, QString, QString>> getConnection
                 outputEp.getObj()->getId(), outputEp.getKey().id,
                 subEp.getObj()->getId(), subEp.getKey().id);
         }
-
     }
     return connections;
 }
