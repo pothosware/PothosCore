@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <cstring> //memset
-#include <cassert>
-#include <iostream>
 
 /***********************************************************************
  * |PothosDoc Forwarder
@@ -16,25 +13,20 @@
  * |category /Misc
  * |keywords forwarder
  *
- * |param dtype[Data Type] The datatype this block consumes.
- * |preview disable
- * |default "float32"
- *
- * |factory /blocks/misc/forwarder(dtype)
+ * |factory /blocks/misc/forwarder()
  **********************************************************************/
 class Forwarder : public Pothos::Block
 {
 public:
-    static Block *make(const Pothos::DType &dtype)
+    static Block *make(void)
     {
-        //TODO we shouldnt need to specify a dtype
-        return new Forwarder(dtype);
+        return new Forwarder();
     }
 
-    Forwarder(const Pothos::DType &dtype)
+    Forwarder(void)
     {
-        this->setupInput(0, dtype);
-        this->setupOutput(0, dtype);
+        this->setupInput(0);
+        this->setupOutput(0);
     }
 
     void work(void)
