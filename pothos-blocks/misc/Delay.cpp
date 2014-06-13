@@ -3,8 +3,6 @@
 
 #include <Pothos/Framework.hpp>
 #include <cstring> //memset
-#include <cassert>
-#include <iostream>
 
 /***********************************************************************
  * |PothosDoc Delay

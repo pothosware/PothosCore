@@ -234,6 +234,17 @@ public:
      */
     void emitSignalArgs(const std::string &name, const std::vector<Object> &args);
 
+    /*!
+     * Notify the scheduler that the work() method will yeild the thread context.
+     * Call this method when the work() function will not produce or consume,
+     * so that the scheduler will call work() again without an external stimulus.
+     * Only call this method from within a call to the work() function.
+     * A typical use case for calling yield are blocks that must wait on a resource.
+     * Such blocks cannot hold the thread context for more than the allowed time,
+     * and must therefore return from the work() call without producing output.
+     */
+    void yield(void);
+
 private:
     WorkInfo _workInfo;
     std::vector<std::string> _inputPortNames;

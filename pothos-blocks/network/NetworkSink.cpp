@@ -101,7 +101,7 @@ private:
 
 void NetworkSink::work(void)
 {
-    if (not _ep.isReady()) return;
+    if (not _ep.isReady()) return this->yield();
 
     const auto timeout = Poco::Timespan(this->workInfo().maxTimeoutNs/1000);
 

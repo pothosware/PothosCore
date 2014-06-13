@@ -24,6 +24,7 @@ set(SOURCES
     sinks/CollectorSink.cpp
     sinks/BlackHole.cpp
     misc/Delay.cpp
+    misc/Pacer.cpp
     misc/Forwarder.cpp
     misc/MessageToSignal.cpp
     misc/SlotToMessage.cpp

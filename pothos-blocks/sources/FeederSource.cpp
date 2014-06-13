@@ -57,7 +57,10 @@ public:
             _messages.pop();
             return;
         }
+
+        //enter backoff + wait for additional user stimulus
         Poco::Thread::sleep(this->workInfo().maxTimeoutNs/1000000); //ms
+        this->yield();
     }
 
 private:

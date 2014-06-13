@@ -156,6 +156,11 @@ Pothos::Object Pothos::Block::opaqueCall(const std::string &name, const Pothos::
     return result.obj;
 }
 
+void Pothos::Block::yield(void)
+{
+    _actor->workBump = true;
+}
+
 #include <Pothos/Managed.hpp>
 
 //FIXME see issue #37
@@ -197,6 +202,7 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, allOutputs))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, output))
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, output))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, yield))
     .commit("Pothos/Block");
 
 template <typename PortType>

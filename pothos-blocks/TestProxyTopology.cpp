@@ -52,7 +52,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
 
     auto feeder = registry.callProxy("/blocks/sources/feeder_source", "int");
     auto collector = registry.callProxy("/blocks/sinks/collector_sink", "int");
-    auto forwarder = registryRemote.callProxy("/blocks/misc/forwarder", "int");
+    auto forwarder = registryRemote.callProxy("/blocks/misc/forwarder");
 
     //feed some msgs
     std::cout << "give messages to the feeder\n";

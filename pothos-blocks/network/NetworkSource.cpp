@@ -115,6 +115,7 @@ void NetworkSource::work(void)
         label.data.deserialize(iss);
         outputPort->postLabel(label);
     }
+    else this->yield();
 }
 
 static Pothos::BlockRegistry registerNetworkSource(
