@@ -8,18 +8,23 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLineEdit>
+#include <QTextEdit>
+#include <QScrollArea>
 #include <QLabel>
 
-class PropertiesPanelBlock : public QWidget
+class PropertiesPanelBlock : public QScrollArea
 {
     Q_OBJECT
 public:
     PropertiesPanelBlock(GraphBlock *block, QWidget *parent):
-        QWidget(parent),
+        QScrollArea(parent),
         _block(block)
     {
+        this->setWidgetResizable(true);
+        this->setWidget(new QWidget(this));
+        auto blockDesc = block->getBlockDesc();
         auto layout = new QVBoxLayout();
-        this->setLayout(layout);
+        this->widget()->setLayout(layout);
 
         //title
         {
@@ -27,6 +32,29 @@ public:
                 .arg(_block->getTitle().toHtmlEscaped()), this);
             label->setAlignment(Qt::AlignCenter);
             layout->addWidget(label);
+        }
+
+        //path
+        {
+            auto path = blockDesc->get("path").convert<std::string>();
+            auto label = new QLabel(QString("<p>(%1)</p>")
+                .arg(QString::fromStdString(path).toHtmlEscaped()), this);
+            label->setAlignment(Qt::AlignCenter);
+            layout->addWidget(label);
+        }
+
+        //id
+        {
+            auto propLayout = new QHBoxLayout();
+            layout->addLayout(propLayout);
+
+            auto label = new QLabel(QString("<b>%1</b>")
+                .arg(tr("ID")), this);
+            propLayout->addWidget(label);
+
+            auto edit = new QLineEdit(this);
+            edit->setText(block->getId());
+            propLayout->addWidget(edit);
         }
 
         //properties
@@ -43,6 +71,54 @@ public:
             auto edit = new QLineEdit(this);
             edit->setText(value);
             propLayout->addWidget(edit);
+        }
+
+        //block level description
+        if (blockDesc->isArray("docs"))
+        {
+            const auto docsArray = blockDesc->getArray("docs");
+            auto text = new QTextEdit(this);
+            layout->addWidget(text);
+
+            QString output;
+            output += QString("<p><b>%1</b></p>").arg(QString::fromStdString(blockDesc->get("name").convert<std::string>()));
+            output += "<p>";
+            for (size_t i = 0; i < docsArray->size(); i++)
+            {
+                const auto line = docsArray->get(i).convert<std::string>();
+                if (line.empty()) output += "<p /><p>";
+                else output += QString::fromStdString(line);
+                output += "\n";
+            }
+            output += "</p>";
+
+            //enumerate slots
+            output += QString("<p><b>%1</b></p>").arg(tr("Available Slots"));
+            output += "<ul>";
+            for (const auto &port : block->getSlotPorts())
+            {
+                output += QString("<li>%1(...)</li>").arg(port.getName());
+            }
+            if (block->getSlotPorts().empty())
+            {
+                output += QString("<li>%1</li>").arg(tr("None"));
+            }
+            output += "</ul>";
+
+            //enumerate signals
+            output += QString("<p><b>%1</b></p>").arg(tr("Available Signals"));
+            output += "<ul>";
+            for (const auto &port : block->getSignalPorts())
+            {
+                output += QString("<li>%1(...)</li>").arg(port.getName());
+            }
+            if (block->getSignalPorts().empty())
+            {
+                output += QString("<li>%1</li>").arg(tr("None"));
+            }
+            output += "</ul>";
+
+            text->insertHtml(output);
         }
 
     }

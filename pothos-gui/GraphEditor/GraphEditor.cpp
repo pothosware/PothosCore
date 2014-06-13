@@ -91,10 +91,10 @@ QString GraphEditor::newId(const QString &hint) const
     //loop for a unique ID name
     QString possibleId = idBase;
     size_t index = 0;
-    while (allIds.find(possibleId) != allIds.end())
+    do
     {
-        possibleId = QString("%1%2").arg(idBase).arg(++index);
-    }
+        possibleId = QString("%1%2").arg(idBase).arg(index++);
+    } while (allIds.find(possibleId) != allIds.end());
 
     return possibleId;
 }

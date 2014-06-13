@@ -64,6 +64,7 @@ public:
     GraphBlock(QObject *parent);
 
     void setBlockDesc(const Poco::JSON::Object::Ptr &);
+    const Poco::JSON::Object::Ptr &getBlockDesc(void) const;
     std::string getBlockDescPath(void) const;
 
     void setTitle(const QString &title);
@@ -90,6 +91,12 @@ public:
     void addOutputPort(const GraphBlockPort &port);
     const std::vector<GraphBlockPort> &getOutputPorts(void) const;
 
+    void addSlotPort(const GraphBlockPort &port);
+    const std::vector<GraphBlockPort> &getSlotPorts(void) const;
+
+    void addSignalPort(const GraphBlockPort &port);
+    const std::vector<GraphBlockPort> &getSignalPorts(void) const;
+
     std::vector<GraphConnectableKey> getConnectableKeys(void) const;
     GraphConnectableKey isPointingToConnectable(const QPointF &pos) const;
     GraphConnectableAttrs getConnectableAttrs(const GraphConnectableKey &key) const;
@@ -108,4 +115,6 @@ private:
     std::vector<GraphBlockProp> _properties;
     std::vector<GraphBlockPort> _inputPorts;
     std::vector<GraphBlockPort> _outputPorts;
+    std::vector<GraphBlockPort> _slotPorts;
+    std::vector<GraphBlockPort> _signalPorts;
 };
