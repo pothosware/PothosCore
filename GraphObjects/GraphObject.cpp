@@ -63,7 +63,7 @@ bool GraphObject::getSelected(void) const
 
 bool GraphObject::isPointing(const QPointF &point) const
 {
-    return this->isPointing(QRectF(point, point+QPointF(1, 1)));
+    return this->isPointing(QRectF(point-QPointF(1, 1), point+QPointF(1, 1)));
 }
 
 bool GraphObject::isPointing(const QRectF &) const
