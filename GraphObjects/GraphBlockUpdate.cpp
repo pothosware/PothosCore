@@ -61,23 +61,39 @@ static void initGraphBlockPortsFromBlock(GraphBlock *self, Pothos::Block *b)
     for (const auto &portKey : b->inputPortNames())
     {
         auto port = b->input(portKey);
-        if (port->isSlot()) continue;
         std::string portName = portKey;
         if (port->index() >= 0) portName = "in" + portName;
-        self->addInputPort(GraphBlockPort(
-            QString::fromStdString(portKey),
-            QString::fromStdString(portName)));
+        if (port->isSlot())
+        {
+            self->addSlotPort(GraphBlockPort(
+                QString::fromStdString(portKey),
+                QString::fromStdString(portName)));
+        }
+        else
+        {
+            self->addInputPort(GraphBlockPort(
+                QString::fromStdString(portKey),
+                QString::fromStdString(portName)));
+        }
     }
 
     for (const auto &portKey : b->outputPortNames())
     {
         auto port = b->output(portKey);
-        if (port->isSignal()) continue;
         std::string portName = portKey;
         if (port->index() >= 0) portName = "out" + portName;
-        self->addOutputPort(GraphBlockPort(
-            QString::fromStdString(portKey),
-            QString::fromStdString(portName)));
+        if (port->isSignal())
+        {
+            self->addSignalPort(GraphBlockPort(
+                QString::fromStdString(portKey),
+                QString::fromStdString(portName)));
+        }
+        else
+        {
+            self->addOutputPort(GraphBlockPort(
+                QString::fromStdString(portKey),
+                QString::fromStdString(portName)));
+        }
     }
 }
 

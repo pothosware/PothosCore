@@ -30,6 +30,12 @@ std::string GraphBlock::getBlockDescPath(void) const
     return _impl->blockDesc->getValue<std::string>("path");
 }
 
+const Poco::JSON::Object::Ptr &GraphBlock::getBlockDesc(void) const
+{
+    assert(_impl);
+    return _impl->blockDesc;
+}
+
 void GraphBlock::setTitle(const QString &title)
 {
     _impl->title = title;
@@ -96,6 +102,28 @@ void GraphBlock::addOutputPort(const GraphBlockPort &port)
 const std::vector<GraphBlockPort> &GraphBlock::getOutputPorts(void) const
 {
     return _outputPorts;
+}
+
+void GraphBlock::addSlotPort(const GraphBlockPort &port)
+{
+    _slotPorts.push_back(port);
+    _impl->changed = true;
+}
+
+const std::vector<GraphBlockPort> &GraphBlock::getSlotPorts(void) const
+{
+    return _slotPorts;
+}
+
+void GraphBlock::addSignalPort(const GraphBlockPort &port)
+{
+    _signalPorts.push_back(port);
+    _impl->changed = true;
+}
+
+const std::vector<GraphBlockPort> &GraphBlock::getSignalPorts(void) const
+{
+    return _signalPorts;
 }
 
 bool GraphBlock::isPointing(const QRectF &rect) const
