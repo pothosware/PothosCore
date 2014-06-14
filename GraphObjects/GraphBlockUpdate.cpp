@@ -28,10 +28,9 @@ void GraphBlock::initPropertiesFromDesc(void)
     this->setTitle(QString::fromStdString(name));
 
     //extract the params or properties from the description
-    const auto params = blockDesc->getArray("params");
-    if (params) for (size_t i = 0; i < params->size(); i++)
+    for (const auto &paramObj : *blockDesc->getArray("params"))
     {
-        const auto param = params->getObject(i);
+        const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
         const auto key = QString::fromStdString(param->get("key").convert<std::string>());
         const auto name = QString::fromStdString(param->get("name").convert<std::string>());
         this->addProperty(GraphBlockProp(key, name));

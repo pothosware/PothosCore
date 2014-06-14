@@ -79,6 +79,9 @@ public:
     void addProperty(const GraphBlockProp &prop);
     const std::vector<GraphBlockProp> &getProperties(void) const;
 
+    //! Get the param desc from the block description
+    const Poco::JSON::Object::Ptr &getParamDesc(const QString &key) const;
+
     QString getPropertyValue(const QString &key) const;
     void setPropertyValue(const QString &key, const QString &value);
 

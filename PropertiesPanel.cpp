@@ -9,8 +9,10 @@
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QTextEdit>
+#include <QComboBox>
 #include <QScrollArea>
 #include <QLabel>
+#include <cassert>
 
 class PropertiesPanelBlock : public QScrollArea
 {
@@ -60,6 +62,9 @@ public:
         //properties
         for (const auto &prop : _block->getProperties())
         {
+            auto paramDesc = _block->getParamDesc(prop.getKey());
+            assert(paramDesc);
+
             auto propLayout = new QHBoxLayout();
             layout->addLayout(propLayout);
 
@@ -68,55 +73,83 @@ public:
             propLayout->addWidget(label);
 
             const auto value = _block->getPropertyValue(prop.getKey());
-            auto edit = new QLineEdit(this);
-            edit->setText(value);
-            propLayout->addWidget(edit);
+            if (paramDesc->isArray("options"))
+            {
+                auto combo = new QComboBox(this);
+                //combo->setEditable(true);
+                propLayout->addWidget(combo);
+                for (const auto &optionObj : *paramDesc->getArray("options"))
+                {
+                    const auto option = optionObj.extract<Poco::JSON::Object::Ptr>();
+                    combo->addItem(
+                        QString::fromStdString(option->getValue<std::string>("name")),
+                        QString::fromStdString(option->getValue<std::string>("value")));
+                }
+            }
+            else
+            {
+                auto edit = new QLineEdit(this);
+                propLayout->addWidget(edit);
+                edit->setText(value);
+            }
         }
 
         //block level description
         if (blockDesc->isArray("docs"))
         {
-            const auto docsArray = blockDesc->getArray("docs");
             auto text = new QTextEdit(this);
             layout->addWidget(text);
 
             QString output;
-            output += QString("<p><b>%1</b></p>").arg(QString::fromStdString(blockDesc->get("name").convert<std::string>()));
+            output += QString("<h1>%1</h1>").arg(QString::fromStdString(blockDesc->get("name").convert<std::string>()));
             output += "<p>";
-            for (size_t i = 0; i < docsArray->size(); i++)
+            for (const auto &lineObj : *blockDesc->getArray("docs"))
             {
-                const auto line = docsArray->get(i).convert<std::string>();
+                const auto line = lineObj.extract<std::string>();
                 if (line.empty()) output += "<p /><p>";
                 else output += QString::fromStdString(line);
-                output += "\n";
             }
             output += "</p>";
 
+            //enumerate properties
+            output += QString("<h2>%1</h2>").arg(tr("Properties"));
+            for (const auto &prop : _block->getProperties())
+            {
+                auto paramDesc = _block->getParamDesc(prop.getKey());
+                assert(paramDesc);
+                output += QString("<h3>%1</h3>").arg(prop.getName());
+                if (paramDesc->isArray("desc")) for (const auto &lineObj : *paramDesc->getArray("desc"))
+                {
+                    const auto line = lineObj.extract<std::string>();
+                    if (line.empty()) output += "<p /><p>";
+                    else output += QString::fromStdString(line);
+                }
+                else output += QString("<p>%1</p>").arg(tr("Undocumented"));
+            }
+
             //enumerate slots
-            output += QString("<p><b>%1</b></p>").arg(tr("Available Slots"));
-            output += "<ul>";
-            for (const auto &port : block->getSlotPorts())
+            if (not block->getSlotPorts().empty())
             {
-                output += QString("<li>%1(...)</li>").arg(port.getName());
+                output += QString("<h2>%1</h2>").arg(tr("Slots"));
+                output += "<ul>";
+                for (const auto &port : block->getSlotPorts())
+                {
+                    output += QString("<li>%1(...)</li>").arg(port.getName());
+                }
+                output += "</ul>";
             }
-            if (block->getSlotPorts().empty())
-            {
-                output += QString("<li>%1</li>").arg(tr("None"));
-            }
-            output += "</ul>";
 
             //enumerate signals
-            output += QString("<p><b>%1</b></p>").arg(tr("Available Signals"));
-            output += "<ul>";
-            for (const auto &port : block->getSignalPorts())
+            if (not block->getSignalPorts().empty())
             {
-                output += QString("<li>%1(...)</li>").arg(port.getName());
+                output += QString("<h2>%1</h2>").arg(tr("Signals"));
+                output += "<ul>";
+                for (const auto &port : block->getSignalPorts())
+                {
+                    output += QString("<li>%1(...)</li>").arg(port.getName());
+                }
+                output += "</ul>";
             }
-            if (block->getSignalPorts().empty())
-            {
-                output += QString("<li>%1</li>").arg(tr("None"));
-            }
-            output += "</ul>";
 
             text->insertHtml(output);
         }
