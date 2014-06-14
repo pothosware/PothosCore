@@ -80,16 +80,14 @@ public:
     static QString extractDocString(Poco::JSON::Object::Ptr blockDesc)
     {
         if (not blockDesc or not blockDesc->isArray("docs")) return "";
-        const auto docsArray = blockDesc->getArray("docs");
         QString output;
         output += "<b>" + QString::fromStdString(blockDesc->get("name").convert<std::string>()) + "</b>";
         output += "<p>";
-        for (size_t i = 0; i < docsArray->size(); i++)
+        for (const auto &lineObj : *blockDesc->getArray("docs"))
         {
-            const auto line = docsArray->get(i).convert<std::string>();
+            const auto line = lineObj.extract<std::string>();
             if (line.empty()) output += "<p /><p>";
             else output += QString::fromStdString(line);
-            output += "\n";
         }
         output += "</p>";
         return "<div>" + output + "</div>";

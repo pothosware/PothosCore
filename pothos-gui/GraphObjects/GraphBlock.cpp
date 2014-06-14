@@ -58,6 +58,17 @@ const std::vector<GraphBlockProp> &GraphBlock::getProperties(void) const
     return _properties;
 }
 
+const Poco::JSON::Object::Ptr &GraphBlock::getParamDesc(const QString &key) const
+{
+    Poco::JSON::Object::Ptr paramDesc;
+    for (const auto &paramObj : *this->getBlockDesc()->getArray("params"))
+    {
+        const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
+        if (param->getValue<std::string>("key") == key.toStdString()) paramDesc = param;
+    }
+    return paramDesc;
+}
+
 QString GraphBlock::getPropertyValue(const QString &key) const
 {
     auto it = _impl->propertiesValues.find(key);
