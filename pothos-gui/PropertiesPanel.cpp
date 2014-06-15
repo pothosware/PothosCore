@@ -11,6 +11,7 @@
 #include <QTextEdit>
 #include <QComboBox>
 #include <QScrollArea>
+#include <QPushButton>
 #include <QLabel>
 #include <cassert>
 
@@ -32,15 +33,6 @@ public:
         {
             auto label = new QLabel(QString("<h1>%1</h1>")
                 .arg(_block->getTitle().toHtmlEscaped()), this);
-            label->setAlignment(Qt::AlignCenter);
-            layout->addWidget(label);
-        }
-
-        //path
-        {
-            auto path = blockDesc->get("path").convert<std::string>();
-            auto label = new QLabel(QString("<p>(%1)</p>")
-                .arg(QString::fromStdString(path).toHtmlEscaped()), this);
             label->setAlignment(Qt::AlignCenter);
             layout->addWidget(label);
         }
@@ -102,12 +94,13 @@ public:
 
             QString output;
             output += QString("<h1>%1</h1>").arg(QString::fromStdString(blockDesc->get("name").convert<std::string>()));
+            output += QString("<p>%1</p>").arg(QString::fromStdString(block->getBlockDescPath()));
             output += "<p>";
             for (const auto &lineObj : *blockDesc->getArray("docs"))
             {
                 const auto line = lineObj.extract<std::string>();
                 if (line.empty()) output += "<p /><p>";
-                else output += QString::fromStdString(line);
+                else output += QString::fromStdString(line)+"\n";
             }
             output += "</p>";
 
@@ -154,6 +147,15 @@ public:
             text->insertHtml(output);
         }
 
+        //buttons
+        {
+            auto buttonLayout = new QHBoxLayout();
+            layout->addLayout(buttonLayout);
+            auto commitButton = new QPushButton(makeIconFromTheme("dialog-ok-apply"), "Commit", this);
+            buttonLayout->addWidget(commitButton);
+            auto cancelButton = new QPushButton(makeIconFromTheme("dialog-cancel"), "Cancel", this);
+            buttonLayout->addWidget(cancelButton);
+        }
     }
 
 private:
