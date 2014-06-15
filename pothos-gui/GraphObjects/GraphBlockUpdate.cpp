@@ -232,6 +232,32 @@ void GraphBlock::update(void)
     assert(_impl->blockDesc);
     const auto &blockDesc = _impl->blockDesc;
 
+/*
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto EvalExpr = env->findProxy("Pothos/Gui/EvalExpression");
+    auto BlockRegistry = env->findProxy("Pothos/BlockRegistry");
+
+    Pothos::ProxyVector proxyArgs;
+    for (const auto &prop : this->getProperties())
+    {
+        const auto val = this->getPropertyValue(prop.getKey()).toStdString();
+        proxyArgs.push_back(EvalExpr.callProxy("eval", val));
+    }
+
+    try
+    {
+        BlockRegistry.getHandle()->call(this->getBlockDescPath(), proxyArgs.data(), proxyArgs.size());
+
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        //TODO logger
+        std::cerr << ex.displayText() << std::endl;
+        throw ex;
+    }
+
+    */
+
     std::vector<Pothos::Object> opaqueArgs;
 
     for (const auto &prop : this->getProperties())
