@@ -22,13 +22,17 @@ public:
     }
 
     OpenClKernel(void):
-        _localSize(1)
+        _localSize(1),
+        _globalFactor(1.0),
+        _productionFactor(1.0)
     {
-        this->setupInput("0");
-        this->setupOutput("0");
         this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setSource));
         this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setLocalSize));
         this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, getLocalSize));
+        this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setGlobalFactor));
+        this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, getGlobalFactor));
+        this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setProductionFactor));
+        this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, getProductionFactor));
     }
 
     void setSource(const std::string &name, const std::string &source)
@@ -47,6 +51,26 @@ public:
         return _localSize;
     }
 
+    void setGlobalFactor(const double factor)
+    {
+        _globalFactor = factor;
+    }
+
+    double getGlobalFactor(void) const
+    {
+        return _globalFactor;
+    }
+
+    void setProductionFactor(const double factor)
+    {
+        _productionFactor = factor;
+    }
+
+    double getProductionFactor(void) const
+    {
+        return _productionFactor;
+    }
+
     void activate(void);
     void deactivate(void);
     void work(void);
@@ -60,6 +84,8 @@ private:
     std::string _kernelName;
     std::string _kernelSource;
     size_t _localSize;
+    double _globalFactor;
+    double _productionFactor;
 };
 
 void OpenClKernel::activate(void)
@@ -130,15 +156,30 @@ void OpenClKernel::work(void)
     std::vector<cl_mem> outputBuffs(outputs.size());
 
     int err = 0;
-    size_t globalSize = this->workInfo().minElements;
-    if (globalSize == 0) return;
+
+    if (this->workInfo().minElements == 0) return;
+
+    //calculate number of elements
+    size_t inputElems = this->workInfo().minInElements;
+    size_t outputElems = this->workInfo().minOutElements;
+    if (_productionFactor > 1.0)
+    {
+        outputElems = std::min<size_t>(inputElems*_productionFactor, outputElems);
+        inputElems = outputElems/_productionFactor;
+    }
+    else
+    {
+        inputElems = std::min<size_t>(outputElems/_productionFactor, inputElems);
+        outputElems = inputElems*_productionFactor;
+    }
+    size_t globalSize = inputElems*_globalFactor;
 
     /* Create data buffer */
     size_t argNo = 0;
     for (size_t i = 0; i < inputs.size(); i++)
     {
         inputBuffs[i] = clCreateBuffer(_context, CL_MEM_READ_ONLY |
-         CL_MEM_COPY_HOST_PTR, inputs[i]->buffer().length, inputs[i]->buffer().as<void *>(), &err);
+         CL_MEM_COPY_HOST_PTR, inputElems*inputs[i]->dtype().size(), inputs[i]->buffer().as<void *>(), &err);
         if (err < 0) throw Pothos::Exception("OpenClKernel::work::clCreateBuffer()", std::to_string(err));
         err = clSetKernelArg(_kernel, argNo++, sizeof(cl_mem), &inputBuffs[i]);
         if (err < 0) throw Pothos::Exception("OpenClKernel::work::clSetKernelArg()", std::to_string(err));
@@ -146,7 +187,7 @@ void OpenClKernel::work(void)
     for (size_t i = 0; i < outputs.size(); i++)
     {
         outputBuffs[i] = clCreateBuffer(_context, CL_MEM_READ_WRITE |
-         CL_MEM_COPY_HOST_PTR, outputs[i]->buffer().length, outputs[i]->buffer().as<void *>(), &err);
+         CL_MEM_COPY_HOST_PTR, outputElems*outputs[i]->dtype().size(), outputs[i]->buffer().as<void *>(), &err);
         if (err < 0) throw Pothos::Exception("OpenClKernel::work::clCreateBuffer()", std::to_string(err));
         err = clSetKernelArg(_kernel, argNo++, sizeof(cl_mem), &outputBuffs[i]);
         if (err < 0) throw Pothos::Exception("OpenClKernel::work::clSetKernelArg()", std::to_string(err));
@@ -159,15 +200,15 @@ void OpenClKernel::work(void)
     /* Read the kernel's output */
     for (size_t i = 0; i < inputs.size(); i++)
     {
-        inputs[i]->consume(globalSize);
+        inputs[i]->consume(inputElems);
         clReleaseMemObject(inputBuffs[i]);
     }
     for (size_t i = 0; i < outputs.size(); i++)
     {
         err = clEnqueueReadBuffer(_queue, outputBuffs[i], CL_TRUE, 0, 
-            globalSize*1, outputs[i]->buffer().as<void *>(), 0, nullptr, nullptr);
+            outputElems*outputs[i]->dtype().size(), outputs[i]->buffer().as<void *>(), 0, nullptr, nullptr);
         if (err < 0) throw Pothos::Exception("OpenClKernel::work::clEnqueueReadBuffer()", std::to_string(err));
-        outputs[i]->produce(globalSize);
+        outputs[i]->produce(outputElems);
         clReleaseMemObject(outputBuffs[i]);
     }
 }
