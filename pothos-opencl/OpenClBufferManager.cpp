@@ -1,24 +1,12 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "OpenClBufferManager.hpp"
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Util/RingDeque.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
 #include <cassert>
-
-#ifdef MAC
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-struct OpenClBufferContainerArgs
-{
-    cl_mem_flags mem_flags;
-    cl_map_flags map_flags;
-    std::shared_ptr<cl_context> context;
-    std::shared_ptr<cl_command_queue> queue;
-};
+#include <iostream>
 
 /***********************************************************************
  * The OpenClBufferContainer allocates and maps a buffer.
@@ -143,3 +131,13 @@ private:
     Pothos::Util::RingDeque<Pothos::ManagedBuffer> _readyBuffs;
     OpenClBufferContainerArgs _clArgs;
 };
+
+Pothos::BufferManager::Sptr makeOpenClBufferManager(const OpenClBufferContainerArgs &args)
+{
+    return Pothos::BufferManager::Sptr(new OpenClBufferManager(args));
+}
+
+cl_mem getClBufferFromManaged(const Pothos::ManagedBuffer &buff)
+{
+    return std::static_pointer_cast<OpenClBufferContainer>(buff.getBuffer().getContainer())->memobj;
+}

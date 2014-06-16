@@ -19,6 +19,7 @@ namespace Pothos {
 
 class OutputPortImpl;
 class WorkerActor;
+class BufferManager;
 
 /*!
  * OutputPort provides methods to interact with a worker's output ports.
@@ -115,6 +116,14 @@ public:
      * Is this port used for signaling in a signals + slots paradigm?
      */
     bool isSignal(void) const;
+
+    /*!
+     * Set a custom buffer manager on this output port.
+     * The output port will get its buffers from this
+     * manager rather than the default buffer manager.
+     * Use this call to integrate with a DMA output device.
+     */
+    void setBufferManager(const std::shared_ptr<BufferManager> &manager);
 
 private:
     OutputPortImpl *_impl;

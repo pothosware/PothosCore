@@ -1,14 +1,9 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "OpenClBufferManager.hpp"
 #include <Pothos/Framework.hpp>
 #include <iostream>
-
-#ifdef MAC
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
 
 /***********************************************************************
  *
@@ -161,10 +156,25 @@ void OpenClKernel::activate(void)
     auto kernel = clCreateKernel(*_program, _kernelName.c_str(), &err);
     if (err < 0) throw Pothos::Exception("OpenClKernel::activate::clCreateKernel()", std::to_string(err));
     _kernel.reset(new cl_kernel(kernel), clReleaseKernelPtr);
+
+    /* Set the output buffer managers */
+    const auto &outputs = this->outputs();
+    for (size_t i = 0; i < outputs.size(); i++)
+    {
+        OpenClBufferContainerArgs args;
+        args.mem_flags = CL_MEM_WRITE_ONLY;
+        args.map_flags = CL_MAP_READ;
+        args.context = _context;
+        args.queue = _queue;
+        auto manager = makeOpenClBufferManager(args);
+        manager->init(Pothos::BufferManagerArgs());
+        outputs[i]->setBufferManager(manager);
+    }
 }
 
 void OpenClKernel::deactivate(void)
 {
+    //reset in order of creation
     _kernel.reset();
     _queue.reset();
     _program.reset();
@@ -210,9 +220,10 @@ void OpenClKernel::work(void)
     }
     for (size_t i = 0; i < outputs.size(); i++)
     {
-        outputBuffs[i] = clCreateBuffer(*_context, CL_MEM_READ_WRITE |
-         CL_MEM_COPY_HOST_PTR, outputElems*outputs[i]->dtype().size(), outputs[i]->buffer().as<void *>(), &err);
-        if (err < 0) throw Pothos::Exception("OpenClKernel::work::clCreateBuffer()", std::to_string(err));
+        //outputBuffs[i] = clCreateBuffer(*_context, CL_MEM_READ_WRITE |
+        // CL_MEM_COPY_HOST_PTR, outputElems*outputs[i]->dtype().size(), outputs[i]->buffer().as<void *>(), &err);
+        outputBuffs[i] = getClBufferFromManaged(outputs[i]->buffer().getManagedBuffer());
+        //if (err < 0) throw Pothos::Exception("OpenClKernel::work::clCreateBuffer()", std::to_string(err));
         err = clSetKernelArg(*_kernel, argNo++, sizeof(cl_mem), &outputBuffs[i]);
         if (err < 0) throw Pothos::Exception("OpenClKernel::work::clSetKernelArg()", std::to_string(err));
     }
@@ -233,7 +244,7 @@ void OpenClKernel::work(void)
             outputElems*outputs[i]->dtype().size(), outputs[i]->buffer().as<void *>(), 0, nullptr, nullptr);
         if (err < 0) throw Pothos::Exception("OpenClKernel::work::clEnqueueReadBuffer()", std::to_string(err));
         outputs[i]->produce(outputElems);
-        clReleaseMemObject(outputBuffs[i]);
+        //clReleaseMemObject(outputBuffs[i]);
     }
 }
 
