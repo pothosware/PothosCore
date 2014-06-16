@@ -13,19 +13,22 @@
 /***********************************************************************
  * 
  **********************************************************************/
-class OpenClBlock : public Pothos::Block
+class OpenClKernel : public Pothos::Block
 {
 public:
     static Pothos::Block *make(void)
     {
-        return new OpenClBlock();
+        return new OpenClKernel();
     }
 
-    OpenClBlock(void)
+    OpenClKernel(void):
+        _localSize(1)
     {
         this->setupInput("0");
         this->setupOutput("0");
-        this->registerCall(POTHOS_FCN_TUPLE(OpenClBlock, setSource));
+        this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setSource));
+        this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setLocalSize));
+        this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, getLocalSize));
     }
 
     void setSource(const std::string &name, const std::string &source)
@@ -34,8 +37,18 @@ public:
         _kernelSource = source;
     }
 
-    void activate(void);
+    void setLocalSize(const size_t size)
+    {
+        _localSize = size;
+    }
 
+    size_t getLocalSize(void) const
+    {
+        return _localSize;
+    }
+
+    void activate(void);
+    void deactivate(void);
     void work(void);
 
 private:
@@ -46,16 +59,17 @@ private:
     cl_command_queue _queue;
     std::string _kernelName;
     std::string _kernelSource;
+    size_t _localSize;
 };
 
-void OpenClBlock::activate(void)
+void OpenClKernel::activate(void)
 {
     cl_platform_id platform;
     int err = 0;
 
     /* Identify a platform */
     err = clGetPlatformIDs(1, &platform, nullptr);
-    if (err < 0) throw Pothos::Exception("OpenClBlock::activate::identifyPlatform()", std::to_string(err));
+    if (err < 0) throw Pothos::Exception("OpenClKernel::activate::identifyPlatform()", std::to_string(err));
 
     /* Access a device */
     err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &_device, nullptr);
@@ -63,18 +77,18 @@ void OpenClBlock::activate(void)
     {
         err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, 1, &_device, nullptr);
     }
-    if (err < 0) throw Pothos::Exception("OpenClBlock::activate::accessDevice()", std::to_string(err));
+    if (err < 0) throw Pothos::Exception("OpenClKernel::activate::accessDevice()", std::to_string(err));
 
     /* Create context */
     _context = clCreateContext(nullptr, 1, &_device, nullptr, nullptr, &err);
-    if (err < 0) throw Pothos::Exception("OpenClBlock::activate::createContext()", std::to_string(err));
+    if (err < 0) throw Pothos::Exception("OpenClKernel::activate::createContext()", std::to_string(err));
 
     /* Create program from source */
-    if (_kernelSource.empty()) throw Pothos::Exception("OpenClBlock::activate::createProgram()", "no source specified");
+    if (_kernelSource.empty()) throw Pothos::Exception("OpenClKernel::activate::createProgram()", "no source specified");
     const char *sourcePtr = _kernelSource.data();
     const size_t sourceSize = _kernelSource.size();
     _program = clCreateProgramWithSource(_context, 1, &sourcePtr, &sourceSize, &err);
-    if(err < 0) throw Pothos::Exception("OpenClBlock::activate::createProgram()", std::to_string(err));
+    if(err < 0) throw Pothos::Exception("OpenClKernel::activate::createProgram()", std::to_string(err));
 
     /* Build program */
     err = clBuildProgram(_program, 0, nullptr, nullptr, nullptr, nullptr);
@@ -87,19 +101,27 @@ void OpenClBlock::activate(void)
         clGetProgramBuildInfo(_program, _device, CL_PROGRAM_BUILD_LOG, logSize, errorLog.data(), nullptr);
 
         std::string errorString(errorLog.begin(), errorLog.end());
-        throw Pothos::Exception("OpenClBlock::activate::buildProgram()", errorString);
+        throw Pothos::Exception("OpenClKernel::activate::buildProgram()", errorString);
     }
 
     /* Create a command queue */
     _queue = clCreateCommandQueue(_context, _device, 0, &err);
-    if (err < 0) throw Pothos::Exception("OpenClBlock::activate::createCommandQueue()", std::to_string(err));
+    if (err < 0) throw Pothos::Exception("OpenClKernel::activate::createCommandQueue()", std::to_string(err));
 
     /* Create a kernel */
     _kernel = clCreateKernel(_program, _kernelName.c_str(), &err);
-    if (err < 0) throw Pothos::Exception("OpenClBlock::activate::createKernel()", std::to_string(err));
+    if (err < 0) throw Pothos::Exception("OpenClKernel::activate::createKernel()", std::to_string(err));
 }
 
-void OpenClBlock::work(void)
+void OpenClKernel::deactivate(void)
+{
+    clReleaseKernel(_kernel);
+    clReleaseCommandQueue(_queue);
+    clReleaseProgram(_program);
+    clReleaseContext(_context);
+}
+
+void OpenClKernel::work(void)
 {
     const auto &inputs = this->inputs();
     const auto &outputs = this->outputs();
@@ -108,11 +130,8 @@ void OpenClBlock::work(void)
     std::vector<cl_mem> outputBuffs(outputs.size());
 
     int err = 0;
-    size_t elems = this->workInfo().minElements;
-    if (elems == 0) return;
-
-    size_t global_size = elems;
-    size_t local_size = 1;
+    size_t globalSize = this->workInfo().minElements;
+    if (globalSize == 0) return;
 
     /* Create data buffer */
     size_t argNo = 0;
@@ -120,36 +139,38 @@ void OpenClBlock::work(void)
     {
         inputBuffs[i] = clCreateBuffer(_context, CL_MEM_READ_ONLY |
          CL_MEM_COPY_HOST_PTR, inputs[i]->buffer().length, inputs[i]->buffer().as<void *>(), &err);
-        if (err < 0) throw Pothos::Exception("OpenClBlock::work::clCreateBuffer()", std::to_string(err));
+        if (err < 0) throw Pothos::Exception("OpenClKernel::work::clCreateBuffer()", std::to_string(err));
         err = clSetKernelArg(_kernel, argNo++, sizeof(cl_mem), &inputBuffs[i]);
-        if (err < 0) throw Pothos::Exception("OpenClBlock::work::clSetKernelArg()", std::to_string(err));
+        if (err < 0) throw Pothos::Exception("OpenClKernel::work::clSetKernelArg()", std::to_string(err));
     }
     for (size_t i = 0; i < outputs.size(); i++)
     {
         outputBuffs[i] = clCreateBuffer(_context, CL_MEM_READ_WRITE |
          CL_MEM_COPY_HOST_PTR, outputs[i]->buffer().length, outputs[i]->buffer().as<void *>(), &err);
-        if (err < 0) throw Pothos::Exception("OpenClBlock::work::clCreateBuffer()", std::to_string(err));
+        if (err < 0) throw Pothos::Exception("OpenClKernel::work::clCreateBuffer()", std::to_string(err));
         err = clSetKernelArg(_kernel, argNo++, sizeof(cl_mem), &outputBuffs[i]);
-        if (err < 0) throw Pothos::Exception("OpenClBlock::work::clSetKernelArg()", std::to_string(err));
+        if (err < 0) throw Pothos::Exception("OpenClKernel::work::clSetKernelArg()", std::to_string(err));
     }
 
     /* Enqueue kernel */
-    err = clEnqueueNDRangeKernel(_queue, _kernel, 1, nullptr, &global_size, &local_size, 0, nullptr, nullptr); 
-    if (err < 0) throw Pothos::Exception("OpenClBlock::work::enqueueKernel()", std::to_string(err));
+    err = clEnqueueNDRangeKernel(_queue, _kernel, 1, nullptr, &globalSize, &_localSize, 0, nullptr, nullptr); 
+    if (err < 0) throw Pothos::Exception("OpenClKernel::work::enqueueKernel()", std::to_string(err));
 
     /* Read the kernel's output */
     for (size_t i = 0; i < inputs.size(); i++)
     {
-        inputs[i]->consume(elems);
+        inputs[i]->consume(globalSize);
+        clReleaseMemObject(inputBuffs[i]);
     }
     for (size_t i = 0; i < outputs.size(); i++)
     {
         err = clEnqueueReadBuffer(_queue, outputBuffs[i], CL_TRUE, 0, 
-            elems*1, outputs[i]->buffer().as<void *>(), 0, nullptr, nullptr);
-        if (err < 0) throw Pothos::Exception("OpenClBlock::work::clEnqueueReadBuffer()", std::to_string(err));
-        outputs[i]->produce(elems);
+            globalSize*1, outputs[i]->buffer().as<void *>(), 0, nullptr, nullptr);
+        if (err < 0) throw Pothos::Exception("OpenClKernel::work::clEnqueueReadBuffer()", std::to_string(err));
+        outputs[i]->produce(globalSize);
+        clReleaseMemObject(outputBuffs[i]);
     }
 }
 
-static Pothos::BlockRegistry registerOpenClBlock(
-    "/blocks/opencl/opencl_block", &OpenClBlock::make);
+static Pothos::BlockRegistry registerOpenClKernel(
+    "/blocks/opencl/opencl_kernel", &OpenClKernel::make);

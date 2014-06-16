@@ -28,7 +28,7 @@ static const char *KERNEL_SOURCE =
 "}"
 ;
 
-POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_block)
+POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel)
 {
     auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
     auto collector = registry.callProxy("/blocks/sinks/collector_sink", "float32");
@@ -36,8 +36,8 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_block)
     auto feeder0 = registry.callProxy("/blocks/sources/feeder_source", "float32");
     auto feeder1 = registry.callProxy("/blocks/sources/feeder_source", "float32");
 
-    auto openClBlock = registry.callProxy("/blocks/opencl/opencl_block");
-    openClBlock.call("setSource", "add_2x_float32", KERNEL_SOURCE);
+    auto openClKernel = registry.callProxy("/blocks/opencl/opencl_kernel");
+    openClKernel.call("setSource", "add_2x_float32", KERNEL_SOURCE);
 
     //feed buffer
     auto b0 = Pothos::BufferChunk(10*sizeof(float));
@@ -53,9 +53,9 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_block)
     //run the topology
     {
         Pothos::Topology topology;
-        topology.connect(feeder0, 0, openClBlock, 0);
-        topology.connect(feeder1, 0, openClBlock, 1);
-        topology.connect(openClBlock, 0, collector, 0);
+        topology.connect(feeder0, 0, openClKernel, 0);
+        topology.connect(feeder1, 0, openClKernel, 1);
+        topology.connect(openClKernel, 0, collector, 0);
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());
     }

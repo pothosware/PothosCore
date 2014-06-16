@@ -28,8 +28,8 @@ else()
 endif()
 
 set(SOURCES
-    OpenClBlock.cpp
-    TestOpenClBlock.cpp
+    OpenClKernel.cpp
+    TestOpenClBlocks.cpp
 )
 
 POTHOS_MODULE_UTIL(
