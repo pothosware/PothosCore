@@ -99,6 +99,11 @@ public:
      */
     pothos_explicit operator bool(void) const;
 
+    /*!
+     * Get access to the underlying memory container.
+     */
+    const std::shared_ptr<void> &getContainer(void) const;
+
 private:
     static SharedBuffer makeCircUnprotected(const size_t numBytes, const long nodeAffinity);
     size_t _address;
@@ -137,4 +142,9 @@ inline bool Pothos::SharedBuffer::unique(void) const
 inline Pothos::SharedBuffer::operator bool(void) const
 {
     return bool(_container);
+}
+
+inline const std::shared_ptr<void> &Pothos::SharedBuffer::getContainer(void) const
+{
+    return _container;
 }
