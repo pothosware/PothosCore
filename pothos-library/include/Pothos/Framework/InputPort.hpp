@@ -19,6 +19,7 @@ namespace Pothos {
 
 class InputPortImpl;
 class WorkerActor;
+class BufferManager;
 
 /*!
  * InputPort provides methods to interact with a worker's input ports.
@@ -118,6 +119,14 @@ public:
      * Is this port used for signal handling in a signals + slots paradigm?
      */
     bool isSlot(void) const;
+
+    /*!
+     * Set a custom buffer manager on this input port.
+     * The input port will get its buffers from this
+     * manager rather than the default buffer manager.
+     * Use this call to integrate with a DMA input device.
+     */
+    void setBufferManager(const std::shared_ptr<BufferManager> &manager);
 
 private:
     InputPortImpl *_impl;

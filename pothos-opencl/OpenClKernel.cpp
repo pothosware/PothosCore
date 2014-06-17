@@ -18,12 +18,12 @@
 class OpenClKernel : public Pothos::Block
 {
 public:
-    static Pothos::Block *make(void)
+    static Pothos::Block *make(const size_t platformIndex, const size_t deviceIndex)
     {
-        return new OpenClKernel();
+        return new OpenClKernel(platformIndex, deviceIndex);
     }
 
-    OpenClKernel(void):
+    OpenClKernel(const size_t platformIndex, const size_t deviceIndex):
         _localSize(1),
         _globalFactor(1.0),
         _productionFactor(1.0)
@@ -35,6 +35,11 @@ public:
         this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, getGlobalFactor));
         this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setProductionFactor));
         this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, getProductionFactor));
+    }
+
+    ~OpenClKernel(void)
+    {
+        return;
     }
 
     void setSource(const std::string &name, const std::string &source)
