@@ -79,24 +79,24 @@ void Pothos::Block::propagateLabels(const InputPort *input, const LabelIteratorR
     }
 }
 
-void Pothos::Block::setupInput(const std::string &name, const DType &dtype)
+void Pothos::Block::setupInput(const std::string &name, const DType &dtype, const std::string &domain)
 {
-    _actor->allocateInput(name, dtype);
+    _actor->allocateInput(name, dtype, domain);
 }
 
-void Pothos::Block::setupInput(const size_t index, const DType &dtype)
+void Pothos::Block::setupInput(const size_t index, const DType &dtype, const std::string &domain)
 {
-    this->setupInput(std::to_string(index), dtype);
+    this->setupInput(std::to_string(index), dtype, domain);
 }
 
-void Pothos::Block::setupOutput(const std::string &name, const DType &dtype)
+void Pothos::Block::setupOutput(const std::string &name, const DType &dtype, const std::string &domain)
 {
-    _actor->allocateOutput(name, dtype);
+    _actor->allocateOutput(name, dtype, domain);
 }
 
-void Pothos::Block::setupOutput(const size_t index, const DType &dtype)
+void Pothos::Block::setupOutput(const size_t index, const DType &dtype, const std::string &domain)
 {
-    this->setupOutput(std::to_string(index), dtype);
+    this->setupOutput(std::to_string(index), dtype, domain);
 }
 
 void Pothos::Block::registerCallable(const std::string &name, const Callable &call)
@@ -161,6 +161,16 @@ void Pothos::Block::yield(void)
     _actor->workBump = true;
 }
 
+std::shared_ptr<Pothos::BufferManager> Pothos::Block::getInputBufferManager(const std::string &, const std::string &)
+{
+    return Pothos::BufferManager::Sptr(); //abdicate
+}
+
+std::shared_ptr<Pothos::BufferManager> Pothos::Block::getOutputBufferManager(const std::string &, const std::string &)
+{
+    return Pothos::BufferManager::make("generic", Pothos::BufferManagerArgs());
+}
+
 #include <Pothos/Managed.hpp>
 
 //FIXME see issue #37
@@ -187,10 +197,23 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputPortNames))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, outputPortNames))
+
+    //all of the setups with default args set
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
+
+    .registerMethod("setupInput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupInput).bind("GPP", 3))
+    .registerMethod("setupInput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupInput).bind("GPP", 3).bind("byte", 2))
+    .registerMethod("setupInput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupInput).bind("GPP", 3))
+    .registerMethod("setupInput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupInput).bind("GPP", 3).bind("byte", 2))
+
+    .registerMethod("setupOutput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupOutput).bind("GPP", 3))
+    .registerMethod("setupOutput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupOutput).bind("GPP", 3).bind("byte", 2))
+    .registerMethod("setupOutput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupOutput).bind("GPP", 3))
+    .registerMethod("setupOutput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupOutput).bind("GPP", 3).bind("byte", 2))
+
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSignal))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSlot))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, emitSignalArgs))

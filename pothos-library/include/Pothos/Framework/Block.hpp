@@ -26,6 +26,8 @@ namespace Theron {
 
 namespace Pothos {
 
+    class BufferManager;
+
 /*!
  * Block is an interface for creating custom computational processing.
  * Users should subclass Block, setup the input and output ports,
@@ -112,6 +114,38 @@ protected:
      */
     virtual Object opaqueCallHandler(const std::string &name, const Object *inputArgs, const size_t numArgs);
 
+    /*!
+     * Get a buffer manager for this input port.
+     * The user may overload this call to install a custom buffer manager.
+     *
+     * The domain parameter describes the memory used by the upstream blocks.
+     * Knowing the domain allows the implementer of getInputBufferManager to
+     *   - abdicate to the upstream's buffer managers (null return)
+     *   - provide a replacement upstream buffer manager (return manager)
+     *   - protest the ability to interact with the domain (throw exception)
+     *
+     * \param name the name of an input port on this block
+     * \param domain the domain of the upstream blocks
+     * \return a new buffer manager for this port or null sptr
+     */
+    virtual std::shared_ptr<BufferManager> getInputBufferManager(const std::string &name, const std::string &domain);
+
+    /*!
+     * Get a buffer manager for this output port.
+     * The user may overload this call to install a custom buffer manager.
+     *
+     * The domain parameter describes the memory used by the downstream blocks.
+     * Knowing the domain allows the implementer of getOutputBufferManager to
+     *   - abdicate to the downstream's buffer managers (null return)
+     *   - provide a replacement downstream buffer manager (return manager)
+     *   - protest the ability to interact with the domain (throw exception)
+     *
+     * \param name the name of an output port on this block
+     * \param domain the domain of the downstream blocks
+     * \return a new buffer manager for this port or null sptr
+     */
+    virtual std::shared_ptr<BufferManager> getOutputBufferManager(const std::string &name, const std::string &domain);
+
 public:
 
     /*!
@@ -183,22 +217,22 @@ public:
     /*!
      * Configure an input port with the given data type.
      */
-    void setupInput(const std::string &name, const DType &dtype = "byte");
+    void setupInput(const std::string &name, const DType &dtype = "byte", const std::string &domain = "GPP");
 
     /*!
      * Configure an input port with the given data type.
      */
-    void setupInput(const size_t index, const DType &dtype = "byte");
+    void setupInput(const size_t index, const DType &dtype = "byte", const std::string &domain = "GPP");
 
     /*!
      * Configure an output port with the given data type.
      */
-    void setupOutput(const std::string &name, const DType &dtype = "byte");
+    void setupOutput(const std::string &name, const DType &dtype = "byte", const std::string &domain = "GPP");
 
     /*!
      * Configure an output port with the given data type.
      */
-    void setupOutput(const size_t index, const DType &dtype = "byte");
+    void setupOutput(const size_t index, const DType &dtype = "byte", const std::string &domain = "GPP");
 
     /*!
      * Export a function call on this block to set/get parameters.

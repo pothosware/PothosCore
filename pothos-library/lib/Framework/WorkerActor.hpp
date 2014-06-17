@@ -206,12 +206,12 @@ public:
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
 
     ///////////////////// port setup methods ///////////////////////
-    void allocateInput(const std::string &name, const DType &dtype);
-    void allocateOutput(const std::string &name, const DType &dtype);
+    void allocateInput(const std::string &name, const DType &dtype, const std::string &domain);
+    void allocateOutput(const std::string &name, const DType &dtype, const std::string &domain);
     void allocateSignal(const std::string &name);
     void allocateSlot(const std::string &name);
     template <typename ImplType, typename PortsType, typename PortNamesType>
-    void allocatePort(PortsType &ports, PortNamesType &portNames, const std::string &name, const DType &dtype);
+    void allocatePort(PortsType &ports, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain);
 
     void autoAllocateInput(const std::string &name);
     void autoAllocateOutput(const std::string &name);
