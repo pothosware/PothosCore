@@ -179,8 +179,8 @@ void OpenClKernel::activate(void)
         args.context = _context;
         args.queue = _queue;
         auto manager = makeOpenClBufferManager(args);
-        manager->init(Pothos::BufferManagerArgs());
-        outputs[i]->setBufferManager(manager);
+        //manager->init(Pothos::BufferManagerArgs());
+        //outputs[i]->setBufferManager(manager);
     }
 }
 

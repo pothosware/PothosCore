@@ -59,12 +59,6 @@ bool Pothos::OutputPort::isSignal(void) const
     return _impl->isSignal;
 }
 
-void Pothos::OutputPort::setBufferManager(const std::shared_ptr<BufferManager> &manager)
-{
-    assert(_impl);
-    _impl->bufferManager = manager;
-}
-
 #include <Pothos/Managed.hpp>
 
 static auto managedOutputPort = Pothos::ManagedClass()
@@ -82,5 +76,4 @@ static auto managedOutputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postBuffer))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, isSignal))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, setBufferManager))
     .commit("Pothos/OutputPort");

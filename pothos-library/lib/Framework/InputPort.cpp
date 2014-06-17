@@ -65,12 +65,6 @@ bool Pothos::InputPort::isSlot(void) const
     return _impl->isSlot;
 }
 
-void Pothos::InputPort::setBufferManager(const std::shared_ptr<BufferManager> &manager)
-{
-    assert(_impl);
-    _impl->bufferManager = manager;
-}
-
 #include <Pothos/Managed.hpp>
 
 static auto managedInputPort = Pothos::ManagedClass()
@@ -89,5 +83,4 @@ static auto managedInputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, popMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, setReserve))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, isSlot))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, setBufferManager))
     .commit("Pothos/InputPort");

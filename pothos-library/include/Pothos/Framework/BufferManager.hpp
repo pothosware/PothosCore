@@ -68,6 +68,7 @@ public:
      */
     static Sptr make(const std::string &name, const BufferManagerArgs &args);
 
+protected:
     /*!
      * Init is called once at factory time to initialize the buffers.
      */
