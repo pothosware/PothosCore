@@ -28,6 +28,7 @@ else()
 endif()
 
 set(SOURCES
+    OpenClInfo.cpp
     OpenClKernel.cpp
     OpenClBufferManager.cpp
     TestOpenClBlocks.cpp

@@ -6,7 +6,14 @@
 #include <iostream>
 
 /***********************************************************************
- *
+ * TODO
+ * enumerate opencl devices
+ * pick an idenfier scheme for the constructor
+ * set a domain on each input/output port
+ * look up table for device number to context
+ * topology needs to collect domain info and
+ *  - call an overload on the block to create a manager
+ *  - create copier blocks to allow domains to interact
  **********************************************************************/
 class OpenClKernel : public Pothos::Block
 {
