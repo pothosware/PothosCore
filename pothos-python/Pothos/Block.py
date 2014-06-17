@@ -24,12 +24,6 @@ class Block(object):
         """
         return self._block
 
-    def setupInput(self, name, dtype="byte"):
-        self._block.setupInput(name, dtype)
-
-    def setupOutput(self, name, dtype="byte"):
-        self._block.setupOutput(name, dtype)
-
     def inputs(self):
         ports = self._block.inputs()
         return [InputPort(ports.at(i)) for i in range(ports.size())]
