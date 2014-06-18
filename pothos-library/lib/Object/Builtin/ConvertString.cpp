@@ -67,6 +67,8 @@ pothos_static_block(pothosObjectRegisterConvertStrings)
     registerConvertString("signed_byte_vector", "string", &convertByteVectorToString<signed char>);
     registerConvertString("unsigned_byte_vector", "string", &convertByteVectorToString<unsigned char>);
     registerConvertString("string", "byte_vector", &convertStringToByteVector);
+    //no integer to string conversions that are non-implicit in a regular language
+    /*
     declare_string_conversion2(char);
     declare_string_conversion2(schar);
     declare_string_conversion2(uchar);
@@ -80,4 +82,5 @@ pothos_static_block(pothosObjectRegisterConvertStrings)
     declare_string_conversion2(ullong);
     declare_string_conversion2(float);
     declare_string_conversion2(double);
+    */
 }
