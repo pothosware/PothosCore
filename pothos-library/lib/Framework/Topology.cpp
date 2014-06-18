@@ -10,6 +10,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/System/Info.hpp>
 #include <Poco/Environment.h>
+#include <Poco/Logger.h>
 #include <Poco/Format.h>
 #include <Poco/Timestamp.h>
 #include <Poco/Timespan.h>
@@ -33,6 +34,7 @@ struct Pothos::Topology::Impl
     std::vector<Flow> activeFlatFlows;
     std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
     std::vector<Flow> createNetworkFlows(void);
+    std::vector<Flow> rectifyDomainFlows(const std::vector<Flow> &);
 };
 
 /***********************************************************************
@@ -189,7 +191,7 @@ static std::vector<Flow> squashFlows(const std::vector<Flow> &flows)
 /***********************************************************************
  * helpers to create network iogress flows
  **********************************************************************/
-std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
+std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(void)
 {
     //first flatten the topology
     const auto flatFlows = squashFlows(this->flows);
@@ -252,6 +254,91 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
     }
 
     return networkAwareFlows;
+}
+
+/***********************************************************************
+ * helpers to deal with domain interaction
+ **********************************************************************/
+std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<Flow> &flatFlows)
+{
+    //map any given src or dst to its upstream/downstream ports
+    std::unordered_map<Port, std::vector<Port>> srcs, dsts;
+    for (const auto &flow : flatFlows)
+    {
+        for (const auto &subFlow : flatFlows)
+        {
+            if (subFlow.src == flow.src) srcs[flow.src].push_back(subFlow.dst);
+            if (subFlow.dst == flow.dst) dsts[flow.dst].push_back(subFlow.src);
+        }
+    }
+
+    //get a list of srcs with domain problems
+    std::unordered_map<Port, Pothos::Proxy> badSrcsToCopier, badDstsToCopier;
+    for (const auto &pair : srcs)
+    {
+        std::set<std::string> domains;
+        for (const auto &dst : pair.second)
+        {
+            domains.insert(dst.obj.callProxy("input", dst.name).call<std::string>("domain"));
+        }
+        if (domains.size() > 1)
+        {
+            auto registry = pair.first.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
+            auto copier = registry.callProxy("/blocks/misc/copier");
+            copier.call("setName", "DomainBridge");
+            badSrcsToCopier[pair.first] = copier;
+        }
+    }
+
+    //get a list of dsts with domain problems
+    for (const auto &pair : dsts)
+    {
+        std::set<std::string> domains;
+        for (const auto &src : pair.second)
+        {
+            domains.insert(src.obj.callProxy("output", src.name).call<std::string>("domain"));
+        }
+        if (domains.size() > 1)
+        {
+            auto registry = pair.first.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
+            auto copier = registry.callProxy("/blocks/misc/copier");
+            copier.call("setName", "DomainBridge");
+            badDstsToCopier[pair.first] = copier;
+        }
+    }
+
+    std::vector<Flow> domainSafeFlows;
+    for (const auto &flow : flatFlows)
+    {
+        auto srcIt = badSrcsToCopier.find(flow.src);
+        auto dstIt = badDstsToCopier.find(flow.dst);
+        Pothos::Proxy copier;
+        if (srcIt != badSrcsToCopier.end()) copier = srcIt->second;
+        if (dstIt != badDstsToCopier.end()) copier = dstIt->second;
+        if (copier)
+        {
+            //create the flows
+            Flow srcFlow;
+            srcFlow.src = flow.src;
+            srcFlow.dst.obj = copier;
+            srcFlow.dst.name = "0";
+
+            Flow dstFlow;
+            dstFlow.src.obj = copier;
+            dstFlow.src.name = "0";
+            dstFlow.dst = flow.dst;
+
+            //add the network flows to the overall list
+            domainSafeFlows.push_back(srcFlow);
+            domainSafeFlows.push_back(dstFlow);
+        }
+        else
+        {
+            domainSafeFlows.push_back(flow);
+        }
+    }
+
+    return domainSafeFlows;
 }
 
 /***********************************************************************
@@ -321,10 +408,17 @@ Pothos::Topology::Topology(void):
 
 Pothos::Topology::~Topology(void)
 {
-    this->disconnectAll();
-    this->commit();
-    assert(_impl->activeFlatFlows.empty());
-    assert(_impl->flowToNetgressCache.empty());
+    try
+    {
+        this->disconnectAll();
+        this->commit();
+        assert(_impl->activeFlatFlows.empty());
+        assert(_impl->flowToNetgressCache.empty());
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        poco_error_f1(Poco::Logger::get("Pothos.Topology"), "Topology destructor threw: %s", ex.displayText());
+    }
 }
 
 void Pothos::Topology::setName(const std::string &name)
@@ -339,7 +433,8 @@ const std::string &Pothos::Topology::getName(void) const
 
 void Pothos::Topology::commit(void)
 {
-    const auto flatFlows = _impl->createNetworkFlows();
+    auto flatFlows = _impl->createNetworkFlows();
+    flatFlows = _impl->rectifyDomainFlows(flatFlows);
     const auto &activeFlatFlows = _impl->activeFlatFlows;
 
     //new flows are in flat flows but not in current
