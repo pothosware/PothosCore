@@ -79,7 +79,7 @@ public:
 
     //! Call a method with a void return and 0 args
     inline
-    void call(const std::string &name) const;
+    void callVoid(const std::string &name) const;
     //! Call a method with a return type and 1 args
     template <typename ReturnType, typename A0>
     ReturnType call(const std::string &name, const A0 &a0) const;
@@ -90,7 +90,7 @@ public:
 
     //! Call a method with a void return and 1 args
     template <typename A0>
-    void call(const std::string &name, const A0 &a0) const;
+    void callVoid(const std::string &name, const A0 &a0) const;
     //! Call a method with a return type and 2 args
     template <typename ReturnType, typename A0, typename A1>
     ReturnType call(const std::string &name, const A0 &a0, const A1 &a1) const;
@@ -101,7 +101,7 @@ public:
 
     //! Call a method with a void return and 2 args
     template <typename A0, typename A1>
-    void call(const std::string &name, const A0 &a0, const A1 &a1) const;
+    void callVoid(const std::string &name, const A0 &a0, const A1 &a1) const;
     //! Call a method with a return type and 3 args
     template <typename ReturnType, typename A0, typename A1, typename A2>
     ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2) const;
@@ -112,7 +112,7 @@ public:
 
     //! Call a method with a void return and 3 args
     template <typename A0, typename A1, typename A2>
-    void call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2) const;
+    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2) const;
     //! Call a method with a return type and 4 args
     template <typename ReturnType, typename A0, typename A1, typename A2, typename A3>
     ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3) const;
@@ -123,7 +123,7 @@ public:
 
     //! Call a method with a void return and 4 args
     template <typename A0, typename A1, typename A2, typename A3>
-    void call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3) const;
+    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3) const;
     //! Call a method with a return type and 5 args
     template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4>
     ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4) const;
@@ -134,7 +134,7 @@ public:
 
     //! Call a method with a void return and 5 args
     template <typename A0, typename A1, typename A2, typename A3, typename A4>
-    void call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4) const;
+    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4) const;
     //! Call a method with a return type and 6 args
     template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
     ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5) const;
@@ -145,7 +145,7 @@ public:
 
     //! Call a method with a void return and 6 args
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-    void call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5) const;
+    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5) const;
     //! Call a method with a return type and 7 args
     template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
     ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6) const;
@@ -156,7 +156,7 @@ public:
 
     //! Call a method with a void return and 7 args
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-    void call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6) const;
+    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6) const;
     //! Call a method with a return type and 8 args
     template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
     ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7) const;
@@ -167,7 +167,7 @@ public:
 
     //! Call a method with a void return and 8 args
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-    void call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7) const;
+    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7) const;
     //! Call a method with a return type and 9 args
     template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
     ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8) const;
@@ -178,7 +178,7 @@ public:
 
     //! Call a method with a void return and 9 args
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-    void call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8) const;
+    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8) const;
 
     /*!
      * Returns a negative integer, zero, or a positive integer as this object is
@@ -236,7 +236,7 @@ inline Pothos::Proxy Pothos::Proxy::callProxy(const std::string &name) const
     return this->call<Proxy>(name);
 }
 
-inline void Pothos::Proxy::call(const std::string &name) const
+inline void Pothos::Proxy::callVoid(const std::string &name) const
 {
     this->call<Proxy>(name);
 }

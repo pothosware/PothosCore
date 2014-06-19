@@ -83,7 +83,7 @@ struct NonsenseClass
 BOOST_AUTO_TEST_CASE(test_callable_null)
 {
     Pothos::Callable callNull;
-    BOOST_CHECK_THROW(callNull.call(0), Pothos::CallableNullError);
+    BOOST_CHECK_THROW(callNull.callVoid(0), Pothos::CallableNullError);
     BOOST_CHECK(callNull == callNull);
     BOOST_CHECK(callNull == Pothos::Callable());
 }
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(test_callable_with_methods)
     BOOST_CHECK(setBar.type(-1) == typeid(void));
     BOOST_CHECK(setBar.type(0) == typeid(TestClass));
     BOOST_CHECK(setBar.type(1) == typeid(int));
-    BOOST_CHECK_THROW(setBar.call(0), Pothos::CallableArgumentError);
+    BOOST_CHECK_THROW(setBar.callVoid(0), Pothos::CallableArgumentError);
 
     Pothos::Callable getBar(&TestClass::getBar);
     BOOST_CHECK_EQUAL(getBar.getNumArgs(), 1);
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(test_callable_with_methods)
 
     //call the class methods
     TestClass test;
-    setBar.call(std::ref(test), int(42));
+    setBar.callVoid(std::ref(test), int(42));
     BOOST_CHECK_EQUAL(42, getBar.call<int>(std::ref(test)));
 
     //check the return error conditions
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(test_callable_bind)
     TestClass test;
     setBar.bind(std::ref(test), 0);
     getBar.bind(std::ref(test), 0);
-    setBar.call(int(42));
+    setBar.callVoid(int(42));
     BOOST_CHECK_EQUAL(42, getBar.call<int>());
 
     //bind and unbind arguments for add
@@ -276,5 +276,5 @@ BOOST_AUTO_TEST_CASE(test_callable_bind)
 BOOST_AUTO_TEST_CASE(test_callable_throwing)
 {
     Pothos::Callable itsGonnaThrow(&TestClass::itsGonnaThrow);
-    BOOST_CHECK_THROW(itsGonnaThrow.call(int(42)), std::runtime_error);
+    BOOST_CHECK_THROW(itsGonnaThrow.callVoid(int(42)), std::runtime_error);
 }

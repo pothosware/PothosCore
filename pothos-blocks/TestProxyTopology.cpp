@@ -16,15 +16,15 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_topology)
 
     //feed some msgs
     std::cout << "give messages to the feeder\n";
-    feeder.call("feedMessage", Pothos::Object("msg0"));
-    feeder.call("feedMessage", Pothos::Object("msg1"));
+    feeder.callVoid("feedMessage", Pothos::Object("msg0"));
+    feeder.callVoid("feedMessage", Pothos::Object("msg1"));
 
     //run the topology
     std::cout << "run the topology\n";
     {
         auto topology = env->findProxy("Pothos/Topology").callProxy("new");
-        topology.call("connect", feeder, "0", collector, "0");
-        topology.call("commit");
+        topology.callVoid("connect", feeder, "0", collector, "0");
+        topology.callVoid("commit");
         POTHOS_TEST_TRUE(topology.call<bool>("waitInactive"));
     }
 
@@ -56,14 +56,14 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
 
     //feed some msgs
     std::cout << "give messages to the feeder\n";
-    feeder.callProxy("feedMessage", Pothos::Object("msg0"));
-    feeder.callProxy("feedMessage", Pothos::Object("msg1"));
+    feeder.callVoid("feedMessage", Pothos::Object("msg0"));
+    feeder.callVoid("feedMessage", Pothos::Object("msg1"));
 
     //connect subtopology that just forwards
     std::cout << "connect the remote subtopology\n";
     auto subtopology = envRemote->findProxy("Pothos/Topology").callProxy("new");
-    subtopology.call("connect", subtopology, "0", forwarder, "0");
-    subtopology.call("connect", forwarder, "0", subtopology, "0");
+    subtopology.callVoid("connect", subtopology, "0", forwarder, "0");
+    subtopology.callVoid("connect", forwarder, "0", subtopology, "0");
 
     //run the topology
     std::cout << "run the topology\n";

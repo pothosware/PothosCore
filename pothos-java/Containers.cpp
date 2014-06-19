@@ -10,10 +10,10 @@
 static Pothos::Proxy convertVectorToJVector(Pothos::ProxyEnvironment::Sptr env, const Pothos::ProxyVector &vec)
 {
     auto jVector = env->findProxy("java.util.Vector").callProxy("new");
-    jVector.call("setSize", vec.size());
+    jVector.callVoid("setSize", vec.size());
     for (size_t i = 0; i < vec.size(); i++)
     {
-        jVector.call("set", i, vec[i]);
+        jVector.callVoid("set", i, vec[i]);
     }
     return jVector;
 }
@@ -44,7 +44,7 @@ static Pothos::Proxy convertSetToJSet(Pothos::ProxyEnvironment::Sptr env, const 
     auto jSet = env->findProxy("java.util.HashSet").callProxy("new");
     for (const auto &entry : set)
     {
-        jSet.call("add", entry);
+        jSet.callVoid("add", entry);
     }
     return jSet;
 }
@@ -76,7 +76,7 @@ static Pothos::Proxy convertMapToJMap(Pothos::ProxyEnvironment::Sptr env, const 
     auto jMap = env->findProxy("java.util.HashMap").callProxy("new");
     for (const auto &entry : map)
     {
-        jMap.call("put", entry.first, entry.second);
+        jMap.callVoid("put", entry.first, entry.second);
     }
     return jMap;
 }

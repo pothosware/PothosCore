@@ -177,7 +177,7 @@ public:
 
     //! Call a bound method/function with a void return and 0 args
     inline
-    void call() const;
+    void callVoid() const;
     //! Create a Callable for a class method with 1 args
     template <typename ReturnType, typename ClassType, typename A0>
     Callable(ReturnType(ClassType::*fcn)(A0));
@@ -248,7 +248,7 @@ public:
 
     //! Call a bound method/function with a void return and 1 args
     template <typename A0>
-    void call(A0 &&a0) const;
+    void callVoid(A0 &&a0) const;
     //! Create a Callable for a class method with 2 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1>
     Callable(ReturnType(ClassType::*fcn)(A0, A1));
@@ -319,7 +319,7 @@ public:
 
     //! Call a bound method/function with a void return and 2 args
     template <typename A0, typename A1>
-    void call(A0 &&a0, A1 &&a1) const;
+    void callVoid(A0 &&a0, A1 &&a1) const;
     //! Create a Callable for a class method with 3 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2));
@@ -390,7 +390,7 @@ public:
 
     //! Call a bound method/function with a void return and 3 args
     template <typename A0, typename A1, typename A2>
-    void call(A0 &&a0, A1 &&a1, A2 &&a2) const;
+    void callVoid(A0 &&a0, A1 &&a1, A2 &&a2) const;
     //! Create a Callable for a class method with 4 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2, A3));
@@ -461,7 +461,7 @@ public:
 
     //! Call a bound method/function with a void return and 4 args
     template <typename A0, typename A1, typename A2, typename A3>
-    void call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3) const;
+    void callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3) const;
     //! Create a Callable for a class method with 5 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4));
@@ -532,7 +532,7 @@ public:
 
     //! Call a bound method/function with a void return and 5 args
     template <typename A0, typename A1, typename A2, typename A3, typename A4>
-    void call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4) const;
+    void callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4) const;
     //! Create a Callable for a class method with 6 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5));
@@ -603,7 +603,7 @@ public:
 
     //! Call a bound method/function with a void return and 6 args
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-    void call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5) const;
+    void callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5) const;
     //! Create a Callable for a class method with 7 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6));
@@ -674,7 +674,7 @@ public:
 
     //! Call a bound method/function with a void return and 7 args
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-    void call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6) const;
+    void callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6) const;
     //! Create a Callable for a class method with 8 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7));
@@ -745,7 +745,7 @@ public:
 
     //! Call a bound method/function with a void return and 8 args
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-    void call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7) const;
+    void callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7) const;
     //! Create a Callable for a class method with 9 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7, A8));
@@ -816,7 +816,7 @@ public:
 
     //! Call a bound method/function with a void return and 9 args
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-    void call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7, A8 &&a8) const;
+    void callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7, A8 &&a8) const;
 
 private:
     std::vector<Object> _boundArgs;
@@ -841,7 +841,7 @@ inline Pothos::Object Pothos::Callable::callObject(void) const
     return this->opaqueCall(nullptr, 0);
 }
 
-inline void Pothos::Callable::call(void) const
+inline void Pothos::Callable::callVoid(void) const
 {
     this->callObject();
 }

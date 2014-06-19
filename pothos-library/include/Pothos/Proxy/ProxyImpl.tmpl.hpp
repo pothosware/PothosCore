@@ -83,7 +83,7 @@ Proxy Proxy::callProxy(const std::string &name, $expand('const A%d &a%d', $NARGS
 }
 
 template <$expand('typename A%d', $NARGS)>
-void Proxy::call(const std::string &name, $expand('const A%d &a%d', $NARGS)) const
+void Proxy::callVoid(const std::string &name, $expand('const A%d &a%d', $NARGS)) const
 {
     this->call<Proxy, $expand('A%d', $NARGS)>(name, $expand('a%d', $NARGS));
 }

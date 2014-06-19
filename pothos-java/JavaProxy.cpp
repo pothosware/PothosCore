@@ -119,7 +119,7 @@ void JavaProxyEnvironment::serialize(const Pothos::Proxy &proxy, std::ostream &o
     {
         auto b = this->findProxy("java.io.ByteArrayOutputStream").callProxy("new");
         auto o = this->findProxy("java.io.ObjectOutputStream").callProxy("new", b);
-        o.call("writeObject", proxy);
+        o.callVoid("writeObject", proxy);
         const auto bytes = b.call<std::vector<Poco::Int8>>("toByteArray");
         os.write((const char *)bytes.data(), bytes.size());
     }

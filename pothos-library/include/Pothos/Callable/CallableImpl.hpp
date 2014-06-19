@@ -1051,7 +1051,7 @@ Object Callable::callObject(A0 &&a0) const
 }
 
 template <typename A0>
-void Callable::call(A0 &&a0) const
+void Callable::callVoid(A0 &&a0) const
 {
     this->callObject(std::forward<A0>(a0));
 }
@@ -1143,7 +1143,7 @@ Object Callable::callObject(A0 &&a0, A1 &&a1) const
 }
 
 template <typename A0, typename A1>
-void Callable::call(A0 &&a0, A1 &&a1) const
+void Callable::callVoid(A0 &&a0, A1 &&a1) const
 {
     this->callObject(std::forward<A0>(a0), std::forward<A1>(a1));
 }
@@ -1236,7 +1236,7 @@ Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2) const
 }
 
 template <typename A0, typename A1, typename A2>
-void Callable::call(A0 &&a0, A1 &&a1, A2 &&a2) const
+void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2) const
 {
     this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2));
 }
@@ -1330,7 +1330,7 @@ Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3) const
 }
 
 template <typename A0, typename A1, typename A2, typename A3>
-void Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3) const
+void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3) const
 {
     this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3));
 }
@@ -1425,7 +1425,7 @@ Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4) const
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4>
-void Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4) const
+void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4) const
 {
     this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4));
 }
@@ -1521,7 +1521,7 @@ Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-void Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5) const
+void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5) const
 {
     this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5));
 }
@@ -1618,7 +1618,7 @@ Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-void Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6) const
+void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6) const
 {
     this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5), std::forward<A6>(a6));
 }
@@ -1716,7 +1716,7 @@ Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-void Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7) const
+void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7) const
 {
     this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5), std::forward<A6>(a6), std::forward<A7>(a7));
 }
@@ -1815,7 +1815,7 @@ Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-void Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7, A8 &&a8) const
+void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7, A8 &&a8) const
 {
     this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5), std::forward<A6>(a6), std::forward<A7>(a7), std::forward<A8>(a8));
 }

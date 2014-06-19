@@ -90,7 +90,7 @@ Proxy Proxy::callProxy(const std::string &name, const A0 &a0) const
 }
 
 template <typename A0>
-void Proxy::call(const std::string &name, const A0 &a0) const
+void Proxy::callVoid(const std::string &name, const A0 &a0) const
 {
     this->call<Proxy, A0>(name, a0);
 }
@@ -114,7 +114,7 @@ Proxy Proxy::callProxy(const std::string &name, const A0 &a0, const A1 &a1) cons
 }
 
 template <typename A0, typename A1>
-void Proxy::call(const std::string &name, const A0 &a0, const A1 &a1) const
+void Proxy::callVoid(const std::string &name, const A0 &a0, const A1 &a1) const
 {
     this->call<Proxy, A0, A1>(name, a0, a1);
 }
@@ -139,7 +139,7 @@ Proxy Proxy::callProxy(const std::string &name, const A0 &a0, const A1 &a1, cons
 }
 
 template <typename A0, typename A1, typename A2>
-void Proxy::call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2) const
+void Proxy::callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2) const
 {
     this->call<Proxy, A0, A1, A2>(name, a0, a1, a2);
 }
@@ -165,7 +165,7 @@ Proxy Proxy::callProxy(const std::string &name, const A0 &a0, const A1 &a1, cons
 }
 
 template <typename A0, typename A1, typename A2, typename A3>
-void Proxy::call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3) const
+void Proxy::callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3) const
 {
     this->call<Proxy, A0, A1, A2, A3>(name, a0, a1, a2, a3);
 }
@@ -192,7 +192,7 @@ Proxy Proxy::callProxy(const std::string &name, const A0 &a0, const A1 &a1, cons
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4>
-void Proxy::call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4) const
+void Proxy::callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4) const
 {
     this->call<Proxy, A0, A1, A2, A3, A4>(name, a0, a1, a2, a3, a4);
 }
@@ -220,7 +220,7 @@ Proxy Proxy::callProxy(const std::string &name, const A0 &a0, const A1 &a1, cons
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-void Proxy::call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5) const
+void Proxy::callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5) const
 {
     this->call<Proxy, A0, A1, A2, A3, A4, A5>(name, a0, a1, a2, a3, a4, a5);
 }
@@ -249,7 +249,7 @@ Proxy Proxy::callProxy(const std::string &name, const A0 &a0, const A1 &a1, cons
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-void Proxy::call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6) const
+void Proxy::callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6) const
 {
     this->call<Proxy, A0, A1, A2, A3, A4, A5, A6>(name, a0, a1, a2, a3, a4, a5, a6);
 }
@@ -279,7 +279,7 @@ Proxy Proxy::callProxy(const std::string &name, const A0 &a0, const A1 &a1, cons
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-void Proxy::call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7) const
+void Proxy::callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7) const
 {
     this->call<Proxy, A0, A1, A2, A3, A4, A5, A6, A7>(name, a0, a1, a2, a3, a4, a5, a6, a7);
 }
@@ -310,7 +310,7 @@ Proxy Proxy::callProxy(const std::string &name, const A0 &a0, const A1 &a1, cons
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-void Proxy::call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8) const
+void Proxy::callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8) const
 {
     this->call<Proxy, A0, A1, A2, A3, A4, A5, A6, A7, A8>(name, a0, a1, a2, a3, a4, a5, a6, a7, a8);
 }

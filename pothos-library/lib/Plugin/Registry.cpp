@@ -69,7 +69,7 @@ static void callPluginEventHandler(const Pothos::Object &handler, const Pothos::
     std::string error_msg;
     try
     {
-        handler.extract<Pothos::Callable>().call(plugin, event);
+        handler.extract<Pothos::Callable>().callVoid(plugin, event);
         return;
     }
     catch(const Pothos::Exception &ex)
