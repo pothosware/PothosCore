@@ -89,11 +89,11 @@ static void test_simple_runner(Pothos::ProxyEnvironment::Sptr env)
 
     //make an instance and test
     auto superBarInstance0 = superBarProxy.callProxy("new");
-    superBarInstance0.call("setBar", 123);
+    superBarInstance0.callVoid("setBar", 123);
     POTHOS_TEST_EQUAL(superBarInstance0.call<int>("getBar"), 123);
 
     //test field access
-    superBarInstance0.call("set:_bar", 321);
+    superBarInstance0.callVoid("set:_bar", 321);
     POTHOS_TEST_EQUAL(superBarInstance0.call<int>("get:_bar"), 321);
 
     //make an instance and test
@@ -115,7 +115,7 @@ static void test_simple_runner(Pothos::ProxyEnvironment::Sptr env)
     POTHOS_TEST_EQUAL(superBarInstance2.call<int>("getBar"), 4567);
     auto superBarInstance3 = superFooProxy.callProxy("makeNew", -543);
     POTHOS_TEST_EQUAL(superBarInstance3.call<int>("getBar"), -543);
-    superBarInstance3.call("delete");
+    superBarInstance3.callVoid("delete");
     auto superBarInstance4 = superFooProxy.callProxy("makeShared", 987);
     POTHOS_TEST_EQUAL(superBarInstance4.call<int>("getBar"), 987);
 

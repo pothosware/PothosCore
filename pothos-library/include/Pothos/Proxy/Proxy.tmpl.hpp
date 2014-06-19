@@ -80,7 +80,7 @@ public:
 
     //! Call a method with a void return and $NARGS args
     template <$expand('typename A%d', $NARGS)>
-    void call(const std::string &name, $expand('const A%d &a%d', $NARGS)) const;
+    void callVoid(const std::string &name, $expand('const A%d &a%d', $NARGS)) const;
     #end for;
 
     /*!
@@ -139,7 +139,7 @@ inline Pothos::Proxy Pothos::Proxy::callProxy(const std::string &name) const
     return this->call<Proxy>(name);
 }
 
-inline void Pothos::Proxy::call(const std::string &name) const
+inline void Pothos::Proxy::callVoid(const std::string &name) const
 {
     this->call<Proxy>(name);
 }

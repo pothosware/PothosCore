@@ -227,11 +227,11 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(void)
             auto dstDType = flow.dst.obj.callProxy("input", flow.dst.name).callProxy("dtype");
 
             auto netSink = srcEnvReg.callProxy("/blocks/network/network_sink", "udt://"+Poco::Environment::nodeName(), "BIND", srcDType);
-            netSink.call("setName", "NetOut");
+            netSink.callVoid("setName", "NetOut");
             auto connectPort = netSink.call<std::string>("getActualPort");
             auto connectUri = Poco::format("udt://%s:%s", Poco::Environment::nodeName(), connectPort);
             auto netSource = dstEnvReg.callProxy("/blocks/network/network_source", connectUri, "CONNECT", dstDType);
-            netSource.call("setName", "NetIn");
+            netSource.callVoid("setName", "NetIn");
 
             //create the flows
             Flow srcFlow;
@@ -582,13 +582,13 @@ void Pothos::Topology::disconnectAll(void)
         //throws ProxyHandleCallError on non topologies (aka blocks)
         if (flow.src.obj) try
         {
-            flow.src.obj.call("disconnectAll");
+            flow.src.obj.callVoid("disconnectAll");
         }
         catch (const Pothos::Exception &){}
 
         if (flow.dst.obj) try
         {
-            flow.dst.obj.call("disconnectAll");
+            flow.dst.obj.callVoid("disconnectAll");
         }
         catch (const Pothos::Exception &){}
     }
