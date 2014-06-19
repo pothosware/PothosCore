@@ -124,6 +124,7 @@ protected:
      *   - provide a replacement upstream buffer manager (return manager)
      *   - protest the ability to interact with the domain (throw exception)
      *
+     * \throws PortDomainError when the domain is incompatible
      * \param name the name of an input port on this block
      * \param domain the domain of the upstream blocks
      * \return a new buffer manager for this port or null sptr
@@ -140,6 +141,7 @@ protected:
      *   - provide a replacement downstream buffer manager (return manager)
      *   - protest the ability to interact with the domain (throw exception)
      *
+     * \throws PortDomainError when the domain is incompatible
      * \param name the name of an output port on this block
      * \param domain the domain of the downstream blocks
      * \return a new buffer manager for this port or null sptr

@@ -267,6 +267,39 @@ public:
         return receiver;
     }
 
+    std::string getInputBufferMode(const std::string &name, const std::string &domain)
+    {
+        try
+        {
+            if (block->getInputBufferManager(name, domain)) return "CUSTOM";
+        }
+        catch (const PortDomainError &)
+        {
+            return "ERROR";
+        }
+        return "ABDICATE";
+    }
+
+    std::string getOutputBufferMode(const std::string &name, const std::string &domain)
+    {
+        try
+        {
+            if (block->getOutputBufferManager(name, domain)) return "CUSTOM";
+        }
+        catch (const PortDomainError &)
+        {
+            return "ERROR";
+        }
+        return "ABDICATE";
+    }
+
+    void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
+    {
+        assert(manager);
+        manager->init(BufferManagerArgs());
+        outputs[name]->_impl->bufferManager = manager;
+    }
+
     ///////////////////// work helper methods ///////////////////////
     inline void notify(void)
     {

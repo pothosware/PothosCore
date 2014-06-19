@@ -259,6 +259,55 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(void)
 /***********************************************************************
  * helpers to deal with domain interaction
  **********************************************************************/
+static std::unordered_map<Port, Pothos::Proxy> domainInspection(
+    const std::unordered_map<Port, std::vector<Port>> &ports,
+    const std::string &domainAccessor,
+    const std::string &modeAccessor
+)
+{
+    std::unordered_map<Port, Pothos::Proxy> bads;
+    for (const auto &pair : ports)
+    {
+        std::set<std::string> domains;
+        for (const auto &subPort : pair.second)
+        {
+            domains.insert(subPort.obj.callProxy(domainAccessor, subPort.name).call<std::string>("domain"));
+        }
+        if (domains.size() > 1)
+        {
+            auto registry = pair.first.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
+            auto copier = registry.callProxy("/blocks/misc/copier");
+            copier.call("setName", "DomainBridge");
+            bads[pair.first] = copier;
+        }
+        else
+        {
+            assert(domains.size() == 1);
+            const std::string domain = *domains.begin();
+            Pothos::Proxy actor = pair.first.obj.callProxy("get:_actor");
+            //auto mode = actor.call<std::string>(modeAccessor, pair.first.name, domain);
+
+            //input has a custom manager
+            //  -> must have 1 src or create copy
+            //  -> 1 src must abdicate or create copy
+            //  -> otherwise ok good
+            // input has error
+            //  -> make a copy
+            // input abdicates - ok good
+
+            //output has a custom manager
+            //  -> all inputs must be in abdicate mode or make a copy
+            // output has an error
+            //  -> make a copy
+            // output abdicates - ok good
+
+            //check for errors and stuff SUCH TODO
+            //auto manager0 = pair.first.obj.callProxy(getKeyBufferManager, pair.first.name, *domains.begin());
+        }
+    }
+    return bads;
+}
+
 std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<Flow> &flatFlows)
 {
     //map any given src or dst to its upstream/downstream ports
@@ -272,40 +321,9 @@ std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<F
         }
     }
 
-    //get a list of srcs with domain problems
-    std::unordered_map<Port, Pothos::Proxy> badSrcsToCopier, badDstsToCopier;
-    for (const auto &pair : srcs)
-    {
-        std::set<std::string> domains;
-        for (const auto &dst : pair.second)
-        {
-            domains.insert(dst.obj.callProxy("input", dst.name).call<std::string>("domain"));
-        }
-        if (domains.size() > 1)
-        {
-            auto registry = pair.first.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
-            auto copier = registry.callProxy("/blocks/misc/copier");
-            copier.call("setName", "DomainBridge");
-            badSrcsToCopier[pair.first] = copier;
-        }
-    }
-
-    //get a list of dsts with domain problems
-    for (const auto &pair : dsts)
-    {
-        std::set<std::string> domains;
-        for (const auto &src : pair.second)
-        {
-            domains.insert(src.obj.callProxy("output", src.name).call<std::string>("domain"));
-        }
-        if (domains.size() > 1)
-        {
-            auto registry = pair.first.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
-            auto copier = registry.callProxy("/blocks/misc/copier");
-            copier.call("setName", "DomainBridge");
-            badDstsToCopier[pair.first] = copier;
-        }
-    }
+    //get a list of ports with domain problems
+    auto badSrcsToCopier = domainInspection(srcs, "input", "getOutputBufferMode");
+    auto badDstsToCopier = domainInspection(dsts, "output", "getInputBufferMode");
 
     std::vector<Flow> domainSafeFlows;
     for (const auto &flow : flatFlows)
@@ -336,6 +354,11 @@ std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<F
         {
             domainSafeFlows.push_back(flow);
         }
+    }
+
+    for (const auto &flow : domainSafeFlows)
+    {
+        
     }
 
     return domainSafeFlows;
