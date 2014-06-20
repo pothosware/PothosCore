@@ -18,8 +18,10 @@
 class OpenClKernel : public Pothos::Block
 {
 public:
-    static Pothos::Block *make(const size_t platformIndex, const size_t deviceIndex)
+    static Pothos::Block *make(/*const size_t platformIndex, const size_t deviceIndex*/)
     {
+        auto platformIndex= 0;
+        auto deviceIndex= 0;
         return new OpenClKernel(platformIndex, deviceIndex);
     }
 
@@ -29,6 +31,7 @@ public:
         _productionFactor(1.0)
     {
         this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setSource));
+        this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, initialize));
         this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setLocalSize));
         this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, getLocalSize));
         this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setGlobalFactor));
@@ -39,7 +42,11 @@ public:
 
     ~OpenClKernel(void)
     {
-        return;
+        //reset in order of creation
+        _kernel.reset();
+        _queue.reset();
+        _program.reset();
+        _context.reset();
     }
 
     void setSource(const std::string &name, const std::string &source)
@@ -78,8 +85,27 @@ public:
         return _productionFactor;
     }
 
-    void activate(void);
-    void deactivate(void);
+    Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &)
+    {
+        OpenClBufferContainerArgs args;
+        args.mem_flags = CL_MEM_READ_ONLY;
+        args.map_flags = CL_MAP_WRITE;
+        args.context = _context;
+        args.queue = _queue;
+        return makeOpenClBufferManager(args);
+    }
+
+    Pothos::BufferManager::Sptr getOutputBufferManager(const std::string &, const std::string &)
+    {
+        OpenClBufferContainerArgs args;
+        args.mem_flags = CL_MEM_WRITE_ONLY;
+        args.map_flags = CL_MAP_READ;
+        args.context = _context;
+        args.queue = _queue;
+        return makeOpenClBufferManager(args);
+    }
+
+    void initialize(void);
     void work(void);
 
 private:
@@ -115,7 +141,7 @@ void clReleaseKernelPtr(cl_kernel *p)
     clReleaseKernel(*p);
 }
 
-void OpenClKernel::activate(void)
+void OpenClKernel::initialize(void)
 {
     cl_platform_id platform;
     cl_int err = 0;
@@ -168,29 +194,6 @@ void OpenClKernel::activate(void)
     auto kernel = clCreateKernel(*_program, _kernelName.c_str(), &err);
     if (err < 0) throw Pothos::Exception("OpenClKernel::activate::clCreateKernel()", std::to_string(err));
     _kernel.reset(new cl_kernel(kernel), clReleaseKernelPtr);
-
-    /* Set the output buffer managers */
-    const auto &outputs = this->outputs();
-    for (size_t i = 0; i < outputs.size(); i++)
-    {
-        OpenClBufferContainerArgs args;
-        args.mem_flags = CL_MEM_WRITE_ONLY;
-        args.map_flags = CL_MAP_READ;
-        args.context = _context;
-        args.queue = _queue;
-        auto manager = makeOpenClBufferManager(args);
-        //manager->init(Pothos::BufferManagerArgs());
-        //outputs[i]->setBufferManager(manager);
-    }
-}
-
-void OpenClKernel::deactivate(void)
-{
-    //reset in order of creation
-    _kernel.reset();
-    _queue.reset();
-    _program.reset();
-    _context.reset();
 }
 
 void OpenClKernel::work(void)
