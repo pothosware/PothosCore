@@ -37,12 +37,12 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel)
     auto feeder1 = registry.callProxy("/blocks/sources/feeder_source", "float32");
 
     auto openClKernel = registry.callProxy("/blocks/opencl/opencl_kernel");
-    openClKernel.call("setupInput", "0", "float32");
-    openClKernel.call("setupOutput", "0", "float32");
-    openClKernel.call("setSource", "add_2x_float32", KERNEL_SOURCE);
-    openClKernel.call("setLocalSize", 1);
-    openClKernel.call("setGlobalFactor", 1.0);
-    openClKernel.call("setProductionFactor", 1.0);
+    openClKernel.callVoid("setupInput", "0", "float32");
+    openClKernel.callVoid("setupOutput", "0", "float32");
+    openClKernel.callVoid("setSource", "add_2x_float32", KERNEL_SOURCE);
+    openClKernel.callVoid("setLocalSize", 1);
+    openClKernel.callVoid("setGlobalFactor", 1.0);
+    openClKernel.callVoid("setProductionFactor", 1.0);
 
     //feed buffer
     auto b0 = Pothos::BufferChunk(10*sizeof(float));

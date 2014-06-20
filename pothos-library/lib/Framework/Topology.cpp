@@ -259,52 +259,62 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(void)
 /***********************************************************************
  * helpers to deal with domain interaction
  **********************************************************************/
+static bool isDomainCrossingAcceptable(
+    const Port &mainPort,
+    const std::vector<Port> &subPorts,
+    const bool isInput
+)
+{
+    auto mainDomain = mainPort.obj.callProxy(isInput?"input":"output", mainPort.name).call<std::string>("domain");
+
+    bool allOthersAbdicate = true;
+    std::set<std::string> subDomains;
+    for (const auto &subPort : subPorts)
+    {
+        subDomains.insert(subPort.obj.callProxy(isInput?"output":"input", subPort.name).call<std::string>("domain"));
+        auto actor = subPort.obj.callProxy("get:_actor");
+        const auto subMode = actor.call<std::string>(isInput?"getOutputBufferMode":"getInputBufferMode", subPort.name, mainDomain);
+        if (subMode != "ABDICATE") allOthersAbdicate = false;
+    }
+
+    //cant handle multiple domains
+    if (subDomains.size() > 1) return false;
+
+    assert(subDomains.size() == 1);
+    const auto subDomain = *subDomains.begin();
+    auto actor = mainPort.obj.callProxy("get:_actor");
+    const auto mainMode = actor.call<std::string>(isInput?"getInputBufferMode":"getOutputBufferMode", mainPort.name, subDomain);
+
+    //error always means we make a copy block
+    if (mainMode == "ERROR") return false;
+
+    //always good when we abdicate
+    if (mainMode == "ABDICATE") return true;
+
+    //otherwise the mode should be custom
+    assert(mainMode == "CUSTOM");
+
+    //if custom, the sub ports must abdicate
+    if (mainMode == "CUSTOM" and not allOthersAbdicate) return false;
+
+    return true;
+}
+
 static std::unordered_map<Port, Pothos::Proxy> domainInspection(
     const std::unordered_map<Port, std::vector<Port>> &ports,
-    const std::string &domainAccessor,
-    const std::string &modeAccessor
+    const bool isInput
 )
 {
     std::unordered_map<Port, Pothos::Proxy> bads;
     for (const auto &pair : ports)
     {
-        std::set<std::string> domains;
-        for (const auto &subPort : pair.second)
-        {
-            domains.insert(subPort.obj.callProxy(domainAccessor, subPort.name).call<std::string>("domain"));
-        }
-        if (domains.size() > 1)
-        {
-            auto registry = pair.first.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
-            auto copier = registry.callProxy("/blocks/misc/copier");
-            copier.call("setName", "DomainBridge");
-            bads[pair.first] = copier;
-        }
-        else
-        {
-            assert(domains.size() == 1);
-            const std::string domain = *domains.begin();
-            Pothos::Proxy actor = pair.first.obj.callProxy("get:_actor");
-            //auto mode = actor.call<std::string>(modeAccessor, pair.first.name, domain);
-
-            //input has a custom manager
-            //  -> must have 1 src or create copy
-            //  -> 1 src must abdicate or create copy
-            //  -> otherwise ok good
-            // input has error
-            //  -> make a copy
-            // input abdicates - ok good
-
-            //output has a custom manager
-            //  -> all inputs must be in abdicate mode or make a copy
-            // output has an error
-            //  -> make a copy
-            // output abdicates - ok good
-
-            //check for errors and stuff SUCH TODO
-            //auto manager0 = pair.first.obj.callProxy(getKeyBufferManager, pair.first.name, *domains.begin());
-        }
+        if (isDomainCrossingAcceptable(pair.first, pair.second, isInput)) continue;
+        auto registry = pair.first.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
+        auto copier = registry.callProxy("/blocks/misc/copier");
+        copier.callVoid("setName", "DomainBridge");
+        bads[pair.first] = copier;
     }
+
     return bads;
 }
 
@@ -322,8 +332,8 @@ std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<F
     }
 
     //get a list of ports with domain problems
-    auto badSrcsToCopier = domainInspection(srcs, "input", "getOutputBufferMode");
-    auto badDstsToCopier = domainInspection(dsts, "output", "getInputBufferMode");
+    auto badSrcsToCopier = domainInspection(srcs, false);
+    auto badDstsToCopier = domainInspection(dsts, true);
 
     std::vector<Flow> domainSafeFlows;
     for (const auto &flow : flatFlows)
@@ -354,11 +364,6 @@ std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<F
         {
             domainSafeFlows.push_back(flow);
         }
-    }
-
-    for (const auto &flow : domainSafeFlows)
-    {
-        
     }
 
     return domainSafeFlows;

@@ -293,13 +293,6 @@ public:
         return "ABDICATE";
     }
 
-    void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
-    {
-        assert(manager);
-        manager->init(BufferManagerArgs());
-        outputs[name]->_impl->bufferManager = manager;
-    }
-
     ///////////////////// work helper methods ///////////////////////
     inline void notify(void)
     {
