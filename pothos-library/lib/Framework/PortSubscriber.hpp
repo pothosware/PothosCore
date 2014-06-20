@@ -7,19 +7,28 @@
 #include <Theron/Framework.h>
 #include <string>
 
+namespace Pothos
+{
+    class InputPort;
+    class OutputPort;
+}
+
 struct PortSubscriber
 {
     PortSubscriber(void):
-        index(-1)
+        inputPort(nullptr),
+        outputPort(nullptr)
     {}
-    int index; //port number
-    std::string name; //port name
+    Pothos::InputPort *inputPort;
+    Pothos::OutputPort *outputPort;
     Theron::Address address;
 };
 
 inline bool operator==(const PortSubscriber &lhs, const PortSubscriber &rhs)
 {
-    return lhs.name == rhs.name and lhs.address == rhs.address;
+    return lhs.inputPort == rhs.inputPort
+        and lhs.outputPort == rhs.outputPort
+        and lhs.address == rhs.address;
 }
 
 struct PortSubscriberMessage

@@ -259,35 +259,29 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
  **********************************************************************/
 static void updateFlows(const std::vector<Flow> &flows, const std::string &action)
 {
+    const bool isInputAction = action.find("INPUT") != std::string::npos;
+
     //result list is used to ack all subscribe messages
-    std::vector<Pothos::Proxy> infoReceivers;
+    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
 
     //add new data acceptors
     for (const auto &flow : flows)
     {
-        if (action == "SUBINPUT" or action == "UNSUBINPUT")
-        {
-            auto actor = flow.src.obj.callProxy("get:_actor");
-            auto addr = flow.dst.obj.callProxy("get:_actor").callProxy("getAddress");
-            auto result = actor.callProxy("sendPortSubscriberMessage", action, flow.src.name, flow.dst.name, addr);
-            infoReceivers.push_back(result);
-        }
-        if (action == "SUBOUTPUT" or action == "UNSUBOUTPUT")
-        {
-            auto actor = flow.dst.obj.callProxy("get:_actor");
-            auto addr = flow.src.obj.callProxy("get:_actor").callProxy("getAddress");
-            auto result = actor.callProxy("sendPortSubscriberMessage", action, flow.dst.name, flow.src.name, addr);
-            infoReceivers.push_back(result);
-        }
+        const auto &pri = isInputAction?flow.src:flow.dst;
+        const auto &sec = isInputAction?flow.dst:flow.src;
+
+        auto actor = pri.obj.callProxy("get:_actor");
+        auto result = actor.callProxy("sendPortSubscriberMessage", action, pri.name, sec.obj.callProxy("getCPointer"), sec.name);
+        const auto msg = Poco::format("%s.sendPortSubscriberMessage(%s)", pri.obj.call<std::string>("getName"), action);
+        infoReceivers.push_back(std::make_pair(msg, result));
     }
 
     //check all subscribe message results
     std::string errors;
     for (auto infoReceiver : infoReceivers)
     {
-        const auto &msg = infoReceiver.call<std::string>("WaitInfo");
-        if (msg.empty()) continue;
-        errors.append(infoReceiver.call<std::string>("getName")+": "+msg+"\n");
+        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
+        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
     }
     if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
 }
@@ -369,13 +363,14 @@ void Pothos::Topology::commit(void)
     updateFlows(oldFlows, "UNSUBINPUT");
 
     //result list is used to ack all de/activate messages
-    std::vector<Pothos::Proxy> infoReceivers;
+    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
 
     //send activate to all new blocks not already in active flows
     for (auto block : getObjSetFromFlowList(newFlows, activeFlatFlows))
     {
         auto actor = block.callProxy("get:_actor");
-        infoReceivers.push_back(actor.callProxy("sendActivateMessage"));
+        const auto msg = Poco::format("%s.sendActivateMessage()", block.call<std::string>("getName"));
+        infoReceivers.push_back(std::make_pair(msg, actor.callProxy("sendActivateMessage")));
     }
 
     //update current flows
@@ -385,16 +380,16 @@ void Pothos::Topology::commit(void)
     for (auto block : getObjSetFromFlowList(oldFlows, _impl->activeFlatFlows))
     {
         auto actor = block.callProxy("get:_actor");
-        infoReceivers.push_back(actor.callProxy("sendDeactivateMessage"));
+        const auto msg = Poco::format("%s.sendDeactivateMessage()", block.call<std::string>("getName"));
+        infoReceivers.push_back(std::make_pair(msg, actor.callProxy("sendDeactivateMessage")));
     }
 
     //check all de/activate message results
     std::string errors;
     for (auto infoReceiver : infoReceivers)
     {
-        const auto &msg = infoReceiver.call<std::string>("WaitInfo");
-        if (msg.empty()) continue;
-        errors.append(infoReceiver.call<std::string>("getName")+": "+msg+"\n");
+        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
+        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
     }
     if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
 

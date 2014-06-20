@@ -169,6 +169,11 @@ static const std::string &getUid(const Pothos::Block &b)
     return b.uid();
 }
 
+static const Pothos::Block *getCPointer(const Pothos::Block &b)
+{
+    return &b;
+}
+
 static WorkerStats getWorkerStats(const Pothos::Block &block)
 {
     InfoReceiver<WorkerStats> receiver;
@@ -182,6 +187,7 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setName))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, getName))
     .registerMethod("uid", &getUid)
+    .registerMethod("getCPointer", &getCPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod("getWorkerStats", &getWorkerStats)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))

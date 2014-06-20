@@ -194,7 +194,7 @@ static std::string typeToPluginPath(const std::type_info &type)
 
 Pothos::ManagedClass &Pothos::ManagedClass::commit(const std::string &classPath)
 {
-    //register conversions for constructors that take one arguments
+    //register conversions for constructors that take one argument
     for (const auto &constructor : this->getConstructors())
     {
         if (constructor.getNumArgs() != 1) continue;

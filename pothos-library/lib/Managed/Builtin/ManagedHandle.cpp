@@ -89,7 +89,7 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
 
     if (calls.empty() and not opaqueCall and not wildcardCall)
     {
-        throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "no available calls");
+        throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "no available calls :" + obj.toString());
     }
 
     /*******************************************************************

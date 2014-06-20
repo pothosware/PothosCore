@@ -6,15 +6,16 @@
 #include <algorithm> //sort
 #include <cassert>
 
-void Pothos::WorkerActor::handleAsyncPortNameMessage(const PortMessage<std::string, Object> &message, const Theron::Address)
+void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, Object> &message, const Theron::Address)
 {
-    auto &input = getInput(message.id, __FUNCTION__);
+    assert(message.id != nullptr);
+    auto &input = *message.id;
     if (input._impl->asyncMessages.full()) input._impl->asyncMessages.set_capacity(input._impl->asyncMessages.capacity()*2);
     if (input._impl->isSlot and message.contents.type() == typeid(ObjectVector))
     {
         //TODO try/catch/log
         const auto &args = message.contents.extract<ObjectVector>();
-        block->opaqueCallHandler(message.id, args.data(), args.size());
+        block->opaqueCallHandler(input.name(), args.data(), args.size());
         this->bump();
         return;
     }
@@ -22,40 +23,19 @@ void Pothos::WorkerActor::handleAsyncPortNameMessage(const PortMessage<std::stri
     this->notify();
 }
 
-void Pothos::WorkerActor::handleAsyncPortIndexMessage(const PortMessage<size_t, Object> &message, const Theron::Address)
+void Pothos::WorkerActor::handleInlinePortMessage(const PortMessage<InputPort *, Label> &message, const Theron::Address)
 {
-    auto &input = getInput(message.id, __FUNCTION__);
-    if (input._impl->asyncMessages.full()) input._impl->asyncMessages.set_capacity(input._impl->asyncMessages.capacity()*2);
-    input._impl->asyncMessages.push_back(message.contents);
-    this->notify();
-}
-
-void Pothos::WorkerActor::handleInlinePortNameMessage(const PortMessage<std::string, Label> &message, const Theron::Address)
-{
-    auto &input = getInput(message.id, __FUNCTION__);
+    assert(message.id != nullptr);
+    auto &input = *message.id;
     input._impl->inlineMessages.push_back(message.contents);
     std::sort(input._impl->inlineMessages.begin(), input._impl->inlineMessages.end());
     this->bump();
 }
 
-void Pothos::WorkerActor::handleInlinePortIndexMessage(const PortMessage<size_t, Label> &message, const Theron::Address)
+void Pothos::WorkerActor::handleBufferPortMessage(const PortMessage<InputPort *, BufferChunk> &message, const Theron::Address)
 {
-    auto &input = getInput(message.id, __FUNCTION__);
-    input._impl->inlineMessages.push_back(message.contents);
-    std::sort(input._impl->inlineMessages.begin(), input._impl->inlineMessages.end());
-    this->bump();
-}
-
-void Pothos::WorkerActor::handleBufferPortNameMessage(const PortMessage<std::string, BufferChunk> &message, const Theron::Address)
-{
-    auto &input = getInput(message.id, __FUNCTION__);
-    input._impl->bufferAccumulator.push(message.contents);
-    this->notify();
-}
-
-void Pothos::WorkerActor::handleBufferPortIndexMessage(const PortMessage<size_t, BufferChunk> &message, const Theron::Address)
-{
-    auto &input = getInput(message.id, __FUNCTION__);
+    assert(message.id != nullptr);
+    auto &input = *message.id;
     input._impl->bufferAccumulator.push(message.contents);
     this->notify();
 }
@@ -66,51 +46,53 @@ void Pothos::WorkerActor::handleBufferReturnMessage(const BufferReturnMessage &m
     this->notify();
 }
 
-void Pothos::WorkerActor::handleSubscriberPortIndexMessage(const PortMessage<std::string, PortSubscriberMessage> &message, const Theron::Address from)
+void Pothos::WorkerActor::handleSubscriberPortMessage(const PortMessage<std::string, PortSubscriberMessage> &message, const Theron::Address from)
 {
     try
     {
         //subscriber is an input, add to the outputs subscribers list
         if (message.contents.action == "SUBINPUT")
         {
+            assert(message.contents.port.inputPort != nullptr);
             this->autoAllocateOutput(message.id);
             auto &port = getOutput(message.id, __FUNCTION__);
             auto sub = message.contents.port;
             auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
-            if (it != port._impl->subscribers.end()) throw Poco::format("input %s subscription exsists in output port %s", sub.name, message.id);
-            sub.index = portNameToIndex(sub.name);
+            if (it != port._impl->subscribers.end()) throw Poco::format("input %s subscription exsists in output port %s", message.contents.port.inputPort->name(), message.id);
             port._impl->subscribers.push_back(sub);
         }
 
         //subscriber is an output, add to the input subscribers list
         if (message.contents.action == "SUBOUTPUT")
         {
+            assert(message.contents.port.outputPort != nullptr);
             this->autoAllocateInput(message.id);
             auto &port = getInput(message.id, __FUNCTION__);
             auto sub = message.contents.port;
             auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
-            if (it != port._impl->subscribers.end()) throw Poco::format("output %s subscription exsists in input port %s", sub.name, message.id);
-            sub.index = portNameToIndex(sub.name);
+            if (it != port._impl->subscribers.end()) throw Poco::format("output %s subscription exsists in input port %s", message.contents.port.outputPort->name(), message.id);
             port._impl->subscribers.push_back(sub);
         }
 
         //unsubscriber is an input, remove from the outputs subscribers list
         if (message.contents.action == "UNSUBINPUT")
         {
+            assert(message.contents.port.inputPort != nullptr);
             auto &port = getOutput(message.id, __FUNCTION__);
             auto sub = message.contents.port;
             auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
-            if (it == port._impl->subscribers.end()) throw Poco::format("input %s subscription missing from output port %s", sub.name, message.id);
+            if (it == port._impl->subscribers.end()) throw Poco::format("input %s subscription missing from output port %s", message.contents.port.inputPort->name(), message.id);
             port._impl->subscribers.erase(it);
         }
 
         //unsubscriber is an output, remove from the inputs subscribers list
         if (message.contents.action == "UNSUBOUTPUT")
         {
+            assert(message.contents.port.outputPort != nullptr);
             auto &port = getInput(message.id, __FUNCTION__);
             auto sub = message.contents.port;
             auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
-            if (it == port._impl->subscribers.end()) throw Poco::format("output %s subscription missing from input port %s", sub.name, message.id);
+            if (it == port._impl->subscribers.end()) throw Poco::format("output %s subscription missing from input port %s", message.contents.port.outputPort->name(), message.id);
             port._impl->subscribers.erase(it);
         }
 

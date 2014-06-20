@@ -165,7 +165,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
             port._buffer = BufferChunk(); //clear reference
             buffer.length = bytes;
             port._impl->bufferManager->pop(buffer.length);
-            this->sendPortMessage(port._impl->subscribers, buffer);
+            this->sendOutputPortMessage(port._impl->subscribers, buffer);
         }
 
         //send the external buffers in the queue
@@ -174,7 +174,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
             auto &buffer = port._impl->postedBuffers.front();
             bytesProduced += buffer.length;
             port._totalElements += buffer.length/port.dtype().size();
-            this->sendPortMessage(port._impl->subscribers, buffer);
+            this->sendOutputPortMessage(port._impl->subscribers, buffer);
             port._impl->postedBuffers.pop_front();
         }
 
@@ -199,15 +199,8 @@ void Pothos::WorkerActor::postWorkTasks(void)
 
 #include <Pothos/Managed.hpp>
 
-//FIXME see issue #37
-static Theron::Address getAddress(const Pothos::WorkerActor &actor)
-{
-    return actor.GetAddress();
-}
-
 static auto managedWorkerActor = Pothos::ManagedClass()
     .registerClass<Pothos::WorkerActor>()
-    .registerMethod("getAddress", &getAddress)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendActivateMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendDeactivateMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendPortSubscriberMessage))

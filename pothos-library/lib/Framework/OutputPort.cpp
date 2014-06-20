@@ -31,7 +31,7 @@ void Pothos::OutputPort::postLabel(const Label &label)
 {
     assert(_impl);
     assert(_impl->actor != nullptr);
-    _impl->actor->sendPortMessage(_impl->subscribers, label);
+    _impl->actor->sendOutputPortMessage(_impl->subscribers, label);
     _impl->actor->workBump = true;
 }
 
@@ -39,7 +39,7 @@ void Pothos::OutputPort::postMessage(const Object &message)
 {
     assert(_impl);
     assert(_impl->actor != nullptr);
-    _impl->actor->sendPortMessage(_impl->subscribers, message);
+    _impl->actor->sendOutputPortMessage(_impl->subscribers, message);
     _totalMessages++;
     _impl->actor->workBump = true;
 }
