@@ -29,6 +29,7 @@ endif()
 
 set(SOURCES
     OpenClInfo.cpp
+    OpenClErrToStr.cpp
     OpenClKernel.cpp
     OpenClBufferManager.cpp
     TestOpenClBlocks.cpp

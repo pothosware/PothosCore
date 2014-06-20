@@ -20,7 +20,7 @@ public:
     {
         cl_int err = 0;
         memobj = clCreateBuffer(*_clArgs.context, _clArgs.mem_flags, bufferSize, nullptr, &err);
-        if (err < 0) throw Pothos::Exception("OpenClBufferContainer::clCreateBuffer()", std::to_string(err));
+        if (err < 0) throw Pothos::Exception("OpenClBufferContainer::clCreateBuffer()", clErrToStr(err));
         mapped_ptr = clEnqueueMapBuffer(
             *_clArgs.queue,
             memobj,
@@ -30,7 +30,7 @@ public:
             bufferSize,
             0, nullptr, nullptr,
             &err);
-        if (err < 0) throw Pothos::Exception("OpenClBufferContainer::clEnqueueMapBuffer()", std::to_string(err));
+        if (err < 0) throw Pothos::Exception("OpenClBufferContainer::clEnqueueMapBuffer()", clErrToStr(err));
     }
 
     ~OpenClBufferContainer(void)
@@ -102,7 +102,7 @@ public:
                 numBytes, container->mapped_ptr,
                 0, nullptr, nullptr
             );
-            if (err < 0) throw Pothos::Exception("OpenClBufferManager::clEnqueueWriteBuffer()", std::to_string(err));
+            if (err < 0) throw Pothos::Exception("OpenClBufferManager::clEnqueueWriteBuffer()", clErrToStr(err));
         }
 
         //perform blocking read
@@ -115,7 +115,7 @@ public:
                 numBytes, container->mapped_ptr,
                 0, nullptr, nullptr
             );
-            if (err < 0) throw Pothos::Exception("OpenClBufferManager::clEnqueueReadBuffer()", std::to_string(err));
+            if (err < 0) throw Pothos::Exception("OpenClBufferManager::clEnqueueReadBuffer()", clErrToStr(err));
         }
     }
 
@@ -137,7 +137,7 @@ Pothos::BufferManager::Sptr makeOpenClBufferManager(const OpenClBufferContainerA
     return Pothos::BufferManager::Sptr(new OpenClBufferManager(args));
 }
 
-cl_mem getClBufferFromManaged(const Pothos::ManagedBuffer &buff)
+cl_mem &getClBufferFromManaged(const Pothos::ManagedBuffer &buff)
 {
     return std::static_pointer_cast<OpenClBufferContainer>(buff.getBuffer().getContainer())->memobj;
 }

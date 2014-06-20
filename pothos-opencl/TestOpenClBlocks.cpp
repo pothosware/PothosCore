@@ -36,7 +36,7 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel)
     auto feeder0 = registry.callProxy("/blocks/sources/feeder_source", "float32");
     auto feeder1 = registry.callProxy("/blocks/sources/feeder_source", "float32");
 
-    auto openClKernel = registry.callProxy("/blocks/opencl/opencl_kernel");
+    auto openClKernel = registry.callProxy("/blocks/opencl/opencl_kernel", 0, 0);
     openClKernel.callVoid("setupInput", "0", "float32", "opencl"); //FIXME dont want to specify the domain here
     openClKernel.callVoid("setupInput", "1", "float32", "opencl"); //FIXME dont want to specify the domain here
     openClKernel.callVoid("setupOutput", "0", "float32", "opencl");
@@ -44,7 +44,6 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel)
     openClKernel.callVoid("setLocalSize", 1);
     openClKernel.callVoid("setGlobalFactor", 1.0);
     openClKernel.callVoid("setProductionFactor", 1.0);
-    openClKernel.callVoid("initialize");
 
     //feed buffer
     auto b0 = Pothos::BufferChunk(10*sizeof(float));

@@ -11,6 +11,11 @@
 #include <CL/cl.h>
 #endif
 
+const char *clErrToStr(cl_int err);
+
+/***********************************************************************
+ * arguments required to create a custom cl buffer manager
+ **********************************************************************/
 struct OpenClBufferContainerArgs
 {
     cl_mem_flags mem_flags;
@@ -19,6 +24,31 @@ struct OpenClBufferContainerArgs
     std::shared_ptr<cl_command_queue> queue;
 };
 
+//! Factory function for creating a cl buffer manager
 Pothos::BufferManager::Sptr makeOpenClBufferManager(const OpenClBufferContainerArgs &);
 
-cl_mem getClBufferFromManaged(const Pothos::ManagedBuffer &buff);
+//! Extract the cl_mem object from the managed buffer
+cl_mem &getClBufferFromManaged(const Pothos::ManagedBuffer &buff);
+
+/***********************************************************************
+ * smart pointer deleters for managing cl objects
+ **********************************************************************/
+inline void clReleaseContextPtr(cl_context *p)
+{
+    clReleaseContext(*p);
+}
+
+inline void clReleaseProgramPtr(cl_program *p)
+{
+    clReleaseProgram(*p);
+}
+
+inline void clReleaseCommandQueuePtr(cl_command_queue *p)
+{
+    clReleaseCommandQueue(*p);
+}
+
+inline void clReleaseKernelPtr(cl_kernel *p)
+{
+    clReleaseKernel(*p);
+}
