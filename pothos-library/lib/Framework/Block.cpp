@@ -168,7 +168,7 @@ std::shared_ptr<Pothos::BufferManager> Pothos::Block::getInputBufferManager(cons
 
 std::shared_ptr<Pothos::BufferManager> Pothos::Block::getOutputBufferManager(const std::string &, const std::string &)
 {
-    return Pothos::BufferManager::make("generic", Pothos::BufferManagerArgs());
+    return Pothos::BufferManager::make("generic");
 }
 
 #include <Pothos/Managed.hpp>

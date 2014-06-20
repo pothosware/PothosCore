@@ -294,6 +294,9 @@ static bool isDomainCrossingAcceptable(
     //otherwise the mode should be custom
     assert(mainMode == "CUSTOM");
 
+    //cant handle custom with multiple upstream
+    if (isInput and mainMode == "CUSTOM" and subPorts.size() > 1) return false;
+
     //if custom, the sub ports must abdicate
     if (mainMode == "CUSTOM" and not allOthersAbdicate) return false;
 
@@ -367,6 +370,60 @@ std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<F
     }
 
     return domainSafeFlows;
+}
+
+/***********************************************************************
+ * helpers to deal with buffer managers
+ **********************************************************************/
+static void installBufferManagers(const std::vector<Flow> &flatFlows)
+{
+    //map of a source port to all destination ports
+    std::unordered_map<Port, std::vector<Port>> srcs;
+    for (const auto &flow : flatFlows)
+    {
+        for (const auto &subFlow : flatFlows)
+        {
+            if (subFlow.src == flow.src) srcs[flow.src].push_back(subFlow.dst);
+        }
+    }
+
+    //for each source port -- install managers
+    for (const auto &pair : srcs)
+    {
+        auto src = pair.first;
+        auto dsts = pair.second;
+        auto dst = dsts.at(0);
+
+        auto srcDomain = src.obj.callProxy("output", src.name).call<std::string>("domain");
+        auto dstDomain = dst.obj.callProxy("input", dst.name).call<std::string>("domain");
+
+        auto srcMode = src.obj.callProxy("get:_actor").call<std::string>("getOutputBufferMode", src.name, dstDomain);
+        auto dstMode = dst.obj.callProxy("get:_actor").call<std::string>("getInputBufferMode", dst.name, srcDomain);
+
+        //check if the source provides a manager and install it to the source
+        if (srcMode == "CUSTOM")
+        {
+            auto m = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
+            src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, m);
+        }
+
+        //check if the destination provides a manager and install it to the source
+        else if (dstMode == "CUSTOM")
+        {
+            assert(dsts.size() == 1); //this must be true if the previous logic was good
+            auto m = dst.obj.callProxy("get:_actor").callProxy("getBufferManager", dst.name, srcDomain, true);
+            src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, m);
+        }
+
+        //otherwise create a generic manager and install it to the source
+        else
+        {
+            assert(srcMode == "ABDICATE"); //this must be true if the previous logic was good
+            assert(dstMode == "ABDICATE");
+            auto m = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
+            src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, m);
+        }
+    }
 }
 
 /***********************************************************************
@@ -463,6 +520,7 @@ void Pothos::Topology::commit(void)
 {
     auto flatFlows = _impl->createNetworkFlows();
     flatFlows = _impl->rectifyDomainFlows(flatFlows);
+    installBufferManagers(flatFlows);
     const auto &activeFlatFlows = _impl->activeFlatFlows;
 
     //new flows are in flat flows but not in current

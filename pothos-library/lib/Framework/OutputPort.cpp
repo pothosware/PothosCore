@@ -12,7 +12,7 @@ Pothos::OutputPort::OutputPort(OutputPortImpl *impl):
     _totalMessages(0),
     _pendingElements(0)
 {
-    _impl->bufferManager = BufferManager::make("generic", BufferManagerArgs());
+    return;
 }
 
 Pothos::OutputPort::~OutputPort(void)

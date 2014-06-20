@@ -213,6 +213,8 @@ static auto managedWorkerActor = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendPortSubscriberMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getInputBufferMode))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getOutputBufferMode))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getBufferManager))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, setOutputBufferManager))
     .commit("Pothos/WorkerActor");
 
 static auto managedInfoReceiverString = Pothos::ManagedClass()

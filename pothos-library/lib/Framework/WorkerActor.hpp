@@ -293,6 +293,20 @@ public:
         return "ABDICATE";
     }
 
+    BufferManager::Sptr getBufferManager(const std::string &name, const std::string &domain, const bool isInput)
+    {
+        auto m = isInput? block->getInputBufferManager(name, domain) : block->getOutputBufferManager(name, domain);
+        if (not m) m = BufferManager::make("generic", BufferManagerArgs());
+        else m->init(BufferManagerArgs()); //TODO pass this in from somewhere
+        return m;
+    }
+
+    void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
+    {
+        assert(manager);
+        outputs[name]->_impl->bufferManager = manager;
+    }
+
     ///////////////////// work helper methods ///////////////////////
     inline void notify(void)
     {
