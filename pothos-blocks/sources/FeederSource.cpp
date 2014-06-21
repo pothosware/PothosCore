@@ -10,7 +10,7 @@ class FeederSource : Pothos::Block
 public:
     FeederSource(const Pothos::DType &dtype)
     {
-        this->setupOutput(0, dtype);
+        this->setupOutput(0, dtype, this->uid()); //unique domain to force copies
         this->registerCall(POTHOS_FCN_TUPLE(FeederSource, feedBuffer));
         this->registerCall(POTHOS_FCN_TUPLE(FeederSource, feedLabel));
         this->registerCall(POTHOS_FCN_TUPLE(FeederSource, feedMessage));
