@@ -23,6 +23,7 @@
 #include <set>
 #include <sstream>
 #include <cctype>
+#include <iostream>
 
 /***********************************************************************
  * implementation guts
@@ -393,6 +394,7 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         auto src = pair.first;
         auto dsts = pair.second;
         auto dst = dsts.at(0);
+        Pothos::Proxy manager;
 
         auto srcDomain = src.obj.callProxy("output", src.name).call<std::string>("domain");
         auto dstDomain = dst.obj.callProxy("input", dst.name).call<std::string>("domain");
@@ -403,16 +405,14 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         //check if the source provides a manager and install it to the source
         if (srcMode == "CUSTOM")
         {
-            auto m = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
-            src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, m);
+            manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
         }
 
         //check if the destination provides a manager and install it to the source
         else if (dstMode == "CUSTOM")
         {
             assert(dsts.size() == 1); //this must be true if the previous logic was good
-            auto m = dst.obj.callProxy("get:_actor").callProxy("getBufferManager", dst.name, srcDomain, true);
-            src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, m);
+            manager = dst.obj.callProxy("get:_actor").callProxy("getBufferManager", dst.name, srcDomain, true);
         }
 
         //otherwise create a generic manager and install it to the source
@@ -420,9 +420,9 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         {
             assert(srcMode == "ABDICATE"); //this must be true if the previous logic was good
             assert(dstMode == "ABDICATE");
-            auto m = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
-            src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, m);
+            manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
         }
+        src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, manager);
     }
 }
 

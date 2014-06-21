@@ -48,6 +48,8 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
 {
     const auto factory = Pothos::BlockRegistry::lookup(path);
     auto block = factory.opaqueCall(args, numArgs).extract<Pothos::Block *>();
+    //make a more interesting block name
+    if (block->getName().empty() or block->getName() == "Block") block->setName(path);
     return Pothos::Object(std::shared_ptr<Pothos::Block>(block));
 }
 
