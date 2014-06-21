@@ -11,6 +11,7 @@
 #include <CL/cl.h>
 #endif
 
+//! error code number to string
 const char *clErrToStr(cl_int err);
 
 /***********************************************************************

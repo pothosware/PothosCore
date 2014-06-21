@@ -3,7 +3,28 @@
 
 #include "OpenClBufferManager.hpp"
 #include <Pothos/Framework.hpp>
+#include <mutex>
 #include <iostream>
+
+//! cache for contexts so we can get the same context per device
+static std::shared_ptr<cl_context> lookupContextCache(cl_device_id device)
+{
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> lock(mutex);
+
+    static std::map<cl_device_id, std::weak_ptr<cl_context>> contextCache;
+    auto &weakContext = contextCache[device];
+    auto contextSptr = weakContext.lock();
+    if (not contextSptr)
+    {
+        cl_int err = 0;
+        auto context = clCreateContext(nullptr, 1, &device, nullptr, nullptr, &err);
+        if (err < 0) throw Pothos::Exception("OpenClKernel::clCreateContext()", clErrToStr(err));
+        contextSptr.reset(new cl_context(context), &clReleaseContextPtr);
+    }
+    weakContext = contextSptr;
+    return contextSptr;
+}
 
 /***********************************************************************
  * TODO
@@ -71,22 +92,26 @@ public:
         if (domain == "GPP")
         {
             OpenClBufferContainerArgs args;
-            args.mem_flags = CL_MEM_READ_ONLY;
+            args.mem_flags = CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR;
             args.map_flags = CL_MAP_WRITE;
             args.context = _context;
             args.queue = _queue;
             return makeOpenClBufferManager(args);
+        }
+        if (domain == "opencl")
+        {
+            return Pothos::BufferManager::Sptr();
         }
         throw Pothos::PortDomainError();
     }
 
     Pothos::BufferManager::Sptr getOutputBufferManager(const std::string &, const std::string &domain)
     {
-        if (domain == "GPP")
+        if (domain == "GPP" or domain == "opencl")
         {
             OpenClBufferContainerArgs args;
-            args.mem_flags = CL_MEM_WRITE_ONLY;
-            args.map_flags = CL_MAP_READ;
+            args.mem_flags = CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR;
+            args.map_flags = 0;
             args.context = _context;
             args.queue = _queue;
             return makeOpenClBufferManager(args);
@@ -114,7 +139,7 @@ OpenClKernel::OpenClKernel(const size_t platformIndex, const size_t deviceIndex)
     _productionFactor(1.0)
 {
     /* Identify a platform */
-    cl_int err;
+    cl_int err = 0;
     cl_uint num_platforms = 0;
     cl_platform_id platforms[64];
     err = clGetPlatformIDs(64, platforms, &num_platforms);
@@ -131,9 +156,7 @@ OpenClKernel::OpenClKernel(const size_t platformIndex, const size_t deviceIndex)
     _device = devices[deviceIndex];
 
     /* Create context */
-    auto context = clCreateContext(nullptr, 1, &_device, nullptr, nullptr, &err);
-    if (err < 0) throw Pothos::Exception("OpenClKernel::initialize::clCreateContext()", clErrToStr(err));
-    _context.reset(new cl_context(context), &clReleaseContextPtr);
+    _context = lookupContextCache(_device);
 
     this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setSource));
     this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setLocalSize));
@@ -153,7 +176,7 @@ void OpenClKernel::setSource(const std::string &kernelName, const std::string &k
     const char *sourcePtr = kernelSource.data();
     const size_t sourceSize = kernelSource.size();
     auto program = clCreateProgramWithSource(*_context, 1, &sourcePtr, &sourceSize, &err);
-    if(err < 0) throw Pothos::Exception("OpenClKernel::initialize::clCreateProgramWithSource()", clErrToStr(err));
+    if(err < 0) throw Pothos::Exception("OpenClKernel::clCreateProgramWithSource()", clErrToStr(err));
     _program.reset(new cl_program(program), clReleaseProgramPtr);
 
     /* Build program */
@@ -167,17 +190,17 @@ void OpenClKernel::setSource(const std::string &kernelName, const std::string &k
         clGetProgramBuildInfo(*_program, _device, CL_PROGRAM_BUILD_LOG, logSize, errorLog.data(), nullptr);
 
         std::string errorString(errorLog.begin(), errorLog.end());
-        throw Pothos::Exception("OpenClKernel::initialize::clBuildProgram()", errorString);
+        throw Pothos::Exception("OpenClKernel::clBuildProgram()", errorString);
     }
 
     /* Create a command queue */
     auto queue = clCreateCommandQueue(*_context, _device, 0, &err);
-    if (err < 0) throw Pothos::Exception("OpenClKernel::initialize::clCreateCommandQueue()", clErrToStr(err));
+    if (err < 0) throw Pothos::Exception("OpenClKernel::clCreateCommandQueue()", clErrToStr(err));
     _queue.reset(new cl_command_queue(queue), clReleaseCommandQueuePtr);
 
     /* Create a kernel */
     auto kernel = clCreateKernel(*_program, kernelName.c_str(), &err);
-    if (err < 0) throw Pothos::Exception("OpenClKernel::initialize::clCreateKernel()", clErrToStr(err));
+    if (err < 0) throw Pothos::Exception("OpenClKernel::clCreateKernel()", clErrToStr(err));
     _kernel.reset(new cl_kernel(kernel), clReleaseKernelPtr);
 }
 
