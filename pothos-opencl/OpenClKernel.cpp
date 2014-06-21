@@ -1,40 +1,51 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "OpenClBufferManager.hpp"
+#include "OpenClKernel.hpp"
 #include <Pothos/Framework.hpp>
-#include <mutex>
 #include <iostream>
 
-//! cache for contexts so we can get the same context per device
-static std::shared_ptr<cl_context> lookupContextCache(cl_device_id device)
-{
-    static std::mutex mutex;
-    std::lock_guard<std::mutex> lock(mutex);
-
-    static std::map<cl_device_id, std::weak_ptr<cl_context>> contextCache;
-    auto &weakContext = contextCache[device];
-    auto contextSptr = weakContext.lock();
-    if (not contextSptr)
-    {
-        cl_int err = 0;
-        auto context = clCreateContext(nullptr, 1, &device, nullptr, nullptr, &err);
-        if (err < 0) throw Pothos::Exception("OpenClKernel::clCreateContext()", clErrToStr(err));
-        contextSptr.reset(new cl_context(context), &clReleaseContextPtr);
-    }
-    weakContext = contextSptr;
-    return contextSptr;
-}
-
 /***********************************************************************
- * TODO
- * enumerate opencl devices
- * pick an idenfier scheme for the constructor
- * set a domain on each input/output port
- * look up table for device number to context
- * topology needs to collect domain info and
- *  - call an overload on the block to create a manager
- *  - create copier blocks to allow domains to interact
+ * |PothosDoc OpenCL Kernel
+ *
+ * The OpenCL Kernel block executes a kernel on supported devices.
+ * The kernel source is just in time (JIT) compiled by the OpenCL API.
+ * This block exclusively computes kernels of one dimensional arrays.
+ * Two and three dimensional kernels and others others are not handled by this block
+ *
+ * |category /Kernels
+ * |keywords kernel jit opencl
+ *
+ * |param platform[Platform] The index of an OpenCL platform.
+ * The platform index represents a platform ID found in clGetPlatformIDs().
+ * |default 0
+ *
+ * |param device[Device] The index of an OpenCL device in the platform.
+ * The device index represents a device ID found in clGetDeviceIDs().
+ * |default 0
+ *
+ * |param kernelName[Kernel Name] The name of a kernel in the source.
+ * |default ""
+ *
+ * |param kernelSource[Kernel Source] Source code for an OpenCL kernel.
+ * |default ""
+ *
+ * |param localSize[Local Size] The number of work units/resources to allocate.
+ * This controls the parallelism of the kernel execution.
+ * |default 2
+ *
+ * |param globalFactor[Global Factor] This factor controls the global size.
+ * The global size is the number of kernel iterarions per call.
+ * Global size = number of input elements * global factor.
+ *
+ * |param productionFactor[Production Factor] This factor controls the elements produced.
+ * For each call to work, elements produced = number of input elements * production factor.
+ *
+ * |factory /blocks/opencl/opencl_kernel(platform, device)
+ * |setter setSource(kernelName, kernelSource)
+ * |setter setLocalSize(localSize)
+ * |setter setGlobalFactor(globalFactor)
+ * |setter setProductionFactor(productionFactor)
  **********************************************************************/
 class OpenClKernel : public Pothos::Block
 {
@@ -254,7 +265,6 @@ void OpenClKernel::work(void)
     for (size_t i = 0; i < inputs.size(); i++)
     {
         inputs[i]->consume(inputElems);
-        clReleaseMemObject(inputBuffs[i]);
     }
     for (size_t i = 0; i < outputs.size(); i++)
     {
@@ -262,7 +272,6 @@ void OpenClKernel::work(void)
             outputElems*outputs[i]->dtype().size(), outputs[i]->buffer().as<void *>(), 0, nullptr, nullptr);
         if (err < 0) throw Pothos::Exception("OpenClKernel::work::clEnqueueReadBuffer()", clErrToStr(err));
         outputs[i]->produce(outputElems);
-        //clReleaseMemObject(outputBuffs[i]);
     }
 }
 

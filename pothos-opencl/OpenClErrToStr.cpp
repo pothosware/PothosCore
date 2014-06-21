@@ -1,6 +1,6 @@
 // http://www.khronos.org/message_boards/showthread.php/5912-error-to-string
 
-#include "OpenClBufferManager.hpp"
+#include "OpenClKernel.hpp"
 
 const char *clErrToStr(cl_int err)
 {

@@ -1,7 +1,7 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "OpenClBufferManager.hpp"
+#include "OpenClKernel.hpp"
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Util/RingDeque.hpp>
 #include <Pothos/Framework/BufferManager.hpp>

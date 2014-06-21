@@ -11,6 +11,13 @@
 #include <CL/cl.h>
 #endif
 
+/***********************************************************************
+ * helper methods for dealing with opencl
+ **********************************************************************/
+
+//! cache for contexts so we can get the same context per device
+std::shared_ptr<cl_context> lookupContextCache(cl_device_id device);
+
 //! error code number to string
 const char *clErrToStr(cl_int err);
 
