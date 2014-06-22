@@ -43,6 +43,9 @@ public:
     //! Get the data type information for this port.
     const DType &dtype(void) const;
 
+    //! Get the domain information for this port
+    const std::string &domain(void) const;
+
     /*!
      * Get access to the stream buffer.
      * For non-stream ports, this returns an empty buffer chunk.
@@ -121,6 +124,7 @@ private:
     int _index;
     std::string _name;
     DType _dtype;
+    std::string _domain;
     BufferChunk _buffer;
     size_t _elements;
     unsigned long long _totalElements;
@@ -147,6 +151,11 @@ inline const std::string &Pothos::OutputPort::name(void) const
 inline const Pothos::DType &Pothos::OutputPort::dtype(void) const
 {
     return _dtype;
+}
+
+inline const std::string &Pothos::OutputPort::domain(void) const
+{
+    return _domain;
 }
 
 inline const Pothos::BufferChunk &Pothos::OutputPort::buffer(void) const

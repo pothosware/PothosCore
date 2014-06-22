@@ -12,7 +12,7 @@ Pothos::OutputPort::OutputPort(OutputPortImpl *impl):
     _totalMessages(0),
     _pendingElements(0)
 {
-    _impl->bufferManager = BufferManager::make("generic", BufferManagerArgs());
+    return;
 }
 
 Pothos::OutputPort::~OutputPort(void)
@@ -66,6 +66,7 @@ static auto managedOutputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, index))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, name))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, dtype))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, domain))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, buffer))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, elements))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, totalElements))

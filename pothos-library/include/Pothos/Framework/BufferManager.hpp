@@ -59,6 +59,17 @@ public:
 
     /*!
      * The BufferManager factory -- makes a new BufferManager given the factory name.
+     * This factory call does not invoke init() on the buffer manager.
+     * Plugins for custom BufferManagers should be located in
+     * the plugin registry: /framework/buffer_manager/[name]
+     * \throws BufferManagerFactoryError if the factory function fails.
+     * \param name the name of a BufferManager factory in the plugin tree
+     * \return a new shared pointer to a buffer manager
+     */
+    static Sptr make(const std::string &name);
+
+    /*!
+     * The BufferManager factory -- makes a new BufferManager given the factory name.
      * Plugins for custom BufferManagers should be located in
      * the plugin registry: /framework/buffer_manager/[name]
      * \throws BufferManagerFactoryError if the factory function fails.
@@ -68,13 +79,11 @@ public:
      */
     static Sptr make(const std::string &name, const BufferManagerArgs &args);
 
-protected:
     /*!
      * Init is called once at factory time to initialize the buffers.
      */
     virtual void init(const BufferManagerArgs &args) = 0;
 
-public:
     /*!
      * Is the manager empty?
      * \return true if no buffers are available
