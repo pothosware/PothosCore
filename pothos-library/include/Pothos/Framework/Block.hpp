@@ -218,23 +218,45 @@ public:
 
     /*!
      * Configure an input port with the given data type.
+     * The data type parameter specifies the size in bytes per input element.
+     * The data type is only relevant when the port is used for streaming data.
+     * The domain parameter is used to specify the type of memory consumed.
+     * The domain will be passed into another block's getOutputBufferManager() call.
+     * \param name the name of this input port
+     * \param dtype the data type for elements
+     * \param domain the expected memory domain
      */
-    void setupInput(const std::string &name, const DType &dtype = "byte", const std::string &domain = "GPP");
+    void setupInput(const std::string &name, const DType &dtype = "byte", const std::string &domain = "");
 
     /*!
      * Configure an input port with the given data type.
+     * This call is equivalent to setupInput(std::to_string(index), ...);
+     * \param index the index number of this input port
+     * \param dtype the data type for elements
+     * \param domain the expected memory domain
      */
-    void setupInput(const size_t index, const DType &dtype = "byte", const std::string &domain = "GPP");
+    void setupInput(const size_t index, const DType &dtype = "byte", const std::string &domain = "");
 
     /*!
      * Configure an output port with the given data type.
+     * The data type parameter specifies the size in bytes per output element.
+     * The data type is only relevant when the port is used for streaming data.
+     * The domain parameter is used to specify the type of memory produced.
+     * The domain will be passed into another block's getInputBufferManager() call.
+     * \param name the name of this output port
+     * \param dtype the data type for elements
+     * \param domain the expected memory domain
      */
-    void setupOutput(const std::string &name, const DType &dtype = "byte", const std::string &domain = "GPP");
+    void setupOutput(const std::string &name, const DType &dtype = "byte", const std::string &domain = "");
 
     /*!
      * Configure an output port with the given data type.
+     * This call is equivalent to setupOutput(std::to_string(index), ...);
+     * \param index the index number of this output port
+     * \param dtype the data type for elements
+     * \param domain the expected memory domain
      */
-    void setupOutput(const size_t index, const DType &dtype = "byte", const std::string &domain = "GPP");
+    void setupOutput(const size_t index, const DType &dtype = "byte", const std::string &domain = "");
 
     /*!
      * Export a function call on this block to set/get parameters.
