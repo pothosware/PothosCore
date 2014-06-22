@@ -45,9 +45,11 @@
  * |param globalFactor[Global Factor] This factor controls the global size.
  * The global size is the number of kernel iterarions per call.
  * Global size = number of input elements * global factor.
+ * |default 1.0
  *
  * |param productionFactor[Production Factor] This factor controls the elements produced.
  * For each call to work, elements produced = number of input elements * production factor.
+ * |default 1.0
  *
  * |factory /blocks/opencl/opencl_kernel(deviceId, portMarkup)
  * |setter setSource(kernelName, kernelSource)
@@ -108,7 +110,7 @@ public:
 
     Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &domain)
     {
-        if (domain == "GPP")
+        if (domain.empty())
         {
             OpenClBufferContainerArgs args;
             args.mem_flags = CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR;
@@ -126,7 +128,7 @@ public:
 
     Pothos::BufferManager::Sptr getOutputBufferManager(const std::string &, const std::string &domain)
     {
-        if (domain == "GPP" or domain == _myDomain)
+        if (domain.empty() or domain == _myDomain)
         {
             OpenClBufferContainerArgs args;
             args.mem_flags = CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR;
