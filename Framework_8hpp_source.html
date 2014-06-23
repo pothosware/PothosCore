@@ -104,26 +104,29 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#include &lt;<a class="code" href="Config_8hpp.html">Pothos/Config.hpp</a>&gt;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="CallRegistry_8hpp.html">Pothos/Framework/CallRegistry.hpp</a>&gt;</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="CallRegistryImpl_8hpp.html">Pothos/Framework/CallRegistryImpl.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="WorkInfo_8hpp.html">Pothos/Framework/WorkInfo.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="DType_8hpp.html">Pothos/Framework/DType.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Label_8hpp.html">Pothos/Framework/Label.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="InputPort_8hpp.html">Pothos/Framework/InputPort.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="OutputPort_8hpp.html">Pothos/Framework/OutputPort.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Block_8hpp.html">Pothos/Framework/Block.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="BlockImpl_8hpp.html">Pothos/Framework/BlockImpl.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Topology_8hpp.html">Pothos/Framework/Topology.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="TopologyImpl_8hpp.html">Pothos/Framework/TopologyImpl.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="BlockRegistry_8hpp.html">Pothos/Framework/BlockRegistry.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="BufferManager_8hpp.html">Pothos/Framework/BufferManager.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="BufferAccumulator_8hpp.html">Pothos/Framework/BufferAccumulator.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="BufferChunk_8hpp.html">Pothos/Framework/BufferChunk.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="SharedBuffer_8hpp.html">Pothos/Framework/SharedBuffer.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="ManagedBuffer_8hpp.html">Pothos/Framework/ManagedBuffer.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Framework_2Exception_8hpp.html">Pothos/Framework/Exception.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="SignalEmitter_8hpp.html">Pothos/Framework/SignalEmitter.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="SignalEmitterImpl_8hpp.html">Pothos/Framework/SignalEmitterImpl.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="WorkInfo_8hpp.html">Pothos/Framework/WorkInfo.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="DType_8hpp.html">Pothos/Framework/DType.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Label_8hpp.html">Pothos/Framework/Label.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="InputPort_8hpp.html">Pothos/Framework/InputPort.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="OutputPort_8hpp.html">Pothos/Framework/OutputPort.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Block_8hpp.html">Pothos/Framework/Block.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="BlockImpl_8hpp.html">Pothos/Framework/BlockImpl.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Topology_8hpp.html">Pothos/Framework/Topology.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="TopologyImpl_8hpp.html">Pothos/Framework/TopologyImpl.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="BlockRegistry_8hpp.html">Pothos/Framework/BlockRegistry.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="BufferManager_8hpp.html">Pothos/Framework/BufferManager.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="BufferAccumulator_8hpp.html">Pothos/Framework/BufferAccumulator.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="BufferChunk_8hpp.html">Pothos/Framework/BufferChunk.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="SharedBuffer_8hpp.html">Pothos/Framework/SharedBuffer.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="ManagedBuffer_8hpp.html">Pothos/Framework/ManagedBuffer.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Framework_2Exception_8hpp.html">Pothos/Framework/Exception.hpp</a>&gt;</span></div>
 <div class="ttc" id="SharedBuffer_8hpp_html"><div class="ttname"><a href="SharedBuffer_8hpp.html">SharedBuffer.hpp</a></div></div>
 <div class="ttc" id="BufferChunk_8hpp_html"><div class="ttname"><a href="BufferChunk_8hpp.html">BufferChunk.hpp</a></div></div>
 <div class="ttc" id="ManagedBuffer_8hpp_html"><div class="ttname"><a href="ManagedBuffer_8hpp.html">ManagedBuffer.hpp</a></div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
+<div class="ttc" id="SignalEmitter_8hpp_html"><div class="ttname"><a href="SignalEmitter_8hpp.html">SignalEmitter.hpp</a></div></div>
 <div class="ttc" id="CallRegistryImpl_8hpp_html"><div class="ttname"><a href="CallRegistryImpl_8hpp.html">CallRegistryImpl.hpp</a></div></div>
 <div class="ttc" id="BufferManager_8hpp_html"><div class="ttname"><a href="BufferManager_8hpp.html">BufferManager.hpp</a></div></div>
 <div class="ttc" id="Framework_2Exception_8hpp_html"><div class="ttname"><a href="Framework_2Exception_8hpp.html">Exception.hpp</a></div></div>
@@ -138,11 +141,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="DType_8hpp_html"><div class="ttname"><a href="DType_8hpp.html">DType.hpp</a></div></div>
 <div class="ttc" id="WorkInfo_8hpp_html"><div class="ttname"><a href="WorkInfo_8hpp.html">WorkInfo.hpp</a></div></div>
 <div class="ttc" id="Block_8hpp_html"><div class="ttname"><a href="Block_8hpp.html">Block.hpp</a></div></div>
+<div class="ttc" id="SignalEmitterImpl_8hpp_html"><div class="ttname"><a href="SignalEmitterImpl_8hpp.html">SignalEmitterImpl.hpp</a></div></div>
 <div class="ttc" id="BufferAccumulator_8hpp_html"><div class="ttname"><a href="BufferAccumulator_8hpp.html">BufferAccumulator.hpp</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 25 2014 13:48:53 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jun 22 2014 18:25:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

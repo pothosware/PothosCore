@@ -113,6 +113,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a92dddc08ad2ae2e2dc371c41bb864491"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classPothos_1_1DType.html">DType</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a92dddc08ad2ae2e2dc371c41bb864491">dtype</a> (void) const </td></tr>
 <tr class="memdesc:a92dddc08ad2ae2e2dc371c41bb864491"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the data type information for this port.  <a href="#a92dddc08ad2ae2e2dc371c41bb864491">More...</a><br/></td></tr>
 <tr class="separator:a92dddc08ad2ae2e2dc371c41bb864491"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aded7d753de08d8ff9995d1b8ddfbc666"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#aded7d753de08d8ff9995d1b8ddfbc666">domain</a> (void) const </td></tr>
+<tr class="memdesc:aded7d753de08d8ff9995d1b8ddfbc666"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the domain information for this port.  <a href="#aded7d753de08d8ff9995d1b8ddfbc666">More...</a><br/></td></tr>
+<tr class="separator:aded7d753de08d8ff9995d1b8ddfbc666"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79a691f4d4484ce9de5b2446d6f6a4c6"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a79a691f4d4484ce9de5b2446d6f6a4c6">buffer</a> (void) const </td></tr>
 <tr class="separator:a79a691f4d4484ce9de5b2446d6f6a4c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6786db790491480ffd84472bdd047dad"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a6786db790491480ffd84472bdd047dad">elements</a> (void) const </td></tr>
@@ -125,12 +128,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:afab490e6d940e2265fdd73c7afbc73dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac8c69f13cb37e3099a3dd8b7bcc84a14"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#ac8c69f13cb37e3099a3dd8b7bcc84a14">popBuffer</a> (const size_t numBytes)</td></tr>
 <tr class="separator:ac8c69f13cb37e3099a3dd8b7bcc84a14"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a90611d871c0983bfb5fceae348e63e74"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a90611d871c0983bfb5fceae348e63e74">postLabel</a> (const <a class="el" href="structPothos_1_1Label.html">Label</a> &amp;label)</td></tr>
+<tr class="memitem:a90611d871c0983bfb5fceae348e63e74"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a90611d871c0983bfb5fceae348e63e74">postLabel</a> (const <a class="el" href="classPothos_1_1Label.html">Label</a> &amp;label)</td></tr>
 <tr class="separator:a90611d871c0983bfb5fceae348e63e74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f3bbe2e02c9637f914e6a65bbaf4971"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a3f3bbe2e02c9637f914e6a65bbaf4971">postMessage</a> (const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;message)</td></tr>
 <tr class="separator:a3f3bbe2e02c9637f914e6a65bbaf4971"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace5ed3d4a5dfdc7196bf58f6fc167579"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#ace5ed3d4a5dfdc7196bf58f6fc167579">postBuffer</a> (const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;<a class="el" href="classPothos_1_1OutputPort.html#a79a691f4d4484ce9de5b2446d6f6a4c6">buffer</a>)</td></tr>
 <tr class="separator:ace5ed3d4a5dfdc7196bf58f6fc167579"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa57f62d76d3d2a8f055fa1f76525f0ee"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#aa57f62d76d3d2a8f055fa1f76525f0ee">isSignal</a> (void) const </td></tr>
+<tr class="separator:aa57f62d76d3d2a8f055fa1f76525f0ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -181,6 +186,32 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Get access to the stream buffer. For non-stream ports, this returns an empty buffer chunk. </p>
+
+</div>
+</div>
+<a class="anchor" id="aded7d753de08d8ff9995d1b8ddfbc666"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string &amp; Pothos::OutputPort::domain </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the domain information for this port. </p>
 
 </div>
 </div>
@@ -258,6 +289,23 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 <p>Get the index number of this port. An index of -1 means the port cannot be represented by an integer. </p>
 <dl class="section return"><dt>Returns</dt><dd>the index or -1 </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="aa57f62d76d3d2a8f055fa1f76525f0ee"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Pothos::OutputPort::isSignal </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Is this port used for signaling in a signals + slots paradigm? </p>
 
 </div>
 </div>
@@ -340,7 +388,7 @@ Friends</h2></td></tr>
         <tr>
           <td class="memname">void Pothos::OutputPort::postLabel </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPothos_1_1Label.html">Label</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1Label.html">Label</a> &amp;&#160;</td>
           <td class="paramname"><em>label</em></td><td>)</td>
           <td></td>
         </tr>
@@ -487,7 +535,7 @@ Friends</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 25 2014 13:48:54 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jun 22 2014 18:25:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

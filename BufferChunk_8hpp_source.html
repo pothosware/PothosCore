@@ -135,7 +135,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ElementType&gt;</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    ElementType as(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordtype">bool</span> null(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <a class="code" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a> <span class="keyword">operator</span> bool(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="keyword">private</span>:</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <a class="code" href="classPothos_1_1SharedBuffer.html">SharedBuffer</a> _buffer;</div>
@@ -172,19 +172,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">reinterpret_cast&lt;</span>ElementType<span class="keyword">&gt;</span>(address);</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;}</div>
 <div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;</div>
-<div class="line"><a name="l00137"></a><span class="lineno"><a class="line" href="classPothos_1_1BufferChunk.html#a40aa4b580106afa56a7392e2f6af61cd">  137</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classPothos_1_1BufferChunk.html#a40aa4b580106afa56a7392e2f6af61cd">Pothos::BufferChunk::null</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno"><a class="line" href="classPothos_1_1BufferChunk.html#abb69ccab54cefce01e0c8c5a922dd049">  137</a></span>&#160;<span class="keyword">inline</span> Pothos::BufferChunk::operator bool(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
 <div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="keyword"></span>{</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    <span class="keywordflow">return</span> (address == 0) and _buffer.null() and _managedBuffer.null();</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    <span class="keywordflow">return</span> (address != 0) or _buffer or _managedBuffer;</div>
 <div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;}</div>
 <div class="ttc" id="SharedBuffer_8hpp_html"><div class="ttname"><a href="SharedBuffer_8hpp.html">SharedBuffer.hpp</a></div></div>
 <div class="ttc" id="classPothos_1_1BufferChunk_html_a38c483e35b3622f2b4a3eb38017c8b83"><div class="ttname"><a href="classPothos_1_1BufferChunk.html#a38c483e35b3622f2b4a3eb38017c8b83">Pothos::BufferChunk::getBuffer</a></div><div class="ttdeci">const SharedBuffer &amp; getBuffer(void) const </div><div class="ttdef"><b>Definition:</b> BufferChunk.hpp:109</div></div>
+<div class="ttc" id="Config_8hpp_html_a8d78f57e80202fac856d4526459c4bbb"><div class="ttname"><a href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a></div><div class="ttdeci">#define pothos_explicit</div><div class="ttdef"><b>Definition:</b> Config.hpp:84</div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:40</div></div>
 <div class="ttc" id="classPothos_1_1BufferChunk_html_a2bf7507ead98077a1fef554e1b4e7be6"><div class="ttname"><a href="classPothos_1_1BufferChunk.html#a2bf7507ead98077a1fef554e1b4e7be6">Pothos::BufferChunk::as</a></div><div class="ttdeci">ElementType as(void) const </div><div class="ttdef"><b>Definition:</b> BufferChunk.hpp:132</div></div>
 <div class="ttc" id="ManagedBuffer_8hpp_html"><div class="ttname"><a href="ManagedBuffer_8hpp.html">ManagedBuffer.hpp</a></div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
 <div class="ttc" id="classPothos_1_1BufferChunk_html_a496570cd0910a1beeab59b338b5b30e3"><div class="ttname"><a href="classPothos_1_1BufferChunk.html#a496570cd0910a1beeab59b338b5b30e3">Pothos::BufferChunk::getEnd</a></div><div class="ttdeci">size_t getEnd(void) const </div><div class="ttdef"><b>Definition:</b> BufferChunk.hpp:126</div></div>
 <div class="ttc" id="classPothos_1_1BufferChunk_html_a465048014ee4344872b65e6c94ead865"><div class="ttname"><a href="classPothos_1_1BufferChunk.html#a465048014ee4344872b65e6c94ead865">Pothos::BufferChunk::getAlias</a></div><div class="ttdeci">size_t getAlias(void) const </div><div class="ttdef"><b>Definition:</b> BufferChunk.hpp:119</div></div>
-<div class="ttc" id="classPothos_1_1BufferChunk_html_a40aa4b580106afa56a7392e2f6af61cd"><div class="ttname"><a href="classPothos_1_1BufferChunk.html#a40aa4b580106afa56a7392e2f6af61cd">Pothos::BufferChunk::null</a></div><div class="ttdeci">bool null(void) const </div><div class="ttdef"><b>Definition:</b> BufferChunk.hpp:137</div></div>
 <div class="ttc" id="classPothos_1_1ManagedBuffer_html"><div class="ttname"><a href="classPothos_1_1ManagedBuffer.html">Pothos::ManagedBuffer</a></div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:26</div></div>
 <div class="ttc" id="classPothos_1_1SharedBuffer_html"><div class="ttname"><a href="classPothos_1_1SharedBuffer.html">Pothos::SharedBuffer</a></div><div class="ttdef"><b>Definition:</b> SharedBuffer.hpp:20</div></div>
 <div class="ttc" id="classPothos_1_1BufferChunk_html_a513442ec93f0da9ea94b6c24507365a5"><div class="ttname"><a href="classPothos_1_1BufferChunk.html#a513442ec93f0da9ea94b6c24507365a5">Pothos::BufferChunk::getManagedBuffer</a></div><div class="ttdeci">const ManagedBuffer &amp; getManagedBuffer(void) const </div><div class="ttdef"><b>Definition:</b> BufferChunk.hpp:114</div></div>
@@ -194,7 +194,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 25 2014 13:48:53 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jun 22 2014 18:25:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

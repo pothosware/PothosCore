@@ -6,6 +6,7 @@ var searchData=
   ['pothos_5fdeclare_5fexception',['POTHOS_DECLARE_EXCEPTION',['../Exception_8hpp.html#a30c0759d243779ab88b894ac4ed79fdb',1,'Exception.hpp']]],
   ['pothos_5fdeclare_5fexception_5fcode',['POTHOS_DECLARE_EXCEPTION_CODE',['../Exception_8hpp.html#a23629ab7758b67efaf4e9cca968860e3',1,'Exception.hpp']]],
   ['pothos_5fdll',['POTHOS_DLL',['../Config_8hpp.html#a883b25e569216f7e1b2c63e54123a80a',1,'Config.hpp']]],
+  ['pothos_5fexplicit',['pothos_explicit',['../Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb',1,'Config.hpp']]],
   ['pothos_5fextern',['POTHOS_EXTERN',['../Config_8hpp.html#aa2f58db1a6d8ee5f5ce0d419638fba12',1,'Config.hpp']]],
   ['pothos_5ffcn_5ftuple',['POTHOS_FCN_TUPLE',['../Config_8hpp.html#ad352afc74126a76bda60d9b2cfe875b4',1,'Config.hpp']]],
   ['pothos_5fhelper_5fdll_5fexport',['POTHOS_HELPER_DLL_EXPORT',['../Config_8hpp.html#a73ebe9aa76b9cbd7a6d17dee8d8875d8',1,'Config.hpp']]],

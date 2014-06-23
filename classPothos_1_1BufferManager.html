@@ -93,7 +93,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
-<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="classPothos_1_1BufferManager-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Pothos::BufferManager Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
@@ -110,6 +109,8 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:ac2e74c3807afd59bf2cf3c47c04f8937"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#ac2e74c3807afd59bf2cf3c47c04f8937">init</a> (const <a class="el" href="structPothos_1_1BufferManagerArgs.html">BufferManagerArgs</a> &amp;args)=0</td></tr>
+<tr class="separator:ac2e74c3807afd59bf2cf3c47c04f8937"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1fcdcf548e6b693aaac1876bd09c10ca"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#a1fcdcf548e6b693aaac1876bd09c10ca">empty</a> (void) const =0</td></tr>
 <tr class="separator:a1fcdcf548e6b693aaac1876bd09c10ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b52470abe6763b1e4035f0077d8a6a4"><td class="memItemLeft" align="right" valign="top">virtual const <a class="el" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#a5b52470abe6763b1e4035f0077d8a6a4">front</a> (void) const =0</td></tr>
@@ -125,13 +126,10 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a94a2c63499df00de7201ebc97a5c7616"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classPothos_1_1BufferManager.html#a416a19df56db34331b3acd0b0367e44c">Sptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#a94a2c63499df00de7201ebc97a5c7616">make</a> (const std::string &amp;name)</td></tr>
+<tr class="separator:a94a2c63499df00de7201ebc97a5c7616"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a903923c99d4a0fde5b597c1f94a06d07"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classPothos_1_1BufferManager.html#a416a19df56db34331b3acd0b0367e44c">Sptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#a903923c99d4a0fde5b597c1f94a06d07">make</a> (const std::string &amp;name, const <a class="el" href="structPothos_1_1BufferManagerArgs.html">BufferManagerArgs</a> &amp;args)</td></tr>
 <tr class="separator:a903923c99d4a0fde5b597c1f94a06d07"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
-Protected Member Functions</h2></td></tr>
-<tr class="memitem:ac2e74c3807afd59bf2cf3c47c04f8937"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#ac2e74c3807afd59bf2cf3c47c04f8937">init</a> (const <a class="el" href="structPothos_1_1BufferManagerArgs.html">BufferManagerArgs</a> &amp;args)=0</td></tr>
-<tr class="separator:ac2e74c3807afd59bf2cf3c47c04f8937"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A <a class="el" href="classPothos_1_1BufferManager.html">BufferManager</a> has a queue-like interface to manage buffers. Since buffers can represent special DMA memory, the buffer manager is responsible for DMA hooks. </p>
@@ -218,11 +216,49 @@ Protected Member Functions</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">pure virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 <p>Init is called once at factory time to initialize the buffers. </p>
+
+</div>
+</div>
+<a class="anchor" id="a94a2c63499df00de7201ebc97a5c7616"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classPothos_1_1BufferManager.html#a416a19df56db34331b3acd0b0367e44c">Sptr</a> Pothos::BufferManager::make </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The <a class="el" href="classPothos_1_1BufferManager.html">BufferManager</a> factory &ndash; makes a new <a class="el" href="classPothos_1_1BufferManager.html">BufferManager</a> given the factory name. This factory call does not invoke <a class="el" href="classPothos_1_1BufferManager.html#ac2e74c3807afd59bf2cf3c47c04f8937">init()</a> on the buffer manager. Plugins for custom BufferManagers should be located in the plugin registry: /framework/buffer_manager/[name] </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">BufferManagerFactoryError</td><td>if the factory function fails. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td>the name of a <a class="el" href="classPothos_1_1BufferManager.html">BufferManager</a> factory in the plugin tree </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>a new shared pointer to a buffer manager </dd></dl>
 
 </div>
 </div>
@@ -392,7 +428,7 @@ Protected Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 25 2014 13:48:54 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jun 22 2014 18:25:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

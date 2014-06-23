@@ -1,6 +1,7 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classPothos_1_1CallRegistry.html" title="Pothos::CallRegistry" alt="" coords="6,5,149,32"/>
-<area shape="rect" id="node2" href="$classPothos_1_1Block.html" title="Pothos::Block" alt="" coords="208,5,312,32"/>
-<area shape="rect" id="node3" href="$classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="16,56,139,83"/>
-<area shape="rect" id="node4" href="$classPothos_1_1Topology.html" title="Pothos::Topology" alt="" coords="198,56,322,83"/>
+<area shape="rect" id="node1" href="$classPothos_1_1CallRegistry.html" title="Pothos::CallRegistry" alt="" coords="9,5,151,32"/>
+<area shape="rect" id="node2" href="$classPothos_1_1Block.html" title="Pothos::Block" alt="" coords="213,56,317,83"/>
+<area shape="rect" id="node3" href="$classPothos_1_1SignalEmitter.html" title="Pothos::SignalEmitter" alt="" coords="5,56,155,83"/>
+<area shape="rect" id="node4" href="$classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="19,107,141,133"/>
+<area shape="rect" id="node5" href="$classPothos_1_1Topology.html" title="Pothos::Topology" alt="" coords="203,107,327,133"/>
 </map>

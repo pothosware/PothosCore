@@ -1,4 +1,5 @@
 <map id="Pothos::Block" name="Pothos::Block">
 <area shape="rect" id="node2" href="$classPothos_1_1CallRegistry.html" title="Pothos::CallRegistry" alt="" coords="5,5,147,32"/>
-<area shape="rect" id="node3" href="$classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="172,5,295,32"/>
+<area shape="rect" id="node3" href="$classPothos_1_1SignalEmitter.html" title="Pothos::SignalEmitter" alt="" coords="171,5,319,32"/>
+<area shape="rect" id="node4" href="$classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="344,5,467,32"/>
 </map>

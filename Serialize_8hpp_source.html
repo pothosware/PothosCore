@@ -143,7 +143,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">class</span> Archive&gt;</div>
 <div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="namespacePothos_1_1serialization.html#a3b9f3f4a675fa57e2b8b7f41fa6629c8">   55</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespacePothos_1_1serialization.html#a3b9f3f4a675fa57e2b8b7f41fa6629c8">save</a>(Archive &amp; ar, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Pothos::Object</a> &amp;t, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;{</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">bool</span> is_null = t.<a class="code" href="classPothos_1_1Object.html#afd3334758ae4cb4944a01af242b0fd47">null</a>();</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">bool</span> is_null = not t;</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    ar &lt;&lt; is_null;</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordflow">if</span> (not is_null) ar &lt;&lt; t.<a class="code" href="classPothos_1_1Object.html#ae18c3e90ebf27064021f328285ef1bb3">_impl</a>;</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;}</div>
@@ -151,10 +151,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">class</span> Archive&gt;</div>
 <div class="line"><a name="l00063"></a><span class="lineno"><a class="line" href="namespacePothos_1_1serialization.html#a785c7a5232e9debee698fe6ba6635084">   63</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespacePothos_1_1serialization.html#a785c7a5232e9debee698fe6ba6635084">load</a>(Archive &amp; ar, <a class="code" href="classPothos_1_1Object.html">Pothos::Object</a> &amp;t, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;{</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    assert(t.<a class="code" href="classPothos_1_1Object.html#afd3334758ae4cb4944a01af242b0fd47">null</a>());</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    assert(not t);</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordtype">bool</span> is_null = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    ar &gt;&gt; is_null;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordflow">if</span> (not is_null) ar &gt;&gt; t.<a class="code" href="classPothos_1_1Object.html#ae18c3e90ebf27064021f328285ef1bb3">_impl</a>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordflow">if</span> (not is_null) ar &gt;&gt; t._impl;</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;}</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;} <span class="comment">// namespace serialization</span></div>
@@ -174,11 +174,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classPothos_1_1Object_html"><div class="ttname"><a href="classPothos_1_1Object.html">Pothos::Object</a></div><div class="ttdef"><b>Definition:</b> Object.hpp:54</div></div>
 <div class="ttc" id="namespacePothos_1_1serialization_html_a4ed1534bf24677dd94d889f63771821e"><div class="ttname"><a href="namespacePothos_1_1serialization.html#a4ed1534bf24677dd94d889f63771821e">Pothos::serialization::serialize</a></div><div class="ttdeci">void serialize(Archive &amp;, Pothos::Detail::ObjectContainer &amp;, const unsigned int)</div><div class="ttdef"><b>Definition:</b> Serialize.hpp:45</div></div>
 <div class="ttc" id="ObjectImpl_8hpp_html"><div class="ttname"><a href="ObjectImpl_8hpp.html">ObjectImpl.hpp</a></div></div>
-<div class="ttc" id="classPothos_1_1Object_html_afd3334758ae4cb4944a01af242b0fd47"><div class="ttname"><a href="classPothos_1_1Object.html#afd3334758ae4cb4944a01af242b0fd47">Pothos::Object::null</a></div><div class="ttdeci">bool null(void) const </div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 25 2014 13:48:53 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jun 22 2014 18:25:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

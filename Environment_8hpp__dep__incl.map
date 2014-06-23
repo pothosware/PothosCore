@@ -1,9 +1,9 @@
 <map id="include/Pothos/Proxy/Environment.hpp" name="include/Pothos/Proxy/Environment.hpp">
-<area shape="rect" id="node2" href="$Client_8hpp.html" title="include/Pothos/Remote\l/Client.hpp" alt="" coords="95,97,253,138"/>
-<area shape="rect" id="node5" href="$Proxy_8hpp.html" title="include/Pothos/Proxy.hpp" alt="" coords="265,195,436,221"/>
-<area shape="rect" id="node7" href="$ProxyImpl_8hpp.html" title="include/Pothos/Proxy\l/ProxyImpl.hpp" alt="" coords="329,97,476,138"/>
-<area shape="rect" id="node8" href="$ProxyImpl_8tmpl_8hpp.html" title="include/Pothos/Proxy\l/ProxyImpl.tmpl.hpp" alt="" coords="500,97,647,138"/>
-<area shape="rect" id="node3" href="$Node_8hpp.html" title="include/Pothos/Remote\l/Node.hpp" alt="" coords="5,187,163,229"/>
-<area shape="rect" id="node4" href="$Remote_8hpp.html" title="include/Pothos/Remote.hpp" alt="" coords="31,285,213,312"/>
-<area shape="rect" id="node6" href="$Proxy_2Containers_8hpp.html" title="include/Pothos/Proxy\l/Containers.hpp" alt="" coords="277,278,424,319"/>
+<area shape="rect" id="node2" href="$Client_8hpp.html" title="include/Pothos/Remote\l/Client.hpp" alt="" coords="17,97,175,138"/>
+<area shape="rect" id="node5" href="$Proxy_8hpp.html" title="include/Pothos/Proxy.hpp" alt="" coords="259,195,429,221"/>
+<area shape="rect" id="node7" href="$ProxyImpl_8tmpl_8hpp.html" title="include/Pothos/Proxy\l/ProxyImpl.tmpl.hpp" alt="" coords="251,97,397,138"/>
+<area shape="rect" id="node8" href="$ProxyImpl_8hpp.html" title="include/Pothos/Proxy\l/ProxyImpl.hpp" alt="" coords="421,97,568,138"/>
+<area shape="rect" id="node3" href="$Remote_8hpp.html" title="include/Pothos/Remote.hpp" alt="" coords="5,285,187,312"/>
+<area shape="rect" id="node4" href="$Node_8hpp.html" title="include/Pothos/Remote\l/Node.hpp" alt="" coords="75,187,233,229"/>
+<area shape="rect" id="node6" href="$Proxy_2Containers_8hpp.html" title="include/Pothos/Proxy\l/Containers.hpp" alt="" coords="271,278,417,319"/>
 </map>

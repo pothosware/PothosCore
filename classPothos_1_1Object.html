@@ -111,8 +111,6 @@ Inheritance diagram for Pothos::Object:</div>
 Collaboration diagram for Pothos::Object:</div>
 <div class="dyncontent">
 <div class="center"><img src="classPothos_1_1Object__coll__graph.png" border="0" usemap="#Pothos_1_1Object_coll__map" alt="Collaboration graph"/></div>
-<map name="Pothos_1_1Object_coll__map" id="Pothos_1_1Object_coll__map">
-</map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -138,8 +136,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aefbabc4be8fe69d3694a3b37c3e0f069"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a71734570352fb7f447b46c3c1265fd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1Object.html">Object</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Object.html#a1a71734570352fb7f447b46c3c1265fd">operator=</a> (<a class="el" href="classPothos_1_1Object.html">Object</a> &amp;&amp;rhs)</td></tr>
 <tr class="separator:a1a71734570352fb7f447b46c3c1265fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afd3334758ae4cb4944a01af242b0fd47"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Object.html#afd3334758ae4cb4944a01af242b0fd47">null</a> (void) const </td></tr>
-<tr class="separator:afd3334758ae4cb4944a01af242b0fd47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5d0e206a78097a33c747c064cf8c684"><td class="memItemLeft" align="right" valign="top"><a class="el" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Object.html#af5d0e206a78097a33c747c064cf8c684">operator bool</a> (void) const </td></tr>
+<tr class="separator:af5d0e206a78097a33c747c064cf8c684"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab856344f279ea28f527db0258c3cd5c5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Object.html#ab856344f279ea28f527db0258c3cd5c5">unique</a> (void) const </td></tr>
 <tr class="separator:ab856344f279ea28f527db0258c3cd5c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5eca5afad74eb694bc666dcb9a4343b2"><td class="memItemLeft" align="right" valign="top">const std::type_info &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Object.html#a5eca5afad74eb694bc666dcb9a4343b2">type</a> (void) const </td></tr>
@@ -696,12 +694,12 @@ template&lt;typename ValueType &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="afd3334758ae4cb4944a01af242b0fd47"></a>
+<a class="anchor" id="af5d0e206a78097a33c747c064cf8c684"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool Pothos::Object::null </td>
+          <td class="memname"><a class="el" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a> Pothos::Object::operator bool </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -709,8 +707,8 @@ template&lt;typename ValueType &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Is the <a class="el" href="classPothos_1_1Object.html">Object</a> null? </p>
-<dl class="section return"><dt>Returns</dt><dd>true if the container is empty </dd></dl>
+<p>Does the object hold a value? </p>
+<dl class="section return"><dt>Returns</dt><dd>true if the container is non-empty </dd></dl>
 
 </div>
 </div>
@@ -900,7 +898,7 @@ template&lt;typename ValueType &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 25 2014 13:48:54 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jun 22 2014 18:25:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

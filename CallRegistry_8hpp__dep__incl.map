@@ -1,7 +1,7 @@
 <map id="include/Pothos/Framework/CallRegistry.hpp" name="include/Pothos/Framework/CallRegistry.hpp">
-<area shape="rect" id="node2" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="55,97,232,138"/>
-<area shape="rect" id="node4" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="144,277,347,304"/>
-<area shape="rect" id="node5" href="$CallRegistryImpl_8hpp.html" title="include/Pothos/Framework\l/CallRegistryImpl.hpp" alt="" coords="309,187,485,229"/>
-<area shape="rect" id="node6" href="$CallRegistryImpl_8tmpl_8hpp.html" title="include/Pothos/Framework\l/CallRegistryImpl.tmpl.hpp" alt="" coords="359,97,536,138"/>
-<area shape="rect" id="node3" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="5,187,181,229"/>
+<area shape="rect" id="node2" href="$CallRegistryImpl_8tmpl_8hpp.html" title="include/Pothos/Framework\l/CallRegistryImpl.tmpl.hpp" alt="" coords="5,97,181,138"/>
+<area shape="rect" id="node3" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="206,97,383,138"/>
+<area shape="rect" id="node5" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="295,277,497,304"/>
+<area shape="rect" id="node6" href="$CallRegistryImpl_8hpp.html" title="include/Pothos/Framework\l/CallRegistryImpl.hpp" alt="" coords="459,187,636,229"/>
+<area shape="rect" id="node4" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="155,187,332,229"/>
 </map>
