@@ -52,10 +52,10 @@ class Forwarder(Pothos.Block):
             self.input(0).consume(n)
             self.output(0).produce(n)
 
-    def propagateLabels(self, input, labels):
+    def propagateLabels(self, input):
         print('propagateLabels')
         print(self.input(0).totalElements())
-        for l in labels:
+        for l in input.labels():
             print(l.index)
             print(l.data)
             #self.output(0).postLabel(l)

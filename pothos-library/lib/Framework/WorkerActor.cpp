@@ -107,10 +107,10 @@ void Pothos::WorkerActor::postWorkTasks(void)
         }
         if (numLabels != 0)
         {
-            LabelIteratorRange iter(allLabels.begin(), allLabels.begin()+numLabels);
+            port._labelIter = LabelIteratorRange(allLabels.begin(), allLabels.begin()+numLabels);
             try
             {
-                block->propagateLabels(&port, iter);
+                block->propagateLabels(&port);
             }
             catch (const Pothos::Exception &ex)
             {

@@ -61,14 +61,14 @@ void Pothos::Block::deactivate(void)
     return;
 }
 
-void Pothos::Block::propagateLabels(const InputPort *input, const LabelIteratorRange &labels)
+void Pothos::Block::propagateLabels(const InputPort *input)
 {
     const auto numConsumed = input->totalElements();
     for (auto &entry : this->allOutputs())
     {
         auto &output = entry.second;
         const auto numProduced = output->totalElements();
-        for (const auto &label : labels)
+        for (const auto &label : input->labels())
         {
             assert(label.index <= numConsumed);
             auto newLabel = label;

@@ -97,10 +97,13 @@ protected:
      * Only the work() thread is allowed to call this method,
      * therefore users should never directly invoke this method.
      *
+     * Access the labels iterator with the call to input->labels().
+     * This iterator will contain only labels from the consumed elements.
+     * Forward labels to the output ports using postLabel() on an output port object.
+     *
      * \param input a pointer to the input port with labels
-     * \param labels the labels within the consumed region
      */
-    virtual void propagateLabels(const InputPort *input, const LabelIteratorRange &labels);
+    virtual void propagateLabels(const InputPort *input);
 
     /*!
      * The opaque call handler handles dispatching calls to registered methods.
