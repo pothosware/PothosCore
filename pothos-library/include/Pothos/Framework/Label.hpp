@@ -29,7 +29,7 @@ public:
 
     //! Create a label with specified data of ValueType and index
     template <typename ValueType>
-    Label(const ValueType &data, const unsigned long long index);
+    Label(ValueType &&data, const unsigned long long index);
 
     /*!
      * The data can be anything that can be held by Object.
@@ -86,8 +86,8 @@ private:
 } //namespace Pothos
 
 template <typename ValueType>
-Pothos::Label::Label(const ValueType &data, const unsigned long long index):
-    data(Object::make(data)), index(index)
+Pothos::Label::Label(ValueType &&data, const unsigned long long index):
+    data(Object::make(std::forward<ValueType>(data))), index(index)
 {
     return;
 }
