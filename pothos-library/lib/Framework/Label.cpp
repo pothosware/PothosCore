@@ -9,13 +9,6 @@ Pothos::Label::Label(void):
     return;
 }
 
-Pothos::Label::Label(const Object &data, const unsigned long long index):
-    data(data),
-    index(index)
-{
-    return;
-}
-
 Pothos::LabelIteratorRange::LabelIteratorRange(void):
     _begin(nullptr), _end(nullptr)
 {

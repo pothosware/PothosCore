@@ -24,9 +24,6 @@ public:
     //! Create an empty label with null data and zero index.
     Label(void);
 
-    //! Create a label with specified data of type Object and index
-    Label(const Object &data, const unsigned long long index);
-
     //! Create a label with specified data of ValueType and index
     template <typename ValueType>
     Label(ValueType &&data, const unsigned long long index);
@@ -87,7 +84,7 @@ private:
 
 template <typename ValueType>
 Pothos::Label::Label(ValueType &&data, const unsigned long long index):
-    data(Object::make(std::forward<ValueType>(data))), index(index)
+    data(Object(std::forward<ValueType>(data))), index(index)
 {
     return;
 }
