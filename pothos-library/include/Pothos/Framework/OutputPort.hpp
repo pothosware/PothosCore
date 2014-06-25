@@ -101,7 +101,8 @@ public:
      * Post an output message to the subscribers on this port.
      * \param message the message to post
      */
-    void postMessage(const Object &message);
+    template <typename ValueType>
+    void postMessage(ValueType &&message);
 
     /*!
      * Post an output buffer to the subscribers on this port.
@@ -134,6 +135,7 @@ private:
     OutputPort(const OutputPort &){} // non construction-copyable
     OutputPort &operator=(const OutputPort &){return *this;} // non copyable
     friend class WorkerActor;
+    void _postMessage(const Object &message);
 };
 
 } //namespace Pothos
@@ -181,4 +183,10 @@ inline unsigned long long Pothos::OutputPort::totalMessages(void) const
 inline void Pothos::OutputPort::produce(const size_t numElements)
 {
     _pendingElements += numElements;
+}
+
+template <typename ValueType>
+void Pothos::OutputPort::postMessage(ValueType &&message)
+{
+    Pothos::OutputPort::_postMessage(Pothos::Object(std::forward<ValueType>(message)));
 }

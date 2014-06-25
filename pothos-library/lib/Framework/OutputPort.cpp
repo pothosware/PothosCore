@@ -35,7 +35,7 @@ void Pothos::OutputPort::postLabel(const Label &label)
     _impl->actor->workBump = true;
 }
 
-void Pothos::OutputPort::postMessage(const Object &message)
+void Pothos::OutputPort::_postMessage(const Object &message)
 {
     assert(_impl);
     assert(_impl->actor != nullptr);
@@ -74,7 +74,7 @@ static auto managedOutputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, produce))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, popBuffer))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postLabel))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postMessage))
+    .registerMethod<const Pothos::Object &, void, Pothos::OutputPort>(POTHOS_FCN_TUPLE(Pothos::OutputPort, postMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postBuffer))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, isSignal))
     .commit("Pothos/OutputPort");
