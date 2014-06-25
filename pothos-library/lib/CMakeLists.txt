@@ -66,6 +66,7 @@ list(APPEND POTHOS_SOURCES
 
     Callable/Callable.cpp
     Callable/Exception.cpp
+    Callable/Tests.cpp
 
     Framework/DType.cpp
     Framework/Label.cpp
@@ -106,6 +107,7 @@ list(APPEND POTHOS_SOURCES
     Plugin/Static.cpp
     Plugin/Exception.cpp
     Plugin/Loader.in.cpp
+    Plugin/Tests.cpp
 
     Proxy/Proxy.cpp
     Proxy/Handle.cpp
