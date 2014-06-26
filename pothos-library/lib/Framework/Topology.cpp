@@ -482,7 +482,7 @@ static std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> 
 Pothos::Topology::Topology(void):
     _impl(new Impl())
 {
-    this->setName("Topology");
+    return;
 }
 
 Pothos::Topology::~Topology(void)

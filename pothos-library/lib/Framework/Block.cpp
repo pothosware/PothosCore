@@ -22,7 +22,7 @@ Pothos::Block::Block(void):
     _framework(getGlobalFramework()),
     _actor(new WorkerActor(this))
 {
-    this->setName("Block");
+    return;
 }
 
 Pothos::Block::~Block(void)
