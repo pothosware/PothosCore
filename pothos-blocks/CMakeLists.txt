@@ -33,6 +33,8 @@ set(SOURCES
     network/NetworkSink.cpp
     network/SocketEndpoint.cpp
     network/TestNetworkBlocks.cpp
+    arithmetic/Add.cpp
+    arithmetic/TestArithmeticBlocks.cpp
 )
 
 #udt support
