@@ -65,6 +65,24 @@ bool Pothos::InputPort::isSlot(void) const
     return _impl->isSlot;
 }
 
+void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
+{
+    assert(_impl);
+    _impl->actor->GetFramework().Send(makePortMessage(this, buffer), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+}
+
+void Pothos::InputPort::pushLabel(const Label &label)
+{
+    assert(_impl);
+    _impl->actor->GetFramework().Send(makePortMessage(this, label), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+}
+
+void Pothos::InputPort::pushMessage(const Object &message)
+{
+    assert(_impl);
+    _impl->actor->GetFramework().Send(makePortMessage(this, message), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedInputPort = Pothos::ManagedClass()
@@ -84,4 +102,7 @@ static auto managedInputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, popMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, setReserve))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, isSlot))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, pushBuffer))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, pushLabel))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, pushMessage))
     .commit("Pothos/InputPort");
