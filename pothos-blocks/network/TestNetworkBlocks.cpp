@@ -37,12 +37,12 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
 
     //feed buffer
     auto b0 = Pothos::BufferChunk(10000*sizeof(int));
-    int *p0 = reinterpret_cast<int *>(b0.address);
+    auto p0 = b0.as<int *>();
     for (size_t i = 0; i < 10000; i++) p0[i] = i;
     feeder.callProxy("feedBuffer", b0);
 
     auto b1 = Pothos::BufferChunk(10000*sizeof(int));
-    int *p1 = reinterpret_cast<int *>(b1.address);
+    auto p1 = b1.as<int *>();
     for (size_t i = 0; i < 10000; i++) p1[i] = i+10000;
     feeder.callProxy("feedBuffer", b1);
 
@@ -85,13 +85,13 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
     {
         auto mbuff = msgs[2].extract<Pothos::BufferChunk>();
         POTHOS_TEST_EQUAL(mbuff.length, 10000*sizeof(int));
-        int *pb = reinterpret_cast<int *>(mbuff.address);
+        auto pb = mbuff.as<const int *>();
         for (int i = 0; i < 10000; i++) POTHOS_TEST_EQUAL(pb[i], i);
     }
 
     //check the buffer for equality
     POTHOS_TEST_EQUAL(buff.length, 2*10000*sizeof(int));
-    int *pb = reinterpret_cast<int *>(buff.address);
+    auto pb = buff.as<const int *>();
     for (int i = 0; i < 2*10000; i++) POTHOS_TEST_EQUAL(pb[i], i);
 
     //check labels
