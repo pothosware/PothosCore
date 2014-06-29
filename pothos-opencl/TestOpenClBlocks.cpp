@@ -44,12 +44,12 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel)
 
     //feed buffer
     auto b0 = Pothos::BufferChunk(10*sizeof(float));
-    auto p0 = reinterpret_cast<float *>(b0.address);
+    auto p0 = b0.as<float *>();
     for (size_t i = 0; i < 10; i++) p0[i] = i;
     feeder0.callProxy("feedBuffer", b0);
 
     auto b1 = Pothos::BufferChunk(10*sizeof(float));
-    auto p1 = reinterpret_cast<float *>(b1.address);
+    auto p1 = b1.as<float *>();
     for (size_t i = 0; i < 10; i++) p1[i] = i+10;
     feeder1.callProxy("feedBuffer", b1);
 
@@ -69,7 +69,7 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel)
 
     //check the buffer for equality
     POTHOS_TEST_EQUAL(buff.length, 10*sizeof(float));
-    auto pb = reinterpret_cast<float *>(buff.address);
+    auto pb = buff.as<const float *>();
     //for (int i = 0; i < 10; i++) std::cout << i << " " << pb[i] << std::endl;
     for (int i = 0; i < 10; i++) POTHOS_TEST_EQUAL(pb[i], float(i+i+10));
 }
@@ -97,17 +97,17 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel_back_to_back)
 
     //feed buffer
     auto b0 = Pothos::BufferChunk(10*sizeof(float));
-    auto p0 = reinterpret_cast<float *>(b0.address);
+    auto p0 = b0.as<float *>();
     for (size_t i = 0; i < 10; i++) p0[i] = i;
     feeder0.callProxy("feedBuffer", b0);
 
     auto b1 = Pothos::BufferChunk(10*sizeof(float));
-    auto p1 = reinterpret_cast<float *>(b1.address);
+    auto p1 = b1.as<float *>();
     for (size_t i = 0; i < 10; i++) p1[i] = i+10;
     feeder1.callProxy("feedBuffer", b1);
 
     auto b2 = Pothos::BufferChunk(10*sizeof(float));
-    auto p2 = reinterpret_cast<float *>(b2.address);
+    auto p2 = b2.as<float *>();
     for (size_t i = 0; i < 10; i++) p2[i] = i+20;
     feeder2.callProxy("feedBuffer", b2);
 
@@ -130,7 +130,7 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel_back_to_back)
 
     //check the buffer for equality
     POTHOS_TEST_EQUAL(buff.length, 10*sizeof(float));
-    auto pb = reinterpret_cast<float *>(buff.address);
+    auto pb = buff.as<const float *>();
     //for (int i = 0; i < 10; i++) std::cout << i << " " << pb[i] << std::endl;
     for (int i = 0; i < 10; i++) POTHOS_TEST_EQUAL(pb[i], float(i+i+10+i+20));
 }
