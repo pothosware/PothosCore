@@ -7,6 +7,7 @@
 #include <Poco/JSON/Array.h>
 #include <iostream>
 #include <complex>
+#include <cstring> //memset
 
 /***********************************************************************
  * |PothosDoc Add
@@ -62,6 +63,7 @@ public:
         {
             auto bytes = ports->getElement<int>(i)*this->input(i)->dtype().size();
             Pothos::BufferChunk buffer(bytes);
+            std::memset(buffer.as<void *>(), 0, buffer.length);
             this->input(i)->pushBuffer(buffer);
         }
     }
