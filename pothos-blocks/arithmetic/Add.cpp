@@ -47,12 +47,17 @@ template <typename Type>
 class Add : public Pothos::Block
 {
 public:
-    Add(void)
+    Add(void):
+        _numInlineBuffers(0)
     {
         this->registerCall(POTHOS_FCN_TUPLE(Add<Type>, setPreload));
+        this->registerCall(POTHOS_FCN_TUPLE(Add<Type>, getNumInlineBuffers));
         this->setupInput(0, typeid(Type));
         this->setupInput(1, typeid(Type)); //TODO FIXME remove this line after: https://github.com/pothosware/pothos-library/issues/42
         this->setupOutput(0, typeid(Type));
+
+        //read before write optimization
+        this->output(0)->setReadBeforeWrite(this->input(0));
     }
 
     void setPreload(const std::string &preloadStr)
@@ -70,16 +75,18 @@ public:
 
     void work(void)
     {
+        //number of elements to work with
+        auto elems = this->workInfo().minElements;
+        if (elems == 0) return;
+
         //access to input ports and output port
         const std::vector<Pothos::InputPort *> &inputs = this->inputs();
         Pothos::OutputPort *output = this->output(0);
 
-        //number of elements to work with
-        auto elems = this->workInfo().minElements;
-
         //establish pointers to buffers
         auto out = Pothos::BufferChunk(output->buffer()).as<Type *>();
         auto in0 = inputs[0]->buffer().as<const Type *>();
+        if (out == in0) _numInlineBuffers++; //track buffer inlining
 
         //loop through available ports
         for (size_t i = 1; i < inputs.size(); i++)
@@ -97,6 +104,14 @@ public:
         inputs[0]->consume(elems);
         output->produce(elems);
     }
+
+    size_t getNumInlineBuffers(void) const
+    {
+        return _numInlineBuffers;
+    }
+
+private:
+    size_t _numInlineBuffers;
 };
 
 /***********************************************************************
