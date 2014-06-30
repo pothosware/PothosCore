@@ -23,7 +23,12 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     for (auto &entry : this->outputs)
     {
         auto &port = *entry.second;
-        if (port._impl->bufferManager->empty()) port._buffer = BufferChunk();
+        if ( //handle read before wite port if specified
+            port._impl->readBeforeWritePort != nullptr and
+            port.dtype().size() == port._impl->readBeforeWritePort->dtype().size() and
+            (port._buffer = port._impl->readBeforeWritePort->_impl->bufferAccumulator.front()).useCount() == 2 //2 -> unique + this assignment
+        ){}
+        else if (port._impl->bufferManager->empty()) port._buffer = BufferChunk();
         else port._buffer = port._impl->bufferManager->front();
         port._elements = port._buffer.length/port.dtype().size();
         if (port._elements == 0) allOutputsReady = false;

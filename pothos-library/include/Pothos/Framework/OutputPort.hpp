@@ -19,6 +19,7 @@ namespace Pothos {
 
 class OutputPortImpl;
 class WorkerActor;
+class InputPort;
 
 /*!
  * OutputPort provides methods to interact with a worker's output ports.
@@ -119,6 +120,26 @@ public:
      * Is this port used for signaling in a signals + slots paradigm?
      */
     bool isSignal(void) const;
+
+    /*!
+     * Set read before write on this output port.
+     * Read before write indicates that an element will be read from the input
+     * before a corresponding element is written to an element from this output.
+     *
+     * This property implies that the input buffer can be used
+     * as an output buffer duing a call to the work operation.
+     * Also referred to as buffer inlining, the intention is to
+     * keep more memory in cache by using the same buffer
+     * for both reading and writing operations when possible.
+     *
+     * When this "read before write" property is enabled,
+     * and the only reference to the buffer is held by the input port,
+     * and the size of the input elements is the same as the output.
+     * then the input buffer may be substituted for an output buffer.
+     *
+     * \param port the input port to borrow the buffer from
+     */
+    void setReadBeforeWrite(InputPort *port);
 
 private:
     OutputPortImpl *_impl;

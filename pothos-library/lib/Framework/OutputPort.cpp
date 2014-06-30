@@ -59,6 +59,12 @@ bool Pothos::OutputPort::isSignal(void) const
     return _impl->isSignal;
 }
 
+void Pothos::OutputPort::setReadBeforeWrite(InputPort *port)
+{
+    assert(_impl);
+    _impl->readBeforeWritePort = port;
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedOutputPort = Pothos::ManagedClass()
@@ -77,4 +83,5 @@ static auto managedOutputPort = Pothos::ManagedClass()
     .registerMethod<const Pothos::Object &, void, Pothos::OutputPort>(POTHOS_FCN_TUPLE(Pothos::OutputPort, postMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postBuffer))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, isSignal))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, setReadBeforeWrite))
     .commit("Pothos/OutputPort");
