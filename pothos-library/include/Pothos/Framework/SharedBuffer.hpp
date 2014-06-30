@@ -95,6 +95,11 @@ public:
     bool unique(void) const;
 
     /*!
+     * The number of copies of this shared buffer.
+     */
+    size_t useCount(void) const;
+
+    /*!
      * Is this shared buffer valid?
      */
     pothos_explicit operator bool(void) const;
@@ -137,6 +142,11 @@ inline size_t Pothos::SharedBuffer::getEnd(void) const
 inline bool Pothos::SharedBuffer::unique(void) const
 {
     return _container.unique();
+}
+
+inline size_t Pothos::SharedBuffer::useCount(void) const
+{
+    return _container.use_count();
 }
 
 inline Pothos::SharedBuffer::operator bool(void) const

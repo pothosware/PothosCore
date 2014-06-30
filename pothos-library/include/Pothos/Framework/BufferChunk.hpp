@@ -94,6 +94,18 @@ public:
     ElementType as(void) const;
 
     /*!
+     * Is the reference to the shared buffer unique?
+     * \return true if this is the only copy of the shared buffer
+     */
+    bool unique(void) const;
+
+    /*!
+     * The number of copies of the shared buffer.
+     * An extra copy held by the managed buffer is not counted.
+     */
+    size_t useCount(void) const;
+
+    /*!
      * Is this buffer chunk valid?
      * \return true when there is underlying memory
      */
@@ -105,6 +117,8 @@ private:
 };
 
 } //namespace Pothos
+
+#include <cassert>
 
 inline const Pothos::SharedBuffer &Pothos::BufferChunk::getBuffer(void) const
 {
@@ -136,5 +150,21 @@ ElementType Pothos::BufferChunk::as(void) const
 
 inline Pothos::BufferChunk::operator bool(void) const
 {
-    return (address != 0) or _buffer or _managedBuffer;
+    return (address != 0) or bool(_buffer);
+}
+
+inline bool Pothos::BufferChunk::unique(void) const
+{
+    return this->useCount() == 1;
+}
+
+inline size_t Pothos::BufferChunk::useCount(void) const
+{
+    //dont count the copy held by the managed buffer
+    if (_managedBuffer)
+    {
+        assert(_buffer.useCount() >= 2);
+        return _buffer.useCount() - 1;
+    }
+    return _buffer.useCount();
 }
