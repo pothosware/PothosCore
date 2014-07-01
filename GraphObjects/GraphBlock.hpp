@@ -114,7 +114,6 @@ private:
     void renderStaticText(void);
     struct Impl;
     std::shared_ptr<Impl> _impl;
-    QByteArray _blockDesc;
     std::vector<GraphBlockProp> _properties;
     std::vector<GraphBlockPort> _inputPorts;
     std::vector<GraphBlockPort> _outputPorts;

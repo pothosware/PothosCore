@@ -97,6 +97,10 @@ set(SOURCES
     GraphObjects/GraphBlockUpdate.cpp
     GraphObjects/GraphBreaker.cpp
     GraphObjects/GraphConnection.cpp
+
+    Execution/ExprEval.cpp
+    Execution/BlockEval.cpp
+    Execution/TopologyEngine.cpp
 )
 add_executable(PothosGui ${SOURCES})
 target_link_libraries(PothosGui Pothos ${POTHOS_LIBRARIES})

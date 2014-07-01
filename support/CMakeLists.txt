@@ -1,4 +1,5 @@
 set(SOURCES
+    EvalEnvironment.cpp
     DeviceInfoUtils.cpp
     DocUtils.cpp
     TestDocUtils.cpp
