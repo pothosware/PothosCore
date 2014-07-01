@@ -18,6 +18,7 @@ struct Pothos::ManagedClass::Impl
     Pothos::Callable pointerToWrapper;
     Pothos::Callable sharedToWrapper;
 
+    std::vector<Pothos::Callable> baseConverters;
     std::vector<Pothos::Callable> constructors;
     std::map<std::string, std::vector<Pothos::Callable>> staticMethods;
     std::map<std::string, std::vector<Pothos::Callable>> methods;
@@ -90,6 +91,16 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerSharedToWrapper(const Callab
         throw ManagedClassTypeError("Pothos::ManagedClass::registerSharedToWrapper()", "class type mismatch");
     }
     _impl->sharedToWrapper = toWrapper;
+    return *this;
+}
+
+Pothos::ManagedClass &Pothos::ManagedClass::registerToBaseClass(const Callable &toBase)
+{
+    if (_impl->referenceToWrapper and toBase.type(0) != _impl->referenceToWrapper.type(0))
+    {
+        throw ManagedClassTypeError("Pothos::ManagedClass::registerToBaseClass()", "class type mismatch");
+    }
+    _impl->baseConverters.push_back(toBase);
     return *this;
 }
 
@@ -226,6 +237,11 @@ const Pothos::Callable &Pothos::ManagedClass::getPointerToWrapper(void) const
 const Pothos::Callable &Pothos::ManagedClass::getSharedToWrapper(void) const
 {
     return _impl->sharedToWrapper;
+}
+
+const std::vector<Pothos::Callable> &Pothos::ManagedClass::getBaseClassConverters(void) const
+{
+    return _impl->baseConverters;
 }
 
 const std::vector<Pothos::Callable> &Pothos::ManagedClass::getConstructors(void) const

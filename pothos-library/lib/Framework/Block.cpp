@@ -173,12 +173,6 @@ std::shared_ptr<Pothos::BufferManager> Pothos::Block::getOutputBufferManager(con
 
 #include <Pothos/Managed.hpp>
 
-//FIXME see issue #37
-static const std::string &getUid(const Pothos::Block &b)
-{
-    return b.uid();
-}
-
 static const Pothos::Block *getCPointer(const Pothos::Block &b)
 {
     return &b;
@@ -193,10 +187,10 @@ static WorkerStats getWorkerStats(const Pothos::Block &block)
 
 static auto managedBlock = Pothos::ManagedClass()
     .registerClass<Pothos::Block>()
+    .registerBaseClass<Pothos::Block, Pothos::Util::UID>()
     .registerWildcardMethod(&Pothos::Block::opaqueCall)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setName))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, getName))
-    .registerMethod("uid", &getUid)
     .registerMethod("getCPointer", &getCPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod("getWorkerStats", &getWorkerStats)
