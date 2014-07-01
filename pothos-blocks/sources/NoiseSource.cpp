@@ -208,7 +208,8 @@ static Pothos::Block *noiseSourceFactory(const Pothos::DType &dtype, const long 
 {
     #define ifTypeDeclareFactory(type) \
         if (dtype == Pothos::DType(typeid(type))) return new NoiseSource<type>(seed); \
-        if (dtype == Pothos::DType(typeid(type), Pothos::DType::Shape(1, 2))) return new NoiseSource<std::complex<type>>(seed);
+        if (dtype == Pothos::DType(typeid(std::complex<type>)) or \
+            dtype == Pothos::DType(typeid(type), Pothos::DType::Shape(1, 2))) return new NoiseSource<std::complex<type>>(seed);
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
     ifTypeDeclareFactory(Poco::Int64);
