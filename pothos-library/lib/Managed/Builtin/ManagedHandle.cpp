@@ -87,11 +87,6 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         wildcardCall = cls.getWildcardMethod();
     }
 
-    if (calls.empty() and not opaqueCall and not wildcardCall)
-    {
-        throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "no available calls :" + obj.toString());
-    }
-
     /*******************************************************************
      * Step 3) create an argument list
      ******************************************************************/
@@ -160,6 +155,27 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         doWildcardCall = true;
         call = wildcardCall;
     }
+
+    //attempt to make the call on a base class
+    if (not call and callMethod)
+    {
+        for (const auto &toBase : cls.getBaseClassConverters())
+        {
+            try
+            {
+                return env->makeHandle(toBase.opaqueCall(&argObjs.at(0), 1)).getHandle()->call(name, args, numArgs);
+            }
+            catch (const Pothos::ProxyHandleCallError &) {}
+        }
+    }
+
+    //searching base classes failed, so we can error out this way if calls are empty
+    if (calls.empty() and not opaqueCall and not wildcardCall)
+    {
+        throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "no available calls :" + obj.toString());
+    }
+
+    //otherwise just assume there was no possible match for the given args
     if (not call) throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "method match failed");
 
     /*******************************************************************

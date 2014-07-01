@@ -35,6 +35,12 @@ std::reference_wrapper<T> sharedToWrapper(std::shared_ptr<T> &v)
     return std::ref(*v);
 }
 
+template <typename T, typename Base>
+std::reference_wrapper<Base> convertToBase(T &v)
+{
+    return std::ref<Base>(v);
+}
+
 template <typename T>
 void deleteValue(T &v)
 {
@@ -66,6 +72,12 @@ ManagedClass &ManagedClass::registerClass(void)
         registerMethod("delete", Callable(&Detail::deleteValue<ClassType>));
     }
     return *this;
+}
+
+template <typename ClassType, typename BaseClassType>
+ManagedClass &ManagedClass::registerBaseClass(void)
+{
+    return this->registerToBaseClass(Callable(&Detail::convertToBase<ClassType, BaseClassType>));
 }
 
 template <typename ClassType, typename ValueType>
