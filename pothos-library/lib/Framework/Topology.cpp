@@ -84,6 +84,11 @@ static bool checkObj(const Pothos::Object &o)
     {
         getProxy(o).call<std::string>("uid");
     }
+    catch (const Pothos::Exception &ex)
+    {
+        std::cout << "ex. " << ex.displayText() << std::endl;
+        return false;
+    }
     catch(...)
     {
         return false;
@@ -752,12 +757,6 @@ std::string Pothos::Topology::toDotMarkup(const bool flat)
 
 #include <Pothos/Managed.hpp>
 
-//FIXME see issue #37
-static const std::string &getUidFromTopology(const Pothos::Topology &t)
-{
-    return t.uid();
-}
-
 static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 {
     Pothos::ProxyVector flows;
@@ -770,9 +769,9 @@ static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 
 static auto managedTopology = Pothos::ManagedClass()
     .registerConstructor<Pothos::Topology>()
+    .registerBaseClass<Pothos::Topology, Pothos::Util::UID>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setName))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, getName))
-    .registerMethod("uid", &getUidFromTopology)
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, commit))

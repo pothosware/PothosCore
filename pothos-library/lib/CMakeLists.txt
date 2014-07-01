@@ -134,6 +134,7 @@ list(APPEND POTHOS_SOURCES
     Managed/Builtin/TestManaged.cpp
     Managed/Builtin/TestManagedOpaque.cpp
     Managed/Builtin/TestManagedWildcard.cpp
+    Managed/Builtin/TestManagedInheritance.cpp
 
     Util/UID.cpp
     Util/RefHolder.cpp
