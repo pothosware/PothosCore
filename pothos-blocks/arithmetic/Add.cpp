@@ -121,7 +121,8 @@ static Pothos::Block *addFactory(const Pothos::DType &dtype)
 {
     #define ifTypeDeclareFactory(type) \
         if (dtype == Pothos::DType(typeid(type))) return new Add<type>(); \
-        if (dtype == Pothos::DType(typeid(type), Pothos::DType::Shape(1, 2))) return new Add<std::complex<type>>();
+        if (dtype == Pothos::DType(typeid(std::complex<type>)) or \
+            dtype == Pothos::DType(typeid(type), Pothos::DType::Shape(1, 2))) return new Add<std::complex<type>>();
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
     ifTypeDeclareFactory(Poco::Int64);
