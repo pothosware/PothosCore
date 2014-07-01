@@ -157,7 +157,8 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
     }
 
     //attempt to make the call on a base class
-    if (not call and callMethod)
+    //always try to call the base class first if there is a wildcard handler
+    if (callMethod and (not call or wildcardCall))
     {
         for (const auto &toBase : cls.getBaseClassConverters())
         {
