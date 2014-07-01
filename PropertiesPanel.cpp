@@ -84,6 +84,14 @@ public:
                 propLayout->addWidget(edit);
                 edit->setText(value);
             }
+
+            //units if available
+            if (paramDesc->has("units"))
+            {
+                auto label = new QLabel(QString("<i>%1</i>")
+                    .arg(QString::fromStdString(paramDesc->getValue<std::string>("units"))), this);
+                propLayout->addWidget(label);
+            }
         }
 
         //block level description
