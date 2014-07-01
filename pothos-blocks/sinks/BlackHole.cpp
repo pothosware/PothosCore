@@ -12,23 +12,19 @@
  * |category /Sinks
  * |keywords sink null black
  *
- * |param dtype[Data Type] The datatype this block consumes.
- * |preview disable
- * |default "float32"
- *
- * |factory /blocks/sinks/black_hole(dtype)
+ * |factory /blocks/sinks/black_hole()
  **********************************************************************/
 class BlackHole : public Pothos::Block
 {
 public:
-    static Block *make(const Pothos::DType &dtype)
+    static Block *make(void)
     {
-        return new BlackHole(dtype);
+        return new BlackHole();
     }
 
-    BlackHole(const Pothos::DType &dtype)
+    BlackHole(void)
     {
-        this->setupInput(0, dtype);
+        this->setupInput(0);
     }
 
     void work(void)

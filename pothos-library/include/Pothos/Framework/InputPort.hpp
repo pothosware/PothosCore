@@ -43,6 +43,9 @@ public:
     //! Get the data type information for this port.
     const DType &dtype(void) const;
 
+    //! Get the domain information for this port
+    const std::string &domain(void) const;
+
     /*!
      * Get access to the stream buffer.
      * For non-stream ports, this returns an empty buffer chunk.
@@ -119,11 +122,35 @@ public:
      */
     bool isSlot(void) const;
 
+    /*!
+     * Push a buffer into the buffer queue of this input port.
+     * This is a thread-safe call, it can be made from any context.
+     * Use pushBuffer to preload an input port with elements, example:
+     * a window-sized history of elements for a filter block,
+     * or a preloaded number of elements for a feedback loop.
+     */
+    void pushBuffer(const BufferChunk &buffer);
+
+    /*!
+     * Push a label into the label storage of this input port.
+     * This is a thread-safe call, it can be made from any context.
+     * When using this call, first push the buffer with the
+     * corresponding label index *before* pushing the label.
+     */
+    void pushLabel(const Label &label);
+
+    /*!
+     * Push a message into the message queue of this input port.
+     * This is a thread-safe call, it can be made from any context.
+     */
+    void pushMessage(const Object &message);
+
 private:
     InputPortImpl *_impl;
     int _index;
     std::string _name;
     DType _dtype;
+    std::string _domain;
     BufferChunk _buffer;
     size_t _elements;
     unsigned long long _totalElements;
@@ -152,6 +179,11 @@ inline const std::string &Pothos::InputPort::name(void) const
 inline const Pothos::DType &Pothos::InputPort::dtype(void) const
 {
     return _dtype;
+}
+
+inline const std::string &Pothos::InputPort::domain(void) const
+{
+    return _domain;
 }
 
 inline const Pothos::BufferChunk &Pothos::InputPort::buffer(void) const

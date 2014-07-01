@@ -95,9 +95,19 @@ public:
     bool unique(void) const;
 
     /*!
+     * The number of copies of this shared buffer.
+     */
+    size_t useCount(void) const;
+
+    /*!
      * Is this shared buffer valid?
      */
     pothos_explicit operator bool(void) const;
+
+    /*!
+     * Get access to the underlying memory container.
+     */
+    const std::shared_ptr<void> &getContainer(void) const;
 
 private:
     static SharedBuffer makeCircUnprotected(const size_t numBytes, const long nodeAffinity);
@@ -134,7 +144,17 @@ inline bool Pothos::SharedBuffer::unique(void) const
     return _container.unique();
 }
 
+inline size_t Pothos::SharedBuffer::useCount(void) const
+{
+    return _container.use_count();
+}
+
 inline Pothos::SharedBuffer::operator bool(void) const
 {
     return bool(_container);
+}
+
+inline const std::shared_ptr<void> &Pothos::SharedBuffer::getContainer(void) const
+{
+    return _container;
 }

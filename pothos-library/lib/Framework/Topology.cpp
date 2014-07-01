@@ -10,6 +10,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/System/Info.hpp>
 #include <Poco/Environment.h>
+#include <Poco/Logger.h>
 #include <Poco/Format.h>
 #include <Poco/Timestamp.h>
 #include <Poco/Timespan.h>
@@ -22,6 +23,7 @@
 #include <set>
 #include <sstream>
 #include <cctype>
+#include <iostream>
 
 /***********************************************************************
  * implementation guts
@@ -33,6 +35,7 @@ struct Pothos::Topology::Impl
     std::vector<Flow> activeFlatFlows;
     std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
     std::vector<Flow> createNetworkFlows(void);
+    std::vector<Flow> rectifyDomainFlows(const std::vector<Flow> &);
 };
 
 /***********************************************************************
@@ -189,7 +192,7 @@ static std::vector<Flow> squashFlows(const std::vector<Flow> &flows)
 /***********************************************************************
  * helpers to create network iogress flows
  **********************************************************************/
-std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
+std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(void)
 {
     //first flatten the topology
     const auto flatFlows = squashFlows(this->flows);
@@ -225,11 +228,11 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
             auto dstDType = flow.dst.obj.callProxy("input", flow.dst.name).callProxy("dtype");
 
             auto netSink = srcEnvReg.callProxy("/blocks/network/network_sink", "udt://"+Poco::Environment::nodeName(), "BIND", srcDType);
-            netSink.call("setName", "NetOut");
+            netSink.callVoid("setName", "NetOut");
             auto connectPort = netSink.call<std::string>("getActualPort");
             auto connectUri = Poco::format("udt://%s:%s", Poco::Environment::nodeName(), connectPort);
             auto netSource = dstEnvReg.callProxy("/blocks/network/network_source", connectUri, "CONNECT", dstDType);
-            netSource.call("setName", "NetIn");
+            netSource.callVoid("setName", "NetIn");
 
             //create the flows
             Flow srcFlow;
@@ -255,39 +258,202 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows()
 }
 
 /***********************************************************************
+ * helpers to deal with domain interaction
+ **********************************************************************/
+static bool isDomainCrossingAcceptable(
+    const Port &mainPort,
+    const std::vector<Port> &subPorts,
+    const bool isInput
+)
+{
+    auto mainDomain = mainPort.obj.callProxy(isInput?"input":"output", mainPort.name).call<std::string>("domain");
+
+    bool allOthersAbdicate = true;
+    std::set<std::string> subDomains;
+    for (const auto &subPort : subPorts)
+    {
+        subDomains.insert(subPort.obj.callProxy(isInput?"output":"input", subPort.name).call<std::string>("domain"));
+        auto actor = subPort.obj.callProxy("get:_actor");
+        const auto subMode = actor.call<std::string>(isInput?"getOutputBufferMode":"getInputBufferMode", subPort.name, mainDomain);
+        if (subMode != "ABDICATE") allOthersAbdicate = false;
+    }
+
+    //cant handle multiple domains
+    if (subDomains.size() > 1) return false;
+
+    assert(subDomains.size() == 1);
+    const auto subDomain = *subDomains.begin();
+    auto actor = mainPort.obj.callProxy("get:_actor");
+    const auto mainMode = actor.call<std::string>(isInput?"getInputBufferMode":"getOutputBufferMode", mainPort.name, subDomain);
+
+    //error always means we make a copy block
+    if (mainMode == "ERROR") return false;
+
+    //always good when we abdicate
+    if (mainMode == "ABDICATE") return true;
+
+    //otherwise the mode should be custom
+    assert(mainMode == "CUSTOM");
+
+    //cant handle custom with multiple upstream
+    if (isInput and mainMode == "CUSTOM" and subPorts.size() > 1) return false;
+
+    //if custom, the sub ports must abdicate
+    if (mainMode == "CUSTOM" and not allOthersAbdicate) return false;
+
+    return true;
+}
+
+static std::unordered_map<Port, Pothos::Proxy> domainInspection(
+    const std::unordered_map<Port, std::vector<Port>> &ports,
+    const bool isInput
+)
+{
+    std::unordered_map<Port, Pothos::Proxy> bads;
+    for (const auto &pair : ports)
+    {
+        if (isDomainCrossingAcceptable(pair.first, pair.second, isInput)) continue;
+        auto registry = pair.first.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
+        auto copier = registry.callProxy("/blocks/misc/copier");
+        copier.callVoid("setName", "DomainBridge");
+        bads[pair.first] = copier;
+    }
+
+    return bads;
+}
+
+std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<Flow> &flatFlows)
+{
+    //map any given src or dst to its upstream/downstream ports
+    std::unordered_map<Port, std::vector<Port>> srcs, dsts;
+    for (const auto &flow : flatFlows)
+    {
+        for (const auto &subFlow : flatFlows)
+        {
+            if (subFlow.src == flow.src) srcs[flow.src].push_back(subFlow.dst);
+            if (subFlow.dst == flow.dst) dsts[flow.dst].push_back(subFlow.src);
+        }
+    }
+
+    //get a list of ports with domain problems
+    auto badSrcsToCopier = domainInspection(srcs, false);
+    auto badDstsToCopier = domainInspection(dsts, true);
+
+    std::vector<Flow> domainSafeFlows;
+    for (const auto &flow : flatFlows)
+    {
+        auto srcIt = badSrcsToCopier.find(flow.src);
+        auto dstIt = badDstsToCopier.find(flow.dst);
+        Pothos::Proxy copier;
+        if (srcIt != badSrcsToCopier.end()) copier = srcIt->second;
+        if (dstIt != badDstsToCopier.end()) copier = dstIt->second;
+        if (copier)
+        {
+            //create the flows
+            Flow srcFlow;
+            srcFlow.src = flow.src;
+            srcFlow.dst.obj = copier;
+            srcFlow.dst.name = "0";
+
+            Flow dstFlow;
+            dstFlow.src.obj = copier;
+            dstFlow.src.name = "0";
+            dstFlow.dst = flow.dst;
+
+            //add the network flows to the overall list
+            domainSafeFlows.push_back(srcFlow);
+            domainSafeFlows.push_back(dstFlow);
+        }
+        else
+        {
+            domainSafeFlows.push_back(flow);
+        }
+    }
+
+    return domainSafeFlows;
+}
+
+/***********************************************************************
+ * helpers to deal with buffer managers
+ **********************************************************************/
+static void installBufferManagers(const std::vector<Flow> &flatFlows)
+{
+    //map of a source port to all destination ports
+    std::unordered_map<Port, std::vector<Port>> srcs;
+    for (const auto &flow : flatFlows)
+    {
+        for (const auto &subFlow : flatFlows)
+        {
+            if (subFlow.src == flow.src) srcs[flow.src].push_back(subFlow.dst);
+        }
+    }
+
+    //for each source port -- install managers
+    for (const auto &pair : srcs)
+    {
+        auto src = pair.first;
+        auto dsts = pair.second;
+        auto dst = dsts.at(0);
+        Pothos::Proxy manager;
+
+        auto srcDomain = src.obj.callProxy("output", src.name).call<std::string>("domain");
+        auto dstDomain = dst.obj.callProxy("input", dst.name).call<std::string>("domain");
+
+        auto srcMode = src.obj.callProxy("get:_actor").call<std::string>("getOutputBufferMode", src.name, dstDomain);
+        auto dstMode = dst.obj.callProxy("get:_actor").call<std::string>("getInputBufferMode", dst.name, srcDomain);
+
+        //check if the source provides a manager and install it to the source
+        if (srcMode == "CUSTOM")
+        {
+            manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
+        }
+
+        //check if the destination provides a manager and install it to the source
+        else if (dstMode == "CUSTOM")
+        {
+            assert(dsts.size() == 1); //this must be true if the previous logic was good
+            manager = dst.obj.callProxy("get:_actor").callProxy("getBufferManager", dst.name, srcDomain, true);
+        }
+
+        //otherwise create a generic manager and install it to the source
+        else
+        {
+            assert(srcMode == "ABDICATE"); //this must be true if the previous logic was good
+            assert(dstMode == "ABDICATE");
+            manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
+        }
+        src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, manager);
+    }
+}
+
+/***********************************************************************
  * Helpers to implement port subscription
  **********************************************************************/
 static void updateFlows(const std::vector<Flow> &flows, const std::string &action)
 {
+    const bool isInputAction = action.find("INPUT") != std::string::npos;
+
     //result list is used to ack all subscribe messages
-    std::vector<Pothos::Proxy> infoReceivers;
+    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
 
     //add new data acceptors
     for (const auto &flow : flows)
     {
-        if (action == "SUBINPUT" or action == "UNSUBINPUT")
-        {
-            auto actor = flow.src.obj.callProxy("get:_actor");
-            auto addr = flow.dst.obj.callProxy("get:_actor").callProxy("getAddress");
-            auto result = actor.callProxy("sendPortSubscriberMessage", action, flow.src.name, flow.dst.name, addr);
-            infoReceivers.push_back(result);
-        }
-        if (action == "SUBOUTPUT" or action == "UNSUBOUTPUT")
-        {
-            auto actor = flow.dst.obj.callProxy("get:_actor");
-            auto addr = flow.src.obj.callProxy("get:_actor").callProxy("getAddress");
-            auto result = actor.callProxy("sendPortSubscriberMessage", action, flow.dst.name, flow.src.name, addr);
-            infoReceivers.push_back(result);
-        }
+        const auto &pri = isInputAction?flow.src:flow.dst;
+        const auto &sec = isInputAction?flow.dst:flow.src;
+
+        auto actor = pri.obj.callProxy("get:_actor");
+        auto result = actor.callProxy("sendPortSubscriberMessage", action, pri.name, sec.obj.callProxy("getCPointer"), sec.name);
+        const auto msg = Poco::format("%s.sendPortSubscriberMessage(%s)", pri.obj.call<std::string>("getName"), action);
+        infoReceivers.push_back(std::make_pair(msg, result));
     }
 
     //check all subscribe message results
     std::string errors;
     for (auto infoReceiver : infoReceivers)
     {
-        const auto &msg = infoReceiver.call<std::string>("WaitInfo");
-        if (msg.empty()) continue;
-        errors.append(infoReceiver.call<std::string>("getName")+": "+msg+"\n");
+        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
+        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
     }
     if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
 }
@@ -316,15 +482,22 @@ static std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> 
 Pothos::Topology::Topology(void):
     _impl(new Impl())
 {
-    this->setName("Topology");
+    return;
 }
 
 Pothos::Topology::~Topology(void)
 {
-    this->disconnectAll();
-    this->commit();
-    assert(_impl->activeFlatFlows.empty());
-    assert(_impl->flowToNetgressCache.empty());
+    try
+    {
+        this->disconnectAll();
+        this->commit();
+        assert(_impl->activeFlatFlows.empty());
+        assert(_impl->flowToNetgressCache.empty());
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        poco_error_f1(Poco::Logger::get("Pothos.Topology"), "Topology destructor threw: %s", ex.displayText());
+    }
 }
 
 void Pothos::Topology::setName(const std::string &name)
@@ -339,7 +512,9 @@ const std::string &Pothos::Topology::getName(void) const
 
 void Pothos::Topology::commit(void)
 {
-    const auto flatFlows = _impl->createNetworkFlows();
+    auto flatFlows = _impl->createNetworkFlows();
+    flatFlows = _impl->rectifyDomainFlows(flatFlows);
+    installBufferManagers(flatFlows);
     const auto &activeFlatFlows = _impl->activeFlatFlows;
 
     //new flows are in flat flows but not in current
@@ -369,13 +544,14 @@ void Pothos::Topology::commit(void)
     updateFlows(oldFlows, "UNSUBINPUT");
 
     //result list is used to ack all de/activate messages
-    std::vector<Pothos::Proxy> infoReceivers;
+    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
 
     //send activate to all new blocks not already in active flows
     for (auto block : getObjSetFromFlowList(newFlows, activeFlatFlows))
     {
         auto actor = block.callProxy("get:_actor");
-        infoReceivers.push_back(actor.callProxy("sendActivateMessage"));
+        const auto msg = Poco::format("%s.sendActivateMessage()", block.call<std::string>("getName"));
+        infoReceivers.push_back(std::make_pair(msg, actor.callProxy("sendActivateMessage")));
     }
 
     //update current flows
@@ -385,16 +561,16 @@ void Pothos::Topology::commit(void)
     for (auto block : getObjSetFromFlowList(oldFlows, _impl->activeFlatFlows))
     {
         auto actor = block.callProxy("get:_actor");
-        infoReceivers.push_back(actor.callProxy("sendDeactivateMessage"));
+        const auto msg = Poco::format("%s.sendDeactivateMessage()", block.call<std::string>("getName"));
+        infoReceivers.push_back(std::make_pair(msg, actor.callProxy("sendDeactivateMessage")));
     }
 
     //check all de/activate message results
     std::string errors;
     for (auto infoReceiver : infoReceivers)
     {
-        const auto &msg = infoReceiver.call<std::string>("WaitInfo");
-        if (msg.empty()) continue;
-        errors.append(infoReceiver.call<std::string>("getName")+": "+msg+"\n");
+        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
+        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
     }
     if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
 
@@ -464,13 +640,13 @@ void Pothos::Topology::disconnectAll(void)
         //throws ProxyHandleCallError on non topologies (aka blocks)
         if (flow.src.obj) try
         {
-            flow.src.obj.call("disconnectAll");
+            flow.src.obj.callVoid("disconnectAll");
         }
         catch (const Pothos::Exception &){}
 
         if (flow.dst.obj) try
         {
-            flow.dst.obj.call("disconnectAll");
+            flow.dst.obj.callVoid("disconnectAll");
         }
         catch (const Pothos::Exception &){}
     }

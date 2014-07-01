@@ -9,6 +9,7 @@
 #include <Poco/DigestStream.h>
 #include <Poco/MD5Engine.h>
 #include <Poco/File.h>
+#include <Poco/NumberParser.h>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -22,6 +23,21 @@ public:
 
 Pothos::Object EvalExpression::eval(const std::string &expr)
 {
+    //try simple evaluations first
+    if (expr.size() >= 2 and expr.front() == '"' and expr.back() == '"') return Pothos::Object(expr.substr(1, expr.size()-2));
+    if (expr == "true") return Pothos::Object(true);
+    if (expr == "false") return Pothos::Object(false);
+    try {return Pothos::Object(Poco::NumberParser::parseUnsigned64(expr));}
+    catch (const Poco::SyntaxException &){}
+    try {return Pothos::Object(Poco::NumberParser::parse64(expr));}
+    catch (const Poco::SyntaxException &){}
+    try {return Pothos::Object(Poco::NumberParser::parseHex64(expr));}
+    catch (const Poco::SyntaxException &){}
+    try {return Pothos::Object(Poco::NumberParser::parseFloat(expr));}
+    catch (const Poco::SyntaxException &){}
+    try {return Pothos::Object(Poco::NumberParser::parse(expr));}
+    catch (const Poco::SyntaxException &){}
+
     const auto compiler = Pothos::Util::Compiler::make();
 
     //get a hash of the expr so its symbol is unique

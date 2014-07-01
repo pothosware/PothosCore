@@ -19,6 +19,7 @@ namespace Pothos {
 
 class OutputPortImpl;
 class WorkerActor;
+class InputPort;
 
 /*!
  * OutputPort provides methods to interact with a worker's output ports.
@@ -42,6 +43,9 @@ public:
 
     //! Get the data type information for this port.
     const DType &dtype(void) const;
+
+    //! Get the domain information for this port
+    const std::string &domain(void) const;
 
     /*!
      * Get access to the stream buffer.
@@ -98,7 +102,8 @@ public:
      * Post an output message to the subscribers on this port.
      * \param message the message to post
      */
-    void postMessage(const Object &message);
+    template <typename ValueType>
+    void postMessage(ValueType &&message);
 
     /*!
      * Post an output buffer to the subscribers on this port.
@@ -116,11 +121,32 @@ public:
      */
     bool isSignal(void) const;
 
+    /*!
+     * Set read before write on this output port.
+     * Read before write indicates that an element will be read from the input
+     * before a corresponding element is written to an element from this output.
+     *
+     * This property implies that the input buffer can be used
+     * as an output buffer duing a call to the work operation.
+     * Also referred to as buffer inlining, the intention is to
+     * keep more memory in cache by using the same buffer
+     * for both reading and writing operations when possible.
+     *
+     * When this "read before write" property is enabled,
+     * and the only reference to the buffer is held by the input port,
+     * and the size of the input elements is the same as the output.
+     * then the input buffer may be substituted for an output buffer.
+     *
+     * \param port the input port to borrow the buffer from
+     */
+    void setReadBeforeWrite(InputPort *port);
+
 private:
     OutputPortImpl *_impl;
     int _index;
     std::string _name;
     DType _dtype;
+    std::string _domain;
     BufferChunk _buffer;
     size_t _elements;
     unsigned long long _totalElements;
@@ -130,6 +156,7 @@ private:
     OutputPort(const OutputPort &){} // non construction-copyable
     OutputPort &operator=(const OutputPort &){return *this;} // non copyable
     friend class WorkerActor;
+    void _postMessage(const Object &message);
 };
 
 } //namespace Pothos
@@ -147,6 +174,11 @@ inline const std::string &Pothos::OutputPort::name(void) const
 inline const Pothos::DType &Pothos::OutputPort::dtype(void) const
 {
     return _dtype;
+}
+
+inline const std::string &Pothos::OutputPort::domain(void) const
+{
+    return _domain;
 }
 
 inline const Pothos::BufferChunk &Pothos::OutputPort::buffer(void) const
@@ -172,4 +204,10 @@ inline unsigned long long Pothos::OutputPort::totalMessages(void) const
 inline void Pothos::OutputPort::produce(const size_t numElements)
 {
     _pendingElements += numElements;
+}
+
+template <typename ValueType>
+void Pothos::OutputPort::postMessage(ValueType &&message)
+{
+    Pothos::OutputPort::_postMessage(Pothos::Object(std::forward<ValueType>(message)));
 }

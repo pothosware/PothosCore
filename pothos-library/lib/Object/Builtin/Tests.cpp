@@ -9,6 +9,73 @@
 
 class NeverHeardOfFooBar {};
 
+POTHOS_TEST_BLOCK("/object/tests", test_object_equals)
+{
+    Pothos::Object nullObj;
+    POTHOS_TEST_TRUE(nullObj == nullObj);
+    POTHOS_TEST_TRUE(not nullObj);
+    POTHOS_TEST_TRUE(nullObj == Pothos::Object());
+
+    Pothos::Object intObj(int(42));
+    POTHOS_TEST_TRUE(not (nullObj == intObj));
+
+    Pothos::Object intCopy = intObj;
+    POTHOS_TEST_TRUE(intObj == intCopy);
+
+    Pothos::Object intCopy2; intCopy2 = intCopy;
+    POTHOS_TEST_TRUE(intCopy == intCopy2);
+}
+
+POTHOS_TEST_BLOCK("/object/tests", test_object_value)
+{
+    Pothos::Object intObj(int(42));
+    POTHOS_TEST_TRUE(intObj.type() == typeid(int));
+    POTHOS_TEST_EQUAL(intObj.extract<int>(), 42);
+}
+
+POTHOS_TEST_BLOCK("/object/tests", test_object_throw)
+{
+    Pothos::Object nullObj;
+    POTHOS_TEST_TRUE(nullObj.type() == typeid(Pothos::NullObject));
+    POTHOS_TEST_THROWS(nullObj.extract<int>(), Pothos::ObjectConvertError);
+
+    Pothos::Object intObj(int(42));
+    POTHOS_TEST_THROWS(intObj.extract<char>(), Pothos::ObjectConvertError);
+}
+
+POTHOS_TEST_BLOCK("/object/tests", test_object_mutable)
+{
+    Pothos::ObjectM nullObj;
+    POTHOS_TEST_TRUE(not nullObj);
+    POTHOS_TEST_TRUE(nullObj == Pothos::Object());
+
+    Pothos::ObjectM intObj(int(42));
+    POTHOS_TEST_EQUAL(intObj.extract<int>(), 42);
+
+    intObj.extract<int>() = 21;
+    POTHOS_TEST_EQUAL(intObj.extract<int>(), 21);
+}
+
+Pothos::Object someFunctionTakesObject(const Pothos::Object &obj)
+{
+    return obj;
+}
+
+POTHOS_TEST_BLOCK("/object/tests", test_object_mutable_copy_assigns)
+{
+    Pothos::ObjectM objM0(int(0));
+    Pothos::ObjectM objM1(int(1));
+    Pothos::Object obj0 = someFunctionTakesObject(objM0);
+    Pothos::Object obj1; obj1 = objM1;
+    POTHOS_TEST_EQUAL(obj0.extract<int>(), 0);
+    POTHOS_TEST_EQUAL(obj1.extract<int>(), 1);
+
+    Pothos::ObjectM objM0Copy = objM0;
+    Pothos::ObjectM objM1Copy; objM1Copy = objM1;
+    POTHOS_TEST_EQUAL(objM0Copy.extract<int>(), 0);
+    POTHOS_TEST_EQUAL(objM1Copy.extract<int>(), 1);
+}
+
 POTHOS_TEST_BLOCK("/object/tests", test_convert_numbers)
 {
     Pothos::Object intObj(int(42));

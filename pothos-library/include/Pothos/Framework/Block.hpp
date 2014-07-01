@@ -26,6 +26,8 @@ namespace Theron {
 
 namespace Pothos {
 
+    class BufferManager;
+
 /*!
  * Block is an interface for creating custom computational processing.
  * Users should subclass Block, setup the input and output ports,
@@ -95,10 +97,13 @@ protected:
      * Only the work() thread is allowed to call this method,
      * therefore users should never directly invoke this method.
      *
+     * Access the labels iterator with the call to input->labels().
+     * This iterator will contain only labels from the consumed elements.
+     * Forward labels to the output ports using postLabel() on an output port object.
+     *
      * \param input a pointer to the input port with labels
-     * \param labels the labels within the consumed region
      */
-    virtual void propagateLabels(const InputPort *input, const LabelIteratorRange &labels);
+    virtual void propagateLabels(const InputPort *input);
 
     /*!
      * The opaque call handler handles dispatching calls to registered methods.
@@ -111,6 +116,40 @@ protected:
      * \return the result of making the registered call, wrapped in type Object
      */
     virtual Object opaqueCallHandler(const std::string &name, const Object *inputArgs, const size_t numArgs);
+
+    /*!
+     * Get a buffer manager for this input port.
+     * The user may overload this call to install a custom buffer manager.
+     *
+     * The domain parameter describes the memory used by the upstream blocks.
+     * Knowing the domain allows the implementer of getInputBufferManager to
+     *   - abdicate to the upstream's buffer managers (null return)
+     *   - provide a replacement upstream buffer manager (return manager)
+     *   - protest the ability to interact with the domain (throw exception)
+     *
+     * \throws PortDomainError when the domain is incompatible
+     * \param name the name of an input port on this block
+     * \param domain the domain of the upstream blocks
+     * \return a new buffer manager for this port or null sptr
+     */
+    virtual std::shared_ptr<BufferManager> getInputBufferManager(const std::string &name, const std::string &domain);
+
+    /*!
+     * Get a buffer manager for this output port.
+     * The user may overload this call to install a custom buffer manager.
+     *
+     * The domain parameter describes the memory used by the downstream blocks.
+     * Knowing the domain allows the implementer of getOutputBufferManager to
+     *   - abdicate to the downstream's buffer managers (null return)
+     *   - provide a replacement downstream buffer manager (return manager)
+     *   - protest the ability to interact with the domain (throw exception)
+     *
+     * \throws PortDomainError when the domain is incompatible
+     * \param name the name of an output port on this block
+     * \param domain the domain of the downstream blocks
+     * \return a new buffer manager for this port or null sptr
+     */
+    virtual std::shared_ptr<BufferManager> getOutputBufferManager(const std::string &name, const std::string &domain);
 
 public:
 
@@ -182,23 +221,45 @@ public:
 
     /*!
      * Configure an input port with the given data type.
+     * The data type parameter specifies the size in bytes per input element.
+     * The data type is only relevant when the port is used for streaming data.
+     * The domain parameter is used to specify the type of memory consumed.
+     * The domain will be passed into another block's getOutputBufferManager() call.
+     * \param name the name of this input port
+     * \param dtype the data type for elements
+     * \param domain the expected memory domain
      */
-    void setupInput(const std::string &name, const DType &dtype = "byte");
+    void setupInput(const std::string &name, const DType &dtype = "byte", const std::string &domain = "");
 
     /*!
      * Configure an input port with the given data type.
+     * This call is equivalent to setupInput(std::to_string(index), ...);
+     * \param index the index number of this input port
+     * \param dtype the data type for elements
+     * \param domain the expected memory domain
      */
-    void setupInput(const size_t index, const DType &dtype = "byte");
+    void setupInput(const size_t index, const DType &dtype = "byte", const std::string &domain = "");
 
     /*!
      * Configure an output port with the given data type.
+     * The data type parameter specifies the size in bytes per output element.
+     * The data type is only relevant when the port is used for streaming data.
+     * The domain parameter is used to specify the type of memory produced.
+     * The domain will be passed into another block's getInputBufferManager() call.
+     * \param name the name of this output port
+     * \param dtype the data type for elements
+     * \param domain the expected memory domain
      */
-    void setupOutput(const std::string &name, const DType &dtype = "byte");
+    void setupOutput(const std::string &name, const DType &dtype = "byte", const std::string &domain = "");
 
     /*!
      * Configure an output port with the given data type.
+     * This call is equivalent to setupOutput(std::to_string(index), ...);
+     * \param index the index number of this output port
+     * \param dtype the data type for elements
+     * \param domain the expected memory domain
      */
-    void setupOutput(const size_t index, const DType &dtype = "byte");
+    void setupOutput(const size_t index, const DType &dtype = "byte", const std::string &domain = "");
 
     /*!
      * Export a function call on this block to set/get parameters.

@@ -58,6 +58,17 @@ const std::vector<GraphBlockProp> &GraphBlock::getProperties(void) const
     return _properties;
 }
 
+Poco::JSON::Object::Ptr GraphBlock::getParamDesc(const QString &key) const
+{
+    Poco::JSON::Object::Ptr paramDesc;
+    for (const auto &paramObj : *this->getBlockDesc()->getArray("params"))
+    {
+        const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
+        if (param->getValue<std::string>("key") == key.toStdString()) paramDesc = param;
+    }
+    return paramDesc;
+}
+
 QString GraphBlock::getPropertyValue(const QString &key) const
 {
     auto it = _impl->propertiesValues.find(key);
@@ -102,6 +113,28 @@ void GraphBlock::addOutputPort(const GraphBlockPort &port)
 const std::vector<GraphBlockPort> &GraphBlock::getOutputPorts(void) const
 {
     return _outputPorts;
+}
+
+void GraphBlock::addSlotPort(const GraphBlockPort &port)
+{
+    _slotPorts.push_back(port);
+    _impl->changed = true;
+}
+
+const std::vector<GraphBlockPort> &GraphBlock::getSlotPorts(void) const
+{
+    return _slotPorts;
+}
+
+void GraphBlock::addSignalPort(const GraphBlockPort &port)
+{
+    _signalPorts.push_back(port);
+    _impl->changed = true;
+}
+
+const std::vector<GraphBlockPort> &GraphBlock::getSignalPorts(void) const
+{
+    return _signalPorts;
 }
 
 bool GraphBlock::isPointing(const QRectF &rect) const

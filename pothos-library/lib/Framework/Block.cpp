@@ -22,7 +22,7 @@ Pothos::Block::Block(void):
     _framework(getGlobalFramework()),
     _actor(new WorkerActor(this))
 {
-    this->setName("Block");
+    return;
 }
 
 Pothos::Block::~Block(void)
@@ -61,14 +61,14 @@ void Pothos::Block::deactivate(void)
     return;
 }
 
-void Pothos::Block::propagateLabels(const InputPort *input, const LabelIteratorRange &labels)
+void Pothos::Block::propagateLabels(const InputPort *input)
 {
     const auto numConsumed = input->totalElements();
     for (auto &entry : this->allOutputs())
     {
         auto &output = entry.second;
         const auto numProduced = output->totalElements();
-        for (const auto &label : labels)
+        for (const auto &label : input->labels())
         {
             assert(label.index <= numConsumed);
             auto newLabel = label;
@@ -79,24 +79,24 @@ void Pothos::Block::propagateLabels(const InputPort *input, const LabelIteratorR
     }
 }
 
-void Pothos::Block::setupInput(const std::string &name, const DType &dtype)
+void Pothos::Block::setupInput(const std::string &name, const DType &dtype, const std::string &domain)
 {
-    _actor->allocateInput(name, dtype);
+    _actor->allocateInput(name, dtype, domain);
 }
 
-void Pothos::Block::setupInput(const size_t index, const DType &dtype)
+void Pothos::Block::setupInput(const size_t index, const DType &dtype, const std::string &domain)
 {
-    this->setupInput(std::to_string(index), dtype);
+    this->setupInput(std::to_string(index), dtype, domain);
 }
 
-void Pothos::Block::setupOutput(const std::string &name, const DType &dtype)
+void Pothos::Block::setupOutput(const std::string &name, const DType &dtype, const std::string &domain)
 {
-    _actor->allocateOutput(name, dtype);
+    _actor->allocateOutput(name, dtype, domain);
 }
 
-void Pothos::Block::setupOutput(const size_t index, const DType &dtype)
+void Pothos::Block::setupOutput(const size_t index, const DType &dtype, const std::string &domain)
 {
-    this->setupOutput(std::to_string(index), dtype);
+    this->setupOutput(std::to_string(index), dtype, domain);
 }
 
 void Pothos::Block::registerCallable(const std::string &name, const Callable &call)
@@ -161,12 +161,27 @@ void Pothos::Block::yield(void)
     _actor->workBump = true;
 }
 
+std::shared_ptr<Pothos::BufferManager> Pothos::Block::getInputBufferManager(const std::string &, const std::string &)
+{
+    return Pothos::BufferManager::Sptr(); //abdicate
+}
+
+std::shared_ptr<Pothos::BufferManager> Pothos::Block::getOutputBufferManager(const std::string &, const std::string &)
+{
+    return Pothos::BufferManager::Sptr(); //abdicate
+}
+
 #include <Pothos/Managed.hpp>
 
 //FIXME see issue #37
 static const std::string &getUid(const Pothos::Block &b)
 {
     return b.uid();
+}
+
+static const Pothos::Block *getCPointer(const Pothos::Block &b)
+{
+    return &b;
 }
 
 static WorkerStats getWorkerStats(const Pothos::Block &block)
@@ -182,15 +197,29 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setName))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, getName))
     .registerMethod("uid", &getUid)
+    .registerMethod("getCPointer", &getCPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod("getWorkerStats", &getWorkerStats)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputPortNames))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, outputPortNames))
+
+    //all of the setups with default args set
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
+
+    .registerMethod("setupInput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupInput).bind("", 3))
+    .registerMethod("setupInput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupInput).bind("", 3).bind("byte", 2))
+    .registerMethod("setupInput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupInput).bind("", 3))
+    .registerMethod("setupInput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupInput).bind("", 3).bind("byte", 2))
+
+    .registerMethod("setupOutput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupOutput).bind("", 3))
+    .registerMethod("setupOutput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupOutput).bind("", 3).bind("byte", 2))
+    .registerMethod("setupOutput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupOutput).bind("", 3))
+    .registerMethod("setupOutput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupOutput).bind("", 3).bind("byte", 2))
+
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSignal))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSlot))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, emitSignalArgs))

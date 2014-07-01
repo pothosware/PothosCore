@@ -205,7 +205,7 @@ Object Callable::callObject($expand('A%d &&a%d', $NARGS)) const
 }
 
 template <$expand('typename A%d', $NARGS)>
-void Callable::call($expand('A%d &&a%d', $NARGS)) const
+void Callable::callVoid($expand('A%d &&a%d', $NARGS)) const
 {
     this->callObject($expand('std::forward<A%d>(a%d)', $NARGS));
 }

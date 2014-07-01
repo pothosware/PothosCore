@@ -12,7 +12,7 @@ Pothos::OutputPort::OutputPort(OutputPortImpl *impl):
     _totalMessages(0),
     _pendingElements(0)
 {
-    _impl->bufferManager = BufferManager::make("generic", BufferManagerArgs());
+    return;
 }
 
 Pothos::OutputPort::~OutputPort(void)
@@ -31,15 +31,15 @@ void Pothos::OutputPort::postLabel(const Label &label)
 {
     assert(_impl);
     assert(_impl->actor != nullptr);
-    _impl->actor->sendPortMessage(_impl->subscribers, label);
+    _impl->actor->sendOutputPortMessage(_impl->subscribers, label);
     _impl->actor->workBump = true;
 }
 
-void Pothos::OutputPort::postMessage(const Object &message)
+void Pothos::OutputPort::_postMessage(const Object &message)
 {
     assert(_impl);
     assert(_impl->actor != nullptr);
-    _impl->actor->sendPortMessage(_impl->subscribers, message);
+    _impl->actor->sendOutputPortMessage(_impl->subscribers, message);
     _totalMessages++;
     _impl->actor->workBump = true;
 }
@@ -59,6 +59,12 @@ bool Pothos::OutputPort::isSignal(void) const
     return _impl->isSignal;
 }
 
+void Pothos::OutputPort::setReadBeforeWrite(InputPort *port)
+{
+    assert(_impl);
+    _impl->readBeforeWritePort = port;
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedOutputPort = Pothos::ManagedClass()
@@ -66,6 +72,7 @@ static auto managedOutputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, index))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, name))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, dtype))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, domain))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, buffer))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, elements))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, totalElements))
@@ -73,7 +80,8 @@ static auto managedOutputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, produce))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, popBuffer))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postLabel))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postMessage))
+    .registerMethod<const Pothos::Object &, void, Pothos::OutputPort>(POTHOS_FCN_TUPLE(Pothos::OutputPort, postMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postBuffer))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, isSignal))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, setReadBeforeWrite))
     .commit("Pothos/OutputPort");

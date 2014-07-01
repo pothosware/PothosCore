@@ -23,7 +23,12 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     for (auto &entry : this->outputs)
     {
         auto &port = *entry.second;
-        if (port._impl->bufferManager->empty()) port._buffer = BufferChunk();
+        if ( //handle read before wite port if specified
+            port._impl->readBeforeWritePort != nullptr and
+            port.dtype().size() == port._impl->readBeforeWritePort->dtype().size() and
+            (port._buffer = port._impl->readBeforeWritePort->_impl->bufferAccumulator.front()).useCount() == 2 //2 -> unique + this assignment
+        ){}
+        else if (port._impl->bufferManager->empty()) port._buffer = BufferChunk();
         else port._buffer = port._impl->bufferManager->front();
         port._elements = port._buffer.length/port.dtype().size();
         if (port._elements == 0) allOutputsReady = false;
@@ -107,10 +112,10 @@ void Pothos::WorkerActor::postWorkTasks(void)
         }
         if (numLabels != 0)
         {
-            LabelIteratorRange iter(allLabels.begin(), allLabels.begin()+numLabels);
+            port._labelIter = LabelIteratorRange(allLabels.begin(), allLabels.begin()+numLabels);
             try
             {
-                block->propagateLabels(&port, iter);
+                block->propagateLabels(&port);
             }
             catch (const Pothos::Exception &ex)
             {
@@ -165,7 +170,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
             port._buffer = BufferChunk(); //clear reference
             buffer.length = bytes;
             port._impl->bufferManager->pop(buffer.length);
-            this->sendPortMessage(port._impl->subscribers, buffer);
+            this->sendOutputPortMessage(port._impl->subscribers, buffer);
         }
 
         //send the external buffers in the queue
@@ -174,7 +179,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
             auto &buffer = port._impl->postedBuffers.front();
             bytesProduced += buffer.length;
             port._totalElements += buffer.length/port.dtype().size();
-            this->sendPortMessage(port._impl->subscribers, buffer);
+            this->sendOutputPortMessage(port._impl->subscribers, buffer);
             port._impl->postedBuffers.pop_front();
         }
 
@@ -199,18 +204,15 @@ void Pothos::WorkerActor::postWorkTasks(void)
 
 #include <Pothos/Managed.hpp>
 
-//FIXME see issue #37
-static Theron::Address getAddress(const Pothos::WorkerActor &actor)
-{
-    return actor.GetAddress();
-}
-
 static auto managedWorkerActor = Pothos::ManagedClass()
     .registerClass<Pothos::WorkerActor>()
-    .registerMethod("getAddress", &getAddress)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendActivateMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendDeactivateMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendPortSubscriberMessage))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getInputBufferMode))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getOutputBufferMode))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getBufferManager))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, setOutputBufferManager))
     .commit("Pothos/WorkerActor");
 
 static auto managedInfoReceiverString = Pothos::ManagedClass()

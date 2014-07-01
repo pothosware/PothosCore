@@ -140,14 +140,11 @@ public:
         workBump(false),
         activeState(false)
     {
-        this->RegisterHandler(this, &WorkerActor::handleAsyncPortNameMessage);
-        this->RegisterHandler(this, &WorkerActor::handleAsyncPortIndexMessage);
-        this->RegisterHandler(this, &WorkerActor::handleInlinePortNameMessage);
-        this->RegisterHandler(this, &WorkerActor::handleInlinePortIndexMessage);
-        this->RegisterHandler(this, &WorkerActor::handleBufferPortNameMessage);
-        this->RegisterHandler(this, &WorkerActor::handleBufferPortIndexMessage);
+        this->RegisterHandler(this, &WorkerActor::handleAsyncPortMessage);
+        this->RegisterHandler(this, &WorkerActor::handleInlinePortMessage);
+        this->RegisterHandler(this, &WorkerActor::handleBufferPortMessage);
         this->RegisterHandler(this, &WorkerActor::handleBufferReturnMessage);
-        this->RegisterHandler(this, &WorkerActor::handleSubscriberPortIndexMessage);
+        this->RegisterHandler(this, &WorkerActor::handleSubscriberPortMessage);
         this->RegisterHandler(this, &WorkerActor::handleBumpWorkMessage);
         this->RegisterHandler(this, &WorkerActor::handleActivateWorkMessage);
         this->RegisterHandler(this, &WorkerActor::handleDeactivateWorkMessage);
@@ -167,14 +164,11 @@ public:
     }
 
     ///////////////////// message handlers ///////////////////////
-    void handleAsyncPortNameMessage(const PortMessage<std::string, Object> &message, const Theron::Address from);
-    void handleAsyncPortIndexMessage(const PortMessage<size_t, Object> &message, const Theron::Address from);
-    void handleInlinePortNameMessage(const PortMessage<std::string, Label> &message, const Theron::Address from);
-    void handleInlinePortIndexMessage(const PortMessage<size_t, Label> &message, const Theron::Address from);
-    void handleBufferPortNameMessage(const PortMessage<std::string, BufferChunk> &message, const Theron::Address from);
-    void handleBufferPortIndexMessage(const PortMessage<size_t, BufferChunk> &message, const Theron::Address from);
+    void handleAsyncPortMessage(const PortMessage<InputPort *, Object> &message, const Theron::Address from);
+    void handleInlinePortMessage(const PortMessage<InputPort *, Label> &message, const Theron::Address from);
+    void handleBufferPortMessage(const PortMessage<InputPort *, BufferChunk> &message, const Theron::Address from);
     void handleBufferReturnMessage(const BufferReturnMessage &message, const Theron::Address from);
-    void handleSubscriberPortIndexMessage(const PortMessage<std::string, PortSubscriberMessage> &message, const Theron::Address from);
+    void handleSubscriberPortMessage(const PortMessage<std::string, PortSubscriberMessage> &message, const Theron::Address from);
     void handleBumpWorkMessage(const BumpWorkMessage &message, const Theron::Address from);
     void handleActivateWorkMessage(const ActivateWorkMessage &message, const Theron::Address from);
     void handleDeactivateWorkMessage(const DeactivateWorkMessage &message, const Theron::Address from);
@@ -185,13 +179,23 @@ public:
 
     ///////////////////// send port messages ///////////////////////
     template <typename PortSubscribersType, typename MessageType>
-    inline void sendPortMessage(const PortSubscribersType &subs, const MessageType &contents) const
+    inline void sendInputPortMessage(const PortSubscribersType &subs, const MessageType &contents) const
     {
         assert(this != nullptr);
         for (const auto &s : subs)
         {
-            if (s.index != -1) this->GetFramework().Send(makePortMessage(size_t(s.index), contents), this->GetAddress(), s.address);
-            else               this->GetFramework().Send(makePortMessage(s.name         , contents), this->GetAddress(), s.address);
+            assert(s.outputPort != nullptr);
+            this->GetFramework().Send(makePortMessage(s.outputPort, contents), this->GetAddress(), s.address);
+        }
+    }
+    template <typename PortSubscribersType, typename MessageType>
+    inline void sendOutputPortMessage(const PortSubscribersType &subs, const MessageType &contents) const
+    {
+        assert(this != nullptr);
+        for (const auto &s : subs)
+        {
+            assert(s.inputPort != nullptr);
+            this->GetFramework().Send(makePortMessage(s.inputPort, contents), this->GetAddress(), s.address);
         }
     }
 
@@ -206,12 +210,12 @@ public:
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
 
     ///////////////////// port setup methods ///////////////////////
-    void allocateInput(const std::string &name, const DType &dtype);
-    void allocateOutput(const std::string &name, const DType &dtype);
+    void allocateInput(const std::string &name, const DType &dtype, const std::string &domain);
+    void allocateOutput(const std::string &name, const DType &dtype, const std::string &domain);
     void allocateSignal(const std::string &name);
     void allocateSlot(const std::string &name);
     template <typename ImplType, typename PortsType, typename PortNamesType>
-    void allocatePort(PortsType &ports, PortNamesType &portNames, const std::string &name, const DType &dtype);
+    void allocatePort(PortsType &ports, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain);
 
     void autoAllocateInput(const std::string &name);
     void autoAllocateOutput(const std::string &name);
@@ -249,8 +253,8 @@ public:
     std::shared_ptr<InfoReceiver<std::string>> sendPortSubscriberMessage(
         const std::string &action,
         const std::string &myPortName,
-        const std::string &subscriberPortName,
-        const Theron::Address &subscriberPortAddr
+        const Block *subscriberPortBlock,
+        const std::string &subscriberPortName
     )
     {
         //create a new receiver to handle async reply
@@ -259,12 +263,53 @@ public:
         //create the message
         PortSubscriberMessage message;
         message.action = action;
-        message.port.name = subscriberPortName;
-        message.port.address = subscriberPortAddr;
+        if (action.find("INPUT") != std::string::npos) message.port.inputPort = subscriberPortBlock->input(subscriberPortName);
+        if (action.find("OUTPUT") != std::string::npos) message.port.outputPort = subscriberPortBlock->output(subscriberPortName);
+        message.port.address = subscriberPortBlock->_actor->GetAddress();
 
         //send it to the actor
         this->GetFramework().Send(makePortMessage(myPortName, message), receiver->GetAddress(), this->GetAddress());
         return receiver;
+    }
+
+    std::string getInputBufferMode(const std::string &name, const std::string &domain)
+    {
+        try
+        {
+            if (block->getInputBufferManager(name, domain)) return "CUSTOM";
+        }
+        catch (const PortDomainError &)
+        {
+            return "ERROR";
+        }
+        return "ABDICATE";
+    }
+
+    std::string getOutputBufferMode(const std::string &name, const std::string &domain)
+    {
+        try
+        {
+            if (block->getOutputBufferManager(name, domain)) return "CUSTOM";
+        }
+        catch (const PortDomainError &)
+        {
+            return "ERROR";
+        }
+        return "ABDICATE";
+    }
+
+    BufferManager::Sptr getBufferManager(const std::string &name, const std::string &domain, const bool isInput)
+    {
+        auto m = isInput? block->getInputBufferManager(name, domain) : block->getOutputBufferManager(name, domain);
+        if (not m) m = BufferManager::make("generic", BufferManagerArgs());
+        else m->init(BufferManagerArgs()); //TODO pass this in from somewhere
+        return m;
+    }
+
+    void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
+    {
+        assert(manager);
+        outputs[name]->_impl->bufferManager = manager;
     }
 
     ///////////////////// work helper methods ///////////////////////

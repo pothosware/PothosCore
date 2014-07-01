@@ -28,10 +28,9 @@ void GraphBlock::initPropertiesFromDesc(void)
     this->setTitle(QString::fromStdString(name));
 
     //extract the params or properties from the description
-    const auto params = blockDesc->getArray("params");
-    if (params) for (size_t i = 0; i < params->size(); i++)
+    for (const auto &paramObj : *blockDesc->getArray("params"))
     {
-        const auto param = params->getObject(i);
+        const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
         const auto key = QString::fromStdString(param->get("key").convert<std::string>());
         const auto name = QString::fromStdString(param->get("name").convert<std::string>());
         this->addProperty(GraphBlockProp(key, name));
@@ -61,23 +60,39 @@ static void initGraphBlockPortsFromBlock(GraphBlock *self, Pothos::Block *b)
     for (const auto &portKey : b->inputPortNames())
     {
         auto port = b->input(portKey);
-        if (port->isSlot()) continue;
         std::string portName = portKey;
         if (port->index() >= 0) portName = "in" + portName;
-        self->addInputPort(GraphBlockPort(
-            QString::fromStdString(portKey),
-            QString::fromStdString(portName)));
+        if (port->isSlot())
+        {
+            self->addSlotPort(GraphBlockPort(
+                QString::fromStdString(portKey),
+                QString::fromStdString(portName)));
+        }
+        else
+        {
+            self->addInputPort(GraphBlockPort(
+                QString::fromStdString(portKey),
+                QString::fromStdString(portName)));
+        }
     }
 
     for (const auto &portKey : b->outputPortNames())
     {
         auto port = b->output(portKey);
-        if (port->isSignal()) continue;
         std::string portName = portKey;
         if (port->index() >= 0) portName = "out" + portName;
-        self->addOutputPort(GraphBlockPort(
-            QString::fromStdString(portKey),
-            QString::fromStdString(portName)));
+        if (port->isSignal())
+        {
+            self->addSignalPort(GraphBlockPort(
+                QString::fromStdString(portKey),
+                QString::fromStdString(portName)));
+        }
+        else
+        {
+            self->addOutputPort(GraphBlockPort(
+                QString::fromStdString(portKey),
+                QString::fromStdString(portName)));
+        }
     }
 }
 
@@ -216,6 +231,32 @@ void GraphBlock::update(void)
 {
     assert(_impl->blockDesc);
     const auto &blockDesc = _impl->blockDesc;
+
+/*
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto EvalExpr = env->findProxy("Pothos/Gui/EvalExpression");
+    auto BlockRegistry = env->findProxy("Pothos/BlockRegistry");
+
+    Pothos::ProxyVector proxyArgs;
+    for (const auto &prop : this->getProperties())
+    {
+        const auto val = this->getPropertyValue(prop.getKey()).toStdString();
+        proxyArgs.push_back(EvalExpr.callProxy("eval", val));
+    }
+
+    try
+    {
+        BlockRegistry.getHandle()->call(this->getBlockDescPath(), proxyArgs.data(), proxyArgs.size());
+
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        //TODO logger
+        std::cerr << ex.displayText() << std::endl;
+        throw ex;
+    }
+
+    */
 
     std::vector<Pothos::Object> opaqueArgs;
 

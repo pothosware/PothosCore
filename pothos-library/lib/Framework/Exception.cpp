@@ -12,4 +12,5 @@ POTHOS_IMPLEMENT_EXCEPTION(PortAccessError, RangeException, "Framework Worker Po
 POTHOS_IMPLEMENT_EXCEPTION(DTypeUnknownError, RuntimeException, "Framework DType Unknown Identifier Error")
 POTHOS_IMPLEMENT_EXCEPTION(TopologyConnectError, RuntimeException, "Framework Topology Connect Error")
 POTHOS_IMPLEMENT_EXCEPTION(BlockCallNotFound, RuntimeException, "Framework Block Call Not Found")
+POTHOS_IMPLEMENT_EXCEPTION(PortDomainError, RuntimeException, "Framework Port Domain Incompatible")
 } //namespace Pothos

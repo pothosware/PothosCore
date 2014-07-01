@@ -13,10 +13,12 @@ class Pothos::OutputPortImpl
 public:
     OutputPortImpl(void):
         actor(nullptr),
-        isSignal(false){}
+        isSignal(false),
+        readBeforeWritePort(nullptr){}
     BufferManager::Sptr bufferManager;
     Util::RingDeque<BufferChunk> postedBuffers;
     std::vector<PortSubscriber> subscribers;
     WorkerActor *actor;
     bool isSignal;
+    InputPort *readBeforeWritePort;
 };

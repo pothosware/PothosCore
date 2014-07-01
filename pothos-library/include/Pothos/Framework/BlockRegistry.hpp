@@ -18,7 +18,8 @@ namespace Pothos {
 class Block; //forward declaration
 
 /*!
- * The BlockRegistry class registers a block's factory function.
+ * The BlockRegistry class registers factories for topological elements.
+ * These elements include Blocks and sub-Topologies (hierarchies of elements).
  * A BlockRegistry can be created at static initialization time
  * so that modules providing blocks will automatically register.
  * Usage example (put this at the bottom of your c++ source file)
@@ -37,13 +38,15 @@ public:
      * it does not throw. However, registration errors are logged,
      * and the block will not be available at runtime.
      *
+     * The return type of the call must be Block* or Topology*.
+     *
      * \param path the factory path begining with a slash ("/")
-     * \param factory the bound factory function returning Block*
+     * \param factory the Callable factory function
      */
     BlockRegistry(const std::string &path, const Callable &factory);
 
     /*!
-     * Lookup a block factory in the plugin registry.
+     * Lookup a factory of a topological element in the plugin registry.
      * Path fallows the same rules as in the BlockRegistry constructor.
      * \throws PluginRegistryError if no factory registration is found
      * \param path the factory path begining with a slash ("/")

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Block.hpp>
+#include <Pothos/Framework/Topology.hpp>
 #include <Pothos/Framework/BlockRegistry.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Plugin.hpp>
@@ -29,14 +30,17 @@ Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &fa
     }
 
     //check the factory
-    if (factory.type(-1) != typeid(Block*))
+    if (factory.type(-1) == typeid(Block*) or factory.type(-1) == typeid(Topology*))
     {
-        poco_error_f1(Poco::Logger::get("Pothos.BlockRegistry"), "Bad Factory, must return Block*: %s", factory.toString());
-        return;
+        //register
+        PluginRegistry::add(fullPath, factory);
     }
 
-    //register
-    PluginRegistry::add(fullPath, factory);
+    //otherwise report the error
+    else
+    {
+        poco_error_f1(Poco::Logger::get("Pothos.BlockRegistry"), "Bad Factory, must return Block* or Topology*: %s", factory.toString());
+    }
 }
 
 Pothos::Callable Pothos::BlockRegistry::lookup(const std::string &path)
@@ -47,8 +51,22 @@ Pothos::Callable Pothos::BlockRegistry::lookup(const std::string &path)
 static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::Object *args, const size_t numArgs)
 {
     const auto factory = Pothos::BlockRegistry::lookup(path);
-    auto block = factory.opaqueCall(args, numArgs).extract<Pothos::Block *>();
-    return Pothos::Object(std::shared_ptr<Pothos::Block>(block));
+
+    if (factory.type(-1) == typeid(Pothos::Block*))
+    {
+        auto element = factory.opaqueCall(args, numArgs).extract<Pothos::Block *>();
+        if (element->getName().empty()) element->setName(path); //a better name
+        return Pothos::Object(std::shared_ptr<Pothos::Block>(element));
+    }
+
+    if (factory.type(-1) == typeid(Pothos::Topology*))
+    {
+        auto element = factory.opaqueCall(args, numArgs).extract<Pothos::Topology *>();
+        if (element->getName().empty()) element->setName(path); //a better name
+        return Pothos::Object(std::shared_ptr<Pothos::Topology>(element));
+    }
+
+    throw Pothos::IllegalStateException("Pothos::BlockRegistry::make("+path+")", factory.toString());
 }
 
 #include <Pothos/Managed.hpp>

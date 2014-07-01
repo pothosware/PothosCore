@@ -178,7 +178,7 @@ public:
 
     //! Call a bound method/function with a void return and $NARGS args
     template <$expand('typename A%d', $NARGS)>
-    void call($expand('A%d &&a%d', $NARGS)) const;
+    void callVoid($expand('A%d &&a%d', $NARGS)) const;
     #end for
 
 private:
@@ -204,7 +204,7 @@ inline Pothos::Object Pothos::Callable::callObject(void) const
     return this->opaqueCall(nullptr, 0);
 }
 
-inline void Pothos::Callable::call(void) const
+inline void Pothos::Callable::callVoid(void) const
 {
     this->callObject();
 }

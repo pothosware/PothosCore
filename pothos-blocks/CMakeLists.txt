@@ -26,12 +26,15 @@ set(SOURCES
     misc/Delay.cpp
     misc/Pacer.cpp
     misc/Forwarder.cpp
+    misc/Copier.cpp
     misc/MessageToSignal.cpp
     misc/SlotToMessage.cpp
     network/NetworkSource.cpp
     network/NetworkSink.cpp
     network/SocketEndpoint.cpp
     network/TestNetworkBlocks.cpp
+    arithmetic/Add.cpp
+    arithmetic/TestArithmeticBlocks.cpp
 )
 
 #udt support

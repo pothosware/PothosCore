@@ -38,12 +38,14 @@ public:
 
     Pacer(const Pothos::DType &dtype):
         _rate(1.0),
+        _actualRate(1.0),
         _startCount(0)
     {
         this->setupInput(0, dtype);
         this->setupOutput(0, dtype);
         this->registerCall(POTHOS_FCN_TUPLE(Pacer, setRate));
         this->registerCall(POTHOS_FCN_TUPLE(Pacer, getRate));
+        this->registerCall(POTHOS_FCN_TUPLE(Pacer, getActualRate));
     }
 
     void setRate(const double rate)
@@ -57,6 +59,11 @@ public:
     double getRate(void) const
     {
         return _rate;
+    }
+
+    double getActualRate(void) const
+    {
+        return _actualRate;
     }
 
     void activate(void)
@@ -75,10 +82,7 @@ public:
         auto currentCount = inputPort->totalElements() + inputPort->totalMessages();
         const auto expectedTime = ((currentCount - _startCount)/_rate)*1e3; //convert s to ms
         const auto actualTime = (currentTime - _startTime)/1e3; //convert us to ms
-
-        std::cout << "expectedTime " << expectedTime << std::endl;
-        std::cout << "actualTime " << actualTime << std::endl;
-        std::cout << "approx rate " << double((currentCount - _startCount))/actualTime << std::endl;
+        _actualRate = double((currentCount - _startCount))/(actualTime/1e3);
 
         //sleep to approximate the requested rate (sleep takes ms)
         if (actualTime < expectedTime)
@@ -104,6 +108,7 @@ public:
 
 private:
     double _rate;
+    double _actualRate;
     Poco::Timestamp _startTime;
     unsigned long long _startCount;
 };
