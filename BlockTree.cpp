@@ -77,19 +77,17 @@ public:
         return _blockDesc;
     }
 
-    static QString extractDocString(Poco::JSON::Object::Ptr blocDesc)
+    static QString extractDocString(Poco::JSON::Object::Ptr blockDesc)
     {
-        if (not blocDesc or not blocDesc->isArray("docs")) return "";
-        const auto docsArray = blocDesc->getArray("docs");
+        if (not blockDesc or not blockDesc->isArray("docs")) return "";
         QString output;
-        output += "<b>" + QString::fromStdString(blocDesc->get("name").convert<std::string>()) + "</b>";
+        output += "<b>" + QString::fromStdString(blockDesc->get("name").convert<std::string>()) + "</b>";
         output += "<p>";
-        for (size_t i = 0; i < docsArray->size(); i++)
+        for (const auto &lineObj : *blockDesc->getArray("docs"))
         {
-            const auto line = docsArray->get(i).convert<std::string>();
+            const auto line = lineObj.extract<std::string>();
             if (line.empty()) output += "<p /><p>";
-            else output += QString::fromStdString(line);
-            output += "\n";
+            else output += QString::fromStdString(line)+"\n";
         }
         output += "</p>";
         return "<div>" + output + "</div>";
