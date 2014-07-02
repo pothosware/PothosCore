@@ -19,36 +19,44 @@ public:
         return;
     };
 
-    Pothos::Proxy eval(const Poco::JSON::Object::Ptr &blockDesc, const std::map<std::string, std::string> &props);
+    void eval(const Poco::JSON::Object::Ptr &blockDesc, const std::map<std::string, std::string> &props);
 
-    static Poco::JSON::Object::Ptr inspectBlock(const Pothos::Proxy &block)
+    Poco::JSON::Object::Ptr inspect(void)
     {
+        auto block = proxyBlock;
         Poco::JSON::Object::Ptr info = new Poco::JSON::Object();
 
         info->set("uid", block.call<std::string>("uid"));
 
-        Poco::JSON::Array inputNames;
+        Poco::JSON::Array::Ptr inputPorts = new Poco::JSON::Array();
         for (const auto &name : block.call<std::vector<std::string>>("inputPortNames"))
         {
-            inputNames.add(name);
+            Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
+            portInfo->set("name", name);
+            portInfo->set("isSlot", block.callProxy("input", name).call<bool>("isSlot"));
+            inputPorts->add(portInfo);
         }
-        info->set("inputNames", inputNames);
+        info->set("inputPorts", inputPorts);
 
-        Poco::JSON::Array outputNames;
+        Poco::JSON::Array::Ptr outputPorts = new Poco::JSON::Array();
         for (const auto &name : block.call<std::vector<std::string>>("outputPortNames"))
         {
-            outputNames.add(name);
+            Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
+            portInfo->set("name", name);
+            portInfo->set("isSignal", block.callProxy("output", name).call<bool>("isSignal"));
+            outputPorts->add(portInfo);
         }
-        info->set("outputNames", outputNames);
+        info->set("outputPorts", outputPorts);
 
         return info;
     }
 
 private:
+    Pothos::Proxy proxyBlock;
     EvalEnvironment &evalEnv;
 };
 
-Pothos::Proxy BlockEval::eval(const Poco::JSON::Object::Ptr &blockDesc, const std::map<std::string, std::string> &props)
+void BlockEval::eval(const Poco::JSON::Object::Ptr &blockDesc, const std::map<std::string, std::string> &props)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -65,7 +73,7 @@ Pothos::Proxy BlockEval::eval(const Poco::JSON::Object::Ptr &blockDesc, const st
     }
 
     //create the block
-    auto proxyBlock = registry.getHandle()->call(path, ctorArgs.data(), ctorArgs.size());
+    proxyBlock = registry.getHandle()->call(path, ctorArgs.data(), ctorArgs.size());
     //proxyBlock.callVoid("setName", block->getId().toStdString());
 
     //make the calls
@@ -83,8 +91,6 @@ Pothos::Proxy BlockEval::eval(const Poco::JSON::Object::Ptr &blockDesc, const st
         }
         proxyBlock.getHandle()->call(callName, callArgs.data(), callArgs.size());
     }
-
-    return proxyBlock;
 }
 
 #include <Pothos/Managed.hpp>
@@ -92,5 +98,5 @@ Pothos::Proxy BlockEval::eval(const Poco::JSON::Object::Ptr &blockDesc, const st
 static auto managedBlockEval = Pothos::ManagedClass()
     .registerConstructor<BlockEval, EvalEnvironment &>()
     .registerMethod(POTHOS_FCN_TUPLE(BlockEval, eval))
-    .registerStaticMethod(POTHOS_FCN_TUPLE(BlockEval, inspectBlock))
+    .registerMethod(POTHOS_FCN_TUPLE(BlockEval, inspect))
     .commit("Pothos/Gui/BlockEval");
