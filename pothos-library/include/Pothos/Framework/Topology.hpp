@@ -9,7 +9,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Util/UID.hpp>
+#include <Pothos/Framework/Connectable.hpp>
 #include <Pothos/Object/Object.hpp>
 #include <string>
 #include <memory>
@@ -25,7 +25,7 @@ namespace Pothos {
  * To create hierarchy, a topology's connections can be made with itself;
  * this action creates input and output ports for the topology.
  */
-class POTHOS_API Topology : public Util::UID
+class POTHOS_API Topology : public Connectable
 {
 public:
 
@@ -38,18 +38,11 @@ public:
      */
     ~Topology(void);
 
-    /*!
-     * Set a displayable name for this topology.
-     * The name is a string to be used in debug outputs.
-     * \param name a new displayable name
-     */
-    void setName(const std::string &name);
+    //! Get a list of input port names in order of connection
+    std::vector<std::string> inputPortNames(void);
 
-    /*!
-     * Get the displayable name for this topology.
-     * \return the displayable name string
-     */
-    const std::string &getName(void) const;
+    //! Get a list of output port names in order of connection
+    std::vector<std::string> outputPortNames(void);
 
     /*!
      * Commit changes made to the topology.

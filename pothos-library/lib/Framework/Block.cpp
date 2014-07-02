@@ -36,16 +36,6 @@ Pothos::Block::~Block(void)
     _actor.reset();
 }
 
-void Pothos::Block::setName(const std::string &name)
-{
-    _actor->name = name;
-}
-
-const std::string &Pothos::Block::getName(void) const
-{
-    return _actor->name;
-}
-
 void Pothos::Block::work(void)
 {
     return;
@@ -173,12 +163,6 @@ std::shared_ptr<Pothos::BufferManager> Pothos::Block::getOutputBufferManager(con
 
 #include <Pothos/Managed.hpp>
 
-//FIXME see issue #37
-static const std::string &getUid(const Pothos::Block &b)
-{
-    return b.uid();
-}
-
 static const Pothos::Block *getCPointer(const Pothos::Block &b)
 {
     return &b;
@@ -193,16 +177,12 @@ static WorkerStats getWorkerStats(const Pothos::Block &block)
 
 static auto managedBlock = Pothos::ManagedClass()
     .registerClass<Pothos::Block>()
+    .registerBaseClass<Pothos::Block, Pothos::Connectable>()
     .registerWildcardMethod(&Pothos::Block::opaqueCall)
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setName))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, getName))
-    .registerMethod("uid", &getUid)
     .registerMethod("getCPointer", &getCPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod("getWorkerStats", &getWorkerStats)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputPortNames))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, outputPortNames))
 
     //all of the setups with default args set
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))

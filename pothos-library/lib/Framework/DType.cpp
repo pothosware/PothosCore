@@ -37,11 +37,12 @@ struct DTypeAliasLookup : Poco::HashMap<std::string, std::string>
         (*this)["float"] = "float32";
         (*this)["double"] = "float64";
 
-        (*this)["std::complex<float>"] = "complex64";
-        (*this)["std::complex<double>"] = "complex128";
+        (*this)["complex64"] = "complex_float32";
+        (*this)["complex128"] = "complex_float64";
 
         #define makeTypeIdEntry(type) \
-            (*this)[Pothos::Util::typeInfoToString(typeid(type))] = (*this)[#type]
+            (*this)[Pothos::Util::typeInfoToString(typeid(type))] = (*this)[#type]; \
+            (*this)[Pothos::Util::typeInfoToString(typeid(std::complex<type>))] = "complex_" + (*this)[#type];
         makeTypeIdEntry(char);
         makeTypeIdEntry(signed char);
         makeTypeIdEntry(unsigned char);
@@ -55,8 +56,6 @@ struct DTypeAliasLookup : Poco::HashMap<std::string, std::string>
         makeTypeIdEntry(unsigned long long);
         makeTypeIdEntry(float);
         makeTypeIdEntry(double);
-        makeTypeIdEntry(std::complex<float>);
-        makeTypeIdEntry(std::complex<double>);
     }
 
     void loadPrimitiveIntegers(const std::string &prim, const std::string &size)
@@ -104,10 +103,20 @@ struct DTypeSizeLookup : Poco::HashMap<std::string, size_t>
         (*this)["uint32"] = sizeof(Poco::UInt32);
         (*this)["int64"] = sizeof(Poco::Int64);
         (*this)["uint64"] = sizeof(Poco::UInt64);
+
+        (*this)["complex_int8"] = sizeof(std::complex<Poco::Int8>);
+        (*this)["complex_uint8"] = sizeof(std::complex<Poco::UInt8>);
+        (*this)["complex_int16"] = sizeof(std::complex<Poco::Int16>);
+        (*this)["complex_uint16"] = sizeof(std::complex<Poco::UInt16>);
+        (*this)["complex_int32"] = sizeof(std::complex<Poco::Int32>);
+        (*this)["complex_uint32"] = sizeof(std::complex<Poco::UInt32>);
+        (*this)["complex_int64"] = sizeof(std::complex<Poco::Int64>);
+        (*this)["complex_uint64"] = sizeof(std::complex<Poco::UInt64>);
+
         (*this)["float32"] = sizeof(float);
         (*this)["float64"] = sizeof(double);
-        (*this)["complex64"] = sizeof(std::complex<float>);
-        (*this)["complex128"] = sizeof(std::complex<double>);
+        (*this)["complex_float32"] = sizeof(std::complex<float>);
+        (*this)["complex_float64"] = sizeof(std::complex<double>);
     }
 
     size_t lookup(const std::string &name) const

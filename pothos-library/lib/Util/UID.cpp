@@ -18,3 +18,10 @@ Pothos::Util::UID::UID(void):
 {
     return;
 }
+
+#include <Pothos/Managed.hpp>
+
+static auto managedUID = Pothos::ManagedClass()
+    .registerConstructor<Pothos::Util::UID>()
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Util::UID, uid))
+    .commit("Pothos/Util/UID");

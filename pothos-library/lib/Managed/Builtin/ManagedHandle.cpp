@@ -29,13 +29,6 @@ int ManagedProxyHandle::compareTo(const Pothos::Proxy &proxy) const
 
 Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Proxy *args, const size_t numArgs)
 {
-    //the object is a proxy - solve the meta-issue with inception
-    if (obj.type() == typeid(Pothos::Proxy))
-    {
-        auto proxy = obj.extract<Pothos::Proxy>();
-        return proxy.getHandle()->call(name, args, numArgs);
-    }
-
     const bool isManagedClass = obj.type() == typeid(Pothos::ManagedClass);
     const bool callConstructor = isManagedClass and name == "new";
     const bool callStaticMethod = isManagedClass and not callConstructor;
@@ -85,11 +78,6 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         try {opaqueCall = cls.getOpaqueMethod(name);}
         catch (const Pothos::ManagedClassNameError &){}
         wildcardCall = cls.getWildcardMethod();
-    }
-
-    if (calls.empty() and not opaqueCall and not wildcardCall)
-    {
-        throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "no available calls :" + obj.toString());
     }
 
     /*******************************************************************
@@ -160,6 +148,28 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         doWildcardCall = true;
         call = wildcardCall;
     }
+
+    //attempt to make the call on a base class
+    //always try to call the base class first if there is a wildcard handler
+    if (callMethod and (not call or wildcardCall))
+    {
+        for (const auto &toBase : cls.getBaseClassConverters())
+        {
+            try
+            {
+                return env->makeHandle(toBase.opaqueCall(&argObjs.at(0), 1)).getHandle()->call(name, args, numArgs);
+            }
+            catch (const Pothos::ProxyHandleCallError &) {}
+        }
+    }
+
+    //searching base classes failed, so we can error out this way if calls are empty
+    if (calls.empty() and not opaqueCall and not wildcardCall)
+    {
+        throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "no available calls :" + obj.toString());
+    }
+
+    //otherwise just assume there was no possible match for the given args
     if (not call) throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")", "method match failed");
 
     /*******************************************************************

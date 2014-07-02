@@ -41,6 +41,20 @@ public:
     ManagedClass &registerClass(void);
 
     /*!
+     * Register a public base class of this managed class.
+     * This adopts the inherited methods of the base class.
+     */
+    template <typename ClassType, typename BaseClassType>
+    ManagedClass &registerBaseClass(void);
+
+    /*!
+     * Register a conversion function from this class to a base class.
+     * \throws ManagedClassTypeError if the class type differs from the registered type
+     * \param toBase a callable that converts between class types
+     */
+    ManagedClass &registerToBaseClass(const Callable &toBase);
+
+    /*!
      * Register a constructor given class type and 0 argument types.
      * \throws ManagedClassTypeError if the class type differs from the registered type
      */
@@ -436,6 +450,12 @@ public:
      * Get a callable that converts a shared pointer into a ref wrapper.
      */
     const Callable &getSharedToWrapper(void) const;
+
+    /*!
+     * Get a list of available converters to base classes
+     * \return a list of converters as callables
+     */
+    const std::vector<Callable> &getBaseClassConverters(void) const;
 
     /*!
      * Get a list of available constructors.

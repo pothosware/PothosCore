@@ -38,6 +38,21 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_topology)
     std::cout << "done!\n";
 }
 
+//create subtopology as per https://github.com/pothosware/pothos-library/issues/44
+static Pothos::Topology* makeForwardingTopology(void)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto registry = env->findProxy("Pothos/BlockRegistry");
+    auto forwarder = registry.callProxy("/blocks/misc/forwarder");
+    auto t = new Pothos::Topology();
+    t->connect(t, "0", forwarder, "0");
+    t->connect(forwarder, "0", t, "0");
+    return t;
+}
+
+static Pothos::BlockRegistry registerAdd(
+    "/blocks/tests/forwarder_topology", &makeForwardingTopology);
+
 POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
 {
     //spawn a server and client
@@ -52,26 +67,20 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
 
     auto feeder = registry.callProxy("/blocks/sources/feeder_source", "int");
     auto collector = registry.callProxy("/blocks/sinks/collector_sink", "int");
-    auto forwarder = registryRemote.callProxy("/blocks/misc/forwarder");
+    std::cout << "make the remote subtopology\n";
+    auto forwarder = registryRemote.callProxy("/blocks/tests/forwarder_topology");
 
     //feed some msgs
     std::cout << "give messages to the feeder\n";
     feeder.callVoid("feedMessage", Pothos::Object("msg0"));
     feeder.callVoid("feedMessage", Pothos::Object("msg1"));
 
-    //connect subtopology that just forwards
-    std::cout << "connect the remote subtopology\n";
-    auto subtopology = envRemote->findProxy("Pothos/Topology").callProxy("new");
-    subtopology.callVoid("connect", subtopology, "0", forwarder, "0");
-    subtopology.callVoid("connect", forwarder, "0", subtopology, "0");
-
     //run the topology
     std::cout << "run the topology\n";
     {
-        auto topology = Pothos::Topology();//env->findProxy("Pothos/Topology").callProxy("new");
-        //POTHOS_TEST_TRUE(subtopology.call<std::string>("uid") != topology.call<std::string>("uid"));
-        topology.connect(feeder, "0", subtopology, "0");
-        topology.connect(subtopology, "0", collector, "0");
+        auto topology = Pothos::Topology();
+        topology.connect(feeder, "0", forwarder, "0");
+        topology.connect(forwarder, "0", collector, "0");
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());
     }

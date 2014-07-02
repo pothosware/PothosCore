@@ -25,13 +25,13 @@ static const size_t waveTableSize = 4096;
  * |option [Float64] "float64"
  * |option [Complex64] "complex64"
  * |option [Float32] "float32"
- * |option [Complex Int64] "int64, 2"
+ * |option [Complex Int64] "complex_int64"
  * |option [Int64] "int64"
- * |option [Complex Int32] "int32, 2"
+ * |option [Complex Int32] "complex_int32"
  * |option [Int32] "int32"
- * |option [Complex Int16] "int16, 2"
+ * |option [Complex Int16] "complex_int16"
  * |option [Int16] "int16"
- * |option [Complex Int8] "int8, 2"
+ * |option [Complex Int8] "complex_int8"
  * |option [Int8] "int8"
  * |preview disable
  *
@@ -208,8 +208,7 @@ static Pothos::Block *noiseSourceFactory(const Pothos::DType &dtype, const long 
 {
     #define ifTypeDeclareFactory(type) \
         if (dtype == Pothos::DType(typeid(type))) return new NoiseSource<type>(seed); \
-        if (dtype == Pothos::DType(typeid(std::complex<type>)) or \
-            dtype == Pothos::DType(typeid(type), Pothos::DType::Shape(1, 2))) return new NoiseSource<std::complex<type>>(seed);
+        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new NoiseSource<std::complex<type>>(seed);
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
     ifTypeDeclareFactory(Poco::Int64);
