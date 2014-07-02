@@ -517,12 +517,22 @@ Pothos::Topology::~Topology(void)
 
 std::vector<std::string> Pothos::Topology::inputPortNames(void)
 {
-    return _impl->inputPortNames;
+    std::vector<std::string> names; //names is a set of ports, no duplicates
+    for (const auto &name : _impl->inputPortNames)
+    {
+        if (std::find(names.begin(), names.end(), name) == names.end()) names.push_back(name);
+    }
+    return names;
 }
 
 std::vector<std::string> Pothos::Topology::outputPortNames(void)
 {
-    return _impl->outputPortNames;
+    std::vector<std::string> names; //names is a set of ports, no duplicates
+    for (const auto &name : _impl->outputPortNames)
+    {
+        if (std::find(names.begin(), names.end(), name) == names.end()) names.push_back(name);
+    }
+    return names;
 }
 
 void Pothos::Topology::commit(void)
