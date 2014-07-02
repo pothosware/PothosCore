@@ -95,12 +95,25 @@ public:
             Poco::MD5Engine md5; md5.update(typeStr);
             const auto hexHash = Poco::DigestEngine::digestToHex(md5.digest());
             QColor typeColor(QString::fromStdString("#" + hexHash.substr(0, 6)));
-            if (editWidget != nullptr) editWidget->setStyleSheet(QString(
-                "QComboBox{background:%1;color:%2;}"
-                "QLineEdit{background:%1;color:%2;}")
-                .arg(typeColor.name())
-                .arg((typeColor.lightnessF() > 0.5)?"black":"white")
-            );
+            if (editWidget != nullptr)
+            {
+                editWidget->setStyleSheet(QString(
+                    "QComboBox{background:%1;color:%2;}"
+                    "QLineEdit{background:%1;color:%2;}")
+                    .arg(typeColor.name())
+                    .arg((typeColor.lightnessF() > 0.5)?"black":"white")
+                );
+                QString errorMsg = _block->getPropertyErrorMsg(prop.getKey());
+                if (not errorMsg.isEmpty()) errorMsg = QString(
+                    "<span style='color:red;'>"
+                        "<h3>%1 &quot;%2&quot;:</h3>"
+                        "<p>%3</p>"
+                    "</span>")
+                    .arg(tr("Failed to evaluate"))
+                    .arg(_block->getPropertyValue(prop.getKey()).toHtmlEscaped())
+                    .arg(errorMsg.toHtmlEscaped());
+                editWidget->setToolTip(errorMsg + this->getParamDocString(_block->getParamDesc(prop.getKey())));
+            }
 
             //units if available
             if (paramDesc->has("units"))
@@ -110,6 +123,10 @@ public:
                 propLayout->addWidget(label);
             }
         }
+
+        //TODO preview here
+
+        //TODO optional error display for block
 
         //block level description
         if (blockDesc->isArray("docs"))
@@ -133,16 +150,7 @@ public:
             output += QString("<h2>%1</h2>").arg(tr("Properties"));
             for (const auto &prop : _block->getProperties())
             {
-                auto paramDesc = _block->getParamDesc(prop.getKey());
-                assert(paramDesc);
-                output += QString("<h3>%1</h3>").arg(prop.getName());
-                if (paramDesc->isArray("desc")) for (const auto &lineObj : *paramDesc->getArray("desc"))
-                {
-                    const auto line = lineObj.extract<std::string>();
-                    if (line.empty()) output += "<p /><p>";
-                    else output += QString::fromStdString(line);
-                }
-                else output += QString("<p>%1</p>").arg(tr("Undocumented"));
+                output += this->getParamDocString(_block->getParamDesc(prop.getKey()));
             }
 
             //enumerate slots
@@ -181,6 +189,21 @@ public:
             auto cancelButton = new QPushButton(makeIconFromTheme("dialog-cancel"), "Cancel", this);
             buttonLayout->addWidget(cancelButton);
         }
+    }
+
+    QString getParamDocString(const Poco::JSON::Object::Ptr &paramDesc)
+    {
+        assert(paramDesc);
+        QString output;
+        output += QString("<h3>%1</h3>").arg(QString::fromStdString(paramDesc->getValue<std::string>("name")));
+        if (paramDesc->isArray("desc")) for (const auto &lineObj : *paramDesc->getArray("desc"))
+        {
+            const auto line = lineObj.extract<std::string>();
+            if (line.empty()) output += "<p /><p>";
+            else output += QString::fromStdString(line);
+        }
+        else output += QString("<p>%1</p>").arg(tr("Undocumented"));
+        return output;
     }
 
 private:
