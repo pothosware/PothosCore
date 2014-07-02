@@ -4,6 +4,7 @@
 #include "PothosGui.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphObjects/GraphBlock.hpp"
+#include <Poco/MD5Engine.h>
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -60,14 +61,17 @@ public:
             auto propLayout = new QHBoxLayout();
             layout->addLayout(propLayout);
 
-            auto label = new QLabel(QString("<b>%1</b>")
+            auto label = new QLabel(QString("<span style='color:%1;'><b>%2</b></span>")
+                .arg(_block->getPropertyErrorMsg(prop.getKey()).isEmpty()?"black":"red")
                 .arg(prop.getName()), this);
             propLayout->addWidget(label);
+            QWidget *editWidget = nullptr;
 
             const auto value = _block->getPropertyValue(prop.getKey());
             if (paramDesc->isArray("options"))
             {
                 auto combo = new QComboBox(this);
+                editWidget = combo;
                 //combo->setEditable(true);
                 propLayout->addWidget(combo);
                 for (const auto &optionObj : *paramDesc->getArray("options"))
@@ -81,9 +85,22 @@ public:
             else
             {
                 auto edit = new QLineEdit(this);
+                editWidget = edit;
                 propLayout->addWidget(edit);
                 edit->setText(value);
             }
+
+            //type color calculation
+            auto typeStr = _block->getPropertyTypeStr(prop.getKey());
+            Poco::MD5Engine md5; md5.update(typeStr);
+            const auto hexHash = Poco::DigestEngine::digestToHex(md5.digest());
+            QColor typeColor(QString::fromStdString("#" + hexHash.substr(0, 6)));
+            if (editWidget != nullptr) editWidget->setStyleSheet(QString(
+                "QComboBox{background:%1;color:%2;}"
+                "QLineEdit{background:%1;color:%2;}")
+                .arg(typeColor.name())
+                .arg((typeColor.lightnessF() > 0.5)?"black":"white")
+            );
 
             //units if available
             if (paramDesc->has("units"))

@@ -273,7 +273,8 @@ static QStaticText makeQStaticText(const QString &s)
 
 void GraphBlock::renderStaticText(void)
 {
-    _impl->titleText = makeQStaticText(QString("<span style='font-size:%1;'><b>%2</b></span>")
+    _impl->titleText = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3</b></span>")
+        .arg(this->getBlockErrorMsg().isEmpty()?"black":"red")
         .arg(GraphBlockTitleFontSize)
         .arg(_impl->title.toHtmlEscaped()));
 
@@ -281,7 +282,8 @@ void GraphBlock::renderStaticText(void)
     for (size_t i = 0; i < _properties.size(); i++)
     {
         if (not this->getPropertyPreview(_properties[i].getKey())) continue;
-        auto text = makeQStaticText(QString("<span style='font-size:%1;'><b>%2: </b> %3</span>")
+        auto text = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3: </b> %4</span>")
+            .arg(this->getPropertyErrorMsg(_properties[i].getKey()).isEmpty()?"black":"red")
             .arg(GraphBlockPropFontSize)
             .arg(_properties[i].getName().toHtmlEscaped())
             .arg(this->getPropertyValue(_properties[i].getKey()).toHtmlEscaped()));
