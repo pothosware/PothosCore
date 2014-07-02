@@ -246,6 +246,11 @@ public:
      */
     std::string toString(void) const;
 
+    /*!
+     * Get a printable string representing the type held by this Object.
+     */
+    std::string getTypeString(void) const;
+
     //! Comparable operator for stl containers
     bool operator<(const Object &obj) const;
 
