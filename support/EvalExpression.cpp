@@ -23,6 +23,8 @@ public:
 
 Pothos::Object EvalExpression::eval(const std::string &expr)
 {
+    if (expr.empty()) throw Pothos::Exception("EvalExpression::eval", "expression is empty");
+
     //try simple evaluations first
     if (expr.size() >= 2 and expr.front() == '"' and expr.back() == '"') return Pothos::Object(expr.substr(1, expr.size()-2));
     if (expr == "true") return Pothos::Object(true);
