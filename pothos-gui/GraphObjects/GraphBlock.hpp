@@ -76,6 +76,10 @@ public:
 
     void render(QPainter &painter);
 
+    //! Set an error message when trying to eval the block -- blank msg for no error
+    void setBlockErrorMsg(const QString &msg);
+    const QString &getBlockErrorMsg(void) const;
+
     void addProperty(const GraphBlockProp &prop);
     const std::vector<GraphBlockProp> &getProperties(void) const;
 
@@ -84,6 +88,14 @@ public:
 
     QString getPropertyValue(const QString &key) const;
     void setPropertyValue(const QString &key, const QString &value);
+
+    //! Set the error message when trying to eval this property -- blank msg for no error
+    void setPropertyErrorMsg(const QString &key, const QString &msg);
+    const QString &getPropertyErrorMsg(const QString &key) const;
+
+    //! Set a descriptive type string for this property
+    void setPropertyTypeStr(const QString &key, const std::string &type);
+    const std::string &getPropertyTypeStr(const QString &key) const;
 
     bool getPropertyPreview(const QString &key) const;
     void setPropertyPreview(const QString &key, const bool value);

@@ -20,6 +20,7 @@ struct GraphBlock::Impl
     Poco::JSON::Object::Ptr blockDesc;
 
     bool changed;
+    QString blockErrorMsg;
 
     QString title;
     QStaticText titleText;
@@ -27,6 +28,8 @@ struct GraphBlock::Impl
     std::vector<QStaticText> propertiesText;
     std::map<QString, QString> propertiesValues;
     std::map<QString, bool> propertiesPreview;
+    std::map<QString, QString> propertiesErrorMsg;
+    std::map<QString, std::string> propertiesTypeStr;
 
     std::vector<QStaticText> inputPortsText;
     std::vector<QRectF> inputPortRects;

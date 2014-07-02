@@ -32,6 +32,6 @@ public:
      */
     void registerConstant(const std::string &key, const std::string &expression)
     {
-        //TODO
+        throw Pothos::Exception("registerConstant not yet supported", key +":"+ expression);
     }
 };
