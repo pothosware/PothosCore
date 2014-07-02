@@ -160,7 +160,7 @@ Pothos::Proxy Pothos::ProxyEnvironment::convertObjectToProxy(const Pothos::Objec
     if (it == getConvertToProxyMap().end()) throw Pothos::ProxyEnvironmentConvertError(
         "Pothos::ProxyEnvironment::convertObjectToProxy()",
         Poco::format("doesnt support Object of type %s to %s environment",
-        Util::typeInfoToString(local.type()), this->getName()));
+        local.getTypeString(), this->getName()));
 
     const auto &callable = it->second.getObject().extract<Pothos::Callable>();
     Pothos::Object args[2];

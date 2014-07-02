@@ -97,7 +97,7 @@ static Pothos::Object convertObject(const Pothos::Object &inputObj, const std::t
     if (it == getConvertMap().end()) throw Pothos::ObjectConvertError(
         "Pothos::Detail::convert()",
         Poco::format("doesnt support %s to %s",
-        Pothos::Util::typeInfoToString(inputObj.type()),
+        inputObj.getTypeString(),
         Pothos::Util::typeInfoToString(outputType)));
 
     auto call = it->second.getObject().extract<Pothos::Callable>();

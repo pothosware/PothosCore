@@ -229,5 +229,5 @@ std::string ManagedProxyHandle::toString(void) const
 
 std::string ManagedProxyHandle::getClassName(void) const
 {
-    return Pothos::Util::typeInfoToString(this->obj.type());
+    return this->obj.getTypeString();
 }
