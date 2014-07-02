@@ -18,6 +18,7 @@
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/OutputPort.hpp>
+#include <Pothos/Framework/Connectable.hpp>
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Topology.hpp>
