@@ -55,18 +55,38 @@ void GraphBlock::update(void)
     auto evalEnv = EvalEnvironment.callProxy("new");
     auto blockEval = BlockEval.callProxy("new", evalEnv);
 
-    //create a dictionary of the block's args and values
-    std::map<std::string, std::string> args;
+    //evaluate the properties
+    bool hasError = false;
     for (const auto &prop : this->getProperties())
     {
         const auto val = this->getPropertyValue(prop.getKey()).toStdString();
-        args[prop.getKey().toStdString()] = val;
+        try
+        {
+            auto obj = blockEval.callProxy("evalProperty", prop.getKey().toStdString(), val);
+            this->setPropertyTypeStr(prop.getKey(), obj.call<std::string>("getTypeString"));
+            this->setPropertyErrorMsg(prop.getKey(), "");
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            this->setPropertyErrorMsg(prop.getKey(), QString::fromStdString(ex.displayText()));
+            hasError = true;
+        }
     }
+
+    //property errors -- cannot continue
+    if (hasError)
+    {
+        this->setBlockErrorMsg("cannot evaluate this block with properties errors");
+        return;
+    }
+
+    //otherwise clear the error
+    this->setBlockErrorMsg("");
 
     //evaluate the block and load its port info
     try
     {
-        blockEval.callProxy("eval", this->getBlockDesc(), args);
+        blockEval.callProxy("eval", this->getId().toStdString(), this->getBlockDesc());
         auto portDesc = blockEval.call<Poco::JSON::Object::Ptr>("inspect");
 
         for (const auto &inputPortDesc : *portDesc->getArray("inputPorts"))
@@ -96,6 +116,6 @@ void GraphBlock::update(void)
     catch(const Pothos::Exception &ex)
     {
         poco_error(Poco::Logger::get("PothosGui.GraphBlock.update"), ex.displayText());
-        //TODO record error with block
+        this->setBlockErrorMsg(QString::fromStdString(ex.displayText()));
     }
 }

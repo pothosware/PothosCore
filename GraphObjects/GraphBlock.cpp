@@ -47,6 +47,16 @@ QString GraphBlock::getTitle(void) const
     return _impl->title;
 }
 
+void GraphBlock::setBlockErrorMsg(const QString &msg)
+{
+    _impl->blockErrorMsg = msg;
+}
+
+const QString &GraphBlock::getBlockErrorMsg(void) const
+{
+    return _impl->blockErrorMsg;
+}
+
 void GraphBlock::addProperty(const GraphBlockProp &prop)
 {
     _properties.push_back(prop);
@@ -91,6 +101,26 @@ bool GraphBlock::getPropertyPreview(const QString &key) const
 void GraphBlock::setPropertyPreview(const QString &key, const bool value)
 {
     _impl->propertiesPreview[key] = value;
+}
+
+void GraphBlock::setPropertyErrorMsg(const QString &key, const QString &msg)
+{
+    _impl->propertiesErrorMsg[key] = msg;
+}
+
+const QString &GraphBlock::getPropertyErrorMsg(const QString &key) const
+{
+    return _impl->propertiesErrorMsg[key];
+}
+
+void GraphBlock::setPropertyTypeStr(const QString &key, const std::string &type)
+{
+    _impl->propertiesTypeStr[key] = type;
+}
+
+const std::string &GraphBlock::getPropertyTypeStr(const QString &key) const
+{
+    return _impl->propertiesTypeStr[key];
 }
 
 void GraphBlock::addInputPort(const GraphBlockPort &port)
