@@ -15,6 +15,9 @@
 
 namespace Pothos {
 
+/*!
+ * Connectable interface for topological elements.
+ */
 class POTHOS_API Connectable : public Util::UID
 {
 public:
@@ -36,12 +39,12 @@ public:
     const std::string &getName(void) const;
 
     /*!
-     * Get the names of the input ports in the order they were allocated.
+     * Get the names of the input ports available.
      */
     virtual std::vector<std::string> inputPortNames(void) = 0;
 
     /*!
-     * Get the names of the output ports in the order they were allocated.
+     * Get the names of the output ports available.
      */
     virtual std::vector<std::string> outputPortNames(void) = 0;
 

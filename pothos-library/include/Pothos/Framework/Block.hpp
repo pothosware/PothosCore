@@ -9,7 +9,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Util/UID.hpp>
+#include <Pothos/Framework/Connectable.hpp>
 #include <Pothos/Framework/CallRegistry.hpp>
 #include <Pothos/Framework/SignalEmitter.hpp>
 #include <Pothos/Framework/WorkInfo.hpp>
@@ -37,7 +37,7 @@ namespace Pothos {
  * Any resources produced at the Block's output ports will be
  * make available to the other Block's connected input ports.
  */
-class POTHOS_API Block : protected CallRegistry, protected SignalEmitter, public Util::UID
+class POTHOS_API Block : protected CallRegistry, protected SignalEmitter, public Connectable
 {
 public:
 
@@ -46,19 +46,6 @@ public:
 
     //! Virtual destructor
     virtual ~Block(void);
-
-    /*!
-     * Set a displayable name for this topology.
-     * The name is a string to be used in debug outputs.
-     * \param name a new displayable name
-     */
-    void setName(const std::string &name);
-
-    /*!
-     * Get the displayable name for this topology.
-     * \return the displayable name string
-     */
-    const std::string &getName(void) const;
 
 protected:
 

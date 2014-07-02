@@ -202,7 +202,6 @@ public:
     ///////////////////// WorkerActor storage ///////////////////////
     Block *block;
     bool workBump;
-    std::string name;
     bool activeState;
     std::string workError;
     WorkerStats workStats;

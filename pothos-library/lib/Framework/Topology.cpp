@@ -30,7 +30,6 @@
  **********************************************************************/
 struct Pothos::Topology::Impl
 {
-    std::string name;
     std::vector<Flow> flows;
     std::vector<Flow> activeFlatFlows;
     std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
@@ -505,16 +504,6 @@ Pothos::Topology::~Topology(void)
     }
 }
 
-void Pothos::Topology::setName(const std::string &name)
-{
-    _impl->name = name;
-}
-
-const std::string &Pothos::Topology::getName(void) const
-{
-    return _impl->name;
-}
-
 void Pothos::Topology::commit(void)
 {
     auto flatFlows = _impl->createNetworkFlows();
@@ -769,9 +758,7 @@ static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 
 static auto managedTopology = Pothos::ManagedClass()
     .registerConstructor<Pothos::Topology>()
-    .registerBaseClass<Pothos::Topology, Pothos::Util::UID>()
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setName))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, getName))
+    .registerBaseClass<Pothos::Topology, Pothos::Connectable>()
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, commit))

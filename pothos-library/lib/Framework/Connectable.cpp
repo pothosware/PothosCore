@@ -20,15 +20,9 @@ const std::string &Pothos::Connectable::getName(void) const
 
 #include <Pothos/Managed.hpp>
 
-//FIXME see issue #37
-static const std::string &getUid(const Pothos::Connectable &b)
-{
-    return b.uid();
-}
-
 static auto managedConnectable = Pothos::ManagedClass()
     .registerClass<Pothos::Connectable>()
-    .registerMethod("uid", &getUid)
+    .registerBaseClass<Pothos::Connectable, Pothos::Util::UID>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, setName))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, getName))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, inputPortNames))
