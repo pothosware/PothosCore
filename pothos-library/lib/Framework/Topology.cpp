@@ -35,6 +35,8 @@ struct Pothos::Topology::Impl
     std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
     std::vector<Flow> createNetworkFlows(void);
     std::vector<Flow> rectifyDomainFlows(const std::vector<Flow> &);
+    std::vector<std::string> inputPortNames;
+    std::vector<std::string> outputPortNames;
 };
 
 /***********************************************************************
@@ -504,6 +506,16 @@ Pothos::Topology::~Topology(void)
     }
 }
 
+std::vector<std::string> Pothos::Topology::inputPortNames(void)
+{
+    return _impl->inputPortNames;
+}
+
+std::vector<std::string> Pothos::Topology::outputPortNames(void)
+{
+    return _impl->outputPortNames;
+}
+
 void Pothos::Topology::commit(void)
 {
     auto flatFlows = _impl->createNetworkFlows();
@@ -597,6 +609,17 @@ void Pothos::Topology::_connect(
     flow.src.name = srcName;
     flow.dst.name = dstName;
 
+    if (this->uid() == getInternalBlock(flow.src.obj).call<std::string>("uid")) _impl->outputPortNames.push_back(srcName);
+    if (this->uid() == getInternalBlock(flow.dst.obj).call<std::string>("uid")) _impl->inputPortNames.push_back(dstName);
+
+    auto outs = getInternalBlock(flow.src.obj).call<std::vector<std::string>>("outputPortNames");
+    if (std::find(outs.begin(), outs.end(), srcName) == outs.end())
+        throw Pothos::TopologyConnectError("Pothos::Topology::connect()", src.toString() + " has no output port named " + srcName);
+
+    auto ins = getInternalBlock(flow.dst.obj).call<std::vector<std::string>>("inputPortNames");
+    if (std::find(ins.begin(), ins.end(), dstName) == ins.end())
+        throw Pothos::TopologyConnectError("Pothos::Topology::connect()", dst.toString() + " has no input port named " + dstName);
+
     const auto it = std::find(_impl->flows.begin(), _impl->flows.end(), flow);
     if (it != _impl->flows.end()) throw Pothos::TopologyConnectError("Pothos::Topology::connect()",
         "this flow already exists in the topology");
@@ -618,6 +641,17 @@ void Pothos::Topology::_disconnect(
     flow.dst.obj = getInternalObject(dst, *this);
     flow.src.name = srcName;
     flow.dst.name = dstName;
+
+    auto outs = getInternalBlock(flow.src.obj).call<std::vector<std::string>>("outputPortNames");
+    if (std::find(outs.begin(), outs.end(), srcName) == outs.end())
+        throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()", src.toString() + " has no output port named " + srcName);
+
+    auto ins = getInternalBlock(flow.dst.obj).call<std::vector<std::string>>("inputPortNames");
+    if (std::find(ins.begin(), ins.end(), dstName) == ins.end())
+        throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()", dst.toString() + " has no input port named " + dstName);
+
+    if (this->uid() == getInternalBlock(flow.src.obj).call<std::string>("uid")) _impl->outputPortNames.erase(std::find(_impl->outputPortNames.begin(), _impl->outputPortNames.end(), srcName));
+    if (this->uid() == getInternalBlock(flow.dst.obj).call<std::string>("uid")) _impl->inputPortNames.erase(std::find(_impl->inputPortNames.begin(), _impl->inputPortNames.end(), srcName));
 
     const auto it = std::find(_impl->flows.begin(), _impl->flows.end(), flow);
     if (it == _impl->flows.end()) throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()",

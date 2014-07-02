@@ -38,8 +38,11 @@ public:
      */
     ~Topology(void);
 
-    std::vector<std::string> inputPortNames(void){}
-    std::vector<std::string> outputPortNames(void){}
+    //! Get a list of input port names in order of connection
+    std::vector<std::string> inputPortNames(void);
+
+    //! Get a list of output port names in order of connection
+    std::vector<std::string> outputPortNames(void);
 
     /*!
      * Commit changes made to the topology.
