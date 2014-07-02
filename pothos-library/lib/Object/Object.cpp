@@ -64,7 +64,7 @@ void Pothos::Detail::ObjectContainer::throwExtract(const Pothos::Object &obj, co
     assert(obj.type() != type);
     throw ObjectConvertError("Pothos::Object::extract()",
         Poco::format("Cannot convert Object of type %s to %s",
-        Util::typeInfoToString(obj.type()), Util::typeInfoToString(type)));
+        obj.getTypeString(), Util::typeInfoToString(type)));
 }
 
 /***********************************************************************
@@ -157,8 +157,13 @@ std::string Pothos::Object::toString(void) const
     }
     catch (...)
     {
-        return Util::typeInfoToString(this->type());
+        return this->getTypeString();
     }
+}
+
+std::string Pothos::Object::getTypeString(void) const
+{
+    return Util::typeInfoToString(this->type());
 }
 
 bool Pothos::Object::operator<(const Pothos::Object &obj) const
@@ -199,4 +204,5 @@ static auto managedObject = Pothos::ManagedClass()
     .registerConstructor<Pothos::Object>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Object, unique))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Object, toString))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Object, getTypeString))
     .commit("Pothos/Object");
