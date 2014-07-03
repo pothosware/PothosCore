@@ -6,6 +6,7 @@
 #include "GraphEditor/ExecutionEngine.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
+#include <Poco/JSON/Array.h>
 #include <QTabWidget>
 #include <ios>
 
@@ -59,6 +60,8 @@ public:
 
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);
+
+    Poco::JSON::Array::Ptr getConnectionInfo(void) const;
 
 signals:
     void newTitleSubtext(const QString &);
