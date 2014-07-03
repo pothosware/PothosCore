@@ -76,7 +76,7 @@ void GraphBlock::update(void)
     //property errors -- cannot continue
     if (hasError)
     {
-        this->setBlockErrorMsg("cannot evaluate this block with properties errors");
+        this->setBlockErrorMsg(tr("Error: cannot evaluate this block with property errors"));
         return;
     }
 
@@ -89,6 +89,13 @@ void GraphBlock::update(void)
         blockEval.callProxy("eval", this->getId().toStdString(), this->getBlockDesc());
         auto portDesc = blockEval.call<Poco::JSON::Object::Ptr>("inspect");
 
+        //reload the port descriptions, clear the old first
+        _inputPorts.clear();
+        _outputPorts.clear();
+        _slotPorts.clear();
+        _signalPorts.clear();
+
+        //reload inputs (and slots)
         for (const auto &inputPortDesc : *portDesc->getArray("inputPorts"))
         {
             const auto &info = inputPortDesc.extract<Poco::JSON::Object::Ptr>();
@@ -100,6 +107,7 @@ void GraphBlock::update(void)
             else this->addInputPort(gbp);
         }
 
+        //reload outputs (and signals)
         for (const auto &outputPortDesc : *portDesc->getArray("outputPorts"))
         {
             const auto &info = outputPortDesc.extract<Poco::JSON::Object::Ptr>();
@@ -115,7 +123,7 @@ void GraphBlock::update(void)
     //parser errors report
     catch(const Pothos::Exception &ex)
     {
-        poco_error(Poco::Logger::get("PothosGui.GraphBlock.update"), ex.message());
+        poco_error(Poco::Logger::get("PothosGui.GraphBlock.update"), ex.displayText());
         this->setBlockErrorMsg(QString::fromStdString(ex.message()));
     }
 }

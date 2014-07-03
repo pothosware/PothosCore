@@ -27,7 +27,7 @@ class PropertiesPanelBlock : public QWidget
 public:
     PropertiesPanelBlock(GraphBlock *block, QWidget *parent):
         QWidget(parent),
-        _titleLabel(new QLabel(this)),
+        _blockErrorLabel(new QLabel(this)),
         _updateTimer(new QTimer(this)),
         _formLayout(nullptr),
         _block(block)
@@ -47,8 +47,14 @@ public:
 
         //title
         {
-            _titleLabel->setAlignment(Qt::AlignCenter);
-            _formLayout->addRow(_titleLabel);
+            auto label = new QLabel(QString("<h1>%1</h1>").arg(_block->getTitle().toHtmlEscaped()), this);
+            label->setAlignment(Qt::AlignCenter);
+            _formLayout->addRow(label);
+        }
+
+        //errors
+        {
+            _formLayout->addRow(_blockErrorLabel);
         }
 
         //id
@@ -62,6 +68,7 @@ public:
         //properties
         for (const auto &prop : _block->getProperties())
         {
+            _propIdToOriginal[prop.getKey()] = _block->getPropertyValue(prop.getKey());
             auto paramDesc = _block->getParamDesc(prop.getKey());
             assert(paramDesc);
 
@@ -88,7 +95,16 @@ public:
                 editWidget = lineEdit;
             }
 
-            _formLayout->addRow(new QLabel(this), editWidget);
+            //create labels
+            _propIdToFormLabel[prop.getKey()] = new QLabel(this);
+            _propIdToErrorLabel[prop.getKey()] = new QLabel(this);
+            editWidget->setToolTip(this->getParamDocString(_block->getParamDesc(prop.getKey())));
+
+            //layout stuff
+            auto editLayout = new QVBoxLayout();
+            editLayout->addWidget(editWidget);
+            editLayout->addWidget(_propIdToErrorLabel[prop.getKey()]);
+            _formLayout->addRow(_propIdToFormLabel[prop.getKey()], editLayout);
             _propIdToEditWidget[prop.getKey()] = editWidget;
         }
 
@@ -222,6 +238,9 @@ private slots:
 
 private:
 
+    std::map<QString, QString> _propIdToOriginal;
+    std::map<QString, QLabel *> _propIdToFormLabel;
+    std::map<QString, QLabel *> _propIdToErrorLabel;
     std::map<QString, QWidget *> _propIdToEditWidget;
 
     /*!
@@ -229,15 +248,13 @@ private:
      */
     void updateAllForms(void)
     {
-        //update title
+        //update block errors
         {
-            auto label = QString("<span style='color:%1;'><h1>%2</h1></span>")
-                .arg(_block->getBlockErrorMsg().isEmpty()?"black":"red")
-                .arg(_block->getTitle().toHtmlEscaped());
-            if (not _block->getBlockErrorMsg().isEmpty()) label += QString(
+            _blockErrorLabel->setVisible(not _block->getBlockErrorMsg().isEmpty());
+            _blockErrorLabel->setWordWrap(true);
+            _blockErrorLabel->setText(QString(
                 "<p><span style='color:red;'><i>%1</i></span></p>")
-                .arg(_block->getBlockErrorMsg().toHtmlEscaped());
-            _titleLabel->setText(label);
+                .arg(_block->getBlockErrorMsg().toHtmlEscaped()));
         }
 
         for (const auto &prop : _block->getProperties())
@@ -254,15 +271,17 @@ private:
     {
         auto paramDesc = _block->getParamDesc(prop.getKey());
         auto editWidget = _propIdToEditWidget[prop.getKey()];
+        auto errorLabel = _propIdToErrorLabel[prop.getKey()];
+        auto formLabel = _propIdToFormLabel[prop.getKey()];
 
         //create label string
-        auto label = QString("<span style='color:%1;'><b>%2</b></span>")
+        bool propChanged = (_propIdToOriginal[prop.getKey()] == _block->getPropertyValue(prop.getKey()));
+        auto label = QString("<span style='color:%1;'><b>%2%3</b></span>")
             .arg(_block->getPropertyErrorMsg(prop.getKey()).isEmpty()?"black":"red")
-            .arg(prop.getName());
+            .arg(prop.getName())
+            .arg(propChanged?"":"*");
         if (paramDesc->has("units")) label += QString("<br /><i>%1</i>")
             .arg(QString::fromStdString(paramDesc->getValue<std::string>("units")));
-        auto formLabel = dynamic_cast<QLabel *>(_formLayout->labelForField(editWidget));
-        assert(formLabel != nullptr);
         formLabel->setText(label);
 
         //type color calculation
@@ -278,17 +297,11 @@ private:
             .arg((typeColor.lightnessF() > 0.5)?"black":"white")
         );
 
-        //tooltip format
+        //error label
         QString errorMsg = _block->getPropertyErrorMsg(prop.getKey());
-        if (not errorMsg.isEmpty()) errorMsg = QString(
-            "<span style='color:red;'>"
-                "<h3>%1 &quot;%2&quot;:</h3>"
-                "<p>%3</p>"
-            "</span>")
-            .arg(tr("Failed to evaluate"))
-            .arg(_block->getPropertyValue(prop.getKey()).toHtmlEscaped())
-            .arg(errorMsg.toHtmlEscaped());
-        editWidget->setToolTip(errorMsg + this->getParamDocString(_block->getParamDesc(prop.getKey())));
+        errorLabel->setVisible(not errorMsg.isEmpty());
+        errorLabel->setText(QString("<span style='color:red;'><p><i>%1</i></p></span>").arg(errorMsg.toHtmlEscaped()));
+        errorLabel->setWordWrap(true);
 
         //set the editor's value
         const auto value = _block->getPropertyValue(prop.getKey());
@@ -301,7 +314,7 @@ private:
         if (lineEdit != nullptr) lineEdit->setText(value);
     }
 
-    QLabel *_titleLabel;
+    QLabel *_blockErrorLabel;
     QTimer *_updateTimer;
     QFormLayout *_formLayout;
     QPointer<GraphBlock> _block;
