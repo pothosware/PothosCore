@@ -4,6 +4,8 @@
 #include "PothosGui.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphObjects/GraphBlock.hpp"
+#include "GraphEditor/GraphDraw.hpp"
+#include "GraphEditor/GraphEditor.hpp"
 #include <Poco/MD5Engine.h>
 #include <QStackedWidget>
 #include <QVBoxLayout>
@@ -27,6 +29,7 @@ class PropertiesPanelBlock : public QWidget
 public:
     PropertiesPanelBlock(GraphBlock *block, QWidget *parent):
         QWidget(parent),
+        _ignoreChanges(true),
         _blockErrorLabel(new QLabel(this)),
         _updateTimer(new QTimer(this)),
         _formLayout(nullptr),
@@ -59,6 +62,7 @@ public:
 
         //id
         {
+            //TODO ID changes must be set to the block and validated, etc...
             auto label = QString("<b>%1</b>").arg(tr("ID"));
             auto edit = new QLineEdit(this);
             edit->setText(block->getId());
@@ -77,7 +81,6 @@ public:
             if (paramDesc->isArray("options"))
             {
                 auto comboBox = new QComboBox(this);
-                connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
                 editWidget = comboBox;
                 //combo->setEditable(true);
                 for (const auto &optionObj : *paramDesc->getArray("options"))
@@ -87,6 +90,7 @@ public:
                         QString::fromStdString(option->getValue<std::string>("name")),
                         QString::fromStdString(option->getValue<std::string>("value")));
                 }
+                connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
             }
             else
             {
@@ -186,17 +190,25 @@ public:
             auto buttonLayout = new QHBoxLayout();
             layout->addLayout(buttonLayout);
             auto commitButton = new QPushButton(makeIconFromTheme("dialog-ok-apply"), "Commit", this);
+            connect(commitButton, SIGNAL(pressed(void)), this, SLOT(handleCommitButton(void)));
             buttonLayout->addWidget(commitButton);
             auto cancelButton = new QPushButton(makeIconFromTheme("dialog-cancel"), "Cancel", this);
+            connect(cancelButton, SIGNAL(pressed(void)), this, SLOT(handleCancelButton(void)));
             buttonLayout->addWidget(cancelButton);
         }
-
-        this->updateAllForms();
 
         //update timer
         _updateTimer->setSingleShot(true);
         _updateTimer->setInterval(UPDATE_TIMER_MS);
         connect(_updateTimer, SIGNAL(timeout(void)), this, SLOT(handleUpdateTimerExpired(void)));
+
+        //connect state change to the graph editor
+        auto draw = dynamic_cast<GraphDraw *>(_block->parent());
+        auto editor = draw->getGraphEditor();
+        connect(this, SIGNAL(stateChanged(const GraphState &)), editor, SLOT(handleStateChange(const GraphState &)));
+
+        this->updateAllForms();
+        _ignoreChanges = false;
     }
 
     QString getParamDocString(const Poco::JSON::Object::Ptr &paramDesc)
@@ -217,11 +229,8 @@ public:
 private slots:
     void handleEditWidgetChanged(const QString &)
     {
-        _updateTimer->start(UPDATE_TIMER_MS);
-    }
-
-    void handleUpdateTimerExpired(void)
-    {
+        if (_ignoreChanges) return;
+        //dump all values from edit widgets into the block's property values
         for (const auto &prop : _block->getProperties())
         {
             auto editWidget = _propIdToEditWidget[prop.getKey()];
@@ -232,9 +241,47 @@ private slots:
             if (lineEdit != nullptr) newValue = lineEdit->text();
             _block->setPropertyValue(prop.getKey(), newValue);
         }
+        _updateTimer->start(UPDATE_TIMER_MS);
+    }
+
+    void handleUpdateTimerExpired(void)
+    {
         _block->update();
         this->updateAllForms();
     }
+
+    void handleCancelButton(void)
+    {
+        _updateTimer->stop();
+
+        //empty state causes reset to the last known point
+        emit this->stateChanged(GraphState());
+
+        this->deleteLater();
+    }
+
+    void handleCommitButton(void)
+    {
+        _updateTimer->stop();
+
+        //were there changes?
+        std::vector<QString> propertiesModified;
+        for (const auto &prop : _block->getProperties())
+        {
+            if (_block->getPropertyValue(prop.getKey()) != _propIdToOriginal[prop.getKey()]) propertiesModified.push_back(prop.getName());
+        }
+        if (propertiesModified.empty()) return this->handleCancelButton();
+
+        //emit a new graph state event
+        auto desc = (propertiesModified.size() == 1)? propertiesModified.front() : tr("properties");
+        emit this->stateChanged(GraphState("document-properties", tr("Edit %1 %2").arg(_block->getId()).arg(desc)));
+
+        //done with this panel
+        this->deleteLater();
+    }
+
+signals:
+    void stateChanged(const GraphState &);
 
 private:
 
@@ -314,6 +361,7 @@ private:
         if (lineEdit != nullptr) lineEdit->setText(value);
     }
 
+    bool _ignoreChanges;
     QLabel *_blockErrorLabel;
     QTimer *_updateTimer;
     QFormLayout *_formLayout;
@@ -342,7 +390,7 @@ private slots:
         else
         {
             //TODO connect panel delete to block delete
-            delete _propertiesPanel;
+            if (_propertiesPanel) delete _propertiesPanel;
             _propertiesPanel = new PropertiesPanelBlock(block, this);
             this->addWidget(_propertiesPanel);
             this->setCurrentWidget(_propertiesPanel);
@@ -350,7 +398,7 @@ private slots:
     }
 
 private:
-    QWidget *_propertiesPanel;
+    QPointer<QWidget> _propertiesPanel;
     QWidget *_blockTree;
 };
 

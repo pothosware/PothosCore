@@ -640,6 +640,12 @@ void GraphEditor::handleResetState(int stateNo)
 
 void GraphEditor::handleStateChange(const GraphState &state)
 {
+    //empty states tell us to simply reset to the current known point
+    if (state.iconName.isEmpty() and state.description.isEmpty())
+    {
+        return this->handleResetState(_stateManager->getCurrentIndex());
+    }
+
     //serialize the graph into the state manager
     std::ostringstream oss;
     this->dumpState(oss);
