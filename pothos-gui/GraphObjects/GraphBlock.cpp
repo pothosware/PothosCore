@@ -364,7 +364,7 @@ void GraphBlock::render(QPainter &painter)
     auto p = mainRect.topLeft();
 
     //set painter for drawing the rectangles
-    QPen pen(QColor(getSelected()?GraphObjectHighlightPenColor:GraphObjectDefaultPenColor));
+    auto pen = QPen(QColor(GraphObjectDefaultPenColor));
     pen.setWidthF(GraphObjectBorderWidth);
     painter.setPen(pen);
     painter.setBrush(QBrush(QColor(GraphObjectDefaultFillColor)));
@@ -379,7 +379,10 @@ void GraphBlock::render(QPainter &painter)
         const qreal hOff = (portFlip)? overallWidth :  1-rectSize.width();
         QRectF portRect(p+QPointF(hOff, inPortVdelta), rectSize);
         inPortVdelta += rectSize.height() + GraphBlockPortVGap;
+        painter.save();
+        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRect(portRect);
+        painter.restore();
         _impl->inputPortRects.push_back(trans.mapRect(portRect));
 
         const qreal availablePortHPad = portRect.width() - text.size().width();
@@ -402,7 +405,10 @@ void GraphBlock::render(QPainter &painter)
         const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
         QRectF portRect(p+QPointF(hOff+arcFix, outPortVdelta), rectSize);
         outPortVdelta += rectSize.height() + GraphBlockPortVGap;
+        painter.save();
+        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
+        painter.restore();
         _impl->outputPortRects.push_back(trans.mapRect(portRect));
 
         const qreal availablePortHPad = portRect.width() - text.size().width() + arcFix;
@@ -415,7 +421,10 @@ void GraphBlock::render(QPainter &painter)
     }
 
     //draw main body of the block
+    painter.save();
+    if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
     painter.drawRoundedRect(mainRect, GraphBlockMainArc, GraphBlockMainArc);
+    painter.restore();
 
     //create title
     const qreal availableTitleHPad = overallWidth-_impl->titleText.size().width();

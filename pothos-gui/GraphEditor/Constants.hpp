@@ -6,7 +6,7 @@
 #include <QSizeF>
 #include <QString>
 
-static const QString GraphObjectHighlightPenColor = "#0040FF";
+static const QString GraphObjectHighlightPenColor = "#33FFFF";
 static const QString GraphObjectDefaultPenColor = "#000000";
 static const QString GraphObjectDefaultFillColor = "#E8E8E8";
 static const qreal GraphObjectBorderWidth = 0.5;

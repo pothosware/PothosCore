@@ -125,7 +125,7 @@ void GraphBreaker::render(QPainter &painter)
     const bool breakerFlip = this->getRotation() >= 180;
 
     //set painter for drawing the figure
-    QPen pen(QColor(getSelected()?GraphObjectHighlightPenColor:GraphObjectDefaultPenColor));
+    auto pen = QPen(QColor(GraphObjectDefaultPenColor));
     pen.setWidthF(GraphObjectBorderWidth);
     painter.setPen(pen);
     painter.setBrush(QBrush(QColor(GraphObjectDefaultFillColor)));
@@ -159,7 +159,10 @@ void GraphBreaker::render(QPainter &painter)
 
     QPointF p(-w/2, -h/2);
     polygon.translate(p);
+    painter.save();
+    if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
     painter.drawPolygon(polygon);
+    painter.restore();
     _impl->polygon = trans.map(polygon);
 
     const auto textOff = QPointF(GraphBreakerTitleHPad, GraphBreakerTitleVPad);
