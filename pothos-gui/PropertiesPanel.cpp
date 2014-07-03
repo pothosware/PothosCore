@@ -14,6 +14,7 @@
 #include <QScrollArea>
 #include <QPushButton>
 #include <QLabel>
+#include <QPainter>
 #include <cassert>
 
 class PropertiesPanelBlock : public QScrollArea
@@ -124,7 +125,22 @@ public:
             }
         }
 
-        //TODO preview here
+        //draw the block's preview onto a mini pixmap
+        {
+            const auto bounds = _block->getBoundingRect();
+            QPixmap pixmap(bounds.size().toSize()+QSize(2,2));
+            pixmap.fill(Qt::transparent);
+            QPainter painter(&pixmap);
+            painter.translate(-bounds.topLeft()+QPoint(1,1));
+            painter.setRenderHint(QPainter::Antialiasing);
+            painter.setRenderHint(QPainter::HighQualityAntialiasing);
+            painter.setRenderHint(QPainter::SmoothPixmapTransform);
+            _block->render(painter);
+            painter.end();
+            auto label = new QLabel(this);
+            label->setPixmap(pixmap);
+            layout->addWidget(label);
+        }
 
         //TODO optional error display for block
 
