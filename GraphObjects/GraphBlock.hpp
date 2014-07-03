@@ -120,8 +120,8 @@ public:
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
 
-private:
     void update(void);
+private:
     void initPropertiesFromDesc(void);
     void renderStaticText(void);
     struct Impl;

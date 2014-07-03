@@ -16,7 +16,10 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QPainter>
+#include <QTimer>
 #include <cassert>
+
+static const long UPDATE_TIMER_MS = 500;
 
 class PropertiesPanelBlock : public QWidget
 {
@@ -24,6 +27,9 @@ class PropertiesPanelBlock : public QWidget
 public:
     PropertiesPanelBlock(GraphBlock *block, QWidget *parent):
         QWidget(parent),
+        _titleLabel(new QLabel(this)),
+        _updateTimer(new QTimer(this)),
+        _formLayout(nullptr),
         _block(block)
     {
         auto blockDesc = block->getBlockDesc();
@@ -35,25 +41,14 @@ public:
         auto scroll = new QScrollArea(this);
         scroll->setWidgetResizable(true);
         scroll->setWidget(new QWidget(scroll));
-        auto formLayout = new QFormLayout(scroll);
-        scroll->widget()->setLayout(formLayout);
+        _formLayout = new QFormLayout(scroll);
+        scroll->widget()->setLayout(_formLayout);
         layout->addWidget(scroll);
 
         //title
         {
-            auto label = new QLabel(QString("<span style='color:%1;'><h1>%2</h1></span>")
-                .arg(_block->getBlockErrorMsg().isEmpty()?"black":"red")
-                .arg(_block->getTitle().toHtmlEscaped()), this);
-            label->setAlignment(Qt::AlignCenter);
-            formLayout->addRow(label);
-        }
-
-        //error display for block
-        if (not _block->getBlockErrorMsg().isEmpty())
-        {
-            auto label = new QLabel(QString("<span style='color:red;'><i>%1</i></span>")
-                .arg(_block->getBlockErrorMsg().toHtmlEscaped()), this);
-            formLayout->addRow(label);
+            _titleLabel->setAlignment(Qt::AlignCenter);
+            _formLayout->addRow(_titleLabel);
         }
 
         //id
@@ -61,7 +56,7 @@ public:
             auto label = QString("<b>%1</b>").arg(tr("ID"));
             auto edit = new QLineEdit(this);
             edit->setText(block->getId());
-            formLayout->addRow(label, edit);
+            _formLayout->addRow(label, edit);
         }
 
         //properties
@@ -70,62 +65,31 @@ public:
             auto paramDesc = _block->getParamDesc(prop.getKey());
             assert(paramDesc);
 
-            //create label string
-            auto label = QString("<span style='color:%1;'><b>%2</b></span>")
-                .arg(_block->getPropertyErrorMsg(prop.getKey()).isEmpty()?"black":"red")
-                .arg(prop.getName());
-            if (paramDesc->has("units")) label += QString("<br /><i>%1</i>")
-                .arg(QString::fromStdString(paramDesc->getValue<std::string>("units")));
-
             //create editable widget
             QWidget *editWidget = nullptr;
-            const auto value = _block->getPropertyValue(prop.getKey());
             if (paramDesc->isArray("options"))
             {
-                auto combo = new QComboBox(this);
-                editWidget = combo;
+                auto comboBox = new QComboBox(this);
+                connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+                editWidget = comboBox;
                 //combo->setEditable(true);
                 for (const auto &optionObj : *paramDesc->getArray("options"))
                 {
                     const auto option = optionObj.extract<Poco::JSON::Object::Ptr>();
-                    combo->addItem(
+                    comboBox->addItem(
                         QString::fromStdString(option->getValue<std::string>("name")),
                         QString::fromStdString(option->getValue<std::string>("value")));
                 }
             }
             else
             {
-                auto edit = new QLineEdit(this);
-                editWidget = edit;
-                edit->setText(value);
+                auto lineEdit = new QLineEdit(this);
+                connect(lineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+                editWidget = lineEdit;
             }
 
-            //type color calculation
-            auto typeStr = _block->getPropertyTypeStr(prop.getKey());
-            Poco::MD5Engine md5; md5.update(typeStr);
-            const auto hexHash = Poco::DigestEngine::digestToHex(md5.digest());
-            QColor typeColor(QString::fromStdString("#" + hexHash.substr(0, 6)));
-            assert(editWidget != nullptr);
-            editWidget->setStyleSheet(QString(
-                "QComboBox{background:%1;color:%2;}"
-                "QLineEdit{background:%1;color:%2;}")
-                .arg(typeColor.name())
-                .arg((typeColor.lightnessF() > 0.5)?"black":"white")
-            );
-
-            //tooltip format
-            QString errorMsg = _block->getPropertyErrorMsg(prop.getKey());
-            if (not errorMsg.isEmpty()) errorMsg = QString(
-                "<span style='color:red;'>"
-                    "<h3>%1 &quot;%2&quot;:</h3>"
-                    "<p>%3</p>"
-                "</span>")
-                .arg(tr("Failed to evaluate"))
-                .arg(_block->getPropertyValue(prop.getKey()).toHtmlEscaped())
-                .arg(errorMsg.toHtmlEscaped());
-            editWidget->setToolTip(errorMsg + this->getParamDocString(_block->getParamDesc(prop.getKey())));
-
-            formLayout->addRow(label, editWidget);
+            _formLayout->addRow(new QLabel(this), editWidget);
+            _propIdToEditWidget[prop.getKey()] = editWidget;
         }
 
         //draw the block's preview onto a mini pixmap
@@ -144,8 +108,8 @@ public:
             painter.end();
             auto label = new QLabel(this);
             label->setPixmap(pixmap);
-            formLayout->addRow(label);
-            formLayout->setAlignment(label, Qt::AlignHCenter);
+            _formLayout->addRow(label);
+            _formLayout->setAlignment(label, Qt::AlignHCenter);
         }
         */
 
@@ -198,7 +162,7 @@ public:
             auto text = new QLabel(output, this);
             text->setStyleSheet("QLabel{background:white;margin:1px;}");
             text->setWordWrap(true);
-            formLayout->addRow(text);
+            _formLayout->addRow(text);
         }
 
         //buttons
@@ -210,6 +174,13 @@ public:
             auto cancelButton = new QPushButton(makeIconFromTheme("dialog-cancel"), "Cancel", this);
             buttonLayout->addWidget(cancelButton);
         }
+
+        this->updateAllForms();
+
+        //update timer
+        _updateTimer->setSingleShot(true);
+        _updateTimer->setInterval(UPDATE_TIMER_MS);
+        connect(_updateTimer, SIGNAL(timeout(void)), this, SLOT(handleUpdateTimerExpired(void)));
     }
 
     QString getParamDocString(const Poco::JSON::Object::Ptr &paramDesc)
@@ -227,7 +198,112 @@ public:
         return output;
     }
 
+private slots:
+    void handleEditWidgetChanged(const QString &)
+    {
+        _updateTimer->start(UPDATE_TIMER_MS);
+    }
+
+    void handleUpdateTimerExpired(void)
+    {
+        for (const auto &prop : _block->getProperties())
+        {
+            auto editWidget = _propIdToEditWidget[prop.getKey()];
+            QString newValue;
+            auto comboBox = dynamic_cast<QComboBox *>(editWidget);
+            if (comboBox != nullptr) newValue = comboBox->itemData(comboBox->currentIndex()).toString();
+            auto lineEdit = dynamic_cast<QLineEdit *>(editWidget);
+            if (lineEdit != nullptr) newValue = lineEdit->text();
+            _block->setPropertyValue(prop.getKey(), newValue);
+        }
+        _block->update();
+        this->updateAllForms();
+    }
+
 private:
+
+    std::map<QString, QWidget *> _propIdToEditWidget;
+
+    /*!
+     * Update everything in this panel after a block change
+     */
+    void updateAllForms(void)
+    {
+        //update title
+        {
+            auto label = QString("<span style='color:%1;'><h1>%2</h1></span>")
+                .arg(_block->getBlockErrorMsg().isEmpty()?"black":"red")
+                .arg(_block->getTitle().toHtmlEscaped());
+            if (not _block->getBlockErrorMsg().isEmpty()) label += QString(
+                "<p><span style='color:red;'><i>%1</i></span></p>")
+                .arg(_block->getBlockErrorMsg().toHtmlEscaped());
+            _titleLabel->setText(label);
+        }
+
+        for (const auto &prop : _block->getProperties())
+        {
+            this->updatePropForms(prop);
+        }
+    }
+
+    /*!
+     * Update all the things that change when a property is modified.
+     * Label string formatting, color of the box, tooltip...
+     */
+    void updatePropForms(const GraphBlockProp &prop)
+    {
+        auto paramDesc = _block->getParamDesc(prop.getKey());
+        auto editWidget = _propIdToEditWidget[prop.getKey()];
+
+        //create label string
+        auto label = QString("<span style='color:%1;'><b>%2</b></span>")
+            .arg(_block->getPropertyErrorMsg(prop.getKey()).isEmpty()?"black":"red")
+            .arg(prop.getName());
+        if (paramDesc->has("units")) label += QString("<br /><i>%1</i>")
+            .arg(QString::fromStdString(paramDesc->getValue<std::string>("units")));
+        auto formLabel = dynamic_cast<QLabel *>(_formLayout->labelForField(editWidget));
+        assert(formLabel != nullptr);
+        formLabel->setText(label);
+
+        //type color calculation
+        auto typeStr = _block->getPropertyTypeStr(prop.getKey());
+        Poco::MD5Engine md5; md5.update(typeStr);
+        const auto hexHash = Poco::DigestEngine::digestToHex(md5.digest());
+        QColor typeColor(QString::fromStdString("#" + hexHash.substr(0, 6)));
+        assert(editWidget != nullptr);
+        editWidget->setStyleSheet(QString(
+            "QComboBox{background:%1;color:%2;}"
+            "QLineEdit{background:%1;color:%2;}")
+            .arg(typeColor.name())
+            .arg((typeColor.lightnessF() > 0.5)?"black":"white")
+        );
+
+        //tooltip format
+        QString errorMsg = _block->getPropertyErrorMsg(prop.getKey());
+        if (not errorMsg.isEmpty()) errorMsg = QString(
+            "<span style='color:red;'>"
+                "<h3>%1 &quot;%2&quot;:</h3>"
+                "<p>%3</p>"
+            "</span>")
+            .arg(tr("Failed to evaluate"))
+            .arg(_block->getPropertyValue(prop.getKey()).toHtmlEscaped())
+            .arg(errorMsg.toHtmlEscaped());
+        editWidget->setToolTip(errorMsg + this->getParamDocString(_block->getParamDesc(prop.getKey())));
+
+        //set the editor's value
+        const auto value = _block->getPropertyValue(prop.getKey());
+        auto comboBox = dynamic_cast<QComboBox *>(editWidget);
+        if (comboBox != nullptr) for (int i = 0; i < comboBox->count(); i++)
+        {
+            if (comboBox->itemData(i).toString() == value) comboBox->setCurrentIndex(i);
+        }
+        auto lineEdit = dynamic_cast<QLineEdit *>(editWidget);
+        if (lineEdit != nullptr) lineEdit->setText(value);
+    }
+
+    QLabel *_titleLabel;
+    QTimer *_updateTimer;
+    QFormLayout *_formLayout;
     QPointer<GraphBlock> _block;
 };
 

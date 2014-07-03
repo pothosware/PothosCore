@@ -68,7 +68,7 @@ void GraphBlock::update(void)
         }
         catch (const Pothos::Exception &ex)
         {
-            this->setPropertyErrorMsg(prop.getKey(), QString::fromStdString(ex.displayText()));
+            this->setPropertyErrorMsg(prop.getKey(), QString::fromStdString(ex.message()));
             hasError = true;
         }
     }
@@ -115,7 +115,7 @@ void GraphBlock::update(void)
     //parser errors report
     catch(const Pothos::Exception &ex)
     {
-        poco_error(Poco::Logger::get("PothosGui.GraphBlock.update"), ex.displayText());
-        this->setBlockErrorMsg(QString::fromStdString(ex.displayText()));
+        poco_error(Poco::Logger::get("PothosGui.GraphBlock.update"), ex.message());
+        this->setBlockErrorMsg(QString::fromStdString(ex.message()));
     }
 }
