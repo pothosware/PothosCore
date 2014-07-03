@@ -19,7 +19,14 @@ void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &block
     }
 
     //create the block
-    proxyBlock = registry.getHandle()->call(path, ctorArgs.data(), ctorArgs.size());
+    try
+    {
+        proxyBlock = registry.getHandle()->call(path, ctorArgs.data(), ctorArgs.size());
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        throw Pothos::Exception("BlockEval factory("+path+")", ex);
+    }
     proxyBlock.callVoid("setName", id);
 
     //make the calls
@@ -34,7 +41,14 @@ void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &block
             const auto obj = this->properties[propKey];
             callArgs.push_back(env->convertObjectToProxy(obj));
         }
-        proxyBlock.getHandle()->call(callName, callArgs.data(), callArgs.size());
+        try
+        {
+            proxyBlock.getHandle()->call(callName, callArgs.data(), callArgs.size());
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            throw Pothos::Exception("BlockEval call("+callName+")", ex);
+        }
     }
 }
 

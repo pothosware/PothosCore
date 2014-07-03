@@ -20,19 +20,31 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
 {
     if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval", "expression is empty");
 
-    //try simple evaluations first
+    //is it a string in quotes?
+    //TODO this would parse an invalid quoted string like "hello " world"
     if (expr.size() >= 2 and expr.front() == '"' and expr.back() == '"') return Pothos::Object(expr.substr(1, expr.size()-2));
+
+    //support booleans
     if (expr == "true") return Pothos::Object(true);
     if (expr == "false") return Pothos::Object(false);
+
+    //try to parse regular unsigned, signed integers
+    try {return Pothos::Object(Poco::NumberParser::parseUnsigned(expr));}
+    catch (const Poco::SyntaxException &){}
+    try {return Pothos::Object(Poco::NumberParser::parse(expr));}
+    catch (const Poco::SyntaxException &){}
+
+    //try to parse large unsigned, signed integers
     try {return Pothos::Object(Poco::NumberParser::parseUnsigned64(expr));}
     catch (const Poco::SyntaxException &){}
     try {return Pothos::Object(Poco::NumberParser::parse64(expr));}
     catch (const Poco::SyntaxException &){}
-    try {return Pothos::Object(Poco::NumberParser::parseHex64(expr));}
-    catch (const Poco::SyntaxException &){}
+
+    //this hex parser does not require a 0x prefix -- dont want it
+    //try {return Pothos::Object(Poco::NumberParser::parseHex64(expr));}
+    //catch (const Poco::SyntaxException &){}
+
     try {return Pothos::Object(Poco::NumberParser::parseFloat(expr));}
-    catch (const Poco::SyntaxException &){}
-    try {return Pothos::Object(Poco::NumberParser::parse(expr));}
     catch (const Poco::SyntaxException &){}
 
     const auto compiler = Pothos::Util::Compiler::make();
