@@ -18,19 +18,26 @@
 #include <QPainter>
 #include <cassert>
 
-class PropertiesPanelBlock : public QScrollArea
+class PropertiesPanelBlock : public QWidget
 {
     Q_OBJECT
 public:
     PropertiesPanelBlock(GraphBlock *block, QWidget *parent):
-        QScrollArea(parent),
+        QWidget(parent),
         _block(block)
     {
-        this->setWidgetResizable(true);
-        this->setWidget(new QWidget(this));
         auto blockDesc = block->getBlockDesc();
-        auto layout = new QFormLayout(this);
-        this->widget()->setLayout(layout);
+
+        //master layout for this widget
+        auto layout = new QVBoxLayout(this);
+
+        //create a scroller and a form layout
+        auto scroll = new QScrollArea(this);
+        scroll->setWidgetResizable(true);
+        scroll->setWidget(new QWidget(scroll));
+        auto formLayout = new QFormLayout(scroll);
+        scroll->widget()->setLayout(formLayout);
+        layout->addWidget(scroll);
 
         //title
         {
@@ -38,17 +45,23 @@ public:
                 .arg(_block->getBlockErrorMsg().isEmpty()?"black":"red")
                 .arg(_block->getTitle().toHtmlEscaped()), this);
             label->setAlignment(Qt::AlignCenter);
-            layout->addRow(label);
+            formLayout->addRow(label);
         }
 
-        //TODO optional error display for block
+        //error display for block
+        if (not _block->getBlockErrorMsg().isEmpty())
+        {
+            auto label = new QLabel(QString("<span style='color:red;'><i>%1</i></span>")
+                .arg(_block->getBlockErrorMsg().toHtmlEscaped()), this);
+            formLayout->addRow(label);
+        }
 
         //id
         {
             auto label = QString("<b>%1</b>").arg(tr("ID"));
             auto edit = new QLineEdit(this);
             edit->setText(block->getId());
-            layout->addRow(label, edit);
+            formLayout->addRow(label, edit);
         }
 
         //properties
@@ -112,10 +125,12 @@ public:
                 .arg(errorMsg.toHtmlEscaped());
             editWidget->setToolTip(errorMsg + this->getParamDocString(_block->getParamDesc(prop.getKey())));
 
-            layout->addRow(label, editWidget);
+            formLayout->addRow(label, editWidget);
         }
 
         //draw the block's preview onto a mini pixmap
+        //this is cool, maybe useful, but its big, where can we put it?
+        /*
         {
             const auto bounds = _block->getBoundingRect();
             QPixmap pixmap(bounds.size().toSize()+QSize(2,2));
@@ -129,9 +144,10 @@ public:
             painter.end();
             auto label = new QLabel(this);
             label->setPixmap(pixmap);
-            layout->addRow(label);
-            layout->setAlignment(label, Qt::AlignHCenter);
+            formLayout->addRow(label);
+            formLayout->setAlignment(label, Qt::AlignHCenter);
         }
+        */
 
         //block level description
         if (blockDesc->isArray("docs"))
@@ -182,13 +198,13 @@ public:
             auto text = new QLabel(output, this);
             text->setStyleSheet("QLabel{background:white;margin:1px;}");
             text->setWordWrap(true);
-            layout->addRow(text);
+            formLayout->addRow(text);
         }
 
         //buttons
         {
             auto buttonLayout = new QHBoxLayout();
-            layout->addRow(buttonLayout);
+            layout->addLayout(buttonLayout);
             auto commitButton = new QPushButton(makeIconFromTheme("dialog-ok-apply"), "Commit", this);
             buttonLayout->addWidget(commitButton);
             auto cancelButton = new QPushButton(makeIconFromTheme("dialog-cancel"), "Cancel", this);
