@@ -20,6 +20,8 @@
 #include <sstream>
 #include <map>
 
+static const long UPDATE_TIMER_MS = 500;
+
 /***********************************************************************
  * Custom tree widget item
  **********************************************************************/
@@ -116,7 +118,7 @@ public:
         this->setHeaderLabels(columnNames);
 
         _filttimer->setSingleShot(true);
-        _filttimer->setInterval(500);
+        _filttimer->setInterval(UPDATE_TIMER_MS);
 
         connect(this, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleSelectionChange(void)));
         connect(this, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(handleItemDoubleClicked(QTreeWidgetItem *, int)));
@@ -211,7 +213,7 @@ private slots:
         _filter = filter;
         //use the timer if search gets expensive.
         //otherwise just call handleFilterTimerExpired here.
-        //_filttimer->start(500);
+        //_filttimer->start(UPDATE_TIMER_MS);
         handleFilterTimerExpired();
     }
 
