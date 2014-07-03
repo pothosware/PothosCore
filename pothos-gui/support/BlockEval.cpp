@@ -78,6 +78,8 @@ Poco::JSON::Object::Ptr BlockEval::inspect(void)
 
     info->set("uid", block.call<std::string>("uid"));
 
+    //TODO FIXME inspect will fail for topologies ATM, cant query isSignal/isSlot on topology
+
     Poco::JSON::Array::Ptr inputPorts = new Poco::JSON::Array();
     for (const auto &name : block.call<std::vector<std::string>>("inputPortNames"))
     {
