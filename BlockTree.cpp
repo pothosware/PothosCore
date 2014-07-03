@@ -162,12 +162,12 @@ public:
         renderBlock->setBlockDesc(blockItem->getBlockDesc());
         renderBlock->prerender(); //precalculate so we can get bounds
         const auto bounds = renderBlock->getBoundingRect();
-        renderBlock->setPosition(-bounds.topLeft()+QPoint(1,1));
 
         //draw the block's preview onto a mini pixmap
         QPixmap pixmap(bounds.size().toSize()+QSize(2,2));
         pixmap.fill(Qt::transparent);
         QPainter painter(&pixmap);
+        painter.translate(-bounds.topLeft()+QPoint(1,1));
         //painter.scale(zoomScale, zoomScale); //TODO get zoomscale from draw
         painter.setRenderHint(QPainter::Antialiasing);
         painter.setRenderHint(QPainter::HighQualityAntialiasing);
