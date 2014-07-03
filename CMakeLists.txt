@@ -89,6 +89,7 @@ set(SOURCES
     GraphEditor/GraphPage.cpp
     GraphEditor/GraphDraw.cpp
     GraphEditor/GraphDrawSelection.cpp
+    GraphEditor/GraphEditorTopologyUtils.cpp
     GraphEditor/ExecutionEngine.cpp
 
     GraphObjects/GraphEndpoint.cpp
