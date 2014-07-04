@@ -67,6 +67,8 @@ Poco::JSON::Object::Ptr BlockEval::inspect(void)
         Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
         portInfo->set("name", name);
         portInfo->set("isSlot", block.callProxy("input", name).call<bool>("isSlot"));
+        portInfo->set("size", block.callProxy("input", name).callProxy("dtype").call<unsigned>("size"));
+        portInfo->set("dtype", block.callProxy("input", name).callProxy("dtype").call<std::string>("toString"));
         inputPorts->add(portInfo);
     }
     info->set("inputPorts", inputPorts);
@@ -77,6 +79,8 @@ Poco::JSON::Object::Ptr BlockEval::inspect(void)
         Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
         portInfo->set("name", name);
         portInfo->set("isSignal", block.callProxy("output", name).call<bool>("isSignal"));
+        portInfo->set("size", block.callProxy("output", name).callProxy("dtype").call<unsigned>("size"));
+        portInfo->set("dtype", block.callProxy("output", name).callProxy("dtype").call<std::string>("toString"));
         outputPorts->add(portInfo);
     }
     info->set("outputPorts", outputPorts);

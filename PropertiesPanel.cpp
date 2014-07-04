@@ -206,6 +206,7 @@ public:
         auto draw = dynamic_cast<GraphDraw *>(_block->parent());
         auto editor = draw->getGraphEditor();
         connect(this, SIGNAL(stateChanged(const GraphState &)), editor, SLOT(handleStateChange(const GraphState &)));
+        connect(_block, SIGNAL(destroyed(QObject*)), this, SLOT(handleBlockDestroyed(QObject*)));
 
         this->updateAllForms();
         _ignoreChanges = false;
@@ -227,6 +228,12 @@ public:
     }
 
 private slots:
+
+    void handleBlockDestroyed(QObject *)
+    {
+        this->deleteLater();
+    }
+
     void handleEditWidgetChanged(const QString &)
     {
         if (_ignoreChanges) return;
@@ -389,7 +396,6 @@ private slots:
         if (block == nullptr) this->setCurrentWidget(_blockTree);
         else
         {
-            //TODO connect panel delete to block delete
             if (_propertiesPanel) delete _propertiesPanel;
             _propertiesPanel = new PropertiesPanelBlock(block, this);
             this->addWidget(_propertiesPanel);
