@@ -14,11 +14,13 @@ public:
     OutputPortImpl(void):
         actor(nullptr),
         isSignal(false),
-        readBeforeWritePort(nullptr){}
+        readBeforeWritePort(nullptr),
+        _bufferFromManager(false){}
     BufferManager::Sptr bufferManager;
     Util::RingDeque<BufferChunk> postedBuffers;
     std::vector<PortSubscriber> subscribers;
     WorkerActor *actor;
     bool isSignal;
     InputPort *readBeforeWritePort;
+    bool _bufferFromManager;
 };

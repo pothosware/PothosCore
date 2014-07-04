@@ -27,9 +27,17 @@ bool Pothos::WorkerActor::preWorkTasks(void)
             port._impl->readBeforeWritePort != nullptr and
             port.dtype().size() == port._impl->readBeforeWritePort->dtype().size() and
             (port._buffer = port._impl->readBeforeWritePort->_impl->bufferAccumulator.front()).useCount() == 2 //2 -> unique + this assignment
-        ){}
-        else if (port._impl->bufferManager->empty()) port._buffer = BufferChunk();
-        else port._buffer = port._impl->bufferManager->front();
+        ) port._impl->_bufferFromManager = false;
+        else if (not port._impl->bufferManager or port._impl->bufferManager->empty())
+        {
+            port._buffer = BufferChunk();
+            port._impl->_bufferFromManager = false;
+        }
+        else
+        {
+            port._buffer = port._impl->bufferManager->front();
+            port._impl->_bufferFromManager = true;
+        }
         port._elements = port._buffer.length/port.dtype().size();
         if (port._elements == 0) allOutputsReady = false;
         port._pendingElements = 0;
@@ -169,7 +177,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
             auto buffer = port._buffer;
             port._buffer = BufferChunk(); //clear reference
             buffer.length = bytes;
-            port._impl->bufferManager->pop(buffer.length);
+            if (port._impl->_bufferFromManager) port._impl->bufferManager->pop(buffer.length);
             this->sendOutputPortMessage(port._impl->subscribers, buffer);
         }
 
