@@ -89,6 +89,7 @@ QString GraphBlock::getPropertyValue(const QString &key) const
 void GraphBlock::setPropertyValue(const QString &key, const QString &value)
 {
     _impl->propertiesValues[key] = value;
+    _impl->changed = true;
 }
 
 bool GraphBlock::getPropertyPreview(const QString &key) const

@@ -680,13 +680,14 @@ void GraphEditor::save(void)
     {
         std::ofstream outFile(fileName.c_str());
         this->dumpState(outFile);
-        _stateManager->saveCurrent();
-        this->render();
     }
     catch (const std::exception &ex)
     {
-        //TODO log
+        poco_error_f2(Poco::Logger::get("PothosGui.GraphEditor.save"), "Error saving %s: %s", fileName, std::string(ex.what()));
     }
+
+    _stateManager->saveCurrent();
+    this->render();
 }
 
 void GraphEditor::load(void)
@@ -707,16 +708,17 @@ void GraphEditor::load(void)
         poco_information_f1(Poco::Logger::get("PothosGui.GraphEditor.load"), "Loading %s from file", fileName);
         std::ifstream inFile(fileName.c_str());
         this->loadState(inFile);
-        _stateManager->resetToDefault();
-        handleStateChange(GraphState("document-new", tr("Load topology from file")));
-        _stateManager->saveCurrent();
-        this->setupMoveGraphObjectsMenu();
-        this->render();
     }
     catch (const std::exception &ex)
     {
-        //TODO log
+        poco_error_f2(Poco::Logger::get("PothosGui.GraphEditor.load"), "Error loading %s: %s", fileName, std::string(ex.what()));
     }
+
+    _stateManager->resetToDefault();
+    handleStateChange(GraphState("document-new", tr("Load topology from file")));
+    _stateManager->saveCurrent();
+    this->setupMoveGraphObjectsMenu();
+    this->render();
 }
 
 void GraphEditor::render(void)
