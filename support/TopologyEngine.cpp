@@ -18,7 +18,7 @@ public:
     void acceptBlock(const BlockEval &blockEval)
     {
         auto proxy = blockEval.getProxyBlock();
-        _idToBlock[proxy.call<std::string>("name")] = proxy;
+        _idToBlock[proxy.call<std::string>("getName")] = proxy;
     }
 
     void commitUpdate(const Poco::JSON::Array::Ptr &connections)
@@ -29,7 +29,7 @@ public:
             auto connection = connections->getObject(i);
             _topology.connect(
                 _idToBlock[connection->getValue<std::string>("srcId")],
-                connection->getValue<std::string>("dstPort"),
+                connection->getValue<std::string>("srcPort"),
                 _idToBlock[connection->getValue<std::string>("dstId")],
                 connection->getValue<std::string>("dstPort"));
         }

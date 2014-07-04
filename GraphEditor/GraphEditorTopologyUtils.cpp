@@ -65,10 +65,10 @@ static Poco::JSON::Array::Ptr getConnectionInfo(const GraphObjectList &graphObje
         for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
         {
             Poco::JSON::Object::Ptr args = new Poco::JSON::Object();
-            args->set("srcId", outputEp.getObj()->getId());
-            args->set("srcPort", outputEp.getKey().id);
-            args->set("dstId", subEp.getObj()->getId());
-            args->set("dstPort", subEp.getKey().id);
+            args->set("srcId", outputEp.getObj()->getId().toStdString());
+            args->set("srcPort", outputEp.getKey().id.toStdString());
+            args->set("dstId", subEp.getObj()->getId().toStdString());
+            args->set("dstPort", subEp.getKey().id.toStdString());
             connections->add(args);
         }
     }

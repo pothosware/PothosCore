@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
+#include <Pothos/Proxy.hpp>
 #include <QObject>
 #include <QString>
 #include <QPointF>
@@ -120,6 +121,11 @@ public:
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
 
+    Pothos::Proxy getBlockEval(void) const
+    {
+        return _blockEval;
+    }
+
     void update(void);
 private:
     void initPropertiesFromDesc(void);
@@ -131,4 +137,5 @@ private:
     std::vector<GraphBlockPort> _outputPorts;
     std::vector<GraphBlockPort> _slotPorts;
     std::vector<GraphBlockPort> _signalPorts;
+    Pothos::Proxy _blockEval;
 };

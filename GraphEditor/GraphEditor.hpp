@@ -3,9 +3,9 @@
 
 #pragma once
 #include "PothosGui.hpp"
-#include "GraphEditor/ExecutionEngine.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
+#include <Pothos/Proxy.hpp>
 #include <Poco/JSON/Array.h>
 #include <QTabWidget>
 #include <ios>
@@ -116,5 +116,5 @@ private:
     void updateEnabledActions(void);
 
     void updateExecutionEngine(void);
-    std::shared_ptr<ExecutionEngine> _ee;
+    Pothos::Proxy _topologyEngine;
 };
