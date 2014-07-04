@@ -138,7 +138,7 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
     {
         auto &port = *entry.second;
         auto &mgr = port._impl->bufferManager;
-        mgr->setCallback(std::bind(&bufferManagerPushExternal,
+        if (mgr) mgr->setCallback(std::bind(&bufferManagerPushExternal,
             mgr.get(), block->_framework, this->GetAddress(), std::placeholders::_1));
     }
 
