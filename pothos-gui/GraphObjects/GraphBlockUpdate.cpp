@@ -53,7 +53,7 @@ void GraphBlock::update(void)
     auto BlockEval = env->findProxy("Pothos/Gui/BlockEval");
 
     auto evalEnv = EvalEnvironment.callProxy("new");
-    auto blockEval = BlockEval.callProxy("new", evalEnv);
+    _blockEval = BlockEval.callProxy("new", evalEnv);
 
     //evaluate the properties
     bool hasError = false;
@@ -62,7 +62,7 @@ void GraphBlock::update(void)
         const auto val = this->getPropertyValue(prop.getKey()).toStdString();
         try
         {
-            auto obj = blockEval.callProxy("evalProperty", prop.getKey().toStdString(), val);
+            auto obj = _blockEval.callProxy("evalProperty", prop.getKey().toStdString(), val);
             this->setPropertyTypeStr(prop.getKey(), obj.call<std::string>("getTypeString"));
             this->setPropertyErrorMsg(prop.getKey(), "");
         }
@@ -86,8 +86,8 @@ void GraphBlock::update(void)
     //evaluate the block and load its port info
     try
     {
-        blockEval.callProxy("eval", this->getId().toStdString(), this->getBlockDesc());
-        auto portDesc = blockEval.call<Poco::JSON::Object::Ptr>("inspect");
+        _blockEval.callProxy("eval", this->getId().toStdString(), this->getBlockDesc());
+        auto portDesc = _blockEval.call<Poco::JSON::Object::Ptr>("inspect");
 
         //reload the port descriptions, clear the old first
         _inputPorts.clear();

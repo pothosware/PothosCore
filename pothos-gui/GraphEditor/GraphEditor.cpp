@@ -34,9 +34,13 @@ GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
     _parentTabWidget(dynamic_cast<QTabWidget *>(parent)),
     _moveGraphObjectsMapper(new QSignalMapper(this)),
-    _stateManager(new GraphStateManager(this)),
-    _ee(ExecutionEngine::make())
+    _stateManager(new GraphStateManager(this))
 {
+    //setup topology execution, in the same process for now
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto TopologyEngine = env->findProxy("Pothos/Gui/TopologyEngine");
+    _topologyEngine = TopologyEngine.callProxy("new");
+
     this->setMovable(true);
     this->setUsesScrollButtons(true);
     this->setTabPosition(QTabWidget::West);
@@ -662,8 +666,14 @@ void GraphEditor::updateExecutionEngine(void)
     //update the execution engine state
     try
     {
-        _ee->update(this->getGraphObjects());
-        _ee->activate();
+        for (auto obj : this->getGraphObjects())
+        {
+            auto block = dynamic_cast<GraphBlock *>(obj);
+            if (block == nullptr) continue;
+            if (not block->getBlockEval()) return;
+            _topologyEngine.callVoid("acceptBlock", block->getBlockEval());
+        }
+        _topologyEngine.callVoid("commitUpdate", this->getConnectionInfo());
     }
     catch (const Pothos::Exception &ex)
     {

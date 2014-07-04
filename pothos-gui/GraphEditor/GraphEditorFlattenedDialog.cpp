@@ -42,7 +42,7 @@ void GraphEditor::handleShowFlattenedDialog(void)
 
         //write the markup into dot
         Poco::PipeOutputStream os(inPipe);
-        os << _ee->toDotMarkup();
+        os << _topologyEngine.call<std::string>("toDotMarkup");
         os.close();
         outPipe.close();
 
