@@ -97,6 +97,7 @@ private slots:
     void handleResetState(int);
     void handleStateChange(const GraphState &state);
     void handleShowFlattenedDialog(void);
+    void handleToggleActivateTopology(bool);
 
 private:
     QTabWidget *_parentTabWidget;

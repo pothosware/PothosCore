@@ -30,6 +30,7 @@ public:
     PropertiesPanelBlock(GraphBlock *block, QWidget *parent):
         QWidget(parent),
         _ignoreChanges(true),
+        _idLineEdit(new QLineEdit(this)),
         _blockErrorLabel(new QLabel(this)),
         _updateTimer(new QTimer(this)),
         _formLayout(nullptr),
@@ -62,11 +63,7 @@ public:
 
         //id
         {
-            //TODO ID changes must be set to the block and validated, etc...
-            auto label = QString("<b>%1</b>").arg(tr("ID"));
-            auto edit = new QLineEdit(this);
-            edit->setText(block->getId());
-            _formLayout->addRow(label, edit);
+            _formLayout->addRow(QString("<b>%1</b>").arg(tr("ID")), _idLineEdit);
         }
 
         //properties
@@ -302,6 +299,12 @@ private:
      */
     void updateAllForms(void)
     {
+        //block id
+        {
+            //TODO ID changes must be set to the block and validated, etc...
+            _idLineEdit->setText(_block->getId());
+        }
+
         //update block errors
         {
             _blockErrorLabel->setVisible(not _block->getBlockErrorMsg().isEmpty());
@@ -369,6 +372,7 @@ private:
     }
 
     bool _ignoreChanges;
+    QLineEdit *_idLineEdit;
     QLabel *_blockErrorLabel;
     QTimer *_updateTimer;
     QFormLayout *_formLayout;
