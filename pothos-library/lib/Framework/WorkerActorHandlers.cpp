@@ -42,8 +42,13 @@ void Pothos::WorkerActor::handleBufferPortMessage(const PortMessage<InputPort *,
 
 void Pothos::WorkerActor::handleBufferReturnMessage(const BufferReturnMessage &message, const Theron::Address)
 {
-    message.mgr->push(message.buff);
-    this->notify();
+    auto mgr = message.buff.getBufferManager();
+    if (mgr)
+    {
+        mgr->push(message.buff);
+        this->notify();
+    }
+    else this->bump();
 }
 
 void Pothos::WorkerActor::handleSubscriberPortMessage(const PortMessage<std::string, PortSubscriberMessage> &message, const Theron::Address from)
@@ -119,14 +124,12 @@ void Pothos::WorkerActor::handleBumpWorkMessage(const BumpWorkMessage &, const T
 }
 
 static void bufferManagerPushExternal(
-    Pothos::BufferManager *mgr,
     std::shared_ptr<Theron::Framework> framework,
     const Theron::Address &addr,
     const Pothos::ManagedBuffer &buff
 )
 {
     BufferReturnMessage message;
-    message.mgr = mgr;
     message.buff = buff;
     framework->Send(message, Theron::Address::Null(), addr);
 }
@@ -139,7 +142,7 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
         auto &port = *entry.second;
         auto &mgr = port._impl->bufferManager;
         if (mgr) mgr->setCallback(std::bind(&bufferManagerPushExternal,
-            mgr.get(), block->_framework, this->GetAddress(), std::placeholders::_1));
+            block->_framework, this->GetAddress(), std::placeholders::_1));
     }
 
     try

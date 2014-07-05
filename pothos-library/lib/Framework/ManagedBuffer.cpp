@@ -94,6 +94,12 @@ size_t Pothos::ManagedBuffer::getSlabIndex(void) const
     return _impl->slabIndex;
 }
 
+Pothos::BufferManager::Sptr Pothos::ManagedBuffer::getBufferManager(void) const
+{
+    assert(*this);
+    return _impl->weakManager.lock();
+}
+
 bool Pothos::operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs)
 {
     return lhs._impl == rhs._impl;

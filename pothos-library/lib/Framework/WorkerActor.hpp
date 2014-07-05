@@ -80,7 +80,6 @@ PortMessage<PortIdType, MessageType> makePortMessage(const PortIdType &id, const
 
 struct BufferReturnMessage
 {
-    Pothos::BufferManager *mgr;
     Pothos::ManagedBuffer buff;
 };
 
