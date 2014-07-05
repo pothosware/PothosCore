@@ -218,7 +218,7 @@ public:
         {
             const auto line = lineObj.extract<std::string>();
             if (line.empty()) output += "<p /><p>";
-            else output += QString::fromStdString(line);
+            else output += QString::fromStdString(line)+"\n";
         }
         else output += QString("<p>%1</p>").arg(tr("Undocumented"));
         return output;
