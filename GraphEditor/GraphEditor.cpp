@@ -36,11 +36,6 @@ GraphEditor::GraphEditor(QWidget *parent):
     _moveGraphObjectsMapper(new QSignalMapper(this)),
     _stateManager(new GraphStateManager(this))
 {
-    //setup topology execution, in the same process for now
-    auto env = Pothos::ProxyEnvironment::make("managed");
-    auto TopologyEngine = env->findProxy("Pothos/Gui/TopologyEngine");
-    _topologyEngine = TopologyEngine.callProxy("new");
-
     this->setMovable(true);
     this->setUsesScrollButtons(true);
     this->setTabPosition(QTabWidget::West);
@@ -72,6 +67,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["undo"], SIGNAL(triggered(void)), this, SLOT(handleUndo(void)));
     connect(getActionMap()["redo"], SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
     connect(getActionMap()["showGraphFlattenedView"], SIGNAL(triggered(void)), this, SLOT(handleShowFlattenedDialog(void)));
+    connect(getActionMap()["activateTopology"], SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
 }
@@ -661,8 +657,24 @@ void GraphEditor::handleStateChange(const GraphState &state)
     this->updateExecutionEngine();
 }
 
+void GraphEditor::handleToggleActivateTopology(const bool enable)
+{
+    if (not this->isVisible()) return;
+    if (enable)
+    {
+        //setup topology execution, in the same process for now
+        auto env = Pothos::ProxyEnvironment::make("managed");
+        auto TopologyEngine = env->findProxy("Pothos/Gui/TopologyEngine");
+        _topologyEngine = TopologyEngine.callProxy("new");
+        this->updateExecutionEngine();
+    }
+    else _topologyEngine = Pothos::Proxy();
+}
+
 void GraphEditor::updateExecutionEngine(void)
 {
+    if (not _topologyEngine) return;
+
     //update the execution engine state
     try
     {
