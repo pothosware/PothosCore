@@ -110,4 +110,4 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
 static auto managedEvalEnvironment = Pothos::ManagedClass()
     .registerConstructor<EvalEnvironment>()
     .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, eval))
-    .commit("Pothos/Gui/EvalEnvironment");
+    .commit("Pothos/Util/EvalEnvironment");

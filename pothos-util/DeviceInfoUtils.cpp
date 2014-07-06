@@ -32,4 +32,4 @@ public:
 static auto managedDocUtils = Pothos::ManagedClass()
     .registerClass<DeviceInfoUtilsDumpJson>()
     .registerStaticMethod("dumpJson", &DeviceInfoUtilsDumpJson::dump)
-    .commit("Pothos/Gui/DeviceInfoUtils");
+    .commit("Pothos/Util/DeviceInfoUtils");

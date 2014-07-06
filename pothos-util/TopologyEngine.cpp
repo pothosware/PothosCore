@@ -53,4 +53,4 @@ static auto managedTopologyEngine = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(TopologyEngine, acceptBlock))
     .registerMethod(POTHOS_FCN_TUPLE(TopologyEngine, commitUpdate))
     .registerMethod(POTHOS_FCN_TUPLE(TopologyEngine, toDotMarkup))
-    .commit("Pothos/Gui/TopologyEngine");
+    .commit("Pothos/Util/TopologyEngine");

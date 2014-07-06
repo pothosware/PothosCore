@@ -11,7 +11,7 @@ POTHOS_TEST_BLOCK("/gui/tests", test_eval_expression)
 {
     //check that the following does not throw
     auto env = Pothos::ProxyEnvironment::make("managed");
-    auto EvalEnvironment = env->findProxy("Pothos/Gui/EvalEnvironment");
+    auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
     auto evalEnv = EvalEnvironment.callProxy("new");
 
     const auto result = evalEnv.call<Pothos::Object>("eval", "1 + 2");

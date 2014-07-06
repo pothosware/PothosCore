@@ -12,7 +12,7 @@ POTHOS_TEST_BLOCK("/gui/tests", test_doc_utils_dump_json)
 {
     //check that the following does not throw
     auto env = Pothos::ProxyEnvironment::make("managed");
-    auto proxy = env->findProxy("Pothos/Gui/DocUtils");
+    auto proxy = env->findProxy("Pothos/Util/DocUtils");
     const auto json = proxy.call<Poco::JSON::Array::Ptr>("dumpJson");
     POTHOS_TEST_TRUE(json);
 }

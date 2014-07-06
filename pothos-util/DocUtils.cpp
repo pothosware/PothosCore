@@ -71,4 +71,4 @@ static auto managedDocUtils = Pothos::ManagedClass()
     .registerClass<DocUtilsDumpJson>()
     .registerStaticMethod(POTHOS_FCN_TUPLE(DocUtilsDumpJson, dumpJson))
     .registerStaticMethod(POTHOS_FCN_TUPLE(DocUtilsDumpJson, dumpJsonAt))
-    .commit("Pothos/Gui/DocUtils");
+    .commit("Pothos/Util/DocUtils");

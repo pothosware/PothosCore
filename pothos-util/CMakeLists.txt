@@ -21,3 +21,24 @@ POTHOS_MODULE_UTIL(
     SOURCES JSONSerialization TestJSONSerialization
     DESTINATION util
 )
+
+########################################################################
+# Misc support (used by GUI)
+# This module used heavily by the GUI but is not depedent on the GUI
+# so it can be deployed on remote machines without the GUI installed.
+########################################################################
+set(SOURCES
+    EvalEnvironment.cpp
+    BlockEval.cpp
+    TopologyEngine.cpp
+    DeviceInfoUtils.cpp
+    DocUtils.cpp
+    TestDocUtils.cpp
+    TestEvalExpression.cpp
+)
+
+POTHOS_MODULE_UTIL(
+    TARGET MiscSupport
+    SOURCES ${SOURCES}
+    DESTINATION util
+)

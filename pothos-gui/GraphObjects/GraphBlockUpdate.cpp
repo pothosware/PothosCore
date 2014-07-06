@@ -51,8 +51,8 @@ void GraphBlock::update(void)
     assert(_impl->blockDesc);
 
     auto env = Pothos::ProxyEnvironment::make("managed");
-    auto EvalEnvironment = env->findProxy("Pothos/Gui/EvalEnvironment");
-    auto BlockEval = env->findProxy("Pothos/Gui/BlockEval");
+    auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
+    auto BlockEval = env->findProxy("Pothos/Util/BlockEval");
 
     auto evalEnv = EvalEnvironment.callProxy("new");
     _blockEval = BlockEval.callProxy("new", evalEnv);
