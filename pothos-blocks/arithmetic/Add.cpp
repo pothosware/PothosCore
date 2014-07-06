@@ -67,6 +67,7 @@ public:
         for (size_t i = 0; i < ports->size(); i++)
         {
             auto bytes = ports->getElement<int>(i)*this->input(i)->dtype().size();
+            if (bytes == 0) continue;
             Pothos::BufferChunk buffer(bytes);
             std::memset(buffer.as<void *>(), 0, buffer.length);
             this->input(i)->pushBuffer(buffer);
