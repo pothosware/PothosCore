@@ -67,6 +67,7 @@ public:
             _idOriginal = _block->getId();
             _formLayout->addRow(_idLabel, _idLineEdit);
             connect(_idLineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+            connect(_idLineEdit, SIGNAL(returnPressed(void)), this, SLOT(handleCommitButton(void)));
         }
 
         //properties
@@ -96,6 +97,7 @@ public:
             {
                 auto lineEdit = new QLineEdit(this);
                 connect(lineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+                connect(lineEdit, SIGNAL(returnPressed(void)), this, SLOT(handleCommitButton(void)));
                 editWidget = lineEdit;
             }
 
@@ -252,7 +254,9 @@ private slots:
             if (lineEdit != nullptr) newValue = lineEdit->text();
             _block->setPropertyValue(prop.getKey(), newValue);
         }
-        _updateTimer->start(UPDATE_TIMER_MS);
+
+        this->updateAllForms(); //quick update for labels
+        _updateTimer->start(UPDATE_TIMER_MS); //schedule new eval
     }
 
     void handleUpdateTimerExpired(void)
