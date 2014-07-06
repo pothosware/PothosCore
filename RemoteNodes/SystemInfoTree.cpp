@@ -32,7 +32,7 @@ static InfoResult getInfo(const Pothos::RemoteNode &node)
         auto env = Pothos::RemoteNode(node).makeClient("info").makeEnvironment("managed");
         info.nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
         info.cpuInfo = env->findProxy("Pothos/System/CpuInfo").call<std::vector<Pothos::System::CpuInfo>>("get");
-        auto deviceInfo = env->findProxy("Pothos/Gui/DeviceInfoUtils").call<std::string>("dumpJson");
+        auto deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call<std::string>("dumpJson");
         Poco::JSON::Parser p; p.parse(deviceInfo);
         info.deviceInfo = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
     }

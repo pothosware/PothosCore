@@ -38,7 +38,7 @@ Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
             auto node = Pothos::RemoteNode::fromKey(key);
             auto client = node.makeClient("json");
             auto env = client.makeEnvironment("managed");
-            auto DocUtils = env->findProxy("Pothos/Gui/DocUtils");
+            auto DocUtils = env->findProxy("Pothos/Util/DocUtils");
             return DocUtils.call<Poco::JSON::Object::Ptr>("dumpJsonAt", path);
         }
         catch (const Pothos::Exception &ex)
@@ -64,7 +64,7 @@ static Poco::JSON::Array::Ptr queryBlockDescs(const std::string &nodeKey)
     {
         auto node = Pothos::RemoteNode::fromKey(nodeKey);
         auto env = node.makeClient("json").makeEnvironment("managed");
-        return env->findProxy("Pothos/Gui/DocUtils").call<Poco::JSON::Array::Ptr>("dumpJson");
+        return env->findProxy("Pothos/Util/DocUtils").call<Poco::JSON::Array::Ptr>("dumpJson");
     }
     catch (const Pothos::Exception &ex)
     {

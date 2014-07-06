@@ -664,7 +664,7 @@ void GraphEditor::handleToggleActivateTopology(const bool enable)
     {
         //setup topology execution, in the same process for now
         auto env = Pothos::ProxyEnvironment::make("managed");
-        auto TopologyEngine = env->findProxy("Pothos/Gui/TopologyEngine");
+        auto TopologyEngine = env->findProxy("Pothos/Util/TopologyEngine");
         _topologyEngine = TopologyEngine.callProxy("new");
         this->updateExecutionEngine();
     }
