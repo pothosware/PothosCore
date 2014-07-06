@@ -380,6 +380,7 @@ void PothosGuiMainWindow::createMenus(void)
     _executeMenu = menuBar()->addMenu(tr("&Execute"));
     _executeMenu->addSeparator();
     _executeMenu->addAction(_activateTopologyAction);
+    _executeMenu->addAction(_showGraphFlattenedViewAction);
 
     _viewMenu = menuBar()->addMenu(tr("&View"));
     _menuMap["view"] = _viewMenu;
@@ -396,7 +397,6 @@ void PothosGuiMainWindow::createMenus(void)
     _debugMenu = _viewMenu->addMenu(tr("&Debug"));
     _debugMenu->addAction(_showGraphConnectionPointsAction);
     _debugMenu->addAction(_showGraphBoundingBoxesAction);
-    _debugMenu->addAction(_showGraphFlattenedViewAction);
 
     _helpMenu = menuBar()->addMenu(tr("&Help"));
     _menuMap["help"] = _helpMenu;

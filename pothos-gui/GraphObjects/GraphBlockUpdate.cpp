@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphBlockImpl.hpp"
+#include "GraphEditor/GraphDraw.hpp"
+#include "GraphEditor/GraphEditor.hpp"
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote.hpp>
 #include <Pothos/Framework.hpp>
@@ -54,6 +56,23 @@ void GraphBlock::update(void)
 
     auto evalEnv = EvalEnvironment.callProxy("new");
     _blockEval = BlockEval.callProxy("new", evalEnv);
+
+    //validate the id
+    if (this->getId().isEmpty())
+    {
+        this->setBlockErrorMsg(tr("Error: empty block ID"));
+        return;
+    }
+    auto draw = dynamic_cast<GraphDraw *>(this->parent());
+    auto editor = draw->getGraphEditor();
+    for (auto obj : editor->getGraphObjects())
+    {
+        if (obj != this and obj->getId() == this->getId())
+        {
+            this->setBlockErrorMsg(tr("Error: duplicate block ID %1").arg(this->getId()));
+            return;
+        }
+    }
 
     //evaluate the properties
     bool hasError = false;

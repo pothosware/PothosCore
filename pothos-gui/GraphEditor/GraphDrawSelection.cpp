@@ -254,7 +254,7 @@ void GraphDraw::doClickSelection(const QPointF &point)
 
         //valid keys, attempt to make a connection
         QPointer<GraphConnection> conn;
-        if (thisEp.isValid() and _lastClickSelectEp.isValid())
+        if (thisEp.isValid() and _lastClickSelectEp.isValid() and not (thisEp == _lastClickSelectEp))
         {
             auto lastAttrs = _lastClickSelectEp.getConnectableAttrs();
             auto thisAttrs = thisEp.getConnectableAttrs();
