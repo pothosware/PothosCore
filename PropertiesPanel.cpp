@@ -30,6 +30,7 @@ public:
     PropertiesPanelBlock(GraphBlock *block, QWidget *parent):
         QWidget(parent),
         _ignoreChanges(true),
+        _idLabel(new QLabel(this)),
         _idLineEdit(new QLineEdit(this)),
         _blockErrorLabel(new QLabel(this)),
         _updateTimer(new QTimer(this)),
@@ -63,7 +64,9 @@ public:
 
         //id
         {
-            _formLayout->addRow(QString("<b>%1</b>").arg(tr("ID")), _idLineEdit);
+            _idOriginal = _block->getId();
+            _formLayout->addRow(_idLabel, _idLineEdit);
+            connect(_idLineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
         }
 
         //properties
@@ -234,6 +237,10 @@ private slots:
     void handleEditWidgetChanged(const QString &)
     {
         if (_ignoreChanges) return;
+
+        //dump editor id to block
+        _block->setId(_idLineEdit->text());
+
         //dump all values from edit widgets into the block's property values
         for (const auto &prop : _block->getProperties())
         {
@@ -274,6 +281,10 @@ private slots:
         {
             if (_block->getPropertyValue(prop.getKey()) != _propIdToOriginal[prop.getKey()]) propertiesModified.push_back(prop.getName());
         }
+
+        //was the ID changed?
+        if (_idOriginal != _block->getId()) propertiesModified.push_back(tr("ID"));
+
         if (propertiesModified.empty()) return this->handleCancelButton();
 
         //emit a new graph state event
@@ -301,8 +312,10 @@ private:
     {
         //block id
         {
-            //TODO ID changes must be set to the block and validated, etc...
             _idLineEdit->setText(_block->getId());
+            _idLabel->setText(QString("<b>%1%2</b>")
+                .arg(tr("ID"))
+                .arg((_idOriginal != _block->getId())?"*":""));
         }
 
         //update block errors
@@ -372,6 +385,8 @@ private:
     }
 
     bool _ignoreChanges;
+    QString _idOriginal;
+    QLabel *_idLabel;
     QLineEdit *_idLineEdit;
     QLabel *_blockErrorLabel;
     QTimer *_updateTimer;
