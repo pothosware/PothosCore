@@ -8,7 +8,6 @@
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
-#include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/Logger.h>
@@ -39,10 +38,8 @@ Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
             auto node = Pothos::RemoteNode::fromKey(key);
             auto client = node.makeClient("json");
             auto env = client.makeEnvironment("managed");
-            auto plugin = env->findProxy("Pothos/PluginRegistry").callProxy("get", "/blocks/docs"+path);
-            auto obj = plugin.call<Pothos::Object>("getObject");
-            Poco::JSON::Parser p; p.parse(obj.convert<std::string>());
-            return p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+            auto DocUtils = env->findProxy("Pothos/Gui/DocUtils");
+            return DocUtils.call<Poco::JSON::Object::Ptr>("dumpJsonAt", path);
         }
         catch (const Pothos::Exception &ex)
         {
@@ -67,10 +64,7 @@ static Poco::JSON::Array::Ptr queryBlockDescs(const std::string &nodeKey)
     {
         auto node = Pothos::RemoteNode::fromKey(nodeKey);
         auto env = node.makeClient("json").makeEnvironment("managed");
-        const auto json = env->findProxy("Pothos/Gui/DocUtils").call<std::string>("dumpJson");
-
-        Poco::JSON::Parser p; p.parse(json);
-        return p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
+        return env->findProxy("Pothos/Gui/DocUtils").call<Poco::JSON::Array::Ptr>("dumpJson");
     }
     catch (const Pothos::Exception &ex)
     {
