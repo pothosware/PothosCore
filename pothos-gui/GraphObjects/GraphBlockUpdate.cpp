@@ -57,21 +57,12 @@ void GraphBlock::update(void)
     auto evalEnv = EvalEnvironment.callProxy("new");
     _blockEval = BlockEval.callProxy("new", evalEnv);
 
+    this->setBlockErrorMsg("");
+
     //validate the id
     if (this->getId().isEmpty())
     {
-        this->setBlockErrorMsg(tr("Error: empty block ID"));
-        return;
-    }
-    auto draw = dynamic_cast<GraphDraw *>(this->parent());
-    auto editor = draw->getGraphEditor();
-    for (auto obj : editor->getGraphObjects())
-    {
-        if (obj != this and obj->getId() == this->getId())
-        {
-            this->setBlockErrorMsg(tr("Error: duplicate block ID %1").arg(this->getId()));
-            return;
-        }
+        this->setBlockErrorMsg(tr("Error: empty  ID"));
     }
 
     //evaluate the properties
@@ -98,9 +89,6 @@ void GraphBlock::update(void)
         this->setBlockErrorMsg(tr("Error: cannot evaluate this block with property errors"));
         return;
     }
-
-    //otherwise clear the error
-    this->setBlockErrorMsg("");
 
     //evaluate the block and load its port info
     try
