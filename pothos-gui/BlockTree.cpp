@@ -20,6 +20,8 @@
 #include <sstream>
 #include <map>
 
+static const long UPDATE_TIMER_MS = 500;
+
 /***********************************************************************
  * Custom tree widget item
  **********************************************************************/
@@ -116,7 +118,7 @@ public:
         this->setHeaderLabels(columnNames);
 
         _filttimer->setSingleShot(true);
-        _filttimer->setInterval(500);
+        _filttimer->setInterval(UPDATE_TIMER_MS);
 
         connect(this, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleSelectionChange(void)));
         connect(this, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(handleItemDoubleClicked(QTreeWidgetItem *, int)));
@@ -162,12 +164,12 @@ public:
         renderBlock->setBlockDesc(blockItem->getBlockDesc());
         renderBlock->prerender(); //precalculate so we can get bounds
         const auto bounds = renderBlock->getBoundingRect();
-        renderBlock->setPosition(-bounds.topLeft()+QPoint(1,1));
 
         //draw the block's preview onto a mini pixmap
         QPixmap pixmap(bounds.size().toSize()+QSize(2,2));
         pixmap.fill(Qt::transparent);
         QPainter painter(&pixmap);
+        painter.translate(-bounds.topLeft()+QPoint(1,1));
         //painter.scale(zoomScale, zoomScale); //TODO get zoomscale from draw
         painter.setRenderHint(QPainter::Antialiasing);
         painter.setRenderHint(QPainter::HighQualityAntialiasing);
@@ -211,7 +213,7 @@ private slots:
         _filter = filter;
         //use the timer if search gets expensive.
         //otherwise just call handleFilterTimerExpired here.
-        //_filttimer->start(500);
+        //_filttimer->start(UPDATE_TIMER_MS);
         handleFilterTimerExpired();
     }
 

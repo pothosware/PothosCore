@@ -5,6 +5,8 @@
 #include "PothosGui.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
+#include <Pothos/Proxy.hpp>
+#include <Poco/JSON/Array.h>
 #include <QTabWidget>
 #include <ios>
 
@@ -59,6 +61,8 @@ public:
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);
 
+    Poco::JSON::Array::Ptr getConnectionInfo(void) const;
+
 signals:
     void newTitleSubtext(const QString &);
 
@@ -92,6 +96,8 @@ private slots:
     void handleRedo(void);
     void handleResetState(int);
     void handleStateChange(const GraphState &state);
+    void handleShowFlattenedDialog(void);
+    void handleToggleActivateTopology(bool);
 
 private:
     QTabWidget *_parentTabWidget;
@@ -109,4 +115,7 @@ private:
 
     //! update enabled actions based on state - after a change or when editor becomes visible
     void updateEnabledActions(void);
+
+    void updateExecutionEngine(void);
+    Pothos::Proxy _topologyEngine;
 };

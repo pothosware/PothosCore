@@ -178,11 +178,14 @@ private:
     QAction *_findAction;
     QAction *_showGraphConnectionPointsAction;
     QAction *_showGraphBoundingBoxesAction;
+    QAction *_showGraphFlattenedViewAction;
+    QAction *_activateTopologyAction;
     QMap<QString, QAction *> &_actionMap;
 
     void createMenus(void);
     QMenu *_fileMenu;
     QMenu *_editMenu;
+    QMenu *_executeMenu;
     QMenu *_viewMenu;
     QMenu *_debugMenu;
     QMenu *_helpMenu;
@@ -318,6 +321,13 @@ void PothosGuiMainWindow::createActions(void)
     _showGraphBoundingBoxesAction->setCheckable(true);
     _actionMap["showGraphBoundingBoxes"] = _showGraphBoundingBoxesAction;
 
+    _showGraphFlattenedViewAction = new QAction(tr("Show graph &flattened view"), this);
+    _actionMap["showGraphFlattenedView"] = _showGraphFlattenedViewAction;
+
+    _activateTopologyAction = new QAction(makeIconFromTheme("run-build"), tr("&Activate topology"), this);
+    _activateTopologyAction->setCheckable(true);
+    _actionMap["activateTopology"] = _activateTopologyAction;
+
     _showAboutAction = new QAction(makeIconFromTheme("help-about"), tr("&About Pothos"), this);
     _showAboutAction->setStatusTip(tr("Information about this version of Pothos"));
     connect(_showAboutAction, SIGNAL(triggered(void)), this, SLOT(handleShowAbout(void)));
@@ -367,6 +377,11 @@ void PothosGuiMainWindow::createMenus(void)
     _editMenu->addAction(_rotateRightAction);
     _editMenu->addAction(_propertiesAction);
 
+    _executeMenu = menuBar()->addMenu(tr("&Execute"));
+    _executeMenu->addSeparator();
+    _executeMenu->addAction(_activateTopologyAction);
+    _executeMenu->addAction(_showGraphFlattenedViewAction);
+
     _viewMenu = menuBar()->addMenu(tr("&View"));
     _menuMap["view"] = _viewMenu;
     _viewMenu->addAction(_remoteNodesDock->toggleViewAction());
@@ -412,15 +427,22 @@ void PothosGuiMainWindow::createMainToolBar(void)
     _mainToolBar->addAction(_undoAction);
     _mainToolBar->addAction(_redoAction);
     _mainToolBar->addSeparator();
+
+    _mainToolBar->addAction(_activateTopologyAction);
+    _mainToolBar->addSeparator();
+
     _mainToolBar->addAction(_cutAction);
     _mainToolBar->addAction(_copyAction);
     _mainToolBar->addAction(_pasteAction);
     _mainToolBar->addAction(_deleteAction);
     _mainToolBar->addSeparator();
+
     _mainToolBar->addAction(_selectAllAction);
     _mainToolBar->addSeparator();
+
     _mainToolBar->addAction(_findAction);
     _mainToolBar->addSeparator();
+
     _mainToolBar->addAction(_rotateLeftAction);
     _mainToolBar->addAction(_rotateRightAction);
     _mainToolBar->addAction(_propertiesAction);

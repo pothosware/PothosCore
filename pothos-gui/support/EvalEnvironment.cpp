@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "EvalEnvironment.hpp"
 #include <Pothos/Util/Compiler.hpp>
 #include <Pothos/Util/EvalInterface.hpp>
 #include <Pothos/Object.hpp>
@@ -15,27 +16,35 @@
 #include <sstream>
 #include <iostream>
 
-class EvalExpression
+Pothos::Object EvalEnvironment::eval(const std::string &expr)
 {
-public:
-    static Pothos::Object eval(const std::string &);
-};
+    if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval", "expression is empty");
 
-Pothos::Object EvalExpression::eval(const std::string &expr)
-{
-    //try simple evaluations first
+    //is it a string in quotes?
+    //TODO this would parse an invalid quoted string like "hello " world"
     if (expr.size() >= 2 and expr.front() == '"' and expr.back() == '"') return Pothos::Object(expr.substr(1, expr.size()-2));
+
+    //support booleans
     if (expr == "true") return Pothos::Object(true);
     if (expr == "false") return Pothos::Object(false);
+
+    //try to parse regular unsigned, signed integers
+    try {return Pothos::Object(Poco::NumberParser::parseUnsigned(expr));}
+    catch (const Poco::SyntaxException &){}
+    try {return Pothos::Object(Poco::NumberParser::parse(expr));}
+    catch (const Poco::SyntaxException &){}
+
+    //try to parse large unsigned, signed integers
     try {return Pothos::Object(Poco::NumberParser::parseUnsigned64(expr));}
     catch (const Poco::SyntaxException &){}
     try {return Pothos::Object(Poco::NumberParser::parse64(expr));}
     catch (const Poco::SyntaxException &){}
-    try {return Pothos::Object(Poco::NumberParser::parseHex64(expr));}
-    catch (const Poco::SyntaxException &){}
+
+    //this hex parser does not require a 0x prefix -- dont want it
+    //try {return Pothos::Object(Poco::NumberParser::parseHex64(expr));}
+    //catch (const Poco::SyntaxException &){}
+
     try {return Pothos::Object(Poco::NumberParser::parseFloat(expr));}
-    catch (const Poco::SyntaxException &){}
-    try {return Pothos::Object(Poco::NumberParser::parse(expr));}
     catch (const Poco::SyntaxException &){}
 
     const auto compiler = Pothos::Util::Compiler::make();
@@ -75,7 +84,7 @@ Pothos::Object EvalExpression::eval(const std::string &expr)
     catch (const Poco::Exception &ex)
     {
         Poco::File(outPath).remove();
-        throw Pothos::Exception("EvalExpression::eval", ex.displayText());
+        throw Pothos::Exception("EvalEnvironment::eval", ex.displayText());
     }
 
     //extract the symbol and call its evaluation routine
@@ -98,7 +107,7 @@ Pothos::Object EvalExpression::eval(const std::string &expr)
 
 #include <Pothos/Managed.hpp>
 
-static auto managedEvalExpr = Pothos::ManagedClass()
-    .registerClass<EvalExpression>()
-    .registerStaticMethod("eval", &EvalExpression::eval)
-    .commit("Pothos/Gui/EvalExpression");
+static auto managedEvalEnvironment = Pothos::ManagedClass()
+    .registerConstructor<EvalEnvironment>()
+    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, eval))
+    .commit("Pothos/Gui/EvalEnvironment");

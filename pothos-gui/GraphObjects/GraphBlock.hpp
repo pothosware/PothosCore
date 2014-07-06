@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
+#include <Pothos/Proxy.hpp>
 #include <QObject>
 #include <QString>
 #include <QPointF>
@@ -76,6 +77,10 @@ public:
 
     void render(QPainter &painter);
 
+    //! Set an error message when trying to eval the block -- blank msg for no error
+    void setBlockErrorMsg(const QString &msg);
+    const QString &getBlockErrorMsg(void) const;
+
     void addProperty(const GraphBlockProp &prop);
     const std::vector<GraphBlockProp> &getProperties(void) const;
 
@@ -84,6 +89,14 @@ public:
 
     QString getPropertyValue(const QString &key) const;
     void setPropertyValue(const QString &key, const QString &value);
+
+    //! Set the error message when trying to eval this property -- blank msg for no error
+    void setPropertyErrorMsg(const QString &key, const QString &msg);
+    const QString &getPropertyErrorMsg(const QString &key) const;
+
+    //! Set a descriptive type string for this property
+    void setPropertyTypeStr(const QString &key, const std::string &type);
+    const std::string &getPropertyTypeStr(const QString &key) const;
 
     bool getPropertyPreview(const QString &key) const;
     void setPropertyPreview(const QString &key, const bool value);
@@ -108,16 +121,21 @@ public:
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
 
-private:
+    Pothos::Proxy getBlockEval(void) const
+    {
+        return _blockEval;
+    }
+
     void update(void);
+private:
     void initPropertiesFromDesc(void);
     void renderStaticText(void);
     struct Impl;
     std::shared_ptr<Impl> _impl;
-    QByteArray _blockDesc;
     std::vector<GraphBlockProp> _properties;
     std::vector<GraphBlockPort> _inputPorts;
     std::vector<GraphBlockPort> _outputPorts;
     std::vector<GraphBlockPort> _slotPorts;
     std::vector<GraphBlockPort> _signalPorts;
+    Pothos::Proxy _blockEval;
 };

@@ -28,6 +28,7 @@
 #include <Poco/UUID.h>
 #include <Poco/UUIDGenerator.h>
 #include <Poco/JSON/Parser.h>
+#include <Pothos/Exception.hpp>
 
 GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
@@ -65,6 +66,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["zoomOriginal"], SIGNAL(triggered(void)), this, SLOT(handleZoomOriginal(void)));
     connect(getActionMap()["undo"], SIGNAL(triggered(void)), this, SLOT(handleUndo(void)));
     connect(getActionMap()["redo"], SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
+    connect(getActionMap()["showGraphFlattenedView"], SIGNAL(triggered(void)), this, SLOT(handleShowFlattenedDialog(void)));
+    connect(getActionMap()["activateTopology"], SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
 }
@@ -631,10 +634,18 @@ void GraphEditor::handleResetState(int stateNo)
     this->loadState(iss);
     this->setupMoveGraphObjectsMenu();
     this->render();
+
+    this->updateExecutionEngine();
 }
 
 void GraphEditor::handleStateChange(const GraphState &state)
 {
+    //empty states tell us to simply reset to the current known point
+    if (state.iconName.isEmpty() and state.description.isEmpty())
+    {
+        return this->handleResetState(_stateManager->getCurrentIndex());
+    }
+
     //serialize the graph into the state manager
     std::ostringstream oss;
     this->dumpState(oss);
@@ -642,6 +653,44 @@ void GraphEditor::handleStateChange(const GraphState &state)
     stateWithDump.dump = QByteArray(oss.str().data(), oss.str().size());
     _stateManager->post(stateWithDump);
     this->render();
+
+    this->updateExecutionEngine();
+}
+
+void GraphEditor::handleToggleActivateTopology(const bool enable)
+{
+    if (not this->isVisible()) return;
+    if (enable)
+    {
+        //setup topology execution, in the same process for now
+        auto env = Pothos::ProxyEnvironment::make("managed");
+        auto TopologyEngine = env->findProxy("Pothos/Gui/TopologyEngine");
+        _topologyEngine = TopologyEngine.callProxy("new");
+        this->updateExecutionEngine();
+    }
+    else _topologyEngine = Pothos::Proxy();
+}
+
+void GraphEditor::updateExecutionEngine(void)
+{
+    if (not _topologyEngine) return;
+
+    //update the execution engine state
+    try
+    {
+        for (auto obj : this->getGraphObjects())
+        {
+            auto block = dynamic_cast<GraphBlock *>(obj);
+            if (block == nullptr) continue;
+            if (not block->getBlockEval()) return;
+            _topologyEngine.callVoid("acceptBlock", block->getBlockEval());
+        }
+        _topologyEngine.callVoid("commitUpdate", this->getConnectionInfo());
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        poco_error_f1(Poco::Logger::get("PothosGui.GraphEditor.handleStateChange"), "Execution engine error: %s", ex.displayText());
+    }
 }
 
 void GraphEditor::save(void)
@@ -653,13 +702,14 @@ void GraphEditor::save(void)
     {
         std::ofstream outFile(fileName.c_str());
         this->dumpState(outFile);
-        _stateManager->saveCurrent();
-        this->render();
     }
     catch (const std::exception &ex)
     {
-        //TODO log
+        poco_error_f2(Poco::Logger::get("PothosGui.GraphEditor.save"), "Error saving %s: %s", fileName, std::string(ex.what()));
     }
+
+    _stateManager->saveCurrent();
+    this->render();
 }
 
 void GraphEditor::load(void)
@@ -680,16 +730,17 @@ void GraphEditor::load(void)
         poco_information_f1(Poco::Logger::get("PothosGui.GraphEditor.load"), "Loading %s from file", fileName);
         std::ifstream inFile(fileName.c_str());
         this->loadState(inFile);
-        _stateManager->resetToDefault();
-        handleStateChange(GraphState("document-new", tr("Load topology from file")));
-        _stateManager->saveCurrent();
-        this->setupMoveGraphObjectsMenu();
-        this->render();
     }
     catch (const std::exception &ex)
     {
-        //TODO log
+        poco_error_f2(Poco::Logger::get("PothosGui.GraphEditor.load"), "Error loading %s: %s", fileName, std::string(ex.what()));
     }
+
+    _stateManager->resetToDefault();
+    handleStateChange(GraphState("document-new", tr("Load topology from file")));
+    _stateManager->saveCurrent();
+    this->setupMoveGraphObjectsMenu();
+    this->render();
 }
 
 void GraphEditor::render(void)

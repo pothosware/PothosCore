@@ -1,8 +1,10 @@
 set(SOURCES
+    EvalEnvironment.cpp
+    BlockEval.cpp
+    TopologyEngine.cpp
     DeviceInfoUtils.cpp
     DocUtils.cpp
     TestDocUtils.cpp
-    EvalExpression.cpp
     TestEvalExpression.cpp
 )
 

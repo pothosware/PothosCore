@@ -47,6 +47,16 @@ QString GraphBlock::getTitle(void) const
     return _impl->title;
 }
 
+void GraphBlock::setBlockErrorMsg(const QString &msg)
+{
+    _impl->blockErrorMsg = msg;
+}
+
+const QString &GraphBlock::getBlockErrorMsg(void) const
+{
+    return _impl->blockErrorMsg;
+}
+
 void GraphBlock::addProperty(const GraphBlockProp &prop)
 {
     _properties.push_back(prop);
@@ -79,6 +89,7 @@ QString GraphBlock::getPropertyValue(const QString &key) const
 void GraphBlock::setPropertyValue(const QString &key, const QString &value)
 {
     _impl->propertiesValues[key] = value;
+    _impl->changed = true;
 }
 
 bool GraphBlock::getPropertyPreview(const QString &key) const
@@ -91,6 +102,26 @@ bool GraphBlock::getPropertyPreview(const QString &key) const
 void GraphBlock::setPropertyPreview(const QString &key, const bool value)
 {
     _impl->propertiesPreview[key] = value;
+}
+
+void GraphBlock::setPropertyErrorMsg(const QString &key, const QString &msg)
+{
+    _impl->propertiesErrorMsg[key] = msg;
+}
+
+const QString &GraphBlock::getPropertyErrorMsg(const QString &key) const
+{
+    return _impl->propertiesErrorMsg[key];
+}
+
+void GraphBlock::setPropertyTypeStr(const QString &key, const std::string &type)
+{
+    _impl->propertiesTypeStr[key] = type;
+}
+
+const std::string &GraphBlock::getPropertyTypeStr(const QString &key) const
+{
+    return _impl->propertiesTypeStr[key];
 }
 
 void GraphBlock::addInputPort(const GraphBlockPort &port)
@@ -243,7 +274,8 @@ static QStaticText makeQStaticText(const QString &s)
 
 void GraphBlock::renderStaticText(void)
 {
-    _impl->titleText = makeQStaticText(QString("<span style='font-size:%1;'><b>%2</b></span>")
+    _impl->titleText = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3</b></span>")
+        .arg(this->getBlockErrorMsg().isEmpty()?"black":"red")
         .arg(GraphBlockTitleFontSize)
         .arg(_impl->title.toHtmlEscaped()));
 
@@ -251,7 +283,8 @@ void GraphBlock::renderStaticText(void)
     for (size_t i = 0; i < _properties.size(); i++)
     {
         if (not this->getPropertyPreview(_properties[i].getKey())) continue;
-        auto text = makeQStaticText(QString("<span style='font-size:%1;'><b>%2: </b> %3</span>")
+        auto text = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3: </b> %4</span>")
+            .arg(this->getPropertyErrorMsg(_properties[i].getKey()).isEmpty()?"black":"red")
             .arg(GraphBlockPropFontSize)
             .arg(_properties[i].getName().toHtmlEscaped())
             .arg(this->getPropertyValue(_properties[i].getKey()).toHtmlEscaped()));
@@ -332,7 +365,7 @@ void GraphBlock::render(QPainter &painter)
     auto p = mainRect.topLeft();
 
     //set painter for drawing the rectangles
-    QPen pen(QColor(getSelected()?GraphObjectHighlightPenColor:GraphObjectDefaultPenColor));
+    auto pen = QPen(QColor(GraphObjectDefaultPenColor));
     pen.setWidthF(GraphObjectBorderWidth);
     painter.setPen(pen);
     painter.setBrush(QBrush(QColor(GraphObjectDefaultFillColor)));
@@ -347,7 +380,10 @@ void GraphBlock::render(QPainter &painter)
         const qreal hOff = (portFlip)? overallWidth :  1-rectSize.width();
         QRectF portRect(p+QPointF(hOff, inPortVdelta), rectSize);
         inPortVdelta += rectSize.height() + GraphBlockPortVGap;
+        painter.save();
+        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRect(portRect);
+        painter.restore();
         _impl->inputPortRects.push_back(trans.mapRect(portRect));
 
         const qreal availablePortHPad = portRect.width() - text.size().width();
@@ -370,7 +406,10 @@ void GraphBlock::render(QPainter &painter)
         const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
         QRectF portRect(p+QPointF(hOff+arcFix, outPortVdelta), rectSize);
         outPortVdelta += rectSize.height() + GraphBlockPortVGap;
+        painter.save();
+        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
+        painter.restore();
         _impl->outputPortRects.push_back(trans.mapRect(portRect));
 
         const qreal availablePortHPad = portRect.width() - text.size().width() + arcFix;
@@ -383,7 +422,10 @@ void GraphBlock::render(QPainter &painter)
     }
 
     //draw main body of the block
+    painter.save();
+    if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
     painter.drawRoundedRect(mainRect, GraphBlockMainArc, GraphBlockMainArc);
+    painter.restore();
 
     //create title
     const qreal availableTitleHPad = overallWidth-_impl->titleText.size().width();
