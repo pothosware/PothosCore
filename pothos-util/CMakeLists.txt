@@ -41,3 +41,12 @@ POTHOS_MODULE_UTIL(
     SOURCES ${SOURCES}
     DESTINATION util
 )
+
+########################################################################
+# JSON support (using POCO JSON)
+########################################################################
+POTHOS_MODULE_UTIL(
+    TARGET JSONSupport
+    SOURCES JSONSerialization TestJSONSerialization
+    DESTINATION util
+)
