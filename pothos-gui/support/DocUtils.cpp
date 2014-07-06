@@ -5,7 +5,6 @@
 #include <Pothos/Plugin.hpp>
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
-#include <sstream>
 
 static Poco::JSON::Array::Ptr recurseParseDocPath(const Pothos::PluginPath &path)
 {
@@ -53,11 +52,16 @@ static Poco::JSON::Array::Ptr recurseParseDocPath(const Pothos::PluginPath &path
 class DocUtilsDumpJson
 {
 public:
-    static std::string dump(void)
+    static Poco::JSON::Array::Ptr dumpJson(void)
     {
-        std::ostringstream outStream;
-        recurseParseDocPath("/blocks/docs")->stringify(outStream);
-        return outStream.str();
+        return recurseParseDocPath("/blocks/docs");
+    }
+    static Poco::JSON::Object::Ptr dumpJsonAt(const std::string &path)
+    {
+        auto plugin = Pothos::PluginRegistry::get("/blocks/docs"+path);
+        auto obj = plugin.getObject();
+        Poco::JSON::Parser p; p.parse(obj.convert<std::string>());
+        return p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
     }
 };
 
@@ -65,5 +69,6 @@ public:
 
 static auto managedDocUtils = Pothos::ManagedClass()
     .registerClass<DocUtilsDumpJson>()
-    .registerStaticMethod("dumpJson", &DocUtilsDumpJson::dump)
+    .registerStaticMethod(POTHOS_FCN_TUPLE(DocUtilsDumpJson, dumpJson))
+    .registerStaticMethod(POTHOS_FCN_TUPLE(DocUtilsDumpJson, dumpJsonAt))
     .commit("Pothos/Gui/DocUtils");
