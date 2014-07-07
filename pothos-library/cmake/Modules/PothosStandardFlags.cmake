@@ -56,8 +56,8 @@ if(MSVC)
     #we always want to use multiple cores for compilation
     add_compile_options(/MP)
 
-    #several of the NumaEx* type of calls require a minimum of Windows Vista
-    add_definitions(-D_WIN32_WINNT=0x0600)
+    #several of the NumaEx* type of calls require a minimum of Windows7
+    add_definitions(-D_WIN32_WINNT=0x0601)
 
     #projects should be cross-platform and standard stl functions should work
     add_definitions(-DNOMINMAX) #enables std::min and std::max

@@ -18,7 +18,7 @@ add_subdirectory(Compiler)
 ########################################################################
 POTHOS_MODULE_UTIL(
     TARGET JSONSupport
-    SOURCES JSONSerialization TestJSONSerialization
+    SOURCES JSONSerialization.cpp TestJSONSerialization.cpp
     DESTINATION util
 )
 
@@ -42,3 +42,14 @@ POTHOS_MODULE_UTIL(
     SOURCES ${SOURCES}
     DESTINATION util
 )
+
+########################################################################
+# CPU device info for windows
+########################################################################
+if (WIN32)
+POTHOS_MODULE_UTIL(
+    TARGET WindowsGetLogicalProcessorInfo
+    SOURCES WindowsGetLogicalProcessorInfo.cpp
+    DESTINATION util
+)
+endif()
