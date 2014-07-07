@@ -103,7 +103,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_inline_buffer)
     auto b1 = Pothos::BufferChunk(10*sizeof(int));
     auto p1 = b1.as<int *>();
     for (size_t i = 0; i < 10; i++) p1[i] = i+10;
-    feeder1.callProxy("feedBuffer", b1);
+    //feeder1.callProxy("feedBuffer", b1);
 
     //run the topology
     {
@@ -113,6 +113,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_inline_buffer)
         topology.connect(feeder1, 0, adder, 1);
         topology.connect(adder, 0, collector, 0);
         topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+        feeder1.callProxy("feedBuffer", b1); //ensure that the buffer will be inlined by forcing processing on a non port 0 message
         POTHOS_TEST_TRUE(topology.waitInactive());
     }
 

@@ -26,6 +26,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         if ( //handle read before wite port if specified
             port._impl->readBeforeWritePort != nullptr and
             port.dtype().size() == port._impl->readBeforeWritePort->dtype().size() and
+            not (port._impl->readBeforeWritePort->_buffer = BufferChunk()) and //make sure input port doesnt have a copy
             (port._buffer = port._impl->readBeforeWritePort->_impl->bufferAccumulator.front()).useCount() == 2 //2 -> unique + this assignment
         ) port._impl->_bufferFromManager = false;
         else if (not port._impl->bufferManager or port._impl->bufferManager->empty())
