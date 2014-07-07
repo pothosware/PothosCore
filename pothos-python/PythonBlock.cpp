@@ -61,4 +61,4 @@ public:
 };
 
 static Pothos::BlockRegistry registerSocketSink(
-    "/blocks/python/python_block", &PythonBlock::make);
+    "/blocks/python_block", &PythonBlock::make);

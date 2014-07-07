@@ -11,8 +11,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_topology)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
-    auto feeder = registry.callProxy("/blocks/sources/feeder_source", "int");
-    auto collector = registry.callProxy("/blocks/sinks/collector_sink", "int");
+    auto feeder = registry.callProxy("/blocks/feeder_source", "int");
+    auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //feed some msgs
     std::cout << "give messages to the feeder\n";
@@ -43,7 +43,7 @@ static Pothos::Topology* makeForwardingTopology(void)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
-    auto forwarder = registry.callProxy("/blocks/misc/forwarder");
+    auto forwarder = registry.callProxy("/blocks/forwarder");
     auto t = new Pothos::Topology();
     t->connect(t, "0", forwarder, "0");
     t->connect(forwarder, "0", t, "0");
@@ -65,8 +65,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
     auto registry = env->findProxy("Pothos/BlockRegistry");
     auto registryRemote = envRemote->findProxy("Pothos/BlockRegistry");
 
-    auto feeder = registry.callProxy("/blocks/sources/feeder_source", "int");
-    auto collector = registry.callProxy("/blocks/sinks/collector_sink", "int");
+    auto feeder = registry.callProxy("/blocks/feeder_source", "int");
+    auto collector = registry.callProxy("/blocks/collector_sink", "int");
     std::cout << "make the remote subtopology\n";
     auto forwarder = registryRemote.callProxy("/blocks/tests/forwarder_topology");
 

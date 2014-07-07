@@ -9,10 +9,10 @@
 POTHOS_TEST_BLOCK("/blocks/tests", test_signals_and_slots)
 {
     auto env = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
-    auto feeder = env.callProxy("/blocks/sources/feeder_source", "int");
-    auto collector = env.callProxy("/blocks/sinks/collector_sink", "int");
-    auto messageToSignal = env.callProxy("/blocks/misc/message_to_signal", "changeEvent");
-    auto slotToMessage = env.callProxy("/blocks/misc/slot_to_message", "handleEvent");
+    auto feeder = env.callProxy("/blocks/feeder_source", "int");
+    auto collector = env.callProxy("/blocks/collector_sink", "int");
+    auto messageToSignal = env.callProxy("/blocks/message_to_signal", "changeEvent");
+    auto slotToMessage = env.callProxy("/blocks/slot_to_message", "handleEvent");
 
     //feed some msgs
     feeder.callProxy("feedMessage", Pothos::Object("msg0"));

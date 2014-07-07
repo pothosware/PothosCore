@@ -16,7 +16,7 @@
  * |param name[Signal Name] The name of the slot to accept signals on.
  * |default "handleIt"
  *
- * |factory /blocks/misc/slot_to_message(name)
+ * |factory /blocks/slot_to_message(name)
  **********************************************************************/
 class SlotToMessage : public Pothos::Block
 {
@@ -50,4 +50,4 @@ private:
 };
 
 static Pothos::BlockRegistry registerSlotToMessage(
-    "/blocks/misc/slot_to_message", &SlotToMessage::make);
+    "/blocks/slot_to_message", &SlotToMessage::make);

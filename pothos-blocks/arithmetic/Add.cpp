@@ -40,7 +40,7 @@
  * |default "[0, 0]"
  * |preview disable
  *
- * |factory /blocks/arithmetic/add(dtype)
+ * |factory /blocks/add(dtype)
  * |setter setPreload(preload)
  **********************************************************************/
 template <typename Type>
@@ -133,4 +133,4 @@ static Pothos::Block *addFactory(const Pothos::DType &dtype)
 }
 
 static Pothos::BlockRegistry registerAdd(
-    "/blocks/arithmetic/add", &addFactory);
+    "/blocks/add", &addFactory);

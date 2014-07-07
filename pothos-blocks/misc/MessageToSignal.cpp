@@ -17,7 +17,7 @@
  * |param name[Signal Name] The name of the signal to emit.
  * |default "itChanged"
  *
- * |factory /blocks/misc/message_to_signal(name)
+ * |factory /blocks/message_to_signal(name)
  **********************************************************************/
 class MessageToSignal : public Pothos::Block
 {
@@ -49,4 +49,4 @@ private:
 };
 
 static Pothos::BlockRegistry registerMessageToSignal(
-    "/blocks/misc/message_to_signal", &MessageToSignal::make);
+    "/blocks/message_to_signal", &MessageToSignal::make);

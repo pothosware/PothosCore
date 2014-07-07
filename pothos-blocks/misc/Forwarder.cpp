@@ -13,7 +13,7 @@
  * |category /Misc
  * |keywords forwarder
  *
- * |factory /blocks/misc/forwarder()
+ * |factory /blocks/forwarder()
  **********************************************************************/
 class Forwarder : public Pothos::Block
 {
@@ -50,4 +50,4 @@ public:
 };
 
 static Pothos::BlockRegistry registerForwarder(
-    "/blocks/misc/forwarder", &Forwarder::make);
+    "/blocks/forwarder", &Forwarder::make);

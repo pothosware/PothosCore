@@ -11,7 +11,7 @@ class Block(object):
     def __init__(self):
         env = ProxyEnvironment("managed")
         reg = env.findProxy("Pothos/BlockRegistry")
-        self._block = reg.callProxy("/blocks/python/python_block")
+        self._block = reg.callProxy("/blocks/python_block")
         self._block._setPyBlock(weakref.proxy(self))
 
     def __getattr__(self, name):

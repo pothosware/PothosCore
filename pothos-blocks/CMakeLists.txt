@@ -15,26 +15,31 @@ include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
 # Build blocks module
 ########################################################################
 set(SOURCES
-    TestUnitTestBlocks.cpp
-    TestNetworkTopology.cpp
-    TestSignalsAndSlots.cpp
-    TestProxyTopology.cpp
-    sources/WaveformSource.cpp
-    sources/FeederSource.cpp
-    sinks/CollectorSink.cpp
-    sinks/BlackHole.cpp
+    waveform/WaveformSource.cpp
+
+    testers/TestUnitTestBlocks.cpp
+    testers/TestProxyTopology.cpp
+    testers/FeederSource.cpp
+    testers/CollectorSink.cpp
+
     misc/Delay.cpp
     misc/Pacer.cpp
     misc/Forwarder.cpp
     misc/Copier.cpp
     misc/MessageToSignal.cpp
     misc/SlotToMessage.cpp
+    misc/BlackHole.cpp
+    misc/TestSignalsAndSlots.cpp
+
     network/NetworkSource.cpp
     network/NetworkSink.cpp
     network/SocketEndpoint.cpp
     network/TestNetworkBlocks.cpp
+    network/TestNetworkTopology.cpp
+
     arithmetic/Add.cpp
     arithmetic/TestArithmeticBlocks.cpp
+
     file/BinaryFileSource.cpp
     file/BinaryFileSink.cpp
     file/TestBinaryFileBlocks.cpp
@@ -56,7 +61,7 @@ POTHOS_MODULE_UTIL(
 ########################## GPL bounded code ############################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set(SOURCES
-    sources/NoiseSource.cpp
+    waveform/NoiseSource.cpp
 )
 
 POTHOS_MODULE_UTIL(

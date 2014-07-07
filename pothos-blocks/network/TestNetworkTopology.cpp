@@ -20,9 +20,9 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_network_topology)
 
     //create local and remote unit test blocks
     std::cout << "create remote feeder\n";
-    auto feeder = remoteReg.callProxy("/blocks/sources/feeder_source", "int");
+    auto feeder = remoteReg.callProxy("/blocks/feeder_source", "int");
     std::cout << "create local collector\n";
-    auto collector = localReg.callProxy("/blocks/sinks/collector_sink", "int");
+    auto collector = localReg.callProxy("/blocks/collector_sink", "int");
 
     //feed some msgs
     std::cout << "give messages to the feeder\n";

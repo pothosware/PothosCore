@@ -13,7 +13,7 @@
  * |category /Misc
  * |keywords copier
  *
- * |factory /blocks/misc/copier()
+ * |factory /blocks/copier()
  **********************************************************************/
 class Copier : public Pothos::Block
 {
@@ -52,4 +52,4 @@ public:
 };
 
 static Pothos::BlockRegistry registerCopier(
-    "/blocks/misc/copier", &Copier::make);
+    "/blocks/copier", &Copier::make);

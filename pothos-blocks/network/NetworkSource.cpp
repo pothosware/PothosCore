@@ -20,6 +20,7 @@
  * or UDT - udt://host:port
  *
  * |category /Network
+ * |category /Source
  * |keywords source network
  *
  * |param uri[URI] The bind or connection uri string.
@@ -35,7 +36,7 @@
  * |param dtype[Data Type] The datatype produced by the network source.
  * |default "int"
  *
- * |factory /blocks/network/network_source(uri, opt, dtype)
+ * |factory /blocks/network_source(uri, opt, dtype)
  **********************************************************************/
 class NetworkSource : public Pothos::Block
 {
@@ -119,4 +120,4 @@ void NetworkSource::work(void)
 }
 
 static Pothos::BlockRegistry registerNetworkSource(
-    "/blocks/network/network_source", &NetworkSource::make);
+    "/blocks/network_source", &NetworkSource::make);

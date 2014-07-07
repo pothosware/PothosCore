@@ -75,4 +75,4 @@ private:
 };
 
 static Pothos::BlockRegistry registerCollectorSink(
-    "/blocks/sinks/collector_sink", &CollectorSink::make);
+    "/blocks/collector_sink", &CollectorSink::make);

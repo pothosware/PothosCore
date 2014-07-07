@@ -25,7 +25,7 @@
  * |param rate[Data Rate] The rate of elements or messages through the block.
  * |default 1e3
  *
- * |factory /blocks/misc/pacer(dtype)
+ * |factory /blocks/pacer(dtype)
  * |setter setRate(rate)
  **********************************************************************/
 class Pacer : public Pothos::Block
@@ -114,4 +114,4 @@ private:
 };
 
 static Pothos::BlockRegistry registerPacer(
-    "/blocks/misc/pacer", &Pacer::make);
+    "/blocks/pacer", &Pacer::make);

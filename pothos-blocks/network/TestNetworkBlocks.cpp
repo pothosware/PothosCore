@@ -17,14 +17,14 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
     auto server_uri = Poco::format("%s://0.0.0.0", scheme);
     std::cout << "make server " << server_uri << std::endl;
     auto server = env.callProxy(
-        (serverIsSource)?"/blocks/network/network_source":"/blocks/network/network_sink",
+        (serverIsSource)?"/blocks/network_source":"/blocks/network_sink",
         server_uri, "BIND", "int");
 
     //create client
     auto client_uri = Poco::format("%s://localhost:%s", scheme, server.call<std::string>("getActualPort"));
     std::cout << "make client " << client_uri << std::endl;
     auto client = env.callProxy(
-        (serverIsSource)?"/blocks/network/network_sink":"/blocks/network/network_source",
+        (serverIsSource)?"/blocks/network_sink":"/blocks/network_source",
         client_uri, "CONNECT", "int");
 
     //who is the source/sink?
@@ -32,8 +32,8 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
     auto sink = (serverIsSource)? client : server;
 
     //tester blocks
-    auto feeder = env.callProxy("/blocks/sources/feeder_source", "int");
-    auto collector = env.callProxy("/blocks/sinks/collector_sink", "int");
+    auto feeder = env.callProxy("/blocks/feeder_source", "int");
+    auto collector = env.callProxy("/blocks/collector_sink", "int");
 
     //feed buffer
     auto b0 = Pothos::BufferChunk(10000*sizeof(int));

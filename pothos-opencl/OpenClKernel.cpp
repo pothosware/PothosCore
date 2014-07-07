@@ -17,6 +17,7 @@
  * Two and three dimensional kernels and others others are not handled by this block
  *
  * |category /Kernels
+ * |category /OpenCL
  * |keywords kernel jit opencl
  *
  * |param deviceId[Device ID] A markup to specify OpenCL platform and device.
@@ -51,7 +52,7 @@
  * For each call to work, elements produced = number of input elements * production factor.
  * |default 1.0
  *
- * |factory /blocks/opencl/opencl_kernel(deviceId, portMarkup)
+ * |factory /blocks/opencl_kernel(deviceId, portMarkup)
  * |setter setSource(kernelName, kernelSource)
  * |setter setLocalSize(localSize)
  * |setter setGlobalFactor(globalFactor)
@@ -306,4 +307,4 @@ void OpenClKernel::work(void)
 }
 
 static Pothos::BlockRegistry registerOpenClKernel(
-    "/blocks/opencl/opencl_kernel", &OpenClKernel::make);
+    "/blocks/opencl_kernel", &OpenClKernel::make);

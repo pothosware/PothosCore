@@ -6,21 +6,21 @@
 #include <Poco/Types.h>
 #include <iostream>
 #include <complex>
-#include "sources/RandomUtils.hpp"
 
 static const size_t waveTableSize = 4096;
 
 /***********************************************************************
- * |PothosDoc Noise Source
+ * |PothosDoc Waveform Source
  *
- * The noise source produces pseudorandom noise patterns.
+ * The waveform source produces simple cyclical waveforms.
  * When a complex data type is chosen, the real and imaginary
- * components are simply treated as two independent channels.
+ * components of the outputs will be 90 degrees out of phase.
  *
  * |category /Sources
- * |keywords noise random source pseudorandom gaussian
+ * |category /Waveforms
+ * |keywords cosine sine ramp square waveform source
  *
- * |param dtype[Data Type] The datatype produced by the noise source.
+ * |param dtype[Data Type] The datatype produced by the waveform source.
  * |option [Complex128] "complex128"
  * |option [Float64] "float64"
  * |option [Complex64] "complex64"
@@ -35,15 +35,16 @@ static const size_t waveTableSize = 4096;
  * |option [Int8] "int8"
  * |preview disable
  *
- * |param seed A seed value for the random number generators.
- * |default 42
+ * |param wave[Wave Type] The type of the waveform produced.
+ * |option [Constant] "CONST"
+ * |option [Sinusoid] "SINE"
+ * |option [Ramp] "RAMP"
+ * |option [Square] "SQUARE"
+ * |default "SINE"
  *
- * |param wave[Wave Type] The type of the pseudorandom noise produced.
- * |option [Uniform] "UNIFORM"
- * |option [Gaussian] "GAUSSIAN"
- * |option [Laplacian] "LAPLACIAN"
- * |option [Impluse] "IMPULSE"
- * |default "GAUSSIAN"
+ * |param freq[Frequency] The frequency of the waveform (+/- 0.5).
+ * |units cycles/sample
+ * |default 0.1
  *
  * |param ampl[Amplitude] A constant scalar representing the amplitude.
  * |default 1.0
@@ -51,37 +52,31 @@ static const size_t waveTableSize = 4096;
  * |param offset A constant value added to the waveform after scaling.
  * |default 0.0
  *
- * |param factor A factor for the impulse noise configuration.
- * |default 9.0
- *
- * |factory /blocks/sources/noise_source(dtype, seed)
+ * |factory /blocks/waveform_source(dtype)
  * |setter setWaveform(wave)
  * |setter setOffset(offset)
  * |setter setAmplitude(ampl)
- * |setter setFactor(factor)
+ * |setter setFrequency(freq)
  **********************************************************************/
 template <typename Type>
-class NoiseSource : public Pothos::Block
+class WaveformSource : public Pothos::Block
 {
 public:
-    NoiseSource(const long seed):
-        _index(0),
+    WaveformSource(void):
+        _index(0), _step(0),
         _table(waveTableSize),
-        _offset(0.0),
-        _scalar(1.0),
-        _factor(9.0),
-        _wave("GAUSSIAN"),
-        _random(seed)
+        _offset(0.0), _scalar(1.0),
+        _wave("CONST")
     {
         this->setupOutput(0, typeid(Type));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setWaveform));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getWaveform));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setOffset));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getOffset));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setAmplitude));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getAmplitude));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setFactor));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getFactor));
+        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, setWaveform));
+        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, getWaveform));
+        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, setOffset));
+        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, getOffset));
+        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, setAmplitude));
+        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, getAmplitude));
+        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, setFrequency));
+        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, getFrequency));
     }
 
     void activate(void)
@@ -91,13 +86,12 @@ public:
 
     void work(void)
     {
-        _index += size_t(_random.ran1()*waveTableSize); //lookup into table is random each work()
         auto outPort = this->output(0);
         auto out = outPort->buffer().template as<Type *>();
         for (size_t i = 0; i < outPort->elements(); i++)
         {
             out[i] = _table[_index % waveTableSize];
-            _index++;
+            _index += _step;
         }
         outPort->produce(outPort->elements());
     }
@@ -135,50 +129,55 @@ public:
         return _scalar;
     }
 
-    void setFactor(const double &factor)
+    void setFrequency(const double &freq)
     {
-        _factor = factor;
-        this->updateTable();
+        _step = size_t(std::llround(freq*_table.size()));
     }
 
-    double getFactor(void)
+    double getFrequency(void)
     {
-        return _factor;
+        return double(_step)/_table.size();
     }
 
 private:
     void updateTable(void)
     {
-        if (_wave == "UNIFORM")
+        if (_wave == "CONST")
         {
             for (size_t i = 0; i < _table.size(); i++)
             {
-                this->setElem(_table[i], std::complex<double>(2*_random.ran1()-1, 2*_random.ran1()-1));
+                this->setElem(_table[i], 1.0);
             }
         }
-        else if (_wave == "GAUSSIAN")
+        else if (_wave == "SINE")
+        {
+            for (size_t i = 0; i < _table.size(); i++){
+                this->setElem(_table[i], std::pow(M_E, std::complex<double>(0, 2*M_PI*i/_table.size())));
+            }
+        }
+        else if (_wave == "RAMP")
         {
             for (size_t i = 0; i < _table.size(); i++)
             {
-                this->setElem(_table[i], std::complex<double>(_random.gasdev(), _random.gasdev()));
+                const size_t q = (i+(3*_table.size())/4)%_table.size();
+                this->setElem(_table[i], std::complex<double>(
+                    2.0*i/(_table.size()-1) - 1.0,
+                    2.0*q/(_table.size()-1) - 1.0
+                ));
             }
         }
-        else if (_wave == "LAPLACIAN")
+        else if (_wave == "SQUARE")
         {
             for (size_t i = 0; i < _table.size(); i++)
             {
-                this->setElem(_table[i], std::complex<double>(_random.laplacian(), _random.laplacian()));
+                const size_t q = (i+(3*_table.size())/4)%_table.size();
+                this->setElem(_table[i], std::complex<double>(
+                    (i < _table.size()/2)? 0.0 : 1.0,
+                    (q < _table.size()/2)? 0.0 : 1.0
+                ));
             }
         }
-        else if (_wave == "IMPULSE")
-        {
-            const float factor = float(_factor);
-            for (size_t i = 0; i < _table.size(); i++)
-            {
-                this->setElem(_table[i], std::complex<double>(_random.impulse(factor), _random.impulse(factor)));
-            }
-        }
-        else throw Pothos::InvalidArgumentException("NoiseSource::setWaveform("+_wave+")", "unknown waveform setting");
+        else throw Pothos::InvalidArgumentException("WaveformSource::setWaveform("+_wave+")", "unknown waveform setting");
     }
 
     template <typename T>
@@ -194,29 +193,28 @@ private:
     }
 
     size_t _index;
+    size_t _step;
     std::vector<Type> _table;
     std::complex<double> _offset, _scalar;
-    double _factor;
     std::string _wave;
-    gr_random _random;
 };
 
 /***********************************************************************
  * registration
  **********************************************************************/
-static Pothos::Block *noiseSourceFactory(const Pothos::DType &dtype, const long seed)
+static Pothos::Block *waveformSourceFactory(const Pothos::DType &dtype)
 {
     #define ifTypeDeclareFactory(type) \
-        if (dtype == Pothos::DType(typeid(type))) return new NoiseSource<type>(seed); \
-        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new NoiseSource<std::complex<type>>(seed);
+        if (dtype == Pothos::DType(typeid(type))) return new WaveformSource<type>(); \
+        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new WaveformSource<std::complex<type>>();
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
     ifTypeDeclareFactory(Poco::Int64);
     ifTypeDeclareFactory(Poco::Int32);
     ifTypeDeclareFactory(Poco::Int16);
     ifTypeDeclareFactory(Poco::Int8);
-    throw Pothos::InvalidArgumentException("noiseSourceFactory("+dtype.toString()+")", "unsupported type");
+    throw Pothos::InvalidArgumentException("waveformSourceFactory("+dtype.toString()+")", "unsupported type");
 }
 
-static Pothos::BlockRegistry registerNoiseSource(
-    "/blocks/sources/noise_source", &noiseSourceFactory);
+static Pothos::BlockRegistry registerWaveformSource(
+    "/blocks/waveform_source", &waveformSourceFactory);

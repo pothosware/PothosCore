@@ -41,14 +41,9 @@ Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
             auto DocUtils = env->findProxy("Pothos/Util/DocUtils");
             return DocUtils.call<Poco::JSON::Object::Ptr>("dumpJsonAt", path);
         }
-        catch (const Pothos::Exception &ex)
+        catch (const Pothos::Exception &)
         {
-            std::cerr << ex.displayText() << std::endl;
-            continue;
-        }
-        catch (...)
-        {
-            continue;
+            //pass
         }
     }
 

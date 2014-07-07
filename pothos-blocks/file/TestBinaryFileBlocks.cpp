@@ -12,8 +12,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_binary_file_blocks)
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
 
-    auto feeder = registry.callProxy("/blocks/sources/feeder_source", "int");
-    auto collector = registry.callProxy("/blocks/sinks/collector_sink", "int");
+    auto feeder = registry.callProxy("/blocks/feeder_source", "int");
+    auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     auto tempFile = Poco::TemporaryFile::tempName();
     auto fileSource = registry.callProxy("/blocks/binary_file_source");

@@ -70,4 +70,4 @@ private:
 };
 
 static Pothos::BlockRegistry registerSocketSink(
-    "/blocks/sources/feeder_source", &FeederSource::make);
+    "/blocks/feeder_source", &FeederSource::make);

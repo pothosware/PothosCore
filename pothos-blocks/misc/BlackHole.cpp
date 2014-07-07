@@ -12,7 +12,7 @@
  * |category /Sinks
  * |keywords sink null black
  *
- * |factory /blocks/sinks/black_hole()
+ * |factory /blocks/black_hole()
  **********************************************************************/
 class BlackHole : public Pothos::Block
 {
@@ -36,4 +36,4 @@ public:
 };
 
 static Pothos::BlockRegistry registerBlackHole(
-    "/blocks/sinks/black_hole", &BlackHole::make);
+    "/blocks/black_hole", &BlackHole::make);

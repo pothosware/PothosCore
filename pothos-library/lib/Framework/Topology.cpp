@@ -242,11 +242,11 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(void)
             auto srcDType = flow.src.obj.callProxy("output", flow.src.name).callProxy("dtype");
             auto dstDType = flow.dst.obj.callProxy("input", flow.dst.name).callProxy("dtype");
 
-            auto netSink = srcEnvReg.callProxy("/blocks/network/network_sink", "udt://"+Poco::Environment::nodeName(), "BIND", srcDType);
+            auto netSink = srcEnvReg.callProxy("/blocks/network_sink", "udt://"+Poco::Environment::nodeName(), "BIND", srcDType);
             netSink.callVoid("setName", "NetOut");
             auto connectPort = netSink.call<std::string>("getActualPort");
             auto connectUri = Poco::format("udt://%s:%s", Poco::Environment::nodeName(), connectPort);
-            auto netSource = dstEnvReg.callProxy("/blocks/network/network_source", connectUri, "CONNECT", dstDType);
+            auto netSource = dstEnvReg.callProxy("/blocks/network_source", connectUri, "CONNECT", dstDType);
             netSource.callVoid("setName", "NetIn");
 
             //create the flows
@@ -329,7 +329,7 @@ static std::unordered_map<Port, Pothos::Proxy> domainInspection(
     {
         if (isDomainCrossingAcceptable(pair.first, pair.second, isInput)) continue;
         auto registry = pair.first.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
-        auto copier = registry.callProxy("/blocks/misc/copier");
+        auto copier = registry.callProxy("/blocks/copier");
         copier.callVoid("setName", "DomainBridge");
         bads[pair.first] = copier;
     }

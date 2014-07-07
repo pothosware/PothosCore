@@ -20,6 +20,7 @@
  * or UDT - udt://host:port
  *
  * |category /Network
+ * |category /Sinks
  * |keywords sink network
  *
  * |param uri[URI] The bind or connection uri string.
@@ -35,7 +36,7 @@
  * |param dtype[Data Type] The datatype consumed by the network sink.
  * |default "int"
  *
- * |factory /blocks/network/network_sink(uri, opt, dtype)
+ * |factory /blocks/network_sink(uri, opt, dtype)
  **********************************************************************/
 class NetworkSink : public Pothos::Block
 {
@@ -135,4 +136,4 @@ void NetworkSink::work(void)
 }
 
 static Pothos::BlockRegistry registerNetworkSink(
-    "/blocks/network/network_sink", &NetworkSink::make);
+    "/blocks/network_sink", &NetworkSink::make);
