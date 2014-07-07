@@ -35,6 +35,9 @@ set(SOURCES
     network/TestNetworkBlocks.cpp
     arithmetic/Add.cpp
     arithmetic/TestArithmeticBlocks.cpp
+    file/BinaryFileSource.cpp
+    file/BinaryFileSink.cpp
+    file/TestBinaryFileBlocks.cpp
 )
 
 #udt support
