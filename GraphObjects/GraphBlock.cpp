@@ -485,7 +485,9 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     auto properties = obj->getArray("properties");
 
     //init the block with the description
-    this->setBlockDesc(getBlockDescFromPath(path));
+    auto blockDesc = getBlockDescFromPath(path);
+    if (not blockDesc) throw Pothos::Exception("GraphBlock::deserialize()", "cant find block factory with path: '"+path+"'");
+    this->setBlockDesc(blockDesc);
 
     assert(properties);
     for (size_t i = 0; i < properties->size(); i++)

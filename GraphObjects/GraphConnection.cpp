@@ -254,8 +254,8 @@ void GraphConnection::deserialize(Poco::JSON::Object::Ptr obj)
         if (obj->getId() == outputId) outputObj = obj;
     }
 
-    if (inputObj.isNull()) throw Pothos::Exception("loadGraphObjectConnection()", "cant resolve object with ID: '"+inputId.toStdString()+"'");
-    if (outputObj.isNull()) throw Pothos::Exception("loadGraphObjectConnection()", "cant resolve object with ID: '"+outputId.toStdString()+"'");
+    if (inputObj.isNull()) throw Pothos::Exception("GraphConnection::deserialize()", "cant resolve object with ID: '"+inputId.toStdString()+"'");
+    if (outputObj.isNull()) throw Pothos::Exception("GraphConnection::deserialize()", "cant resolve object with ID: '"+outputId.toStdString()+"'");
 
     this->setupEndpoint(GraphConnectionEndpoint(inputObj, GraphConnectableKey(inputKey, true)));
     this->setupEndpoint(GraphConnectionEndpoint(outputObj, GraphConnectableKey(outputKey, false)));
