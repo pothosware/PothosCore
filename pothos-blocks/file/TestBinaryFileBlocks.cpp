@@ -15,14 +15,15 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_binary_file_blocks)
     auto feeder = registry.callProxy("/blocks/feeder_source", "int");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
-    auto tempFile = Poco::TemporaryFile::tempName();
-    std::cout << "tempFile " << tempFile << std::endl;
+    auto tempFile = Poco::TemporaryFile();
+    std::cout << "tempFile " << tempFile.path() << std::endl;
+    POTHOS_TEST_TRUE(tempFile.createFile());
 
     auto fileSource = registry.callProxy("/blocks/binary_file_source");
-    fileSource.callVoid("setFilePath", tempFile);
+    fileSource.callVoid("setFilePath", tempFile.path());
 
     auto fileSink = registry.callProxy("/blocks/binary_file_sink");
-    fileSink.callVoid("setFilePath", tempFile);
+    fileSink.callVoid("setFilePath", tempFile.path());
 
     //feed buffer
     auto b0 = Pothos::BufferChunk(10*sizeof(int));
