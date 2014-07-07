@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #ifdef _MSC_VER
 #include <io.h>
+#include <winsock2.h>
 #else
 #include <unistd.h>
 #endif //_MSC_VER
