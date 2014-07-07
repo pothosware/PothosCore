@@ -25,6 +25,9 @@ class POTHOS_API BufferChunk
 {
 public:
 
+    //! Get a const reference to a null/empty BufferChunk
+    static const BufferChunk &null(void);
+
     /*!
      * Create a null BufferChunk.
      * The fields will be zeroed out and buffer null.

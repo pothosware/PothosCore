@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferChunk.hpp>
+#include <Poco/SingletonHolder.h>
+
+const Pothos::BufferChunk &Pothos::BufferChunk::null(void)
+{
+    static Poco::SingletonHolder<BufferChunk> sh;
+    return *sh.get();
+}
 
 Pothos::BufferChunk::BufferChunk(void):
     address(0),

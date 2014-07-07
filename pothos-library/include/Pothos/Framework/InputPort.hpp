@@ -151,7 +151,7 @@ private:
     std::string _name;
     DType _dtype;
     std::string _domain;
-    BufferChunk _buffer;
+    std::reference_wrapper<const BufferChunk> _buffer;
     size_t _elements;
     unsigned long long _totalElements;
     unsigned long long _totalMessages;
@@ -159,7 +159,9 @@ private:
     size_t _pendingElements;
     size_t _reserveElements;
     InputPort(InputPortImpl *);
-    InputPort(const InputPort &){} // non construction-copyable
+    InputPort(const InputPort &):
+        _buffer(BufferChunk::null())
+    {} // non construction-copyable
     InputPort &operator=(const InputPort &){return *this;} // non copyable
     friend class WorkerActor;
 };

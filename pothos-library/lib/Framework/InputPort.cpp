@@ -7,6 +7,7 @@
 Pothos::InputPort::InputPort(InputPortImpl *impl):
     _impl(impl),
     _index(-1),
+    _buffer(BufferChunk::null()),
     _elements(0),
     _totalElements(0),
     _totalMessages(0),

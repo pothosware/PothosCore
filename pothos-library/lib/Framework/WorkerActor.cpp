@@ -26,7 +26,6 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         if ( //handle read before wite port if specified
             port._impl->readBeforeWritePort != nullptr and
             port.dtype().size() == port._impl->readBeforeWritePort->dtype().size() and
-            not (port._impl->readBeforeWritePort->_buffer = BufferChunk()) and //make sure input port doesnt have a copy
             (port._buffer = port._impl->readBeforeWritePort->_impl->bufferAccumulator.front()).useCount() == 2 //2 -> unique + this assignment
         ) port._impl->_bufferFromManager = false;
         else if (not port._impl->bufferManager or port._impl->bufferManager->empty())
@@ -60,7 +59,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         const size_t reserveBytes = port._reserveElements*port.dtype().size();
         port._impl->bufferAccumulator.require(reserveBytes);
         port._buffer = port._impl->bufferAccumulator.front();
-        port._elements = port._buffer.length/port.dtype().size();
+        port._elements = port._buffer.get().length/port.dtype().size();
         if (port._elements < port._reserveElements) allInputsReady = false;
         if (not port._impl->asyncMessages.empty()) hasInputMessage = true;
         port._pendingElements = 0;
@@ -68,7 +67,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         if (port.index() != -1)
         {
             assert(block->_workInfo.inputPointers.size() > size_t(port.index()));
-            block->_workInfo.inputPointers[port.index()] = port._buffer.as<const void *>();
+            block->_workInfo.inputPointers[port.index()] = port._buffer.get().as<const void *>();
             block->_workInfo.minInElements = std::min(block->_workInfo.minInElements, port._elements);
         }
         block->_workInfo.minAllInElements = std::min(block->_workInfo.minAllInElements, port._elements);
@@ -101,12 +100,8 @@ void Pothos::WorkerActor::postWorkTasks(void)
         bytesConsumed += bytes;
         msgsConsumed += port._totalMessages;
 
-        //set the buffer length, send it, pop from manager, clear reference
-        if (bytes != 0)
-        {
-            port._buffer = BufferChunk(); //clear reference
-            port._impl->bufferAccumulator.pop(bytes);
-        }
+        //pop the consumed bytes from the accumulator
+        if (bytes != 0) port._impl->bufferAccumulator.pop(bytes);
 
         //move consumed elements into total
         port._totalElements += port._pendingElements;
@@ -175,11 +170,11 @@ void Pothos::WorkerActor::postWorkTasks(void)
         //set the buffer length, send it, pop from manager, clear reference
         if (bytes != 0)
         {
-            auto buffer = port._buffer;
-            port._buffer = BufferChunk(); //clear reference
+            auto &buffer = port._buffer;
             buffer.length = bytes;
             if (port._impl->_bufferFromManager) port._impl->bufferManager->pop(buffer.length);
             this->sendOutputPortMessage(port._impl->subscribers, buffer);
+            port._buffer = BufferChunk(); //clear reference
         }
 
         //send the external buffers in the queue
