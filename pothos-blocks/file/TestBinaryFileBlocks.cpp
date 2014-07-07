@@ -16,6 +16,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_binary_file_blocks)
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     auto tempFile = Poco::TemporaryFile::tempName();
+    std::cout << "tempFile " << tempFile << std::endl;
+
     auto fileSource = registry.callProxy("/blocks/binary_file_source");
     fileSource.callVoid("setFilePath", tempFile);
 

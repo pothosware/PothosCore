@@ -8,7 +8,6 @@
 #include <sys/stat.h>
 #ifdef _MSC_VER
 #include <io.h>
-#include <winsock2.h>
 #else
 #include <unistd.h>
 #endif //_MSC_VER
@@ -61,6 +60,10 @@ public:
     void activate(void)
     {
         _fd = open(_path.c_str(), O_RDONLY);
+        if (_fd < 0)
+        {
+            poco_error_f4(Poco::Logger::get("BinaryFileSource"), "open(%s) returned %d -- %s(%d)", _path, _fd, std::string(strerror(errno)), errno);
+        }
     }
 
     void deactivate(void)
@@ -69,8 +72,11 @@ public:
         _fd = -1;
     }
 
-    bool select(void)
+    void work(void)
     {
+        #ifdef _MSC_VER
+        //TODO use windows API to have timeout
+        #else
         //setup timeval for timeout
         timeval tv;
         tv.tv_sec = 0;
@@ -82,12 +88,8 @@ public:
         FD_SET(_fd, &rset);
 
         //call select with timeout
-        return ::select(_fd+1, &rset, NULL, NULL, &tv) > 0;
-    }
-
-    void work(void)
-    {
-        if (not this->select()) return this->yield();
+        if (::select(_fd+1, &rset, NULL, NULL, &tv) <= 0) return this->yield();
+        #endif
 
         auto out0 = this->output(0);
         auto buff = out0->buffer();

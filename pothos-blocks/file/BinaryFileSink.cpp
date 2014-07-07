@@ -60,6 +60,10 @@ public:
     void activate(void)
     {
         _fd = open(_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC);
+        if (_fd < 0)
+        {
+            poco_error_f4(Poco::Logger::get("BinaryFileSource"), "open(%s) returned %d -- %s(%d)", _path, _fd, std::string(strerror(errno)), errno);
+        }
     }
 
     void deactivate(void)
