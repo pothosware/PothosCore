@@ -188,16 +188,5 @@ static Poco::JSON::Object::Ptr enumerateGetLogicalProcessorInformationEx(void)
 pothos_static_block(registerWinProcInfo)
 {
     Pothos::PluginRegistry::addCall(
-        "/devices/cpu/info", &enumerateGetLogicalProcessorInformationEx);
-}
-
-#include <Pothos/Testing.hpp>
-#include <sstream>
-
-POTHOS_TEST_BLOCK("/devices/tests", test_cpu_info)
-{
-    auto json = enumerateGetLogicalProcessorInformationEx();
-    std::stringstream ss;
-    json->stringify(ss, 4);
-    std::cout << ss.str() << std::endl;
+        "/devices/windows_logical_processor/info", &enumerateGetLogicalProcessorInformationEx);
 }

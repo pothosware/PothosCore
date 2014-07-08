@@ -53,3 +53,21 @@ POTHOS_MODULE_UTIL(
     DESTINATION util
 )
 endif()
+
+########################################################################
+# NUMA device info for linux
+########################################################################
+find_library(
+    NUMA_LIBRARIES
+    NAMES numa
+    PATHS /usr/lib /usr/lib64
+)
+
+if(NUMA_LIBRARIES)
+    POTHOS_MODULE_UTIL(
+        TARGET LinuxNumaInfo
+        SOURCES LinuxNumaInfo.cpp
+        LIBRARIES ${NUMA_LIBRARIES}
+        DESTINATION util
+    )
+endif()
