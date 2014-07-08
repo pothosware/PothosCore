@@ -86,7 +86,7 @@ static Poco::JSON::Object::Ptr enumerateGetLogicalProcessorInformationEx(void)
 
     {
         Poco::JSON::Array::Ptr infoArray = new Poco::JSON::Array();
-        topObject->set("Cache", infoArray);
+        topObject->set("CPU Cache", infoArray);
         for (EnumLogicalProcessorInformation enumInfo(RelationCache); auto pinfo = enumInfo.Current(); enumInfo.MoveNext())
         {
             Poco::JSON::Object::Ptr infoObj = new Poco::JSON::Object();
@@ -109,7 +109,7 @@ static Poco::JSON::Object::Ptr enumerateGetLogicalProcessorInformationEx(void)
     }
     {
         Poco::JSON::Array::Ptr infoArray = new Poco::JSON::Array();
-        topObject->set("Group", infoArray);
+        topObject->set("CPU Group", infoArray);
         for (EnumLogicalProcessorInformation enumInfo(RelationGroup); auto pinfo = enumInfo.Current(); enumInfo.MoveNext())
         {
             Poco::JSON::Object::Ptr infoObj = new Poco::JSON::Object();
@@ -131,7 +131,7 @@ static Poco::JSON::Object::Ptr enumerateGetLogicalProcessorInformationEx(void)
     }
     {
         Poco::JSON::Array::Ptr infoArray = new Poco::JSON::Array();
-        topObject->set("NumaNode", infoArray);
+        topObject->set("CPU Numa Node", infoArray);
         for (EnumLogicalProcessorInformation enumInfo(RelationNumaNode); auto pinfo = enumInfo.Current(); enumInfo.MoveNext())
         {
             Poco::JSON::Object::Ptr infoObj = new Poco::JSON::Object();
@@ -144,7 +144,7 @@ static Poco::JSON::Object::Ptr enumerateGetLogicalProcessorInformationEx(void)
     }
     {
         Poco::JSON::Array::Ptr infoArray = new Poco::JSON::Array();
-        topObject->set("ProcessorCore", infoArray);
+        topObject->set("CPU Processor Core", infoArray);
         for (EnumLogicalProcessorInformation enumInfo(RelationProcessorCore); auto pinfo = enumInfo.Current(); enumInfo.MoveNext())
         {
             Poco::JSON::Object::Ptr infoObj = new Poco::JSON::Object();
@@ -164,7 +164,7 @@ static Poco::JSON::Object::Ptr enumerateGetLogicalProcessorInformationEx(void)
     }
     {
         Poco::JSON::Array::Ptr infoArray = new Poco::JSON::Array();
-        topObject->set("ProcessorPackage", infoArray);
+        topObject->set("CPU Processor Package", infoArray);
         for (EnumLogicalProcessorInformation enumInfo(RelationProcessorPackage); auto pinfo = enumInfo.Current(); enumInfo.MoveNext())
         {
             Poco::JSON::Object::Ptr infoObj = new Poco::JSON::Object();

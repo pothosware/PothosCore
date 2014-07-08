@@ -15,7 +15,7 @@ static Poco::JSON::Object::Ptr enumerateOpenCl(void)
 {
     Poco::JSON::Object::Ptr topObject = new Poco::JSON::Object();
     Poco::JSON::Array::Ptr platformArray = new Poco::JSON::Array();
-    topObject->set("platforms", platformArray);
+    topObject->set("OpenCL Platform", platformArray);
     cl_int err;
     cl_uint num_platforms = 0;
     cl_platform_id platforms[64];
@@ -46,7 +46,7 @@ static Poco::JSON::Object::Ptr enumerateOpenCl(void)
         if (err < 0) return topObject;
 
         Poco::JSON::Array::Ptr deviceArray = new Poco::JSON::Array();
-        platformObj->set("devices", deviceArray);
+        platformObj->set("OpenCL Device", deviceArray);
         for (size_t device_i = 0; device_i < num_devices; device_i++)
         {
             Poco::JSON::Object::Ptr deviceObj = new Poco::JSON::Object();

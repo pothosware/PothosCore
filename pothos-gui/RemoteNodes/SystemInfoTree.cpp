@@ -21,7 +21,7 @@ struct InfoResult
 {
     Pothos::System::NodeInfo nodeInfo;
     std::vector<Pothos::System::CpuInfo> cpuInfo;
-    Poco::JSON::Object::Ptr deviceInfo;
+    Poco::JSON::Array::Ptr deviceInfo;
 };
 
 static InfoResult getInfo(const Pothos::RemoteNode &node)
@@ -34,7 +34,7 @@ static InfoResult getInfo(const Pothos::RemoteNode &node)
         info.cpuInfo = env->findProxy("Pothos/System/CpuInfo").call<std::vector<Pothos::System::CpuInfo>>("get");
         auto deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call<std::string>("dumpJson");
         Poco::JSON::Parser p; p.parse(deviceInfo);
-        info.deviceInfo = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        info.deviceInfo = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
     }
     catch (const Pothos::Exception &ex)
     {
@@ -113,8 +113,9 @@ private slots:
             //makeEntry(rootItem, "Cores Per Socket", std::to_string(cpuInfo[i].coresPerSocket));
         }
 
+        for (size_t i = 0; i < info.deviceInfo->size(); i++)
         {
-            this->loadJsonObject(this, "Device", info.deviceInfo);
+            this->loadJsonObject(this, "", info.deviceInfo->getObject(i));
         }
 
         this->resizeColumnToContents(0);
