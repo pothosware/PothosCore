@@ -65,7 +65,7 @@ private:
  DWORD m_cbRemaining;
 };
 
-std::string MaskToString(KAFFINITY Mask)
+static std::string MaskToString(KAFFINITY Mask)
 {
  std::string out;
  for (int i = 0; i < sizeof(Mask) * 8; i++) {
