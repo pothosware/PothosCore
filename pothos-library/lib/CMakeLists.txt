@@ -33,6 +33,23 @@ add_definitions(${THERON_DEFINES})
 list(APPEND POTHOS_SOURCES ${THERON_SOURCES})
 
 ########################################################################
+# NUMA info support
+########################################################################
+find_library(
+    NUMA_LIBRARIES
+    NAMES numa
+    PATHS /usr/lib /usr/lib64
+)
+
+if(NUMA_LIBRARIES)
+    list(APPEND POTHOS_SOURCES System/NumaInfoLinux.cpp)
+elseif(WIN32)
+    list(APPEND POTHOS_SOURCES System/NumaInfoWindows.cpp)
+else()
+    list(APPEND POTHOS_SOURCES System/NumaInfoFail.cpp)
+endif()
+
+########################################################################
 # Library sources
 ########################################################################
 list(APPEND POTHOS_SOURCES
@@ -44,6 +61,7 @@ list(APPEND POTHOS_SOURCES
     System/Version.in.cpp
     System/Paths.in.cpp
     System/Info.cpp
+    System/NumaInfo.cpp
     System/Exception.cpp
 
     Object/Object.cpp

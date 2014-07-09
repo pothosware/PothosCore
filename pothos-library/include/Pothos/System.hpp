@@ -13,4 +13,5 @@
 #include <Pothos/System/Logger.hpp>
 #include <Pothos/System/Paths.hpp>
 #include <Pothos/System/Info.hpp>
+#include <Pothos/System/NumaInfo.hpp>
 #include <Pothos/System/Exception.hpp>

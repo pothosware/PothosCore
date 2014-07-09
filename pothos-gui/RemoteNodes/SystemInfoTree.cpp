@@ -5,7 +5,7 @@
 #include <QTreeWidget>
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Pothos/System/Info.hpp>
+#include <Pothos/System.hpp>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
@@ -21,6 +21,7 @@ struct InfoResult
 {
     Pothos::System::NodeInfo nodeInfo;
     std::vector<Pothos::System::CpuInfo> cpuInfo;
+    std::vector<Pothos::System::NumaInfo> numaInfo;
     Poco::JSON::Array::Ptr deviceInfo;
 };
 
@@ -32,6 +33,7 @@ static InfoResult getInfo(const Pothos::RemoteNode &node)
         auto env = Pothos::RemoteNode(node).makeClient("info").makeEnvironment("managed");
         info.nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
         info.cpuInfo = env->findProxy("Pothos/System/CpuInfo").call<std::vector<Pothos::System::CpuInfo>>("get");
+        info.numaInfo = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
         auto deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call<std::string>("dumpJson");
         Poco::JSON::Parser p; p.parse(deviceInfo);
         info.deviceInfo = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
@@ -111,6 +113,23 @@ private slots:
             makeEntry(rootItem, "Num Sockets", std::to_string(cpuInfo[i].totalSockets));
             makeEntry(rootItem, "Num Cores", std::to_string(cpuInfo[i].totalCores));
             //makeEntry(rootItem, "Cores Per Socket", std::to_string(cpuInfo[i].coresPerSocket));
+        }
+
+        for (const auto &numaInfo : info.numaInfo)
+        {
+            QStringList columns;
+            columns.push_back(tr("NUMA Node %1 Info").arg(numaInfo.nodeNumber));
+            auto rootItem = new QTreeWidgetItem(this, columns);
+            rootItem->setExpanded(numaInfo.nodeNumber == 0);
+            makeEntry(rootItem, "Total Memory", std::to_string(numaInfo.totalMemory/1024/1024), "MB");
+            makeEntry(rootItem, "Free Memory", std::to_string(numaInfo.freeMemory/1024/1024), "MB");
+            std::string cpuStr;
+            for (auto i : numaInfo.cpus)
+            {
+                if (not cpuStr.empty()) cpuStr += ", ";
+                cpuStr += std::to_string(i);
+            }
+            makeEntry(rootItem, "CPUs", cpuStr);
         }
 
         for (size_t i = 0; i < info.deviceInfo->size(); i++)
