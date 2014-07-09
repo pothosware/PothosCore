@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/NumaInfo.hpp>
-#include <Pothos/Managed.hpp>
-#include <Pothos/Object/Serialize.hpp>
 
 Pothos::System::NumaInfo::NumaInfo(void):
     nodeNumber(0),
@@ -12,6 +10,9 @@ Pothos::System::NumaInfo::NumaInfo(void):
 {
     return;
 }
+
+#include <Pothos/Managed.hpp>
+#include <Pothos/Object/Serialize.hpp>
 
 static auto managedNumaInfo = Pothos::ManagedClass()
     .registerConstructor<Pothos::System::NumaInfo>()

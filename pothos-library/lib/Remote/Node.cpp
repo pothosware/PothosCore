@@ -3,7 +3,7 @@
 
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Pothos/System/Info.hpp>
+#include <Pothos/System/NodeInfo.hpp>
 #include <Pothos/System/Paths.hpp>
 #include <Poco/Util/PropertyFileConfiguration.h>
 #include <Poco/Path.h>
