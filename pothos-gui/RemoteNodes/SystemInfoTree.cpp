@@ -20,7 +20,6 @@
 struct InfoResult
 {
     Pothos::System::NodeInfo nodeInfo;
-    std::vector<Pothos::System::CpuInfo> cpuInfo;
     std::vector<Pothos::System::NumaInfo> numaInfo;
     Poco::JSON::Array::Ptr deviceInfo;
 };
@@ -32,7 +31,6 @@ static InfoResult getInfo(const Pothos::RemoteNode &node)
     {
         auto env = Pothos::RemoteNode(node).makeClient("info").makeEnvironment("managed");
         info.nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
-        info.cpuInfo = env->findProxy("Pothos/System/CpuInfo").call<std::vector<Pothos::System::CpuInfo>>("get");
         info.numaInfo = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
         auto deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call<std::string>("dumpJson");
         Poco::JSON::Parser p; p.parse(deviceInfo);
@@ -98,22 +96,6 @@ private slots:
             makeEntry(rootItem, "Node Name", nodeInfo.nodeName);
             makeEntry(rootItem, "Node ID", nodeInfo.nodeId);
             makeEntry(rootItem, "Processors", std::to_string(nodeInfo.processorCount), "CPUs");
-        }
-
-        const auto &cpuInfo = info.cpuInfo;
-        for (size_t i = 0; i < cpuInfo.size(); i++)
-        {
-            QStringList columns;
-            columns.push_back(tr("CPU %1 Info").arg(i));
-            auto rootItem = new QTreeWidgetItem(this, columns);
-            rootItem->setExpanded(i == 0);
-            //makeEntry(rootItem, "Current Speed", std::to_string(cpuInfo[i].mhz), "MHz");
-            makeEntry(rootItem, "Min Speed", std::to_string(cpuInfo[i].mhzMin), "MHz");
-            makeEntry(rootItem, "Max Speed", std::to_string(cpuInfo[i].mhzMax), "MHz");
-            makeEntry(rootItem, "Cache Size", std::to_string(cpuInfo[i].cacheSize), "KB");
-            makeEntry(rootItem, "Num Sockets", std::to_string(cpuInfo[i].totalSockets));
-            makeEntry(rootItem, "Num Cores", std::to_string(cpuInfo[i].totalCores));
-            //makeEntry(rootItem, "Cores Per Socket", std::to_string(cpuInfo[i].coresPerSocket));
         }
 
         for (const auto &numaInfo : info.numaInfo)
