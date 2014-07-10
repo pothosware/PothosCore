@@ -16,12 +16,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${POTHOS_INCLUDE_DIRS})
 
 ########################################################################
-# Sigar dependency
-########################################################################
-include_directories(${SIGAR_INCLUDE_DIRS})
-list(APPEND POTHOS_LIBRARIES ${SIGAR_LIBRARIES})
-
-########################################################################
 # Theron dependency
 ########################################################################
 set(THERON_SOURCE_DIR ${POTHOS_SOURCE_DIR}/theron)

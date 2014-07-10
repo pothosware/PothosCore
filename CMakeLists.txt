@@ -89,26 +89,6 @@ message(STATUS "POCO_INCLUDE_DIRS: ${POCO_INCLUDE_DIRS}")
 message(STATUS "POCO_LIBRARIES: ${POCO_LIBRARIES}")
 
 ########################################################################
-# Sigar dependency - always build it
-########################################################################
-#set top level dirs, go into submodule, and restore
-set(CMAKE_SOURCE_DIR ${POTHOS_SOURCE_DIR}/sigar)
-set(CMAKE_BINARY_DIR ${POTHOS_BINARY_DIR}/sigar)
-unset(CMAKE_MODULE_PATH)
-add_subdirectory(sigar)
-set(CMAKE_SOURCE_DIR ${POTHOS_SOURCE_DIR})
-set(CMAKE_BINARY_DIR ${POTHOS_BINARY_DIR})
-set(CMAKE_MODULE_PATH ${POTHOS_MODULE_PATH})
-
-#set FindSigar variables for submodule build
-set(SIGAR_FOUND TRUE)
-set(SIGAR_INCLUDE_DIRS ${POTHOS_SOURCE_DIR}/sigar/include)
-set(SIGAR_LIBRARIES sigar)
-
-message(STATUS "SIGAR_INCLUDE_DIRS: ${SIGAR_INCLUDE_DIRS}")
-message(STATUS "SIGAR_LIBRARIES: ${SIGAR_LIBRARIES}")
-
-########################################################################
 # Build serialization library
 ########################################################################
 add_subdirectory(pothos-serialization)
