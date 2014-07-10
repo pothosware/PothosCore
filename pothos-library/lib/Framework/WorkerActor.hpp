@@ -134,7 +134,7 @@ class Pothos::WorkerActor : public Theron::Actor
 {
 public:
     WorkerActor(Block *block):
-        Theron::Actor(*(block->_framework)),
+        Theron::Actor(*std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer())),
         block(block),
         workBump(false),
         activeState(false)
@@ -184,7 +184,7 @@ public:
         for (const auto &s : subs)
         {
             assert(s.outputPort != nullptr);
-            this->GetFramework().Send(makePortMessage(s.outputPort, contents), this->GetAddress(), s.address);
+            this->GetFramework().Send(makePortMessage(s.outputPort, contents), this->GetAddress(), s.block->_actor->GetAddress());
         }
     }
     template <typename PortSubscribersType, typename MessageType>
@@ -194,7 +194,7 @@ public:
         for (const auto &s : subs)
         {
             assert(s.inputPort != nullptr);
-            this->GetFramework().Send(makePortMessage(s.inputPort, contents), this->GetAddress(), s.address);
+            this->GetFramework().Send(makePortMessage(s.inputPort, contents), this->GetAddress(), s.block->_actor->GetAddress());
         }
     }
 
@@ -206,6 +206,18 @@ public:
     WorkerStats workStats;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
+
+    //swap method that moves the internal state from another actor
+    void swap(WorkerActor *oldActor)
+    {
+        std::swap(this->block, oldActor->block);
+        std::swap(this->workBump, oldActor->workBump);
+        std::swap(this->activeState, oldActor->activeState);
+        std::swap(this->workError, oldActor->workError);
+        std::swap(this->workStats, oldActor->workStats);
+        std::swap(this->inputs, oldActor->inputs);
+        std::swap(this->outputs, oldActor->outputs);
+    }
 
     ///////////////////// port setup methods ///////////////////////
     void allocateInput(const std::string &name, const DType &dtype, const std::string &domain);
@@ -251,7 +263,7 @@ public:
     std::shared_ptr<InfoReceiver<std::string>> sendPortSubscriberMessage(
         const std::string &action,
         const std::string &myPortName,
-        const Block *subscriberPortBlock,
+        Block *subscriberPortBlock,
         const std::string &subscriberPortName
     )
     {
@@ -263,7 +275,7 @@ public:
         message.action = action;
         if (action.find("INPUT") != std::string::npos) message.port.inputPort = subscriberPortBlock->input(subscriberPortName);
         if (action.find("OUTPUT") != std::string::npos) message.port.outputPort = subscriberPortBlock->output(subscriberPortName);
-        message.port.address = subscriberPortBlock->_actor->GetAddress();
+        message.port.block = subscriberPortBlock;
 
         //send it to the actor
         this->GetFramework().Send(makePortMessage(myPortName, message), receiver->GetAddress(), this->GetAddress());

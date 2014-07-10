@@ -82,6 +82,7 @@ list(APPEND POTHOS_SOURCES
     Framework/WorkerActorPortAllocation.cpp
     Framework/WorkerActorHandlers.cpp
     Framework/WorkerStats.cpp
+    Framework/ThreadPool.cpp
     Framework/SharedBuffer.cpp
     Framework/ManagedBuffer.cpp
     Framework/BufferChunk.cpp
@@ -99,6 +100,7 @@ list(APPEND POTHOS_SOURCES
     Framework/Builtin/TestGenericBufferManager.cpp
     Framework/Builtin/TestWorker.cpp
     Framework/Builtin/TestLabel.cpp
+    Framework/Builtin/TestThreadPool.cpp
 
     Plugin/Path.cpp
     Plugin/Plugin.cpp

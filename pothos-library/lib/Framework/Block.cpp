@@ -15,11 +15,28 @@ static std::shared_ptr<Theron::Framework> getGlobalFramework(void)
     return framework;
 }
 
+void Pothos::Block::setThreadPool(const ThreadPool &threadPool)
+{
+    if (_threadPool == threadPool) return; //no change
+
+    auto oldThreadPool = _threadPool;
+    auto oldActor = _actor;
+
+    _threadPool = threadPool;
+    _actor.reset(new WorkerActor(this));
+    _actor->swap(oldActor.get());
+}
+
+const Pothos::ThreadPool &Pothos::Block::getThreadPool(void) const
+{
+    return _threadPool;
+}
+
 /***********************************************************************
  * Block member implementation
  **********************************************************************/
 Pothos::Block::Block(void):
-    _framework(getGlobalFramework()),
+    _threadPool(ThreadPool(getGlobalFramework())),
     _actor(new WorkerActor(this))
 {
     return;
@@ -31,7 +48,7 @@ Pothos::Block::~Block(void)
     //This allows the actor to finish with messages ahead of the shutdown message.
     Theron::Receiver receiver;
     ShutdownActorMessage message;
-    _framework->Send(message, receiver.GetAddress(), _actor->GetAddress());
+    _actor->GetFramework().Send(message, receiver.GetAddress(), _actor->GetAddress());
     receiver.Wait();
     _actor.reset();
 }
@@ -163,7 +180,7 @@ std::shared_ptr<Pothos::BufferManager> Pothos::Block::getOutputBufferManager(con
 
 #include <Pothos/Managed.hpp>
 
-static const Pothos::Block *getCPointer(const Pothos::Block &b)
+static Pothos::Block *getPointer(Pothos::Block &b)
 {
     return &b;
 }
@@ -179,12 +196,14 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerClass<Pothos::Block>()
     .registerBaseClass<Pothos::Block, Pothos::Connectable>()
     .registerWildcardMethod(&Pothos::Block::opaqueCall)
-    .registerMethod("getCPointer", &getCPointer)
+    .registerMethod("getPointer", &getPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod("getWorkerStats", &getWorkerStats)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
 
     //all of the setups with default args set
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setThreadPool))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, getThreadPool))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
