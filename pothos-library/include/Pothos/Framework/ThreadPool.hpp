@@ -86,6 +86,9 @@ public:
     //! Create a null ThreadPool
     ThreadPool(void);
 
+    //! Create a ThreadPool from an opaque shared_ptr
+    ThreadPool(const std::shared_ptr<void> &);
+
     /*!
      * Create a new ThreadPool from args.
      * \param args the configuration struct
@@ -98,6 +101,12 @@ public:
      * \return true when the thread poll is non-null
      */
     pothos_explicit operator bool(void) const;
+
+    /*!
+     * Get access to the underlying container for the thread pool.
+     * \return an opaque shared_ptr to the internal object
+     */
+    const std::shared_ptr<void> &getContainer(void) const;
 
 private:
     std::shared_ptr<void> _impl;

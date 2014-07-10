@@ -30,6 +30,12 @@ Pothos::ThreadPool::ThreadPool(void)
     return;
 }
 
+Pothos::ThreadPool::ThreadPool(const std::shared_ptr<void> &impl):
+    _impl(impl)
+{
+    return;
+}
+
 static uint32_t toMask(const Pothos::ThreadPoolArgs &args)
 {
     uint32_t mask = 0;
@@ -66,4 +72,9 @@ Pothos::ThreadPool::ThreadPool(const ThreadPoolArgs &args)
 Pothos::ThreadPool::operator bool(void) const
 {
     return bool(_impl);
+}
+
+const std::shared_ptr<void> &Pothos::ThreadPool::getContainer(void) const
+{
+    return _impl;
 }

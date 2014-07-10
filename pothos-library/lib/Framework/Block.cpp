@@ -15,11 +15,26 @@ static std::shared_ptr<Theron::Framework> getGlobalFramework(void)
     return framework;
 }
 
+void Pothos::Block::setThreadPool(const ThreadPool &threadPool)
+{
+    auto oldThreadPool = _threadPool;
+    auto oldActor = _actor;
+
+    _threadPool = threadPool;
+    _actor.reset(new WorkerActor(this));
+    _actor->swap(oldActor.get());
+}
+
+const Pothos::ThreadPool &Pothos::Block::getThreadPool(void) const
+{
+    return _threadPool;
+}
+
 /***********************************************************************
  * Block member implementation
  **********************************************************************/
 Pothos::Block::Block(void):
-    _framework(getGlobalFramework()),
+    _threadPool(ThreadPool(getGlobalFramework())),
     _actor(new WorkerActor(this))
 {
     return;
@@ -31,7 +46,7 @@ Pothos::Block::~Block(void)
     //This allows the actor to finish with messages ahead of the shutdown message.
     Theron::Receiver receiver;
     ShutdownActorMessage message;
-    _framework->Send(message, receiver.GetAddress(), _actor->GetAddress());
+    _actor->GetFramework().Send(message, receiver.GetAddress(), _actor->GetAddress());
     receiver.Wait();
     _actor.reset();
 }

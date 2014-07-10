@@ -15,14 +15,11 @@
 #include <Pothos/Framework/WorkInfo.hpp>
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/OutputPort.hpp>
+#include <Pothos/Framework/ThreadPool.hpp>
 #include <memory>
 #include <string>
 #include <vector>
 #include <map>
-
-namespace Theron {
-    class Framework;
-} //namespace Theron
 
 namespace Pothos {
 
@@ -46,6 +43,12 @@ public:
 
     //! Virtual destructor
     virtual ~Block(void);
+
+    //! Set the thread pool used by this block.
+    void setThreadPool(const ThreadPool &threadPool);
+
+    //! Get the thread pool used by this block
+    const ThreadPool &getThreadPool(void) const;
 
 protected:
 
@@ -302,7 +305,7 @@ private:
     std::map<std::string, InputPort*> _namedInputs;
     std::map<std::string, OutputPort*> _namedOutputs;
     std::map<std::string, Callable> _calls;
-    std::shared_ptr<Theron::Framework> _framework;
+    ThreadPool _threadPool;
 public:
     std::shared_ptr<WorkerActor> _actor;
     friend class WorkerActor;

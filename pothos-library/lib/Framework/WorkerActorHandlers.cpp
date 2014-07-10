@@ -142,7 +142,7 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
         auto &port = *entry.second;
         auto &mgr = port._impl->bufferManager;
         if (mgr) mgr->setCallback(std::bind(&bufferManagerPushExternal,
-            block->_framework, this->GetAddress(), std::placeholders::_1));
+            std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer()), this->GetAddress(), std::placeholders::_1));
     }
 
     try
