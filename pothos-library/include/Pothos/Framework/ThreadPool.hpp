@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <cstdlib>
+#include <cstddef>
 
 namespace Pothos {
 
@@ -86,7 +86,11 @@ public:
     //! Create a null ThreadPool
     ThreadPool(void);
 
-    //! Create a new ThreadPool from args
+    /*!
+     * Create a new ThreadPool from args.
+     * \param args the configuration struct
+     * \throws ThreadPoolError on bad values
+     */
     ThreadPool(const ThreadPoolArgs &args);
 
     /*!

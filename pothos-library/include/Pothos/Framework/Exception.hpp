@@ -49,8 +49,13 @@ POTHOS_DECLARE_EXCEPTION(POTHOS_API, TopologyConnectError, RuntimeException)
 POTHOS_DECLARE_EXCEPTION(POTHOS_API, BlockCallNotFound, RuntimeException)
 
 /*!
- * A PortDomainError is thrown from getInput/OutputBufferManager() for incmpatible domains.
+ * A PortDomainError is thrown from getInput/OutputBufferManager() for incompatible domains.
  */
 POTHOS_DECLARE_EXCEPTION(POTHOS_API, PortDomainError, RuntimeException)
+
+/*!
+ * A ThreadPoolError is thrown when ThreadPoolArgs are invalid.
+ */
+POTHOS_DECLARE_EXCEPTION(POTHOS_API, ThreadPoolError, RuntimeException)
 
 } //namespace Pothos

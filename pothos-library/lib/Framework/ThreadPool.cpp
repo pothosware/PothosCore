@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/ThreadPool.hpp>
+#include <Pothos/Framework/Exception.hpp>
 #include <Poco/Environment.h>
+#include <Theron/Actor.h>
+#include <Theron/Framework.h>
 
 Pothos::ThreadPoolArgs::ThreadPoolArgs(void):
-    numThreads(Poco::Environment::processorCount()+1),
+    numThreads(0),
     priority(0.0),
     affinityMode("ALL"),
     yieldMode("CONDITION")
@@ -27,9 +30,37 @@ Pothos::ThreadPool::ThreadPool(void)
     return;
 }
 
+static uint32_t toMask(const Pothos::ThreadPoolArgs &args)
+{
+    uint32_t mask = 0;
+    for (auto i : args.affinity) mask |= (1 << i);
+    return mask;
+}
+
 Pothos::ThreadPool::ThreadPool(const ThreadPoolArgs &args)
 {
-    //TODO
+    //create params for the number of threads
+    Theron::Framework::Parameters params(args.numThreads);
+    if (args.numThreads == 0) params.mThreadCount = Poco::Environment::processorCount()+1;
+
+    //setup affinity masks
+    if (args.affinityMode == "ALL"){/* no changes to default masks */}
+    else if (args.affinityMode == "CPU") params.mProcessorMask = toMask(params.mProcessorMask);
+    else if (args.affinityMode == "NUMA") params.mNodeMask = toMask(params.mProcessorMask);
+    else throw ThreadPoolError("Pothos::ThreadPool()", "unknown affinityMode " + args.affinityMode);
+
+    //setup yield strategy
+    if (args.yieldMode == "CONDITION") params.mYieldStrategy = Theron::YIELD_STRATEGY_CONDITION;
+    else if (args.yieldMode == "HYBRID") params.mYieldStrategy = Theron::YIELD_STRATEGY_HYBRID;
+    else if (args.yieldMode == "SPIN") params.mYieldStrategy = Theron::YIELD_STRATEGY_SPIN;
+    else throw ThreadPoolError("Pothos::ThreadPool()", "unknown yieldMode " + args.yieldMode);
+
+    //thread priority
+    if (args.priority > 1.0 or args.priority < 1.0) throw ThreadPoolError("Pothos::ThreadPool()", "priority out of range " + std::to_string(args.priority));
+    params.mThreadPriority = float(args.priority);
+
+    std::shared_ptr<Theron::Framework> framework(new Theron::Framework(params));
+    _impl = framework;
 }
 
 Pothos::ThreadPool::operator bool(void) const
