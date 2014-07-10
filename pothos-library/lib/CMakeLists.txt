@@ -40,7 +40,7 @@ if(NUMA_LIBRARIES)
 elseif(WIN32)
     list(APPEND POTHOS_SOURCES System/NumaInfoWindows.cpp)
 else()
-    list(APPEND POTHOS_SOURCES System/NumaInfoFail.cpp)
+    list(APPEND POTHOS_SOURCES System/NumaInfoOther.cpp)
 endif()
 
 ########################################################################
