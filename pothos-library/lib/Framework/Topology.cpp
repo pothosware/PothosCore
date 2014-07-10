@@ -30,6 +30,7 @@
  **********************************************************************/
 struct Pothos::Topology::Impl
 {
+    ThreadPool threadPool;
     std::vector<Flow> flows;
     std::vector<Flow> activeFlatFlows;
     std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
@@ -109,11 +110,21 @@ static bool checkObj(const Pothos::Object &o)
 /***********************************************************************
  * get a unique process identifier for an environment
  **********************************************************************/
+static std::string getUpid(const Pothos::System::NodeInfo &info)
+{
+    return info.nodeName + "/" + info.nodeId + "/" + info.pid;
+}
+
+static std::string getUpid(void)
+{
+    return getUpid(Pothos::System::NodeInfo::get());
+}
+
 static std::string getUpid(const Pothos::ProxyEnvironment::Sptr &env)
 {
     assert(env->getName() == "managed");
     auto info = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
-    return info.nodeName + "/" + info.nodeId + "/" + info.pid;
+    return getUpid(info);
 }
 
 /***********************************************************************
@@ -458,7 +469,7 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
         const auto &sec = isInputAction?flow.dst:flow.src;
 
         auto actor = pri.obj.callProxy("get:_actor");
-        auto result = actor.callProxy("sendPortSubscriberMessage", action, pri.name, sec.obj.callProxy("getCPointer"), sec.name);
+        auto result = actor.callProxy("sendPortSubscriberMessage", action, pri.name, sec.obj.callProxy("getPointer"), sec.name);
         const auto msg = Poco::format("%s.sendPortSubscriberMessage(%s)", pri.obj.call<std::string>("getName"), action);
         infoReceivers.push_back(std::make_pair(msg, result));
     }
@@ -515,6 +526,16 @@ Pothos::Topology::~Topology(void)
     }
 }
 
+void Pothos::Topology::setThreadPool(const ThreadPool &threadPool)
+{
+    _impl->threadPool = threadPool;
+}
+
+const Pothos::ThreadPool &Pothos::Topology::getThreadPool(void) const
+{
+    return _impl->threadPool;
+}
+
 std::vector<std::string> Pothos::Topology::inputPortNames(void)
 {
     std::vector<std::string> names; //names is a set of ports, no duplicates
@@ -554,6 +575,13 @@ void Pothos::Topology::commit(void)
     for (const auto &flow : _impl->activeFlatFlows)
     {
         if (std::find(flatFlows.begin(), flatFlows.end(), flow) == flatFlows.end()) oldFlows.push_back(flow);
+    }
+
+    //set thread pools for all blocks in this process
+    if (this->getThreadPool()) for (auto block : getObjSetFromFlowList(flatFlows))
+    {
+        if (getUpid(block.getEnvironment()) != getUpid()) continue; //is the block local?
+        block.call<Block *>("getPointer")->setThreadPool(this->getThreadPool());
     }
 
     //add new data acceptors
@@ -814,6 +842,8 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerBaseClass<Pothos::Topology, Pothos::Connectable>()
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setThreadPool))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, getThreadPool))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, commit))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, disconnectAll))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, waitInactive))

@@ -112,4 +112,7 @@ private:
     std::shared_ptr<void> _impl;
 };
 
+//! Are these two thread pools the same?
+POTHOS_API bool operator==(const ThreadPool &lhs, const ThreadPool &rhs);
+
 } //namespace Pothos

@@ -79,6 +79,11 @@ const std::shared_ptr<void> &Pothos::ThreadPool::getContainer(void) const
     return _impl;
 }
 
+bool Pothos::operator==(const ThreadPool &lhs, const ThreadPool &rhs)
+{
+    return lhs.getContainer() == rhs.getContainer();
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedThreadPoolArgs = Pothos::ManagedClass()
@@ -96,4 +101,5 @@ static auto managedThreadPool = Pothos::ManagedClass()
     .registerConstructor<Pothos::ThreadPool, const std::shared_ptr<void> &>()
     .registerConstructor<Pothos::ThreadPool, const Pothos::ThreadPoolArgs &>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::ThreadPool, getContainer))
+    .registerStaticMethod<const Pothos::ThreadPool &, const Pothos::ThreadPool &>("equal", Pothos::operator==)
     .commit("Pothos/ThreadPool");

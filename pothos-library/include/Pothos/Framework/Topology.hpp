@@ -10,6 +10,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/Connectable.hpp>
+#include <Pothos/Framework/ThreadPool.hpp>
 #include <Pothos/Object/Object.hpp>
 #include <string>
 #include <memory>
@@ -37,6 +38,12 @@ public:
      * This call simply disconnects all data flows and commits the changes.
      */
     ~Topology(void);
+
+    //! Set the thread pool used by all blocks in this topology.
+    void setThreadPool(const ThreadPool &threadPool);
+
+    //! Get the thread pool used by all blocks in this topology.
+    const ThreadPool &getThreadPool(void) const;
 
     //! Get a list of input port names in order of connection
     std::vector<std::string> inputPortNames(void);

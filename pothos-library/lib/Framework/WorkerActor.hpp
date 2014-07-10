@@ -263,7 +263,7 @@ public:
     std::shared_ptr<InfoReceiver<std::string>> sendPortSubscriberMessage(
         const std::string &action,
         const std::string &myPortName,
-        const Block *subscriberPortBlock,
+        Block *subscriberPortBlock,
         const std::string &subscriberPortName
     )
     {

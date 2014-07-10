@@ -17,6 +17,8 @@ static std::shared_ptr<Theron::Framework> getGlobalFramework(void)
 
 void Pothos::Block::setThreadPool(const ThreadPool &threadPool)
 {
+    if (_threadPool == threadPool) return; //no change
+
     auto oldThreadPool = _threadPool;
     auto oldActor = _actor;
 
@@ -178,7 +180,7 @@ std::shared_ptr<Pothos::BufferManager> Pothos::Block::getOutputBufferManager(con
 
 #include <Pothos/Managed.hpp>
 
-static const Pothos::Block *getCPointer(const Pothos::Block &b)
+static Pothos::Block *getPointer(Pothos::Block &b)
 {
     return &b;
 }
@@ -194,7 +196,7 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerClass<Pothos::Block>()
     .registerBaseClass<Pothos::Block, Pothos::Connectable>()
     .registerWildcardMethod(&Pothos::Block::opaqueCall)
-    .registerMethod("getCPointer", &getCPointer)
+    .registerMethod("getPointer", &getPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod("getWorkerStats", &getWorkerStats)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
