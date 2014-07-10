@@ -62,7 +62,7 @@ Pothos::ThreadPool::ThreadPool(const ThreadPoolArgs &args)
     else throw ThreadPoolError("Pothos::ThreadPool()", "unknown yieldMode " + args.yieldMode);
 
     //thread priority
-    if (args.priority > 1.0 or args.priority < 1.0) throw ThreadPoolError("Pothos::ThreadPool()", "priority out of range " + std::to_string(args.priority));
+    if (args.priority > +1.0 or args.priority < -1.0) throw ThreadPoolError("Pothos::ThreadPool()", "priority out of range " + std::to_string(args.priority));
     params.mThreadPriority = float(args.priority);
 
     std::shared_ptr<Theron::Framework> framework(new Theron::Framework(params));
@@ -78,3 +78,22 @@ const std::shared_ptr<void> &Pothos::ThreadPool::getContainer(void) const
 {
     return _impl;
 }
+
+#include <Pothos/Managed.hpp>
+
+static auto managedThreadPoolArgs = Pothos::ManagedClass()
+    .registerConstructor<Pothos::ThreadPoolArgs>()
+    .registerConstructor<Pothos::ThreadPoolArgs, const size_t>()
+    .registerField(POTHOS_FCN_TUPLE(Pothos::ThreadPoolArgs, numThreads))
+    .registerField(POTHOS_FCN_TUPLE(Pothos::ThreadPoolArgs, priority))
+    .registerField(POTHOS_FCN_TUPLE(Pothos::ThreadPoolArgs, affinityMode))
+    .registerField(POTHOS_FCN_TUPLE(Pothos::ThreadPoolArgs, affinity))
+    .registerField(POTHOS_FCN_TUPLE(Pothos::ThreadPoolArgs, yieldMode))
+    .commit("Pothos/ThreadPoolArgs");
+
+static auto managedThreadPool = Pothos::ManagedClass()
+    .registerConstructor<Pothos::ThreadPool>()
+    .registerConstructor<Pothos::ThreadPool, const std::shared_ptr<void> &>()
+    .registerConstructor<Pothos::ThreadPool, const Pothos::ThreadPoolArgs &>()
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::ThreadPool, getContainer))
+    .commit("Pothos/ThreadPool");

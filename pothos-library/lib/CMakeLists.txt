@@ -100,6 +100,7 @@ list(APPEND POTHOS_SOURCES
     Framework/Builtin/TestGenericBufferManager.cpp
     Framework/Builtin/TestWorker.cpp
     Framework/Builtin/TestLabel.cpp
+    Framework/Builtin/TestThreadPool.cpp
 
     Plugin/Path.cpp
     Plugin/Plugin.cpp

@@ -200,6 +200,8 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
 
     //all of the setups with default args set
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setThreadPool))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, getThreadPool))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
