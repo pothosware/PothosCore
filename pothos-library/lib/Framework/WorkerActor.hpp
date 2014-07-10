@@ -184,7 +184,7 @@ public:
         for (const auto &s : subs)
         {
             assert(s.outputPort != nullptr);
-            this->GetFramework().Send(makePortMessage(s.outputPort, contents), this->GetAddress(), s.address);
+            this->GetFramework().Send(makePortMessage(s.outputPort, contents), this->GetAddress(), s.block->_actor->GetAddress());
         }
     }
     template <typename PortSubscribersType, typename MessageType>
@@ -194,7 +194,7 @@ public:
         for (const auto &s : subs)
         {
             assert(s.inputPort != nullptr);
-            this->GetFramework().Send(makePortMessage(s.inputPort, contents), this->GetAddress(), s.address);
+            this->GetFramework().Send(makePortMessage(s.inputPort, contents), this->GetAddress(), s.block->_actor->GetAddress());
         }
     }
 
@@ -275,7 +275,7 @@ public:
         message.action = action;
         if (action.find("INPUT") != std::string::npos) message.port.inputPort = subscriberPortBlock->input(subscriberPortName);
         if (action.find("OUTPUT") != std::string::npos) message.port.outputPort = subscriberPortBlock->output(subscriberPortName);
-        message.port.address = subscriberPortBlock->_actor->GetAddress();
+        message.port.block = subscriberPortBlock;
 
         //send it to the actor
         this->GetFramework().Send(makePortMessage(myPortName, message), receiver->GetAddress(), this->GetAddress());
