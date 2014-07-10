@@ -120,7 +120,7 @@ get_target_property(POTHOS_UTIL_EXE PothosUtil LOCATION_${CMAKE_BUILD_TYPE})
 
 if(MSVC)
     unset(built_dll_paths)
-    foreach(target sigar ${POTHOS_LIBRARIES})
+    foreach(target ${POTHOS_LIBRARIES})
         get_target_property(library_location ${target} LOCATION_${CMAKE_BUILD_TYPE})
         get_filename_component(library_location ${library_location} PATH)
         file(TO_NATIVE_PATH ${library_location} library_location)
