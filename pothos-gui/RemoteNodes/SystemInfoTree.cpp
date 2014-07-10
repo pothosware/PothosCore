@@ -97,6 +97,7 @@ private slots:
             makeEntry(rootItem, "OS Architecture", nodeInfo.osArchitecture);
             makeEntry(rootItem, "Node Name", nodeInfo.nodeName);
             makeEntry(rootItem, "Node ID", nodeInfo.nodeId);
+            makeEntry(rootItem, "Processors", std::to_string(nodeInfo.processorCount), "CPUs");
         }
 
         const auto &cpuInfo = info.cpuInfo;

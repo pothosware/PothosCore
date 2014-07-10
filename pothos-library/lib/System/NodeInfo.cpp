@@ -20,6 +20,7 @@ Pothos::System::NodeInfo Pothos::System::NodeInfo::get(void)
     info.osArchitecture = Poco::Environment::osArchitecture();
     info.nodeName = Poco::Environment::nodeName();
     info.nodeId = Poco::Environment::nodeId();
+    info.processorCount = Poco::Environment::processorCount();
     info.pid = std::to_string(Poco::Process::id());
     return info;
 }
@@ -41,6 +42,7 @@ void serialize(Archive &ar, Pothos::System::NodeInfo &t, const unsigned int)
     ar & t.osArchitecture;
     ar & t.nodeName;
     ar & t.nodeId;
+    ar & t.processorCount;
     ar & t.pid;
 }
 }}

@@ -36,6 +36,9 @@ public:
     std::string nodeName;
     std::string nodeId;
 
+    //! The number of CPUs on this system
+    size_t processorCount;
+
     //! The process id of the caller
     std::string pid;
 };
