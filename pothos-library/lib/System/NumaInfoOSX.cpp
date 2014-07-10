@@ -8,6 +8,8 @@
 //https://developer.apple.com/library/Mac/releasenotes/Performance/RN-AffinityAPI/index.html
 //Note: NUMA INFO Other assumes one NUMA node with all CPUs
 
+//TODO: why not hw.memsize?
+
 inline uint64_t get_hw_cachsize(const int index)
 {
     //query the size of the cachesize entries
