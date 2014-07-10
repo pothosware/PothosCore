@@ -9,6 +9,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <cstddef>
 #include <string>
 
 namespace Pothos {

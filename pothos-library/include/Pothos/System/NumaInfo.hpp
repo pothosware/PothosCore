@@ -10,7 +10,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <vector>
-#include <cstdlib>
+#include <cstddef>
 
 namespace Pothos {
 namespace System {
