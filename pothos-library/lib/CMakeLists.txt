@@ -16,12 +16,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${POTHOS_INCLUDE_DIRS})
 
 ########################################################################
-# Sigar dependency
-########################################################################
-include_directories(${SIGAR_INCLUDE_DIRS})
-list(APPEND POTHOS_LIBRARIES ${SIGAR_LIBRARIES})
-
-########################################################################
 # Theron dependency
 ########################################################################
 set(THERON_SOURCE_DIR ${POTHOS_SOURCE_DIR}/theron)
@@ -31,6 +25,25 @@ link_directories(${THERON_LIBRARY_DIRS})
 list(APPEND POTHOS_LIBRARIES ${THERON_LIBRARIES})
 add_definitions(${THERON_DEFINES})
 list(APPEND POTHOS_SOURCES ${THERON_SOURCES})
+
+########################################################################
+# NUMA info support
+########################################################################
+find_library(
+    NUMA_LIBRARIES
+    NAMES numa
+    PATHS /usr/lib /usr/lib64
+)
+
+if(NUMA_LIBRARIES)
+    list(APPEND POTHOS_SOURCES System/NumaInfoLinux.cpp)
+elseif(WIN32)
+    list(APPEND POTHOS_SOURCES System/NumaInfoWindows.cpp)
+elseif(APPLE)
+    list(APPEND POTHOS_SOURCES System/NumaInfoOSX.cpp)
+else()
+    list(APPEND POTHOS_SOURCES System/NumaInfoOther.cpp)
+endif()
 
 ########################################################################
 # Library sources
@@ -43,7 +56,8 @@ list(APPEND POTHOS_SOURCES
     System/Logger.cpp
     System/Version.in.cpp
     System/Paths.in.cpp
-    System/Info.cpp
+    System/NodeInfo.cpp
+    System/NumaInfo.cpp
     System/Exception.cpp
 
     Object/Object.cpp

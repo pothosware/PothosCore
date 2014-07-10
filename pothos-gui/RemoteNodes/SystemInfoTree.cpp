@@ -5,7 +5,7 @@
 #include <QTreeWidget>
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Pothos/System/Info.hpp>
+#include <Pothos/System.hpp>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
@@ -20,7 +20,7 @@
 struct InfoResult
 {
     Pothos::System::NodeInfo nodeInfo;
-    std::vector<Pothos::System::CpuInfo> cpuInfo;
+    std::vector<Pothos::System::NumaInfo> numaInfo;
     Poco::JSON::Array::Ptr deviceInfo;
 };
 
@@ -31,7 +31,7 @@ static InfoResult getInfo(const Pothos::RemoteNode &node)
     {
         auto env = Pothos::RemoteNode(node).makeClient("info").makeEnvironment("managed");
         info.nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
-        info.cpuInfo = env->findProxy("Pothos/System/CpuInfo").call<std::vector<Pothos::System::CpuInfo>>("get");
+        info.numaInfo = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
         auto deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call<std::string>("dumpJson");
         Poco::JSON::Parser p; p.parse(deviceInfo);
         info.deviceInfo = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
@@ -95,31 +95,37 @@ private slots:
             makeEntry(rootItem, "OS Architecture", nodeInfo.osArchitecture);
             makeEntry(rootItem, "Node Name", nodeInfo.nodeName);
             makeEntry(rootItem, "Node ID", nodeInfo.nodeId);
+            makeEntry(rootItem, "Processors", std::to_string(nodeInfo.processorCount), "CPUs");
         }
 
-        const auto &cpuInfo = info.cpuInfo;
-        for (size_t i = 0; i < cpuInfo.size(); i++)
+        for (const auto &numaInfo : info.numaInfo)
         {
             QStringList columns;
-            columns.push_back(tr("CPU %1 Info").arg(i));
+            columns.push_back(tr("NUMA Node %1 Info").arg(numaInfo.nodeNumber));
             auto rootItem = new QTreeWidgetItem(this, columns);
-            rootItem->setExpanded(i == 0);
-            //makeEntry(rootItem, "Current Speed", std::to_string(cpuInfo[i].mhz), "MHz");
-            makeEntry(rootItem, "Min Speed", std::to_string(cpuInfo[i].mhzMin), "MHz");
-            makeEntry(rootItem, "Max Speed", std::to_string(cpuInfo[i].mhzMax), "MHz");
-            makeEntry(rootItem, "Cache Size", std::to_string(cpuInfo[i].cacheSize), "KB");
-            makeEntry(rootItem, "Num Sockets", std::to_string(cpuInfo[i].totalSockets));
-            makeEntry(rootItem, "Num Cores", std::to_string(cpuInfo[i].totalCores));
-            //makeEntry(rootItem, "Cores Per Socket", std::to_string(cpuInfo[i].coresPerSocket));
+            rootItem->setExpanded(numaInfo.nodeNumber == 0);
+            if (numaInfo.totalMemory != 0) makeEntry(rootItem, "Total Memory", std::to_string(numaInfo.totalMemory/1024/1024), "MB");
+            if (numaInfo.freeMemory != 0) makeEntry(rootItem, "Free Memory", std::to_string(numaInfo.freeMemory/1024/1024), "MB");
+            std::string cpuStr;
+            for (auto i : numaInfo.cpus)
+            {
+                if (not cpuStr.empty()) cpuStr += ", ";
+                cpuStr += std::to_string(i);
+            }
+            makeEntry(rootItem, "CPUs", cpuStr);
         }
+
+        //adjust value column before arbitrary values from device info
+        this->resizeColumnToContents(1);
 
         for (size_t i = 0; i < info.deviceInfo->size(); i++)
         {
-            this->loadJsonObject(this, "", info.deviceInfo->getObject(i));
+            this->loadJsonObject(this, "", info.deviceInfo->getObject(i), true/*expand*/);
         }
 
+        //adjust names and units columns after all information is loaded
         this->resizeColumnToContents(0);
-        this->resizeColumnToContents(1);
+        //this->resizeColumnToContents(1);
         this->resizeColumnToContents(2);
         emit stopLoad();
     }
@@ -137,43 +143,45 @@ private:
     }
 
     template <typename Parent>
-    void loadJsonObject(Parent *root, const std::string &rootName, const Poco::JSON::Object::Ptr &obj)
+    void loadJsonObject(Parent *root, const std::string &rootName, const Poco::JSON::Object::Ptr &obj, const bool expand = false)
     {
         std::vector<std::string> names; obj->getNames(names);
         for (const auto &name : names)
         {
             std::string newName = name;
             if (not rootName.empty()) newName = rootName + " " + name;
-            loadJsonVar(root, newName, obj->get(name));
+            loadJsonVar(root, newName, obj->get(name), expand);
         }
     }
 
     template <typename Parent>
-    void loadJsonArray(Parent *root, const std::string &rootName, const Poco::JSON::Array::Ptr &arr)
+    void loadJsonArray(Parent *root, const std::string &rootName, const Poco::JSON::Array::Ptr &arr, const bool expand = false)
     {
         for (size_t i = 0; i < arr->size(); i++)
         {
-            loadJsonVar(root, rootName + " " + std::to_string(i), arr->get(i));
+            loadJsonVar(root, rootName + " " + std::to_string(i), arr->get(i), expand and (i == 0));
         }
     }
 
     template <typename Parent>
-    void loadJsonVar(Parent *root, const std::string &rootName, const Poco::Dynamic::Var &var)
+    void loadJsonVar(Parent *root, const std::string &rootName, const Poco::Dynamic::Var &var, const bool expand = false)
     {
         if (var.type() == typeid(Poco::JSON::Array::Ptr))
         {
-            this->loadJsonArray(root, rootName, var.extract<Poco::JSON::Array::Ptr>());
+            this->loadJsonArray(root, rootName, var.extract<Poco::JSON::Array::Ptr>(), expand);
         }
         else if (var.type() == typeid(Poco::JSON::Object::Ptr))
         {
             QStringList columns;
             columns.push_back(QString::fromStdString(rootName));
             auto rootItem = new QTreeWidgetItem(root, columns);
+            rootItem->setExpanded(expand);
             this->loadJsonObject(rootItem, "", var.extract<Poco::JSON::Object::Ptr>());
         }
         else
         {
-            makeEntry(root, rootName, var.convert<std::string>());
+            auto entry = makeEntry(root, rootName, var.convert<std::string>());
+            entry->setExpanded(expand);
         }
     }
 

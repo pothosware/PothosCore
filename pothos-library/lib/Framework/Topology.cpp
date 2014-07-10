@@ -8,7 +8,7 @@
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Pothos/System/Info.hpp>
+#include <Pothos/System/NodeInfo.hpp>
 #include <Poco/Environment.h>
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
