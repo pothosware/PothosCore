@@ -38,6 +38,7 @@ struct Pothos::Topology::Impl
     std::vector<Flow> rectifyDomainFlows(const std::vector<Flow> &);
     std::vector<std::string> inputPortNames;
     std::vector<std::string> outputPortNames;
+    std::map<std::string, Callable> calls;
 };
 
 /***********************************************************************
@@ -774,6 +775,21 @@ static std::string getDotEscapedString(const Pothos::Proxy &elem)
     return out;
 }
 
+void Pothos::Topology::registerCallable(const std::string &name, const Callable &call)
+{
+    _impl->calls[name] = call;
+}
+
+Pothos::Object Pothos::Topology::opaqueCall(const std::string &name, const Object *inputArgs, const size_t numArgs)
+{
+    auto it = _impl->calls.find(name);
+    if (it == _impl->calls.end())
+    {
+        throw Pothos::BlockCallNotFound("Pothos::Topology::call("+name+")", "method does not exist in registry");
+    }
+    return it->second.opaqueCall(inputArgs, numArgs);
+}
+
 std::string Pothos::Topology::toDotMarkup(const bool flat)
 {
     std::ostringstream os;
@@ -840,6 +856,7 @@ static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 static auto managedTopology = Pothos::ManagedClass()
     .registerConstructor<Pothos::Topology>()
     .registerBaseClass<Pothos::Topology, Pothos::Connectable>()
+    .registerWildcardMethod(&Pothos::Topology::opaqueCall)
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setThreadPool))

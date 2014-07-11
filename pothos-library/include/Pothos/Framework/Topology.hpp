@@ -10,6 +10,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/Connectable.hpp>
+#include <Pothos/Framework/CallRegistry.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>
 #include <Pothos/Object/Object.hpp>
 #include <string>
@@ -26,7 +27,7 @@ namespace Pothos {
  * To create hierarchy, a topology's connections can be made with itself;
  * this action creates input and output ports for the topology.
  */
-class POTHOS_API Topology : public Connectable
+class POTHOS_API Topology : protected CallRegistry, public Connectable
 {
 public:
 
@@ -119,6 +120,14 @@ public:
         const Object &dst, const std::string &dstPort);
 
     /*!
+     * Export a function call on this topology to set/get parameters.
+     * This call will automatically register a slot of the same name.
+     * \param name the name of the callable
+     * \param call the bound callable method
+     */
+    void registerCallable(const std::string &name, const Callable &call);
+
+    /*!
      * Convert the topology to a string containing dot markup.
      * This markup can be passed into the dot tool to create a visual graph.
      * The markup can represent the connections as specified by the user,
@@ -132,6 +141,7 @@ public:
 public:
     struct Impl;
     std::shared_ptr<Impl> _impl;
+    Object opaqueCall(const std::string &name, const Object *inputArgs, const size_t numArgs);
 };
 
 } //namespace Pothos
