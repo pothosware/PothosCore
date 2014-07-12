@@ -10,6 +10,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Util/UID.hpp>
+#include <Pothos/Util/RefHolder.hpp>
 #include <string>
 #include <vector>
 
@@ -18,7 +19,7 @@ namespace Pothos {
 /*!
  * Connectable interface for topological elements.
  */
-class POTHOS_API Connectable : public Util::UID
+class POTHOS_API Connectable : public Util::UID, public Util::RefHolder
 {
 public:
 
