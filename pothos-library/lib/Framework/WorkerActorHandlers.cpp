@@ -3,6 +3,7 @@
 
 #include "Framework/WorkerActor.hpp"
 #include <Poco/Format.h>
+#include <Poco/Logger.h>
 #include <algorithm> //sort
 #include <cassert>
 
@@ -13,9 +14,15 @@ void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, 
     if (input._impl->asyncMessages.full()) input._impl->asyncMessages.set_capacity(input._impl->asyncMessages.capacity()*2);
     if (input._impl->isSlot and message.contents.type() == typeid(ObjectVector))
     {
-        //TODO try/catch/log
-        const auto &args = message.contents.extract<ObjectVector>();
-        block->opaqueCallHandler(input.name(), args.data(), args.size());
+        POTHOS_EXCEPTION_TRY
+        {
+            const auto &args = message.contents.extract<ObjectVector>();
+            block->opaqueCallHandler(input.name(), args.data(), args.size());
+        }
+        POTHOS_EXCEPTION_CATCH(const Exception &ex)
+        {
+            poco_error_f2(Poco::Logger::get("Pothos.Block.callSlot"), "%s: %s", block->getName(), ex.displayText());
+        }
         this->bump();
         return;
     }
@@ -145,54 +152,30 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
             std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer()), this->GetAddress(), std::placeholders::_1));
     }
 
-    try
+    POTHOS_EXCEPTION_TRY
     {
         this->block->activate();
         this->activeState = true;
         this->Send(std::string(""), from);
     }
-    catch (const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Exception &ex)
     {
         this->Send(ex.displayText(), from);
-    }
-    catch (const Poco::Exception &ex)
-    {
-        this->Send(ex.displayText(), from);
-    }
-    catch (const std::runtime_error &ex)
-    {
-        this->Send(std::string(ex.what()), from);
-    }
-    catch (...)
-    {
-        this->Send(std::string("unknown error"), from);
     }
     this->bump();
 }
 
 void Pothos::WorkerActor::handleDeactivateWorkMessage(const DeactivateWorkMessage &, const Theron::Address from)
 {
-    try
+    POTHOS_EXCEPTION_TRY
     {
         this->activeState = false;
         this->block->deactivate();
         this->Send(std::string(""), from);
     }
-    catch (const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Exception &ex)
     {
         this->Send(ex.displayText(), from);
-    }
-    catch (const Poco::Exception &ex)
-    {
-        this->Send(ex.displayText(), from);
-    }
-    catch (const std::runtime_error &ex)
-    {
-        this->Send(std::string(ex.what()), from);
-    }
-    catch (...)
-    {
-        this->Send(std::string("unknown error"), from);
     }
 }
 
@@ -222,22 +205,13 @@ void Pothos::WorkerActor::handleRequestWorkerStatsMessage(const RequestWorkerSta
 void Pothos::WorkerActor::handleOpaqueCallMessage(const OpaqueCallMessage &message, const Theron::Address from)
 {
     OpaqueCallResultMessage result;
-    try
+    POTHOS_EXCEPTION_TRY
     {
         result.obj = this->block->opaqueCallHandler(message.name, message.inputArgs, message.numArgs);
     }
-    catch (const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
         result.error.reset(ex.clone());
-        //result.error.reset(new Pothos::Exception("Pothos::Block::call("+message.name+")", ex));
-    }
-    catch (const std::exception &ex)
-    {
-        result.error.reset(new Pothos::Exception("Pothos::Block::call("+message.name+")", ex.what()));
-    }
-    catch (...)
-    {
-        result.error.reset(new Pothos::Exception("Pothos::Block::call("+message.name+")", "unknown error"));
     }
     this->Send(result, from);
     this->bump();

@@ -28,8 +28,7 @@ static void loadPages(GraphEditor *editor, Poco::JSON::Array::Ptr pages, const s
         for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
         {
             GraphObject *obj = nullptr;
-            std::string errorMsg;
-            try
+            POTHOS_EXCEPTION_TRY
             {
                 const auto jGraphObj = graphObjects->getObject(objIndex);
                 if (not jGraphObj) continue;
@@ -40,25 +39,9 @@ static void loadPages(GraphEditor *editor, Poco::JSON::Array::Ptr pages, const s
                 if (type == "Connection") obj = new GraphConnection(parent);
                 if (obj != nullptr) obj->deserialize(jGraphObj);
             }
-            catch (const Poco::Exception &ex)
+            POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
             {
-                errorMsg = ex.displayText();
-            }
-            catch (const Pothos::Exception &ex)
-            {
-                errorMsg = ex.displayText();
-            }
-            catch (const std::exception &ex)
-            {
-                errorMsg = ex.what();
-            }
-            catch (...)
-            {
-                errorMsg = "unknown";
-            }
-            if (not errorMsg.empty())
-            {
-                poco_error(Poco::Logger::get("PothosGui.GraphEditor.loadState"), errorMsg);
+                poco_error(Poco::Logger::get("PothosGui.GraphEditor.loadState"), ex.displayText());
                 delete obj;
             }
         }

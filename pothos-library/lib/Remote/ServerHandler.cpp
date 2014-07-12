@@ -64,7 +64,7 @@ static void runHandlerOnce(std::istream &is, std::ostream &os, bool &done)
 
     //process the request and form the reply
     Pothos::ObjectKwargs replyArgs;
-    try
+    POTHOS_EXCEPTION_TRY
     {
         const auto &action = reqArgs.at("action").extract<std::string>();
         if (action == "RemoteProxyEnvironment")
@@ -159,21 +159,9 @@ static void runHandlerOnce(std::istream &is, std::ostream &os, bool &done)
             poco_bugcheck_msg(action.c_str());
         }
     }
-    catch (const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
         replyArgs["errorMsg"] = Pothos::Object(ex.displayText());
-    }
-    catch (const Poco::Exception &ex)
-    {
-        replyArgs["errorMsg"] = Pothos::Object(ex.displayText());
-    }
-    catch (const std::exception &ex)
-    {
-        replyArgs["errorMsg"] = Pothos::Object(std::string(ex.what()));
-    }
-    catch (...)
-    {
-        replyArgs["errorMsg"] = Pothos::Object("unknown");
     }
 
     //serialize the reply

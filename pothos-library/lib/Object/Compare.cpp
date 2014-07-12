@@ -42,7 +42,7 @@ static inline size_t typesHashCombine(const std::type_info &t0, const std::type_
 static void handleComparePluginEvent(const Pothos::Plugin &plugin, const std::string &event)
 {
     poco_information_f2(Poco::Logger::get("Pothos.Object.handleComparePluginEvent"), "plugin %s, event %s", plugin.toString(), event);
-    try
+    POTHOS_EXCEPTION_TRY
     {
         //validate the plugin -- if we want to handle it -- check the signature:
         if (plugin.getObject().type() != typeid(Pothos::Callable)) return;
@@ -64,15 +64,10 @@ static void handleComparePluginEvent(const Pothos::Plugin &plugin, const std::st
             getCompareMap()[typesHashCombine(t0, t1)] = Pothos::Plugin();
         }
     }
-    catch(const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
         poco_error_f3(Poco::Logger::get("Pothos.Object.handleComparePluginEvent"),
             "exception %s, plugin %s, event %s", ex.displayText(), plugin.toString(), event);
-    }
-    catch(...)
-    {
-        poco_error_f3(Poco::Logger::get("Pothos.Object.handleComparePluginEvent"),
-            "exception %s, plugin %s, event %s", std::string("unknown"), plugin.toString(), event);
     }
 }
 

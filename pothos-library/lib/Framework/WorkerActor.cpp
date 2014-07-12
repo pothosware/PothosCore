@@ -117,28 +117,13 @@ void Pothos::WorkerActor::postWorkTasks(void)
         if (numLabels != 0)
         {
             port._labelIter = LabelIteratorRange(allLabels.begin(), allLabels.begin()+numLabels);
-            try
+            POTHOS_EXCEPTION_TRY
             {
                 block->propagateLabels(&port);
             }
-            catch (const Pothos::Exception &ex)
+            POTHOS_EXCEPTION_CATCH(const Exception &ex)
             {
-                workError = ex.displayText();
-            }
-            catch (const std::exception &ex)
-            {
-                workError = ex.what();
-            }
-            catch (...)
-            {
-                workError = "unknown error";
-            }
-
-            //log errors
-            if (not workError.empty())
-            {
-                poco_error_f2(Poco::Logger::get("Pothos.Block.propagateLabels"), "%s: %s", block->getName(), workError);
-                workError.clear();
+                poco_error_f2(Poco::Logger::get("Pothos.Block.propagateLabels"), "%s: %s", block->getName(), ex.displayText());
             }
 
             allLabels.erase(allLabels.begin(), allLabels.begin()+numLabels);

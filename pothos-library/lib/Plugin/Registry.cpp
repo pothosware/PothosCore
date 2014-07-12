@@ -66,26 +66,15 @@ static bool canObjectHandleEvent(const Pothos::Object &obj)
 static void callPluginEventHandler(const Pothos::Object &handler, const Pothos::Plugin &plugin, const std::string &event)
 {
     if (not canObjectHandleEvent(handler)) return;
-    std::string error_msg;
-    try
+    POTHOS_EXCEPTION_TRY
     {
         handler.extract<Pothos::Callable>().callVoid(plugin, event);
-        return;
     }
-    catch(const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
-        error_msg = ex.displayText();
+        poco_error_f3(Poco::Logger::get("Pothos.PluginRegistry.handlePluginEvent"),
+        "exception %s, plugin %s, event %s", ex.displayText(), plugin.toString(), event);
     }
-    catch(const std::exception &ex)
-    {
-        error_msg = ex.what();
-    }
-    catch(...)
-    {
-        error_msg = "unknown";
-    }
-    poco_error_f3(Poco::Logger::get("Pothos.PluginRegistry.handlePluginEvent"),
-        "exception %s, plugin %s, event %s", error_msg, plugin.toString(), event);
 }
 
 static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &event)

@@ -176,7 +176,7 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
      * Step 4) make the call
      ******************************************************************/
     Pothos::Object result;
-    try
+    POTHOS_EXCEPTION_TRY
     {
         Pothos::Object oArgs[4]; //yes this is so META
         size_t oArgsIndex = 0;
@@ -205,17 +205,9 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         }
         else result = call.opaqueCall(argObjs.data(), argObjs.size());
     }
-    catch(const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
         throw Pothos::ProxyExceptionMessage(ex.displayText());
-    }
-    catch(const std::exception &ex)
-    {
-        throw Pothos::ProxyExceptionMessage(ex.what());
-    }
-    catch(...)
-    {
-        throw Pothos::ProxyExceptionMessage("unknown");
     }
 
     if (result.type() == typeid(Pothos::Proxy)) return result.extract<Pothos::Proxy>();

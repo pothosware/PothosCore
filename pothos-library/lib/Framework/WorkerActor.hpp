@@ -202,7 +202,6 @@ public:
     Block *block;
     bool workBump;
     bool activeState;
-    std::string workError;
     WorkerStats workStats;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
@@ -213,7 +212,6 @@ public:
         std::swap(this->block, oldActor->block);
         std::swap(this->workBump, oldActor->workBump);
         std::swap(this->activeState, oldActor->activeState);
-        std::swap(this->workError, oldActor->workError);
         std::swap(this->workStats, oldActor->workStats);
         std::swap(this->inputs, oldActor->inputs);
         std::swap(this->outputs, oldActor->outputs);
@@ -335,27 +333,15 @@ public:
         }
 
         //work
-        try
+        POTHOS_EXCEPTION_TRY
         {
             workStats.numWorkCalls++;
             TicksAccumulator preWorkTime(workStats.totalTicksWork);
             block->work();
         }
-        catch (const Pothos::Exception &ex)
+        POTHOS_EXCEPTION_CATCH(const Exception &ex)
         {
-            workError = ex.displayText();
-        }
-        catch (const Poco::Exception &ex)
-        {
-            workError = ex.displayText();
-        }
-        catch (const std::runtime_error &ex)
-        {
-            workError = ex.what();
-        }
-        catch (...)
-        {
-            workError = "unknown error";
+            poco_error_f2(Poco::Logger::get("Pothos.Block.work"), "%s: %s", block->getName(), ex.displayText());
         }
 
         //postwork
@@ -365,13 +351,6 @@ public:
         }
 
         workStats.ticksLastWork = Theron::Detail::Clock::GetTicks();
-
-        //log errors
-        if (not workError.empty())
-        {
-            poco_error_f2(Poco::Logger::get("Pothos.Block.work"), "%s: %s", block->getName(), workError);
-            workError.clear();
-        }
     }
     bool preWorkTasks(void);
     void postWorkTasks(void);

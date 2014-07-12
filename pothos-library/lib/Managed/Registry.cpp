@@ -34,7 +34,7 @@ static ClassMapType &getClassMap(void)
 static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &event)
 {
     poco_information_f2(Poco::Logger::get("Pothos.ManagedClass.handlePluginEvent"), "plugin %s, event %s", plugin.toString(), event);
-    try
+    POTHOS_EXCEPTION_TRY
     {
         //validate the plugin -- if we want to handle it -- check the signature:
         if (plugin.getObject().type() != typeid(Pothos::ManagedClass)) return;
@@ -54,15 +54,10 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
             getClassMap()[reg.sharedType().hash_code()] = Pothos::Plugin();
         }
     }
-    catch(const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
         poco_error_f3(Poco::Logger::get("Pothos.ManagedClass.handlePluginEvent"),
             "exception %s, plugin %s, event %s", ex.displayText(), plugin.toString(), event);
-    }
-    catch(...)
-    {
-        poco_error_f3(Poco::Logger::get("Pothos.ManagedClass.handlePluginEvent"),
-            "exception %s, plugin %s, event %s", std::string("unknown"), plugin.toString(), event);
     }
 }
 

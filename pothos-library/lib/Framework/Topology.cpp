@@ -96,11 +96,6 @@ static bool checkObj(const Pothos::Object &o)
     {
         getProxy(o).call<std::string>("uid");
     }
-    catch (const Pothos::Exception &ex)
-    {
-        std::cout << "ex. " << ex.displayText() << std::endl;
-        return false;
-    }
     catch(...)
     {
         return false;

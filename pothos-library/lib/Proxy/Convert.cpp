@@ -93,7 +93,7 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
     assert(nodes[1] == "converters");
     const auto &name = nodes[2];
 
-    try
+    POTHOS_EXCEPTION_TRY
     {
         if (isConvertToLocal(plugin))
         {
@@ -126,15 +126,10 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
             throw Pothos::Exception("unknown format for plugin");
         }
     }
-    catch(const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
         poco_error_f3(Poco::Logger::get("Pothos.Proxy.handlePluginEvent"),
             "exception %s, plugin %s, event %s", ex.displayText(), plugin.toString(), event);
-    }
-    catch(...)
-    {
-        poco_error_f3(Poco::Logger::get("Pothos.Proxy.handlePluginEvent"),
-            "exception %s, plugin %s, event %s", std::string("unknown"), plugin.toString(), event);
     }
 }
 

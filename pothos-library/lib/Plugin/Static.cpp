@@ -15,24 +15,13 @@ void Pothos::Detail::safeInit(const std::string &clientAbi, const std::string &n
             name, clientAbi, Pothos::System::getAbiVersion());
         return;
     }
-    std::string error_msg;
-    try
+    POTHOS_EXCEPTION_TRY
     {
         init();
-        return;
     }
-    catch(const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Exception &ex)
     {
-        error_msg = ex.displayText();
+        poco_error_f2(Poco::Logger::get("Pothos.StaticBlock.safeInit"),
+        "loading %s, exception %s", name, ex.displayText());
     }
-    catch(const std::exception &ex)
-    {
-        error_msg = ex.what();
-    }
-    catch(...)
-    {
-        error_msg = "unknown";
-    }
-    poco_error_f2(Poco::Logger::get("Pothos.StaticBlock.safeInit"),
-        "loading %s, exception %s", name, error_msg);
 }

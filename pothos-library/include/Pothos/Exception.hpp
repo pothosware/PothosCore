@@ -32,11 +32,30 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-
 #pragma once
 #include <Pothos/Config.hpp>
 #include <stdexcept>
 #include <string>
+
+/*!
+ * The try block for a super catch-all exception.
+ * Use the standard try/catch syntax and bracketing,
+ * and always use this macro with POTHOS_EXCEPTION_CATCH.
+ */
+#define POTHOS_EXCEPTION_TRY try{try
+
+/*!
+ * The catch block for a super catch-all exception.
+ * Catch exceptions from all known exception types
+ * and rethrow any exception as a Pothos::Exception.
+ * \param catchExpr the contents of the catch() keyword
+ */
+#define POTHOS_EXCEPTION_CATCH(catchExpr) \
+	catch(const Pothos::Exception &ex){throw;}\
+	catch(const Poco::Exception &ex){throw Pothos::Exception(ex.displayText());}\
+	catch(const std::exception &ex){throw Pothos::Exception(ex.what());}\
+	catch(...){throw Pothos::Exception("unknown exception");}\
+	}catch(catchExpr)
 
 namespace Pothos {
 

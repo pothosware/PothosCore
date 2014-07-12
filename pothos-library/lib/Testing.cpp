@@ -40,31 +40,17 @@ void Pothos::TestingBase::runTests(void)
 {
     std::lock_guard<std::mutex> lock(getTestMutex());
     testInProgress = this;
-    std::string errorMsg;
-    try
+    POTHOS_EXCEPTION_TRY
     {
         lastLine = -1;
         lastFile = "";
         this->runTestsImpl();
     }
-    catch(const Poco::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Exception &ex)
     {
-        errorMsg = ex.displayText();
-    }
-    catch(const Exception &ex)
-    {
-        errorMsg = ex.displayText();
-    }
-    catch(const std::exception &ex)
-    {
-        errorMsg = ex.what();
-    }
-    catch(...)
-    {
-        errorMsg = "unknown";
+        this->report("Unexpected error after last checkpoint", "runTests()", ex.displayText(), lastLine, lastFile);
     }
     testInProgress = nullptr;
-    if (not errorMsg.empty()) this->report("Unexpected error after last checkpoint", "runTests()", errorMsg, lastLine, lastFile);
 }
 
 void Pothos::TestingBase::report(

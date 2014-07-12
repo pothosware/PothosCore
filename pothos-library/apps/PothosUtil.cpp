@@ -163,26 +163,17 @@ private:
 
 int main(int argc, char *argv[])
 {
-    try
+    POTHOS_EXCEPTION_TRY
     {
         PothosUtil app(argc);
         const int ret = app.run(argc, argv);
         if (ret == 0) return app.config().getInt("successCode", 0);
         return ret;
     }
-    catch(const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
         std::cerr << ex.displayText() << std::endl;
         std::cout << std::endl;
-    }
-    catch(const std::exception &ex)
-    {
-        std::cerr << ex.what() << std::endl;
-        std::cout << std::endl;
-    }
-    catch(...)
-    {
-        //unknown exception
     }
     return Poco::Util::Application::EXIT_USAGE;
 }
