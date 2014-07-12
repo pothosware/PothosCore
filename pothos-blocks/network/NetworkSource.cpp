@@ -20,7 +20,7 @@
  * or UDT - udt://host:port
  *
  * |category /Network
- * |category /Source
+ * |category /Sources
  * |keywords source network
  *
  * |param uri[URI] The bind or connection uri string.
