@@ -43,14 +43,11 @@ Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &fa
     }
 }
 
-Pothos::Callable Pothos::BlockRegistry::lookup(const std::string &path)
-{
-    return PluginRegistry::get(PluginPath("/blocks").join(path.substr(1))).getObject().extract<Callable>();
-}
-
 static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::Object *args, const size_t numArgs)
 {
-    const auto factory = Pothos::BlockRegistry::lookup(path);
+    const auto pluginPath = Pothos::PluginPath("/blocks").join(path.substr(1));
+    const auto plugin = Pothos::PluginRegistry::get(pluginPath);
+    const auto factory = plugin.getObject().extract<Pothos::Callable>();
 
     if (factory.type(-1) == typeid(Pothos::Block*))
     {

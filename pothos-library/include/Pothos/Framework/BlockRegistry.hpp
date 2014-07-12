@@ -11,11 +11,8 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Callable/Callable.hpp>
 #include <string>
-#include <memory>
 
 namespace Pothos {
-
-class Block; //forward declaration
 
 /*!
  * The BlockRegistry class registers factories for topological elements.
@@ -44,16 +41,6 @@ public:
      * \param factory the Callable factory function
      */
     BlockRegistry(const std::string &path, const Callable &factory);
-
-    /*!
-     * Lookup a factory of a topological element in the plugin registry.
-     * Path fallows the same rules as in the BlockRegistry constructor.
-     * \throws PluginRegistryError if no factory registration is found
-     * \param path the factory path begining with a slash ("/")
-     * \return the factory function that was registered to path
-     */
-    static Callable lookup(const std::string &path);
-
 };
 
 } //namespace Pothos
