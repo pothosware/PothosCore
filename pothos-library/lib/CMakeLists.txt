@@ -46,6 +46,16 @@ else()
 endif()
 
 ########################################################################
+# OSX support
+########################################################################
+if (APPLE)
+    #Need to link to CoreFoundation to fix dlopen() issue:
+    #http://openradar.appspot.com/7209349
+    find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+    list(APPEND POTHOS_LIBRARIES ${COREFOUNDATION_LIBRARY})
+endif()
+
+########################################################################
 # Library sources
 ########################################################################
 list(APPEND POTHOS_SOURCES
