@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/NumaInfo.hpp>
+#include <Poco/Environment.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
