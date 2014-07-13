@@ -5,7 +5,7 @@
 #include <Pothos/Framework/BufferManager.hpp>
 #include <memory>
 
-#ifdef MAC
+#ifdef __APPLE__
 #include <OpenCL/cl.h>
 #else
 #include <CL/cl.h>

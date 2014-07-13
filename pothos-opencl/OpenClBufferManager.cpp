@@ -134,7 +134,7 @@ private:
 
 Pothos::BufferManager::Sptr makeOpenClBufferManager(const OpenClBufferContainerArgs &args)
 {
-    return Pothos::BufferManager::Sptr(new OpenClBufferManager(args));
+    return std::make_shared<OpenClBufferManager>(args);
 }
 
 cl_mem &getClBufferFromManaged(const Pothos::ManagedBuffer &buff)

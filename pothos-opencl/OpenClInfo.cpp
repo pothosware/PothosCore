@@ -5,7 +5,7 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 
-#ifdef MAC
+#ifdef __APPLE__
 #include <OpenCL/cl.h>
 #else
 #include <CL/cl.h>
