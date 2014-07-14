@@ -35,7 +35,7 @@ QStringList getRemoteNodeUris(void)
 {
     std::lock_guard<std::mutex> lock(getMutex());
 
-    auto uris = getSettings().value("RemoteNodesTable/uris").toStringList();
+    auto uris = getSettings().value("RemoteNodes/uris").toStringList();
     uris.push_back("tcp://localhost");
 
     //sanitize duplicates
@@ -51,7 +51,7 @@ static void setRemoteNodeUris(const QStringList &uris)
 {
     std::lock_guard<std::mutex> lock(getMutex());
 
-    getSettings().setValue("RemoteNodesTable/uris", uris);
+    getSettings().setValue("RemoteNodes/uris", uris);
 }
 
 /***********************************************************************
@@ -79,11 +79,11 @@ struct NodeInfo
                 auto env = client.makeEnvironment("managed");
                 auto nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
                 this->nodeName = QString::fromStdString(nodeInfo.nodeName);
-                getSettings().setValue("RemoteNodesTable/"+this->uri+"/nodeName", this->nodeName);
+                getSettings().setValue("RemoteNodes/"+this->uri+"/nodeName", this->nodeName);
             }
             this->isOnline = true;
             this->lastAccess = Poco::Timestamp();
-            getSettings().setValue("RemoteNodesTable/"+this->uri+"/lastAccess", int(this->lastAccess.epochTime()));
+            getSettings().setValue("RemoteNodes/"+this->uri+"/lastAccess", int(this->lastAccess.epochTime()));
         }
         //otherwise, fetch the information from the settings cache
         catch(const Pothos::RemoteClientError &)
@@ -91,9 +91,9 @@ struct NodeInfo
             this->isOnline = false;
             if (this->nodeName.isEmpty())
             {
-                this->nodeName = getSettings().value("RemoteNodesTable/"+this->uri+"/nodeName").toString();
+                this->nodeName = getSettings().value("RemoteNodes/"+this->uri+"/nodeName").toString();
             }
-            this->lastAccess = Poco::Timestamp::fromEpochTime(std::time_t(getSettings().value("RemoteNodesTable/"+this->uri+"/lastAccess").toInt()));
+            this->lastAccess = Poco::Timestamp::fromEpochTime(std::time_t(getSettings().value("RemoteNodes/"+this->uri+"/lastAccess").toInt()));
         }
     }
 
