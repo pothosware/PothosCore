@@ -14,11 +14,6 @@
 namespace Pothos {
 
 /*!
- * A RemoteNodeError is thrown when a node call fails.
- */
-POTHOS_DECLARE_EXCEPTION(POTHOS_API, RemoteNodeError, RuntimeException)
-
-/*!
  * A RemoteClientError is thrown when a the server connect fails.
  */
 POTHOS_DECLARE_EXCEPTION(POTHOS_API, RemoteClientError, RuntimeException)

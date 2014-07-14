@@ -9,7 +9,6 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Remote/Node.hpp>
 #include <Pothos/Remote/Client.hpp>
 #include <Pothos/Remote/Server.hpp>
 #include <Pothos/Remote/Exception.hpp>
