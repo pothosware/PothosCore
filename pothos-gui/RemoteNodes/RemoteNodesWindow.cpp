@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGui.hpp"
-#include <QSplitter>
+#include <QVBoxLayout>
 #include <QTabWidget>
 #include <QLabel>
 #include <QMovie>
@@ -33,23 +33,24 @@ public:
 /***********************************************************************
  * top level window for node info
  **********************************************************************/
-class RemoteNodesWindow : public QSplitter
+class RemoteNodesWindow : public QWidget
 {
     Q_OBJECT
 public:
     RemoteNodesWindow(QWidget *parent):
-        QSplitter(parent),
+        QWidget(parent),
         _startMapper(new QSignalMapper(this)),
         _stopMapper(new QSignalMapper(this))
     {
+        auto layout = new QVBoxLayout(this);
         auto table = makeRemoteNodesTable(this);
-        this->addWidget(table);
+        layout->addWidget(table);
 
         _tabs = new RemoteNodeInfoTabs(this);
         _tabs->addTab(makeSystemInfoTree(_tabs), tr("System Info"));
         _tabs->addTab(makePluginRegistryTree(_tabs), tr("Plugin Registry"));
         _tabs->addTab(makePluginModuleTree(_tabs), tr("Plugin Modules"));
-        this->addWidget(_tabs);
+        layout->addWidget(_tabs, 1);
 
         //connect mappers
         connect(
@@ -72,13 +73,6 @@ public:
             connect(_tabs->widget(i), SIGNAL(stopLoad(void)), _stopMapper, SLOT(map(void)));
             _stopMapper->setMapping(_tabs->widget(i), i);
         }
-
-        this->restoreState(getSettings().value("RemoteNodesWindow/state").toByteArray());
-    }
-
-    ~RemoteNodesWindow(void)
-    {
-        getSettings().setValue("RemoteNodesWindow/state", saveState());
     }
 
 private slots:

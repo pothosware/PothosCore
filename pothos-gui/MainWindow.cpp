@@ -12,7 +12,6 @@
 #include <QAction>
 #include <QTabWidget>
 #include <QMessageBox>
-#include <QSplitter>
 #include <QMap>
 #include <Poco/SingletonHolder.h>
 #include <Poco/Logger.h>
@@ -44,14 +43,12 @@ public:
     PothosGuiMainWindow(QWidget *parent):
         QMainWindow(parent),
         _actionMap(getActionMap()),
-        _menuMap(getMenuMap()),
-        _topLevelSplitter(new QSplitter(this))
+        _menuMap(getMenuMap())
     {
         getObjectMap()["mainWindow"] = this;
 
         this->setMinimumSize(800, 600);
         this->setWindowTitle("Pothos GUI");
-        this->setCentralWidget(_topLevelSplitter);
 
         //initialize actions and action buttons
         this->createActions();
@@ -61,6 +58,7 @@ public:
         _messageWindowDock = new QDockWidget(this);
         _messageWindowDock->setObjectName("MessageWindowDock");
         _messageWindowDock->setWindowTitle(tr("Message Window"));
+        _messageWindowDock->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
         _messageWindowDock->setWidget(makeMessageWindow(_messageWindowDock));
         this->addDockWidget(Qt::BottomDockWidgetArea, _messageWindowDock);
 
@@ -75,9 +73,10 @@ public:
         _remoteNodesDock = new QDockWidget(this);
         _remoteNodesDock->setObjectName("RemoteNodesDock");
         _remoteNodesDock->setWindowTitle(tr("Remote Nodes"));
+        _remoteNodesDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
         _remoteNodesDock->setWidget(makeRemoteNodesWindow(_remoteNodesDock));
-        this->addDockWidget(Qt::TopDockWidgetArea, _remoteNodesDock);
-        _remoteNodesDock->hide(); //default is hidden
+        this->addDockWidget(Qt::RightDockWidgetArea, _remoteNodesDock);
+        //_remoteNodesDock->hide(); //default is hidden
 
         //block cache (make before block tree)
         auto blockCache = makeBlockCache(this);
@@ -85,21 +84,34 @@ public:
         connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
 
         //create topology editor tabbed widget
-        auto editorTabs = makeGraphEditorTabs(_topLevelSplitter);
+        auto editorTabs = makeGraphEditorTabs(this);
+        this->setCentralWidget(editorTabs);
         getObjectMap()["editorTabs"] = editorTabs;
 
-        //create properties panel (make after block cache)
-        auto propertiesPanel = makePropertiesPanel(this);
-        getObjectMap()["propertiesPanel"] = propertiesPanel;
+        //create block tree (after the block cache)
+        _blockTreeDock = new QDockWidget(this);
+        _blockTreeDock->setObjectName("BlockTreeDock");
+        _blockTreeDock->setWindowTitle(tr("Block Tree"));
+        _blockTreeDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        auto blockTree = makeBlockTree(_blockTreeDock);
+        getObjectMap()["blockTree"] = blockTree;
+        _blockTreeDock->setWidget(blockTree);
+        this->tabifyDockWidget(_remoteNodesDock, _blockTreeDock);
 
-        //load the splitter between editor and properties
-        _topLevelSplitter->addWidget(editorTabs);
-        _topLevelSplitter->addWidget(propertiesPanel);
+        //create properties panel (make after block cache)
+        _propertiesPanelDock = new QDockWidget(this);
+        _propertiesPanelDock->setObjectName("PropertiesPanelDock");
+        _propertiesPanelDock->setWindowTitle(tr("Properties Panel"));
+        _propertiesPanelDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        auto propertiesPanel = makePropertiesPanel(_propertiesPanelDock);
+        getObjectMap()["propertiesPanel"] = propertiesPanel;
+        _propertiesPanelDock->setWidget(propertiesPanel);
+        this->tabifyDockWidget(_blockTreeDock, _propertiesPanelDock);
 
         //restore main window settings from file
         this->restoreGeometry(getSettings().value("MainWindow/geometry").toByteArray());
         this->restoreState(getSettings().value("MainWindow/state").toByteArray());
-        _topLevelSplitter->restoreState(getSettings().value("MainSplitter/state").toByteArray());
+        _propertiesPanelDock->hide(); //hidden until used
 
         //create menus after docks and tool bars (view menu calls their toggleViewAction())
         this->createMenus();
@@ -136,7 +148,6 @@ protected:
         emit this->exitBegin(event);
         getSettings().setValue("MainWindow/geometry", saveGeometry());
         getSettings().setValue("MainWindow/state", saveState());
-        getSettings().setValue("MainSplitter/state", _topLevelSplitter->saveState());
     }
 
     void showEvent(QShowEvent *event)
@@ -193,10 +204,11 @@ private:
 
     void createMainToolBar(void);
     QToolBar *_mainToolBar;
-    QSplitter *_topLevelSplitter;
     QDockWidget *_remoteNodesDock;
     QDockWidget *_messageWindowDock;
     QDockWidget *_graphActionsDock;
+    QDockWidget *_blockTreeDock;
+    QDockWidget *_propertiesPanelDock;
 };
 
 void PothosGuiMainWindow::createActions(void)
@@ -387,6 +399,7 @@ void PothosGuiMainWindow::createMenus(void)
     _viewMenu->addAction(_remoteNodesDock->toggleViewAction());
     _viewMenu->addAction(_messageWindowDock->toggleViewAction());
     _viewMenu->addAction(_graphActionsDock->toggleViewAction());
+    _viewMenu->addAction(_blockTreeDock->toggleViewAction());
     _viewMenu->addAction(_mainToolBar->toggleViewAction());
     _fileMenu->addSeparator();
     _viewMenu->addAction(_zoomInAction);

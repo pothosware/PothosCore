@@ -7,6 +7,7 @@
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include <Poco/MD5Engine.h>
+#include <QDockWidget>
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -404,11 +405,10 @@ class PropertiesPanelTopWidget : public QStackedWidget
 public:
     PropertiesPanelTopWidget(QWidget *parent):
         QStackedWidget(parent),
-        _propertiesPanel(nullptr),
-        _blockTree(makeBlockTree(this))
+        _dock(dynamic_cast<QDockWidget *>(parent)),
+        _propertiesPanel(nullptr)
     {
-        getObjectMap()["blockTree"] = _blockTree;
-        this->addWidget(_blockTree);
+        assert(_dock != nullptr);
     }
 
 private slots:
@@ -416,19 +416,26 @@ private slots:
     void handleGraphModifyProperties(GraphObject *obj)
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
-        if (block == nullptr) this->setCurrentWidget(_blockTree);
-        else
+        if (block != nullptr)
         {
             if (_propertiesPanel) delete _propertiesPanel;
             _propertiesPanel = new PropertiesPanelBlock(block, this);
+            connect(_propertiesPanel, SIGNAL(destroyed(QObject*)), this, SLOT(handlePanelDestroyed(QObject *)));
             this->addWidget(_propertiesPanel);
             this->setCurrentWidget(_propertiesPanel);
+            _dock->show();
+            _dock->raise();
         }
     }
 
+    void handlePanelDestroyed(QObject *)
+    {
+        _dock->hide();
+    }
+
 private:
+    QDockWidget *_dock;
     QPointer<QWidget> _propertiesPanel;
-    QWidget *_blockTree;
 };
 
 QWidget *makePropertiesPanel(QWidget *parent)
