@@ -36,7 +36,9 @@ int main(int argc, char **argv)
         }
         catch (const Pothos::RemoteClientError &)
         {
-            static Pothos::RemoteServer server("tcp://localhost:"+Pothos::RemoteServer::getLocatorPort()); //TODO make it background -- not close with process
+            static Pothos::RemoteServer server("tcp://localhost:"+Pothos::RemoteServer::getLocatorPort());
+            //TODO make server background so it does not close with process
+            Pothos::RemoteClient client("tcp://localhost"); //now it should connect to the new server
         }
     }
     catch (const Pothos::Exception &ex)
