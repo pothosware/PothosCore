@@ -70,11 +70,11 @@ void GraphEditorTabs::handleOpen(void)
     if(lastPath.isEmpty()) {
         lastPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     }
-    assert(!lastPath.isEmpty());
+    assert(not lastPath.isEmpty());
     auto filePaths = QFileDialog::getOpenFileNames(this,
                         "Open Files",
                         lastPath,
-                        "Pothos Topologies (.pth)");
+                        "Pothos Topologies (*.pth)");
 
     for (const auto &filePath : filePaths)
     {
