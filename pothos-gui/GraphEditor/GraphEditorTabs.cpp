@@ -101,6 +101,7 @@ void GraphEditorTabs::handleOpen(const QString &filePath)
     editor->setCurrentFilePath(filePath);
     this->addTab(editor, "");
     editor->load();
+    this->setCurrentWidget(editor);
 
     this->saveState();
 }
