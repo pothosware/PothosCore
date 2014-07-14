@@ -26,7 +26,7 @@ struct Pothos::RemoteServer::Impl
     ~Impl(void)
     {
         client = RemoteClient(); //reset
-        Poco::Process::kill(ph.id());
+        Poco::Process::kill(ph);
     }
 
     Poco::ProcessHandle ph;
