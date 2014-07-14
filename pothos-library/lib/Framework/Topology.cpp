@@ -34,7 +34,7 @@ struct Pothos::Topology::Impl
     std::vector<Flow> flows;
     std::vector<Flow> activeFlatFlows;
     std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
-    std::vector<Flow> createNetworkFlows(void);
+    std::vector<Flow> createNetworkFlows(const std::vector<Flow> &);
     std::vector<Flow> rectifyDomainFlows(const std::vector<Flow> &);
     std::vector<std::string> inputPortNames;
     std::vector<std::string> outputPortNames;
@@ -214,12 +214,8 @@ static std::vector<Flow> squashFlows(const std::vector<Flow> &flows)
 /***********************************************************************
  * helpers to create network iogress flows
  **********************************************************************/
-std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(void)
+std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<Flow> &flatFlows)
 {
-    //first flatten the topology
-    const auto flatFlows = squashFlows(this->flows);
-
-    //then create network iogress blocks when needed
     std::vector<Flow> networkAwareFlows;
     for (const auto &flow : flatFlows)
     {
@@ -554,9 +550,18 @@ std::vector<std::string> Pothos::Topology::outputPortNames(void)
 
 void Pothos::Topology::commit(void)
 {
-    auto flatFlows = _impl->createNetworkFlows();
+    //1) flatten the topology
+    auto flatFlows = squashFlows(_impl->flows);
+
+    //2) create network iogress blocks when needed
+    flatFlows = _impl->createNetworkFlows(flatFlows);
+
+    //3) deal with domain crossing
     flatFlows = _impl->rectifyDomainFlows(flatFlows);
+
+    //4) install buffer managers
     installBufferManagers(flatFlows);
+
     const auto &activeFlatFlows = _impl->activeFlatFlows;
 
     //new flows are in flat flows but not in current
@@ -651,6 +656,10 @@ void Pothos::Topology::_connect(
     flow.dst.obj = getInternalObject(dst, *this);
     flow.src.name = srcName;
     flow.dst.name = dstName;
+
+    //perform auto-allocation, on a block this may or may not allocate, on a topology this throws
+    try{getConnectable(src).callProxy("get:_actor").call<std::string>("autoAllocateOutput", srcName);}catch(const Exception &){}
+    try{getConnectable(dst).callProxy("get:_actor").call<std::string>("autoAllocateInput", dstName);}catch(const Exception &){}
 
     if (this->uid() == getConnectable(src).call<std::string>("uid")) _impl->outputPortNames.push_back(srcName);
     if (this->uid() == getConnectable(dst).call<std::string>("uid")) _impl->inputPortNames.push_back(dstName);

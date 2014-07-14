@@ -62,53 +62,58 @@ void Pothos::WorkerActor::handleSubscriberPortMessage(const PortMessage<std::str
 {
     try
     {
+        //extract the list of subscribers
+        std::vector<PortSubscriber> *subscribers = nullptr;
+        if (message.contents.action.find("INPUT") != std::string::npos)
+        {
+            assert(message.contents.port.inputPort != nullptr);
+            auto &port = getOutput(message.id, __FUNCTION__);
+            subscribers = &port._impl->subscribers;
+        }
+        if (message.contents.action.find("OUTPUT") != std::string::npos)
+        {
+            assert(message.contents.port.outputPort != nullptr);
+            auto &port = getInput(message.id, __FUNCTION__);
+            subscribers = &port._impl->subscribers;
+        }
+        assert(subscribers != nullptr);
+
+        //locate the subscriber in the list
+        auto sub = message.contents.port;
+        auto it = std::find(subscribers->begin(), subscribers->end(), sub);
+        const bool found = it != subscribers->end();
+
         //subscriber is an input, add to the outputs subscribers list
         if (message.contents.action == "SUBINPUT")
         {
-            assert(message.contents.port.inputPort != nullptr);
-            this->autoAllocateOutput(message.id);
-            auto &port = getOutput(message.id, __FUNCTION__);
-            auto sub = message.contents.port;
-            auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
-            if (it != port._impl->subscribers.end()) throw Poco::format("input %s subscription exsists in output port %s", message.contents.port.inputPort->name(), message.id);
-            port._impl->subscribers.push_back(sub);
+            if (found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
+                Poco::format("input %s subscription exsists in output port %s", message.contents.port.inputPort->name(), message.id));
+            subscribers->push_back(sub);
         }
 
         //subscriber is an output, add to the input subscribers list
         if (message.contents.action == "SUBOUTPUT")
         {
-            assert(message.contents.port.outputPort != nullptr);
-            this->autoAllocateInput(message.id);
-            auto &port = getInput(message.id, __FUNCTION__);
-            auto sub = message.contents.port;
-            auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
-            if (it != port._impl->subscribers.end()) throw Poco::format("output %s subscription exsists in input port %s", message.contents.port.outputPort->name(), message.id);
-            port._impl->subscribers.push_back(sub);
+            if (found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
+                Poco::format("output %s subscription exsists in input port %s", message.contents.port.outputPort->name(), message.id));
+            subscribers->push_back(sub);
         }
 
         //unsubscriber is an input, remove from the outputs subscribers list
         if (message.contents.action == "UNSUBINPUT")
         {
-            assert(message.contents.port.inputPort != nullptr);
-            auto &port = getOutput(message.id, __FUNCTION__);
-            auto sub = message.contents.port;
-            auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
-            if (it == port._impl->subscribers.end()) throw Poco::format("input %s subscription missing from output port %s", message.contents.port.inputPort->name(), message.id);
-            port._impl->subscribers.erase(it);
+            if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
+                Poco::format("input %s subscription missing from output port %s", message.contents.port.inputPort->name(), message.id));
+            subscribers->erase(it);
         }
 
         //unsubscriber is an output, remove from the inputs subscribers list
         if (message.contents.action == "UNSUBOUTPUT")
         {
-            assert(message.contents.port.outputPort != nullptr);
-            auto &port = getInput(message.id, __FUNCTION__);
-            auto sub = message.contents.port;
-            auto it = std::find(port._impl->subscribers.begin(), port._impl->subscribers.end(), sub);
-            if (it == port._impl->subscribers.end()) throw Poco::format("output %s subscription missing from input port %s", message.contents.port.outputPort->name(), message.id);
-            port._impl->subscribers.erase(it);
+            if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
+                Poco::format("output %s subscription missing from input port %s", message.contents.port.outputPort->name(), message.id));
+            subscribers->erase(it);
         }
-
-        //TODO delete unsubscribed automatic ports
 
         this->updatePorts();
 
@@ -117,10 +122,6 @@ void Pothos::WorkerActor::handleSubscriberPortMessage(const PortMessage<std::str
     catch (const Pothos::Exception &ex)
     {
         if (from != Theron::Address::Null()) this->Send(ex.displayText(), from);
-    }
-    catch (const std::string &ex)
-    {
-        if (from != Theron::Address::Null()) this->Send(ex, from);
     }
     this->bump();
 }

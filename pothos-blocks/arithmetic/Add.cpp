@@ -53,7 +53,6 @@ public:
         this->registerCall(POTHOS_FCN_TUPLE(Add<Type>, setPreload));
         this->registerCall(POTHOS_FCN_TUPLE(Add<Type>, getNumInlineBuffers));
         this->setupInput(0, typeid(Type));
-        this->setupInput(1, typeid(Type)); //TODO FIXME remove this line after: https://github.com/pothosware/pothos-library/issues/42
         this->setupOutput(0, typeid(Type));
 
         //read before write optimization
@@ -66,6 +65,7 @@ public:
         const auto ports = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
         for (size_t i = 0; i < ports->size(); i++)
         {
+            if (i > 0) this->setupInput(i, this->input(0)->dtype());
             auto bytes = ports->getElement<int>(i)*this->input(i)->dtype().size();
             if (bytes == 0) continue;
             Pothos::BufferChunk buffer(bytes);
