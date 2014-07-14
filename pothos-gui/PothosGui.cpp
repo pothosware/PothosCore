@@ -32,14 +32,11 @@ int main(int argc, char **argv)
         //make a server and node that is temporary with this process
         try
         {
-            Pothos::RemoteNode("tcp://localhost").communicate();
+            Pothos::RemoteClient client("tcp://localhost");
         }
-        catch (const Pothos::RemoteNodeError &)
+        catch (const Pothos::RemoteClientError &)
         {
-            static Pothos::RemoteServer server("tcp://0.0.0.0");
-            Pothos::RemoteNode node("tcp://localhost:"+server.getActualPort());
-            node.makeClient(); //tests communication
-            node.registerWithProcess();
+            static Pothos::RemoteServer server("tcp://localhost:"+Pothos::RemoteServer::getLocatorPort()); //TODO make it background -- not close with process
         }
     }
     catch (const Pothos::Exception &ex)

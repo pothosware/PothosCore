@@ -13,10 +13,70 @@
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
 #include <Pothos/Remote.hpp>
+#include <Pothos/Proxy.hpp>
+#include <Pothos/System.hpp>
 #include <Poco/DateTimeFormatter.h>
 #include <map>
 #include <iostream>
 #include <functional> //std::bind
+
+/***********************************************************************
+ * global query for remote nodes known to system
+ **********************************************************************/
+QStringList getRemoteNodeUris(void)
+{
+    auto uris = getSettings().value("RemoteNodesTable/uris").toStringList();
+    uris.push_back("tcp://localhost");
+
+    //sanitize duplicates
+    QStringList noDups;
+    for (const auto &uri : uris)
+    {
+        if (std::find(noDups.begin(), noDups.end(), uri) == noDups.end()) noDups.push_back(uri);
+    }
+    return noDups;
+}
+
+static void setRemoteNodeUris(const QStringList &uris)
+{
+    getSettings().setValue("RemoteNodesTable/uris", uris);
+}
+
+/***********************************************************************
+ * represent information about a remote node
+ **********************************************************************/
+struct NodeInfo
+{
+    NodeInfo(void):
+        isOnline(false),
+        accessCount(0)
+    {}
+    QString uri;
+    Poco::Timestamp lastAccess;
+    bool isOnline;
+    size_t accessCount;
+    QString nodeName;
+    void update(void)
+    {
+        try
+        {
+            Pothos::RemoteClient client(this->uri.toStdString());
+            if (nodeName.isEmpty())
+            {
+                auto env = client.makeEnvironment("managed");
+                auto nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
+                this->nodeName = QString::fromStdString(nodeInfo.nodeName);
+            }
+            this->lastAccess = Poco::Timestamp();
+            this->accessCount++;
+            this->isOnline = true;
+        }
+        catch(const Pothos::RemoteClientError &)
+        {
+            this->isOnline = false;
+        }
+    }
+};
 
 /***********************************************************************
  * Custom line editor for node URI entry
@@ -117,7 +177,7 @@ public:
         QTableWidget(parent),
         _removeMapper(new QSignalMapper(this)),
         _timer(new QTimer(this)),
-        _watcher(new QFutureWatcher<std::vector<Pothos::RemoteNode>>(this))
+        _watcher(new QFutureWatcher<std::vector<NodeInfo>>(this))
     {
         this->setColumnCount(nCols);
         size_t col = 0;
@@ -144,27 +204,30 @@ public:
 
 signals:
     void handleErrorMessage(const QString &);
-    void nodeInfoRequest(const Pothos::RemoteNode &);
+    void nodeInfoRequest(const std::string &);
 
 private slots:
 
     void handleCellClicked(const int row, const int col)
     {
         if (col < 1) return;
-        for (const auto &entry : _keyToRow)
+        for (const auto &entry : _uriToRow)
         {
             if (entry.second != size_t(row)) continue;
-            const auto &node = _keyToNode.at(entry.first);
-            if (node.isOnline()) emit nodeInfoRequest(node);
-            else emit handleErrorMessage(tr("node %1 is offline").arg(QString::fromStdString(node.getName())));
+            auto &info = _uriToInfo.at(entry.first);
+            info.update();
+            if (info.isOnline) emit nodeInfoRequest(info.uri.toStdString());
+            else emit handleErrorMessage(tr("node %1 is offline").arg(info.uri));
         }
     }
 
-    void handleRemove(const QString &key)
+    void handleRemove(const QString &uri)
     {
         try
         {
-            Pothos::RemoteNode::fromKey(key.toStdString()).removeFromRegistry();
+            auto uris = getRemoteNodeUris();
+            uris.erase(std::find(uris.begin(), uris.end(), uri));
+            setRemoteNodeUris(uris);
             this->reloadTable();
         }
         catch(const Pothos::Exception &ex)
@@ -177,7 +240,14 @@ private slots:
     {
         try
         {
-            Pothos::RemoteNode(uri.toStdString()).addToRegistry();
+            auto uris = getRemoteNodeUris();
+            if (std::find(uris.begin(), uris.end(), uri) != uris.end())
+            {
+                emit handleErrorMessage(tr("%1 already exists").arg(uri));
+                return;
+            }
+            uris.push_back(uri);
+            setRemoteNodeUris(uris);
             this->reloadTable();
         }
         catch(const Pothos::Exception &ex)
@@ -195,18 +265,18 @@ private slots:
     {
         //did the keys change?
         {
-            auto keys = Pothos::RemoteNode::listRegistryKeys();
+            auto uris = getRemoteNodeUris();
             bool changed = false;
-            if (_keyToRow.size() != keys.size()) changed = true;
-            for (size_t i = 0; i < keys.size(); i++)
+            if (_uriToRow.size() != size_t(uris.size())) changed = true;
+            for (int i = 0; i < uris.size(); i++)
             {
-                if (_keyToRow.find(keys[i]) == _keyToRow.end()) changed = true;
+                if (_uriToRow.find(uris[i]) == _uriToRow.end()) changed = true;
             }
             if (changed) return this->reloadTable();
         }
 
-        std::vector<Pothos::RemoteNode> nodes;
-        for (const auto &entry : _keyToNode)
+        std::vector<NodeInfo> nodes;
+        for (const auto &entry : _uriToInfo)
         {
             nodes.push_back(entry.second);
         }
@@ -216,46 +286,42 @@ private slots:
 
 private:
 
-    static std::vector<Pothos::RemoteNode> peformNodeComms(std::vector<Pothos::RemoteNode> nodes)
+    static std::vector<NodeInfo> peformNodeComms(std::vector<NodeInfo> nodes)
     {
-        for (size_t i = 0; i < nodes.size(); i++)
-        {
-            try{nodes[i].communicate();}catch(const Pothos::RemoteNodeError &){}
-        }
+        for (size_t i = 0; i < nodes.size(); i++) nodes[i].update();
         return nodes;
     }
 
-    void reloadRows(const std::vector<Pothos::RemoteNode> &nodes);
+    void reloadRows(const std::vector<NodeInfo> &nodes);
     void reloadTable(void);
     QSignalMapper *_removeMapper;
     QTimer *_timer;
-    QFutureWatcher<std::vector<Pothos::RemoteNode>> *_watcher;
-    std::map<std::string, size_t> _keyToRow;
-    std::map<std::string, Pothos::RemoteNode> _keyToNode;
+    QFutureWatcher<std::vector<NodeInfo>> *_watcher;
+    std::map<QString, size_t> _uriToRow;
+    std::map<QString, NodeInfo> _uriToInfo;
     static const size_t nCols = 4;
 };
 
-void RemoteNodesQTableWidget::reloadRows(const std::vector<Pothos::RemoteNode> &nodes)
+void RemoteNodesQTableWidget::reloadRows(const std::vector<NodeInfo> &nodeInfos)
 {
-    for (size_t i = 0; i < nodes.size(); i++)
+    for (size_t i = 0; i < nodeInfos.size(); i++)
     {
-        const auto &node = nodes[i];
-        if (_keyToRow.find(node.getKey()) == _keyToRow.end()) continue;
-        const size_t row = _keyToRow[node.getKey()];
-        _keyToNode[node.getKey()] = node;
+        const auto &info = nodeInfos[i];
+        if (_uriToRow.find(info.uri) == _uriToRow.end()) continue;
+        const size_t row = _uriToRow[info.uri];
+        _uriToInfo[info.uri] = info;
 
         //gather information
-        auto t = Poco::Timestamp::fromEpochTime(node.getLastAccess());
-        auto ldt = Poco::LocalDateTime(Poco::DateTime(t));
+        auto ldt = Poco::LocalDateTime(Poco::DateTime(info.lastAccess));
         auto timeStr = Poco::DateTimeFormatter::format(ldt, "%h:%M:%S %A - %b %e %Y");
-        auto accessTimeStr = QString((t == 0)? tr("Never") : QString::fromStdString(timeStr));
+        auto accessTimeStr = QString((info.accessCount == 0)? tr("Never") : QString::fromStdString(timeStr));
         QIcon statusIcon = makeIconFromTheme(
-            node.isOnline()?"network-transmit-receive":"network-offline");
+            info.isOnline?"network-transmit-receive":"network-offline");
 
         //load columns
         size_t col = 1;
-        this->setItem(row, col++, new QTableWidgetItem(statusIcon, QString::fromStdString(node.getUri())));
-        this->setItem(row, col++, new QTableWidgetItem(QString::fromStdString(node.getName())));
+        this->setItem(row, col++, new QTableWidgetItem(statusIcon, info.uri));
+        this->setItem(row, col++, new QTableWidgetItem(info.nodeName));
         this->setItem(row, col++, new QTableWidgetItem(accessTimeStr));
         for (size_t c = 0; c < nCols; c++) disableEdit(this->item(row, c));
     }
@@ -267,11 +333,11 @@ void RemoteNodesQTableWidget::reloadTable(void)
     //clear stuff for table reload
     this->clearContents();
     this->clearSpans();
-    _keyToRow.clear();
+    _uriToRow.clear();
 
     //query keys and set dimensions
-    auto keys = Pothos::RemoteNode::listRegistryKeys();
-    this->setRowCount(keys.size()+1);
+    auto uris = getRemoteNodeUris();
+    this->setRowCount(uris.size()+1);
     size_t row = 0;
 
     //create new entry row
@@ -283,15 +349,15 @@ void RemoteNodesQTableWidget::reloadTable(void)
     row++;
 
     //enumerate the available nodes
-    for (size_t i = 0; i < keys.size(); i++)
+    for (int i = 0; i < uris.size(); i++)
     {
-        const auto &key = keys[i];
-        _keyToNode[key] = Pothos::RemoteNode::fromKey(key);
-        _keyToRow[key] = row;
+        const auto &uri = uris[i];
+        _uriToInfo[uri].uri = uri;
+        _uriToRow[uri] = row;
         auto removeButton = makeToolButton(this, "list-remove");
         this->setCellWidget(row, 0, removeButton);
         connect(removeButton, SIGNAL(clicked(void)), _removeMapper, SLOT(map()));
-        _removeMapper->setMapping(removeButton, QString::fromStdString(key));
+        _removeMapper->setMapping(removeButton, uri);
 
         row++;
     }

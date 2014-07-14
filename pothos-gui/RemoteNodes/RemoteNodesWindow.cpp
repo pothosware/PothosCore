@@ -64,8 +64,8 @@ public:
         for (int i = 0; i < _tabs->count(); i++)
         {
             connect(
-                table, SIGNAL(nodeInfoRequest(const Pothos::RemoteNode &)),
-                _tabs->widget(i), SLOT(handeNodeInfoRequest(const Pothos::RemoteNode &)));
+                table, SIGNAL(nodeInfoRequest(const std::string &)),
+                _tabs->widget(i), SLOT(handeNodeInfoRequest(const std::string &)));
 
             connect(_tabs->widget(i), SIGNAL(startLoad(void)), _startMapper, SLOT(map(void)));
             _startMapper->setMapping(_tabs->widget(i), i);
