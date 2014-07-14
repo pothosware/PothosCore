@@ -16,15 +16,25 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/System.hpp>
 #include <Poco/DateTimeFormatter.h>
+#include <Poco/SingletonHolder.h>
 #include <map>
 #include <iostream>
 #include <functional> //std::bind
+#include <mutex>
+
+std::mutex &getMutex(void)
+{
+    static Poco::SingletonHolder<std::mutex> sh;
+    return *sh.get();
+}
 
 /***********************************************************************
  * global query for remote nodes known to system
  **********************************************************************/
 QStringList getRemoteNodeUris(void)
 {
+    std::lock_guard<std::mutex> lock(getMutex());
+
     auto uris = getSettings().value("RemoteNodesTable/uris").toStringList();
     uris.push_back("tcp://localhost");
 
@@ -39,6 +49,8 @@ QStringList getRemoteNodeUris(void)
 
 static void setRemoteNodeUris(const QStringList &uris)
 {
+    std::lock_guard<std::mutex> lock(getMutex());
+
     getSettings().setValue("RemoteNodesTable/uris", uris);
 }
 
@@ -49,32 +61,45 @@ struct NodeInfo
 {
     NodeInfo(void):
         isOnline(false),
-        accessCount(0)
+        lastAccess(Poco::Timestamp::fromEpochTime(0))
     {}
     QString uri;
-    Poco::Timestamp lastAccess;
     bool isOnline;
-    size_t accessCount;
+    Poco::Timestamp lastAccess;
     QString nodeName;
+
     void update(void)
     {
+        //determine if the remote node is online and update access times
         try
         {
             Pothos::RemoteClient client(this->uri.toStdString());
-            if (nodeName.isEmpty())
+            if (this->nodeName.isEmpty())
             {
                 auto env = client.makeEnvironment("managed");
                 auto nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
                 this->nodeName = QString::fromStdString(nodeInfo.nodeName);
+                getSettings().setValue("RemoteNodesTable/"+this->uri+"/nodeName", this->nodeName);
             }
-            this->lastAccess = Poco::Timestamp();
-            this->accessCount++;
             this->isOnline = true;
+            this->lastAccess = Poco::Timestamp();
+            getSettings().setValue("RemoteNodesTable/"+this->uri+"/lastAccess", int(this->lastAccess.epochTime()));
         }
+        //otherwise, fetch the information from the settings cache
         catch(const Pothos::RemoteClientError &)
         {
             this->isOnline = false;
+            if (this->nodeName.isEmpty())
+            {
+                this->nodeName = getSettings().value("RemoteNodesTable/"+this->uri+"/nodeName").toString();
+            }
+            this->lastAccess = Poco::Timestamp::fromEpochTime(std::time_t(getSettings().value("RemoteNodesTable/"+this->uri+"/lastAccess").toInt()));
         }
+    }
+
+    bool neverAccessed(void) const
+    {
+        return this->lastAccess == Poco::Timestamp::fromEpochTime(0);
     }
 };
 
@@ -314,7 +339,7 @@ void RemoteNodesQTableWidget::reloadRows(const std::vector<NodeInfo> &nodeInfos)
         //gather information
         auto ldt = Poco::LocalDateTime(Poco::DateTime(info.lastAccess));
         auto timeStr = Poco::DateTimeFormatter::format(ldt, "%h:%M:%S %A - %b %e %Y");
-        auto accessTimeStr = QString((info.accessCount == 0)? tr("Never") : QString::fromStdString(timeStr));
+        auto accessTimeStr = QString(info.neverAccessed()? tr("Never") : QString::fromStdString(timeStr));
         QIcon statusIcon = makeIconFromTheme(
             info.isOnline?"network-transmit-receive":"network-offline");
 
