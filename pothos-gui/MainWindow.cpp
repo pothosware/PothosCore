@@ -121,6 +121,12 @@ public:
         emit this->initDone();
     }
 
+    ~PothosGuiMainWindow(void)
+    {
+        getSettings().setValue("MainWindow/geometry", saveGeometry());
+        getSettings().setValue("MainWindow/state", saveState());
+    }
+
 signals:
     void initDone(void);
     void exitBegin(QCloseEvent *);
@@ -146,8 +152,6 @@ protected:
     void closeEvent(QCloseEvent *event)
     {
         emit this->exitBegin(event);
-        getSettings().setValue("MainWindow/geometry", saveGeometry());
-        getSettings().setValue("MainWindow/state", saveState());
     }
 
     void showEvent(QShowEvent *event)
