@@ -24,12 +24,12 @@ struct InfoResult
     Poco::JSON::Array::Ptr deviceInfo;
 };
 
-static InfoResult getInfo(const Pothos::RemoteNode &node)
+static InfoResult getInfo(const std::string &uriStr)
 {
     InfoResult info;
     try
     {
-        auto env = Pothos::RemoteNode(node).makeClient("info").makeEnvironment("managed");
+        auto env = Pothos::RemoteClient(uriStr).makeEnvironment("managed");
         info.nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
         info.numaInfo = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
         auto deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call<std::string>("dumpJson");
@@ -38,7 +38,7 @@ static InfoResult getInfo(const Pothos::RemoteNode &node)
     }
     catch (const Pothos::Exception &ex)
     {
-        poco_error_f2(Poco::Logger::get("PothosGui.SystemInfoTree"), "Failed to query system info %s - %s", node.getUri(), ex.displayText());
+        poco_error_f2(Poco::Logger::get("PothosGui.SystemInfoTree"), "Failed to query system info %s - %s", uriStr, ex.displayText());
     }
     return info;
 }
@@ -72,11 +72,11 @@ signals:
 
 private slots:
 
-    void handeNodeInfoRequest(const Pothos::RemoteNode &node)
+    void handeNodeInfoRequest(const std::string &uriStr)
     {
         if (_watcher->isRunning()) return;
         while (this->topLevelItemCount() > 0) delete this->topLevelItem(0);
-        _watcher->setFuture(QtConcurrent::run(std::bind(&getInfo, node)));
+        _watcher->setFuture(QtConcurrent::run(std::bind(&getInfo, uriStr)));
         emit startLoad();
     }
 

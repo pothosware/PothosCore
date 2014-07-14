@@ -31,12 +31,11 @@ Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
     if (it != getRegistryPathToBlockDesc().end()) return it->second;
 
     //search all of the nodes
-    for (const auto &key : Pothos::RemoteNode::listRegistryKeys())
+    for (const auto &uri : getRemoteNodeUris())
     {
         try
         {
-            auto node = Pothos::RemoteNode::fromKey(key);
-            auto client = node.makeClient("json");
+            auto client = Pothos::RemoteClient(uri.toStdString());
             auto env = client.makeEnvironment("managed");
             auto DocUtils = env->findProxy("Pothos/Util/DocUtils");
             return DocUtils.call<Poco::JSON::Object::Ptr>("dumpJsonAt", path);
@@ -53,18 +52,17 @@ Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
 /***********************************************************************
  * Query JSON docs from node
  **********************************************************************/
-static Poco::JSON::Array::Ptr queryBlockDescs(const std::string &nodeKey)
+static Poco::JSON::Array::Ptr queryBlockDescs(const QString &uri)
 {
     try
     {
-        auto node = Pothos::RemoteNode::fromKey(nodeKey);
-        auto env = node.makeClient("json").makeEnvironment("managed");
+        auto client = Pothos::RemoteClient(uri.toStdString());
+        auto env = client.makeEnvironment("managed");
         return env->findProxy("Pothos/Util/DocUtils").call<Poco::JSON::Array::Ptr>("dumpJson");
     }
     catch (const Pothos::Exception &ex)
     {
-        const auto uri = Pothos::RemoteNode::fromKey(nodeKey).getUri();
-        poco_error_f2(Poco::Logger::get("PothosGui.BlockCache"), "Failed to query JSON Docs from %s - %s", uri, ex.displayText());
+        poco_error_f2(Poco::Logger::get("PothosGui.BlockCache"), "Failed to query JSON Docs from %s - %s", uri.toStdString(), ex.displayText());
     }
 
     return Poco::JSON::Array::Ptr(); //empty JSON array
@@ -97,22 +95,23 @@ public slots:
         if (_watcher->isRunning()) return;
 
         //nodeKeys cannot be a temporary because QtConcurrent will reference them
-        _allNodeKeys = Pothos::RemoteNode::listRegistryKeys();
-        _watcher->setFuture(QtConcurrent::mapped(_allNodeKeys, &queryBlockDescs));
+        _allRemoteNodeUris = getRemoteNodeUris();
+        _watcher->setFuture(QtConcurrent::mapped(_allRemoteNodeUris, &queryBlockDescs));
     }
 
 private slots:
     void handleWatcherFinished(void)
     {
         //remove old nodes
-        std::map<std::string, Poco::JSON::Array::Ptr> newMap;
-        for (const auto &key : _allNodeKeys) newMap[key] = _nodeKeyToBlockDescs[key];
-        _nodeKeyToBlockDescs = newMap;
+        std::map<QString, Poco::JSON::Array::Ptr> newMap;
+        for (const auto &uri : _allRemoteNodeUris) newMap[uri] = _uriToBlockDescs[uri];
+        _uriToBlockDescs = newMap;
 
         //map paths to block descs
         _registryPathToBlockDesc.clear();
-        for (const auto &pair : _nodeKeyToBlockDescs)
+        for (const auto &pair : _uriToBlockDescs)
         {
+            if (not pair.second) continue;
             for (const auto &blockDescObj : *pair.second)
             {
                 const auto blockDesc = blockDescObj.extract<Poco::JSON::Object::Ptr>();
@@ -135,15 +134,15 @@ private slots:
 
     void handleWatcherDone(const int which)
     {
-        _nodeKeyToBlockDescs[_allNodeKeys[which]] = _watcher->resultAt(which);
+        _uriToBlockDescs[_allRemoteNodeUris[which]] = _watcher->resultAt(which);
     }
 
 private:
-    std::vector<std::string> _allNodeKeys;
+    QStringList _allRemoteNodeUris;
     QFutureWatcher<Poco::JSON::Array::Ptr> *_watcher;
 
     //storage structures
-    std::map<std::string, Poco::JSON::Array::Ptr> _nodeKeyToBlockDescs;
+    std::map<QString, Poco::JSON::Array::Ptr> _uriToBlockDescs;
     std::map<std::string, Poco::JSON::Object::Ptr> &_registryPathToBlockDesc;
     Poco::JSON::Array::Ptr _superSetBlockDescs;
 };

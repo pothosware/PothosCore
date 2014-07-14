@@ -6,7 +6,6 @@
 
 namespace Pothos
 {
-POTHOS_IMPLEMENT_EXCEPTION(RemoteNodeError, RuntimeException, "Remote Node Error")
 POTHOS_IMPLEMENT_EXCEPTION(RemoteClientError, RuntimeException, "Remote Client Error")
 POTHOS_IMPLEMENT_EXCEPTION(RemoteServerError, RuntimeException, "Remote Server Error")
 } //namespace Pothos

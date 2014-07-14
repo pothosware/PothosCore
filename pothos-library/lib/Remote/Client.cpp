@@ -13,11 +13,12 @@ struct Pothos::RemoteClient::Impl
     Impl(const std::string &uriStr, const long timeoutUs):
         socketStream(clientSocket)
     {
-        try
+        POTHOS_EXCEPTION_TRY
         {
-            RemoteNode node(uriStr); //validates
+            Poco::URI uri(uriStr);
+            if (uri.getScheme() != "tcp") throw InvalidArgumentException("unsupported URI scheme");
         }
-        catch (const Exception &ex)
+        POTHOS_EXCEPTION_CATCH(const Exception &ex)
         {
             throw RemoteClientError("Pothos::RemoteClient("+uriStr+")", ex);
         }

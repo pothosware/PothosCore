@@ -33,18 +33,18 @@ static void loadModuleMap(ModMapType &modMap, const Pothos::PluginRegistryInfoDu
 /***********************************************************************
  * information aquisition
  **********************************************************************/
-static ModMapType getRegistryDump(const Pothos::RemoteNode &node)
+static ModMapType getRegistryDump(const std::string &uriStr)
 {
     ModMapType modMap;
     try
     {
-        auto env = Pothos::RemoteNode(node).makeClient("info").makeEnvironment("managed");
+        auto env = Pothos::RemoteClient(uriStr).makeEnvironment("managed");
         const auto dump = env->findProxy("Pothos/PluginRegistry").call<Pothos::PluginRegistryInfoDump>("dump");
         loadModuleMap(modMap, dump);
     }
     catch (const Pothos::Exception &ex)
     {
-        poco_error_f2(Poco::Logger::get("PothosGui.PluginModuleTree"), "Failed to dump registry %s - %s", node.getUri(), ex.displayText());
+        poco_error_f2(Poco::Logger::get("PothosGui.PluginModuleTree"), "Failed to dump registry %s - %s", uriStr, ex.displayText());
     }
     return modMap;
 }
@@ -76,11 +76,11 @@ signals:
 
 private slots:
 
-    void handeNodeInfoRequest(const Pothos::RemoteNode &node)
+    void handeNodeInfoRequest(const std::string &uriStr)
     {
         if (_watcher->isRunning()) return;
         while (this->topLevelItemCount() > 0) delete this->topLevelItem(0);
-        _watcher->setFuture(QtConcurrent::run(std::bind(&getRegistryDump, node)));
+        _watcher->setFuture(QtConcurrent::run(std::bind(&getRegistryDump, uriStr)));
         emit startLoad();
     }
 

@@ -26,7 +26,7 @@ struct Pothos::RemoteServer::Impl
     ~Impl(void)
     {
         client = RemoteClient(); //reset
-        Poco::Process::kill(ph.id());
+        Poco::Process::kill(ph);
     }
 
     Poco::ProcessHandle ph;
@@ -42,13 +42,14 @@ Pothos::RemoteServer::RemoteServer(void)
 Pothos::RemoteServer::RemoteServer(const std::string &uriStr)
 {
     //validate the URI first
-    if (not uriStr.empty()) try
+    if (not uriStr.empty()) POTHOS_EXCEPTION_TRY
     {
-        RemoteNode node(uriStr); //validates
+        Poco::URI uri(uriStr);
+        if (uri.getScheme() != "tcp") throw InvalidArgumentException("unsupported URI scheme");
     }
-    catch (const Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Exception &ex)
     {
-        throw Pothos::RemoteClientError("Pothos::RemoteServer("+uriStr+")", ex);
+        throw RemoteServerError("Pothos::RemoteServer("+uriStr+")", ex);
     }
 
     //create args
