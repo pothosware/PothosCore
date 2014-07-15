@@ -49,6 +49,8 @@ public:
         return _lastContextMenuPos;
     }
 
+    int getMaxZIndex(void);
+
 protected:
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
@@ -74,8 +76,6 @@ private:
     void setupCanvas(void);
 
     void deselectAllObjs(void);
-
-    int getMaxZIndex(void);
 
     void doClickSelection(const QPointF &point);
 

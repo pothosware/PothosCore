@@ -358,7 +358,9 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const
     }
     block->setId(this->newId(hint));
 
-    //TODO set a top most z index
+    //set highest z-index on new block
+    const int maxZIndex = draw->getMaxZIndex();
+    block->setZIndex(maxZIndex+1);
 
     block->setPosition(QPointF(where)/draw->zoomScale());
     block->setRotation(0);
