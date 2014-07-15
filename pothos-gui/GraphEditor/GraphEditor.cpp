@@ -179,6 +179,22 @@ void GraphEditor::handleDeleteGraphPage(void)
 
 GraphConnection *GraphEditor::makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1)
 {
+    //direction check
+    if (ep0.getConnectableAttrs().isInput == ep1.getConnectableAttrs().isInput)
+    {
+        throw Pothos::Exception("GraphEditor::makeConnection()", "cant connect endpoints of the same direction");
+    }
+
+    //duplicate check
+    for (auto obj : this->getGraphObjects())
+    {
+        auto conn = dynamic_cast<GraphConnection *>(obj);
+        if (conn != nullptr and (
+            (conn->getOutputEndpoint() == ep0 and conn->getInputEndpoint() == ep1) or
+            (conn->getOutputEndpoint() == ep1 and conn->getInputEndpoint() == ep0)
+        )) throw Pothos::Exception("GraphEditor::makeConnection()", "connection already exists");
+    }
+
     auto conn = new GraphConnection(ep0.getObj()->parent());
     conn->setupEndpoint(ep0);
     conn->setupEndpoint(ep1);

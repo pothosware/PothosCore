@@ -157,7 +157,8 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     //emit the move event up to the graph editor
     if (event->button() == Qt::LeftButton and _selectionState == "move")
     {
-        emit stateChanged(GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription())));
+        auto selected = getObjectsSelected(false/*NC*/);
+        if (not selected.isEmpty()) emit stateChanged(GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription())));
     }
 
     if (event->button() == Qt::LeftButton)
@@ -256,9 +257,7 @@ void GraphDraw::doClickSelection(const QPointF &point)
         QPointer<GraphConnection> conn;
         if (thisEp.isValid() and _lastClickSelectEp.isValid() and not (thisEp == _lastClickSelectEp))
         {
-            auto lastAttrs = _lastClickSelectEp.getConnectableAttrs();
-            auto thisAttrs = thisEp.getConnectableAttrs();
-            if (lastAttrs.isInput != thisAttrs.isInput)
+            try
             {
                 conn = this->getGraphEditor()->makeConnection(thisEp, _lastClickSelectEp);
                 emit stateChanged(GraphState("connect-arrow", tr("Connect %1[%2] to %3[%4]").arg(
@@ -268,11 +267,14 @@ void GraphDraw::doClickSelection(const QPointF &point)
                     conn->getInputEndpoint().getKey().id
                 )));
             }
-            else
+            catch (const Pothos::Exception &ex)
             {
-                poco_warning_f2(Poco::Logger::get("PothosGui.GraphDraw.connect"), "Cannot connect %s to %s",
-                    std::string(lastAttrs.isInput?"input":"output"),
-                    std::string(thisAttrs.isInput?"input":"output"));
+                poco_warning(Poco::Logger::get("PothosGui.GraphDraw.connect"), Poco::format("Cannot connect port %s[%s] to port %s[%s]: %s",
+                    _lastClickSelectEp.getObj()->getId().toStdString(),
+                    _lastClickSelectEp.getKey().id.toStdString(),
+                    thisEp.getObj()->getId().toStdString(),
+                    thisEp.getKey().id.toStdString(),
+                    ex.message()));
             }
         }
 
