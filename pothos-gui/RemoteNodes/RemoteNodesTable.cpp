@@ -113,7 +113,7 @@ public:
     NodeUriQLineEdit(QWidget *parent):
         QLineEdit(parent)
     {
-        this->setPlaceholderText("Click to enter a new Node URI");
+        this->setPlaceholderText(tr("Click to enter a new Node URI"));
 
         connect(
             this, SIGNAL(returnPressed(void)),

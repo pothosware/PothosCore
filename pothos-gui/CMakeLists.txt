@@ -68,6 +68,7 @@ set(SOURCES
     BlockCache.cpp
     MessageWindow.cpp
     PropertiesPanel.cpp
+    AffinityPanel.cpp
 
     RemoteNodes/RemoteNodesWindow.cpp
     RemoteNodes/PluginRegistryTree.cpp

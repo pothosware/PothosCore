@@ -76,7 +76,16 @@ public:
         _remoteNodesDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
         _remoteNodesDock->setWidget(makeRemoteNodesWindow(_remoteNodesDock));
         this->addDockWidget(Qt::RightDockWidgetArea, _remoteNodesDock);
-        //_remoteNodesDock->hide(); //default is hidden
+
+        //create affinity panel
+        _affinityPanelDock = new QDockWidget(this);
+        _affinityPanelDock->setObjectName("AffinityPanelDock");
+        _affinityPanelDock->setWindowTitle(tr("Affinity Panel"));
+        _affinityPanelDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        auto affinityPanel = makeAffinityPanel(_affinityPanelDock);
+        getObjectMap()["affinityPanel"] = affinityPanel;
+        _affinityPanelDock->setWidget(affinityPanel);
+        this->tabifyDockWidget(_remoteNodesDock, _affinityPanelDock);
 
         //block cache (make before block tree)
         auto blockCache = makeBlockCache(this);
@@ -96,7 +105,7 @@ public:
         auto blockTree = makeBlockTree(_blockTreeDock);
         getObjectMap()["blockTree"] = blockTree;
         _blockTreeDock->setWidget(blockTree);
-        this->tabifyDockWidget(_remoteNodesDock, _blockTreeDock);
+        this->tabifyDockWidget(_affinityPanelDock, _blockTreeDock);
 
         //create properties panel (make after block cache)
         _propertiesPanelDock = new QDockWidget(this);
@@ -213,6 +222,7 @@ private:
     QDockWidget *_graphActionsDock;
     QDockWidget *_blockTreeDock;
     QDockWidget *_propertiesPanelDock;
+    QDockWidget *_affinityPanelDock;
 };
 
 void PothosGuiMainWindow::createActions(void)
@@ -404,6 +414,7 @@ void PothosGuiMainWindow::createMenus(void)
     _viewMenu->addAction(_messageWindowDock->toggleViewAction());
     _viewMenu->addAction(_graphActionsDock->toggleViewAction());
     _viewMenu->addAction(_blockTreeDock->toggleViewAction());
+    _viewMenu->addAction(_affinityPanelDock->toggleViewAction());
     _viewMenu->addAction(_mainToolBar->toggleViewAction());
     _fileMenu->addSeparator();
     _viewMenu->addAction(_zoomInAction);

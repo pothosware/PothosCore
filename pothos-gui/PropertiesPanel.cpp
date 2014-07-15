@@ -192,10 +192,10 @@ public:
         {
             auto buttonLayout = new QHBoxLayout();
             layout->addLayout(buttonLayout);
-            auto commitButton = new QPushButton(makeIconFromTheme("dialog-ok-apply"), "Commit", this);
+            auto commitButton = new QPushButton(makeIconFromTheme("dialog-ok-apply"), tr("Commit"), this);
             connect(commitButton, SIGNAL(pressed(void)), this, SLOT(handleCommitButton(void)));
             buttonLayout->addWidget(commitButton);
-            auto cancelButton = new QPushButton(makeIconFromTheme("dialog-cancel"), "Cancel", this);
+            auto cancelButton = new QPushButton(makeIconFromTheme("dialog-cancel"), tr("Cancel"), this);
             connect(cancelButton, SIGNAL(pressed(void)), this, SLOT(handleCancelButton(void)));
             buttonLayout->addWidget(cancelButton);
         }
