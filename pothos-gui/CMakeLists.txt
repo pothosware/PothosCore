@@ -82,7 +82,10 @@ set(SOURCES
     BlockCache.cpp
     MessageWindow.cpp
     PropertiesPanel.cpp
-    AffinityPanel.cpp
+
+    AffinitySupport/AffinityPanel.cpp
+    AffinitySupport/AffinityZoneEditor.cpp
+    AffinitySupport/FiniteNumericSelectionWidget.cpp
 
     RemoteNodes/RemoteNodesWindow.cpp
     RemoteNodes/PluginRegistryTree.cpp
