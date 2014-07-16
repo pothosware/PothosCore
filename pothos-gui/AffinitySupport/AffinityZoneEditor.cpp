@@ -3,7 +3,9 @@
 
 #include "PothosGui.hpp"
 #include "AffinitySupport/AffinityZoneEditor.hpp"
-#include "AffinitySupport/FiniteNumericSelectionWidget.hpp"
+#include "AffinitySupport/CpuSelectionWidget.hpp"
+#include <Pothos/Remote.hpp>
+#include <Pothos/Proxy.hpp>
 #include <QFormLayout>
 
 static const int ARBITRARY_MAX_THREADS = 4096;
@@ -70,7 +72,9 @@ AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent)
 
     //cpu/node selection
     {
-        auto _cpuTable = new FiniteNumericSelectionWidget(8, this);
+        auto env = Pothos::RemoteClient("tcp://localhost").makeEnvironment("managed");
+        auto nodeInfos = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
+        auto _cpuTable = new CpuSelectionWidget(nodeInfos, this);
         formLayout->addRow(tr("CPU Selection"), _cpuTable);
     }
 }

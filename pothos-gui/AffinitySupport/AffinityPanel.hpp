@@ -4,13 +4,8 @@
 #pragma once
 #include "PothosGui.hpp"
 #include "AffinitySupport/AffinityZoneEditor.hpp"
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFormLayout>
 #include <QPushButton>
-#include <QComboBox>
 #include <QLineEdit>
-#include <QToolTip>
 #include <QTabWidget>
 
 class AffinityPanel : public QWidget
@@ -20,52 +15,19 @@ public:
     AffinityPanel(QWidget *parent);
 
 private slots:
-    void handleCreateZone(void)
-    {
-        auto zoneName = _zoneEntry->text();
-        _zoneEntry->setText("");
-        if (zoneName.isEmpty()) return;
-        //TODO is in existing list?
-        this->handleErrorMessage(zoneName);
-        _editorsTabs->addTab(new AffinityZoneEditor(zoneName, this), zoneName);
-        this->saveAffinityZoneEditorsState();
-    }
+    void handleCreateZone(void);
+    void handleTabCloseRequested(int);
 
 private:
+    QWidget *createZoneFromName(const QString &name);
 
-    void ensureDefault(void)
-    {
-        //FIXME not this way
-        _editorsTabs->addTab(new AffinityZoneEditor("default", this), "default");
-    }
+    void ensureDefault(void);
 
-    void initAffinityZoneEditors(void)
-    {
-        auto names = getSettings().value("AffinityZones/zoneNames").toStringList();
-        for (const auto &name : names)
-        {
-            _editorsTabs->addTab(new AffinityZoneEditor(name, this), name);
-        }
-        if (names.isEmpty()) this->ensureDefault();
-    }
+    void initAffinityZoneEditors(void);
 
-    void saveAffinityZoneEditorsState(void)
-    {
-        //TODO save it
-        this->ensureDefault();
-    }
+    void saveAffinityZoneEditorsState(void);
 
-    void handleAffinityZoneEditor(QObject *)
-    {
-        //TODO maybe something other than destroyed signal to record this
-        //objects are always destroyed
-        this->saveAffinityZoneEditorsState();
-    }
-
-    void handleErrorMessage(const QString &errMsg)
-    {
-        QToolTip::showText(_zoneEntry->mapToGlobal(QPoint()), "<font color=\"red\">"+errMsg+"</font>");
-    }
+    void handleErrorMessage(const QString &errMsg);
 
     QLineEdit *_zoneEntry;
     QPushButton *_createButton;

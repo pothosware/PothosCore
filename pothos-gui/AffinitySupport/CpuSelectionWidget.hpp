@@ -5,32 +5,20 @@
 #include <QString>
 #include <QLabel>
 #include <QTableWidget>
+#include <Pothos/System.hpp>
 #include <cstddef>
 #include <vector>
+#include <set>
 #include <map>
 
 /*!
  * A table-based display to select a finite number of integers.
  */
-class FiniteNumericSelectionWidget : public QWidget
+class CpuSelectionWidget : public QWidget
 {
     Q_OBJECT
 public:
-    FiniteNumericSelectionWidget(const size_t size, QWidget *parent);
-
-    void setSelection(const std::vector<size_t> &selection)
-    {
-        for (auto &pair : _itemToSelected)
-        {
-            pair.second = std::find(selection.begin(), selection.end(), _itemToNum.at(pair.first)) != selection.end();
-        }
-        this->update();
-    }
-
-    std::vector<size_t> getSelection(void) const;
-
-signals:
-    void selectionChanged(const std::vector<size_t> &);
+    CpuSelectionWidget(const std::vector<Pothos::System::NumaInfo> &numaInfos, QWidget *parent);
 
 private slots:
     void handleTableItemClicked(QTableWidgetItem *item);
@@ -39,8 +27,10 @@ private:
 
     void update(void);
 
+    std::map<QTableWidgetItem *, QTableWidgetItem *> _cpuItemToNumaNodeItem;
     std::map<QTableWidgetItem *, size_t> _itemToNum;
     std::map<QTableWidgetItem *, bool> _itemToSelected;
+    std::set<QTableWidgetItem *> _cpuItems, _nodeItems;
     QTableWidget *_table;
     QLabel *_label;
 };

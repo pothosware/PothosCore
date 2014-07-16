@@ -85,7 +85,7 @@ set(SOURCES
 
     AffinitySupport/AffinityPanel.cpp
     AffinitySupport/AffinityZoneEditor.cpp
-    AffinitySupport/FiniteNumericSelectionWidget.cpp
+    AffinitySupport/CpuSelectionWidget.cpp
 
     RemoteNodes/RemoteNodesWindow.cpp
     RemoteNodes/PluginRegistryTree.cpp
