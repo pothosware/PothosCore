@@ -24,6 +24,7 @@ int main(int argc, char **argv)
     }
 
     //perform library initialization with graphical error message on failure
+    Pothos::RemoteServer server;
     try
     {
         Pothos::init();
@@ -36,7 +37,7 @@ int main(int argc, char **argv)
         }
         catch (const Pothos::RemoteClientError &)
         {
-            static Pothos::RemoteServer server("tcp://localhost:"+Pothos::RemoteServer::getLocatorPort());
+            server = Pothos::RemoteServer("tcp://localhost:"+Pothos::RemoteServer::getLocatorPort());
             //TODO make server background so it does not close with process
             Pothos::RemoteClient client("tcp://localhost"); //now it should connect to the new server
         }
