@@ -20,6 +20,41 @@ class CpuSelectionWidget : public QWidget
 public:
     CpuSelectionWidget(const std::vector<Pothos::System::NumaInfo> &numaInfos, QWidget *parent);
 
+    //! get affinity mode for thread pool args
+    std::string affinityMode(void) const
+    {
+        for (const auto &item : _nodeItems)
+        {
+            if (_itemToSelected.at(item)) return "NUMA";
+        }
+        for (const auto &item : _cpuItems)
+        {
+            if (_itemToSelected.at(item)) return "CPU";
+        }
+        return "ALL";
+    }
+
+    //! get affinity selection for thread pool args
+    std::vector<size_t> affinity(void) const
+    {
+        std::vector<size_t> nums;
+        if (this->affinityMode() == "NUMA")
+        {
+            for (const auto &item : _nodeItems)
+            {
+                if (_itemToSelected.at(item)) nums.push_back(_itemToNum.at(item));
+            }
+        }
+        if (this->affinityMode() == "CPU")
+        {
+            for (const auto &item : _cpuItems)
+            {
+                if (_itemToSelected.at(item)) nums.push_back(_itemToNum.at(item));
+            }
+        }
+        return nums;
+    }
+
 private slots:
     void handleTableItemClicked(QTableWidgetItem *item);
 
