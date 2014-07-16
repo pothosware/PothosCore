@@ -9,13 +9,21 @@
 #include <QSpinBox>
 #include <QLineEdit>
 #include <QVBoxLayout>
-#include <Pothos/Framework/ThreadPool.hpp>
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Array.h>
 
 class AffinityZoneEditor : public QWidget
 {
     Q_OBJECT
 public:
-    AffinityZoneEditor(const QString &zoneName, QWidget *parent);
+    AffinityZoneEditor(QWidget *parent);
+
+    void loadFromConfig(const Poco::JSON::Object::Ptr &config);
+
+    Poco::JSON::Object::Ptr getCurrentConfig(void) const;
+
+signals:
+    void settingsChanged(void);
 
 private slots:
 
@@ -37,16 +45,15 @@ private slots:
     void somethingChanged(void)
     {
         this->update();
-        //TODO save changes
+        emit this->settingsChanged();
     }
 
 private:
 
     void update(void);
 
-    const QString _zoneName;
     QtColorPicker *_colorPicker;
-    QComboBox *_remoteNodesBox;
+    QComboBox *_nodesBox;
     QLineEdit *_processNameEdit;
     QSpinBox *_numThreadsSpin;
     QSpinBox *_prioritySpin;

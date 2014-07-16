@@ -9,11 +9,10 @@
 
 static const int ARBITRARY_MAX_THREADS = 4096;
 
-AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent):
+AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     QWidget(parent),
-    _zoneName(zoneName),
     _colorPicker(new QtColorPicker(this)),
-    _remoteNodesBox(new QComboBox(this)),
+    _nodesBox(new QComboBox(this)),
     _processNameEdit(new QLineEdit(this)),
     _numThreadsSpin(new QSpinBox(this)),
     _prioritySpin(new QSpinBox(this)),
@@ -39,10 +38,10 @@ AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent)
 
     //remote nodes
     {
-        formLayout->addRow(tr("Remote node"), _remoteNodesBox);
-        _remoteNodesBox->addItems(getRemoteNodeUris());
-        _remoteNodesBox->setToolTip(tr("Select the URI for a local or remote host"));
-        connect(_remoteNodesBox, SIGNAL(currentIndexChanged(int)), this, SLOT(somethingChanged(int)));
+        formLayout->addRow(tr("Remote node"), _nodesBox);
+        _nodesBox->addItems(getRemoteNodeUris());
+        _nodesBox->setToolTip(tr("Select the URI for a local or remote host"));
+        connect(_nodesBox, SIGNAL(currentIndexChanged(int)), this, SLOT(somethingChanged(int)));
     }
 
     //process id
@@ -86,16 +85,81 @@ AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent)
     this->update();
 }
 
+
+void AffinityZoneEditor::loadFromConfig(const Poco::JSON::Object::Ptr &config)
+{
+    if (config->has("color"))
+    {
+        auto color = QString::fromStdString(config->getValue<std::string>("color"));
+        _colorPicker->setCurrentColor(QColor(color));
+    }
+    if (config->has("nodeUri"))
+    {
+        auto uri = QString::fromStdString(config->getValue<std::string>("nodeUri"));
+        for (int i = 0; i < _nodesBox->count(); i++)
+        {
+            if (_nodesBox->itemText(i) == uri) _nodesBox->setCurrentIndex(i);
+        }
+    }
+    if (config->has("processName"))
+    {
+        auto name = QString::fromStdString(config->getValue<std::string>("processName"));
+        _processNameEdit->setText(name);
+    }
+    if (config->has("numThreads"))
+    {
+        _numThreadsSpin->setValue(config->getValue<int>("numThreads"));
+    }
+    if (config->has("priority"))
+    {
+        _prioritySpin->setValue(int(config->getValue<double>("priority")*100));
+    }
+    if (config->has("affinityMode") and config->has("affinityMask"))
+    {
+        auto mode = config->getValue<std::string>("affinityMode");
+        auto mask = config->getArray("affinityMask");
+        std::vector<size_t> selection;
+        for (size_t i = 0; i < mask->size(); i++) selection.push_back(mask->getElement<int>(i));
+        _cpuSelection->setup(mode, selection);
+    }
+    if (config->has("yieldMode"))
+    {
+        auto mode = QString::fromStdString(config->getValue<std::string>("yieldMode"));
+        for (int i = 0; i < _yieldModeBox->count(); i++)
+        {
+            if (_yieldModeBox->itemData(i).toString() == mode) _yieldModeBox->setCurrentIndex(i);
+        }
+    }
+}
+
+Poco::JSON::Object::Ptr AffinityZoneEditor::getCurrentConfig(void) const
+{
+    Poco::JSON::Object::Ptr config = new Poco::JSON::Object();
+    config->set("color", _colorPicker->currentColor().name().toStdString());
+    config->set("nodeUri", _nodesBox->itemText(_nodesBox->currentIndex()).toStdString());
+    config->set("processName", _processNameEdit->text());
+    config->set("numThreads", _numThreadsSpin->value());
+    config->set("priority", _prioritySpin->value()/100.0);
+    config->set("affinityMode", _cpuSelection->mode());
+    Poco::JSON::Array::Ptr affinityMask = new Poco::JSON::Array();
+    for (auto num : _cpuSelection->selection()) affinityMask->add(num);
+    config->set("affinityMask", affinityMask);
+    config->set("yieldMode", _yieldModeBox->itemData(_yieldModeBox->currentIndex()).toString().toStdString());
+    return config;
+}
+
 void AffinityZoneEditor::update(void)
 {
+    //FIXME this part isnt right...
     //update the cpu selection widget
-    auto uriStr = _remoteNodesBox->itemText(_remoteNodesBox->currentIndex());
-    delete _cpuSelection;
-    try
+    auto uriStr = _nodesBox->itemText(_nodesBox->currentIndex());
+    delete _cpuSelection; _cpuSelection = nullptr;
+    if (_cpuSelection == nullptr) try
     {
         auto env = Pothos::RemoteClient(uriStr.toStdString()).makeEnvironment("managed");
         auto nodeInfos = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
         _cpuSelection = new CpuSelectionWidget(nodeInfos, this);
+        connect(_cpuSelection, SIGNAL(selectionChanged(void)), this, SLOT(somethingChanged(void)));
         _cpuSelectionContainer->addWidget(_cpuSelection);
     }
     catch (const Pothos::Exception &ex)
@@ -103,11 +167,4 @@ void AffinityZoneEditor::update(void)
         //make a junk _cpuSelection?
         //TODO log this?
     }
-
-    Pothos::ThreadPoolArgs threadPoolArgs;
-    threadPoolArgs.numThreads = _numThreadsSpin->value();
-    threadPoolArgs.priority = _prioritySpin->value()/100.0;
-    threadPoolArgs.affinityMode = _cpuSelection->affinityMode();
-    threadPoolArgs.affinity = _cpuSelection->affinity();
-    threadPoolArgs.yieldMode = _yieldModeBox->itemData(_yieldModeBox->currentIndex()).toString().toStdString();
 }

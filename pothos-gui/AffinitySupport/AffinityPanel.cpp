@@ -73,7 +73,7 @@ void AffinityPanel::handleCreateZone(void)
 
 QWidget *AffinityPanel::createZoneFromName(const QString &zoneName)
 {
-    auto editor = new AffinityZoneEditor(zoneName, this);
+    auto editor = new AffinityZoneEditor(this);
     _editorsTabs->addTab(editor, zoneName);
     return editor;
 }

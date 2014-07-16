@@ -20,8 +20,28 @@ class CpuSelectionWidget : public QWidget
 public:
     CpuSelectionWidget(const std::vector<Pothos::System::NumaInfo> &numaInfos, QWidget *parent);
 
+    void setup(const std::string &mode, const std::vector<size_t> &selection)
+    {
+        for (auto &pair : _itemToSelected) pair.second = false; //unselect all
+        if (mode == "NUMA")
+        {
+            for (const auto &item : _nodeItems)
+            {
+                _itemToSelected[item] = std::find(selection.begin(), selection.end(), _itemToNum[item]) != selection.end();
+            }
+        }
+        if (mode == "CPU")
+        {
+            for (const auto &item : _cpuItems)
+            {
+                _itemToSelected[item] = std::find(selection.begin(), selection.end(), _itemToNum[item]) != selection.end();
+            }
+        }
+        this->update();
+    }
+
     //! get affinity mode for thread pool args
-    std::string affinityMode(void) const
+    std::string mode(void) const
     {
         for (const auto &item : _nodeItems)
         {
@@ -35,17 +55,17 @@ public:
     }
 
     //! get affinity selection for thread pool args
-    std::vector<size_t> affinity(void) const
+    std::vector<size_t> selection(void) const
     {
         std::vector<size_t> nums;
-        if (this->affinityMode() == "NUMA")
+        if (this->mode() == "NUMA")
         {
             for (const auto &item : _nodeItems)
             {
                 if (_itemToSelected.at(item)) nums.push_back(_itemToNum.at(item));
             }
         }
-        if (this->affinityMode() == "CPU")
+        if (this->mode() == "CPU")
         {
             for (const auto &item : _cpuItems)
             {
@@ -54,6 +74,9 @@ public:
         }
         return nums;
     }
+
+signals:
+    void selectionChanged(void);
 
 private slots:
     void handleTableItemClicked(QTableWidgetItem *item);
