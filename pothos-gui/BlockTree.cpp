@@ -15,6 +15,7 @@
 #include <QPainter>
 #include <QLineEdit>
 #include <QAction>
+#include <QDockWidget>
 #include <Poco/Logger.h>
 #include <iostream>
 #include <sstream>
@@ -342,6 +343,10 @@ public:
         //on ctrl-f or edit:find, set focus on search window and select all text
         connect(getActionMap()["find"], SIGNAL(triggered(void)), search, SLOT(setFocus(void)));
         connect(getActionMap()["find"], SIGNAL(triggered(void)), search, SLOT(selectAll(void)));
+        auto dock = dynamic_cast<QDockWidget *>(parent);
+        assert(dock != nullptr);
+        connect(getActionMap()["find"], SIGNAL(triggered(void)), dock, SLOT(show(void)));
+        connect(getActionMap()["find"], SIGNAL(triggered(void)), dock, SLOT(raise(void)));
     }
 
 signals:
