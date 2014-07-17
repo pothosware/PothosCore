@@ -395,6 +395,7 @@ void PothosGuiMainWindow::createMenus(void)
     _editMenu->addAction(_renameGraphPageAction);
     _editMenu->addAction(_deleteGraphPageAction);
     _menuMap["moveGraphObjects"] = _editMenu->addMenu(makeIconFromTheme("transform-move"), tr("Move selected graph objects..."));
+    _menuMap["setAffinityZone"] = _editMenu->addMenu(makeIconFromTheme("edit-node"), tr("Set graph objects affinity..."));
     _editMenu->addSeparator();
     _editMenu->addAction(_createInputBreakerAction);
     _editMenu->addAction(_createOutputBreakerAction);

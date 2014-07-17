@@ -219,6 +219,7 @@ void GraphDraw::handleCustomContextMenuRequested(const QPoint &pos)
     menu->addAction(getActionMap()["renameGraphPage"]);
     menu->addAction(getActionMap()["deleteGraphPage"]);
     menu->addMenu(getMenuMap()["moveGraphObjects"]);
+    menu->addMenu(getMenuMap()["setAffinityZone"]);
     menu->addSeparator();
     menu->addAction(getActionMap()["createInputBreaker"]);
     menu->addAction(getActionMap()["createOutputBreaker"]);
