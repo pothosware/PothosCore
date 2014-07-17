@@ -6,6 +6,10 @@
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <Poco/JSON/Parser.h>
+#include <Poco/Logger.h>
+#include <cassert>
+#include <sstream>
 
 AffinityPanel::AffinityPanel(QWidget *parent):
     QWidget(parent),
@@ -28,7 +32,6 @@ AffinityPanel::AffinityPanel(QWidget *parent):
             QString("QTabBar::close-button {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-16.png"))+
             QString("QTabBar::close-button:hover {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-hover-16.png"))+
             QString("QTabBar::close-button:pressed {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-down-16.png")));
-        connect(_editorsTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(handleTabCloseRequested(int)));
     }
 
     //zone creation area
@@ -71,15 +74,26 @@ void AffinityPanel::handleCreateZone(void)
     this->saveAffinityZoneEditorsState();
 }
 
-void AffinityPanel::handleZoneEditorChanged(void)
-{
-    
-}
-
-QWidget *AffinityPanel::createZoneFromName(const QString &zoneName)
+AffinityZoneEditor *AffinityPanel::createZoneFromName(const QString &zoneName)
 {
     auto editor = new AffinityZoneEditor(this);
     _editorsTabs->addTab(editor, zoneName);
+    if (zoneName == getSettings().value("AffinityZones/currentZone").toString()) _editorsTabs->setCurrentWidget(editor);
+
+    //restore the settings from save -- even if this is a new panel with the same name as a previous one
+    auto json = getSettings().value("AffinityZones/zones/"+zoneName).toString();
+    if (not json.isEmpty()) try
+    {
+        Poco::JSON::Parser p; p.parse(json.toStdString());
+        auto dataObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        editor->loadFromConfig(dataObj);
+    }
+    catch (const Poco::JSON::JSONException &ex)
+    {
+        poco_error_f2(Poco::Logger::get("PothosGui.AffinityPanel"), "Failed to load editor for zone '%s' -- %s", zoneName.toStdString(), ex.displayText());
+    }
+
+    //now connect the changed signal after initialization+restore changes
     connect(editor, SIGNAL(settingsChanged(void)), this, SLOT(handleZoneEditorChanged(void)));
     return editor;
 }
@@ -94,6 +108,8 @@ void AffinityPanel::initAffinityZoneEditors(void)
     auto names = getSettings().value("AffinityZones/zoneNames").toStringList();
     for (const auto &name : names) this->createZoneFromName(name);
     this->ensureDefault();
+    connect(_editorsTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(handleTabCloseRequested(int)));
+    connect(_editorsTabs, SIGNAL(currentChanged(int)), this, SLOT(handleTabSelectionChanged(int)));
 }
 
 void AffinityPanel::saveAffinityZoneEditorsState(void)
@@ -101,6 +117,16 @@ void AffinityPanel::saveAffinityZoneEditorsState(void)
     QStringList names;
     for (int i = 0; i < _editorsTabs->count(); i++) names.push_back(_editorsTabs->tabText(i));
     getSettings().setValue("AffinityZones/zoneNames", names);
+    getSettings().setValue("AffinityZones/currentZone", _editorsTabs->tabText(_editorsTabs->currentIndex()));
+
+    for (int i = 0; i < _editorsTabs->count(); i++)
+    {
+        auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
+        assert(editor != nullptr);
+        auto dataObj = editor->getCurrentConfig();
+        std::stringstream ss; dataObj->stringify(ss);
+        getSettings().setValue("AffinityZones/zones/"+_editorsTabs->tabText(i), QString::fromStdString(ss.str()));
+    }
 }
 
 void AffinityPanel::handleErrorMessage(const QString &errMsg)

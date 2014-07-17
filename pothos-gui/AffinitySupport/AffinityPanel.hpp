@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QTabWidget>
+#include <iostream>
 
 class AffinityPanel : public QWidget
 {
@@ -17,10 +18,17 @@ public:
 private slots:
     void handleCreateZone(void);
     void handleTabCloseRequested(int);
-    void handleZoneEditorChanged(void);
+    void handleZoneEditorChanged(void)
+    {
+        this->saveAffinityZoneEditorsState();
+    }
+    void handleTabSelectionChanged(int)
+    {
+        this->saveAffinityZoneEditorsState();
+    }
 
 private:
-    QWidget *createZoneFromName(const QString &name);
+    AffinityZoneEditor *createZoneFromName(const QString &name);
 
     void ensureDefault(void);
 

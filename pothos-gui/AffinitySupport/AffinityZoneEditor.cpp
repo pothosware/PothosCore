@@ -93,7 +93,9 @@ void AffinityZoneEditor::loadFromConfig(const Poco::JSON::Object::Ptr &config)
     if (config->has("color"))
     {
         auto color = QString::fromStdString(config->getValue<std::string>("color"));
+        _colorPicker->blockSignals(true);
         _colorPicker->setCurrentColor(QColor(color));
+        _colorPicker->blockSignals(false);
     }
     if (config->has("nodeUri"))
     {
@@ -139,7 +141,7 @@ Poco::JSON::Object::Ptr AffinityZoneEditor::getCurrentConfig(void) const
     Poco::JSON::Object::Ptr config = new Poco::JSON::Object();
     config->set("color", _colorPicker->currentColor().name().toStdString());
     config->set("nodeUri", _nodesBox->itemText(_nodesBox->currentIndex()).toStdString());
-    config->set("processName", _processNameEdit->text());
+    config->set("processName", _processNameEdit->text().toStdString());
     config->set("numThreads", _numThreadsSpin->value());
     config->set("priority", _prioritySpin->value()/100.0);
     config->set("affinityMode", _cpuSelection->mode());
