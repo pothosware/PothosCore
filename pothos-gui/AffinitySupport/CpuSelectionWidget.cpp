@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "AffinitySupport/CpuSelectionWidget.hpp"
+#include <QLabel>
+#include <QTableWidget>
 #include <QHeaderView>
 #include <QVBoxLayout>
 #include <algorithm>

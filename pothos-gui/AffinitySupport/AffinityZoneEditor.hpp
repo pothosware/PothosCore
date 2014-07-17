@@ -2,16 +2,20 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-#include "AffinitySupport/CpuSelectionWidget.hpp"
-#define QT_QTCOLORPICKER_IMPORT
-#include <QtColorPicker>
-#include <QComboBox>
-#include <QSpinBox>
-#include <QLineEdit>
-#include <QVBoxLayout>
+#include <QWidget>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
+#include <Pothos/System/NumaInfo.hpp>
+#include <vector>
 #include <map>
+
+class CpuSelectionWidget;
+class QtColorPicker;
+class QComboBox;
+class QLineEdit;
+class QSpinBox;
+class QComboBox;
+class QVBoxLayout;
 
 class AffinityZoneEditor : public QWidget
 {

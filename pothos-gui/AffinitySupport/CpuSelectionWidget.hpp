@@ -2,14 +2,17 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include <QWidget>
 #include <QString>
-#include <QLabel>
-#include <QTableWidget>
 #include <Pothos/System.hpp>
 #include <cstddef>
 #include <vector>
 #include <set>
 #include <map>
+
+class QLabel;
+class QTableWidget;
+class QTableWidgetItem;
 
 /*!
  * A table-based display to select a finite number of integers.

@@ -2,18 +2,28 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-#include "PothosGui.hpp"
+#include <QWidget>
 #include "AffinitySupport/AffinityZoneEditor.hpp"
-#include <QPushButton>
-#include <QLineEdit>
-#include <QTabWidget>
+#include <QStringList>
 #include <iostream>
+
+class QLineEdit;
+class QPushButton;
+class QTabWidget;
 
 class AffinityPanel : public QWidget
 {
     Q_OBJECT
 public:
     AffinityPanel(QWidget *parent);
+
+    //! query the list of available zones
+    QStringList zones(void) const;
+
+signals:
+
+    //! emitted when zones are created, destroyed, changed
+    void zonesChanged(void);
 
 private slots:
     void handleCreateZone(void);

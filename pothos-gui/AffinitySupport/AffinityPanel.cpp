@@ -6,6 +6,9 @@
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QTabWidget>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Logger.h>
 #include <cassert>
@@ -49,6 +52,13 @@ AffinityPanel::AffinityPanel(QWidget *parent):
     this->initAffinityZoneEditors();
 }
 
+QStringList AffinityPanel::zones(void) const
+{
+    QStringList zones;
+    for (int i = 0; i < _editorsTabs->count(); i++) zones.push_back(_editorsTabs->tabText(i));
+    return zones;
+}
+
 void AffinityPanel::handleTabCloseRequested(const int index)
 {
     _editorsTabs->removeTab(index);
@@ -61,9 +71,9 @@ void AffinityPanel::handleCreateZone(void)
     auto zoneName = _zoneEntry->text();
     _zoneEntry->setText("");
     if (zoneName.isEmpty()) return;
-    for (int i = 0; i < _editorsTabs->count(); i++)
+    for (const auto &name : this->zones())
     {
-        if (_editorsTabs->tabText(i) == zoneName)
+        if (name == zoneName)
         {
             this->handleErrorMessage(tr("%1 already exists!").arg(zoneName));
             return;
@@ -114,9 +124,7 @@ void AffinityPanel::initAffinityZoneEditors(void)
 
 void AffinityPanel::saveAffinityZoneEditorsState(void)
 {
-    QStringList names;
-    for (int i = 0; i < _editorsTabs->count(); i++) names.push_back(_editorsTabs->tabText(i));
-    getSettings().setValue("AffinityZones/zoneNames", names);
+    getSettings().setValue("AffinityZones/zoneNames", this->zones());
     getSettings().setValue("AffinityZones/currentZone", _editorsTabs->tabText(_editorsTabs->currentIndex()));
 
     for (int i = 0; i < _editorsTabs->count(); i++)
@@ -127,6 +135,8 @@ void AffinityPanel::saveAffinityZoneEditorsState(void)
         std::stringstream ss; dataObj->stringify(ss);
         getSettings().setValue("AffinityZones/zones/"+_editorsTabs->tabText(i), QString::fromStdString(ss.str()));
     }
+
+    emit this->zonesChanged();
 }
 
 void AffinityPanel::handleErrorMessage(const QString &errMsg)

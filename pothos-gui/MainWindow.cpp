@@ -3,6 +3,8 @@
 
 #include "PothosGui.hpp"
 #include <Pothos/System.hpp>
+#include "AffinitySupport/AffinityZoneMenu.hpp"
+#include "AffinitySupport/AffinityPanel.hpp"
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QSettings>
@@ -395,7 +397,8 @@ void PothosGuiMainWindow::createMenus(void)
     _editMenu->addAction(_renameGraphPageAction);
     _editMenu->addAction(_deleteGraphPageAction);
     _menuMap["moveGraphObjects"] = _editMenu->addMenu(makeIconFromTheme("transform-move"), tr("Move selected graph objects..."));
-    _menuMap["setAffinityZone"] = _editMenu->addMenu(makeIconFromTheme("edit-node"), tr("Set graph objects affinity..."));
+    _menuMap["setAffinityZone"] = new AffinityZoneMenu(dynamic_cast<AffinityPanel *>(getObjectMap()["affinityPanel"]), _editMenu);
+    _editMenu->addMenu(_menuMap["setAffinityZone"]);
     _editMenu->addSeparator();
     _editMenu->addAction(_createInputBreakerAction);
     _editMenu->addAction(_createOutputBreakerAction);

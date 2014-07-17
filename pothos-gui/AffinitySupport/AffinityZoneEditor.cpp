@@ -3,10 +3,17 @@
 
 #include "PothosGui.hpp"
 #include "AffinitySupport/AffinityZoneEditor.hpp"
+#include "AffinitySupport/CpuSelectionWidget.hpp"
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Poco/Logger.h>
 #include <QFormLayout>
+#define QT_QTCOLORPICKER_IMPORT
+#include <QtColorPicker>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QLineEdit>
+#include <QVBoxLayout>
 
 static const int ARBITRARY_MAX_THREADS = 4096;
 
