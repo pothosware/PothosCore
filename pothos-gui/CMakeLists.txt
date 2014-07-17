@@ -78,10 +78,13 @@ set(SOURCES
     PothosGui.cpp
     WindowSettings.cpp
     MainWindow.cpp
-    BlockTree.cpp
     BlockCache.cpp
     MessageWindow.cpp
     PropertiesPanel.cpp
+
+    BlockTree/BlockTreeTopWindow.cpp
+    BlockTree/BlockTreeWidget.cpp
+    BlockTree/BlockTreeWidgetItem.cpp
 
     AffinitySupport/AffinityPanel.cpp
     AffinitySupport/AffinityZoneEditor.cpp
