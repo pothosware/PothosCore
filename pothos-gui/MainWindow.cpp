@@ -80,7 +80,7 @@ public:
         //create affinity panel
         _affinityPanelDock = new QDockWidget(this);
         _affinityPanelDock->setObjectName("AffinityPanelDock");
-        _affinityPanelDock->setWindowTitle(tr("Affinity Panel"));
+        _affinityPanelDock->setWindowTitle(tr("Affinity Zones"));
         _affinityPanelDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
         auto affinityPanel = makeAffinityPanel(_affinityPanelDock);
         getObjectMap()["affinityPanel"] = affinityPanel;

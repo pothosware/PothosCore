@@ -71,10 +71,16 @@ void AffinityPanel::handleCreateZone(void)
     this->saveAffinityZoneEditorsState();
 }
 
+void AffinityPanel::handleZoneEditorChanged(void)
+{
+    
+}
+
 QWidget *AffinityPanel::createZoneFromName(const QString &zoneName)
 {
     auto editor = new AffinityZoneEditor(this);
     _editorsTabs->addTab(editor, zoneName);
+    connect(editor, SIGNAL(settingsChanged(void)), this, SLOT(handleZoneEditorChanged(void)));
     return editor;
 }
 

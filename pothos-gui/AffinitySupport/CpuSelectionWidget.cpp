@@ -67,8 +67,8 @@ void CpuSelectionWidget::handleTableItemClicked(QTableWidgetItem *item)
 {
     if (item == nullptr) return;
     _itemToSelected[item] = not _itemToSelected[item];
-    emit this->selectionChanged();
     this->update();
+    emit this->selectionChanged();
 }
 
 void CpuSelectionWidget::update(void)

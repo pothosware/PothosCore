@@ -11,6 +11,7 @@
 #include <QVBoxLayout>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
+#include <map>
 
 class AffinityZoneEditor : public QWidget
 {
@@ -27,30 +28,35 @@ signals:
 
 private slots:
 
-    void somethingChanged(const QColor &)
+    void handleUriChanged(int)
     {
-        this->somethingChanged();
+        this->updateCpuSelection();
+        emit this->settingsChanged();
     }
 
-    void somethingChanged(const QString &)
+    void handleColorChanged(const QColor &)
     {
-        this->somethingChanged();
+        emit this->settingsChanged();
     }
 
-    void somethingChanged(int)
+    void handleProcessNameChanged(const QString &)
     {
-        this->somethingChanged();
+        emit this->settingsChanged();
     }
 
-    void somethingChanged(void)
+    void handleComboChanged(int)
     {
-        this->update();
+        emit this->settingsChanged();
+    }
+
+    void handleSpinSelChanged(void)
+    {
         emit this->settingsChanged();
     }
 
 private:
 
-    void update(void);
+    void updateCpuSelection(void);
 
     QtColorPicker *_colorPicker;
     QComboBox *_nodesBox;
@@ -60,4 +66,6 @@ private:
     CpuSelectionWidget *_cpuSelection;
     QVBoxLayout *_cpuSelectionContainer;
     QComboBox *_yieldModeBox;
+
+    std::map<QString, std::vector<Pothos::System::NumaInfo>> _uriToNumaInfo;
 };

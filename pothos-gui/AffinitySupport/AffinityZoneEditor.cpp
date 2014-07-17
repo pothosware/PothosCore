@@ -5,6 +5,7 @@
 #include "AffinitySupport/AffinityZoneEditor.hpp"
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
+#include <Poco/Logger.h>
 #include <QFormLayout>
 
 static const int ARBITRARY_MAX_THREADS = 4096;
@@ -33,15 +34,15 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         _colorPicker->setStandardColors();
         _colorPicker->setCurrentColor(Qt::yellow);
         _colorPicker->setToolTip(tr("Select a color to associate affinities in the graph editor"));
-        connect(_colorPicker, SIGNAL(colorChanged(const QColor &)), this, SLOT(somethingChanged(const QColor &)));
+        connect(_colorPicker, SIGNAL(colorChanged(const QColor &)), this, SLOT(handleColorChanged(const QColor &)));
     }
 
-    //remote nodes
+    //node selection
     {
         formLayout->addRow(tr("Remote node"), _nodesBox);
         _nodesBox->addItems(getRemoteNodeUris());
         _nodesBox->setToolTip(tr("Select the URI for a local or remote host"));
-        connect(_nodesBox, SIGNAL(currentIndexChanged(int)), this, SLOT(somethingChanged(int)));
+        connect(_nodesBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleUriChanged(int)));
     }
 
     //process id
@@ -49,7 +50,7 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         formLayout->addRow(tr("Process name"), _processNameEdit);
         _processNameEdit->setPlaceholderText(tr("The string name of a process"));
         _processNameEdit->setToolTip(tr("An arbitrary name to identify a process on a node"));
-        connect(_processNameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(somethingChanged(const QString &)));
+        connect(_processNameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(handleProcessNameChanged(const QString &)));
     }
 
     //num threads
@@ -57,7 +58,7 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         formLayout->addRow(tr("Thread count"), _numThreadsSpin);
         _numThreadsSpin->setRange(0, ARBITRARY_MAX_THREADS);
         _numThreadsSpin->setToolTip(tr("Number of threads to allocate, 0 means automatic"));
-        connect(_numThreadsSpin, SIGNAL(editingFinished(void)), this, SLOT(somethingChanged()));
+        connect(_numThreadsSpin, SIGNAL(editingFinished(void)), this, SLOT(handleSpinSelChanged()));
     }
 
     //priority selection
@@ -65,7 +66,7 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         formLayout->addRow(tr("Process priority %"), _prioritySpin);
         _prioritySpin->setRange(-100, +100);
         _prioritySpin->setToolTip(tr("A priority percentage between -100% and 100%"));
-        connect(_prioritySpin, SIGNAL(editingFinished(void)), this, SLOT(somethingChanged()));
+        connect(_prioritySpin, SIGNAL(editingFinished(void)), this, SLOT(handleSpinSelChanged()));
     }
 
     //cpu/node selection
@@ -79,10 +80,11 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         _yieldModeBox->addItem(tr("Condition"), "CONDITION");
         _yieldModeBox->addItem(tr("Hybrid"), "HYBRID");
         _yieldModeBox->addItem(tr("Spin"), "SPIN");
-        connect(_yieldModeBox, SIGNAL(currentIndexChanged(int)), this, SLOT(somethingChanged(int)));
+        _yieldModeBox->setToolTip(tr("Yield mode specifies the internal threading mechanisms"));
+        connect(_yieldModeBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleComboChanged(int)));
     }
 
-    this->update();
+    this->updateCpuSelection();
 }
 
 
@@ -148,23 +150,24 @@ Poco::JSON::Object::Ptr AffinityZoneEditor::getCurrentConfig(void) const
     return config;
 }
 
-void AffinityZoneEditor::update(void)
+void AffinityZoneEditor::updateCpuSelection(void)
 {
-    //FIXME this part isnt right...
-    //update the cpu selection widget
+    //get node info and cache it
     auto uriStr = _nodesBox->itemText(_nodesBox->currentIndex());
-    delete _cpuSelection; _cpuSelection = nullptr;
-    if (_cpuSelection == nullptr) try
+    if (_uriToNumaInfo.count(uriStr) == 0) try
     {
         auto env = Pothos::RemoteClient(uriStr.toStdString()).makeEnvironment("managed");
         auto nodeInfos = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
-        _cpuSelection = new CpuSelectionWidget(nodeInfos, this);
-        connect(_cpuSelection, SIGNAL(selectionChanged(void)), this, SLOT(somethingChanged(void)));
-        _cpuSelectionContainer->addWidget(_cpuSelection);
+        _uriToNumaInfo[uriStr] = nodeInfos;
     }
     catch (const Pothos::Exception &ex)
     {
-        //make a junk _cpuSelection?
-        //TODO log this?
+        poco_error(Poco::Logger::get("PothosGui.AffinityZoneEditor"), ex.displayText());
+        _uriToNumaInfo[uriStr] = std::vector<Pothos::System::NumaInfo>(); //empty
     }
+
+    delete _cpuSelection;
+    _cpuSelection = new CpuSelectionWidget(_uriToNumaInfo[uriStr], this);
+    connect(_cpuSelection, SIGNAL(selectionChanged(void)), this, SLOT(handleSpinSelChanged(void)));
+    _cpuSelectionContainer->addWidget(_cpuSelection);
 }

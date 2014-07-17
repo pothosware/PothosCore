@@ -17,6 +17,7 @@ public:
 private slots:
     void handleCreateZone(void);
     void handleTabCloseRequested(int);
+    void handleZoneEditorChanged(void);
 
 private:
     QWidget *createZoneFromName(const QString &name);
