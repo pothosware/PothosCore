@@ -82,6 +82,7 @@ set(SOURCES
     MessageWindow.cpp
     PropertiesPanel.cpp
 
+    BlockTree/BlockTreeDock.cpp
     BlockTree/BlockTreeTopWindow.cpp
     BlockTree/BlockTreeWidget.cpp
     BlockTree/BlockTreeWidgetItem.cpp

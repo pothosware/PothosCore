@@ -3,6 +3,7 @@
 
 #include "PothosGui.hpp"
 #include <Pothos/System.hpp>
+#include "BlockTree/BlockTreeDock.hpp"
 #include "AffinitySupport/AffinityZoneMenu.hpp"
 #include "AffinitySupport/AffinityPanel.hpp"
 #include <QMainWindow>
@@ -100,13 +101,9 @@ public:
         getObjectMap()["editorTabs"] = editorTabs;
 
         //create block tree (after the block cache)
-        _blockTreeDock = new QDockWidget(this);
-        _blockTreeDock->setObjectName("BlockTreeDock");
-        _blockTreeDock->setWindowTitle(tr("Block Tree"));
-        _blockTreeDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-        auto blockTree = makeBlockTree(_blockTreeDock);
-        getObjectMap()["blockTree"] = blockTree;
-        _blockTreeDock->setWidget(blockTree);
+        _blockTreeDock = new BlockTreeDock(this);
+        connect(getActionMap()["find"], SIGNAL(triggered(void)), _blockTreeDock, SLOT(activateFind(void)));
+        getObjectMap()["blockTree"] = _blockTreeDock;
         this->tabifyDockWidget(_affinityPanelDock, _blockTreeDock);
 
         //create properties panel (make after block cache)

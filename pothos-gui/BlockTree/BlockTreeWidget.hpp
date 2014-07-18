@@ -21,10 +21,6 @@ public:
 
     BlockTreeWidget(QWidget *parent);
 
-    void mousePressEvent(QMouseEvent *event);
-
-    void mouseMoveEvent(QMouseEvent *event);
-
 signals:
     void blockDescEvent(const Poco::JSON::Object::Ptr &, bool);
 
@@ -41,6 +37,10 @@ private slots:
     void handleItemDoubleClicked(QTreeWidgetItem *item, int);
 
 private:
+
+    void mousePressEvent(QMouseEvent *event);
+
+    void mouseMoveEvent(QMouseEvent *event);
 
     void populate(void);
 
