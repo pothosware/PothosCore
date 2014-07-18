@@ -4,6 +4,7 @@
 #include "PothosGui.hpp"
 #include <Pothos/System.hpp>
 #include "BlockCache.hpp"
+#include "PropertiesPanel/PropertiesPanelDock.hpp"
 #include "GraphEditor/GraphEditorTabs.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
@@ -97,13 +98,8 @@ public:
         this->tabifyDockWidget(_affinityZonesDock, _blockTreeDock);
 
         //create properties panel (make after block cache)
-        _propertiesPanelDock = new QDockWidget(this);
-        _propertiesPanelDock->setObjectName("PropertiesPanelDock");
-        _propertiesPanelDock->setWindowTitle(tr("Properties Panel"));
-        _propertiesPanelDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-        auto propertiesPanel = makePropertiesPanel(_propertiesPanelDock);
-        getObjectMap()["propertiesPanel"] = propertiesPanel;
-        _propertiesPanelDock->setWidget(propertiesPanel);
+        _propertiesPanelDock = new PropertiesPanelDock(this);
+        getObjectMap()["propertiesPanel"] = _propertiesPanelDock;
         this->tabifyDockWidget(_blockTreeDock, _propertiesPanelDock);
 
         //restore main window settings from file

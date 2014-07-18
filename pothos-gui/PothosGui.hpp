@@ -24,4 +24,3 @@ QStringList getRemoteNodeUris(void);
 QString makeIconPath(const QString &name);
 QIcon makeIconFromTheme(const QString &name);
 QWidget *makeMainWindow(QWidget *parent);
-QWidget *makePropertiesPanel(QWidget *parent);

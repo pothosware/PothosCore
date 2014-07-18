@@ -79,7 +79,9 @@ set(SOURCES
     WindowSettings.cpp
     MainWindow.cpp
     BlockCache.cpp
-    PropertiesPanel.cpp
+
+    PropertiesPanel/PropertiesPanelDock.cpp
+    PropertiesPanel/BlockPropertiesPanel.cpp
 
     MessageWindow/MessageWindowDock.cpp
     MessageWindow/LoggerDisplay.cpp
