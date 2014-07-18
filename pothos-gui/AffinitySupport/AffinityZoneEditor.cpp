@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
+#include "PothosGuiUtils.hpp" //node uris
 #include "AffinitySupport/AffinityZoneEditor.hpp"
 #include "AffinitySupport/CpuSelectionWidget.hpp"
 #include <Pothos/Remote.hpp>

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-#include <Pothos/Config.hpp>
-#include <QWidget>
 #include <QString>
 #include <QSettings>
 #include <QMap>
@@ -13,13 +11,17 @@
 class QAction;
 class QMenu;
 
-//--- access to globals --//
+//! global settings
 QSettings &getSettings(void);
+
+//! global widget maps
 QMap<QString, QAction *> &getActionMap(void);
 QMap<QString, QMenu *> &getMenuMap(void);
 QMap<QString, QObject *> &getObjectMap(void);
+
+//! available hosts
 QStringList getRemoteNodeUris(void);
 
-//--- main factories --//
+//! icon utils
 QString makeIconPath(const QString &name);
 QIcon makeIconFromTheme(const QString &name);

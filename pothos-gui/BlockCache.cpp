@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp" //get hosts list
+#include "PothosGuiUtils.hpp" //get hosts list
 #include "BlockCache.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include <Pothos/Remote.hpp>

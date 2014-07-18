@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow.hpp"
-#include "PothosGui.hpp" //icon path
+#include "PothosGuiUtils.hpp"
 #include <Pothos/Init.hpp>
 #include <Pothos/Remote.hpp>
-#include <QIcon>
 #include <QMessageBox>
 #include <QApplication>
 #include <stdexcept>

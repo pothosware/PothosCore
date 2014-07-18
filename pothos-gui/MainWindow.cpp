@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow.hpp"
-#include "PothosGui.hpp"
+#include "PothosGuiUtils.hpp" //object and action maps, settings
 #include <Pothos/System.hpp>
 #include "BlockCache.hpp"
 #include "PropertiesPanel/PropertiesPanelDock.hpp"

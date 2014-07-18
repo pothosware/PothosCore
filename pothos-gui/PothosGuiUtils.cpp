@@ -1,7 +1,7 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
+#include "PothosGuiUtils.hpp"
 #include <Pothos/System.hpp>
 #include <Poco/Path.h>
 #include <Poco/SingletonHolder.h>

@@ -76,7 +76,7 @@ list(APPEND POTHOS_LIBRARIES QtColorPicker)
 ########################################################################
 set(SOURCES
     PothosGui.cpp
-    WindowSettings.cpp
+    PothosGuiUtils.cpp
     MainWindow.cpp
     BlockCache.cpp
 

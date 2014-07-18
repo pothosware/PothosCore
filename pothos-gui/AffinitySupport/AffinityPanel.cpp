@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
+#include "PothosGuiUtils.hpp" //make icon theme
 #include "AffinitySupport/AffinityPanel.hpp"
 #include <QToolTip>
 #include <QVBoxLayout>
