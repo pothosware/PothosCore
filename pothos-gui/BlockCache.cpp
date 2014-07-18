@@ -62,7 +62,7 @@ static Poco::JSON::Array::Ptr queryBlockDescs(const QString &uri)
     }
     catch (const Pothos::Exception &ex)
     {
-        poco_error_f2(Poco::Logger::get("PothosGui.BlockCache"), "Failed to query JSON Docs from %s - %s", uri.toStdString(), ex.displayText());
+        poco_warning_f2(Poco::Logger::get("PothosGui.BlockCache"), "Failed to query JSON Docs from %s - %s", uri.toStdString(), ex.displayText());
     }
 
     return Poco::JSON::Array::Ptr(); //empty JSON array

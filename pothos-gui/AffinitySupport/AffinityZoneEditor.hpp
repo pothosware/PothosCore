@@ -63,7 +63,7 @@ private:
     void updateCpuSelection(void);
 
     QtColorPicker *_colorPicker;
-    QComboBox *_nodesBox;
+    QComboBox *_hostsBox;
     QLineEdit *_processNameEdit;
     QSpinBox *_numThreadsSpin;
     QSpinBox *_prioritySpin;

@@ -20,7 +20,7 @@ static const int ARBITRARY_MAX_THREADS = 4096;
 AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     QWidget(parent),
     _colorPicker(new QtColorPicker(this)),
-    _nodesBox(new QComboBox(this)),
+    _hostsBox(new QComboBox(this)),
     _processNameEdit(new QLineEdit(this)),
     _numThreadsSpin(new QSpinBox(this)),
     _prioritySpin(new QSpinBox(this)),
@@ -44,12 +44,12 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         connect(_colorPicker, SIGNAL(colorChanged(const QColor &)), this, SLOT(handleColorChanged(const QColor &)));
     }
 
-    //node selection
+    //host selection
     {
-        formLayout->addRow(tr("Remote node"), _nodesBox);
-        _nodesBox->addItems(getRemoteNodeUris());
-        _nodesBox->setToolTip(tr("Select the URI for a local or remote host"));
-        connect(_nodesBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleUriChanged(int)));
+        formLayout->addRow(tr("Host URI"), _hostsBox);
+        _hostsBox->addItems(getRemoteNodeUris());
+        _hostsBox->setToolTip(tr("Select the URI for a local or remote host"));
+        connect(_hostsBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleUriChanged(int)));
     }
 
     //process id
@@ -104,12 +104,12 @@ void AffinityZoneEditor::loadFromConfig(const Poco::JSON::Object::Ptr &config)
         _colorPicker->setCurrentColor(QColor(color));
         _colorPicker->blockSignals(false);
     }
-    if (config->has("nodeUri"))
+    if (config->has("hostUri"))
     {
-        auto uri = QString::fromStdString(config->getValue<std::string>("nodeUri"));
-        for (int i = 0; i < _nodesBox->count(); i++)
+        auto uri = QString::fromStdString(config->getValue<std::string>("hostUri"));
+        for (int i = 0; i < _hostsBox->count(); i++)
         {
-            if (_nodesBox->itemText(i) == uri) _nodesBox->setCurrentIndex(i);
+            if (_hostsBox->itemText(i) == uri) _hostsBox->setCurrentIndex(i);
         }
     }
     if (config->has("processName"))
@@ -147,7 +147,7 @@ Poco::JSON::Object::Ptr AffinityZoneEditor::getCurrentConfig(void) const
 {
     Poco::JSON::Object::Ptr config = new Poco::JSON::Object();
     config->set("color", _colorPicker->currentColor().name().toStdString());
-    config->set("nodeUri", _nodesBox->itemText(_nodesBox->currentIndex()).toStdString());
+    config->set("hostUri", _hostsBox->itemText(_hostsBox->currentIndex()).toStdString());
     config->set("processName", _processNameEdit->text().toStdString());
     config->set("numThreads", _numThreadsSpin->value());
     config->set("priority", _prioritySpin->value()/100.0);
@@ -162,7 +162,7 @@ Poco::JSON::Object::Ptr AffinityZoneEditor::getCurrentConfig(void) const
 void AffinityZoneEditor::updateCpuSelection(void)
 {
     //get node info and cache it
-    auto uriStr = _nodesBox->itemText(_nodesBox->currentIndex());
+    auto uriStr = _hostsBox->itemText(_hostsBox->currentIndex());
     if (_uriToNumaInfo.count(uriStr) == 0) try
     {
         auto env = Pothos::RemoteClient(uriStr.toStdString()).makeEnvironment("managed");
@@ -171,7 +171,7 @@ void AffinityZoneEditor::updateCpuSelection(void)
     }
     catch (const Pothos::Exception &ex)
     {
-        poco_error(Poco::Logger::get("PothosGui.AffinityZoneEditor"), ex.displayText());
+        poco_warning(Poco::Logger::get("PothosGui.AffinityZoneEditor"), ex.displayText());
         _uriToNumaInfo[uriStr] = std::vector<Pothos::System::NumaInfo>(); //empty
     }
 
