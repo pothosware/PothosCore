@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include <Pothos/Config.hpp>
 #include <QObject>
 #include <Poco/Channel.h>
 #include <Poco/Message.h>

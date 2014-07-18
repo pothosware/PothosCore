@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include <Pothos/Config.hpp>
 #include "GraphObjects/GraphEndpoint.hpp"
 #include <QList>
 #include <QObject>

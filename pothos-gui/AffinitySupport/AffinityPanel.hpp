@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include <Pothos/Config.hpp>
 #include <QWidget>
 #include "AffinitySupport/AffinityZoneEditor.hpp"
 #include <QStringList>

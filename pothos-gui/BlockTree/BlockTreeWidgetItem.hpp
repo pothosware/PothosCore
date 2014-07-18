@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include <Pothos/Config.hpp>
 #include <QTreeWidgetItem>
 #include <Poco/JSON/Object.h>
 #include <string>
