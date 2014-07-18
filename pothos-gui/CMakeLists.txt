@@ -78,7 +78,6 @@ set(SOURCES
     PothosGui.cpp
     PothosGuiUtils.cpp
     MainWindow.cpp
-    BlockCache.cpp
 
     PropertiesPanel/PropertiesPanelDock.cpp
     PropertiesPanel/BlockPropertiesPanel.cpp
@@ -88,9 +87,9 @@ set(SOURCES
     MessageWindow/LoggerChannel.cpp
 
     BlockTree/BlockTreeDock.cpp
-    BlockTree/BlockTreeTopWindow.cpp
     BlockTree/BlockTreeWidget.cpp
     BlockTree/BlockTreeWidgetItem.cpp
+    BlockTree/BlockCache.cpp
 
     AffinitySupport/AffinityPanel.cpp
     AffinitySupport/AffinityZoneEditor.cpp

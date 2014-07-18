@@ -4,11 +4,11 @@
 #include "MainWindow.hpp"
 #include "PothosGuiUtils.hpp" //object and action maps, settings
 #include <Pothos/System.hpp>
-#include "BlockCache.hpp"
+#include "BlockTree/BlockCache.hpp"
+#include "BlockTree/BlockTreeDock.hpp"
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
 #include "GraphEditor/GraphEditorTabs.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
-#include "BlockTree/BlockTreeDock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "MessageWindow/MessageWindowDock.hpp"
 #include <QMainWindow>

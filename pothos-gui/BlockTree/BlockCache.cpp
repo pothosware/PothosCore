@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //get hosts list
-#include "BlockCache.hpp"
+#include "BlockTree/BlockCache.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>

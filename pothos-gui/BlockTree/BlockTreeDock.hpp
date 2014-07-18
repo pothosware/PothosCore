@@ -5,7 +5,9 @@
 #include <QDockWidget>
 #include <Poco/JSON/Object.h>
 
-class BlockTreeTopWindow;
+class QPushButton;
+class QLineEdit;
+class BlockTreeWidget;
 
 //! A top level dock widget with a block tree top window
 class BlockTreeDock : public QDockWidget
@@ -20,6 +22,14 @@ signals:
 public slots:
     void activateFind(void);
 
+private slots:
+    void handleAdd(void);
+
+    void handleBlockDescEvent(const Poco::JSON::Object::Ptr &blockDesc, bool add);
+
 private:
-    BlockTreeTopWindow *_blockTreeWindow;
+    QPushButton *_addButton;
+    QLineEdit *_searchBox;
+    Poco::JSON::Object::Ptr _blockDesc;
+    BlockTreeWidget *_blockTree;
 };
