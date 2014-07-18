@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGui.hpp" //icon path
-#include <HostExplorer/HostExplorerDock.hpp>
-#include <HostExplorer/HostSelectionTable.hpp>
-#include <HostExplorer/PluginModuleTree.hpp>
-#include <HostExplorer/PluginRegistryTree.hpp>
-#include <HostExplorer/SystemInfoTree.hpp>
+#include "HostExplorer/HostExplorerDock.hpp"
+#include "HostExplorer/HostSelectionTable.hpp"
+#include "HostExplorer/PluginModuleTree.hpp"
+#include "HostExplorer/PluginRegistryTree.hpp"
+#include "HostExplorer/SystemInfoTree.hpp"
 #include <QVBoxLayout>
 #include <QTabWidget>
 #include <QLabel>

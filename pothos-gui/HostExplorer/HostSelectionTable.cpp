@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGui.hpp" //get settings
-#include <HostExplorer/HostSelectionTable.hpp>
+#include "HostExplorer/HostSelectionTable.hpp"
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QToolButton>
