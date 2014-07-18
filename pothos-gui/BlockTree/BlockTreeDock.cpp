@@ -3,7 +3,6 @@
 
 #include "BlockTree/BlockTreeDock.hpp"
 #include "PothosGuiUtils.hpp" //getObjectMap
-#include "BlockTree/BlockTreeTopWindow.hpp"
 #include "BlockTree/BlockTreeWidget.hpp"
 #include <QVBoxLayout>
 #include <QLineEdit>

@@ -13,6 +13,7 @@
 #include <QTimer>
 #include <QPainter>
 #include <Poco/Logger.h>
+#include <Poco/String.h>
 #include <memory>
 
 static const long UPDATE_TIMER_MS = 500;
@@ -183,7 +184,9 @@ bool BlockTreeWidget::blockDescMatchesFilter(const Poco::JSON::Object::Ptr &bloc
     }
 
     //reject if filter string not found in candidate
-    return (candidate.find(_filter.toStdString()) != std::string::npos);
+    candidate = Poco::toLower(candidate);
+    const auto searchToken = Poco::toLower(_filter.toStdString());
+    return (candidate.find(searchToken) != std::string::npos);
 }
 
 QMimeData *BlockTreeWidget::mimeData(const QList<QTreeWidgetItem *> items) const
