@@ -1,6 +1,7 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "PothosGuiUtils.hpp" //action and object map
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
@@ -219,6 +220,7 @@ void GraphDraw::handleCustomContextMenuRequested(const QPoint &pos)
     menu->addAction(getActionMap()["renameGraphPage"]);
     menu->addAction(getActionMap()["deleteGraphPage"]);
     menu->addMenu(getMenuMap()["moveGraphObjects"]);
+    menu->addMenu(getMenuMap()["setAffinityZone"]);
     menu->addSeparator();
     menu->addAction(getActionMap()["createInputBreaker"]);
     menu->addAction(getActionMap()["createOutputBreaker"]);

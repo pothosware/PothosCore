@@ -1,26 +1,13 @@
 // Copyright (c) 2013 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
-#include <QScrollArea>
-#include <iostream>
+#include "GraphEditor/GraphPage.hpp"
+#include "GraphEditor/GraphDraw.hpp"
 
-class GraphPage : public QScrollArea
+GraphPage::GraphPage(QWidget *parent):
+    QScrollArea(parent)
 {
-    Q_OBJECT
-public:
-    GraphPage(QWidget *parent):
-        QScrollArea(parent)
-    {
-        //create draw with parent so draw can connect to parent's signals
-        //the draw will be reparented by scrollarea automatically by set widget
-        this->setWidget(makeGraphDraw(parent));
-    }
-};
-
-QWidget *makeGraphPage(QWidget *parent)
-{
-    return new GraphPage(parent);
-};
-
-#include "GraphPage.moc"
+    //create draw with parent so draw can connect to parent's signals
+    //the draw will be reparented by scrollarea automatically by set widget
+    this->setWidget(new GraphDraw(parent));
+}

@@ -3,7 +3,7 @@
 
 #include "GraphObjects/GraphBlockImpl.hpp"
 #include "GraphEditor/Constants.hpp"
-#include "BlockCache.hpp"
+#include "BlockTree/BlockCache.hpp"
 #include <QPainter>
 #include <QPen>
 #include <QBrush>

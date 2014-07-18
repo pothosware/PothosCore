@@ -1,8 +1,16 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
+#include "MainWindow.hpp"
+#include "PothosGuiUtils.hpp" //object and action maps, settings
 #include <Pothos/System.hpp>
+#include "BlockTree/BlockCache.hpp"
+#include "BlockTree/BlockTreeDock.hpp"
+#include "PropertiesPanel/PropertiesPanelDock.hpp"
+#include "GraphEditor/GraphEditorTabs.hpp"
+#include "HostExplorer/HostExplorerDock.hpp"
+#include "AffinitySupport/AffinityZonesDock.hpp"
+#include "MessageWindow/MessageWindowDock.hpp"
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QSettings>
@@ -13,207 +21,107 @@
 #include <QTabWidget>
 #include <QMessageBox>
 #include <QMap>
-#include <Poco/SingletonHolder.h>
 #include <Poco/Logger.h>
 #include <iostream>
 
-QMap<QString, QAction *> &getActionMap(void)
+PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
+    QMainWindow(parent),
+    _actionMap(getActionMap()),
+    _menuMap(getMenuMap())
 {
-    static Poco::SingletonHolder<QMap<QString, QAction *>> sh;
-    return *sh.get();
+    getObjectMap()["mainWindow"] = this;
+
+    this->setMinimumSize(800, 600);
+    this->setWindowTitle("Pothos GUI");
+
+    //initialize actions and action buttons
+    this->createActions();
+    this->createMainToolBar();
+
+    //create message window dock
+    _messageWindowDock = new MessageWindowDock(this);
+    this->addDockWidget(Qt::BottomDockWidgetArea, _messageWindowDock);
+
+    //create graph actions dock
+    _graphActionsDock = new QDockWidget(this);
+    _graphActionsDock->setObjectName("_graphActionsDock");
+    _graphActionsDock->setWindowTitle(tr("Graph Actions"));
+    this->addDockWidget(Qt::BottomDockWidgetArea, _graphActionsDock);
+    getObjectMap()["graphActionsDock"] = _graphActionsDock;
+
+    //create host explorer dock
+    _hostExplorerDock = new HostExplorerDock(this);
+    this->addDockWidget(Qt::RightDockWidgetArea, _hostExplorerDock);
+
+    //create affinity panel
+    _affinityZonesDock = new AffinityZonesDock(this);
+    getObjectMap()["affinityZonesDock"] = _affinityZonesDock;
+    this->tabifyDockWidget(_hostExplorerDock, _affinityZonesDock);
+
+    //block cache (make before block tree)
+    auto blockCache = new BlockCache(this);
+    getObjectMap()["blockCache"] = blockCache;
+    connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
+
+    //create topology editor tabbed widget
+    auto editorTabs = new GraphEditorTabs(this);
+    this->setCentralWidget(editorTabs);
+    getObjectMap()["editorTabs"] = editorTabs;
+
+    //create block tree (after the block cache)
+    _blockTreeDock = new BlockTreeDock(this);
+    connect(getActionMap()["find"], SIGNAL(triggered(void)), _blockTreeDock, SLOT(activateFind(void)));
+    getObjectMap()["blockTreeDock"] = _blockTreeDock;
+    this->tabifyDockWidget(_affinityZonesDock, _blockTreeDock);
+
+    //create properties panel (make after block cache)
+    _propertiesPanelDock = new PropertiesPanelDock(this);
+    getObjectMap()["propertiesPanel"] = _propertiesPanelDock;
+    this->tabifyDockWidget(_blockTreeDock, _propertiesPanelDock);
+
+    //restore main window settings from file
+    this->restoreGeometry(getSettings().value("MainWindow/geometry").toByteArray());
+    this->restoreState(getSettings().value("MainWindow/state").toByteArray());
+    _propertiesPanelDock->hide(); //hidden until used
+
+    //create menus after docks and tool bars (view menu calls their toggleViewAction())
+    this->createMenus();
+
+    //we do this last so all of the connections and logging is setup
+    poco_information(Poco::Logger::get("PothosGui.MainWindow"), "Initialization complete");
+    emit this->initDone();
 }
 
-QMap<QString, QMenu *> &getMenuMap(void)
+PothosGuiMainWindow::~PothosGuiMainWindow(void)
 {
-    static Poco::SingletonHolder<QMap<QString, QMenu *>> sh;
-    return *sh.get();
+    getSettings().setValue("MainWindow/geometry", saveGeometry());
+    getSettings().setValue("MainWindow/state", saveState());
 }
 
-QMap<QString, QObject *> &getObjectMap(void)
+void PothosGuiMainWindow::handleNewTitleSubtext(const QString &s)
 {
-    static Poco::SingletonHolder<QMap<QString, QObject *>> sh;
-    return *sh.get();
+    this->setWindowTitle("Pothos GUI - " + s);
 }
 
-class PothosGuiMainWindow : public QMainWindow
+void PothosGuiMainWindow::handleShowAbout(void)
 {
-    Q_OBJECT
-public:
+    QMessageBox::about(this, "About Pothos", QString::fromStdString(Pothos::System::getApiVersion()));
+}
 
-    PothosGuiMainWindow(QWidget *parent):
-        QMainWindow(parent),
-        _actionMap(getActionMap()),
-        _menuMap(getMenuMap())
-    {
-        getObjectMap()["mainWindow"] = this;
+void PothosGuiMainWindow::handleShowAboutQt(void)
+{
+    QMessageBox::aboutQt(this);
+}
 
-        this->setMinimumSize(800, 600);
-        this->setWindowTitle("Pothos GUI");
+void PothosGuiMainWindow::closeEvent(QCloseEvent *event)
+{
+    emit this->exitBegin(event);
+}
 
-        //initialize actions and action buttons
-        this->createActions();
-        this->createMainToolBar();
-
-        //create message window dock
-        _messageWindowDock = new QDockWidget(this);
-        _messageWindowDock->setObjectName("MessageWindowDock");
-        _messageWindowDock->setWindowTitle(tr("Message Window"));
-        _messageWindowDock->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
-        _messageWindowDock->setWidget(makeMessageWindow(_messageWindowDock));
-        this->addDockWidget(Qt::BottomDockWidgetArea, _messageWindowDock);
-
-        //create graph actions dock
-        _graphActionsDock = new QDockWidget(this);
-        _graphActionsDock->setObjectName("_graphActionsDock");
-        _graphActionsDock->setWindowTitle(tr("Graph Actions"));
-        this->addDockWidget(Qt::BottomDockWidgetArea, _graphActionsDock);
-        getObjectMap()["graphActionsDock"] = _graphActionsDock;
-
-        //create remote nodes dock
-        _remoteNodesDock = new QDockWidget(this);
-        _remoteNodesDock->setObjectName("RemoteNodesDock");
-        _remoteNodesDock->setWindowTitle(tr("Remote Nodes"));
-        _remoteNodesDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-        _remoteNodesDock->setWidget(makeRemoteNodesWindow(_remoteNodesDock));
-        this->addDockWidget(Qt::RightDockWidgetArea, _remoteNodesDock);
-        //_remoteNodesDock->hide(); //default is hidden
-
-        //block cache (make before block tree)
-        auto blockCache = makeBlockCache(this);
-        getObjectMap()["blockCache"] = blockCache;
-        connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
-
-        //create topology editor tabbed widget
-        auto editorTabs = makeGraphEditorTabs(this);
-        this->setCentralWidget(editorTabs);
-        getObjectMap()["editorTabs"] = editorTabs;
-
-        //create block tree (after the block cache)
-        _blockTreeDock = new QDockWidget(this);
-        _blockTreeDock->setObjectName("BlockTreeDock");
-        _blockTreeDock->setWindowTitle(tr("Block Tree"));
-        _blockTreeDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-        auto blockTree = makeBlockTree(_blockTreeDock);
-        getObjectMap()["blockTree"] = blockTree;
-        _blockTreeDock->setWidget(blockTree);
-        this->tabifyDockWidget(_remoteNodesDock, _blockTreeDock);
-
-        //create properties panel (make after block cache)
-        _propertiesPanelDock = new QDockWidget(this);
-        _propertiesPanelDock->setObjectName("PropertiesPanelDock");
-        _propertiesPanelDock->setWindowTitle(tr("Properties Panel"));
-        _propertiesPanelDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-        auto propertiesPanel = makePropertiesPanel(_propertiesPanelDock);
-        getObjectMap()["propertiesPanel"] = propertiesPanel;
-        _propertiesPanelDock->setWidget(propertiesPanel);
-        this->tabifyDockWidget(_blockTreeDock, _propertiesPanelDock);
-
-        //restore main window settings from file
-        this->restoreGeometry(getSettings().value("MainWindow/geometry").toByteArray());
-        this->restoreState(getSettings().value("MainWindow/state").toByteArray());
-        _propertiesPanelDock->hide(); //hidden until used
-
-        //create menus after docks and tool bars (view menu calls their toggleViewAction())
-        this->createMenus();
-
-        //we do this last so all of the connections and logging is setup
-        poco_information(Poco::Logger::get("PothosGui.MainWindow"), "Initialization complete");
-        emit this->initDone();
-    }
-
-    ~PothosGuiMainWindow(void)
-    {
-        getSettings().setValue("MainWindow/geometry", saveGeometry());
-        getSettings().setValue("MainWindow/state", saveState());
-    }
-
-signals:
-    void initDone(void);
-    void exitBegin(QCloseEvent *);
-
-private slots:
-
-    void handleNewTitleSubtext(const QString &s)
-    {
-        this->setWindowTitle("Pothos GUI - " + s);
-    }
-
-    void handleShowAbout(void)
-    {
-        QMessageBox::about(this, "About Pothos", QString::fromStdString(Pothos::System::getApiVersion()));
-    }
-
-    void handleShowAboutQt(void)
-    {
-        QMessageBox::aboutQt(this);
-    }
-
-protected:
-    void closeEvent(QCloseEvent *event)
-    {
-        emit this->exitBegin(event);
-    }
-
-    void showEvent(QShowEvent *event)
-    {
-        QMainWindow::showEvent(event);
-    }
-
-private:
-
-    void createActions(void);
-    QAction *_newAction;
-    QAction *_openAction;
-    QAction *_saveAction;
-    QAction *_saveAsAction;
-    QAction *_saveAllAction;
-    QAction *_reloadAction;
-    QAction *_closeAction;
-    QAction *_exitAction;
-    QAction *_undoAction;
-    QAction *_redoAction;
-    QAction *_cutAction;
-    QAction *_copyAction;
-    QAction *_pasteAction;
-    QAction *_deleteAction;
-    QAction *_selectAllAction;
-    QAction *_propertiesAction;
-    QAction *_createGraphPageAction;
-    QAction *_renameGraphPageAction;
-    QAction *_deleteGraphPageAction;
-    QAction *_createInputBreakerAction;
-    QAction *_createOutputBreakerAction;
-    QAction *_rotateLeftAction;
-    QAction *_rotateRightAction;
-    QAction *_zoomInAction;
-    QAction *_zoomOutAction;
-    QAction *_zoomOriginalAction;
-    QAction *_showAboutAction;
-    QAction *_showAboutQtAction;
-    QAction *_findAction;
-    QAction *_showGraphConnectionPointsAction;
-    QAction *_showGraphBoundingBoxesAction;
-    QAction *_showGraphFlattenedViewAction;
-    QAction *_activateTopologyAction;
-    QMap<QString, QAction *> &_actionMap;
-
-    void createMenus(void);
-    QMenu *_fileMenu;
-    QMenu *_editMenu;
-    QMenu *_executeMenu;
-    QMenu *_viewMenu;
-    QMenu *_debugMenu;
-    QMenu *_helpMenu;
-    QMap<QString, QMenu *> &_menuMap;
-
-    void createMainToolBar(void);
-    QToolBar *_mainToolBar;
-    QDockWidget *_remoteNodesDock;
-    QDockWidget *_messageWindowDock;
-    QDockWidget *_graphActionsDock;
-    QDockWidget *_blockTreeDock;
-    QDockWidget *_propertiesPanelDock;
-};
+void PothosGuiMainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+}
 
 void PothosGuiMainWindow::createActions(void)
 {
@@ -385,6 +293,8 @@ void PothosGuiMainWindow::createMenus(void)
     _editMenu->addAction(_renameGraphPageAction);
     _editMenu->addAction(_deleteGraphPageAction);
     _menuMap["moveGraphObjects"] = _editMenu->addMenu(makeIconFromTheme("transform-move"), tr("Move selected graph objects..."));
+    _menuMap["setAffinityZone"] = dynamic_cast<AffinityZonesDock *>(_affinityZonesDock)->makeMenu(_editMenu);
+    _editMenu->addMenu(_menuMap["setAffinityZone"]);
     _editMenu->addSeparator();
     _editMenu->addAction(_createInputBreakerAction);
     _editMenu->addAction(_createOutputBreakerAction);
@@ -400,10 +310,11 @@ void PothosGuiMainWindow::createMenus(void)
 
     _viewMenu = menuBar()->addMenu(tr("&View"));
     _menuMap["view"] = _viewMenu;
-    _viewMenu->addAction(_remoteNodesDock->toggleViewAction());
+    _viewMenu->addAction(_hostExplorerDock->toggleViewAction());
     _viewMenu->addAction(_messageWindowDock->toggleViewAction());
     _viewMenu->addAction(_graphActionsDock->toggleViewAction());
     _viewMenu->addAction(_blockTreeDock->toggleViewAction());
+    _viewMenu->addAction(_affinityZonesDock->toggleViewAction());
     _viewMenu->addAction(_mainToolBar->toggleViewAction());
     _fileMenu->addSeparator();
     _viewMenu->addAction(_zoomInAction);
@@ -464,10 +375,3 @@ void PothosGuiMainWindow::createMainToolBar(void)
     _mainToolBar->addAction(_rotateRightAction);
     _mainToolBar->addAction(_propertiesAction);
 }
-
-QWidget *makeMainWindow(QWidget *parent)
-{
-    return new PothosGuiMainWindow(parent);
-}
-
-#include "MainWindow.moc"

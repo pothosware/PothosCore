@@ -1,6 +1,7 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "PothosGuiUtils.hpp" //make icon theme
 #include "GraphEditor/GraphState.hpp"
 #include <QListWidgetItem>
 #include <QLabel>

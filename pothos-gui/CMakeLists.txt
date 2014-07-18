@@ -58,22 +58,50 @@ add_definitions(${Qt5Concurrent_DEFINITIONS})
 list(APPEND POTHOS_LIBRARIES ${Qt5Concurrent_LIBRARIES})
 
 ########################################################################
+# Color picker library - LGPL separate library
+########################################################################
+include_directories(qtcolorpicker/src)
+add_library(QtColorPicker SHARED qtcolorpicker/src/qtcolorpicker.cpp)
+set_target_properties(QtColorPicker PROPERTIES DEFINE_SYMBOL "QT_QTCOLORPICKER_EXPORT")
+target_link_libraries(QtColorPicker ${POTHOS_LIBRARIES})
+install(TARGETS QtColorPicker
+    LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_gui # .so file
+    ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_gui # .lib file
+    RUNTIME DESTINATION bin              COMPONENT pothos_gui # .dll file
+)
+list(APPEND POTHOS_LIBRARIES QtColorPicker)
+
+########################################################################
 # GUI Main App
 ########################################################################
 set(SOURCES
     PothosGui.cpp
-    WindowSettings.cpp
+    PothosGuiUtils.cpp
     MainWindow.cpp
-    BlockTree.cpp
-    BlockCache.cpp
-    MessageWindow.cpp
-    PropertiesPanel.cpp
 
-    RemoteNodes/RemoteNodesWindow.cpp
-    RemoteNodes/PluginRegistryTree.cpp
-    RemoteNodes/PluginModuleTree.cpp
-    RemoteNodes/RemoteNodesTable.cpp
-    RemoteNodes/SystemInfoTree.cpp
+    PropertiesPanel/PropertiesPanelDock.cpp
+    PropertiesPanel/BlockPropertiesPanel.cpp
+
+    MessageWindow/MessageWindowDock.cpp
+    MessageWindow/LoggerDisplay.cpp
+    MessageWindow/LoggerChannel.cpp
+
+    BlockTree/BlockTreeDock.cpp
+    BlockTree/BlockTreeWidget.cpp
+    BlockTree/BlockTreeWidgetItem.cpp
+    BlockTree/BlockCache.cpp
+
+    AffinitySupport/AffinityPanel.cpp
+    AffinitySupport/AffinityZoneEditor.cpp
+    AffinitySupport/AffinityZonesMenu.cpp
+    AffinitySupport/AffinityZonesDock.cpp
+    AffinitySupport/CpuSelectionWidget.cpp
+
+    HostExplorer/PluginModuleTree.cpp
+    HostExplorer/PluginRegistryTree.cpp
+    HostExplorer/SystemInfoTree.cpp
+    HostExplorer/HostSelectionTable.cpp
+    HostExplorer/HostExplorerDock.cpp
 
     GraphEditor/GraphState.cpp
     GraphEditor/GraphEditorTabs.cpp

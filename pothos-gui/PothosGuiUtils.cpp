@@ -1,10 +1,28 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
+#include "PothosGuiUtils.hpp"
 #include <Pothos/System.hpp>
 #include <Poco/Path.h>
 #include <Poco/SingletonHolder.h>
+
+QMap<QString, QAction *> &getActionMap(void)
+{
+    static Poco::SingletonHolder<QMap<QString, QAction *>> sh;
+    return *sh.get();
+}
+
+QMap<QString, QMenu *> &getMenuMap(void)
+{
+    static Poco::SingletonHolder<QMap<QString, QMenu *>> sh;
+    return *sh.get();
+}
+
+QMap<QString, QObject *> &getObjectMap(void)
+{
+    static Poco::SingletonHolder<QMap<QString, QObject *>> sh;
+    return *sh.get();
+}
 
 struct MySettings : QSettings
 {

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-#include "PothosGui.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
 #include <Pothos/Proxy.hpp>

@@ -1,6 +1,8 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "PothosGuiUtils.hpp" //action map
+#include "GraphEditor/GraphPage.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/Constants.hpp"
@@ -55,7 +57,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["cut"], SIGNAL(triggered(void)), this, SLOT(handleCut(void)));
     connect(getActionMap()["copy"], SIGNAL(triggered(void)), this, SLOT(handleCopy(void)));
     connect(getActionMap()["paste"], SIGNAL(triggered(void)), this, SLOT(handlePaste(void)));
-    connect(getObjectMap()["blockTree"], SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
+    connect(getObjectMap()["blockTreeDock"], SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
     connect(getActionMap()["selectAll"], SIGNAL(triggered(void)), this, SLOT(handleSelectAll(void)));
     connect(getActionMap()["delete"], SIGNAL(triggered(void)), this, SLOT(handleDelete(void)));
     connect(getActionMap()["rotateLeft"], SIGNAL(triggered(void)), this, SLOT(handleRotateLeft(void)));
@@ -147,7 +149,7 @@ void GraphEditor::handleCreateGraphPage(void)
     const QString newName = QInputDialog::getText(this, tr("Create page"),
         tr("New page name"), QLineEdit::Normal, tr("untitled"));
     if (newName.isEmpty()) return;
-    this->addTab(makeGraphPage(this), newName);
+    this->addTab(new GraphPage(this), newName);
     this->setupMoveGraphObjectsMenu();
 
     handleStateChange(GraphState("document-new", tr("Create graph page ") + newName));
@@ -821,7 +823,7 @@ GraphObjectList GraphEditor::getGraphObjects(void) const
 
 void GraphEditor::makeDefaultPage(void)
 {
-    this->insertTab(0, makeGraphPage(this), tr("Main"));
+    this->insertTab(0, new GraphPage(this), tr("Main"));
 }
 
 QWidget *makeGraphEditor(QWidget *parent)

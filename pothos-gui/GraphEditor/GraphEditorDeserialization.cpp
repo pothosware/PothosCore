@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "GraphEditor/GraphPage.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphObjects/GraphBlock.hpp"
@@ -80,8 +81,7 @@ void GraphEditor::loadState(std::istream &is)
         auto pageObj = pages->getObject(pageNo);
         auto pageName = pageObj->getValue<std::string>("pageName");
         auto graphObjects = pageObj->getArray("graphObjects");
-        auto page = makeGraphPage(this);
-        assert(dynamic_cast<QScrollArea *>(page) != nullptr);
+        auto page = new GraphPage(this);
         this->insertTab(int(pageNo), page, QString::fromStdString(pageName));
         if (pageObj->getValue<bool>("selected")) this->setCurrentIndex(pageNo);
     }
