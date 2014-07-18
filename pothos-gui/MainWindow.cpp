@@ -3,6 +3,7 @@
 
 #include "PothosGui.hpp"
 #include <Pothos/System.hpp>
+#include "GraphEditor/GraphEditorTabs.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
@@ -87,7 +88,7 @@ public:
         connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
 
         //create topology editor tabbed widget
-        auto editorTabs = makeGraphEditorTabs(this);
+        auto editorTabs = new GraphEditorTabs(this);
         this->setCentralWidget(editorTabs);
         getObjectMap()["editorTabs"] = editorTabs;
 

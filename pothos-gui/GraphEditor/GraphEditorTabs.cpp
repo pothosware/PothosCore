@@ -45,7 +45,7 @@ void GraphEditorTabs::handleInit(void)
 
 void GraphEditorTabs::handleNew(void)
 {
-    auto editor = makeGraphEditor(this);
+    auto editor = new GraphEditor(this);
     this->addTab(editor, "");
     this->setCurrentWidget(editor);
     dynamic_cast<GraphEditor *>(editor)->load();
@@ -97,7 +97,7 @@ void GraphEditorTabs::handleOpen(const QString &filePath)
     }
 
     //open a new editor with the specified file
-    auto editor = dynamic_cast<GraphEditor *>(makeGraphEditor(this));
+    auto editor = new GraphEditor(this);
     editor->setCurrentFilePath(filePath);
     this->addTab(editor, "");
     editor->load();
@@ -237,7 +237,7 @@ void GraphEditorTabs::loadState(void)
             poco_error_f1(Poco::Logger::get("PothosGui.GraphEditorTabs.loadState"), "File %s does not exist", files.at(i).toStdString());
             continue;
         }
-        auto editor = dynamic_cast<GraphEditor *>(makeGraphEditor(this));
+        auto editor = new GraphEditor(this);
         editor->setCurrentFilePath(files.at(i));
         this->addTab(editor, "");
         editor->load();

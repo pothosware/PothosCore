@@ -27,9 +27,3 @@ QWidget *makeMainWindow(QWidget *parent);
 QWidget *makePropertiesPanel(QWidget *parent);
 QWidget *makeMessageWindow(QWidget *parent);
 QObject *makeBlockCache(QObject *parent);
-
-//-- graph editor factories --//
-QWidget *makeGraphEditorTabs(QWidget *parent);
-QWidget *makeGraphEditor(QWidget *parent);
-QWidget *makeGraphPage(QWidget *parent);
-QWidget *makeGraphDraw(QWidget *parent);

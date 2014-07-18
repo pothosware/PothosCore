@@ -1,6 +1,7 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "GraphEditor/GraphPage.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/Constants.hpp"
@@ -147,7 +148,7 @@ void GraphEditor::handleCreateGraphPage(void)
     const QString newName = QInputDialog::getText(this, tr("Create page"),
         tr("New page name"), QLineEdit::Normal, tr("untitled"));
     if (newName.isEmpty()) return;
-    this->addTab(makeGraphPage(this), newName);
+    this->addTab(new GraphPage(this), newName);
     this->setupMoveGraphObjectsMenu();
 
     handleStateChange(GraphState("document-new", tr("Create graph page ") + newName));
@@ -821,7 +822,7 @@ GraphObjectList GraphEditor::getGraphObjects(void) const
 
 void GraphEditor::makeDefaultPage(void)
 {
-    this->insertTab(0, makeGraphPage(this), tr("Main"));
+    this->insertTab(0, new GraphPage(this), tr("Main"));
 }
 
 QWidget *makeGraphEditor(QWidget *parent)
