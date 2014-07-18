@@ -1,7 +1,8 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
+#include "MainWindow.hpp"
+#include "PothosGui.hpp" //icon path
 #include <Pothos/Init.hpp>
 #include <Pothos/Remote.hpp>
 #include <QIcon>
@@ -50,7 +51,7 @@ int main(int argc, char **argv)
     }
 
     //create the main window for the GUI
-    std::unique_ptr<QWidget> mainWindow(makeMainWindow(nullptr));
+    std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr));
     mainWindow->show();
 
     //begin application execution
