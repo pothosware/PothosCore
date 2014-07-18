@@ -1,10 +1,11 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
+#include "PothosGui.hpp" //get hosts list
+#include "BlockCache.hpp"
+#include "GraphObjects/GraphBlock.hpp"
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
-#include "GraphObjects/GraphBlock.hpp"
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
@@ -71,85 +72,57 @@ static Poco::JSON::Array::Ptr queryBlockDescs(const QString &uri)
 /***********************************************************************
  * Block Cache impl
  **********************************************************************/
-class BlockCache : public QObject
+BlockCache::BlockCache(QObject *parent):
+    QObject(parent),
+    _watcher(new QFutureWatcher<Poco::JSON::Array::Ptr>(this)),
+    _registryPathToBlockDesc(getRegistryPathToBlockDesc())
 {
-    Q_OBJECT
-public:
-
-    BlockCache(QObject *parent):
-        QObject(parent),
-        _watcher(new QFutureWatcher<Poco::JSON::Array::Ptr>(this)),
-        _registryPathToBlockDesc(getRegistryPathToBlockDesc())
-    {
-        connect(_watcher, SIGNAL(resultReadyAt(int)), this, SLOT(handleWatcherDone(int)));
-        connect(_watcher, SIGNAL(finished()), this, SLOT(handleWatcherFinished()));
-    }
-
-signals:
-    void blockDescUpdate(const Poco::JSON::Array::Ptr &);
-    void blockDescReady(void);
-
-public slots:
-    void handleUpdate(void)
-    {
-        if (_watcher->isRunning()) return;
-
-        //nodeKeys cannot be a temporary because QtConcurrent will reference them
-        _allRemoteNodeUris = getRemoteNodeUris();
-        _watcher->setFuture(QtConcurrent::mapped(_allRemoteNodeUris, &queryBlockDescs));
-    }
-
-private slots:
-    void handleWatcherFinished(void)
-    {
-        //remove old nodes
-        std::map<QString, Poco::JSON::Array::Ptr> newMap;
-        for (const auto &uri : _allRemoteNodeUris) newMap[uri] = _uriToBlockDescs[uri];
-        _uriToBlockDescs = newMap;
-
-        //map paths to block descs
-        _registryPathToBlockDesc.clear();
-        for (const auto &pair : _uriToBlockDescs)
-        {
-            if (not pair.second) continue;
-            for (const auto &blockDescObj : *pair.second)
-            {
-                const auto blockDesc = blockDescObj.extract<Poco::JSON::Object::Ptr>();
-                const auto path = blockDesc->get("path").extract<std::string>();
-                _registryPathToBlockDesc[path] = blockDesc;
-            }
-        }
-
-        //make a master block desc list
-        _superSetBlockDescs = new Poco::JSON::Array();
-        for (const auto &pair : _registryPathToBlockDesc)
-        {
-            _superSetBlockDescs->add(pair.second);
-        }
-
-        //let the subscribers know
-        emit this->blockDescReady();
-        emit this->blockDescUpdate(_superSetBlockDescs);
-    }
-
-    void handleWatcherDone(const int which)
-    {
-        _uriToBlockDescs[_allRemoteNodeUris[which]] = _watcher->resultAt(which);
-    }
-
-private:
-    QStringList _allRemoteNodeUris;
-    QFutureWatcher<Poco::JSON::Array::Ptr> *_watcher;
-
-    //storage structures
-    std::map<QString, Poco::JSON::Array::Ptr> _uriToBlockDescs;
-    std::map<std::string, Poco::JSON::Object::Ptr> &_registryPathToBlockDesc;
-    Poco::JSON::Array::Ptr _superSetBlockDescs;
-};
-
-QObject *makeBlockCache(QObject *parent)
-{
-    return new BlockCache(parent);
+    connect(_watcher, SIGNAL(resultReadyAt(int)), this, SLOT(handleWatcherDone(int)));
+    connect(_watcher, SIGNAL(finished()), this, SLOT(handleWatcherFinished()));
 }
 
-#include "BlockCache.moc"
+void BlockCache::handleUpdate(void)
+{
+    if (_watcher->isRunning()) return;
+
+    //nodeKeys cannot be a temporary because QtConcurrent will reference them
+    _allRemoteNodeUris = getRemoteNodeUris();
+    _watcher->setFuture(QtConcurrent::mapped(_allRemoteNodeUris, &queryBlockDescs));
+}
+
+void BlockCache::handleWatcherFinished(void)
+{
+    //remove old nodes
+    std::map<QString, Poco::JSON::Array::Ptr> newMap;
+    for (const auto &uri : _allRemoteNodeUris) newMap[uri] = _uriToBlockDescs[uri];
+    _uriToBlockDescs = newMap;
+
+    //map paths to block descs
+    _registryPathToBlockDesc.clear();
+    for (const auto &pair : _uriToBlockDescs)
+    {
+        if (not pair.second) continue;
+        for (const auto &blockDescObj : *pair.second)
+        {
+            const auto blockDesc = blockDescObj.extract<Poco::JSON::Object::Ptr>();
+            const auto path = blockDesc->get("path").extract<std::string>();
+            _registryPathToBlockDesc[path] = blockDesc;
+        }
+    }
+
+    //make a master block desc list
+    _superSetBlockDescs = new Poco::JSON::Array();
+    for (const auto &pair : _registryPathToBlockDesc)
+    {
+        _superSetBlockDescs->add(pair.second);
+    }
+
+    //let the subscribers know
+    emit this->blockDescReady();
+    emit this->blockDescUpdate(_superSetBlockDescs);
+}
+
+void BlockCache::handleWatcherDone(const int which)
+{
+    _uriToBlockDescs[_allRemoteNodeUris[which]] = _watcher->resultAt(which);
+}

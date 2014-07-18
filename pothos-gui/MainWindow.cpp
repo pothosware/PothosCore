@@ -3,6 +3,7 @@
 
 #include "PothosGui.hpp"
 #include <Pothos/System.hpp>
+#include "BlockCache.hpp"
 #include "GraphEditor/GraphEditorTabs.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
@@ -83,7 +84,7 @@ public:
         this->tabifyDockWidget(_hostExplorerDock, _affinityZonesDock);
 
         //block cache (make before block tree)
-        auto blockCache = makeBlockCache(this);
+        auto blockCache = new BlockCache(this);
         getObjectMap()["blockCache"] = blockCache;
         connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
 

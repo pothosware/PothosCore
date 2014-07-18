@@ -26,4 +26,3 @@ QIcon makeIconFromTheme(const QString &name);
 QWidget *makeMainWindow(QWidget *parent);
 QWidget *makePropertiesPanel(QWidget *parent);
 QWidget *makeMessageWindow(QWidget *parent);
-QObject *makeBlockCache(QObject *parent);
