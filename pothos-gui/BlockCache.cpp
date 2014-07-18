@@ -32,7 +32,7 @@ Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
     if (it != getRegistryPathToBlockDesc().end()) return it->second;
 
     //search all of the nodes
-    for (const auto &uri : getRemoteNodeUris())
+    for (const auto &uri : getHostUriList())
     {
         try
         {
@@ -86,7 +86,7 @@ void BlockCache::handleUpdate(void)
     if (_watcher->isRunning()) return;
 
     //nodeKeys cannot be a temporary because QtConcurrent will reference them
-    _allRemoteNodeUris = getRemoteNodeUris();
+    _allRemoteNodeUris = getHostUriList();
     _watcher->setFuture(QtConcurrent::mapped(_allRemoteNodeUris, &queryBlockDescs));
 }
 

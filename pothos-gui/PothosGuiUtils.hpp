@@ -20,7 +20,7 @@ QMap<QString, QMenu *> &getMenuMap(void);
 QMap<QString, QObject *> &getObjectMap(void);
 
 //! available hosts
-QStringList getRemoteNodeUris(void);
+QStringList getHostUriList(void);
 
 //! icon utils
 QString makeIconPath(const QString &name);

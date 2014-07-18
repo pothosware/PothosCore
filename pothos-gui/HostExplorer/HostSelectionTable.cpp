@@ -34,7 +34,7 @@ std::mutex &getMutex(void)
  **********************************************************************/
 void NodeInfo::update(void)
 {
-    //determine if the remote node is online and update access times
+    //determine if the host is online and update access times
     try
     {
         Pothos::RemoteClient client(this->uri.toStdString());
@@ -43,11 +43,11 @@ void NodeInfo::update(void)
             auto env = client.makeEnvironment("managed");
             auto nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
             this->nodeName = QString::fromStdString(nodeInfo.nodeName);
-            getSettings().setValue("RemoteNodes/"+this->uri+"/nodeName", this->nodeName);
+            getSettings().setValue("HostExplorer/"+this->uri+"/nodeName", this->nodeName);
         }
         this->isOnline = true;
         this->lastAccess = Poco::Timestamp();
-        getSettings().setValue("RemoteNodes/"+this->uri+"/lastAccess", int(this->lastAccess.epochTime()));
+        getSettings().setValue("HostExplorer/"+this->uri+"/lastAccess", int(this->lastAccess.epochTime()));
     }
     //otherwise, fetch the information from the settings cache
     catch(const Pothos::RemoteClientError &)
@@ -55,20 +55,20 @@ void NodeInfo::update(void)
         this->isOnline = false;
         if (this->nodeName.isEmpty())
         {
-            this->nodeName = getSettings().value("RemoteNodes/"+this->uri+"/nodeName").toString();
+            this->nodeName = getSettings().value("HostExplorer/"+this->uri+"/nodeName").toString();
         }
-        this->lastAccess = Poco::Timestamp::fromEpochTime(std::time_t(getSettings().value("RemoteNodes/"+this->uri+"/lastAccess").toInt()));
+        this->lastAccess = Poco::Timestamp::fromEpochTime(std::time_t(getSettings().value("HostExplorer/"+this->uri+"/lastAccess").toInt()));
     }
 }
 
 /***********************************************************************
- * global query for remote nodes known to system
+ * global query for hosts known to system
  **********************************************************************/
-QStringList getRemoteNodeUris(void)
+QStringList getHostUriList(void)
 {
     std::lock_guard<std::mutex> lock(getMutex());
 
-    auto uris = getSettings().value("RemoteNodes/uris").toStringList();
+    auto uris = getSettings().value("HostExplorer/uris").toStringList();
     uris.push_back("tcp://localhost");
 
     //sanitize duplicates
@@ -80,24 +80,24 @@ QStringList getRemoteNodeUris(void)
     return noDups;
 }
 
-static void setRemoteNodeUris(const QStringList &uris)
+static void setHostUriList(const QStringList &uris)
 {
     std::lock_guard<std::mutex> lock(getMutex());
 
-    getSettings().setValue("RemoteNodes/uris", uris);
+    getSettings().setValue("HostExplorer/uris", uris);
 }
 
 /***********************************************************************
- * Custom line editor for node URI entry
+ * Custom line editor for host URI entry
  **********************************************************************/
-class NodeUriQLineEdit : public QLineEdit
+class HostUriQLineEdit : public QLineEdit
 {
     Q_OBJECT
 public:
-    NodeUriQLineEdit(QWidget *parent):
+    HostUriQLineEdit(QWidget *parent):
         QLineEdit(parent)
     {
-        this->setPlaceholderText(tr("Click to enter a new Node URI"));
+        this->setPlaceholderText(tr("Click to enter a new Host URI"));
 
         connect(
             this, SIGNAL(returnPressed(void)),
@@ -216,7 +216,7 @@ void HostSelectionTable::handleCellClicked(const int row, const int col)
         auto &info = _uriToInfo.at(entry.first);
         info.update();
         if (info.isOnline) emit nodeInfoRequest(info.uri.toStdString());
-        else emit handleErrorMessage(tr("node %1 is offline").arg(info.uri));
+        else emit handleErrorMessage(tr("Host %1 is offline").arg(info.uri));
     }
 }
 
@@ -224,9 +224,9 @@ void HostSelectionTable::handleRemove(const QString &uri)
 {
     try
     {
-        auto uris = getRemoteNodeUris();
+        auto uris = getHostUriList();
         uris.erase(std::find(uris.begin(), uris.end(), uri));
-        setRemoteNodeUris(uris);
+        setHostUriList(uris);
         this->reloadTable();
     }
     catch(const Pothos::Exception &ex)
@@ -239,14 +239,14 @@ void HostSelectionTable::handleAdd(const QString &uri)
 {
     try
     {
-        auto uris = getRemoteNodeUris();
+        auto uris = getHostUriList();
         if (std::find(uris.begin(), uris.end(), uri) != uris.end())
         {
             emit handleErrorMessage(tr("%1 already exists").arg(uri));
             return;
         }
         uris.push_back(uri);
-        setRemoteNodeUris(uris);
+        setHostUriList(uris);
         this->reloadTable();
     }
     catch(const Pothos::Exception &ex)
@@ -264,7 +264,7 @@ void HostSelectionTable::handleUpdateStatus(void)
 {
     //did the keys change?
     {
-        auto uris = getRemoteNodeUris();
+        auto uris = getHostUriList();
         bool changed = false;
         if (_uriToRow.size() != size_t(uris.size())) changed = true;
         for (int i = 0; i < uris.size(); i++)
@@ -323,19 +323,19 @@ void HostSelectionTable::reloadTable(void)
     _uriToRow.clear();
 
     //query keys and set dimensions
-    auto uris = getRemoteNodeUris();
+    auto uris = getHostUriList();
     this->setRowCount(uris.size()+1);
     size_t row = 0;
 
     //create new entry row
     auto addButton = makeToolButton(this, "list-add");
     this->setCellWidget(row, 0, addButton);
-    auto lineEdit = new NodeUriQLineEdit(this);
+    auto lineEdit = new HostUriQLineEdit(this);
     this->setCellWidget(row, 1, lineEdit);
     this->setSpan(row, 1, 1, nCols-1);
     row++;
 
-    //enumerate the available nodes
+    //enumerate the available hosts
     for (int i = 0; i < uris.size(); i++)
     {
         const auto &uri = uris[i];

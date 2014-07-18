@@ -47,7 +47,7 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     //host selection
     {
         formLayout->addRow(tr("Host URI"), _hostsBox);
-        _hostsBox->addItems(getRemoteNodeUris());
+        _hostsBox->addItems(getHostUriList());
         _hostsBox->setToolTip(tr("Select the URI for a local or remote host"));
         connect(_hostsBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleUriChanged(int)));
     }
