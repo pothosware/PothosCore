@@ -17,25 +17,6 @@
 #include <iostream>
 
 /***********************************************************************
- * tab widget overload to access tabbar
- **********************************************************************/
-class HostInfoTabWidget : public QTabWidget
-{
-    Q_OBJECT
-public:
-    HostInfoTabWidget(QWidget *parent):
-        QTabWidget(parent)
-    {
-        return;
-    }
-
-    void setLabel(const int index, QLabel *label)
-    {
-        this->tabBar()->setTabButton(index, QTabBar::LeftSide, label);
-    }
-};
-
-/***********************************************************************
  * top level window for host info implementation
  **********************************************************************/
 HostExplorerDock::HostExplorerDock(QWidget *parent):
@@ -53,7 +34,7 @@ HostExplorerDock::HostExplorerDock(QWidget *parent):
     auto table = new HostSelectionTable(this->widget());
     layout->addWidget(table);
 
-    _tabs = new HostInfoTabWidget(this->widget());
+    _tabs = new QTabWidget(this->widget());
     _tabs->addTab(new SystemInfoTree(_tabs), tr("System Info"));
     _tabs->addTab(new PluginRegistryTree(_tabs), tr("Plugin Registry"));
     _tabs->addTab(new SystemInfoTree(_tabs), tr("Plugin Modules"));
@@ -88,12 +69,10 @@ void HostExplorerDock::start(const int index)
     auto movie = new QMovie(makeIconPath("loading.gif"), QByteArray(), label);
     label->setMovie(movie);
     movie->start();
-    _tabs->setLabel(index, label);
+    _tabs->tabBar()->setTabButton(index, QTabBar::LeftSide, label);
 }
 
 void HostExplorerDock::stop(const int index)
 {
-    _tabs->setLabel(index, new QLabel(_tabs));
+    _tabs->tabBar()->setTabButton(index, QTabBar::LeftSide, new QLabel(_tabs));
 }
-
-#include "HostExplorerDock.moc"

@@ -4,7 +4,7 @@
 #pragma once
 #include <QTreeWidget>
 #include <QFutureWatcher>
-#include <Pothos/Plugin.hpp>
+#include <Pothos/Plugin/Registry.hpp>
 #include <string>
 
 //! tree widget display for a host's plugin registry

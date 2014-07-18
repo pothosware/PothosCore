@@ -5,7 +5,7 @@
 #include <QDockWidget>
 
 class QSignalMapper;
-class HostInfoTabWidget;
+class QTabWidget;
 
 //! top level dock widget for dealing with hosts
 class HostExplorerDock : public QDockWidget
@@ -20,7 +20,7 @@ private slots:
     void stop(const int index);
 
 private:
-    HostInfoTabWidget *_tabs;
+    QTabWidget *_tabs;
     QSignalMapper *_startMapper;
     QSignalMapper *_stopMapper;
 };
