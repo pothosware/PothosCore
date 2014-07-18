@@ -8,6 +8,7 @@
 #include "HostExplorer/HostExplorerDock.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
+#include "MessageWindow/MessageWindowDock.hpp"
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QSettings>
@@ -60,11 +61,7 @@ public:
         this->createMainToolBar();
 
         //create message window dock
-        _messageWindowDock = new QDockWidget(this);
-        _messageWindowDock->setObjectName("MessageWindowDock");
-        _messageWindowDock->setWindowTitle(tr("Message Window"));
-        _messageWindowDock->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
-        _messageWindowDock->setWidget(makeMessageWindow(_messageWindowDock));
+        _messageWindowDock = new MessageWindowDock(this);
         this->addDockWidget(Qt::BottomDockWidgetArea, _messageWindowDock);
 
         //create graph actions dock

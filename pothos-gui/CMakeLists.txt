@@ -79,8 +79,11 @@ set(SOURCES
     WindowSettings.cpp
     MainWindow.cpp
     BlockCache.cpp
-    MessageWindow.cpp
     PropertiesPanel.cpp
+
+    MessageWindow/MessageWindowDock.cpp
+    MessageWindow/LoggerDisplay.cpp
+    MessageWindow/LoggerChannel.cpp
 
     BlockTree/BlockTreeDock.cpp
     BlockTree/BlockTreeTopWindow.cpp
