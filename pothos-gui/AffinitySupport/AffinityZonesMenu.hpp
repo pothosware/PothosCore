@@ -12,11 +12,11 @@ class AffinityPanel;
 /*!
  * A menu with options that reflect the active affinity zones.
  */
-class AffinityZoneMenu : public QMenu
+class AffinityZonesMenu : public QMenu
 {
     Q_OBJECT
 public:
-    AffinityZoneMenu(AffinityPanel *affinityPanel, QWidget *parent);
+    AffinityZonesMenu(AffinityPanel *affinityPanel, QWidget *parent);
 
 signals:
     //! emitted when a submenu of that zone name is clicked

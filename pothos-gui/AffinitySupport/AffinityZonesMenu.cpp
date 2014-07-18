@@ -1,11 +1,11 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "AffinitySupport/AffinityZoneMenu.hpp"
+#include "AffinitySupport/AffinityZonesMenu.hpp"
 #include "AffinitySupport/AffinityPanel.hpp"
 #include <QSignalMapper>
 
-AffinityZoneMenu::AffinityZoneMenu(AffinityPanel *affinityPanel, QWidget *parent):
+AffinityZonesMenu::AffinityZonesMenu(AffinityPanel *affinityPanel, QWidget *parent):
     QMenu(tr("Set graph objects affinity..."), parent),
     _clickMapper(new QSignalMapper(this)),
     _affinityPanel(affinityPanel)
@@ -15,7 +15,7 @@ AffinityZoneMenu::AffinityZoneMenu(AffinityPanel *affinityPanel, QWidget *parent
     this->handleZonesChanged(); //init
 }
 
-void AffinityZoneMenu::handleZonesChanged(void)
+void AffinityZonesMenu::handleZonesChanged(void)
 {
     this->clear();
     if (_affinityPanel) for (const auto &name : _affinityPanel->zones())
@@ -26,7 +26,7 @@ void AffinityZoneMenu::handleZonesChanged(void)
     }
 }
 
-void AffinityZoneMenu::handleMapperClicked(const QString &name)
+void AffinityZonesMenu::handleMapperClicked(const QString &name)
 {
     emit this->zoneClicked(name);
 }

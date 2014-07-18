@@ -143,8 +143,3 @@ void AffinityPanel::handleErrorMessage(const QString &errMsg)
 {
     QToolTip::showText(_zoneEntry->mapToGlobal(QPoint()), "<font color=\"red\">"+errMsg+"</font>");
 }
-
-QWidget *makeAffinityPanel(QWidget *parent)
-{
-    return new AffinityPanel(parent);
-}

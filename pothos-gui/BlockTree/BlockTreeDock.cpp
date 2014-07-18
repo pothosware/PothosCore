@@ -14,6 +14,7 @@ BlockTreeDock::BlockTreeDock(QWidget *parent):
     this->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     this->setWidget(_blockTreeWindow);
 
+    //forward addBlockEvent signal
     connect(_blockTreeWindow, SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)),
         this, SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)));
 }

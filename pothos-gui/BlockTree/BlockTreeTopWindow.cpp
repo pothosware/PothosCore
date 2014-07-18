@@ -55,8 +55,3 @@ void BlockTreeTopWindow::handleBlockDescEvent(const Poco::JSON::Object::Ptr &blo
     _addButton->setEnabled(bool(blockDesc));
     if (add) emit addBlockEvent(_blockDesc);
 }
-
-QWidget *makeBlockTree(QWidget *parent)
-{
-    return new BlockTreeTopWindow(parent);
-}

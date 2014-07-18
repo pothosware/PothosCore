@@ -89,7 +89,8 @@ set(SOURCES
 
     AffinitySupport/AffinityPanel.cpp
     AffinitySupport/AffinityZoneEditor.cpp
-    AffinitySupport/AffinityZoneMenu.cpp
+    AffinitySupport/AffinityZonesMenu.cpp
+    AffinitySupport/AffinityZonesDock.cpp
     AffinitySupport/CpuSelectionWidget.cpp
 
     RemoteNodes/RemoteNodesWindow.cpp

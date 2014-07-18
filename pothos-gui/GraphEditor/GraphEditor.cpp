@@ -55,7 +55,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["cut"], SIGNAL(triggered(void)), this, SLOT(handleCut(void)));
     connect(getActionMap()["copy"], SIGNAL(triggered(void)), this, SLOT(handleCopy(void)));
     connect(getActionMap()["paste"], SIGNAL(triggered(void)), this, SLOT(handlePaste(void)));
-    connect(getObjectMap()["blockTree"], SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
+    connect(getObjectMap()["blockTreeDock"], SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
     connect(getActionMap()["selectAll"], SIGNAL(triggered(void)), this, SLOT(handleSelectAll(void)));
     connect(getActionMap()["delete"], SIGNAL(triggered(void)), this, SLOT(handleDelete(void)));
     connect(getActionMap()["rotateLeft"], SIGNAL(triggered(void)), this, SLOT(handleRotateLeft(void)));
