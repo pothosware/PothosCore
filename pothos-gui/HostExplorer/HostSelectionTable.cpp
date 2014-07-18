@@ -1,8 +1,8 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
-#include <QTableWidget>
+#include "PothosGui.hpp" //get settings
+#include <HostExplorer/HostSelectionTable.hpp>
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QToolButton>
@@ -22,10 +22,43 @@
 #include <functional> //std::bind
 #include <mutex>
 
+//TODO do we need a mutex? isnt QSettings safe?
 std::mutex &getMutex(void)
 {
     static Poco::SingletonHolder<std::mutex> sh;
     return *sh.get();
+}
+
+/***********************************************************************
+ * NodeInfo update implementation
+ **********************************************************************/
+void NodeInfo::update(void)
+{
+    //determine if the remote node is online and update access times
+    try
+    {
+        Pothos::RemoteClient client(this->uri.toStdString());
+        if (this->nodeName.isEmpty())
+        {
+            auto env = client.makeEnvironment("managed");
+            auto nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
+            this->nodeName = QString::fromStdString(nodeInfo.nodeName);
+            getSettings().setValue("RemoteNodes/"+this->uri+"/nodeName", this->nodeName);
+        }
+        this->isOnline = true;
+        this->lastAccess = Poco::Timestamp();
+        getSettings().setValue("RemoteNodes/"+this->uri+"/lastAccess", int(this->lastAccess.epochTime()));
+    }
+    //otherwise, fetch the information from the settings cache
+    catch(const Pothos::RemoteClientError &)
+    {
+        this->isOnline = false;
+        if (this->nodeName.isEmpty())
+        {
+            this->nodeName = getSettings().value("RemoteNodes/"+this->uri+"/nodeName").toString();
+        }
+        this->lastAccess = Poco::Timestamp::fromEpochTime(std::time_t(getSettings().value("RemoteNodes/"+this->uri+"/lastAccess").toInt()));
+    }
 }
 
 /***********************************************************************
@@ -53,55 +86,6 @@ static void setRemoteNodeUris(const QStringList &uris)
 
     getSettings().setValue("RemoteNodes/uris", uris);
 }
-
-/***********************************************************************
- * represent information about a remote node
- **********************************************************************/
-struct NodeInfo
-{
-    NodeInfo(void):
-        isOnline(false),
-        lastAccess(Poco::Timestamp::fromEpochTime(0))
-    {}
-    QString uri;
-    bool isOnline;
-    Poco::Timestamp lastAccess;
-    QString nodeName;
-
-    void update(void)
-    {
-        //determine if the remote node is online and update access times
-        try
-        {
-            Pothos::RemoteClient client(this->uri.toStdString());
-            if (this->nodeName.isEmpty())
-            {
-                auto env = client.makeEnvironment("managed");
-                auto nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
-                this->nodeName = QString::fromStdString(nodeInfo.nodeName);
-                getSettings().setValue("RemoteNodes/"+this->uri+"/nodeName", this->nodeName);
-            }
-            this->isOnline = true;
-            this->lastAccess = Poco::Timestamp();
-            getSettings().setValue("RemoteNodes/"+this->uri+"/lastAccess", int(this->lastAccess.epochTime()));
-        }
-        //otherwise, fetch the information from the settings cache
-        catch(const Pothos::RemoteClientError &)
-        {
-            this->isOnline = false;
-            if (this->nodeName.isEmpty())
-            {
-                this->nodeName = getSettings().value("RemoteNodes/"+this->uri+"/nodeName").toString();
-            }
-            this->lastAccess = Poco::Timestamp::fromEpochTime(std::time_t(getSettings().value("RemoteNodes/"+this->uri+"/lastAccess").toInt()));
-        }
-    }
-
-    bool neverAccessed(void) const
-    {
-        return this->lastAccess == Poco::Timestamp::fromEpochTime(0);
-    }
-};
 
 /***********************************************************************
  * Custom line editor for node URI entry
@@ -194,140 +178,118 @@ static QToolButton *makeToolButton(QWidget *parent, const QString &theme)
 /***********************************************************************
  * node table implementation
  **********************************************************************/
-class RemoteNodesQTableWidget : public QTableWidget
+HostSelectionTable::HostSelectionTable(QWidget *parent):
+    QTableWidget(parent),
+    _removeMapper(new QSignalMapper(this)),
+    _timer(new QTimer(this)),
+    _watcher(new QFutureWatcher<std::vector<NodeInfo>>(this))
 {
-    Q_OBJECT
-public:
-    RemoteNodesQTableWidget(QWidget *parent):
-        QTableWidget(parent),
-        _removeMapper(new QSignalMapper(this)),
-        _timer(new QTimer(this)),
-        _watcher(new QFutureWatcher<std::vector<NodeInfo>>(this))
+    this->setColumnCount(nCols);
+    size_t col = 0;
+    this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("Action")));
+    this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("URI")));
+    this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("Name")));
+    this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("Last Access")));
+    this->reloadTable();
+
+    connect(
+        _removeMapper, SIGNAL(mapped(const QString &)),
+        this, SLOT(handleRemove(const QString &)));
+    connect(
+        _timer, SIGNAL(timeout(void)),
+        this, SLOT(handleUpdateStatus(void)));
+    connect(
+        _watcher, SIGNAL(finished(void)),
+        this, SLOT(handleNodeQueryComplete(void)));
+    connect(
+        this, SIGNAL(cellClicked(int, int)),
+        this, SLOT(handleCellClicked(int, int)));
+    _timer->start(5000/*ms*/);
+}
+
+void HostSelectionTable::handleCellClicked(const int row, const int col)
+{
+    if (col < 1) return;
+    for (const auto &entry : _uriToRow)
     {
-        this->setColumnCount(nCols);
-        size_t col = 0;
-        this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("Action")));
-        this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("URI")));
-        this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("Name")));
-        this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("Last Access")));
+        if (entry.second != size_t(row)) continue;
+        auto &info = _uriToInfo.at(entry.first);
+        info.update();
+        if (info.isOnline) emit nodeInfoRequest(info.uri.toStdString());
+        else emit handleErrorMessage(tr("node %1 is offline").arg(info.uri));
+    }
+}
+
+void HostSelectionTable::handleRemove(const QString &uri)
+{
+    try
+    {
+        auto uris = getRemoteNodeUris();
+        uris.erase(std::find(uris.begin(), uris.end(), uri));
+        setRemoteNodeUris(uris);
         this->reloadTable();
-
-        connect(
-            _removeMapper, SIGNAL(mapped(const QString &)),
-            this, SLOT(handleRemove(const QString &)));
-        connect(
-            _timer, SIGNAL(timeout(void)),
-            this, SLOT(handleUpdateStatus(void)));
-        connect(
-            _watcher, SIGNAL(finished(void)),
-            this, SLOT(handleNodeQueryComplete(void)));
-        connect(
-            this, SIGNAL(cellClicked(int, int)),
-            this, SLOT(handleCellClicked(int, int)));
-        _timer->start(5000/*ms*/);
     }
-
-signals:
-    void handleErrorMessage(const QString &);
-    void nodeInfoRequest(const std::string &);
-
-private slots:
-
-    void handleCellClicked(const int row, const int col)
+    catch(const Pothos::Exception &ex)
     {
-        if (col < 1) return;
-        for (const auto &entry : _uriToRow)
-        {
-            if (entry.second != size_t(row)) continue;
-            auto &info = _uriToInfo.at(entry.first);
-            info.update();
-            if (info.isOnline) emit nodeInfoRequest(info.uri.toStdString());
-            else emit handleErrorMessage(tr("node %1 is offline").arg(info.uri));
-        }
+        emit handleErrorMessage(QString::fromStdString(ex.displayText()));
     }
+}
 
-    void handleRemove(const QString &uri)
+void HostSelectionTable::handleAdd(const QString &uri)
+{
+    try
     {
-        try
+        auto uris = getRemoteNodeUris();
+        if (std::find(uris.begin(), uris.end(), uri) != uris.end())
         {
-            auto uris = getRemoteNodeUris();
-            uris.erase(std::find(uris.begin(), uris.end(), uri));
-            setRemoteNodeUris(uris);
-            this->reloadTable();
+            emit handleErrorMessage(tr("%1 already exists").arg(uri));
+            return;
         }
-        catch(const Pothos::Exception &ex)
-        {
-            emit handleErrorMessage(QString::fromStdString(ex.displayText()));
-        }
+        uris.push_back(uri);
+        setRemoteNodeUris(uris);
+        this->reloadTable();
     }
-
-    void handleAdd(const QString &uri)
+    catch(const Pothos::Exception &ex)
     {
-        try
-        {
-            auto uris = getRemoteNodeUris();
-            if (std::find(uris.begin(), uris.end(), uri) != uris.end())
-            {
-                emit handleErrorMessage(tr("%1 already exists").arg(uri));
-                return;
-            }
-            uris.push_back(uri);
-            setRemoteNodeUris(uris);
-            this->reloadTable();
-        }
-        catch(const Pothos::Exception &ex)
-        {
-            emit handleErrorMessage(QString::fromStdString(ex.displayText()));
-        }
+        emit handleErrorMessage(QString::fromStdString(ex.displayText()));
     }
+}
 
-    void handleNodeQueryComplete(void)
+void HostSelectionTable::handleNodeQueryComplete(void)
+{
+    this->reloadRows(_watcher->result());
+}
+
+void HostSelectionTable::handleUpdateStatus(void)
+{
+    //did the keys change?
     {
-        this->reloadRows(_watcher->result());
-    }
-
-    void handleUpdateStatus(void)
-    {
-        //did the keys change?
+        auto uris = getRemoteNodeUris();
+        bool changed = false;
+        if (_uriToRow.size() != size_t(uris.size())) changed = true;
+        for (int i = 0; i < uris.size(); i++)
         {
-            auto uris = getRemoteNodeUris();
-            bool changed = false;
-            if (_uriToRow.size() != size_t(uris.size())) changed = true;
-            for (int i = 0; i < uris.size(); i++)
-            {
-                if (_uriToRow.find(uris[i]) == _uriToRow.end()) changed = true;
-            }
-            if (changed) return this->reloadTable();
+            if (_uriToRow.find(uris[i]) == _uriToRow.end()) changed = true;
         }
-
-        std::vector<NodeInfo> nodes;
-        for (const auto &entry : _uriToInfo)
-        {
-            nodes.push_back(entry.second);
-        }
-        this->reloadRows(nodes); //initial load, future will fill in the rest
-        _watcher->setFuture(QtConcurrent::run(std::bind(&RemoteNodesQTableWidget::peformNodeComms, nodes)));
+        if (changed) return this->reloadTable();
     }
 
-private:
-
-    static std::vector<NodeInfo> peformNodeComms(std::vector<NodeInfo> nodes)
+    std::vector<NodeInfo> nodes;
+    for (const auto &entry : _uriToInfo)
     {
-        for (size_t i = 0; i < nodes.size(); i++) nodes[i].update();
-        return nodes;
+        nodes.push_back(entry.second);
     }
+    this->reloadRows(nodes); //initial load, future will fill in the rest
+    _watcher->setFuture(QtConcurrent::run(std::bind(&HostSelectionTable::peformNodeComms, nodes)));
+}
 
-    void reloadRows(const std::vector<NodeInfo> &nodes);
-    void reloadTable(void);
-    QSignalMapper *_removeMapper;
-    QTimer *_timer;
-    QFutureWatcher<std::vector<NodeInfo>> *_watcher;
-    std::map<QString, size_t> _uriToRow;
-    std::map<QString, NodeInfo> _uriToInfo;
-    static const size_t nCols = 4;
-};
+std::vector<NodeInfo> HostSelectionTable::peformNodeComms(std::vector<NodeInfo> nodes)
+{
+    for (size_t i = 0; i < nodes.size(); i++) nodes[i].update();
+    return nodes;
+}
 
-void RemoteNodesQTableWidget::reloadRows(const std::vector<NodeInfo> &nodeInfos)
+void HostSelectionTable::reloadRows(const std::vector<NodeInfo> &nodeInfos)
 {
     for (size_t i = 0; i < nodeInfos.size(); i++)
     {
@@ -353,7 +315,7 @@ void RemoteNodesQTableWidget::reloadRows(const std::vector<NodeInfo> &nodeInfos)
     this->resizeColumnsToContents();
 }
 
-void RemoteNodesQTableWidget::reloadTable(void)
+void HostSelectionTable::reloadTable(void)
 {
     //clear stuff for table reload
     this->clearContents();
@@ -401,9 +363,4 @@ void RemoteNodesQTableWidget::reloadTable(void)
     this->handleUpdateStatus(); //fills in status
 }
 
-QWidget *makeRemoteNodesTable(QWidget *parent)
-{
-    return new RemoteNodesQTableWidget(parent);
-}
-
-#include "RemoteNodesTable.moc"
+#include "HostSelectionTable.moc"

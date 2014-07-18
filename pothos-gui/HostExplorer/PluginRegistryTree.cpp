@@ -1,8 +1,7 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGui.hpp"
-#include <QTreeWidget>
+#include <HostExplorer/PluginRegistryTree.hpp>
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Plugin.hpp>
@@ -65,57 +64,36 @@ static Pothos::PluginRegistryInfoDump getRegistryDump(const std::string &uriStr)
 }
 
 /***********************************************************************
- * tree widget plugin registry
+ * tree widget plugin registry implementation
  **********************************************************************/
-class PluginRegistryTree : public QTreeWidget
+PluginRegistryTree::PluginRegistryTree(QWidget *parent):
+    QTreeWidget(parent),
+    _watcher(new QFutureWatcher<Pothos::PluginRegistryInfoDump>(this))
 {
-    Q_OBJECT
-public:
-    PluginRegistryTree(QWidget *parent):
-        QTreeWidget(parent),
-        _watcher(new QFutureWatcher<Pothos::PluginRegistryInfoDump>(this))
-    {
-        QStringList columnNames;
-        columnNames.push_back(tr("Plugin path"));
-        columnNames.push_back(tr("Object type"));
-        columnNames.push_back(tr("Module path"));
-        this->setColumnCount(columnNames.size());
-        this->setHeaderLabels(columnNames);
+    QStringList columnNames;
+    columnNames.push_back(tr("Plugin path"));
+    columnNames.push_back(tr("Object type"));
+    columnNames.push_back(tr("Module path"));
+    this->setColumnCount(columnNames.size());
+    this->setHeaderLabels(columnNames);
 
-        connect(
-            _watcher, SIGNAL(finished(void)),
-            this, SLOT(handleWatcherDone(void)));
-    }
-
-signals:
-    void startLoad(void);
-    void stopLoad(void);
-
-private slots:
-
-    void handeNodeInfoRequest(const std::string &uriStr)
-    {
-        if (_watcher->isRunning()) return;
-        while (this->topLevelItemCount() > 0) delete this->topLevelItem(0);
-        _watcher->setFuture(QtConcurrent::run(std::bind(&getRegistryDump, uriStr)));
-        emit startLoad();
-    }
-
-    void handleWatcherDone(void)
-    {
-        new PluginPathTreeItem(this, _watcher->result());
-        this->resizeColumnToContents(0);
-        this->resizeColumnToContents(1);
-        emit stopLoad();
-    }
-
-private:
-    QFutureWatcher<Pothos::PluginRegistryInfoDump> *_watcher;
-};
-
-QWidget *makePluginRegistryTree(QWidget *parent)
-{
-    return new PluginRegistryTree(parent);
+    connect(
+        _watcher, SIGNAL(finished(void)),
+        this, SLOT(handleWatcherDone(void)));
 }
 
-#include "PluginRegistryTree.moc"
+void PluginRegistryTree::handeNodeInfoRequest(const std::string &uriStr)
+{
+    if (_watcher->isRunning()) return;
+    while (this->topLevelItemCount() > 0) delete this->topLevelItem(0);
+    _watcher->setFuture(QtConcurrent::run(std::bind(&getRegistryDump, uriStr)));
+    emit startLoad();
+}
+
+void PluginRegistryTree::handleWatcherDone(void)
+{
+    new PluginPathTreeItem(this, _watcher->result());
+    this->resizeColumnToContents(0);
+    this->resizeColumnToContents(1);
+    emit stopLoad();
+}

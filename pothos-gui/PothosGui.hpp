@@ -28,13 +28,6 @@ QWidget *makePropertiesPanel(QWidget *parent);
 QWidget *makeMessageWindow(QWidget *parent);
 QObject *makeBlockCache(QObject *parent);
 
-//--- remote node factories --//
-QWidget *makeRemoteNodesWindow(QWidget *parent);
-QWidget *makeRemoteNodesTable(QWidget *parent);
-QWidget *makePluginRegistryTree(QWidget *parent);
-QWidget *makePluginModuleTree(QWidget *parent);
-QWidget *makeSystemInfoTree(QWidget *parent);
-
 //-- graph editor factories --//
 QWidget *makeGraphEditorTabs(QWidget *parent);
 QWidget *makeGraphEditor(QWidget *parent);

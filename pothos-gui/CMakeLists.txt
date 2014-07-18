@@ -93,11 +93,11 @@ set(SOURCES
     AffinitySupport/AffinityZonesDock.cpp
     AffinitySupport/CpuSelectionWidget.cpp
 
-    RemoteNodes/RemoteNodesWindow.cpp
-    RemoteNodes/PluginRegistryTree.cpp
-    RemoteNodes/PluginModuleTree.cpp
-    RemoteNodes/RemoteNodesTable.cpp
-    RemoteNodes/SystemInfoTree.cpp
+    HostExplorer/PluginModuleTree.cpp
+    HostExplorer/PluginRegistryTree.cpp
+    HostExplorer/SystemInfoTree.cpp
+    HostExplorer/HostSelectionTable.cpp
+    HostExplorer/HostExplorerDock.cpp
 
     GraphEditor/GraphState.cpp
     GraphEditor/GraphEditorTabs.cpp

@@ -3,6 +3,7 @@
 
 #include "PothosGui.hpp"
 #include <Pothos/System.hpp>
+#include "HostExplorer/HostExplorerDock.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include <QMainWindow>
@@ -71,18 +72,14 @@ public:
         this->addDockWidget(Qt::BottomDockWidgetArea, _graphActionsDock);
         getObjectMap()["graphActionsDock"] = _graphActionsDock;
 
-        //create remote nodes dock
-        _remoteNodesDock = new QDockWidget(this);
-        _remoteNodesDock->setObjectName("RemoteNodesDock");
-        _remoteNodesDock->setWindowTitle(tr("Remote Nodes"));
-        _remoteNodesDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-        _remoteNodesDock->setWidget(makeRemoteNodesWindow(_remoteNodesDock));
-        this->addDockWidget(Qt::RightDockWidgetArea, _remoteNodesDock);
+        //create host explorer dock
+        _hostExplorerDock = new HostExplorerDock(this);
+        this->addDockWidget(Qt::RightDockWidgetArea, _hostExplorerDock);
 
         //create affinity panel
         _affinityZonesDock = new AffinityZonesDock(this);
         getObjectMap()["affinityZonesDock"] = _affinityZonesDock;
-        this->tabifyDockWidget(_remoteNodesDock, _affinityZonesDock);
+        this->tabifyDockWidget(_hostExplorerDock, _affinityZonesDock);
 
         //block cache (make before block tree)
         auto blockCache = makeBlockCache(this);
@@ -210,7 +207,7 @@ private:
 
     void createMainToolBar(void);
     QToolBar *_mainToolBar;
-    QDockWidget *_remoteNodesDock;
+    QDockWidget *_hostExplorerDock;
     QDockWidget *_messageWindowDock;
     QDockWidget *_graphActionsDock;
     QDockWidget *_blockTreeDock;
@@ -405,7 +402,7 @@ void PothosGuiMainWindow::createMenus(void)
 
     _viewMenu = menuBar()->addMenu(tr("&View"));
     _menuMap["view"] = _viewMenu;
-    _viewMenu->addAction(_remoteNodesDock->toggleViewAction());
+    _viewMenu->addAction(_hostExplorerDock->toggleViewAction());
     _viewMenu->addAction(_messageWindowDock->toggleViewAction());
     _viewMenu->addAction(_graphActionsDock->toggleViewAction());
     _viewMenu->addAction(_blockTreeDock->toggleViewAction());
