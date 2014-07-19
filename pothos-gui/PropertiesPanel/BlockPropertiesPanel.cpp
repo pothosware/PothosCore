@@ -3,11 +3,11 @@
 
 #include "PothosGuiUtils.hpp" //make icon theme
 #include "PropertiesPanel/BlockPropertiesPanel.hpp"
+#include "PropertiesPanel/BlockPropertyEditWidget.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
-#include <Poco/MD5Engine.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -74,28 +74,10 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         assert(paramDesc);
 
         //create editable widget
-        QWidget *editWidget = nullptr;
-        if (paramDesc->isArray("options"))
-        {
-            auto comboBox = new QComboBox(this);
-            editWidget = comboBox;
-            //combo->setEditable(true);
-            for (const auto &optionObj : *paramDesc->getArray("options"))
-            {
-                const auto option = optionObj.extract<Poco::JSON::Object::Ptr>();
-                comboBox->addItem(
-                    QString::fromStdString(option->getValue<std::string>("name")),
-                    QString::fromStdString(option->getValue<std::string>("value")));
-            }
-            connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
-        }
-        else
-        {
-            auto lineEdit = new QLineEdit(this);
-            connect(lineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
-            connect(lineEdit, SIGNAL(returnPressed(void)), this, SLOT(handleCommitButton(void)));
-            editWidget = lineEdit;
-        }
+        auto editWidget = new BlockPropertyEditWidget(paramDesc, this);
+        connect(editWidget, SIGNAL(valueChanged(void)), this, SLOT(handleEditWidgetChanged(void)));
+        connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommitButton(void)));
+        _propIdToEditWidget[prop.getKey()] = editWidget;
 
         //create labels
         _propIdToFormLabel[prop.getKey()] = new QLabel(this);
@@ -107,7 +89,6 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         editLayout->addWidget(editWidget);
         editLayout->addWidget(_propIdToErrorLabel[prop.getKey()]);
         _formLayout->addRow(_propIdToFormLabel[prop.getKey()], editLayout);
-        _propIdToEditWidget[prop.getKey()] = editWidget;
     }
 
     //draw the block's preview onto a mini pixmap
@@ -147,10 +128,13 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         output += "</p>";
 
         //enumerate properties
-        output += QString("<h2>%1</h2>").arg(tr("Properties"));
-        for (const auto &prop : _block->getProperties())
+        if (not _block->getProperties().empty())
         {
-            output += this->getParamDocString(_block->getParamDesc(prop.getKey()));
+            output += QString("<h2>%1</h2>").arg(tr("Properties"));
+            for (const auto &prop : _block->getProperties())
+            {
+                output += this->getParamDocString(_block->getParamDesc(prop.getKey()));
+            }
         }
 
         //enumerate slots
@@ -230,7 +214,7 @@ void BlockPropertiesPanel::handleBlockDestroyed(QObject *)
     this->deleteLater();
 }
 
-void BlockPropertiesPanel::handleEditWidgetChanged(const QString &)
+void BlockPropertiesPanel::handleEditWidgetChanged(void)
 {
     if (_ignoreChanges) return;
 
@@ -240,12 +224,7 @@ void BlockPropertiesPanel::handleEditWidgetChanged(const QString &)
     //dump all values from edit widgets into the block's property values
     for (const auto &prop : _block->getProperties())
     {
-        auto editWidget = _propIdToEditWidget[prop.getKey()];
-        QString newValue;
-        auto comboBox = dynamic_cast<QComboBox *>(editWidget);
-        if (comboBox != nullptr) newValue = comboBox->itemData(comboBox->currentIndex()).toString();
-        auto lineEdit = dynamic_cast<QLineEdit *>(editWidget);
-        if (lineEdit != nullptr) newValue = lineEdit->text();
+        QString newValue = _propIdToEditWidget[prop.getKey()]->value();
         _block->setPropertyValue(prop.getKey(), newValue);
     }
 
@@ -335,32 +314,13 @@ void BlockPropertiesPanel::updatePropForms(const GraphBlockProp &prop)
         .arg(QString::fromStdString(paramDesc->getValue<std::string>("units")));
     formLabel->setText(label);
 
-    //type color calculation
-    auto typeStr = _block->getPropertyTypeStr(prop.getKey());
-    Poco::MD5Engine md5; md5.update(typeStr);
-    const auto hexHash = Poco::DigestEngine::digestToHex(md5.digest());
-    QColor typeColor(QString::fromStdString("#" + hexHash.substr(0, 6)));
-    assert(editWidget != nullptr);
-    editWidget->setStyleSheet(QString(
-        "QComboBox{background:%1;color:%2;}"
-        "QLineEdit{background:%1;color:%2;}")
-        .arg(typeColor.name())
-        .arg((typeColor.lightnessF() > 0.5)?"black":"white")
-    );
-
     //error label
     QString errorMsg = _block->getPropertyErrorMsg(prop.getKey());
     errorLabel->setVisible(not errorMsg.isEmpty());
     errorLabel->setText(QString("<span style='color:red;'><p><i>%1</i></p></span>").arg(errorMsg.toHtmlEscaped()));
     errorLabel->setWordWrap(true);
 
-    //set the editor's value
-    const auto value = _block->getPropertyValue(prop.getKey());
-    auto comboBox = dynamic_cast<QComboBox *>(editWidget);
-    if (comboBox != nullptr) for (int i = 0; i < comboBox->count(); i++)
-    {
-        if (comboBox->itemData(i).toString() == value) comboBox->setCurrentIndex(i);
-    }
-    auto lineEdit = dynamic_cast<QLineEdit *>(editWidget);
-    if (lineEdit != nullptr) lineEdit->setText(value);
+    //set the editor's value and type string colors
+    editWidget->setValue(_block->getPropertyValue(prop.getKey()));
+    editWidget->setColors(_block->getPropertyTypeStr(prop.getKey()));
 }

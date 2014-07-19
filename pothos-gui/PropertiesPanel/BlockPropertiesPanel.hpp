@@ -15,6 +15,7 @@ class QLabel;
 class QLineEdit;
 class QTimer;
 class QFormLayout;
+class BlockPropertyEditWidget;
 
 class BlockPropertiesPanel : public QWidget
 {
@@ -28,7 +29,12 @@ private slots:
 
     void handleBlockDestroyed(QObject *);
 
-    void handleEditWidgetChanged(const QString &);
+    void handleEditWidgetChanged(const QString &)
+    {
+        this->handleEditWidgetChanged();
+    }
+
+    void handleEditWidgetChanged(void);
 
     void handleUpdateTimerExpired(void);
 
@@ -44,7 +50,7 @@ private:
     std::map<QString, QString> _propIdToOriginal;
     std::map<QString, QLabel *> _propIdToFormLabel;
     std::map<QString, QLabel *> _propIdToErrorLabel;
-    std::map<QString, QWidget *> _propIdToEditWidget;
+    std::map<QString, BlockPropertyEditWidget *> _propIdToEditWidget;
 
     /*!
      * Update everything in this panel after a block change
