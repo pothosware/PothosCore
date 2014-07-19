@@ -20,14 +20,6 @@
 #include <map>
 #include <iostream>
 #include <functional> //std::bind
-#include <mutex>
-
-//TODO do we need a mutex? isnt QSettings safe?
-std::mutex &getMutex(void)
-{
-    static Poco::SingletonHolder<std::mutex> sh;
-    return *sh.get();
-}
 
 /***********************************************************************
  * NodeInfo update implementation
@@ -66,8 +58,6 @@ void NodeInfo::update(void)
  **********************************************************************/
 QStringList getHostUriList(void)
 {
-    std::lock_guard<std::mutex> lock(getMutex());
-
     auto uris = getSettings().value("HostExplorer/uris").toStringList();
     uris.push_back("tcp://localhost");
 
@@ -82,8 +72,6 @@ QStringList getHostUriList(void)
 
 static void setHostUriList(const QStringList &uris)
 {
-    std::lock_guard<std::mutex> lock(getMutex());
-
     getSettings().setValue("HostExplorer/uris", uris);
 }
 
