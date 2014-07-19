@@ -40,6 +40,5 @@ private:
 
     //storage structures
     std::map<QString, Poco::JSON::Array::Ptr> _uriToBlockDescs;
-    std::map<std::string, Poco::JSON::Object::Ptr> &_registryPathToBlockDesc;
-    Poco::JSON::Array::Ptr _superSetBlockDescs;
+    //Poco::JSON::Array::Ptr _superSetBlockDescs;
 };

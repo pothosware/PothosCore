@@ -13,6 +13,7 @@
 #include <Poco/JSON/Object.h>
 #include <Poco/Logger.h>
 #include <Poco/SingletonHolder.h>
+#include <Poco/RWLock.h>
 #include <iostream>
 #include <map>
 
@@ -25,11 +26,20 @@ static std::map<std::string, Poco::JSON::Object::Ptr> &getRegistryPathToBlockDes
     return *sh.get();
 }
 
+static Poco::RWLock &getMapMutex(void)
+{
+    static Poco::SingletonHolder<Poco::RWLock> sh;
+    return *sh.get();
+}
+
 Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
 {
     //look in the cache
-    auto it = getRegistryPathToBlockDesc().find(path);
-    if (it != getRegistryPathToBlockDesc().end()) return it->second;
+    {
+        Poco::RWLock::ScopedReadLock lock(getMapMutex());
+        auto it = getRegistryPathToBlockDesc().find(path);
+        if (it != getRegistryPathToBlockDesc().end()) return it->second;
+    }
 
     //search all of the nodes
     for (const auto &uri : getHostUriList())
@@ -74,8 +84,7 @@ static Poco::JSON::Array::Ptr queryBlockDescs(const QString &uri)
  **********************************************************************/
 BlockCache::BlockCache(QObject *parent):
     QObject(parent),
-    _watcher(new QFutureWatcher<Poco::JSON::Array::Ptr>(this)),
-    _registryPathToBlockDesc(getRegistryPathToBlockDesc())
+    _watcher(new QFutureWatcher<Poco::JSON::Array::Ptr>(this))
 {
     connect(_watcher, SIGNAL(resultReadyAt(int)), this, SLOT(handleWatcherDone(int)));
     connect(_watcher, SIGNAL(finished()), this, SLOT(handleWatcherFinished()));
@@ -98,28 +107,34 @@ void BlockCache::handleWatcherFinished(void)
     _uriToBlockDescs = newMap;
 
     //map paths to block descs
-    _registryPathToBlockDesc.clear();
-    for (const auto &pair : _uriToBlockDescs)
     {
-        if (not pair.second) continue;
-        for (const auto &blockDescObj : *pair.second)
+        Poco::RWLock::ScopedWriteLock lock(getMapMutex());
+        getRegistryPathToBlockDesc().clear();
+        for (const auto &pair : _uriToBlockDescs)
         {
-            const auto blockDesc = blockDescObj.extract<Poco::JSON::Object::Ptr>();
-            const auto path = blockDesc->get("path").extract<std::string>();
-            _registryPathToBlockDesc[path] = blockDesc;
+            if (not pair.second) continue;
+            for (const auto &blockDescObj : *pair.second)
+            {
+                const auto blockDesc = blockDescObj.extract<Poco::JSON::Object::Ptr>();
+                const auto path = blockDesc->get("path").extract<std::string>();
+                getRegistryPathToBlockDesc()[path] = blockDesc;
+            }
         }
     }
 
     //make a master block desc list
-    _superSetBlockDescs = new Poco::JSON::Array();
-    for (const auto &pair : _registryPathToBlockDesc)
+    auto superSetBlockDescs = new Poco::JSON::Array();
     {
-        _superSetBlockDescs->add(pair.second);
+        Poco::RWLock::ScopedReadLock lock(getMapMutex());
+        for (const auto &pair : getRegistryPathToBlockDesc())
+        {
+            superSetBlockDescs->add(pair.second);
+        }
     }
 
     //let the subscribers know
     emit this->blockDescReady();
-    emit this->blockDescUpdate(_superSetBlockDescs);
+    emit this->blockDescUpdate(superSetBlockDescs);
 }
 
 void BlockCache::handleWatcherDone(const int which)
