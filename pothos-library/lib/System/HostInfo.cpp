@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Poco/Process.h>
-#include <Pothos/System/NodeInfo.hpp>
+#include <Pothos/System/HostInfo.hpp>
 #include <Pothos/Managed.hpp>
 #include <Pothos/Object/Serialize.hpp>
 #include <Poco/Environment.h>
 
-Pothos::System::NodeInfo::NodeInfo(void)
+Pothos::System::HostInfo::HostInfo(void)
 {
     return;
 }
 
-Pothos::System::NodeInfo Pothos::System::NodeInfo::get(void)
+Pothos::System::HostInfo Pothos::System::HostInfo::get(void)
 {
-    NodeInfo info;
+    HostInfo info;
     info.osName = Poco::Environment::osName();
     info.osVersion = Poco::Environment::osVersion();
     info.osArchitecture = Poco::Environment::osArchitecture();
@@ -28,14 +28,14 @@ Pothos::System::NodeInfo Pothos::System::NodeInfo::get(void)
 #include <Pothos/Managed.hpp>
 #include <Pothos/Object/Serialize.hpp>
 
-static auto managedNodeInfo = Pothos::ManagedClass()
-    .registerConstructor<Pothos::System::NodeInfo>()
-    .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::System::NodeInfo, get))
-    .commit("Pothos/System/NodeInfo");
+static auto managedHostInfo = Pothos::ManagedClass()
+    .registerConstructor<Pothos::System::HostInfo>()
+    .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::System::HostInfo, get))
+    .commit("Pothos/System/HostInfo");
 
 namespace Pothos { namespace serialization {
 template <class Archive>
-void serialize(Archive &ar, Pothos::System::NodeInfo &t, const unsigned int)
+void serialize(Archive &ar, Pothos::System::HostInfo &t, const unsigned int)
 {
     ar & t.osName;
     ar & t.osVersion;
@@ -47,4 +47,4 @@ void serialize(Archive &ar, Pothos::System::NodeInfo &t, const unsigned int)
 }
 }}
 
-POTHOS_OBJECT_SERIALIZE(Pothos::System::NodeInfo)
+POTHOS_OBJECT_SERIALIZE(Pothos::System::HostInfo)

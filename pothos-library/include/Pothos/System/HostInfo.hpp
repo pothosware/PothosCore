@@ -16,20 +16,20 @@ namespace Pothos {
 namespace System {
 
 /*!
- * NodeInfo contains various OS and network node indentification.
+ * HostInfo contains various OS and network node indentification.
  */
-class POTHOS_API NodeInfo
+class POTHOS_API HostInfo
 {
 public:
     /*!
-     * Create an empty NodeInfo
+     * Create an empty HostInfo
      */
-    NodeInfo(void);
+    HostInfo(void);
 
     /*!
      * Query the node infomation.
      */
-    static NodeInfo get(void);
+    static HostInfo get(void);
 
     std::string osName;
     std::string osVersion;

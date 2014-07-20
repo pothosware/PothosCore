@@ -66,7 +66,7 @@ list(APPEND POTHOS_SOURCES
     System/Logger.cpp
     System/Version.in.cpp
     System/Paths.in.cpp
-    System/NodeInfo.cpp
+    System/HostInfo.cpp
     System/NumaInfo.cpp
     System/Exception.cpp
 

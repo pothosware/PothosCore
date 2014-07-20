@@ -8,7 +8,7 @@
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Pothos/System/NodeInfo.hpp>
+#include <Pothos/System/HostInfo.hpp>
 #include <Poco/Environment.h>
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
@@ -106,20 +106,20 @@ static bool checkObj(const Pothos::Object &o)
 /***********************************************************************
  * get a unique process identifier for an environment
  **********************************************************************/
-static std::string getUpid(const Pothos::System::NodeInfo &info)
+static std::string getUpid(const Pothos::System::HostInfo &info)
 {
     return info.nodeName + "/" + info.nodeId + "/" + info.pid;
 }
 
 static std::string getUpid(void)
 {
-    return getUpid(Pothos::System::NodeInfo::get());
+    return getUpid(Pothos::System::HostInfo::get());
 }
 
 static std::string getUpid(const Pothos::ProxyEnvironment::Sptr &env)
 {
     assert(env->getName() == "managed");
-    auto info = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
+    auto info = env->findProxy("Pothos/System/HostInfo").call<Pothos::System::HostInfo>("get");
     return getUpid(info);
 }
 
