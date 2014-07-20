@@ -5,6 +5,7 @@
 #include "PothosGuiUtils.hpp"
 #include <Pothos/Init.hpp>
 #include <Pothos/Remote.hpp>
+#include <Poco/Logger.h>
 #include <QMessageBox>
 #include <QApplication>
 #include <stdexcept>
@@ -49,10 +50,19 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    //create the main window for the GUI
-    std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr));
-    mainWindow->show();
+    POTHOS_EXCEPTION_TRY
+    {
+        //create the main window for the GUI
+        std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr));
+        mainWindow->show();
 
-    //begin application execution
-    return app.exec();
+        //begin application execution
+        return app.exec();
+    }
+    POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
+    {
+        QMessageBox msgBox(QMessageBox::Critical, "PothosGui Application Error", QString::fromStdString(ex.displayText()));
+        msgBox.exec();
+        return EXIT_FAILURE;
+    }
 }
