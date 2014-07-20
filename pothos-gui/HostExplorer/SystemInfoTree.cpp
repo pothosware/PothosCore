@@ -22,7 +22,7 @@ static InfoResult getInfo(const std::string &uriStr)
     try
     {
         auto env = Pothos::RemoteClient(uriStr).makeEnvironment("managed");
-        info.nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
+        info.hostInfo = env->findProxy("Pothos/System/HostInfo").call<Pothos::System::HostInfo>("get");
         info.numaInfo = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
         auto deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call<std::string>("dumpJson");
         Poco::JSON::Parser p; p.parse(deviceInfo);
@@ -54,7 +54,7 @@ SystemInfoTree::SystemInfoTree(QWidget *parent):
         this, SLOT(handleWatcherDone(void)));
 }
 
-void SystemInfoTree::handeNodeInfoRequest(const std::string &uriStr)
+void SystemInfoTree::handeInfoRequest(const std::string &uriStr)
 {
     if (_watcher->isRunning()) return;
     while (this->topLevelItemCount() > 0) delete this->topLevelItem(0);
@@ -66,18 +66,18 @@ void SystemInfoTree::handleWatcherDone(void)
 {
     const auto info = _watcher->result();
 
-    const auto &nodeInfo = info.nodeInfo;
+    const auto &hostInfo = info.hostInfo;
     {
         QStringList columns;
-        columns.push_back(tr("Node Info"));
+        columns.push_back(tr("Host Info"));
         auto rootItem = new QTreeWidgetItem(this, columns);
         rootItem->setExpanded(true);
-        makeEntry(rootItem, "OS Name", nodeInfo.osName);
-        makeEntry(rootItem, "OS Version", nodeInfo.osVersion);
-        makeEntry(rootItem, "OS Architecture", nodeInfo.osArchitecture);
-        makeEntry(rootItem, "Node Name", nodeInfo.nodeName);
-        makeEntry(rootItem, "Node ID", nodeInfo.nodeId);
-        makeEntry(rootItem, "Processors", std::to_string(nodeInfo.processorCount), "CPUs");
+        makeEntry(rootItem, "OS Name", hostInfo.osName);
+        makeEntry(rootItem, "OS Version", hostInfo.osVersion);
+        makeEntry(rootItem, "OS Architecture", hostInfo.osArchitecture);
+        makeEntry(rootItem, "Node Name", hostInfo.nodeName);
+        makeEntry(rootItem, "Node ID", hostInfo.nodeId);
+        makeEntry(rootItem, "Processors", std::to_string(hostInfo.processorCount), "CPUs");
     }
 
     for (const auto &numaInfo : info.numaInfo)

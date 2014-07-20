@@ -82,7 +82,7 @@ PluginRegistryTree::PluginRegistryTree(QWidget *parent):
         this, SLOT(handleWatcherDone(void)));
 }
 
-void PluginRegistryTree::handeNodeInfoRequest(const std::string &uriStr)
+void PluginRegistryTree::handeInfoRequest(const std::string &uriStr)
 {
     if (_watcher->isRunning()) return;
     while (this->topLevelItemCount() > 0) delete this->topLevelItem(0);

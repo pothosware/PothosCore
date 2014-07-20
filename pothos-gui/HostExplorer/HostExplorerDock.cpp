@@ -37,7 +37,7 @@ HostExplorerDock::HostExplorerDock(QWidget *parent):
     _tabs = new QTabWidget(this->widget());
     _tabs->addTab(new SystemInfoTree(_tabs), tr("System Info"));
     _tabs->addTab(new PluginRegistryTree(_tabs), tr("Plugin Registry"));
-    _tabs->addTab(new SystemInfoTree(_tabs), tr("Plugin Modules"));
+    _tabs->addTab(new PluginModuleTree(_tabs), tr("Plugin Modules"));
     layout->addWidget(_tabs, 1);
 
     //connect mappers
@@ -53,7 +53,7 @@ HostExplorerDock::HostExplorerDock(QWidget *parent):
     {
         connect(
             table, SIGNAL(nodeInfoRequest(const std::string &)),
-            _tabs->widget(i), SLOT(handeNodeInfoRequest(const std::string &)));
+            _tabs->widget(i), SLOT(handeInfoRequest(const std::string &)));
 
         connect(_tabs->widget(i), SIGNAL(startLoad(void)), _startMapper, SLOT(map(void)));
         _startMapper->setMapping(_tabs->widget(i), i);

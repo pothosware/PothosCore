@@ -14,7 +14,7 @@
 
 struct InfoResult
 {
-    Pothos::System::NodeInfo nodeInfo;
+    Pothos::System::HostInfo hostInfo;
     std::vector<Pothos::System::NumaInfo> numaInfo;
     Poco::JSON::Array::Ptr deviceInfo;
 };
@@ -30,9 +30,10 @@ signals:
     void startLoad(void);
     void stopLoad(void);
 
-private slots:
+public slots:
+    void handeInfoRequest(const std::string &uriStr);
 
-    void handeNodeInfoRequest(const std::string &uriStr);
+private slots:
 
     void handleWatcherDone(void);
 

@@ -33,8 +33,8 @@ void NodeInfo::update(void)
         if (this->nodeName.isEmpty())
         {
             auto env = client.makeEnvironment("managed");
-            auto nodeInfo = env->findProxy("Pothos/System/NodeInfo").call<Pothos::System::NodeInfo>("get");
-            this->nodeName = QString::fromStdString(nodeInfo.nodeName);
+            auto hostInfo = env->findProxy("Pothos/System/HostInfo").call<Pothos::System::HostInfo>("get");
+            this->nodeName = QString::fromStdString(hostInfo.nodeName);
             getSettings().setValue("HostExplorer/"+this->uri+"/nodeName", this->nodeName);
         }
         this->isOnline = true;
