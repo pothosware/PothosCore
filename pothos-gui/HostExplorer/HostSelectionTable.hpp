@@ -10,6 +10,8 @@
 #include <vector>
 #include <map>
 
+class HostUriQLineEdit;
+class QToolButton;
 class QSignalMapper;
 class QTimer;
 
@@ -62,6 +64,8 @@ private:
 
     void reloadRows(const std::vector<NodeInfo> &nodes);
     void reloadTable(void);
+    HostUriQLineEdit *_lineEdit;
+    QToolButton *_addButton;
     QSignalMapper *_removeMapper;
     QTimer *_timer;
     QFutureWatcher<std::vector<NodeInfo>> *_watcher;

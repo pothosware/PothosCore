@@ -168,6 +168,8 @@ static QToolButton *makeToolButton(QWidget *parent, const QString &theme)
  **********************************************************************/
 HostSelectionTable::HostSelectionTable(QWidget *parent):
     QTableWidget(parent),
+    _lineEdit(new HostUriQLineEdit(this)),
+    _addButton(makeToolButton(this, "list-add")),
     _removeMapper(new QSignalMapper(this)),
     _timer(new QTimer(this)),
     _watcher(new QFutureWatcher<std::vector<NodeInfo>>(this))
@@ -178,7 +180,23 @@ HostSelectionTable::HostSelectionTable(QWidget *parent):
     this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("URI")));
     this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("Name")));
     this->setHorizontalHeaderItem(col++, new QTableWidgetItem(tr("Last Access")));
-    this->reloadTable();
+
+    //create the data entry row
+    this->setRowCount(1);
+    this->setCellWidget(0, 0, _addButton);
+    this->setCellWidget(0, 1, _lineEdit);
+    this->setSpan(0, 1, 1, nCols-1);
+
+    //connect entry related widgets
+    connect(
+        _addButton, SIGNAL(clicked(void)),
+        _lineEdit, SLOT(handleReturnPressed(void)));
+    connect(
+        _lineEdit, SIGNAL(handleUriEntered(const QString &)),
+        this, SLOT(handleAdd(const QString &)));
+    connect(
+        this, SIGNAL(handleErrorMessage(const QString &)),
+        _lineEdit, SLOT(handleErrorMessage(const QString &)));
 
     connect(
         _removeMapper, SIGNAL(mapped(const QString &)),
@@ -192,6 +210,8 @@ HostSelectionTable::HostSelectionTable(QWidget *parent):
     connect(
         this, SIGNAL(cellClicked(int, int)),
         this, SLOT(handleCellClicked(int, int)));
+
+    this->reloadTable();
     _timer->start(5000/*ms*/);
 }
 
@@ -255,9 +275,9 @@ void HostSelectionTable::handleUpdateStatus(void)
         auto uris = getHostUriList();
         bool changed = false;
         if (_uriToRow.size() != size_t(uris.size())) changed = true;
-        for (int i = 0; i < uris.size(); i++)
+        for (const auto &uri : uris)
         {
-            if (_uriToRow.find(uris[i]) == _uriToRow.end()) changed = true;
+            if (_uriToRow.count(uri) == 0) changed = true;
         }
         if (changed) return this->reloadTable();
     }
@@ -305,48 +325,21 @@ void HostSelectionTable::reloadRows(const std::vector<NodeInfo> &nodeInfos)
 
 void HostSelectionTable::reloadTable(void)
 {
-    //clear stuff for table reload
-    this->clearContents();
-    this->clearSpans();
+    int row = 1;
     _uriToRow.clear();
 
-    //query keys and set dimensions
-    auto uris = getHostUriList();
-    this->setRowCount(uris.size()+1);
-    size_t row = 0;
-
-    //create new entry row
-    auto addButton = makeToolButton(this, "list-add");
-    this->setCellWidget(row, 0, addButton);
-    auto lineEdit = new HostUriQLineEdit(this);
-    this->setCellWidget(row, 1, lineEdit);
-    this->setSpan(row, 1, 1, nCols-1);
-    row++;
-
     //enumerate the available hosts
-    for (int i = 0; i < uris.size(); i++)
+    for (const auto &uri : getHostUriList())
     {
-        const auto &uri = uris[i];
+        this->setRowCount(row+1);
         _uriToInfo[uri].uri = uri;
         _uriToRow[uri] = row;
         auto removeButton = makeToolButton(this, "list-remove");
         this->setCellWidget(row, 0, removeButton);
         connect(removeButton, SIGNAL(clicked(void)), _removeMapper, SLOT(map()));
         _removeMapper->setMapping(removeButton, uri);
-
         row++;
     }
-
-    //connect for new entries
-    connect(
-        addButton, SIGNAL(clicked(void)),
-        lineEdit, SLOT(handleReturnPressed(void)));
-    connect(
-        lineEdit, SIGNAL(handleUriEntered(const QString &)),
-        this, SLOT(handleAdd(const QString &)));
-    connect(
-        this, SIGNAL(handleErrorMessage(const QString &)),
-        lineEdit, SLOT(handleErrorMessage(const QString &)));
 
     this->handleUpdateStatus(); //fills in status
 }
