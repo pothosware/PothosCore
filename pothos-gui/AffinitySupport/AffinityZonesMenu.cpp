@@ -6,7 +6,7 @@
 #include <QSignalMapper>
 
 AffinityZonesMenu::AffinityZonesMenu(AffinityPanel *affinityPanel, QWidget *parent):
-    QMenu(tr("Set graph objects affinity..."), parent),
+    QMenu(tr("Set graph blocks affinity..."), parent),
     _clickMapper(new QSignalMapper(this)),
     _affinityPanel(affinityPanel)
 {

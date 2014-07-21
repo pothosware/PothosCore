@@ -8,6 +8,7 @@
 #include "BlockTree/BlockTreeDock.hpp"
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
 #include "GraphEditor/GraphEditorTabs.hpp"
+#include "GraphEditor/GraphActionsDock.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "MessageWindow/MessageWindowDock.hpp"
@@ -41,11 +42,10 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     //create message window dock
     _messageWindowDock = new MessageWindowDock(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, _messageWindowDock);
+    getObjectMap()["messageWindowDock"] = _messageWindowDock;
 
     //create graph actions dock
-    _graphActionsDock = new QDockWidget(this);
-    _graphActionsDock->setObjectName("_graphActionsDock");
-    _graphActionsDock->setWindowTitle(tr("Graph Actions"));
+    _graphActionsDock = new GraphActionsDock(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, _graphActionsDock);
     getObjectMap()["graphActionsDock"] = _graphActionsDock;
 

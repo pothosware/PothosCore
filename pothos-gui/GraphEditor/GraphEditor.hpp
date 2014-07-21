@@ -8,6 +8,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Poco/JSON/Array.h>
 #include <QTabWidget>
+#include <QPointer>
 #include <ios>
 
 class GraphConnection;
@@ -20,6 +21,7 @@ class GraphEditor : public QTabWidget
     Q_OBJECT
 public:
     GraphEditor(QWidget *parent);
+    ~GraphEditor(void);
 
     void dumpState(std::ostream &os) const;
 
@@ -111,7 +113,7 @@ private:
     QSignalMapper *_moveGraphObjectsMapper;
 
     QString _currentFilePath;
-    GraphStateManager *_stateManager;
+    QPointer<GraphStateManager> _stateManager;
 
     //! update enabled actions based on state - after a change or when editor becomes visible
     void updateEnabledActions(void);

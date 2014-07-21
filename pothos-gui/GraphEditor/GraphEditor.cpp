@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //action map
+#include "GraphEditor/GraphActionsDock.hpp"
 #include "GraphEditor/GraphPage.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
@@ -74,6 +75,13 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
 }
 
+GraphEditor::~GraphEditor(void)
+{
+    //the actions dock owns state manager for display purposes,
+    //so delete it here when the graph editor is actually done with it
+    delete _stateManager;
+}
+
 QString GraphEditor::newId(const QString &hint) const
 {
     std::set<QString> allIds;
@@ -107,9 +115,9 @@ QString GraphEditor::newId(const QString &hint) const
 void GraphEditor::showEvent(QShowEvent *event)
 {
     //load our state monitor into the actions dock
-    auto actionsDock = dynamic_cast<QDockWidget *>(getObjectMap()["graphActionsDock"]);
+    auto actionsDock = dynamic_cast<GraphActionsDock *>(getObjectMap()["graphActionsDock"]);
     assert(actionsDock != nullptr);
-    actionsDock->setWidget(_stateManager);
+    actionsDock->setActiveWidget(_stateManager);
 
     this->setupMoveGraphObjectsMenu();
     this->updateEnabledActions();
