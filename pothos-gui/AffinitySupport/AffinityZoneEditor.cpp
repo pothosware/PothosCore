@@ -97,8 +97,6 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         _yieldModeBox->setToolTip(tr("Yield mode specifies the internal threading mechanisms"));
         connect(_yieldModeBox, SIGNAL(activated(int)), this, SLOT(handleComboChanged(int)));
     }
-
-    this->updateCpuSelection();
 }
 
 void AffinityZoneEditor::handleHostListChanged(void)
@@ -116,6 +114,7 @@ void AffinityZoneEditor::selectThisUri(const QString &uri)
         if (_hostsBox->itemText(i) == uri)
         {
             _hostsBox->setCurrentIndex(i);
+            this->updateCpuSelection();
             return;
         }
     }
@@ -123,6 +122,7 @@ void AffinityZoneEditor::selectThisUri(const QString &uri)
     //didnt select, make a new entry...
     _hostsBox->insertItem(0, uri);
     _hostsBox->setCurrentIndex(0);
+    this->updateCpuSelection();
 }
 
 void AffinityZoneEditor::loadFromConfig(const Poco::JSON::Object::Ptr &config)
