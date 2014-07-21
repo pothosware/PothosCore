@@ -10,6 +10,7 @@
 #include <vector>
 #include <map>
 
+class HostExplorerDock;
 class CpuSelectionWidget;
 class QtColorPicker;
 class QComboBox;
@@ -32,6 +33,9 @@ signals:
     void settingsChanged(void);
 
 private slots:
+
+    //! user edited the host list in another widget, modify the combo box to match
+    void handleHostListChanged(void);
 
     void handleUriChanged(int)
     {
@@ -61,8 +65,11 @@ private slots:
 
 private:
 
+    void selectThisUri(const QString &uri);
+
     void updateCpuSelection(void);
 
+    HostExplorerDock *_hostExplorerDock;
     QtColorPicker *_colorPicker;
     QComboBox *_hostsBox;
     QLineEdit *_processNameEdit;

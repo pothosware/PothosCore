@@ -59,7 +59,7 @@ void NodeInfo::update(void)
 QStringList getHostUriList(void)
 {
     auto uris = getSettings().value("HostExplorer/uris").toStringList();
-    uris.push_back("tcp://localhost");
+    uris.push_front("tcp://localhost");
 
     //sanitize duplicates
     QStringList noDups;
@@ -106,11 +106,6 @@ public slots:
         if (this->text().isEmpty()) return;
         emit handleUriEntered(this->text());
         this->setText("");
-    }
-
-    void handleErrorMessage(const QString &errMsg)
-    {
-        QToolTip::showText(this->mapToGlobal(QPoint()), "<font color=\"red\">"+errMsg+"</font>");
     }
 
 signals:
@@ -188,31 +183,20 @@ HostSelectionTable::HostSelectionTable(QWidget *parent):
     this->setSpan(0, 1, 1, nCols-1);
 
     //connect entry related widgets
-    connect(
-        _addButton, SIGNAL(clicked(void)),
-        _lineEdit, SLOT(handleReturnPressed(void)));
-    connect(
-        _lineEdit, SIGNAL(handleUriEntered(const QString &)),
-        this, SLOT(handleAdd(const QString &)));
-    connect(
-        this, SIGNAL(handleErrorMessage(const QString &)),
-        _lineEdit, SLOT(handleErrorMessage(const QString &)));
-
-    connect(
-        _removeMapper, SIGNAL(mapped(const QString &)),
-        this, SLOT(handleRemove(const QString &)));
-    connect(
-        _timer, SIGNAL(timeout(void)),
-        this, SLOT(handleUpdateStatus(void)));
-    connect(
-        _watcher, SIGNAL(finished(void)),
-        this, SLOT(handleNodeQueryComplete(void)));
-    connect(
-        this, SIGNAL(cellClicked(int, int)),
-        this, SLOT(handleCellClicked(int, int)));
+    connect(_addButton, SIGNAL(clicked(void)), _lineEdit, SLOT(handleReturnPressed(void)));
+    connect(_lineEdit, SIGNAL(handleUriEntered(const QString &)), this, SLOT(handleAdd(const QString &)));
+    connect(_removeMapper, SIGNAL(mapped(const QString &)), this, SLOT(handleRemove(const QString &)));
+    connect(_timer, SIGNAL(timeout(void)), this, SLOT(handleUpdateStatus(void)));
+    connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleNodeQueryComplete(void)));
+    connect(this, SIGNAL(cellClicked(int, int)), this, SLOT(handleCellClicked(int, int)));
 
     this->reloadTable();
     _timer->start(5000/*ms*/);
+}
+
+QStringList HostSelectionTable::hostUriList(void) const
+{
+    return getHostUriList();
 }
 
 void HostSelectionTable::handleCellClicked(const int row, const int col)
@@ -223,8 +207,8 @@ void HostSelectionTable::handleCellClicked(const int row, const int col)
         if (entry.second != size_t(row)) continue;
         auto &info = _uriToInfo.at(entry.first);
         info.update();
-        if (info.isOnline) emit nodeInfoRequest(info.uri.toStdString());
-        else emit handleErrorMessage(tr("Host %1 is offline").arg(info.uri));
+        if (info.isOnline) emit hostInfoRequest(info.uri.toStdString());
+        else this->showErrorMessage(tr("Host %1 is offline").arg(info.uri));
     }
 }
 
@@ -236,10 +220,11 @@ void HostSelectionTable::handleRemove(const QString &uri)
         uris.erase(std::find(uris.begin(), uris.end(), uri));
         setHostUriList(uris);
         this->reloadTable();
+        emit this->hostUriListChanged();
     }
     catch(const Pothos::Exception &ex)
     {
-        emit handleErrorMessage(QString::fromStdString(ex.displayText()));
+        this->showErrorMessage(QString::fromStdString(ex.displayText()));
     }
 }
 
@@ -250,16 +235,17 @@ void HostSelectionTable::handleAdd(const QString &uri)
         auto uris = getHostUriList();
         if (std::find(uris.begin(), uris.end(), uri) != uris.end())
         {
-            emit handleErrorMessage(tr("%1 already exists").arg(uri));
+            this->showErrorMessage(tr("%1 already exists").arg(uri));
             return;
         }
         uris.push_back(uri);
         setHostUriList(uris);
         this->reloadTable();
+        emit this->hostUriListChanged();
     }
     catch(const Pothos::Exception &ex)
     {
-        emit handleErrorMessage(QString::fromStdString(ex.displayText()));
+        this->showErrorMessage(QString::fromStdString(ex.displayText()));
     }
 }
 
@@ -342,6 +328,11 @@ void HostSelectionTable::reloadTable(void)
     }
 
     this->handleUpdateStatus(); //fills in status
+}
+
+void HostSelectionTable::showErrorMessage(const QString &errMsg)
+{
+    QToolTip::showText(_lineEdit->mapToGlobal(QPoint()), "<font color=\"red\">"+errMsg+"</font>");
 }
 
 #include "HostSelectionTable.moc"

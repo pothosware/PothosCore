@@ -21,7 +21,8 @@
  **********************************************************************/
 HostExplorerDock::HostExplorerDock(QWidget *parent):
     QDockWidget(parent),
-    _tabs(nullptr),
+    _table(new HostSelectionTable(this)),
+    _tabs(new QTabWidget(this)),
     _startMapper(new QSignalMapper(this)),
     _stopMapper(new QSignalMapper(this))
 {
@@ -31,28 +32,23 @@ HostExplorerDock::HostExplorerDock(QWidget *parent):
     this->setWidget(new QWidget(this));
 
     auto layout = new QVBoxLayout(this->widget());
-    auto table = new HostSelectionTable(this->widget());
-    layout->addWidget(table);
+    layout->addWidget(_table);
 
-    _tabs = new QTabWidget(this->widget());
     _tabs->addTab(new SystemInfoTree(_tabs), tr("System Info"));
     _tabs->addTab(new PluginRegistryTree(_tabs), tr("Plugin Registry"));
     _tabs->addTab(new PluginModuleTree(_tabs), tr("Plugin Modules"));
     layout->addWidget(_tabs, 1);
 
     //connect mappers
-    connect(
-        _startMapper, SIGNAL(mapped(const int)),
-        this, SLOT(start(const int)));
-    connect(
-        _stopMapper, SIGNAL(mapped(const int)),
-        this, SLOT(stop(const int)));
+    connect(_startMapper, SIGNAL(mapped(const int)), this, SLOT(start(const int)));
+    connect(_stopMapper, SIGNAL(mapped(const int)), this, SLOT(stop(const int)));
+    connect(_table, SIGNAL(hostUriListChanged(void)), this, SIGNAL(hostUriListChanged(void)));
 
     //connect handlers for node info so the tabs update
     for (int i = 0; i < _tabs->count(); i++)
     {
         connect(
-            table, SIGNAL(nodeInfoRequest(const std::string &)),
+            _table, SIGNAL(hostInfoRequest(const std::string &)),
             _tabs->widget(i), SLOT(handeInfoRequest(const std::string &)));
 
         connect(_tabs->widget(i), SIGNAL(startLoad(void)), _startMapper, SLOT(map(void)));
@@ -61,6 +57,11 @@ HostExplorerDock::HostExplorerDock(QWidget *parent):
         connect(_tabs->widget(i), SIGNAL(stopLoad(void)), _stopMapper, SLOT(map(void)));
         _stopMapper->setMapping(_tabs->widget(i), i);
     }
+}
+
+QStringList HostExplorerDock::hostUriList(void) const
+{
+    return _table->hostUriList();
 }
 
 void HostExplorerDock::start(const int index)

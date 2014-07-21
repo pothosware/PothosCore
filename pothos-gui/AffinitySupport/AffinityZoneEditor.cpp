@@ -4,6 +4,7 @@
 #include "PothosGuiUtils.hpp" //node uris
 #include "AffinitySupport/AffinityZoneEditor.hpp"
 #include "AffinitySupport/CpuSelectionWidget.hpp"
+#include "HostExplorer/HostExplorerDock.hpp"
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Poco/Logger.h>
@@ -14,11 +15,13 @@
 #include <QSpinBox>
 #include <QLineEdit>
 #include <QVBoxLayout>
+#include <cassert>
 
 static const int ARBITRARY_MAX_THREADS = 4096;
 
 AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     QWidget(parent),
+    _hostExplorerDock(dynamic_cast<HostExplorerDock *>(getObjectMap()["hostExplorerDock"])),
     _colorPicker(new QtColorPicker(this)),
     _hostsBox(new QComboBox(this)),
     _processNameEdit(new QLineEdit(this)),
@@ -28,6 +31,8 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     _cpuSelectionContainer(new QVBoxLayout()),
     _yieldModeBox(new QComboBox(this))
 {
+    assert(_hostExplorerDock != nullptr);
+
     //bold title
     this->setStyleSheet("QGroupBox{font-weight: bold;}");
 
@@ -47,9 +52,11 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     //host selection
     {
         formLayout->addRow(tr("Host URI"), _hostsBox);
-        _hostsBox->addItems(getHostUriList());
+        _hostsBox->setEditable(true);
         _hostsBox->setToolTip(tr("Select the URI for a local or remote host"));
-        connect(_hostsBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleUriChanged(int)));
+        connect(_hostsBox, SIGNAL(activated(int)), this, SLOT(handleUriChanged(int)));
+        connect(_hostExplorerDock, SIGNAL(hostUriListChanged(void)), this, SLOT(handleHostListChanged(void)));
+        this->handleHostListChanged();
     }
 
     //process id
@@ -88,12 +95,35 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         _yieldModeBox->addItem(tr("Hybrid"), "HYBRID");
         _yieldModeBox->addItem(tr("Spin"), "SPIN");
         _yieldModeBox->setToolTip(tr("Yield mode specifies the internal threading mechanisms"));
-        connect(_yieldModeBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleComboChanged(int)));
+        connect(_yieldModeBox, SIGNAL(activated(int)), this, SLOT(handleComboChanged(int)));
     }
 
     this->updateCpuSelection();
 }
 
+void AffinityZoneEditor::handleHostListChanged(void)
+{
+    auto uri = _hostsBox->itemText(_hostsBox->currentIndex());
+    _hostsBox->clear();
+    _hostsBox->addItems(_hostExplorerDock->hostUriList());
+    if (not uri.isEmpty()) this->selectThisUri(uri);
+}
+
+void AffinityZoneEditor::selectThisUri(const QString &uri)
+{
+    for (int i = 0; i < _hostsBox->count(); i++)
+    {
+        if (_hostsBox->itemText(i) == uri)
+        {
+            _hostsBox->setCurrentIndex(i);
+            return;
+        }
+    }
+
+    //didnt select, make a new entry...
+    _hostsBox->insertItem(0, uri);
+    _hostsBox->setCurrentIndex(0);
+}
 
 void AffinityZoneEditor::loadFromConfig(const Poco::JSON::Object::Ptr &config)
 {
@@ -107,10 +137,7 @@ void AffinityZoneEditor::loadFromConfig(const Poco::JSON::Object::Ptr &config)
     if (config->has("hostUri"))
     {
         auto uri = QString::fromStdString(config->getValue<std::string>("hostUri"));
-        for (int i = 0; i < _hostsBox->count(); i++)
-        {
-            if (_hostsBox->itemText(i) == uri) _hostsBox->setCurrentIndex(i);
-        }
+        this->selectThisUri(uri);
     }
     if (config->has("processName"))
     {

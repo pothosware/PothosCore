@@ -51,6 +51,7 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
 
     //create host explorer dock
     _hostExplorerDock = new HostExplorerDock(this);
+    getObjectMap()["hostExplorerDock"] = _hostExplorerDock;
     this->addDockWidget(Qt::RightDockWidgetArea, _hostExplorerDock);
 
     //create affinity panel

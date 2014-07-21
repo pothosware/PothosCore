@@ -42,9 +42,16 @@ class HostSelectionTable : public QTableWidget
 public:
     HostSelectionTable(QWidget *parent);
 
+    //! Get a list of available host uris
+    QStringList hostUriList(void) const;
+
 signals:
-    void handleErrorMessage(const QString &);
-    void nodeInfoRequest(const std::string &);
+
+    //! Emitted when the list of host uris changes
+    void hostUriListChanged(void);
+
+    //! A row for the following host was clicked
+    void hostInfoRequest(const std::string &);
 
 private slots:
 
@@ -64,6 +71,7 @@ private:
 
     void reloadRows(const std::vector<NodeInfo> &nodes);
     void reloadTable(void);
+    void showErrorMessage(const QString &errMsg);
     HostUriQLineEdit *_lineEdit;
     QToolButton *_addButton;
     QSignalMapper *_removeMapper;
