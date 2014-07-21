@@ -18,7 +18,7 @@ include_directories(${POTHOS_INCLUDE_DIRS})
 ########################################################################
 # Theron dependency
 ########################################################################
-set(THERON_SOURCE_DIR ${POTHOS_SOURCE_DIR}/theron)
+set(THERON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../theron)
 include(${CMAKE_CURRENT_SOURCE_DIR}/TheronSetup.cmake)
 include_directories(${THERON_INCLUDE_DIRS})
 link_directories(${THERON_LIBRARY_DIRS})
