@@ -14,6 +14,7 @@
 #include <Poco/Net/RemoteSyslogChannel.h>
 #include <Poco/Net/RemoteSyslogListener.h>
 #include <Poco/Net/DatagramSocket.h>
+#include <Poco/AutoPtr.h>
 
 std::string Pothos::System::startSyslogListener(void)
 {
@@ -34,8 +35,8 @@ std::string Pothos::System::startSyslogListener(void)
 
 void Pothos::System::startSyslogForwarding(const std::string &addr)
 {
-    auto *ch = new Poco::Net::RemoteSyslogChannel(addr, ""/*empty name*/);
-    Poco::Logger::get("").setChannel(ch);
+    Poco::AutoPtr<Poco::Channel> channel(new Poco::Net::RemoteSyslogChannel(addr, ""/*empty name*/));
+    Poco::Logger::get("").setChannel(channel);
 }
 
 void Pothos::System::setupDefaultLogging(void)
@@ -48,7 +49,7 @@ void Pothos::System::setupDefaultLogging(void)
     Poco::Logger::get("").setLevel(logLevel);
 
     //create and set the channel with the type string specified
-    Poco::Channel *channel = nullptr;
+    Poco::AutoPtr<Poco::Channel> channel;
     if (logChannel == "null") channel = new Poco::NullChannel();
     else if (logChannel == "console") channel = new Poco::ConsoleChannel();
     else if (logChannel == "color") channel = new Poco::ColorConsoleChannel();
@@ -57,12 +58,12 @@ void Pothos::System::setupDefaultLogging(void)
         channel = new Poco::SimpleFileChannel();
         channel->setProperty("path", logFile);
     }
-    if (channel == nullptr) return;
+    if (channel.isNull()) return;
 
     //setup formatting
-    Poco::Formatter *formatter = new Poco::PatternFormatter();
+    Poco::AutoPtr<Poco::Formatter> formatter(new Poco::PatternFormatter());
     formatter->setProperty("pattern", "%Y-%m-%d %H:%M:%S %s: %t");
-    Poco::Channel *formattingChannel = new Poco::FormattingChannel(formatter, channel);
+    Poco::AutoPtr<Poco::Channel> formattingChannel(new Poco::FormattingChannel(formatter, channel));
     Poco::Logger::get("").setChannel(formattingChannel);
 }
 
