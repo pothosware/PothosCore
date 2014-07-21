@@ -56,7 +56,7 @@ void NodeInfo::update(void)
 /***********************************************************************
  * global query for hosts known to system
  **********************************************************************/
-QStringList getHostUriList(void)
+static QStringList getHostUriList(void)
 {
     auto uris = getSettings().value("HostExplorer/uris").toStringList();
     uris.push_front("tcp://localhost");

@@ -15,6 +15,8 @@
 //! Get a block description given the block registry path
 Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path);
 
+class HostExplorerDock;
+
 class BlockCache : public QObject
 {
     Q_OBJECT
@@ -35,10 +37,10 @@ private slots:
     void handleWatcherDone(const int which);
 
 private:
+    HostExplorerDock *_hostExplorerDock;
     QStringList _allRemoteNodeUris;
     QFutureWatcher<Poco::JSON::Array::Ptr> *_watcher;
 
     //storage structures
     std::map<QString, Poco::JSON::Array::Ptr> _uriToBlockDescs;
-    //Poco::JSON::Array::Ptr _superSetBlockDescs;
 };

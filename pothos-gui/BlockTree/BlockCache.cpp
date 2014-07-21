@@ -1,9 +1,10 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //get hosts list
+#include "PothosGuiUtils.hpp" //get object map
 #include "BlockTree/BlockCache.hpp"
 #include "GraphObjects/GraphBlock.hpp"
+#include "HostExplorer/HostExplorerDock.hpp"
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
 #include <QFuture>
@@ -42,7 +43,8 @@ Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
     }
 
     //search all of the nodes
-    for (const auto &uri : getHostUriList())
+    auto dock = dynamic_cast<HostExplorerDock *>(getObjectMap()["hostExplorerDock"]);
+    if (dock != nullptr) for (const auto &uri : dock->hostUriList())
     {
         try
         {
@@ -84,18 +86,24 @@ static Poco::JSON::Array::Ptr queryBlockDescs(const QString &uri)
  **********************************************************************/
 BlockCache::BlockCache(QObject *parent):
     QObject(parent),
+    _hostExplorerDock(dynamic_cast<HostExplorerDock *>(getObjectMap()["hostExplorerDock"])),
     _watcher(new QFutureWatcher<Poco::JSON::Array::Ptr>(this))
 {
+    assert(_hostExplorerDock != nullptr);
     connect(_watcher, SIGNAL(resultReadyAt(int)), this, SLOT(handleWatcherDone(int)));
-    connect(_watcher, SIGNAL(finished()), this, SLOT(handleWatcherFinished()));
+    connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleWatcherFinished(void)));
+    connect(_hostExplorerDock, SIGNAL(hostUriListChanged(void)), this, SLOT(handleUpdate(void)));
 }
 
 void BlockCache::handleUpdate(void)
 {
-    if (_watcher->isRunning()) return;
+    //cancel the existing future, begin a new one
+    //if (_watcher->isRunning()) return;
+    _watcher->cancel();
+    _watcher->waitForFinished();
 
     //nodeKeys cannot be a temporary because QtConcurrent will reference them
-    _allRemoteNodeUris = getHostUriList();
+    _allRemoteNodeUris = _hostExplorerDock->hostUriList();
     _watcher->setFuture(QtConcurrent::mapped(_allRemoteNodeUris, &queryBlockDescs));
 }
 
