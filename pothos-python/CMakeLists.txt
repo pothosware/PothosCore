@@ -28,6 +28,13 @@ else()
     unset(PYTHON_DEBUG_POSTFIX)
 endif()
 
+#on windows, we require a pythonxx_d.lib in debug mode
+#require that the PYTHON_DEBUG_LIBRARY flag is set
+#or the build assumes that the debug library DNE
+if(WIN32 AND NOT PYTHON_DEBUG_LIBRARY AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    return()
+endif()
+
 if(NOT PYTHONLIBS_FOUND)
     return()
 endif()
