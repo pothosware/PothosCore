@@ -168,6 +168,16 @@ const std::vector<GraphBlockPort> &GraphBlock::getSignalPorts(void) const
     return _signalPorts;
 }
 
+const QString &GraphBlock::getAffinityZone(void) const
+{
+    return _impl->affinityZone;
+}
+
+void GraphBlock::setAffinityZone(const QString &zone)
+{
+    _impl->affinityZone = zone;
+}
+
 bool GraphBlock::isPointing(const QRectF &rect) const
 {
     //true if it points to a port
@@ -445,6 +455,7 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     auto obj = GraphObject::serialize();
     obj->set("what", std::string("Block"));
     obj->set("path", this->getBlockDescPath());
+    obj->set("affinityZone", this->getAffinityZone().toStdString());
 
     Poco::JSON::Array jPropsObj;
     for (const auto &property : this->getProperties())
@@ -488,6 +499,9 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     auto blockDesc = getBlockDescFromPath(path);
     if (not blockDesc) throw Pothos::Exception("GraphBlock::deserialize()", "cant find block factory with path: '"+path+"'");
     this->setBlockDesc(blockDesc);
+
+    if (obj->has("affinityZone")) this->setAffinityZone(
+        QString::fromStdString(obj->getValue<std::string>("affinityZone")));
 
     assert(properties);
     for (size_t i = 0; i < properties->size(); i++)

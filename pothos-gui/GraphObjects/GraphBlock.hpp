@@ -126,6 +126,10 @@ public:
         return _blockEval;
     }
 
+    //! affinity zone support
+    const QString &getAffinityZone(void) const;
+    void setAffinityZone(const QString &zone);
+
     void update(void);
 private:
     void initPropertiesFromDesc(void);

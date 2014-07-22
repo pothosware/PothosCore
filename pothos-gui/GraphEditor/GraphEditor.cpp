@@ -69,6 +69,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["zoomOriginal"], SIGNAL(triggered(void)), this, SLOT(handleZoomOriginal(void)));
     connect(getActionMap()["undo"], SIGNAL(triggered(void)), this, SLOT(handleUndo(void)));
     connect(getActionMap()["redo"], SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
+    connect(getMenuMap()["setAffinityZone"], SIGNAL(zoneClicked(const QString &)), this, SLOT(handleAffinityZoneClicked(const QString &)));
     connect(getActionMap()["showGraphFlattenedView"], SIGNAL(triggered(void)), this, SLOT(handleShowFlattenedDialog(void)));
     connect(getActionMap()["activateTopology"], SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
@@ -664,6 +665,20 @@ void GraphEditor::handleResetState(int stateNo)
     this->render();
 
     this->updateExecutionEngine();
+}
+
+void GraphEditor::handleAffinityZoneClicked(const QString &zone)
+{
+    if (not this->isVisible()) return;
+    auto draw = this->getGraphDraw(this->currentIndex());
+
+    for (auto obj : this->getGraphObjects())
+    {
+        auto block = dynamic_cast<GraphBlock *>(obj);
+        if (block == nullptr) continue;
+        block->setAffinityZone(zone);
+    }
+    handleStateChange(GraphState("document-export", tr("Set %1 affinity zone").arg(draw->getSelectionDescription())));
 }
 
 void GraphEditor::handleStateChange(const GraphState &state)

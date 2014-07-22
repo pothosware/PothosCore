@@ -19,6 +19,7 @@ struct GraphBlock::Impl
     }
 
     Poco::JSON::Object::Ptr blockDesc;
+    QString affinityZone;
 
     bool changed;
     QString blockErrorMsg;
