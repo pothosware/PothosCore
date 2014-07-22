@@ -2,19 +2,23 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MessageWindow/LoggerChannel.hpp"
-#include <Poco/Logger.h>
+#include <Poco/SplitterChannel.h>
 
 LoggerChannel::LoggerChannel(QObject *parent):
-    QObject(parent)
+    QObject(parent),
+    _logger(Poco::Logger::get("")),
+    _oldLevel(_logger.getLevel()),
+    _oldChannel(_logger.getChannel()),
+    _splitter(new Poco::SplitterChannel())
 {
-    //TODO install channel splitter
-    Poco::Logger::get("").setLevel("information");
-    Poco::Logger::get("").setChannel(this);
+    _logger.setLevel("information");
+    _logger.setChannel(_splitter);
+    _splitter->addChannel(_oldChannel);
+    _splitter->addChannel(this);
 }
 
 LoggerChannel::~LoggerChannel(void)
 {
-    //TODO uninstall channel splitter
-    //also mutex for making channel changes
-    Poco::Logger::get("").setChannel(nullptr);
+    _logger.setLevel(_oldLevel);
+    _logger.setChannel(_oldChannel);
 }

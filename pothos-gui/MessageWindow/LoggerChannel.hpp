@@ -6,6 +6,13 @@
 #include <QObject>
 #include <Poco/Channel.h>
 #include <Poco/Message.h>
+#include <Poco/Logger.h>
+#include <Poco/AutoPtr.h>
+
+namespace Poco
+{
+    class SplitterChannel;
+}
 
 class LoggerChannel : public QObject, public Poco::Channel
 {
@@ -22,4 +29,10 @@ public:
 
 signals:
     void receivedLogMessage(const Poco::Message &);
+
+private:
+    Poco::Logger &_logger;
+    const int _oldLevel;
+    Poco::AutoPtr<Poco::Channel> _oldChannel;
+    Poco::AutoPtr<Poco::SplitterChannel> _splitter;
 };
