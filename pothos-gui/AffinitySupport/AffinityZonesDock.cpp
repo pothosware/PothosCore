@@ -27,3 +27,8 @@ QStringList AffinityZonesDock::zones(void) const
 {
     return _panel->zones();
 }
+
+QColor AffinityZonesDock::zoneToColor(const QString &zone)
+{
+    return _panel->zoneToColor(zone);
+}

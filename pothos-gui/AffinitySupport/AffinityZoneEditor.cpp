@@ -99,6 +99,11 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     }
 }
 
+QColor AffinityZoneEditor::color(void) const
+{
+    return _colorPicker->currentColor();
+}
+
 void AffinityZoneEditor::handleHostListChanged(void)
 {
     auto uri = _hostsBox->itemText(_hostsBox->currentIndex());

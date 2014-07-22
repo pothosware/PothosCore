@@ -59,6 +59,18 @@ QStringList AffinityPanel::zones(void) const
     return zones;
 }
 
+QColor AffinityPanel::zoneToColor(const QString &zone)
+{
+    for (int i = 0; i < _editorsTabs->count(); i++)
+    {
+        if (zone == _editorsTabs->tabText(i))
+        {
+            return dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i))->color();
+        }
+    }
+    return QColor();
+}
+
 void AffinityPanel::handleTabCloseRequested(const int index)
 {
     _editorsTabs->removeTab(index);

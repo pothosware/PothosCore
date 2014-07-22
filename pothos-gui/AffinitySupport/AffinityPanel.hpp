@@ -6,7 +6,7 @@
 #include <QWidget>
 #include "AffinitySupport/AffinityZoneEditor.hpp"
 #include <QStringList>
-#include <iostream>
+#include <QColor>
 
 class QLineEdit;
 class QPushButton;
@@ -20,6 +20,9 @@ public:
 
     //! query the list of available zones
     QStringList zones(void) const;
+
+    //! Get the color for a particular zone
+    QColor zoneToColor(const QString &zone);
 
 signals:
 

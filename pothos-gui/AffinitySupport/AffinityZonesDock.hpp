@@ -4,6 +4,8 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QDockWidget>
+#include <QString>
+#include <QColor>
 
 class AffinityPanel;
 class QMenu;
@@ -20,6 +22,9 @@ public:
 
     //! query the list of available zones
     QStringList zones(void) const;
+
+    //! Get the color for a particular zone
+    QColor zoneToColor(const QString &zone);
 
 signals:
 

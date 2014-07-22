@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QWidget>
+#include <QColor>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
 #include <Pothos/System/NumaInfo.hpp>
@@ -28,6 +29,8 @@ public:
     void loadFromConfig(const Poco::JSON::Object::Ptr &config);
 
     Poco::JSON::Object::Ptr getCurrentConfig(void) const;
+
+    QColor color(void) const;
 
 signals:
     void settingsChanged(void);
