@@ -6,7 +6,7 @@
 #include <Poco/Types.h>
 #include <iostream>
 #include <complex>
-#include "RandomUtils.hpp"
+#include <random>
 
 static const size_t waveTableSize = 4096;
 
@@ -36,15 +36,12 @@ static const size_t waveTableSize = 4096;
  * |option [Int8] "int8"
  * |preview disable
  *
- * |param seed A seed value for the random number generators.
- * |default 42
- *
  * |param wave[Wave Type] The type of the pseudorandom noise produced.
  * |option [Uniform] "UNIFORM"
- * |option [Gaussian] "GAUSSIAN"
- * |option [Laplacian] "LAPLACIAN"
- * |option [Impluse] "IMPULSE"
- * |default "GAUSSIAN"
+ * |option [Normal] "NORMAL"
+ * |option [Laplace] "LAPLACE"
+ * |option [Poisson] "POISSON"
+ * |default "NORMAL"
  *
  * |param ampl[Amplitude] A constant scalar representing the amplitude.
  * |default 1.0
@@ -52,27 +49,38 @@ static const size_t waveTableSize = 4096;
  * |param offset A constant value added to the waveform after scaling.
  * |default 0.0
  *
- * |param factor A factor for the impulse noise configuration.
- * |default 9.0
+ * |param mean The mean of the distribution - applies to all distributions.
+ * |default 0.0
  *
- * |factory /blocks/noise_source(dtype, seed)
+ * |param b A value with distribution-dependent meaning:
+ * <ul>
+ *   <li><b>Uniform distribution:</b> range = mean +/- b</li>
+ *   <li><b>Normal distribution:</b> the standard deviation</li>
+ *   <li><b>Laplace distribution:</b> the diversity parameter</li>
+ *   <li><b>Poisson distribution:</b> not used</li>
+ * </ul>
+ * |default 1.0
+ *
+ * |factory /blocks/noise_source(dtype)
  * |setter setWaveform(wave)
  * |setter setOffset(offset)
  * |setter setAmplitude(ampl)
- * |setter setFactor(factor)
+ * |setter setMean(mean)
+ * |setter setB(b)
  **********************************************************************/
 template <typename Type>
 class NoiseSource : public Pothos::Block
 {
 public:
-    NoiseSource(const long seed):
+    NoiseSource(void):
         _index(0),
         _table(waveTableSize),
         _offset(0.0),
         _scalar(1.0),
-        _factor(9.0),
         _wave("GAUSSIAN"),
-        _random(seed)
+        _mean(0.0),
+        _b(1.0),
+        _gen(_rd())
     {
         this->setupOutput(0, typeid(Type));
         this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setWaveform));
@@ -81,8 +89,10 @@ public:
         this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getOffset));
         this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setAmplitude));
         this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getAmplitude));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setFactor));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getFactor));
+        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setMean));
+        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getMean));
+        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setB));
+        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getB));
     }
 
     void activate(void)
@@ -92,7 +102,7 @@ public:
 
     void work(void)
     {
-        _index += size_t(_random.ran1()*waveTableSize); //lookup into table is random each work()
+        _index += size_t(_uniform(_gen)*waveTableSize)%waveTableSize; //lookup into table is random each work()
         auto outPort = this->output(0);
         auto out = outPort->buffer().template as<Type *>();
         for (size_t i = 0; i < outPort->elements(); i++)
@@ -120,7 +130,7 @@ public:
         this->updateTable();
     }
 
-    std::complex<double> getOffset(void)
+    std::complex<double> getOffset(void) const
     {
         return _offset;
     }
@@ -131,52 +141,66 @@ public:
         this->updateTable();
     }
 
-    std::complex<double> getAmplitude(void)
+    std::complex<double> getAmplitude(void) const
     {
         return _scalar;
     }
 
-    void setFactor(const double &factor)
+    void setMean(const double mean)
     {
-        _factor = factor;
+        _mean = mean;
         this->updateTable();
     }
 
-    double getFactor(void)
+    double getMean(void) const
     {
-        return _factor;
+        return _mean;
+    }
+
+    void setB(const double b)
+    {
+        _b = b;
+        this->updateTable();
+    }
+
+    double getB(void) const
+    {
+        return _b;
     }
 
 private:
     void updateTable(void)
     {
+        _uniform = std::uniform_real_distribution<>(_mean-_b, _mean+_b);
+        _normal = std::normal_distribution<>(_mean, _b);
+        _poisson = std::poisson_distribution<>(_mean);
+
         if (_wave == "UNIFORM")
         {
             for (size_t i = 0; i < _table.size(); i++)
             {
-                this->setElem(_table[i], std::complex<double>(2*_random.ran1()-1, 2*_random.ran1()-1));
+                this->setElem(_table[i], std::complex<double>(_uniform(_gen), _uniform(_gen)));
             }
         }
-        else if (_wave == "GAUSSIAN")
+        else if (_wave == "NORMAL")
         {
             for (size_t i = 0; i < _table.size(); i++)
             {
-                this->setElem(_table[i], std::complex<double>(_random.gasdev(), _random.gasdev()));
+                this->setElem(_table[i], std::complex<double>(_normal(_gen), _normal(_gen)));
             }
         }
-        else if (_wave == "LAPLACIAN")
+        else if (_wave == "LAPLACE")
         {
             for (size_t i = 0; i < _table.size(); i++)
             {
-                this->setElem(_table[i], std::complex<double>(_random.laplacian(), _random.laplacian()));
+                this->setElem(_table[i], std::complex<double>(_laplace(_gen), _laplace(_gen)));
             }
         }
-        else if (_wave == "IMPULSE")
+        else if (_wave == "POISSON")
         {
-            const float factor = float(_factor);
             for (size_t i = 0; i < _table.size(); i++)
             {
-                this->setElem(_table[i], std::complex<double>(_random.impulse(factor), _random.impulse(factor)));
+                this->setElem(_table[i], std::complex<double>(_poisson(_gen), _poisson(_gen)));
             }
         }
         else throw Pothos::InvalidArgumentException("NoiseSource::setWaveform("+_wave+")", "unknown waveform setting");
@@ -194,22 +218,41 @@ private:
         out = Type(_scalar * val + _offset);
     }
 
+    template <typename T> int sgn(T val) {
+        return (T(0) < val) - (val < T(0));
+    }
+
+    template <typename GenType>
+    double _laplace(GenType &gen)
+    {
+        //http://en.wikipedia.org/wiki/Laplace_distribution
+        auto num = _uniform(gen);
+        if (num < 0) return _mean + _b*std::log(1+num);
+        else return _mean - _b*std::log(1-num);
+    }
+
     size_t _index;
     std::vector<Type> _table;
     std::complex<double> _offset, _scalar;
-    double _factor;
     std::string _wave;
-    gr_random _random;
+    double _mean;
+    double _b;
+
+    std::random_device _rd;
+    std::mt19937 _gen;
+    std::uniform_real_distribution<> _uniform;
+    std::normal_distribution<> _normal;
+    std::poisson_distribution<> _poisson;
 };
 
 /***********************************************************************
  * registration
  **********************************************************************/
-static Pothos::Block *noiseSourceFactory(const Pothos::DType &dtype, const long seed)
+static Pothos::Block *noiseSourceFactory(const Pothos::DType &dtype)
 {
     #define ifTypeDeclareFactory(type) \
-        if (dtype == Pothos::DType(typeid(type))) return new NoiseSource<type>(seed); \
-        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new NoiseSource<std::complex<type>>(seed);
+        if (dtype == Pothos::DType(typeid(type))) return new NoiseSource<type>(); \
+        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new NoiseSource<std::complex<type>>();
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
     ifTypeDeclareFactory(Poco::Int64);
