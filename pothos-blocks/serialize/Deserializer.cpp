@@ -77,7 +77,7 @@ static bool inspectPacket(const void *pkt, const size_t length, bool &fragment, 
  */
 static void unpackBuffer(const Pothos::BufferChunk &packet, size_t &seq, size_t &sid, bool &has_tsf, unsigned long long &tsf, bool &is_ext, Pothos::BufferChunk &payloadBuff)
 {
-    #define unpackCheck(cond) if (not (cond)) throw Pothos::Exception("Deserializer.unpackBuffer", "failed assertion: " #cond)
+    #define unpackCheck(cond) if (not (cond)) throw Pothos::AssertionViolationException("Deserializer::unpackBuffer()", "failed assertion: " #cond)
     auto p = packet.as<const Poco::UInt32 *>();
 
     //validate vrlp
@@ -184,7 +184,7 @@ void Deserializer::handlePacket(const Pothos::BufferChunk &packetBuff)
     Pothos::BufferChunk payloadBuff;
     unpackBuffer(packetBuff, seq, sid, has_tsf, tsf, is_ext, payloadBuff);
 
-    if (sid >= this->outputs().size()) throw Pothos::Exception("Deserializer.handlePacket()",
+    if (sid >= this->outputs().size()) throw Pothos::RangeException("Deserializer::handlePacket()",
         Poco::format("packet has SID %d, but block has %d outputs", int(sid), int(this->outputs().size())));
     auto outputPort = this->output(sid);
 
