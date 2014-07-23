@@ -5,6 +5,7 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote.hpp>
+#include <Poco/JSON/Object.h>
 #include <iostream>
 
 POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_topology)
@@ -14,10 +15,12 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_topology)
     auto feeder = registry.callProxy("/blocks/feeder_source", "int");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
-    //feed some msgs
-    std::cout << "give messages to the feeder\n";
-    feeder.callVoid("feedMessage", Pothos::Object("msg0"));
-    feeder.callVoid("feedMessage", Pothos::Object("msg1"));
+    //create a test plan
+    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+    testPlan->set("enableBuffers", true);
+    testPlan->set("enableLabels", true);
+    testPlan->set("enableMessages", true);
+    auto expected = feeder.callProxy("feedTestPlan", testPlan);
 
     //run the topology
     std::cout << "run the topology\n";
@@ -28,12 +31,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_topology)
         POTHOS_TEST_TRUE(topology.call<bool>("waitInactive"));
     }
 
-    //check msgs
-    std::cout << "check the collector for msgs\n";
-    auto msgs = collector.call<std::vector<Pothos::Object>>("getMessages");
-    POTHOS_TEST_EQUAL(msgs.size(), 2);
-    POTHOS_TEST_EQUAL(msgs[0].extract<std::string>(), "msg0");
-    POTHOS_TEST_EQUAL(msgs[1].extract<std::string>(), "msg1");
+    std::cout << "verifyTestPlan!\n";
+    collector.callVoid("verifyTestPlan", expected);
 
     std::cout << "done!\n";
 }
@@ -70,10 +69,12 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
     std::cout << "make the remote subtopology\n";
     auto forwarder = registryRemote.callProxy("/blocks/tests/forwarder_topology");
 
-    //feed some msgs
-    std::cout << "give messages to the feeder\n";
-    feeder.callVoid("feedMessage", Pothos::Object("msg0"));
-    feeder.callVoid("feedMessage", Pothos::Object("msg1"));
+    //create a test plan
+    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+    testPlan->set("enableBuffers", true);
+    testPlan->set("enableLabels", true);
+    testPlan->set("enableMessages", true);
+    auto expected = feeder.callProxy("feedTestPlan", testPlan);
 
     //run the topology
     std::cout << "run the topology\n";
@@ -85,12 +86,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
         POTHOS_TEST_TRUE(topology.waitInactive());
     }
 
-    //check msgs
-    std::cout << "check the collector for msgs\n";
-    auto msgs = collector.call<std::vector<Pothos::Object>>("getMessages");
-    POTHOS_TEST_EQUAL(msgs.size(), 2);
-    POTHOS_TEST_EQUAL(msgs[0].extract<std::string>(), "msg0");
-    POTHOS_TEST_EQUAL(msgs[1].extract<std::string>(), "msg1");
+    std::cout << "verifyTestPlan!\n";
+    collector.callVoid("verifyTestPlan", expected);
 
     std::cout << "done!\n";
 }

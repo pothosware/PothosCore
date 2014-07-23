@@ -40,6 +40,13 @@ public:
             outputPort->postMessage(m);
         }
 
+        while (inputPort->labels().begin() != inputPort->labels().end())
+        {
+            const auto &label = *inputPort->labels().begin();
+            outputPort->postLabel(label);
+            inputPort->removeLabel(label);
+        }
+
         const auto &buffer = inputPort->buffer();
         if (buffer.length != 0)
         {

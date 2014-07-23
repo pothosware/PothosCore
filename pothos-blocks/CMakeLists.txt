@@ -26,6 +26,7 @@ set(SOURCES
     misc/Delay.cpp
     misc/Pacer.cpp
     misc/Forwarder.cpp
+    misc/TestForwarder.cpp
     misc/Copier.cpp
     misc/MessageToSignal.cpp
     misc/SlotToMessage.cpp
