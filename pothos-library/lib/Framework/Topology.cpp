@@ -241,15 +241,11 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<F
             auto srcEnvReg = flow.src.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
             auto dstEnvReg = flow.dst.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
 
-            //determine port types
-            auto srcDType = flow.src.obj.callProxy("output", flow.src.name).callProxy("dtype");
-            auto dstDType = flow.dst.obj.callProxy("input", flow.dst.name).callProxy("dtype");
-
-            auto netSink = srcEnvReg.callProxy("/blocks/network_sink", "udt://"+Poco::Environment::nodeName(), "BIND", srcDType);
+            auto netSink = srcEnvReg.callProxy("/blocks/network_sink", "udt://"+Poco::Environment::nodeName(), "BIND");
             netSink.callVoid("setName", "NetOut");
             auto connectPort = netSink.call<std::string>("getActualPort");
             auto connectUri = Poco::format("udt://%s:%s", Poco::Environment::nodeName(), connectPort);
-            auto netSource = dstEnvReg.callProxy("/blocks/network_source", connectUri, "CONNECT", dstDType);
+            auto netSource = dstEnvReg.callProxy("/blocks/network_source", connectUri, "CONNECT");
             netSource.callVoid("setName", "NetIn");
 
             //create the flows

@@ -33,24 +33,21 @@
  * |option [Bind] "BIND"
  * |default "DISCONNECT"
  *
- * |param dtype[Data Type] The datatype produced by the network source.
- * |default "int"
- *
- * |factory /blocks/network_source(uri, opt, dtype)
+ * |factory /blocks/network_source(uri, opt)
  **********************************************************************/
 class NetworkSource : public Pothos::Block
 {
 public:
-    static Block *make(const std::string &uri, const std::string &opt, const Pothos::DType &dtype)
+    static Block *make(const std::string &uri, const std::string &opt)
     {
-        return new NetworkSource(uri, opt, dtype);
+        return new NetworkSource(uri, opt);
     }
 
-    NetworkSource(const std::string &uri, const std::string &opt, const Pothos::DType &dtype):
+    NetworkSource(const std::string &uri, const std::string &opt):
         _ep(PothosPacketSocketEndpoint(uri, opt))
     {
         //std::cout << "NetworkSource " << opt << " " << uri << std::endl;
-        this->setupOutput(0, dtype);
+        this->setupOutput(0);
         this->registerCall(POTHOS_FCN_TUPLE(NetworkSource, getActualPort));
     }
 
@@ -94,7 +91,7 @@ void NetworkSource::work(void)
         if (index > outputPort->totalElements())
         {
             assert(outputPort->totalElements() < index);
-            Pothos::BufferChunk recovery((index - outputPort->totalElements())*outputPort->dtype().size());
+            Pothos::BufferChunk recovery(index - outputPort->totalElements());
             std::memset(recovery.as<void *>(), 0, recovery.length);
             outputPort->postBuffer(recovery);
         }
