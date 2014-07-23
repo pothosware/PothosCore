@@ -44,6 +44,10 @@ set(SOURCES
     file/BinaryFileSource.cpp
     file/BinaryFileSink.cpp
     file/TestBinaryFileBlocks.cpp
+
+    serialize/Serializer.cpp
+    serialize/Deserializer.cpp
+    serialize/TestSerialize.cpp
 )
 
 #udt support
