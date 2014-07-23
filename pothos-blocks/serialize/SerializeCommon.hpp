@@ -10,11 +10,11 @@ static inline size_t padUp32(const size_t len)
     return (len+3) & ~3;
 }
 
-static const Poco::UInt32 VRLP = 0
-    | (Poco::UInt32('V') << 24)
-    | (Poco::UInt32('R') << 16)
-    | (Poco::UInt32('L') << 8)
-    | (Poco::UInt32('P') << 0)
+static const Poco::UInt32 mVRL = 0
+    | (Poco::UInt32('m') << 24)
+    | (Poco::UInt32('V') << 16)
+    | (Poco::UInt32('R') << 8)
+    | (Poco::UInt32('L') << 0)
 ;
 
 static const Poco::UInt32 VEND = 0

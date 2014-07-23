@@ -73,7 +73,7 @@ static void packBuffer(const size_t seq, const size_t sid, const bool has_tsf, c
     buff.length = pkt_words32*4;
 
     auto p = buff.as<Poco::UInt32 *>();
-    p[0] = Poco::ByteOrder::toNetwork(VRLP);
+    p[0] = Poco::ByteOrder::toNetwork(mVRL);
     p[1] = Poco::ByteOrder::toNetwork(Poco::UInt32(((seq << 20) & 0xfff) | (pkt_bytes & 0xfffff)));
     p[2] = Poco::ByteOrder::toNetwork(Poco::UInt32(VITA_SID | (is_ext? VITA_EXT : 0) | (has_tsf? VITA_TSF : 0) | ((seq << 16) & 0xf) | (vita_words32 & 0xffff)));
     p[3] = Poco::ByteOrder::toNetwork(Poco::UInt32(sid));
@@ -101,7 +101,7 @@ static Pothos::BufferChunk objectToOffsetBuffer(const size_t offset_words32, con
 
 static Pothos::BufferChunk serializeMessage(const size_t seq, const size_t sid, const Pothos::Object &msg)
 {
-    const size_t hdr_words32 = 4;
+    const size_t hdr_words32 = 4; // a priori
     auto buff = objectToOffsetBuffer(hdr_words32, msg);
     packBuffer(seq, sid, false, 0, true, buff);
     return buff;
@@ -109,7 +109,7 @@ static Pothos::BufferChunk serializeMessage(const size_t seq, const size_t sid, 
 
 static Pothos::BufferChunk serializeLabel(const size_t seq, const size_t sid, const Pothos::Label &lbl)
 {
-    const size_t hdr_words32 = 6;
+    const size_t hdr_words32 = 6; // a priori
     auto buff = objectToOffsetBuffer(hdr_words32, lbl.data);
     packBuffer(seq, sid, true, lbl.index, true, buff);
     return buff;
@@ -141,7 +141,7 @@ void Serializer::work(void)
         if (buff.length > 0)
         {
             auto hdrTlrBuff = Pothos::BufferChunk(buff.length+HDR_TLR_BYTES);
-            const size_t hdr_words32 = 6;
+            const size_t hdr_words32 = 6; // a priori
             hdrTlrBuff.address += hdr_words32*4;
             hdrTlrBuff.length = buff.length;
             packBuffer(_seqs[i]++, i, true, inputPort->totalElements(), false, hdrTlrBuff);

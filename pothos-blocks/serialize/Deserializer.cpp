@@ -56,18 +56,18 @@ static Pothos::BlockRegistry registerDeserializer(
 /*!
  * Inspect an input buffer for an entire valid packet.
  */
-static bool inspectPacket(const void *pkt, const size_t length, bool &fragment, size_t &pkt_len)
+static bool inspectPacket(const Pothos::BufferChunk &packet, bool &isFragment, size_t &pkt_bytes)
 {
-    auto vrlp_pkt = reinterpret_cast<const Poco::UInt32 *>(pkt);
-    auto p = reinterpret_cast<const char *>(pkt);
-    if ((p[0] == 'V') and (p[1] == 'R') and (p[2] == 'L') and (p[3] == 'P'))
+    auto vrlp_pkt = packet.as<const Poco::UInt32 *>();
+    auto p = packet.as<const char *>();
+    if ((p[0] == 'm') and (p[1] == 'V') and (p[2] == 'R') and (p[3] == 'L'))
     {
-        assert(Poco::ByteOrder::fromNetwork(vrlp_pkt[0]) == VRLP);
-        pkt_len = Poco::ByteOrder::fromNetwork(vrlp_pkt[1]) & 0xfffff;
-        const size_t pkt_words32 = padUp32(pkt_len)/4;
-        fragment = pkt_len > length;
-        if (pkt_len > MAX_PKT_BYTES) return false; //call this BS
-        return fragment or Poco::ByteOrder::fromNetwork(vrlp_pkt[pkt_words32-1]) == VEND;
+        assert(Poco::ByteOrder::fromNetwork(vrlp_pkt[0]) == mVRL);
+        pkt_bytes = Poco::ByteOrder::fromNetwork(vrlp_pkt[1]) & 0xfffff;
+        const size_t pkt_words32 = padUp32(pkt_bytes)/4;
+        isFragment = pkt_bytes > packet.length;
+        if (pkt_bytes > MAX_PKT_BYTES) return false; //call this BS
+        return isFragment or Poco::ByteOrder::fromNetwork(vrlp_pkt[pkt_words32-1]) == VEND;
     }
     return false;
 }
@@ -81,7 +81,7 @@ static void unpackBuffer(const Pothos::BufferChunk &packet, size_t &seq, size_t 
     auto p = packet.as<const Poco::UInt32 *>();
 
     //validate vrlp
-    assert(Poco::ByteOrder::fromNetwork(p[0]) == VRLP);
+    assert(Poco::ByteOrder::fromNetwork(p[0]) == mVRL);
     const size_t pkt_bytes = Poco::ByteOrder::fromNetwork(p[1]) & 0xfffff;
     const size_t pkt_words32 = padUp32(pkt_bytes)/4;
     assert(Poco::ByteOrder::fromNetwork(p[pkt_words32-1]) == VEND);
@@ -146,16 +146,16 @@ void Deserializer::work(void)
     //character by character recovery search for packet header
     while (_accumulator.length >= MIN_PKT_BYTES)
     {
-        bool fragment = true; size_t pkt_len = 0;
-        if (inspectPacket(_accumulator.as<const void *>(), _accumulator.length, fragment, pkt_len))
+        bool isFragment = true; size_t pkt_bytes = 0;
+        if (inspectPacket(_accumulator, isFragment, pkt_bytes))
         {
-            if (fragment) return; //wait for more incoming buffers to accumulate
+            if (isFragment) return; //wait for more incoming buffers to accumulate
             this->handlePacket(_accumulator); //handle the packet, its good probably
 
             //increment for the next iteration
-            assert(pkt_len <= _accumulator.length);
-            _accumulator.address += pkt_len;
-            _accumulator.length -= pkt_len;
+            assert(pkt_bytes <= _accumulator.length);
+            _accumulator.address += pkt_bytes;
+            _accumulator.length -= pkt_bytes;
             assert(_accumulator.length <= _accumulator.getBuffer().getLength());
         }
         else
@@ -205,7 +205,7 @@ void Deserializer::handlePacket(const Pothos::BufferChunk &packetBuff)
         if (has_tsf)
         {
             Pothos::Label lbl;
-            lbl.index = tsf;
+            lbl.index = tsf; //TODO FIXME tsf is bad when we loose buffers or start w/ an offset
             lbl.data = obj;
             outputPort->postLabel(lbl);
         }
