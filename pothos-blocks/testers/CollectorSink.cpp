@@ -45,7 +45,7 @@ public:
 
     void work(void)
     {
-        auto inputPort = this->inputs()[0];
+        auto inputPort = this->input(0);
 
         //accumulate the buffer into a bigger buffer
         const auto &buffer = inputPort->buffer();

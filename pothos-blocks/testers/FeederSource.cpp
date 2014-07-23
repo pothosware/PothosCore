@@ -47,24 +47,23 @@ public:
 
     void work(void)
     {
-        //do labels first since we return after each type
-        if (not _labels.empty())
+        auto outputPort = this->output(0);
+
+        //do labels first so they remain ahead of buffers
+        while (not _labels.empty())
         {
-            this->outputs()[0]->postLabel(_labels.front());
+            outputPort->postLabel(_labels.front());
             _labels.pop();
-            return;
         }
-        if (not _buffers.empty())
+        while (not _buffers.empty())
         {
-            this->outputs()[0]->postBuffer(_buffers.front());
+            outputPort->postBuffer(_buffers.front());
             _buffers.pop();
-            return;
         }
-        if (not _messages.empty())
+        while (not _messages.empty())
         {
-            this->outputs()[0]->postMessage(_messages.front());
+            outputPort->postMessage(_messages.front());
             _messages.pop();
-            return;
         }
 
         //enter backoff + wait for additional user stimulus
@@ -169,33 +168,36 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
         std::uniform_int_distribution<int> dataSizeDist(
             testPlan->optValue<int>("minLabelSize", minSize),
             testPlan->optValue<int>("maxLabelSize", maxSize));
-        std::uniform_int_distribution<int> indexDist(0, totalElements-1);
+        std::uniform_int_distribution<unsigned long long> indexDist(0, totalElements-1);
 
-        //generate random labels
+        //generate random label indexes and sort them
         std::vector<unsigned long long> labelIndexes;
-        std::map<unsigned long long, Poco::JSON::Object::Ptr> indexToLabelData;
         const size_t numLabels = labelDist(gen);
         for (size_t lblno = 0; lblno < numLabels; lblno++)
         {
+            auto index = indexDist(gen);
+            if (std::find(labelIndexes.begin(), labelIndexes.end(), index) == labelIndexes.end())
+            {
+                labelIndexes.push_back(index);
+            }
+        }
+        std::sort(labelIndexes.begin(), labelIndexes.end());
+
+        //generate random labels
+        for (auto index : labelIndexes)
+        {
             Pothos::Label lbl;
-            lbl.index = indexDist(gen);
+            lbl.index = index;
             auto data = random_string(dataSizeDist(gen));
             lbl.data = Pothos::Object(data);
-
-            if (indexToLabelData.count(lbl.index) != 0) continue; //skip repeated indexes -- harder to check
             this->feedLabel(lbl);
 
             //record expected values
             Poco::JSON::Object::Ptr expectedLabel(new Poco::JSON::Object());
-            expectedLabel->set("index", Poco::UInt64(lbl.index));
+            expectedLabel->set("index", Poco::UInt64(index));
             expectedLabel->set("data", data);
-            indexToLabelData[lbl.index] = expectedLabel;
-            labelIndexes.push_back(lbl.index);
+            expectedLabels->add(expectedLabel);
         }
-
-        //load the sorted labels into the expected array
-        std::sort(labelIndexes.begin(), labelIndexes.end());
-        for (auto index : labelIndexes) expectedLabels->add(indexToLabelData.at(index));
     }
 
     if (testPlan->has("enableMessages"))
