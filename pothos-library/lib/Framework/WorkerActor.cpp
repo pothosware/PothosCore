@@ -56,8 +56,9 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     for (auto &entry : this->inputs)
     {
         auto &port = *entry.second;
-        const size_t reserveBytes = port._reserveElements*port.dtype().size();
-        port._impl->bufferAccumulator.require(reserveBytes);
+        //perform minimum reserve accumulator require to recover from possible element fragmentation
+        const size_t requireElems = std::max<size_t>(1, port._reserveElements);
+        port._impl->bufferAccumulator.require(requireElems*port.dtype().size());
         port._buffer = port._impl->bufferAccumulator.front();
         port._elements = port._buffer.get().length/port.dtype().size();
         if (port._elements < port._reserveElements) allInputsReady = false;
@@ -131,13 +132,11 @@ void Pothos::WorkerActor::postWorkTasks(void)
     }
 
     //update consumption stats, bytes are incremental, messages cumulative
-    if (bytesConsumed != 0 or this->workStats.msgsConsumed != msgsConsumed)
-    {
-        this->workStats.ticksLastConsumed = Theron::Detail::Clock::GetTicks();
-    }
     this->workStats.bytesConsumed += bytesConsumed;
     msgsConsumed -= this->workStats.msgsConsumed;
     this->workStats.msgsConsumed += msgsConsumed;
+    const bool hadConsumption = (bytesConsumed !=0 or msgsConsumed != 0);
+    if (hadConsumption) this->workStats.ticksLastConsumed = Theron::Detail::Clock::GetTicks();
 
     ///////////////////// output handling ////////////////////////
     //Note: output buffer production must come after propagateLabels()
@@ -177,17 +176,13 @@ void Pothos::WorkerActor::postWorkTasks(void)
     }
 
     //update production stats, bytes are incremental, messages cumulative
-    if (bytesProduced != 0 or this->workStats.msgsProduced != msgsProduced)
-    {
-        this->workStats.ticksLastProduced = Theron::Detail::Clock::GetTicks();
-    }
     this->workStats.bytesProduced += bytesProduced;
     msgsProduced -= this->workStats.msgsProduced;
     this->workStats.msgsProduced += msgsProduced;
+    const bool hadProduction = (bytesProduced != 0 or msgsProduced != 0);
+    if (hadProduction) this->workStats.ticksLastProduced = Theron::Detail::Clock::GetTicks();
 
     //postwork bump logic
-    const bool hadConsumption = (bytesConsumed !=0 or msgsConsumed != 0);
-    const bool hadProduction = (bytesProduced != 0 or msgsProduced != 0);
     if (this->workBump or hadConsumption or hadProduction) this->bump();
 }
 
