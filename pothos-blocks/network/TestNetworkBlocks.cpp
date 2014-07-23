@@ -5,6 +5,7 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Poco/Format.h>
+#include <Poco/JSON/Object.h>
 #include <iostream>
 
 static void network_test_harness(const std::string &scheme, const bool serverIsSource)
@@ -35,25 +36,17 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
     auto feeder = env.callProxy("/blocks/feeder_source", "int");
     auto collector = env.callProxy("/blocks/collector_sink", "int");
 
-    //feed buffer
-    auto b0 = Pothos::BufferChunk(10000*sizeof(int));
-    auto p0 = b0.as<int *>();
-    for (size_t i = 0; i < 10000; i++) p0[i] = i;
-    feeder.callProxy("feedBuffer", b0);
-
-    auto b1 = Pothos::BufferChunk(10000*sizeof(int));
-    auto p1 = b1.as<int *>();
-    for (size_t i = 0; i < 10000; i++) p1[i] = i+10000;
-    feeder.callProxy("feedBuffer", b1);
-
-    //feed labels within buffer length
-    feeder.callProxy("feedLabel", Pothos::Label("lbl0", 3));
-    feeder.callProxy("feedLabel", Pothos::Label("lbl1", 5));
-
-    //feed some msgs
-    feeder.callProxy("feedMessage", Pothos::Object("msg0"));
-    feeder.callProxy("feedMessage", Pothos::Object("msg1"));
-    feeder.callProxy("feedMessage", Pothos::Object(b0));
+    //create a test plan
+    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+    testPlan->set("enableBuffers", true);
+    testPlan->set("enableLabels", true);
+    testPlan->set("enableMessages", true);
+    //large and numerous payloads
+    testPlan->set("minTrials", 100);
+    testPlan->set("maxTrials", 200);
+    testPlan->set("minSize", 512);
+    testPlan->set("maxSize", 2048); //TODO FIXME see #7
+    auto expected = feeder.callProxy("feedTestPlan", testPlan);
 
     //create tester topology
     std::cout << "Basic message test" << std::endl;
@@ -65,47 +58,12 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
         POTHOS_TEST_TRUE(topology.waitInactive());
     }
 
-    //collect the output
-    auto msgs = collector.call<std::vector<Pothos::Object>>("getMessages");
-    auto lbls = collector.call<std::vector<Pothos::Label>>("getLabels");
-    auto buff = collector.call<Pothos::BufferChunk>("getBuffer");
-    std::cout << msgs.size() << std::endl;
-    std::cout << lbls.size() << std::endl;
-    std::cout << buff.length << std::endl;
-
-    //check msgs
-    POTHOS_TEST_EQUAL(msgs.size(), 3);
-    POTHOS_TEST_TRUE(msgs[0].type() == typeid(std::string));
-    POTHOS_TEST_TRUE(msgs[1].type() == typeid(std::string));
-    POTHOS_TEST_TRUE(msgs[2].type() == typeid(Pothos::BufferChunk));
-    POTHOS_TEST_EQUAL(msgs[0].extract<std::string>(), "msg0");
-    POTHOS_TEST_EQUAL(msgs[1].extract<std::string>(), "msg1");
-
-    //check the buffer for equality
-    {
-        auto mbuff = msgs[2].extract<Pothos::BufferChunk>();
-        POTHOS_TEST_EQUAL(mbuff.length, 10000*sizeof(int));
-        auto pb = mbuff.as<const int *>();
-        for (int i = 0; i < 10000; i++) POTHOS_TEST_EQUAL(pb[i], i);
-    }
-
-    //check the buffer for equality
-    POTHOS_TEST_EQUAL(buff.length, 2*10000*sizeof(int));
-    auto pb = buff.as<const int *>();
-    for (int i = 0; i < 2*10000; i++) POTHOS_TEST_EQUAL(pb[i], i);
-
-    //check labels
-    POTHOS_TEST_EQUAL(lbls.size(), 2);
-    POTHOS_TEST_EQUAL(lbls[0].index, 3);
-    POTHOS_TEST_EQUAL(lbls[1].index, 5);
-    POTHOS_TEST_TRUE(lbls[0].data.type() == typeid(std::string));
-    POTHOS_TEST_TRUE(lbls[1].data.type() == typeid(std::string));
-    POTHOS_TEST_EQUAL(lbls[0].data.extract<std::string>(), "lbl0");
-    POTHOS_TEST_EQUAL(lbls[1].data.extract<std::string>(), "lbl1");
+    std::cout << "verifyTestPlan" << std::endl;
+    collector.callVoid("verifyTestPlan", expected);
 
     //create tester topology -- tests for open close
     std::cout << "Open/close repeat test" << std::endl;
-    for (size_t i = 0; i < 10; i++)
+    for (size_t i = 0; i < 3; i++)
     {
         Pothos::Topology topology;
         topology.connect(source, 0, collector, 0);

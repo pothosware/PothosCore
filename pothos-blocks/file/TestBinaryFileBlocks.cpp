@@ -5,6 +5,7 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Poco/TemporaryFile.h>
+#include <Poco/JSON/Object.h>
 #include <iostream>
 
 POTHOS_TEST_BLOCK("/blocks/tests", test_binary_file_blocks)
@@ -25,11 +26,14 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_binary_file_blocks)
     auto fileSink = registry.callProxy("/blocks/binary_file_sink");
     fileSink.callVoid("setFilePath", tempFile.path());
 
-    //feed buffer
-    auto b0 = Pothos::BufferChunk(10*sizeof(int));
-    auto p0 = b0.as<int *>();
-    for (size_t i = 0; i < 10; i++) p0[i] = i;
-    feeder.callProxy("feedBuffer", b0);
+    //create a test plan
+    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+    testPlan->set("enableBuffers", true);
+    testPlan->set("minTrials", 100);
+    testPlan->set("maxTrials", 200);
+    testPlan->set("minSize", 512);
+    testPlan->set("maxSize", 2048);
+    auto expected = feeder.callProxy("feedTestPlan", testPlan);
 
     //run a topology that sends feeder to file
     {
@@ -47,9 +51,5 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_binary_file_blocks)
         POTHOS_TEST_TRUE(topology.waitInactive());
     }
 
-    //check the buffer for equality
-    auto buff = collector.call<Pothos::BufferChunk>("getBuffer");
-    POTHOS_TEST_EQUAL(buff.length, 10*sizeof(int));
-    auto pb = buff.as<const int *>();
-    for (int i = 0; i < 10; i++) POTHOS_TEST_EQUAL(pb[i], i);
+    collector.callVoid("verifyTestPlan", expected);
 }

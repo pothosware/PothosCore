@@ -5,7 +5,6 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
 #include <iostream>
 
 POTHOS_TEST_BLOCK("/blocks/tests", test_unit_test_blocks)

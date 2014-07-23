@@ -110,6 +110,12 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
     std::random_device rd;
     std::mt19937 gen(rd());
 
+    //defaults
+    auto minTrials = testPlan->optValue<int>("minTrials", 10);
+    auto maxTrials = testPlan->optValue<int>("maxTrials", 100);
+    auto minSize = testPlan->optValue<int>("minSize", 10);
+    auto maxSize = testPlan->optValue<int>("maxSize", 100);
+
     unsigned long long totalElements = 0;
     if (testPlan->has("enableBuffers"))
     {
@@ -121,11 +127,11 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
 
         //create random distributions
         std::uniform_int_distribution<int> bufferDist(
-            testPlan->optValue<int>("minBuffers", 2),
-            testPlan->optValue<int>("maxBuffers", 4));
+            testPlan->optValue<int>("minBuffers", minTrials),
+            testPlan->optValue<int>("maxBuffers", maxTrials));
         std::uniform_int_distribution<int> elementsDist(
-            testPlan->optValue<int>("minElements", 10),
-            testPlan->optValue<int>("maxElements", 20));
+            testPlan->optValue<int>("minBufferSize", minSize)/elemDType.size(),
+            testPlan->optValue<int>("maxBufferSize", maxSize)/elemDType.size());
         std::uniform_int_distribution<int> valueDist(
             testPlan->optValue<int>("minValue", -(1 << (elemDType.size()*8 - 1))),
             testPlan->optValue<int>("maxValue", (1 << (elemDType.size()*8 - 1))-1));
@@ -158,11 +164,11 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
 
         //create random distributions
         std::uniform_int_distribution<int> labelDist(
-            testPlan->optValue<int>("minLabels", 2),
-            testPlan->optValue<int>("maxLabels", 4));
+            testPlan->optValue<int>("minLabels", minTrials),
+            testPlan->optValue<int>("maxLabels", maxTrials));
         std::uniform_int_distribution<int> dataSizeDist(
-            testPlan->optValue<int>("minLabelSize", 10),
-            testPlan->optValue<int>("maxLabelSize", 100));
+            testPlan->optValue<int>("minLabelSize", minSize),
+            testPlan->optValue<int>("maxLabelSize", maxSize));
         std::uniform_int_distribution<int> indexDist(0, totalElements-1);
 
         //generate random labels
@@ -200,11 +206,11 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
 
         //create random distributions
         std::uniform_int_distribution<int> messageDist(
-            testPlan->optValue<int>("minMessages", 2),
-            testPlan->optValue<int>("maxMessages", 4));
+            testPlan->optValue<int>("minMessages", minTrials),
+            testPlan->optValue<int>("maxMessages", maxTrials));
         std::uniform_int_distribution<int> dataSizeDist(
-            testPlan->optValue<int>("minMessageSize", 10),
-            testPlan->optValue<int>("maxMessageSize", 100));
+            testPlan->optValue<int>("minMessageSize", minSize),
+            testPlan->optValue<int>("maxMessageSize", maxSize));
 
         const size_t numMessages = messageDist(gen);
         for (size_t msgno = 0; msgno < numMessages; msgno++)
