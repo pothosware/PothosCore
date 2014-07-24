@@ -18,6 +18,12 @@ AffinityZonesMenu::AffinityZonesMenu(AffinityPanel *affinityPanel, QWidget *pare
 void AffinityZonesMenu::handleZonesChanged(void)
 {
     this->clear();
+
+    //clear affinity setting
+    auto clearAction = this->addAction(tr("Clear affinity"));
+    connect(clearAction, SIGNAL(triggered(void)), _clickMapper, SLOT(map(void)));
+    _clickMapper->setMapping(clearAction, "");
+
     if (_affinityPanel) for (const auto &name : _affinityPanel->zones())
     {
         auto action = this->addAction(name);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //make icon theme
+#include "AffinitySupport/AffinityZonesDock.hpp"
 #include "PropertiesPanel/BlockPropertiesPanel.hpp"
 #include "PropertiesPanel/BlockPropertyEditWidget.hpp"
 #include "GraphObjects/GraphObject.hpp"
@@ -28,6 +29,8 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     _ignoreChanges(true),
     _idLabel(new QLabel(this)),
     _idLineEdit(new QLineEdit(this)),
+    _affinityZoneLabel(new QLabel(this)),
+    _affinityZoneBox(nullptr),
     _blockErrorLabel(new QLabel(this)),
     _updateTimer(new QTimer(this)),
     _formLayout(nullptr),
@@ -89,6 +92,16 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         editLayout->addWidget(editWidget);
         editLayout->addWidget(_propIdToErrorLabel[prop.getKey()]);
         _formLayout->addRow(_propIdToFormLabel[prop.getKey()], editLayout);
+    }
+
+    //affinity zone
+    {
+        _affinityZoneOriginal = _block->getAffinityZone();
+        auto dock = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]);
+        assert(dock != nullptr);
+        _affinityZoneBox = dock->makeComboBox(this);
+        _formLayout->addRow(_affinityZoneLabel, _affinityZoneBox);
+        connect(_affinityZoneBox, SIGNAL(activated(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
     }
 
     //draw the block's preview onto a mini pixmap
@@ -221,6 +234,9 @@ void BlockPropertiesPanel::handleEditWidgetChanged(void)
     //dump editor id to block
     _block->setId(_idLineEdit->text());
 
+    //dump the affinity zone to block
+    _block->setAffinityZone(_affinityZoneBox->itemData(_affinityZoneBox->currentIndex()).toString());
+
     //dump all values from edit widgets into the block's property values
     for (const auto &prop : _block->getProperties())
     {
@@ -262,6 +278,9 @@ void BlockPropertiesPanel::handleCommitButton(void)
     //was the ID changed?
     if (_idOriginal != _block->getId()) propertiesModified.push_back(tr("ID"));
 
+    //was the affinity zone changed?
+    if (_affinityZoneOriginal != _block->getAffinityZone()) propertiesModified.push_back(tr("Affinity Zone"));
+
     if (propertiesModified.empty()) return this->handleCancelButton();
 
     //emit a new graph state event
@@ -280,6 +299,20 @@ void BlockPropertiesPanel::updateAllForms(void)
         _idLabel->setText(QString("<b>%1%2</b>")
             .arg(tr("ID"))
             .arg((_idOriginal != _block->getId())?"*":""));
+    }
+
+    //affinity zone
+    {
+        for (int i = 0; i < _affinityZoneBox->count(); i++)
+        {
+            if (_affinityZoneBox->itemData(i).toString() == _block->getAffinityZone())
+            {
+                _affinityZoneBox->setCurrentIndex(i);
+            }
+        }
+        _affinityZoneLabel->setText(QString("<b>%1%2</b>")
+            .arg(tr("Affinity Zone"))
+            .arg((_affinityZoneOriginal != _block->getAffinityZone())?"*":""));
     }
 
     //update block errors

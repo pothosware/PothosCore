@@ -14,6 +14,7 @@ class GraphBlock;
 class QLabel;
 class QLineEdit;
 class QTimer;
+class QComboBox;
 class QFormLayout;
 class BlockPropertyEditWidget;
 
@@ -64,9 +65,15 @@ private:
     void updatePropForms(const GraphBlockProp &prop);
 
     bool _ignoreChanges;
+
     QString _idOriginal;
     QLabel *_idLabel;
     QLineEdit *_idLineEdit;
+
+    QString _affinityZoneOriginal;
+    QLabel *_affinityZoneLabel;
+    QComboBox *_affinityZoneBox;
+
     QLabel *_blockErrorLabel;
     QTimer *_updateTimer;
     QFormLayout *_formLayout;

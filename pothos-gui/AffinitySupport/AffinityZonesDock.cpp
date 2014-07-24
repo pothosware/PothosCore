@@ -3,6 +3,7 @@
 
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "AffinitySupport/AffinityZonesMenu.hpp"
+#include "AffinitySupport/AffinityZonesComboBox.hpp"
 #include "AffinitySupport/AffinityPanel.hpp"
 
 AffinityZonesDock::AffinityZonesDock(QWidget *parent):
@@ -15,12 +16,17 @@ AffinityZonesDock::AffinityZonesDock(QWidget *parent):
     this->setWidget(_panel);
 
     //forward zones changed signal
-    connect(_panel, SIGNAL(zonesChanged(void)), this, SIGNAL(zonesChanged(void)));
+    connect(_panel, SIGNAL(zonesChanged(void)), this, SLOT(handleZonesChanged(void)));
 }
 
 QMenu *AffinityZonesDock::makeMenu(QWidget *parent)
 {
     return new AffinityZonesMenu(_panel, parent);
+}
+
+QComboBox *AffinityZonesDock::makeComboBox(QWidget *parent)
+{
+    return new AffinityZonesComboBox(_panel, parent);
 }
 
 QStringList AffinityZonesDock::zones(void) const
@@ -31,4 +37,10 @@ QStringList AffinityZonesDock::zones(void) const
 QColor AffinityZonesDock::zoneToColor(const QString &zone)
 {
     return _panel->zoneToColor(zone);
+}
+
+void AffinityZonesDock::handleZonesChanged(void)
+{
+    emit this->zonesChanged();
+    emit this->zonesChanged(this->zones());
 }

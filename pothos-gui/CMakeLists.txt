@@ -95,6 +95,7 @@ set(SOURCES
     AffinitySupport/AffinityPanel.cpp
     AffinitySupport/AffinityZoneEditor.cpp
     AffinitySupport/AffinityZonesMenu.cpp
+    AffinitySupport/AffinityZonesComboBox.cpp
     AffinitySupport/AffinityZonesDock.cpp
     AffinitySupport/CpuSelectionWidget.cpp
 
