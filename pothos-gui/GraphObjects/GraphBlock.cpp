@@ -1,9 +1,11 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "PothosGuiUtils.hpp" //get object map
 #include "GraphObjects/GraphBlockImpl.hpp"
 #include "GraphEditor/Constants.hpp"
 #include "BlockTree/BlockCache.hpp"
+#include "AffinitySupport/AffinityZonesDock.hpp"
 #include <QPainter>
 #include <QPen>
 #include <QBrush>
@@ -175,6 +177,7 @@ const QString &GraphBlock::getAffinityZone(void) const
 
 void GraphBlock::setAffinityZone(const QString &zone)
 {
+    _impl->changed = true;
     _impl->affinityZone = zone;
 }
 
@@ -282,10 +285,16 @@ static QStaticText makeQStaticText(const QString &s)
     return st;
 }
 
+static QString getTextColor(const bool isOk, const QColor &bg)
+{
+    if (isOk) return (bg.lightnessF() > 0.5)?"black":"white";
+    else return (bg.lightnessF() > 0.5)?"red":"pink";
+}
+
 void GraphBlock::renderStaticText(void)
 {
     _impl->titleText = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3</b></span>")
-        .arg(this->getBlockErrorMsg().isEmpty()?"black":"red")
+        .arg(getTextColor(this->getBlockErrorMsg().isEmpty(), _impl->mainBlockColor))
         .arg(GraphBlockTitleFontSize)
         .arg(_impl->title.toHtmlEscaped()));
 
@@ -294,9 +303,10 @@ void GraphBlock::renderStaticText(void)
     {
         if (not this->getPropertyPreview(_properties[i].getKey())) continue;
         auto text = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3: </b> %4</span>")
-            .arg(this->getPropertyErrorMsg(_properties[i].getKey()).isEmpty()?"black":"red")
+            .arg(getTextColor(this->getPropertyErrorMsg(_properties[i].getKey()).isEmpty(), _impl->mainBlockColor))
             .arg(GraphBlockPropFontSize)
             .arg(_properties[i].getName().toHtmlEscaped())
+            //TODO use property enum option name when there are discrete options
             .arg(this->getPropertyValue(_properties[i].getKey()).toHtmlEscaped()));
         _impl->propertiesText.push_back(text);
     }
@@ -304,7 +314,8 @@ void GraphBlock::renderStaticText(void)
     _impl->inputPortsText.resize(_inputPorts.size());
     for (size_t i = 0; i < _inputPorts.size(); i++)
     {
-        _impl->inputPortsText[i] = QStaticText(QString("<span style='font-size:%1;'>%2</span>")
+        _impl->inputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
+            .arg(getTextColor(true, _impl->inputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
             .arg(_inputPorts[i].getName().toHtmlEscaped()));
     }
@@ -312,7 +323,8 @@ void GraphBlock::renderStaticText(void)
     _impl->outputPortsText.resize(_outputPorts.size());
     for (size_t i = 0; i < _outputPorts.size(); i++)
     {
-        _impl->outputPortsText[i] = QStaticText(QString("<span style='font-size:%1;'>%2</span>")
+        _impl->outputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
+            .arg(getTextColor(true, _impl->outputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
             .arg(_outputPorts[i].getName().toHtmlEscaped()));
     }
@@ -325,6 +337,21 @@ void GraphBlock::render(QPainter &painter)
     {
         this->update(); //call first because this will set changed again
         _impl->changed = false;
+
+        //update colors
+        auto zoneColor = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"])->zoneToColor(this->getAffinityZone());
+        _impl->mainBlockColor = zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor);
+        _impl->inputPortColors.resize(_inputPorts.size());
+        for (size_t i = 0; i < _inputPorts.size(); i++)
+        {
+            _impl->inputPortColors[i] = QColor(GraphObjectDefaultFillColor);
+        }
+        _impl->outputPortColors.resize(_outputPorts.size());
+        for (size_t i = 0; i < _outputPorts.size(); i++)
+        {
+            _impl->outputPortColors[i] = QColor(GraphObjectDefaultFillColor);
+        }
+
         this->renderStaticText();
     }
 
@@ -378,23 +405,25 @@ void GraphBlock::render(QPainter &painter)
     auto pen = QPen(QColor(GraphObjectDefaultPenColor));
     pen.setWidthF(GraphObjectBorderWidth);
     painter.setPen(pen);
-    painter.setBrush(QBrush(QColor(GraphObjectDefaultFillColor)));
 
     //create input ports
-    _impl->inputPortRects.clear();
-    _impl->inputPortPoints.clear();
+    const auto numInputs = this->getInputPorts().size();
+    _impl->inputPortRects.resize(numInputs);
+    _impl->inputPortPoints.resize(numInputs);
     qreal inPortVdelta = (overallHeight - inputPortsMinHeight)/2.0 + GraphBlockPortVOutterPad;
-    for (const auto &text : _impl->inputPortsText)
+    for (size_t i = 0; i < numInputs; i++)
     {
+        const auto &text = _impl->inputPortsText.at(i);
         QSizeF rectSize = text.size() + QSizeF(GraphBlockPortTextHPad*2, GraphBlockPortTextVPad*2);
         const qreal hOff = (portFlip)? overallWidth :  1-rectSize.width();
         QRectF portRect(p+QPointF(hOff, inPortVdelta), rectSize);
         inPortVdelta += rectSize.height() + GraphBlockPortVGap;
         painter.save();
+        painter.setBrush(QBrush(_impl->inputPortColors.at(i)));
         if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRect(portRect);
         painter.restore();
-        _impl->inputPortRects.push_back(trans.mapRect(portRect));
+        _impl->inputPortRects[i] = trans.mapRect(portRect);
 
         const qreal availablePortHPad = portRect.width() - text.size().width();
         const qreal availablePortVPad = portRect.height() - text.size().height();
@@ -402,25 +431,28 @@ void GraphBlock::render(QPainter &painter)
 
         //connection point logic
         const auto connPoint = portRect.topLeft() + QPointF(portFlip?rectSize.width():0, rectSize.height()/2);
-        _impl->inputPortPoints.push_back(trans.map(connPoint));
+        _impl->inputPortPoints[i] = trans.map(connPoint);
     }
 
     //create output ports
-    _impl->outputPortRects.clear();
-    _impl->outputPortPoints.clear();
+    const auto numOutputs = this->getOutputPorts().size();
+    _impl->outputPortRects.resize(numOutputs);
+    _impl->outputPortPoints.resize(numOutputs);
     qreal outPortVdelta = (overallHeight - outputPortsMinHeight)/2.0 + GraphBlockPortVOutterPad;
-    for (const auto &text : _impl->outputPortsText)
+    for (size_t i = 0; i < numOutputs; i++)
     {
+        const auto &text = _impl->outputPortsText.at(i);
         QSizeF rectSize = text.size() + QSizeF(GraphBlockPortTextHPad*2+GraphBlockPortArc, GraphBlockPortTextVPad*2);
         const qreal hOff = (portFlip)? 1-rectSize.width() :  overallWidth;
         const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
         QRectF portRect(p+QPointF(hOff+arcFix, outPortVdelta), rectSize);
         outPortVdelta += rectSize.height() + GraphBlockPortVGap;
         painter.save();
+        painter.setBrush(QBrush(_impl->outputPortColors.at(i)));
         if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
         painter.restore();
-        _impl->outputPortRects.push_back(trans.mapRect(portRect));
+        _impl->outputPortRects[i] = trans.mapRect(portRect);
 
         const qreal availablePortHPad = portRect.width() - text.size().width() + arcFix;
         const qreal availablePortVPad = portRect.height() - text.size().height();
@@ -428,11 +460,12 @@ void GraphBlock::render(QPainter &painter)
 
         //connection point logic
         const auto connPoint = portRect.topLeft() + QPointF(portFlip?0:rectSize.width(), rectSize.height()/2);
-        _impl->outputPortPoints.push_back(trans.map(connPoint));
+        _impl->outputPortPoints[i] = trans.map(connPoint);
     }
 
     //draw main body of the block
     painter.save();
+    painter.setBrush(QBrush(_impl->mainBlockColor));
     if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
     painter.drawRoundedRect(mainRect, GraphBlockMainArc, GraphBlockMainArc);
     painter.restore();

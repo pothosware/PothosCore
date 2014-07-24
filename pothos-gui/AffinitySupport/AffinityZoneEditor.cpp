@@ -86,6 +86,7 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     //cpu/node selection
     {
         formLayout->addRow(tr("CPU selection"), _cpuSelectionContainer);
+        this->updateCpuSelection();
     }
 
     //yield mode
@@ -183,6 +184,7 @@ Poco::JSON::Object::Ptr AffinityZoneEditor::getCurrentConfig(void) const
     config->set("processName", _processNameEdit->text().toStdString());
     config->set("numThreads", _numThreadsSpin->value());
     config->set("priority", _prioritySpin->value()/100.0);
+    assert(_cpuSelection != nullptr);
     config->set("affinityMode", _cpuSelection->mode());
     Poco::JSON::Array::Ptr affinityMask = new Poco::JSON::Array();
     for (auto num : _cpuSelection->selection()) affinityMask->add(num);

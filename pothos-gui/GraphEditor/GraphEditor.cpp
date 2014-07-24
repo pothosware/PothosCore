@@ -672,7 +672,7 @@ void GraphEditor::handleAffinityZoneClicked(const QString &zone)
     if (not this->isVisible()) return;
     auto draw = this->getGraphDraw(this->currentIndex());
 
-    for (auto obj : this->getGraphObjects())
+    for (auto obj : draw->getObjectsSelected(false/*nc*/))
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
         if (block == nullptr) continue;
