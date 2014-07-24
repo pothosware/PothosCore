@@ -43,8 +43,24 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     //color picker
     {
         formLayout->addRow(tr("Affinity color"), _colorPicker);
-        _colorPicker->setStandardColors();
-        _colorPicker->setCurrentColor(Qt::yellow);
+        //https://en.wikipedia.org/wiki/List_of_colors_%28compact%29
+        _colorPicker->insertColor(QColor(119,158,203), tr("Dark pastel blue"));
+        _colorPicker->insertColor(QColor(3,192,60), tr("Dark pastel green"));
+        _colorPicker->insertColor(QColor(150,111,214), tr("Dark pastel purple"));
+        _colorPicker->insertColor(QColor(194,59,34), tr("Dark pastel red"));
+        _colorPicker->insertColor(QColor(177,156,217), tr("Light pastel purple"));
+        _colorPicker->insertColor(QColor(174,198,207), tr("Pastel blue"));
+        _colorPicker->insertColor(QColor(130,105,83), tr("Pastel brown"));
+        _colorPicker->insertColor(QColor(207,207,196), tr("Pastel gray"));
+        _colorPicker->insertColor(QColor(119,221,119), tr("Pastel green"));
+        _colorPicker->insertColor(QColor(244,154,194), tr("Pastel magenta"));
+        _colorPicker->insertColor(QColor(255,179,71), tr("Pastel orange"));
+        _colorPicker->insertColor(QColor(222,165,164), tr("Pastel pink"));
+        _colorPicker->insertColor(QColor(179,158,181), tr("Pastel purple"));
+        _colorPicker->insertColor(QColor(255,105,97), tr("Pastel red"));
+        _colorPicker->insertColor(QColor(203,153,201), tr("Pastel violet"));
+        _colorPicker->insertColor(QColor(253,253,150), tr("Pastel yellow"));
+        _colorPicker->setCurrentColor(QColor(253,253,150)); //Pastel yellow
         _colorPicker->setToolTip(tr("Select a color to associate affinities in the graph editor"));
         connect(_colorPicker, SIGNAL(colorChanged(const QColor &)), this, SLOT(handleColorChanged(const QColor &)));
     }
