@@ -75,6 +75,9 @@ public:
 
     QRectF getBoundingRect(void) const;
 
+    //! indicate an external change -- thats not applied through the other setters
+    void changed(void);
+
     void render(QPainter &painter);
 
     //! Set an error message when trying to eval the block -- blank msg for no error

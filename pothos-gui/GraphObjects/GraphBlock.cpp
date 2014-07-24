@@ -330,6 +330,11 @@ void GraphBlock::renderStaticText(void)
     }
 }
 
+void GraphBlock::changed(void)
+{
+    _impl->changed = true;
+}
+
 void GraphBlock::render(QPainter &painter)
 {
     //render text
@@ -341,16 +346,8 @@ void GraphBlock::render(QPainter &painter)
         //update colors
         auto zoneColor = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"])->zoneToColor(this->getAffinityZone());
         _impl->mainBlockColor = zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor);
-        _impl->inputPortColors.resize(_inputPorts.size());
-        for (size_t i = 0; i < _inputPorts.size(); i++)
-        {
-            _impl->inputPortColors[i] = QColor(GraphObjectDefaultFillColor);
-        }
-        _impl->outputPortColors.resize(_outputPorts.size());
-        for (size_t i = 0; i < _outputPorts.size(); i++)
-        {
-            _impl->outputPortColors[i] = QColor(GraphObjectDefaultFillColor);
-        }
+        _impl->inputPortColors.resize(_inputPorts.size(), GraphObjectDefaultFillColor);
+        _impl->outputPortColors.resize(_outputPorts.size(), GraphObjectDefaultFillColor);
 
         this->renderStaticText();
     }
