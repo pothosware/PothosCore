@@ -108,6 +108,7 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     //yield mode
     {
         formLayout->addRow(tr("Yield mode"), _yieldModeBox);
+        _yieldModeBox->addItem(tr("Default"), "");
         _yieldModeBox->addItem(tr("Condition"), "CONDITION");
         _yieldModeBox->addItem(tr("Hybrid"), "HYBRID");
         _yieldModeBox->addItem(tr("Spin"), "SPIN");
