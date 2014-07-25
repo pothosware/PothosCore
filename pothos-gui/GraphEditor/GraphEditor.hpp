@@ -101,7 +101,7 @@ private slots:
     void handleRedo(void);
     void handleResetState(int);
     void handleAffinityZoneClicked(const QString &zone);
-    void handleAffinityZonesChanged(void);
+    void handleAffinityZoneChanged(const QString &zone);
     void handleStateChange(const GraphState &state);
     void handleShowFlattenedDialog(void);
     void handleToggleActivateTopology(bool);

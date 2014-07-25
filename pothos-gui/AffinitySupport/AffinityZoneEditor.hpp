@@ -51,7 +51,7 @@ private slots:
         emit this->settingsChanged();
     }
 
-    void handleProcessNameChanged(const QString &)
+    void handleProcessNameChanged(void)
     {
         emit this->settingsChanged();
     }

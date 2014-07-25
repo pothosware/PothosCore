@@ -80,7 +80,7 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         formLayout->addRow(tr("Process name"), _processNameEdit);
         _processNameEdit->setPlaceholderText(tr("The string name of a process"));
         _processNameEdit->setToolTip(tr("An arbitrary name to identify a process on a node"));
-        connect(_processNameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(handleProcessNameChanged(const QString &)));
+        connect(_processNameEdit, SIGNAL(editingFinished(void)), this, SLOT(handleProcessNameChanged(void)));
     }
 
     //num threads

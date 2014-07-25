@@ -3,15 +3,19 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <QDockWidget>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
-#include <QDockWidget>
-#include <QString>
+#include <QStringList>
 #include <QColor>
 
-class AffinityPanel;
 class QMenu;
 class QComboBox;
+class QLineEdit;
+class QPushButton;
+class QTabWidget;
+class QSignalMapper;
+class AffinityZoneEditor;
 
 //! Top level dock widget for affinity designer
 class AffinityZonesDock : public QDockWidget
@@ -40,12 +44,31 @@ signals:
     //! emitted when zones are created, destroyed, changed
     void zonesChanged(void);
 
-    //! list of current zones version
-    void zonesChanged(const QStringList &zones);
+    //! emitted when a particular zone is modified
+    void zoneChanged(const QString &zone);
 
 private slots:
-    void handleZonesChanged(void);
+    void handleCreateZone(void);
+    void handleTabCloseRequested(int);
+    void handleZoneEditorChanged(void)
+    {
+        this->saveAffinityZoneEditorsState();
+    }
+    void handleTabSelectionChanged(int);
 
 private:
-    AffinityPanel *_panel;
+    AffinityZoneEditor *createZoneFromName(const QString &name);
+
+    void ensureDefault(void);
+
+    void initAffinityZoneEditors(void);
+
+    void saveAffinityZoneEditorsState(void);
+
+    void handleErrorMessage(const QString &errMsg);
+
+    QSignalMapper *_mapper;
+    QLineEdit *_zoneEntry;
+    QPushButton *_createButton;
+    QTabWidget *_editorsTabs;
 };

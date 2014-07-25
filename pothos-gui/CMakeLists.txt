@@ -92,7 +92,6 @@ set(SOURCES
     BlockTree/BlockTreeWidgetItem.cpp
     BlockTree/BlockCache.cpp
 
-    AffinitySupport/AffinityPanel.cpp
     AffinitySupport/AffinityZoneEditor.cpp
     AffinitySupport/AffinityZonesMenu.cpp
     AffinitySupport/AffinityZonesComboBox.cpp

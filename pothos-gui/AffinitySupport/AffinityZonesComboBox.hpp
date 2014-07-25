@@ -6,7 +6,7 @@
 #include <QComboBox>
 #include <QPointer>
 
-class AffinityPanel;
+class AffinityZonesDock;
 
 /*!
  * A combo box with options that reflect the active affinity zones.
@@ -15,11 +15,11 @@ class AffinityZonesComboBox : public QComboBox
 {
     Q_OBJECT
 public:
-    AffinityZonesComboBox(AffinityPanel *affinityPanel, QWidget *parent);
+    AffinityZonesComboBox(AffinityZonesDock *dock, QWidget *parent);
 
 private slots:
     void handleZonesChanged(void);
 
 private:
-    QPointer<AffinityPanel> _affinityPanel;
+    QPointer<AffinityZonesDock> _dock;
 };
