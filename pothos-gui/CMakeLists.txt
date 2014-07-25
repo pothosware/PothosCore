@@ -114,7 +114,6 @@ set(SOURCES
     GraphEditor/GraphPage.cpp
     GraphEditor/GraphDraw.cpp
     GraphEditor/GraphDrawSelection.cpp
-    GraphEditor/GraphEditorTopologyUtils.cpp
     GraphEditor/GraphActionsDock.cpp
 
     GraphObjects/GraphEndpoint.cpp

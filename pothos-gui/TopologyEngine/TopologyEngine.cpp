@@ -12,6 +12,12 @@
 #include <Poco/NumberParser.h>
 #include <cassert>
 
+TopologyEngine::TopologyEngine(QObject *parent):
+    QObject(parent)
+{
+    return;
+}
+
 void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
 {
     //get all block proxy objects
@@ -20,7 +26,10 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
         if (block == nullptr) continue;
-        //idToBlock[block->getId()] = block->getProxy(); //TODO
+        
+        //NOPE! FIXME TODO
+        
+        //idToBlock[block->getId().toStdString()] = block->getBlockEval().callProxy("getProxyBlock");
     }
 
     //make all of the connections

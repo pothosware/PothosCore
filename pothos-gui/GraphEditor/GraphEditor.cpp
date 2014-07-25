@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //action map
+#include "TopologyEngine/TopologyEngine.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
 #include "GraphEditor/GraphPage.hpp"
 #include "GraphEditor/GraphEditor.hpp"
@@ -717,30 +718,18 @@ void GraphEditor::handleToggleActivateTopology(const bool enable)
     if (not this->isVisible()) return;
     if (enable)
     {
-        //setup topology execution, in the same process for now
-        auto env = Pothos::ProxyEnvironment::make("managed");
-        auto TopologyEngine = env->findProxy("Pothos/Util/TopologyEngine");
-        _topologyEngine = TopologyEngine.callProxy("new");
+        _topologyEngine = new TopologyEngine(this);
         this->updateExecutionEngine();
     }
-    else _topologyEngine = Pothos::Proxy();
+    else delete _topologyEngine;
 }
 
 void GraphEditor::updateExecutionEngine(void)
 {
     if (not _topologyEngine) return;
-
-    //update the execution engine state
     try
     {
-        for (auto obj : this->getGraphObjects())
-        {
-            auto block = dynamic_cast<GraphBlock *>(obj);
-            if (block == nullptr) continue;
-            if (not block->getBlockEval()) return;
-            _topologyEngine.callVoid("acceptBlock", block->getBlockEval());
-        }
-        _topologyEngine.callVoid("commitUpdate", this->getConnectionInfo());
+        _topologyEngine->commitUpdate(this->getGraphObjects());
     }
     catch (const Pothos::Exception &ex)
     {

@@ -6,6 +6,7 @@
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/Constants.hpp"
 #include "GraphObjects/GraphConnection.hpp"
+#include <Pothos/Exception.hpp>
 #include <Poco/Logger.h>
 #include <QScrollArea>
 #include <QScrollBar>

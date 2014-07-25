@@ -30,7 +30,6 @@ POTHOS_MODULE_UTIL(
 set(SOURCES
     EvalEnvironment.cpp
     BlockEval.cpp
-    TopologyEngine.cpp
     DeviceInfoUtils.cpp
     DocUtils.cpp
     TestDocUtils.cpp

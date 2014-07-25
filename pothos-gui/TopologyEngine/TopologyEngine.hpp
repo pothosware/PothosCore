@@ -31,6 +31,11 @@ public:
      */
     Pothos::ProxyEnvironment::Sptr getEnvironmentFromZone(const QString &zone);
 
+    Pothos::Topology &getTopology(void)
+    {
+        return _topology;
+    }
+
 private:
     //! A host URI to a map of process names to server handles
     std::map<std::string, std::map<std::string, Pothos::Proxy>> _uriToProcessToServer;
