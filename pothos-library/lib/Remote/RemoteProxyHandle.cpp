@@ -45,7 +45,7 @@ Pothos::Proxy RemoteProxyHandle::call(const std::string &name, const Pothos::Pro
         }
         catch(const std::exception &ex)
         {
-            throw Pothos::ProxyHandleCallError("ManagedProxyHandle::call("+name+")",
+            throw Pothos::ProxyHandleCallError("RemoteProxyHandle::call("+name+")",
                 Poco::format("convert arg %d - %s", int(i), std::string(ex.what())));
         }
         req[std::to_string(i)] = Pothos::Object(handle->remoteID);

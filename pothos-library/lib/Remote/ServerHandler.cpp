@@ -5,6 +5,7 @@
 #include <Pothos/Object/Containers.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote/Server.hpp>
+#include <Pothos/System/HostInfo.hpp>
 #include <Poco/SingletonHolder.h>
 #include <mutex>
 #include <Poco/Bugcheck.h>
@@ -78,6 +79,10 @@ static void runHandlerOnce(std::istream &is, std::ostream &os, bool &done)
             const auto &name = reqArgs.at("name").extract<std::string>();
             auto env = Pothos::ProxyEnvironment::make(name, envArgs);
             replyArgs["envID"] = getNewObjectId(Pothos::Object(env));
+
+            //a unique process ID for this server
+            const auto info = Pothos::System::HostInfo::get();
+            replyArgs["upid"] = Pothos::Object(info.nodeName + "/" + info.nodeId + "/" + info.pid);
         }
         else if (action == "~RemoteProxyEnvironment")
         {

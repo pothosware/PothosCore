@@ -49,6 +49,7 @@ public:
     Pothos::ObjectKwargs transact(const Pothos::ObjectKwargs &request);
 
     size_t remoteID;
+    std::string upid;
 
     std::istream &is;
     std::ostream &os;

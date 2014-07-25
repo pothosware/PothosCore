@@ -46,6 +46,7 @@ RemoteProxyEnvironment::RemoteProxyEnvironment(
 
     //set the remote ID for this env
     remoteID = reply["envID"].convert<size_t>();
+    upid = reply["upid"].convert<std::string>();
 }
 
 RemoteProxyEnvironment::~RemoteProxyEnvironment(void)
@@ -73,12 +74,16 @@ Pothos::Proxy RemoteProxyEnvironment::makeHandle(const size_t remoteID)
 
 std::shared_ptr<RemoteProxyHandle> RemoteProxyEnvironment::getHandle(const Pothos::Proxy &proxy)
 {
-    Pothos::Proxy myProxy = proxy;
-    if (proxy.getEnvironment() != this->shared_from_this())
+    //check if the proxy environment is for the same server
+    auto remoteEnv = std::dynamic_pointer_cast<RemoteProxyEnvironment>(proxy.getEnvironment());
+    if (remoteEnv and this->upid == remoteEnv->upid)
     {
-        auto local = proxy.getEnvironment()->convertProxyToObject(proxy);
-        myProxy = this->convertObjectToProxy(local);
+        return std::dynamic_pointer_cast<RemoteProxyHandle>(proxy.getHandle());
     }
+
+    //otherwise perform the conversion
+    auto local = proxy.getEnvironment()->convertProxyToObject(proxy);
+    auto myProxy = this->convertObjectToProxy(local);
     return std::dynamic_pointer_cast<RemoteProxyHandle>(myProxy.getHandle());
 }
 
