@@ -4,6 +4,7 @@
 #include "GraphObjects/GraphBlockImpl.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
+#include "TopologyEngine/TopologyEngine.hpp"
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote.hpp>
 #include <Pothos/Framework.hpp>
@@ -50,7 +51,11 @@ void GraphBlock::update(void)
 {
     assert(_impl->blockDesc);
 
-    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto draw = dynamic_cast<GraphDraw *>(this->parent());
+    assert(draw != nullptr);
+    auto engine = draw->getGraphEditor()->getTopologyEngine();
+
+    auto env = engine->getEnvironmentFromZone(this->getAffinityZone());
     auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
     auto BlockEval = env->findProxy("Pothos/Util/BlockEval");
 

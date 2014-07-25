@@ -10,6 +10,7 @@
 #include <Pothos/Framework.hpp>
 #include <Poco/URI.h>
 #include <Poco/NumberParser.h>
+#include <iostream>
 #include <cassert>
 
 TopologyEngine::TopologyEngine(QObject *parent):
@@ -26,10 +27,7 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
         if (block == nullptr) continue;
-        
-        //NOPE! FIXME TODO
-        
-        //idToBlock[block->getId().toStdString()] = block->getBlockEval().callProxy("getProxyBlock");
+        idToBlock[block->getId().toStdString()] = block->getBlockEval().callProxy("getProxyBlock");
     }
 
     //make all of the connections
@@ -50,20 +48,17 @@ Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QStr
     auto dock = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]);
     assert(dock != nullptr);
     auto config = dock->zoneToConfig(zone);
-    auto hostUri = config->getValue<std::string>("hostUri");
-    auto processName = config->getValue<std::string>("processName");
+    auto hostUri = config?config->getValue<std::string>("hostUri"):"tcp://localhost";
+    auto processName = config?config->getValue<std::string>("processName"):"";
 
     //find if the environment already exists
-    if (_uriToProcessToServer.find(hostUri) == _uriToProcessToServer.end())
+    auto &processToServer = _uriToProcessToServer[hostUri];
+    if (processToServer.find(processName) == processToServer.end())
     {
-        auto processToServer = _uriToProcessToServer.at(hostUri);
-        if (processToServer.find(processName) == processToServer.end())
-        {
-            //talk to the server and spawn a new process with a new server
-            auto env = Pothos::RemoteClient(hostUri).makeEnvironment("managed");
-            auto serverHandle = env->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://0.0.0.0");
-            _uriToProcessToServer[hostUri][processName] = serverHandle;
-        }
+        //talk to the server and spawn a new process with a new server
+        auto env = Pothos::RemoteClient(hostUri).makeEnvironment("managed");
+        auto serverHandle = env->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://0.0.0.0");
+        processToServer[processName] = serverHandle;
     }
 
     //connect to the new server and make the communication environment

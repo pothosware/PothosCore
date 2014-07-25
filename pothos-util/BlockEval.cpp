@@ -95,4 +95,5 @@ static auto managedBlockEval = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(BlockEval, evalProperty))
     .registerMethod(POTHOS_FCN_TUPLE(BlockEval, eval))
     .registerMethod(POTHOS_FCN_TUPLE(BlockEval, inspect))
+    .registerMethod(POTHOS_FCN_TUPLE(BlockEval, getProxyBlock))
     .commit("Pothos/Util/BlockEval");

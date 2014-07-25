@@ -38,7 +38,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
     _parentTabWidget(dynamic_cast<QTabWidget *>(parent)),
     _moveGraphObjectsMapper(new QSignalMapper(this)),
-    _stateManager(new GraphStateManager(this))
+    _stateManager(new GraphStateManager(this)),
+    _topologyEngine(new TopologyEngine(this))
 {
     this->setMovable(true);
     this->setUsesScrollButtons(true);
@@ -716,17 +717,13 @@ void GraphEditor::handleStateChange(const GraphState &state)
 void GraphEditor::handleToggleActivateTopology(const bool enable)
 {
     if (not this->isVisible()) return;
-    if (enable)
-    {
-        _topologyEngine = new TopologyEngine(this);
-        this->updateExecutionEngine();
-    }
-    else delete _topologyEngine;
+    if (enable) this->updateExecutionEngine();
+    else _topologyEngine->clear();
 }
 
 void GraphEditor::updateExecutionEngine(void)
 {
-    if (not _topologyEngine) return;
+    if (not getActionMap()["activateTopology"]->isChecked()) return;
     try
     {
         _topologyEngine->commitUpdate(this->getGraphObjects());

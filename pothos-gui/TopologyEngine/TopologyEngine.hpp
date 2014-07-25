@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iostream>
 
 struct ConnectionInfo
 {
@@ -34,6 +35,12 @@ public:
     Pothos::Topology &getTopology(void)
     {
         return _topology;
+    }
+
+    void clear(void)
+    {
+        _topology.disconnectAll();
+        _topology.commit();
     }
 
 private:
