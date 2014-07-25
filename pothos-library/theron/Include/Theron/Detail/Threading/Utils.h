@@ -315,7 +315,7 @@ inline bool Utils::GetNodeCount(uint32_t &nodeCount)
 inline bool Utils::SetThreadAffinity(const uint32_t nodeMask, const uint32_t processorMask)
 {
     // We check this mainly so the arguments are always used.
-    if (nodeMask == 0 || processorMask == 0)
+    if (/*nodeMask == 0 || */processorMask == 0)
     {
         return false;
     }
@@ -395,6 +395,9 @@ inline bool Utils::SetThreadAffinity(const uint32_t nodeMask, const uint32_t pro
         }
     }
 
+    //use the processor mask when NUMA nodes are not specified
+    if (nodeMask == 0) accumulatedMask = processorMask;
+
     if (SetThreadAffinityMask(GetCurrentThread(), static_cast<DWORD_PTR>(accumulatedMask)))
     {
         return true;
@@ -435,6 +438,15 @@ inline bool Utils::SetThreadAffinity(const uint32_t nodeMask, const uint32_t pro
             {
                 numa_bitmask_setbit(accumulatedMask, cpu);
             }
+        }
+    }
+
+    //use the processor mask when NUMA nodes are not specified
+    if (nodeMask == 0) for (size_t cpu = 0; cpu < 32; cpu++)
+    {
+        if ((processorMask & (1 << cpu)) != 0)
+        {
+            numa_bitmask_setbit(accumulatedMask, cpu);
         }
     }
 

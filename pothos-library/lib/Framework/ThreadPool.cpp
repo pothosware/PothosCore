@@ -42,7 +42,7 @@ static uint32_t toMask(const Pothos::ThreadPoolArgs &args)
 Pothos::ThreadPool::ThreadPool(const ThreadPoolArgs &args)
 {
     //create params for the number of threads
-    Theron::Framework::Parameters params(args.numThreads, ~0);
+    Theron::Framework::Parameters params(args.numThreads, 0);
     if (args.numThreads == 0) params.mThreadCount = Poco::Environment::processorCount()+1;
 
     //setup affinity masks
@@ -51,6 +51,9 @@ Pothos::ThreadPool::ThreadPool(const ThreadPoolArgs &args)
     else if (args.affinityMode == "CPU") params.mProcessorMask = toMask(args);
     else if (args.affinityMode == "NUMA") params.mNodeMask = toMask(args);
     else throw ThreadPoolError("Pothos::ThreadPool()", "unknown affinityMode " + args.affinityMode);
+
+    //when setting via numa nodes, use the full mask
+    if (args.affinityMode == "NUMA") params.mProcessorMask = ~0;
 
     //setup yield strategy
     if (args.yieldMode.empty()) params.mYieldStrategy = Theron::YIELD_STRATEGY_CONDITION;
