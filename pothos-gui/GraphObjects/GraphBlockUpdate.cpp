@@ -62,7 +62,7 @@ void GraphBlock::update(void)
     //validate the id
     if (this->getId().isEmpty())
     {
-        this->setBlockErrorMsg(tr("Error: empty  ID"));
+        this->setBlockErrorMsg(tr("Error: empty ID"));
     }
 
     //evaluate the properties

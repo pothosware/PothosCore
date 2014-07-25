@@ -3,6 +3,7 @@
 
 #include "PothosGuiUtils.hpp" //make icon theme
 #include "AffinitySupport/AffinityPanel.hpp"
+#include "AffinitySupport/AffinityZoneEditor.hpp"
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -69,6 +70,18 @@ QColor AffinityPanel::zoneToColor(const QString &zone)
         }
     }
     return QColor();
+}
+
+Poco::JSON::Object::Ptr AffinityPanel::zoneToConfig(const QString &zone)
+{
+    for (int i = 0; i < _editorsTabs->count(); i++)
+    {
+        if (zone == _editorsTabs->tabText(i))
+        {
+            return dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i))->getCurrentConfig();
+        }
+    }
+    return Poco::JSON::Object::Ptr();
 }
 
 void AffinityPanel::handleTabCloseRequested(const int index)

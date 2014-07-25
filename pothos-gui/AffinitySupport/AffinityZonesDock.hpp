@@ -3,6 +3,8 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Array.h>
 #include <QDockWidget>
 #include <QString>
 #include <QColor>
@@ -29,6 +31,9 @@ public:
 
     //! Get the color for a particular zone
     QColor zoneToColor(const QString &zone);
+
+    //! Get the config for a particular zone
+    Poco::JSON::Object::Ptr zoneToConfig(const QString &zone);
 
 signals:
 

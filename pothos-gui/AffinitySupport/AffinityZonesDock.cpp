@@ -39,6 +39,11 @@ QColor AffinityZonesDock::zoneToColor(const QString &zone)
     return _panel->zoneToColor(zone);
 }
 
+Poco::JSON::Object::Ptr AffinityZonesDock::zoneToConfig(const QString &zone)
+{
+    return _panel->zoneToConfig(zone);
+}
+
 void AffinityZonesDock::handleZonesChanged(void)
 {
     emit this->zonesChanged();

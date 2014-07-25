@@ -123,6 +123,9 @@ set(SOURCES
     GraphObjects/GraphBlockUpdate.cpp
     GraphObjects/GraphBreaker.cpp
     GraphObjects/GraphConnection.cpp
+
+    TopologyEngine/TopologyEngine.cpp
+    TopologyEngine/TopologyTraversal.cpp
 )
 add_executable(PothosGui ${SOURCES})
 target_link_libraries(PothosGui Pothos ${POTHOS_LIBRARIES})

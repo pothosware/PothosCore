@@ -4,13 +4,15 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QWidget>
-#include "AffinitySupport/AffinityZoneEditor.hpp"
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Array.h>
 #include <QStringList>
 #include <QColor>
 
 class QLineEdit;
 class QPushButton;
 class QTabWidget;
+class AffinityZoneEditor;
 
 class AffinityPanel : public QWidget
 {
@@ -23,6 +25,9 @@ public:
 
     //! Get the color for a particular zone
     QColor zoneToColor(const QString &zone);
+
+    //! Get the config for a particular zone
+    Poco::JSON::Object::Ptr zoneToConfig(const QString &zone);
 
 signals:
 
