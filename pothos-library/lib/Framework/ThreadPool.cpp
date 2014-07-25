@@ -9,18 +9,14 @@
 
 Pothos::ThreadPoolArgs::ThreadPoolArgs(void):
     numThreads(0),
-    priority(0.0),
-    affinityMode("ALL"),
-    yieldMode("CONDITION")
+    priority(0.0)
 {
     return;
 }
 
 Pothos::ThreadPoolArgs::ThreadPoolArgs(const size_t numThreads):
     numThreads(numThreads),
-    priority(0.0),
-    affinityMode("ALL"),
-    yieldMode("CONDITION")
+    priority(0.0)
 {
     return;
 }
@@ -46,17 +42,22 @@ static uint32_t toMask(const Pothos::ThreadPoolArgs &args)
 Pothos::ThreadPool::ThreadPool(const ThreadPoolArgs &args)
 {
     //create params for the number of threads
-    Theron::Framework::Parameters params(args.numThreads);
+    Theron::Framework::Parameters params(args.numThreads, 0);
     if (args.numThreads == 0) params.mThreadCount = Poco::Environment::processorCount()+1;
 
     //setup affinity masks
-    if (args.affinityMode == "ALL"){/* no changes to default masks */}
-    else if (args.affinityMode == "CPU") params.mProcessorMask = toMask(params.mProcessorMask);
-    else if (args.affinityMode == "NUMA") params.mNodeMask = toMask(params.mProcessorMask);
+    if (args.affinityMode.empty()){/* no changes to default masks */}
+    else if (args.affinityMode == "ALL"){/* no changes to default masks */}
+    else if (args.affinityMode == "CPU") params.mProcessorMask = toMask(args);
+    else if (args.affinityMode == "NUMA") params.mNodeMask = toMask(args);
     else throw ThreadPoolError("Pothos::ThreadPool()", "unknown affinityMode " + args.affinityMode);
 
+    //when setting via numa nodes, use the full mask
+    if (args.affinityMode == "NUMA") params.mProcessorMask = ~0;
+
     //setup yield strategy
-    if (args.yieldMode == "CONDITION") params.mYieldStrategy = Theron::YIELD_STRATEGY_CONDITION;
+    if (args.yieldMode.empty()) params.mYieldStrategy = Theron::YIELD_STRATEGY_CONDITION;
+    else if (args.yieldMode == "CONDITION") params.mYieldStrategy = Theron::YIELD_STRATEGY_CONDITION;
     else if (args.yieldMode == "HYBRID") params.mYieldStrategy = Theron::YIELD_STRATEGY_HYBRID;
     else if (args.yieldMode == "SPIN") params.mYieldStrategy = Theron::YIELD_STRATEGY_SPIN;
     else throw ThreadPoolError("Pothos::ThreadPool()", "unknown yieldMode " + args.yieldMode);
@@ -103,3 +104,19 @@ static auto managedThreadPool = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::ThreadPool, getContainer))
     .registerStaticMethod<const Pothos::ThreadPool &, const Pothos::ThreadPool &>("equal", Pothos::operator==)
     .commit("Pothos/ThreadPool");
+
+#include <Pothos/Object/Serialize.hpp>
+
+namespace Pothos { namespace serialization {
+template <class Archive>
+void serialize(Archive &ar, Pothos::ThreadPoolArgs &t, const unsigned int)
+{
+    ar & t.numThreads;
+    ar & t.priority;
+    ar & t.affinityMode;
+    ar & t.affinity;
+    ar & t.yieldMode;
+}
+}}
+
+POTHOS_OBJECT_SERIALIZE(Pothos::ThreadPoolArgs)

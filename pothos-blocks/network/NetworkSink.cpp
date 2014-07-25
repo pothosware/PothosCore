@@ -33,25 +33,22 @@
  * |option [Bind] "BIND"
  * |default "DISCONNECT"
  *
- * |param dtype[Data Type] The datatype consumed by the network sink.
- * |default "int"
- *
- * |factory /blocks/network_sink(uri, opt, dtype)
+ * |factory /blocks/network_sink(uri, opt)
  **********************************************************************/
 class NetworkSink : public Pothos::Block
 {
 public:
-    static Block *make(const std::string &uri, const std::string &opt, const Pothos::DType &dtype)
+    static Block *make(const std::string &uri, const std::string &opt)
     {
-        return new NetworkSink(uri, opt, dtype);
+        return new NetworkSink(uri, opt);
     }
 
-    NetworkSink(const std::string &uri, const std::string &opt, const Pothos::DType &dtype):
+    NetworkSink(const std::string &uri, const std::string &opt):
         _ep(PothosPacketSocketEndpoint(uri, opt)),
         running(false)
     {
         //std::cout << "NetworkSink " << opt << " " << uri << std::endl;
-        this->setupInput(0, dtype);
+        this->setupInput(0);
         this->registerCall(POTHOS_FCN_TUPLE(NetworkSink, getActualPort));
     }
 

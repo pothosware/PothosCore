@@ -4,6 +4,7 @@
 #include <Pothos/Testing.hpp>
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
+#include <Poco/JSON/Object.h>
 #include <iostream>
 
 POTHOS_TEST_BLOCK("/blocks/tests", test_unit_test_blocks)
@@ -69,4 +70,33 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_unit_test_blocks)
     POTHOS_TEST_TRUE(lbls[1].data.type() == typeid(std::string));
     POTHOS_TEST_EQUAL(lbls[0].data.extract<std::string>(), "lbl0");
     POTHOS_TEST_EQUAL(lbls[1].data.extract<std::string>(), "lbl1");
+}
+
+POTHOS_TEST_BLOCK("/blocks/tests", test_random_unit_test)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto registry = env->findProxy("Pothos/BlockRegistry");
+    auto feeder = registry.callProxy("/blocks/feeder_source", "int");
+    auto collector = registry.callProxy("/blocks/collector_sink", "int");
+
+    //create a test plan
+    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+    testPlan->set("enableBuffers", true);
+    testPlan->set("enableLabels", true);
+    testPlan->set("enableMessages", true);
+    auto expected = feeder.callProxy("feedTestPlan", testPlan);
+
+    //std::stringstream ss;
+    //expected.convert<Poco::JSON::Object::Ptr>()->stringify(ss, 4);
+    //std::cout << ss.str() << std::endl;
+
+    //run the topology
+    {
+        Pothos::Topology topology;
+        topology.connect(feeder, 0, collector, 0);
+        topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+    }
+
+    collector.callVoid("verifyTestPlan", expected);
 }

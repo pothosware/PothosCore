@@ -1,12 +1,7 @@
 //
 // Framework/BufferAccumulator.hpp
 //
-// A BufferAccumulator enqueus input buffers and presents
-// contiguous buffer chunks to the caller when applicable.
-// The BufferAccumulator may do several things:
-// 1) Forward the same input buffers to the caller.
-// 2) Amalgamate contiguous buffers into one.
-// 3) Memcpy when the caller requires contiguity.
+// BufferAccumulator provides an input pool of buffers.
 //
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
@@ -24,6 +19,13 @@ namespace Pothos {
 /*!
  * The BufferAccumulator is a queue like interface
  * for holding and interacting with buffer chunks.
+ *
+ * A BufferAccumulator enqueus input buffers and presents
+ * contiguous buffer chunks to the caller when applicable.
+ * The BufferAccumulator may do several things:
+ *  - Forward the same input buffers to the caller.
+ *  - Amalgamate contiguous buffers into one.
+ *  - Memcpy when the caller requires contiguity.
  */
 class POTHOS_API BufferAccumulator
 {
