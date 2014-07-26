@@ -71,7 +71,9 @@ Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QStr
     auto actualPort = serverHandle.call<std::string>("getActualPort");
     Poco::URI newHostUri(hostUri);
     newHostUri.setPort(Poco::NumberParser::parseUnsigned(actualPort));
-    return Pothos::RemoteClient(newHostUri.toString()).makeEnvironment("managed");
+    auto client = Pothos::RemoteClient(newHostUri.toString());
+    client.holdRef(Pothos::Object(serverHandle));
+    return client.makeEnvironment("managed");
 }
 
 Pothos::Proxy TopologyEngine::getThreadPoolFromZone(const QString &zone)
