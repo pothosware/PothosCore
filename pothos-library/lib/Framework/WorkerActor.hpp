@@ -78,6 +78,12 @@ PortMessage<PortIdType, MessageType> makePortMessage(const PortIdType &id, const
     return message;
 }
 
+struct LabeledBuffersMessage
+{
+    std::vector<Pothos::Label> labels;
+    std::vector<Pothos::BufferChunk> buffers;
+};
+
 struct BufferReturnMessage
 {
     Pothos::ManagedBuffer buff;
@@ -140,7 +146,7 @@ public:
         activeState(false)
     {
         this->RegisterHandler(this, &WorkerActor::handleAsyncPortMessage);
-        this->RegisterHandler(this, &WorkerActor::handleInlinePortMessage);
+        this->RegisterHandler(this, &WorkerActor::handleLabelsPortMessage);
         this->RegisterHandler(this, &WorkerActor::handleBufferPortMessage);
         this->RegisterHandler(this, &WorkerActor::handleBufferReturnMessage);
         this->RegisterHandler(this, &WorkerActor::handleSubscriberPortMessage);
@@ -164,7 +170,7 @@ public:
 
     ///////////////////// message handlers ///////////////////////
     void handleAsyncPortMessage(const PortMessage<InputPort *, Object> &message, const Theron::Address from);
-    void handleInlinePortMessage(const PortMessage<InputPort *, Label> &message, const Theron::Address from);
+    void handleLabelsPortMessage(const PortMessage<InputPort *, LabeledBuffersMessage> &message, const Theron::Address from);
     void handleBufferPortMessage(const PortMessage<InputPort *, BufferChunk> &message, const Theron::Address from);
     void handleBufferReturnMessage(const BufferReturnMessage &message, const Theron::Address from);
     void handleSubscriberPortMessage(const PortMessage<std::string, PortSubscriberMessage> &message, const Theron::Address from);
