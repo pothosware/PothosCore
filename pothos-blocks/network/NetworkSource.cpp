@@ -45,7 +45,7 @@ public:
 
     NetworkSource(const std::string &uri, const std::string &opt):
         _ep(PothosPacketSocketEndpoint(uri, opt)),
-        _lastBufferRecvIndex(0)
+        _nextExpectedIndex(0)
     {
         //std::cout << "NetworkSource " << opt << " " << uri << std::endl;
         this->setupOutput(0);
@@ -71,7 +71,7 @@ public:
 
 private:
     PothosPacketSocketEndpoint _ep;
-    unsigned long long _lastBufferRecvIndex;
+    unsigned long long _nextExpectedIndex;
 };
 
 void NetworkSource::work(void)
@@ -89,7 +89,7 @@ void NetworkSource::work(void)
     //handle the output
     if (type == PothosPacketTypeBuffer)
     {
-        _lastBufferRecvIndex = index;
+        _nextExpectedIndex = index + buffer.length;
         outputPort->popBuffer(buffer.length);
         outputPort->postBuffer(buffer);
     }
@@ -104,7 +104,7 @@ void NetworkSource::work(void)
     {
         std::istringstream iss(std::string(buffer.as<char *>(), buffer.length));
         Pothos::Label label;
-        label.index = index + outputPort->totalElements() - _lastBufferRecvIndex;
+        label.index = index + outputPort->totalElements() - _nextExpectedIndex;
         label.data.deserialize(iss);
         outputPort->postLabel(label);
     }
