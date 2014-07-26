@@ -45,6 +45,7 @@ public:
 
     NetworkSink(const std::string &uri, const std::string &opt):
         _ep(PothosPacketSocketEndpoint(uri, opt)),
+        _lastBufferSentIndex(0),
         running(false)
     {
         //std::cout << "NetworkSink " << opt << " " << uri << std::endl;
@@ -93,6 +94,7 @@ public:
 
 private:
     PothosPacketSocketEndpoint _ep;
+    unsigned long long _lastBufferSentIndex;
     std::thread handlerThread;
     bool running;
 };
@@ -103,7 +105,7 @@ void NetworkSink::work(void)
 
     const auto timeout = Poco::Timespan(this->workInfo().maxTimeoutNs/1000);
 
-    auto inputPort = this->inputs()[0];
+    auto inputPort = this->input(0);
 
     //serialize messages
     while (inputPort->hasMessage())
@@ -119,7 +121,8 @@ void NetworkSink::work(void)
         const auto &label = *inputPort->labels().begin();
         std::ostringstream oss;
         label.data.serialize(oss);
-        _ep.send(PothosPacketTypeLabel, label.index, oss.str().data(), oss.str().length());
+        auto index = label.index + _lastBufferSentIndex - inputPort->totalElements();
+        _ep.send(PothosPacketTypeLabel, index, oss.str().data(), oss.str().length());
         inputPort->removeLabel(label);
     }
 
@@ -127,6 +130,7 @@ void NetworkSink::work(void)
     const auto &buffer = inputPort->buffer();
     if (buffer.length != 0)
     {
+        _lastBufferSentIndex = inputPort->totalElements();
         _ep.send(PothosPacketTypeBuffer, inputPort->totalElements(), buffer.as<const void *>(), buffer.length);
         inputPort->consume(inputPort->elements());
     }
