@@ -68,6 +68,14 @@ public:
     static ProxyEnvironment::Sptr makeEnvironment(std::iostream &io,
         const std::string &name, const ProxyEnvironmentArgs &args = ProxyEnvironmentArgs());
 
+    /*!
+     * Lookup an IP address given the node identifier of the remote host.
+     * \see Pothos::ProxyEnvironment::getNodeId()
+     * \param nodeId the unique ID of a host on the network
+     * \return the IP address as a string or empty if lookup fails
+     */
+    static std::string lookupIpFromNodeId(const std::string nodeId);
+
 private:
     struct Impl;
     std::shared_ptr<Impl> _impl;

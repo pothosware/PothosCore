@@ -2,18 +2,55 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Remote.hpp>
-#include <Pothos/Remote/Exception.hpp>
 #include <Poco/Net/StreamSocket.h>
 #include <Poco/Net/SocketStream.h>
+#include <Poco/Net/DNS.h>
 #include <Poco/URI.h>
+#include <Poco/NumberParser.h>
+#include <Poco/SingletonHolder.h>
+#include <Poco/RWLock.h>
+#include <map>
 #include <cassert>
 
+/***********************************************************************
+ * lookupIpFromNodeId implementation
+ **********************************************************************/
+static Poco::RWLock &getLookupMutex(void)
+{
+    static Poco::SingletonHolder<Poco::RWLock> sh;
+    return *sh.get();
+}
+
+static std::map<std::string, Poco::Net::IPAddress> &getNodeIdTable(void)
+{
+    static Poco::SingletonHolder<std::map<std::string, Poco::Net::IPAddress>> sh;
+    return *sh.get();
+}
+
+std::string Pothos::RemoteClient::lookupIpFromNodeId(const std::string nodeId)
+{
+    Poco::RWLock::ScopedReadLock lock(getLookupMutex());
+    auto it = getNodeIdTable().find(nodeId);
+    if (it == getNodeIdTable().end()) return "";
+    return it->second.toString();
+}
+
+static void updateNodeIdTable(const Pothos::ProxyEnvironment::Sptr &env, const Poco::Net::IPAddress &ipAddr)
+{
+    Poco::RWLock::ScopedWriteLock lock(getLookupMutex());
+    getNodeIdTable()[env->getNodeId()] = ipAddr;
+}
+
+/***********************************************************************
+ * RemoteClient implementation
+ **********************************************************************/
 struct Pothos::RemoteClient::Impl
 {
     Impl(const std::string &uriStr, const long timeoutUs):
         socketStream(clientSocket),
         uriStr(uriStr)
     {
+        //validate the URI
         POTHOS_EXCEPTION_TRY
         {
             Poco::URI uri(uriStr);
@@ -24,24 +61,36 @@ struct Pothos::RemoteClient::Impl
             throw RemoteClientError("Pothos::RemoteClient("+uriStr+")", ex);
         }
 
+        //perform the dns lookup
+        Poco::URI uri(uriStr);
         try
         {
-            Poco::URI uri(uriStr);
-            const std::string host = uri.getHost();
-            std::string port = std::to_string(uri.getPort());
-            if (port == "0") port = RemoteServer::getLocatorPort();
-            Poco::Net::SocketAddress sa(host, port);
-            clientSocket.connect(sa, Poco::Timespan(0, timeoutUs));
+            ipAddr = Poco::Net::DNS::resolveOne(uri.getHost());
         }
         catch (const Poco::Exception &ex)
         {
             throw RemoteClientError("Pothos::RemoteClient("+uriStr+")", ex.displayText());
         }
 
+        //extract port, for unspecified port -- use the default locator port
+        auto port = uri.getPort();
+        if (port == 0) port = Poco::NumberParser::parseUnsigned(RemoteServer::getLocatorPort());
+
+        //try to connect to the server
+        try
+        {
+            Poco::Net::SocketAddress sa(ipAddr, port);
+            clientSocket.connect(sa, Poco::Timespan(0, timeoutUs));
+        }
+        catch (const Poco::Exception &ex)
+        {
+            throw RemoteClientError("Pothos::RemoteClient("+uriStr+")", ex.displayText());
+        }
     }
     Poco::Net::StreamSocket clientSocket;
     Poco::Net::SocketStream socketStream;
     const std::string uriStr;
+    Poco::Net::IPAddress ipAddr;
 };
 
 Pothos::RemoteClient::RemoteClient(void)
@@ -77,6 +126,7 @@ Pothos::ProxyEnvironment::Sptr Pothos::RemoteClient::makeEnvironment(const std::
     assert(_impl);
     auto env = RemoteClient::makeEnvironment(this->getIoStream(), name, args);
     env->holdRef(Object(*this));
+    updateNodeIdTable(env, _impl->ipAddr); //update the node id table with this remote host
     return env;
 }
 
