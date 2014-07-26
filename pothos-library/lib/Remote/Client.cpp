@@ -11,7 +11,8 @@
 struct Pothos::RemoteClient::Impl
 {
     Impl(const std::string &uriStr, const long timeoutUs):
-        socketStream(clientSocket)
+        socketStream(clientSocket),
+        uriStr(uriStr)
     {
         POTHOS_EXCEPTION_TRY
         {
@@ -40,6 +41,7 @@ struct Pothos::RemoteClient::Impl
     }
     Poco::Net::StreamSocket clientSocket;
     Poco::Net::SocketStream socketStream;
+    const std::string uriStr;
 };
 
 Pothos::RemoteClient::RemoteClient(void)
@@ -53,6 +55,12 @@ Pothos::RemoteClient::RemoteClient(const std::string &uri, const long timeoutUs)
     return;
 }
 
+const std::string &Pothos::RemoteClient::getUri(void) const
+{
+    assert(_impl);
+    return _impl->uriStr;
+}
+
 Pothos::RemoteClient::operator bool(void) const
 {
     return bool(_impl);
@@ -60,11 +68,13 @@ Pothos::RemoteClient::operator bool(void) const
 
 std::iostream &Pothos::RemoteClient::getIoStream(void) const
 {
+    assert(_impl);
     return _impl->socketStream;
 }
 
 Pothos::ProxyEnvironment::Sptr Pothos::RemoteClient::makeEnvironment(const std::string &name, const ProxyEnvironmentArgs &args)
 {
+    assert(_impl);
     auto env = RemoteClient::makeEnvironment(this->getIoStream(), name, args);
     env->holdRef(Object(*this));
     return env;

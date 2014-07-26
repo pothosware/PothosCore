@@ -37,6 +37,9 @@ public:
      */
     RemoteClient(const std::string &uri, const long timeoutUs = 100000);
 
+    //! Get the connection's URI
+    const std::string &getUri(void) const;
+
     //! Is this remote client connected?
     pothos_explicit operator bool(void) const;
 
