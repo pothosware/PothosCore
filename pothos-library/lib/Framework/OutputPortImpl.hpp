@@ -17,6 +17,7 @@ public:
         readBeforeWritePort(nullptr),
         _bufferFromManager(false){}
     BufferManager::Sptr bufferManager;
+    std::vector<Label> postedLabels;
     Util::RingDeque<BufferChunk> postedBuffers;
     std::vector<PortSubscriber> subscribers;
     WorkerActor *actor;

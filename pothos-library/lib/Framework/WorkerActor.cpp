@@ -147,32 +147,49 @@ void Pothos::WorkerActor::postWorkTasks(void)
     for (auto &entry : this->outputs)
     {
         auto &port = *entry.second;
-        const size_t bytes = port._pendingElements*port.dtype().size();
-        bytesProduced += bytes;
         msgsProduced += port._totalMessages;
+        size_t bytesDequeued = 0;
 
         //set the buffer length, send it, pop from manager, clear reference
-        if (bytes != 0)
+        const size_t pendingBytes = port._pendingElements*port.dtype().size();
+        if (pendingBytes != 0)
         {
             auto &buffer = port._buffer;
-            buffer.length = bytes;
+            buffer.length = pendingBytes;
             if (port._impl->_bufferFromManager) port._impl->bufferManager->pop(buffer.length);
-            this->sendOutputPortMessage(port._impl->subscribers, buffer);
+            port.postBuffer(buffer);
             port._buffer = BufferChunk(); //clear reference
+        }
+
+        //send the outgoing labels with buffers
+        auto &postedLabels = port._impl->postedLabels;
+        if (not postedLabels.empty())
+        {
+            std::sort(postedLabels.begin(), postedLabels.end());
+            LabeledBuffersMessage message;
+            std::swap(message.labels, postedLabels);
+            while (not port._impl->postedBuffers.empty())
+            {
+                auto &buffer = port._impl->postedBuffers.front();
+                bytesDequeued += buffer.length;
+                message.buffers.push_back(buffer);
+                port._impl->postedBuffers.pop_front();
+            }
+            this->sendOutputPortMessage(port._impl->subscribers, message);
         }
 
         //send the external buffers in the queue
         while (not port._impl->postedBuffers.empty())
         {
             auto &buffer = port._impl->postedBuffers.front();
-            bytesProduced += buffer.length;
-            port._totalElements += buffer.length/port.dtype().size();
+            bytesDequeued += buffer.length;
             this->sendOutputPortMessage(port._impl->subscribers, buffer);
             port._impl->postedBuffers.pop_front();
         }
 
-        //move produced elements into total
-        port._totalElements += port._pendingElements;
+        //add produced bytes into total
+        port._totalElements += bytesDequeued/port.dtype().size();
+        bytesProduced += bytesDequeued;
     }
 
     //update production stats, bytes are incremental, messages cumulative

@@ -45,7 +45,7 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
     testPlan->set("minTrials", 100);
     testPlan->set("maxTrials", 200);
     testPlan->set("minSize", 512);
-    testPlan->set("maxSize", 2048); //TODO FIXME see #7
+    testPlan->set("maxSize", 1048); //TODO FIXME see #7
     auto expected = feeder.callProxy("feedTestPlan", testPlan);
 
     //create tester topology

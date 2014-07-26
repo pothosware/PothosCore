@@ -37,6 +37,9 @@ public:
      */
     RemoteServer(const std::string &uri);
 
+    //! Get the server's bind URI
+    const std::string &getUri(void) const;
+
     //! Is this remove server active?
     pothos_explicit operator bool(void) const;
 

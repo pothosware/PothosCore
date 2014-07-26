@@ -32,6 +32,7 @@ struct Pothos::RemoteServer::Impl
     Poco::ProcessHandle ph;
     std::string actualPort;
     RemoteClient client;
+    std::string uriStr;
 };
 
 Pothos::RemoteServer::RemoteServer(void)
@@ -65,6 +66,7 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr)
         System::getPothosUtilExecutablePath(),
         args, nullptr, &outPipe, &errPipe, env));
     _impl.reset(new Impl(ph));
+    _impl->uriStr = uriStr;
 
     //read port and close pipe
     Poco::PipeInputStream is(outPipe);
@@ -107,6 +109,12 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr)
     }
 }
 
+const std::string &Pothos::RemoteServer::getUri(void) const
+{
+    assert(_impl);
+    return _impl->uriStr;
+}
+
 Pothos::RemoteServer::operator bool(void) const
 {
     return bool(_impl);
@@ -114,6 +122,7 @@ Pothos::RemoteServer::operator bool(void) const
 
 std::string Pothos::RemoteServer::getActualPort(void) const
 {
+    assert(_impl);
     return _impl->actualPort;
 }
 

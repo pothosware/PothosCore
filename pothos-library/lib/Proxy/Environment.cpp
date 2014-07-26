@@ -5,6 +5,7 @@
 #include <Pothos/Proxy/Environment.hpp>
 #include <Pothos/Callable.hpp>
 #include <Pothos/Plugin.hpp>
+#include <Pothos/System/HostInfo.hpp>
 
 Pothos::ProxyEnvironment::Sptr Pothos::ProxyEnvironment::make(const std::string &name, const ProxyEnvironmentArgs &args)
 {
@@ -25,4 +26,9 @@ Pothos::ProxyEnvironment::Sptr Pothos::ProxyEnvironment::make(const std::string 
 Pothos::ProxyEnvironment::~ProxyEnvironment(void)
 {
     return;
+}
+
+std::string Pothos::ProxyEnvironment::getNodeId(void) const
+{
+    return System::HostInfo::get().nodeId;
 }

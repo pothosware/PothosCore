@@ -58,6 +58,12 @@ public:
     virtual ~ProxyEnvironment(void);
 
     /*!
+     * Get the unique ID of the node that this environment is running on.
+     * Remote environments will report the node id of the remote server.
+     */
+    virtual std::string getNodeId(void) const;
+
+    /*!
      * Get the name of the environment.
      * This should be the same name passed into the factory.
      */

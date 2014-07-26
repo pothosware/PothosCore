@@ -32,7 +32,8 @@
 class Deserializer : public Pothos::Block
 {
 public:
-    Deserializer(void)
+    Deserializer(void):
+        _nextExpectedIndex(0)
     {
         this->setupInput(0);
         this->setupOutput(0);
@@ -48,6 +49,7 @@ public:
 
 private:
     Pothos::BufferChunk _accumulator;
+    unsigned long long _nextExpectedIndex;
 };
 
 static Pothos::BlockRegistry registerDeserializer(
@@ -191,7 +193,8 @@ void Deserializer::handlePacket(const Pothos::BufferChunk &packetBuff)
     //handle buffs
     if (not is_ext)
     {
-        //TODO use tsf to handle lost buffers
+        assert(has_tsf);
+        _nextExpectedIndex = tsf + payloadBuff.length;
         outputPort->postBuffer(payloadBuff);
     }
 
@@ -205,7 +208,7 @@ void Deserializer::handlePacket(const Pothos::BufferChunk &packetBuff)
         if (has_tsf)
         {
             Pothos::Label lbl;
-            lbl.index = tsf; //TODO FIXME tsf is bad when we loose buffers or start w/ an offset
+            lbl.index = tsf + outputPort->totalElements() - _nextExpectedIndex;
             lbl.data = obj;
             outputPort->postLabel(lbl);
         }

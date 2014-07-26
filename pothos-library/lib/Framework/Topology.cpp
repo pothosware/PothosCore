@@ -6,6 +6,7 @@
 #include "Framework/WorkerStats.hpp"
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/Exception.hpp>
+#include <Pothos/Remote.hpp>
 #include <Pothos/Object.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Pothos/System/HostInfo.hpp>
@@ -241,10 +242,15 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<F
             auto srcEnvReg = flow.src.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
             auto dstEnvReg = flow.dst.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
 
-            auto netSink = srcEnvReg.callProxy("/blocks/network_sink", "udt://"+Poco::Environment::nodeName(), "BIND");
+            //determine the remote hosts ip addr to bind and connect with
+            auto bindEnv = flow.src.obj.getEnvironment();
+            auto bindIp = Pothos::RemoteClient::lookupIpFromNodeId(bindEnv->getNodeId());
+            assert(not bindIp.empty());
+
+            auto netSink = srcEnvReg.callProxy("/blocks/network_sink", "udt://"+bindIp, "BIND");
             netSink.callVoid("setName", "NetOut");
             auto connectPort = netSink.call<std::string>("getActualPort");
-            auto connectUri = Poco::format("udt://%s:%s", Poco::Environment::nodeName(), connectPort);
+            auto connectUri = Poco::format("udt://%s:%s", bindIp, connectPort);
             auto netSource = dstEnvReg.callProxy("/blocks/network_source", connectUri, "CONNECT");
             netSource.callVoid("setName", "NetIn");
 
