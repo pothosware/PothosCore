@@ -55,7 +55,16 @@ void GraphBlock::update(void)
     assert(draw != nullptr);
     auto engine = draw->getGraphEditor()->getTopologyEngine();
 
-    auto env = engine->getEnvironmentFromZone(this->getAffinityZone());
+    Pothos::ProxyEnvironment::Sptr env;
+    POTHOS_EXCEPTION_TRY
+    {
+        env = engine->getEnvironmentFromZone(this->getAffinityZone());
+    }
+    POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
+    {
+        this->setBlockErrorMsg(QString::fromStdString(ex.displayText()));
+        return;
+    }
     auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
     auto BlockEval = env->findProxy("Pothos/Util/BlockEval");
 
