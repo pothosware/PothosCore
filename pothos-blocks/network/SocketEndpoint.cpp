@@ -134,7 +134,7 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
             this->serverSock = makeSocket();
             if (UDT::ERROR == UDT::bind(this->serverSock, addr.addr(), addr.length()))
             {
-                throw Pothos::RuntimeException("UDT::bind()", UDT::getlasterror().getErrorMessage());
+                throw Pothos::RuntimeException("UDT::bind("+addr.toString()+")", UDT::getlasterror().getErrorMessage());
             }
             UDT::listen(this->serverSock, 1/*only one client expected*/);
         }
@@ -143,7 +143,7 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
             this->clientSock = makeSocket();
             if (UDT::ERROR == UDT::connect(this->clientSock, addr.addr(), addr.length()))
             {
-                throw Pothos::RuntimeException("UDT::connect()", UDT::getlasterror().getErrorMessage());
+                throw Pothos::RuntimeException("UDT::connect("+addr.toString()+")", UDT::getlasterror().getErrorMessage());
             }
             this->connected = true;
         }
