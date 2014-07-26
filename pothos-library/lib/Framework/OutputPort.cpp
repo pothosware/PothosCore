@@ -31,7 +31,11 @@ void Pothos::OutputPort::postLabel(const Label &label)
 {
     assert(_impl);
     assert(_impl->actor != nullptr);
-    _impl->actor->sendOutputPortMessage(_impl->subscribers, label);
+    auto byteOffsetLabel = label;
+    assert(byteOffsetLabel.index >= this->totalElements());
+    byteOffsetLabel.index -= this->totalElements();
+    byteOffsetLabel.index *= this->dtype().size();
+    _impl->postedLabels.push_back(byteOffsetLabel);
     _impl->actor->workBump = true;
 }
 

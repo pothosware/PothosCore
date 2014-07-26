@@ -30,13 +30,29 @@ void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, 
     this->notify();
 }
 
-void Pothos::WorkerActor::handleInlinePortMessage(const PortMessage<InputPort *, Label> &message, const Theron::Address)
+void Pothos::WorkerActor::handleLabelsPortMessage(const PortMessage<InputPort *, LabeledBuffersMessage> &message, const Theron::Address)
 {
     assert(message.id != nullptr);
     auto &input = *message.id;
-    input._impl->inlineMessages.push_back(message.contents);
-    std::sort(input._impl->inlineMessages.begin(), input._impl->inlineMessages.end());
-    this->bump();
+
+    //insert labels (in order) and adjust for the current offset
+    for (const auto &byteOffsetLabel : message.contents.labels)
+    {
+        auto label = byteOffsetLabel;
+        auto elemSize = input.dtype().size();
+        label.index += input.totalElements()*elemSize; //increment by absolute byte count
+        label.index += input._impl->bufferAccumulator.getTotalBytesAvailable(); //increment by enqueued bytes
+        label.index /= elemSize; //convert from bytes to elements
+        input._impl->inlineMessages.push_back(label);
+    }
+
+    //push all buffers into the accumulator
+    for (const auto &buffer : message.contents.buffers)
+    {
+        input._impl->bufferAccumulator.push(buffer);
+    }
+
+    this->notify();
 }
 
 void Pothos::WorkerActor::handleBufferPortMessage(const PortMessage<InputPort *, BufferChunk> &message, const Theron::Address)

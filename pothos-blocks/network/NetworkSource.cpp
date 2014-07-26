@@ -44,7 +44,8 @@ public:
     }
 
     NetworkSource(const std::string &uri, const std::string &opt):
-        _ep(PothosPacketSocketEndpoint(uri, opt))
+        _ep(PothosPacketSocketEndpoint(uri, opt)),
+        _nextExpectedIndex(0)
     {
         //std::cout << "NetworkSource " << opt << " " << uri << std::endl;
         this->setupOutput(0);
@@ -70,13 +71,14 @@ public:
 
 private:
     PothosPacketSocketEndpoint _ep;
+    unsigned long long _nextExpectedIndex;
 };
 
 void NetworkSource::work(void)
 {
     const auto timeout = Poco::Timespan(this->workInfo().maxTimeoutNs/1000);
 
-    auto outputPort = this->outputs()[0];
+    auto outputPort = this->output(0);
 
     //recv the header, use output buffer when possible for zero-copy
     Poco::UInt16 type;
@@ -87,14 +89,7 @@ void NetworkSource::work(void)
     //handle the output
     if (type == PothosPacketTypeBuffer)
     {
-        //there was a drop, post recovery padding
-        if (index > outputPort->totalElements())
-        {
-            assert(outputPort->totalElements() < index);
-            Pothos::BufferChunk recovery(index - outputPort->totalElements());
-            std::memset(recovery.as<void *>(), 0, recovery.length);
-            outputPort->postBuffer(recovery);
-        }
+        _nextExpectedIndex = index + buffer.length;
         outputPort->popBuffer(buffer.length);
         outputPort->postBuffer(buffer);
     }
@@ -109,7 +104,7 @@ void NetworkSource::work(void)
     {
         std::istringstream iss(std::string(buffer.as<char *>(), buffer.length));
         Pothos::Label label;
-        label.index = index;
+        label.index = index + outputPort->totalElements() - _nextExpectedIndex;
         label.data.deserialize(iss);
         outputPort->postLabel(label);
     }
