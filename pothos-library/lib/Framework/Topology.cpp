@@ -238,28 +238,41 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<F
         //otherwise make new network iogress flows
         else
         {
-            //create source and sink blocks
-            auto srcEnvReg = flow.src.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
-            auto dstEnvReg = flow.dst.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
-
-            //determine the remote hosts ip addr to bind and connect with
+            //default behaviour: the sink binds, the source connects
             auto bindEnv = flow.src.obj.getEnvironment();
+            auto connEnv = flow.dst.obj.getEnvironment();
+            Pothos::Proxy netConn, netBind;
+            auto netSink = std::ref(netBind);
+            auto netSource = std::ref(netConn);
+            auto netBindPath = "/blocks/network_sink";
+            auto netConnPath = "/blocks/network_source";
+
+            //If the bind environment is local, swap them to bind on the remote host.
+            //The reason for this swap, is that we dont know the local's external IP
+            //to which the remote host can connect to, so we just do the reverse.
+            if (Pothos::System::HostInfo::get().nodeId == bindEnv->getNodeId())
+            {
+                std::swap(bindEnv, connEnv);
+                std::swap(netSink, netSource);
+                std::swap(netBindPath, netConnPath);
+            }
+
+            //create the bind and connect source and sink blocks
             auto bindIp = Pothos::RemoteClient::lookupIpFromNodeId(bindEnv->getNodeId());
             assert(not bindIp.empty());
-
-            auto netSink = srcEnvReg.callProxy("/blocks/network_sink", "udt://"+bindIp, "BIND");
-            netSink.callVoid("setName", "NetOut");
-            auto connectPort = netSink.call<std::string>("getActualPort");
+            netBind = bindEnv->findProxy("Pothos/BlockRegistry").callProxy(netBindPath, "udt://"+bindIp, "BIND");
+            auto connectPort = netBind.call<std::string>("getActualPort");
             auto connectUri = Poco::format("udt://%s:%s", bindIp, connectPort);
-            auto netSource = dstEnvReg.callProxy("/blocks/network_source", connectUri, "CONNECT");
-            netSource.callVoid("setName", "NetIn");
+            netConn = connEnv->findProxy("Pothos/BlockRegistry").callProxy(netConnPath, connectUri, "CONNECT");
 
             //create the flows
+            netSink.get().callVoid("setName", "NetOut");
             Flow srcFlow;
             srcFlow.src = flow.src;
             srcFlow.dst.obj = netSink;
             srcFlow.dst.name = "0";
 
+            netSource.get().callVoid("setName", "NetIn");
             Flow dstFlow;
             dstFlow.src.obj = netSource;
             dstFlow.src.name = "0";
