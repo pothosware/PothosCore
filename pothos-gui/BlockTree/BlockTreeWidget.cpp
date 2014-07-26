@@ -1,10 +1,14 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "PothosGuiUtils.hpp" //get object map
 #include "BlockTree/BlockTreeWidget.hpp"
 #include "BlockTree/BlockTreeWidgetItem.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphEditor/Constants.hpp"
+#include "GraphEditor/GraphEditorTabs.hpp"
+#include "GraphEditor/GraphEditor.hpp"
+#include "GraphEditor/GraphDraw.hpp"
 #include <QTreeWidgetItem>
 #include <QApplication>
 #include <QDrag>
@@ -70,7 +74,8 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
     if (not blockItem->getBlockDesc()) return;
 
     //create a block object to render the image
-    std::shared_ptr<GraphBlock> renderBlock(new GraphBlock(nullptr));
+    auto draw = dynamic_cast<GraphEditorTabs *>(getObjectMap()["editorTabs"])->getCurrentGraphEditor()->getCurrentGraphDraw();
+    std::shared_ptr<GraphBlock> renderBlock(new GraphBlock(draw));
     renderBlock->setBlockDesc(blockItem->getBlockDesc());
     renderBlock->prerender(); //precalculate so we can get bounds
     const auto bounds = renderBlock->getBoundingRect();
@@ -85,6 +90,7 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
     painter.setRenderHint(QPainter::HighQualityAntialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
     renderBlock->render(painter);
+    renderBlock.reset();
     painter.end();
 
     //create the drag object
