@@ -99,24 +99,10 @@ static Pothos::BufferChunk objectToOffsetBuffer(const size_t offset_words32, con
     return buff;
 }
 
-static Pothos::BufferChunk serializeMessage(const size_t seq, const size_t sid, const Pothos::Object &msg)
-{
-    const size_t hdr_words32 = 4; // a priori
-    auto buff = objectToOffsetBuffer(hdr_words32, msg);
-    packBuffer(seq, sid, false, 0, true, buff);
-    return buff;
-}
-
-static Pothos::BufferChunk serializeLabel(const size_t seq, const size_t sid, const Pothos::Label &lbl)
-{
-    const size_t hdr_words32 = 6; // a priori
-    auto buff = objectToOffsetBuffer(hdr_words32, lbl.data);
-    packBuffer(seq, sid, true, lbl.index, true, buff);
-    return buff;
-}
-
 void Serializer::work(void)
 {
+    auto outputPort = this->output(0);
+
     for (size_t i = 0; i < this->inputs().size(); i++)
     {
         auto inputPort = this->input(i);
@@ -125,7 +111,10 @@ void Serializer::work(void)
         while (inputPort->hasMessage())
         {
             auto msg = inputPort->popMessage();
-            this->output(0)->postBuffer(serializeMessage(_seqs[i]++, i, msg));
+            const size_t hdr_words32 = 4; // a priori
+            auto buff = objectToOffsetBuffer(hdr_words32, msg);
+            packBuffer(_seqs[i]++, i, false, 0, true, buff);
+            outputPort->postBuffer(buff);
         }
 
         //labels (always handled prior to buffers for ordering reasons)
@@ -133,7 +122,11 @@ void Serializer::work(void)
         {
             auto lbl = *inputPort->labels().begin();
             inputPort->removeLabel(lbl);
-            this->output(0)->postBuffer(serializeLabel(_seqs[i]++, i, lbl));
+            const size_t hdr_words32 = 6; // a priori
+            auto buff = objectToOffsetBuffer(hdr_words32, lbl.data);
+            auto index = lbl.index - inputPort->totalElements();
+            packBuffer(_seqs[i]++, i, true, index, true, buff);
+            outputPort->postBuffer(buff);
         }
 
         //buffers
@@ -148,17 +141,17 @@ void Serializer::work(void)
 
             //post the header
             hdrTlrBuff.length = hdr_words32*4;
-            this->output(0)->postBuffer(hdrTlrBuff);
+            outputPort->postBuffer(hdrTlrBuff);
 
             //post the payload
-            this->output(0)->postBuffer(buff);
+            outputPort->postBuffer(buff);
             inputPort->consume(buff.length);
 
             //post the trailer
             const size_t pkt_words32 = hdr_words32 + padUp32(buff.length)/4 + 1;
             hdrTlrBuff.address += (pkt_words32 - 1)*4;
             hdrTlrBuff.length = 4;
-            this->output(0)->postBuffer(hdrTlrBuff);
+            outputPort->postBuffer(hdrTlrBuff);
         }
     }
 }
