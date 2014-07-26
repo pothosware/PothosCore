@@ -47,6 +47,7 @@ RemoteProxyEnvironment::RemoteProxyEnvironment(
     //set the remote ID for this env
     remoteID = reply["envID"].convert<size_t>();
     upid = reply["upid"].convert<std::string>();
+    nodeId = reply["nodeId"].convert<std::string>();
 }
 
 RemoteProxyEnvironment::~RemoteProxyEnvironment(void)

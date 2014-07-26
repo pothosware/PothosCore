@@ -25,6 +25,11 @@ public:
 
     std::shared_ptr<RemoteProxyHandle> getHandle(const Pothos::Proxy &proxy);
 
+    std::string getNodeId(void) const
+    {
+        return nodeId;
+    }
+
     std::string getName(void) const
     {
         return name;
@@ -50,6 +55,7 @@ public:
 
     size_t remoteID;
     std::string upid;
+    std::string nodeId;
 
     std::istream &is;
     std::ostream &os;
