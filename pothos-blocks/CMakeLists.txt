@@ -20,6 +20,7 @@ set(SOURCES
 
     testers/TestUnitTestBlocks.cpp
     testers/TestProxyTopology.cpp
+    testers/TestSetThreadPool.cpp
     testers/FeederSource.cpp
     testers/CollectorSink.cpp
 
