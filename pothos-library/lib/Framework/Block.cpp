@@ -25,6 +25,8 @@ void Pothos::Block::setThreadPool(const ThreadPool &threadPool)
     _threadPool = threadPool;
     _actor.reset(new WorkerActor(this));
     _actor->swap(oldActor.get());
+
+    oldActor.reset();
 }
 
 const Pothos::ThreadPool &Pothos::Block::getThreadPool(void) const

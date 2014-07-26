@@ -221,6 +221,8 @@ public:
         std::swap(this->workStats, oldActor->workStats);
         std::swap(this->inputs, oldActor->inputs);
         std::swap(this->outputs, oldActor->outputs);
+        for (auto &port : this->inputs) port.second->_impl->actor = this;
+        for (auto &port : this->outputs) port.second->_impl->actor = this;
     }
 
     ///////////////////// port setup methods ///////////////////////
