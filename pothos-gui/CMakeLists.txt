@@ -92,9 +92,9 @@ set(SOURCES
     BlockTree/BlockTreeWidgetItem.cpp
     BlockTree/BlockCache.cpp
 
-    AffinitySupport/AffinityPanel.cpp
     AffinitySupport/AffinityZoneEditor.cpp
     AffinitySupport/AffinityZonesMenu.cpp
+    AffinitySupport/AffinityZonesComboBox.cpp
     AffinitySupport/AffinityZonesDock.cpp
     AffinitySupport/CpuSelectionWidget.cpp
 
@@ -113,7 +113,6 @@ set(SOURCES
     GraphEditor/GraphPage.cpp
     GraphEditor/GraphDraw.cpp
     GraphEditor/GraphDrawSelection.cpp
-    GraphEditor/GraphEditorTopologyUtils.cpp
     GraphEditor/GraphActionsDock.cpp
 
     GraphObjects/GraphEndpoint.cpp
@@ -122,6 +121,9 @@ set(SOURCES
     GraphObjects/GraphBlockUpdate.cpp
     GraphObjects/GraphBreaker.cpp
     GraphObjects/GraphConnection.cpp
+
+    TopologyEngine/TopologyEngine.cpp
+    TopologyEngine/TopologyTraversal.cpp
 )
 add_executable(PothosGui ${SOURCES})
 target_link_libraries(PothosGui Pothos ${POTHOS_LIBRARIES})

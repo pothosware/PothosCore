@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QWidget>
+#include <QColor>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
 #include <Pothos/System/NumaInfo.hpp>
@@ -29,6 +30,8 @@ public:
 
     Poco::JSON::Object::Ptr getCurrentConfig(void) const;
 
+    QColor color(void) const;
+
 signals:
     void settingsChanged(void);
 
@@ -48,7 +51,7 @@ private slots:
         emit this->settingsChanged();
     }
 
-    void handleProcessNameChanged(const QString &)
+    void handleProcessNameChanged(void)
     {
         emit this->settingsChanged();
     }

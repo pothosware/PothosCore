@@ -5,8 +5,7 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
-#include <Pothos/Proxy.hpp>
-#include <Poco/JSON/Array.h>
+#include <Poco/JSON/Object.h>
 #include <QTabWidget>
 #include <QPointer>
 #include <ios>
@@ -15,6 +14,7 @@ class GraphConnection;
 class GraphDraw;
 class QSignalMapper;
 class QTabWidget;
+class TopologyEngine;
 
 class GraphEditor : public QTabWidget
 {
@@ -63,7 +63,10 @@ public:
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);
 
-    Poco::JSON::Array::Ptr getConnectionInfo(void) const;
+    TopologyEngine *getTopologyEngine(void) const
+    {
+        return _topologyEngine;
+    }
 
 signals:
     void newTitleSubtext(const QString &);
@@ -97,6 +100,8 @@ private slots:
     void handleUndo(void);
     void handleRedo(void);
     void handleResetState(int);
+    void handleAffinityZoneClicked(const QString &zone);
+    void handleAffinityZoneChanged(const QString &zone);
     void handleStateChange(const GraphState &state);
     void handleShowFlattenedDialog(void);
     void handleToggleActivateTopology(bool);
@@ -119,5 +124,5 @@ private:
     void updateEnabledActions(void);
 
     void updateExecutionEngine(void);
-    Pothos::Proxy _topologyEngine;
+    TopologyEngine *_topologyEngine;
 };

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //action map
+#include "TopologyEngine/TopologyEngine.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
 #include "GraphEditor/GraphPage.hpp"
 #include "GraphEditor/GraphEditor.hpp"
@@ -37,7 +38,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
     _parentTabWidget(dynamic_cast<QTabWidget *>(parent)),
     _moveGraphObjectsMapper(new QSignalMapper(this)),
-    _stateManager(new GraphStateManager(this))
+    _stateManager(new GraphStateManager(this)),
+    _topologyEngine(new TopologyEngine(this))
 {
     this->setMovable(true);
     this->setUsesScrollButtons(true);
@@ -69,6 +71,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["zoomOriginal"], SIGNAL(triggered(void)), this, SLOT(handleZoomOriginal(void)));
     connect(getActionMap()["undo"], SIGNAL(triggered(void)), this, SLOT(handleUndo(void)));
     connect(getActionMap()["redo"], SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
+    connect(getMenuMap()["setAffinityZone"], SIGNAL(zoneClicked(const QString &)), this, SLOT(handleAffinityZoneClicked(const QString &)));
+    connect(getObjectMap()["affinityZonesDock"], SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
     connect(getActionMap()["showGraphFlattenedView"], SIGNAL(triggered(void)), this, SLOT(handleShowFlattenedDialog(void)));
     connect(getActionMap()["activateTopology"], SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
@@ -666,6 +670,33 @@ void GraphEditor::handleResetState(int stateNo)
     this->updateExecutionEngine();
 }
 
+void GraphEditor::handleAffinityZoneClicked(const QString &zone)
+{
+    if (not this->isVisible()) return;
+    auto draw = this->getGraphDraw(this->currentIndex());
+
+    for (auto obj : draw->getObjectsSelected(false/*nc*/))
+    {
+        auto block = dynamic_cast<GraphBlock *>(obj);
+        if (block == nullptr) continue;
+        block->setAffinityZone(zone);
+    }
+    handleStateChange(GraphState("document-export", tr("Set %1 affinity zone").arg(draw->getSelectionDescription())));
+}
+
+void GraphEditor::handleAffinityZoneChanged(const QString &zone)
+{
+    for (auto obj : this->getGraphObjects())
+    {
+        auto block = dynamic_cast<GraphBlock *>(obj);
+        if (block == nullptr) continue;
+        if (block->getAffinityZone() == zone) block->changed();
+    }
+
+    this->render();
+    this->updateExecutionEngine();
+}
+
 void GraphEditor::handleStateChange(const GraphState &state)
 {
     //empty states tell us to simply reset to the current known point
@@ -688,32 +719,16 @@ void GraphEditor::handleStateChange(const GraphState &state)
 void GraphEditor::handleToggleActivateTopology(const bool enable)
 {
     if (not this->isVisible()) return;
-    if (enable)
-    {
-        //setup topology execution, in the same process for now
-        auto env = Pothos::ProxyEnvironment::make("managed");
-        auto TopologyEngine = env->findProxy("Pothos/Util/TopologyEngine");
-        _topologyEngine = TopologyEngine.callProxy("new");
-        this->updateExecutionEngine();
-    }
-    else _topologyEngine = Pothos::Proxy();
+    if (enable) this->updateExecutionEngine();
+    else _topologyEngine->clear();
 }
 
 void GraphEditor::updateExecutionEngine(void)
 {
-    if (not _topologyEngine) return;
-
-    //update the execution engine state
+    if (not getActionMap()["activateTopology"]->isChecked()) return;
     try
     {
-        for (auto obj : this->getGraphObjects())
-        {
-            auto block = dynamic_cast<GraphBlock *>(obj);
-            if (block == nullptr) continue;
-            if (not block->getBlockEval()) return;
-            _topologyEngine.callVoid("acceptBlock", block->getBlockEval());
-        }
-        _topologyEngine.callVoid("commitUpdate", this->getConnectionInfo());
+        _topologyEngine->commitUpdate(this->getGraphObjects());
     }
     catch (const Pothos::Exception &ex)
     {

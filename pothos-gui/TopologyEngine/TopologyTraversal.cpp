@@ -1,7 +1,7 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "GraphEditor/GraphEditor.hpp"
+#include "TopologyEngine/TopologyEngine.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
@@ -47,9 +47,9 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnecti
     return inputEndpoints;
 }
 
-static Poco::JSON::Array::Ptr getConnectionInfo(const GraphObjectList &graphObjects)
+std::vector<ConnectionInfo> TopologyEngine::getConnectionInfo(const GraphObjectList &graphObjects)
 {
-    Poco::JSON::Array::Ptr connections = new Poco::JSON::Array();
+    std::vector<ConnectionInfo> connections;
     for (auto graphObject : graphObjects)
     {
         auto connection = dynamic_cast<GraphConnection *>(graphObject);
@@ -64,18 +64,13 @@ static Poco::JSON::Array::Ptr getConnectionInfo(const GraphObjectList &graphObje
 
         for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
         {
-            Poco::JSON::Object::Ptr args = new Poco::JSON::Object();
-            args->set("srcId", outputEp.getObj()->getId().toStdString());
-            args->set("srcPort", outputEp.getKey().id.toStdString());
-            args->set("dstId", subEp.getObj()->getId().toStdString());
-            args->set("dstPort", subEp.getKey().id.toStdString());
-            connections->add(args);
+            ConnectionInfo info;
+            info.srcId = outputEp.getObj()->getId().toStdString();
+            info.srcPort = outputEp.getKey().id.toStdString();
+            info.dstId = subEp.getObj()->getId().toStdString();
+            info.dstPort = subEp.getKey().id.toStdString();
+            connections.push_back(info);
         }
     }
     return connections;
-}
-
-Poco::JSON::Array::Ptr GraphEditor::getConnectionInfo(void) const
-{
-    return ::getConnectionInfo(this->getGraphObjects());
 }

@@ -2,23 +2,29 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "AffinitySupport/AffinityZonesMenu.hpp"
-#include "AffinitySupport/AffinityPanel.hpp"
+#include "AffinitySupport/AffinityZonesDock.hpp"
 #include <QSignalMapper>
 
-AffinityZonesMenu::AffinityZonesMenu(AffinityPanel *affinityPanel, QWidget *parent):
+AffinityZonesMenu::AffinityZonesMenu(AffinityZonesDock *dock, QWidget *parent):
     QMenu(tr("Set graph blocks affinity..."), parent),
     _clickMapper(new QSignalMapper(this)),
-    _affinityPanel(affinityPanel)
+    _dock(dock)
 {
     connect(_clickMapper, SIGNAL(mapped(const QString &)), this, SLOT(handleMapperClicked(const QString &)));
-    connect(_affinityPanel, SIGNAL(zonesChanged(void)), this, SLOT(handleZonesChanged(void)));
+    connect(_dock, SIGNAL(zonesChanged(void)), this, SLOT(handleZonesChanged(void)));
     this->handleZonesChanged(); //init
 }
 
 void AffinityZonesMenu::handleZonesChanged(void)
 {
     this->clear();
-    if (_affinityPanel) for (const auto &name : _affinityPanel->zones())
+
+    //clear affinity setting
+    auto clearAction = this->addAction(tr("Clear affinity"));
+    connect(clearAction, SIGNAL(triggered(void)), _clickMapper, SLOT(map(void)));
+    _clickMapper->setMapping(clearAction, "");
+
+    if (_dock) for (const auto &name : _dock->zones())
     {
         auto action = this->addAction(name);
         connect(action, SIGNAL(triggered(void)), _clickMapper, SLOT(map(void)));

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
+#include "TopologyEngine/TopologyEngine.hpp"
 #include <Pothos/Exception.hpp>
 #include <Poco/Pipe.h>
 #include <Poco/PipeStream.h>
@@ -42,7 +43,7 @@ void GraphEditor::handleShowFlattenedDialog(void)
 
         //write the markup into dot
         Poco::PipeOutputStream os(inPipe);
-        os << _topologyEngine.call<std::string>("toDotMarkup");
+        os << _topologyEngine->getTopology().toDotMarkup();
         os.close();
         outPipe.close();
 

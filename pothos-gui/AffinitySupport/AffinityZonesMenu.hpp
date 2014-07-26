@@ -8,7 +8,7 @@
 #include <QPointer>
 
 class QSignalMapper;
-class AffinityPanel;
+class AffinityZonesDock;
 
 /*!
  * A menu with options that reflect the active affinity zones.
@@ -17,7 +17,7 @@ class AffinityZonesMenu : public QMenu
 {
     Q_OBJECT
 public:
-    AffinityZonesMenu(AffinityPanel *affinityPanel, QWidget *parent);
+    AffinityZonesMenu(AffinityZonesDock *affinityPanel, QWidget *parent);
 
 signals:
     //! emitted when a submenu of that zone name is clicked
@@ -29,5 +29,5 @@ private slots:
 
 private:
     QSignalMapper *_clickMapper;
-    QPointer<AffinityPanel> _affinityPanel;
+    QPointer<AffinityZonesDock> _dock;
 };

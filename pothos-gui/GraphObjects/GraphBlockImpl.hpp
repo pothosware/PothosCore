@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphBlock.hpp"
+#include <QColor>
 #include <QRectF>
 #include <QPointF>
 #include <QStaticText>
@@ -19,12 +20,14 @@ struct GraphBlock::Impl
     }
 
     Poco::JSON::Object::Ptr blockDesc;
+    QString affinityZone;
 
     bool changed;
     QString blockErrorMsg;
 
     QString title;
     QStaticText titleText;
+    QColor mainBlockColor;
 
     std::vector<QStaticText> propertiesText;
     std::map<QString, QString> propertiesValues;
@@ -35,10 +38,12 @@ struct GraphBlock::Impl
     std::vector<QStaticText> inputPortsText;
     std::vector<QRectF> inputPortRects;
     std::vector<QPointF> inputPortPoints;
+    std::vector<QColor> inputPortColors;
 
     std::vector<QStaticText> outputPortsText;
     std::vector<QRectF> outputPortRects;
     std::vector<QPointF> outputPortPoints;
+    std::vector<QColor> outputPortColors;
 
     QRectF mainBlockRect;
 };
