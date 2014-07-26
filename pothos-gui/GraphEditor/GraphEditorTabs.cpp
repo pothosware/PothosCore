@@ -38,6 +38,16 @@ GraphEditorTabs::GraphEditorTabs(QWidget *parent):
     connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(handleClose(int)));
 }
 
+GraphEditor *GraphEditorTabs::getGraphEditor(const int i) const
+{
+    return dynamic_cast<GraphEditor *>(this->widget(i));
+}
+
+GraphEditor *GraphEditorTabs::getCurrentGraphEditor(void) const
+{
+    return this->getGraphEditor(this->currentIndex());
+}
+
 void GraphEditorTabs::handleInit(void)
 {
     this->loadState();

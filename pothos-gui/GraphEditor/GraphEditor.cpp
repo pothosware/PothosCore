@@ -247,7 +247,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
 {
     if (not this->isVisible()) return;
     if (index >= this->count()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     auto desc = tr("Move %1 to %2").arg(draw->getSelectionDescription(), this->tabText(index));
 
     //move all selected objects
@@ -356,7 +356,7 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc)
 void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const QPoint &where)
 {
     if (not blockDesc) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     auto block = new GraphBlock(draw);
     block->setBlockDesc(blockDesc);
 
@@ -390,7 +390,7 @@ void GraphEditor::handleCreateBreaker(const bool isInput)
         tr("New breaker node name"), QLineEdit::Normal, tr("untitled"));
     if (newName.isEmpty()) return;
 
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     auto breaker = new GraphBreaker(draw);
     breaker->setInput(isInput);
     breaker->setNodeName(newName);
@@ -412,7 +412,7 @@ void GraphEditor::handleCreateOutputBreaker(void)
 
 void GraphEditor::handleCut(void)
 {
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     auto desc = tr("Cut %1").arg(draw->getSelectionDescription());
 
     //load up the clipboard
@@ -432,7 +432,7 @@ void GraphEditor::handleCut(void)
 void GraphEditor::handleCopy(void)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
 
     Poco::JSON::Array jsonObjs;
     for (auto obj : draw->getObjectsSelected())
@@ -454,7 +454,7 @@ void GraphEditor::handleCopy(void)
 void GraphEditor::handlePaste(void)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
 
     auto mimeData = QApplication::clipboard()->mimeData();
     const bool canPaste = mimeData->hasFormat("text/json/pothos_object_array") and
@@ -547,7 +547,7 @@ void GraphEditor::handleClipboardDataChange(void)
 void GraphEditor::handleSelectAll(void)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     for (auto obj : draw->getGraphObjects(false/*nosort*/))
     {
         obj->setSelected(true);
@@ -576,7 +576,7 @@ void GraphEditor::deleteFlagged(void)
 void GraphEditor::handleDelete(void)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     auto desc = tr("Delete %1").arg(draw->getSelectionDescription());
 
     //delete all selected graph objects
@@ -593,7 +593,7 @@ void GraphEditor::handleDelete(void)
 void GraphEditor::handleRotateLeft(void)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     for (auto obj : draw->getObjectsSelected())
     {
         obj->rotateLeft();
@@ -604,7 +604,7 @@ void GraphEditor::handleRotateLeft(void)
 void GraphEditor::handleRotateRight(void)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     for (auto obj : draw->getObjectsSelected())
     {
         obj->rotateRight();
@@ -615,7 +615,7 @@ void GraphEditor::handleRotateRight(void)
 void GraphEditor::handleProperties(void)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     const auto objs = draw->getObjectsSelected();
     if (not objs.isEmpty()) emit draw->modifyProperties(objs.at(0));
 }
@@ -623,7 +623,7 @@ void GraphEditor::handleProperties(void)
 void GraphEditor::handleZoomIn(void)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     if (draw->zoomScale() >= GraphDrawZoomMax) return;
     draw->setZoomScale(draw->zoomScale() + GraphDrawZoomStep);
 }
@@ -631,7 +631,7 @@ void GraphEditor::handleZoomIn(void)
 void GraphEditor::handleZoomOut(void)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     if (draw->zoomScale() <= GraphDrawZoomMin) return;
     draw->setZoomScale(draw->zoomScale() - GraphDrawZoomStep);
 }
@@ -639,7 +639,7 @@ void GraphEditor::handleZoomOut(void)
 void GraphEditor::handleZoomOriginal(void)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
     draw->setZoomScale(1.0);
 }
 
@@ -673,7 +673,7 @@ void GraphEditor::handleResetState(int stateNo)
 void GraphEditor::handleAffinityZoneClicked(const QString &zone)
 {
     if (not this->isVisible()) return;
-    auto draw = this->getGraphDraw(this->currentIndex());
+    auto draw = this->getCurrentGraphDraw();
 
     for (auto obj : draw->getObjectsSelected(false/*nc*/))
     {
@@ -804,7 +804,7 @@ void GraphEditor::render(void)
         _parentTabWidget->setTabText(i, title);
     }
 
-    this->getGraphDraw(this->currentIndex())->render();
+    this->getCurrentGraphDraw()->render();
     this->updateEnabledActions();
 }
 
@@ -829,6 +829,11 @@ GraphDraw *GraphEditor::getGraphDraw(const int index) const
     auto draw = dynamic_cast<GraphDraw *>(scroll->widget());
     assert(draw != nullptr);
     return draw;
+}
+
+GraphDraw *GraphEditor::getCurrentGraphDraw(void) const
+{
+    return this->getGraphDraw(this->currentIndex());
 }
 
 GraphObjectList GraphEditor::getGraphObjects(void) const

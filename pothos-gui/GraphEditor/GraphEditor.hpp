@@ -57,6 +57,8 @@ public:
 
     GraphDraw *getGraphDraw(const int index) const;
 
+    GraphDraw *getCurrentGraphDraw(void) const;
+
     //! Get a list of all graph objects in all pages
     GraphObjectList getGraphObjects(void) const;
 

@@ -16,6 +16,9 @@ public:
     void loadState(void);
     void saveState(void);
 
+    GraphEditor *getGraphEditor(const int index) const;
+    GraphEditor *getCurrentGraphEditor(void) const;
+
 private slots:
     void handleInit(void);
     void handleNew(void);
