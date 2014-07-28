@@ -16,16 +16,6 @@ inline const Pothos::WorkInfo &Pothos::Block::workInfo(void) const
     return _workInfo;
 }
 
-inline std::vector<std::string> Pothos::Block::inputPortNames(void)
-{
-    return _inputPortNames;
-}
-
-inline std::vector<std::string> Pothos::Block::outputPortNames(void)
-{
-    return _outputPortNames;
-}
-
 inline Pothos::InputPort *Pothos::Block::input(const std::string &name) const
 {
     auto it = _namedInputs.find(name);

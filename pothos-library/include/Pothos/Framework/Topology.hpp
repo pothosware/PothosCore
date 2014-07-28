@@ -46,11 +46,15 @@ public:
     //! Get the thread pool used by all blocks in this topology.
     const ThreadPool &getThreadPool(void) const;
 
-    //! Get a list of input port names in order of connection
-    std::vector<std::string> inputPortNames(void);
+    /*!
+     * Get a vector of info about all of the input ports available.
+     */
+    std::vector<PortInfo> inputPortInfo(void);
 
-    //! Get a list of output port names in order of connection
-    std::vector<std::string> outputPortNames(void);
+    /*!
+     * Get a vector of info about all of the output ports available.
+     */
+    std::vector<PortInfo> outputPortInfo(void);
 
     /*!
      * Commit changes made to the topology.

@@ -20,7 +20,8 @@ struct GraphBlock::Impl
     }
 
     Poco::JSON::Object::Ptr blockDesc;
-    Poco::JSON::Object::Ptr portDesc;
+    Poco::JSON::Array::Ptr inputDesc;
+    Poco::JSON::Array::Ptr outputDesc;
     QString affinityZone;
 
     bool changed;
@@ -40,11 +41,13 @@ struct GraphBlock::Impl
     std::vector<QRectF> inputPortRects;
     std::vector<QPointF> inputPortPoints;
     std::vector<QColor> inputPortColors;
+    std::map<QString, std::string> inputPortTypeStr;
 
     std::vector<QStaticText> outputPortsText;
     std::vector<QRectF> outputPortRects;
     std::vector<QPointF> outputPortPoints;
     std::vector<QColor> outputPortColors;
+    std::map<QString, std::string> outputPortTypeStr;
 
     QRectF mainBlockRect;
 };

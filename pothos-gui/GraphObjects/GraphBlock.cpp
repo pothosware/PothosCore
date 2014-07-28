@@ -188,6 +188,26 @@ const std::vector<GraphBlockPort> &GraphBlock::getSignalPorts(void) const
     return _signalPorts;
 }
 
+void GraphBlock::setInputPortTypeStr(const QString &key, const std::string &type)
+{
+    _impl->inputPortTypeStr[key] = type;
+}
+
+const std::string &GraphBlock::getInputPortTypeStr(const QString &key) const
+{
+    return _impl->inputPortTypeStr[key];
+}
+
+void GraphBlock::setOutputPortTypeStr(const QString &key, const std::string &type)
+{
+    _impl->outputPortTypeStr[key] = type;
+}
+
+const std::string &GraphBlock::getOutputPortTypeStr(const QString &key) const
+{
+    return _impl->outputPortTypeStr[key];
+}
+
 const QString &GraphBlock::getAffinityZone(void) const
 {
     return _impl->affinityZone;
@@ -365,7 +385,8 @@ void GraphBlock::render(QPainter &painter)
         _impl->mainBlockColor = zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor);
         _impl->inputPortColors.resize(_inputPorts.size(), GraphObjectDefaultFillColor);
         _impl->outputPortColors.resize(_outputPorts.size(), GraphObjectDefaultFillColor);
-
+        for (size_t i = 0; i < _inputPorts.size(); i++) _impl->inputPortColors[i] = typeStrToColor(this->getInputPortTypeStr(_inputPorts.at(i).getKey()));
+        for (size_t i = 0; i < _outputPorts.size(); i++) _impl->outputPortColors[i] = typeStrToColor(this->getOutputPortTypeStr(_outputPorts.at(i).getKey()));
         this->renderStaticText();
     }
 
@@ -515,7 +536,8 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     }
     obj->set("properties", jPropsObj);
 
-    if (_impl->portDesc) obj->set("portDesc", _impl->portDesc);
+    if (_impl->inputDesc) obj->set("inputDesc", _impl->inputDesc);
+    if (_impl->outputDesc) obj->set("outputDesc", _impl->outputDesc);
     return obj;
 }
 
@@ -543,8 +565,10 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     }
 
     //load port description and init from it -- in the case eval fails
-    if (obj->isObject("portDesc")) _impl->portDesc = obj->getObject("portDesc");
-    this->initPortsFromDesc();
+    if (obj->isArray("inputDesc")) _impl->inputDesc = obj->getArray("inputDesc");
+    if (obj->isArray("outputDesc")) _impl->outputDesc = obj->getArray("outputDesc");
+    this->initInputsFromDesc();
+    this->initOutputsFromDesc();
 
     GraphObject::deserialize(obj);
 }

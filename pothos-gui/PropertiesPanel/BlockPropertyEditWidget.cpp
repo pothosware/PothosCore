@@ -1,11 +1,10 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "PothosGuiUtils.hpp" //type to color
 #include "PropertiesPanel/BlockPropertyEditWidget.hpp"
 #include <QComboBox>
 #include <QLineEdit>
-#include <QColor>
-#include <Poco/MD5Engine.h>
 
 BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent):
     QStackedWidget(parent),
@@ -59,10 +58,7 @@ QString BlockPropertyEditWidget::value(void) const
 
 void BlockPropertyEditWidget::setColors(const std::string &typeStr)
 {
-    //type color calculation
-    Poco::MD5Engine md5; md5.update(typeStr);
-    const auto hexHash = Poco::DigestEngine::digestToHex(md5.digest());
-    QColor typeColor(QString::fromStdString("#" + hexHash.substr(0, 6)));
+    auto typeColor = typeStrToColor(typeStr);
 
     //set the fg and bg colors for all possible widget types
     _edit->setStyleSheet(QString(
