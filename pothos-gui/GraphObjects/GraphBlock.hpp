@@ -93,6 +93,9 @@ public:
     QString getPropertyValue(const QString &key) const;
     void setPropertyValue(const QString &key, const QString &value);
 
+    //! Get the property display text: varies from actual value, enum name, error...
+    QString getPropertyDisplayText(const QString &key) const;
+
     //! Set the error message when trying to eval this property -- blank msg for no error
     void setPropertyErrorMsg(const QString &key, const QString &msg);
     const QString &getPropertyErrorMsg(const QString &key) const;

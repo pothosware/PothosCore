@@ -81,6 +81,24 @@ Poco::JSON::Object::Ptr GraphBlock::getParamDesc(const QString &key) const
     return paramDesc;
 }
 
+QString GraphBlock::getPropertyDisplayText(const QString &key) const
+{
+    const auto value = this->getPropertyValue(key);
+    auto paramDesc = this->getParamDesc(key);
+    if (paramDesc and paramDesc->isArray("options"))
+    {
+        for (const auto &optionObj : *paramDesc->getArray("options"))
+        {
+            const auto option = optionObj.extract<Poco::JSON::Object::Ptr>();
+            if (value == QString::fromStdString(option->getValue<std::string>("value")))
+            {
+                return QString::fromStdString(option->getValue<std::string>("name"));
+            }
+        }
+    }
+    return value;
+}
+
 QString GraphBlock::getPropertyValue(const QString &key) const
 {
     auto it = _impl->propertiesValues.find(key);
@@ -306,8 +324,7 @@ void GraphBlock::renderStaticText(void)
             .arg(getTextColor(this->getPropertyErrorMsg(_properties[i].getKey()).isEmpty(), _impl->mainBlockColor))
             .arg(GraphBlockPropFontSize)
             .arg(_properties[i].getName().toHtmlEscaped())
-            //TODO use property enum option name when there are discrete options
-            .arg(this->getPropertyValue(_properties[i].getKey()).toHtmlEscaped()));
+            .arg(this->getPropertyDisplayText(_properties[i].getKey()).toHtmlEscaped()));
         _impl->propertiesText.push_back(text);
     }
 
