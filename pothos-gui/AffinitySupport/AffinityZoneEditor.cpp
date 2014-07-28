@@ -214,17 +214,13 @@ void AffinityZoneEditor::updateCpuSelection(void)
 {
     //get node info and cache it
     auto uriStr = _hostsBox->itemText(_hostsBox->currentIndex());
-    if (_uriToNumaInfo.count(uriStr) == 0) try
+    if (_uriToNumaInfo[uriStr].empty()) try
     {
         auto env = Pothos::RemoteClient(uriStr.toStdString()).makeEnvironment("managed");
         auto nodeInfos = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
         _uriToNumaInfo[uriStr] = nodeInfos;
     }
-    catch (const Pothos::Exception &ex)
-    {
-        poco_warning(Poco::Logger::get("PothosGui.AffinityZoneEditor"), ex.displayText());
-        _uriToNumaInfo[uriStr] = std::vector<Pothos::System::NumaInfo>(); //empty
-    }
+    catch (const Pothos::Exception &){}
 
     delete _cpuSelection;
     _cpuSelection = new CpuSelectionWidget(_uriToNumaInfo[uriStr], this);
