@@ -55,6 +55,7 @@ private slots:
         this->saveAffinityZoneEditorsState();
     }
     void handleTabSelectionChanged(int);
+    void updateTabColors(void);
 
 private:
     AffinityZoneEditor *createZoneFromName(const QString &name);

@@ -20,16 +20,20 @@ class QSpinBox;
 class QComboBox;
 class QVBoxLayout;
 
+//! Editor panel for affinity zone settings
 class AffinityZoneEditor : public QWidget
 {
     Q_OBJECT
 public:
     AffinityZoneEditor(QWidget *parent);
 
+    //! load the settings from a JSON object
     void loadFromConfig(const Poco::JSON::Object::Ptr &config);
 
+    //! query the settings as a JSON object
     Poco::JSON::Object::Ptr getCurrentConfig(void) const;
 
+    //! Get the current color set on this editor
     QColor color(void) const;
 
 signals:

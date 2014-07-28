@@ -25,7 +25,7 @@ void AffinityZonesComboBox::handleZonesChanged(void)
     for (const auto &zone : _dock->zones())
     {
         this->addItem(zone, zone);
-        QPixmap pixmap(15, 15);
+        QPixmap pixmap(10, 10);
         pixmap.fill(_dock->zoneToColor(zone));
         this->setItemData(this->count()-1, pixmap, Qt::DecorationRole);
         if (zone == oldSelection) this->setCurrentIndex(this->count()-1);

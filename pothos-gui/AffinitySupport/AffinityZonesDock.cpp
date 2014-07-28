@@ -12,6 +12,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QTabWidget>
+#include <QPixmap>
 #include <QSignalMapper>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Logger.h>
@@ -152,6 +153,11 @@ AffinityZoneEditor *AffinityZonesDock::createZoneFromName(const QString &zoneNam
     connect(editor, SIGNAL(settingsChanged(void)), this, SLOT(handleZoneEditorChanged(void)));
     connect(editor, SIGNAL(settingsChanged(void)), _mapper, SLOT(map(void)));
     _mapper->setMapping(editor, zoneName);
+
+    //when to update colors
+    connect(editor, SIGNAL(settingsChanged(void)), this, SLOT(updateTabColors(void)));
+    this->updateTabColors();
+
     return editor;
 }
 
@@ -167,6 +173,17 @@ void AffinityZonesDock::initAffinityZoneEditors(void)
     this->ensureDefault();
     connect(_editorsTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(handleTabCloseRequested(int)));
     connect(_editorsTabs, SIGNAL(currentChanged(int)), this, SLOT(handleTabSelectionChanged(int)));
+}
+
+void AffinityZonesDock::updateTabColors(void)
+{
+    for (int i = 0; i < _editorsTabs->count(); i++)
+    {
+        auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
+        QPixmap pixmap(10, 10);
+        pixmap.fill(editor->color());
+        _editorsTabs->setTabIcon(i, pixmap);
+    }
 }
 
 void AffinityZonesDock::handleTabSelectionChanged(const int index)
