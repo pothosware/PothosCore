@@ -536,7 +536,8 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     }
     obj->set("properties", jPropsObj);
 
-    if (_impl->portDesc) obj->set("portDesc", _impl->portDesc);
+    if (_impl->inputDesc) obj->set("inputDesc", _impl->inputDesc);
+    if (_impl->outputDesc) obj->set("outputDesc", _impl->outputDesc);
     return obj;
 }
 
@@ -564,8 +565,10 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     }
 
     //load port description and init from it -- in the case eval fails
-    if (obj->isObject("portDesc")) _impl->portDesc = obj->getObject("portDesc");
-    this->initPortsFromDesc();
+    if (obj->isArray("inputDesc")) _impl->inputDesc = obj->getArray("inputDesc");
+    if (obj->isArray("outputDesc")) _impl->outputDesc = obj->getArray("outputDesc");
+    this->initInputsFromDesc();
+    this->initOutputsFromDesc();
 
     GraphObject::deserialize(obj);
 }

@@ -11,9 +11,13 @@
 #include <Poco/Logger.h>
 #include <iostream>
 
+/***********************************************************************
+ * initialize the block's properties
+ **********************************************************************/
 void GraphBlock::initPropertiesFromDesc(void)
 {
     const auto &blockDesc = _impl->blockDesc;
+    assert(blockDesc);
 
     //extract the name or title from the description
     const auto name = blockDesc->get("name").convert<std::string>();
@@ -47,19 +51,20 @@ void GraphBlock::initPropertiesFromDesc(void)
     }
 }
 
-void GraphBlock::initPortsFromDesc(void)
+/***********************************************************************
+ * initialize the block's input ports
+ **********************************************************************/
+void GraphBlock::initInputsFromDesc(void)
 {
-    const auto &portDesc = _impl->portDesc;
-    if (not portDesc) return;
+    const auto &inputDesc = _impl->inputDesc;
+    if (not inputDesc) return;
 
     //reload the port descriptions, clear the old first
     _inputPorts.clear();
-    _outputPorts.clear();
     _slotPorts.clear();
-    _signalPorts.clear();
 
     //reload inputs (and slots)
-    for (const auto &inputPortDesc : *portDesc->getArray("inputPorts"))
+    for (const auto &inputPortDesc : *inputDesc)
     {
         const auto &info = inputPortDesc.extract<Poco::JSON::Object::Ptr>();
         auto portKey = info->getValue<std::string>("name");
@@ -70,9 +75,22 @@ void GraphBlock::initPortsFromDesc(void)
         else this->addInputPort(gbp);
         if (info->has("dtype")) this->setInputPortTypeStr(gbp.getKey(), info->getValue<std::string>("dtype"));
     }
+}
+
+/***********************************************************************
+ * initialize the block's output ports
+ **********************************************************************/
+void GraphBlock::initOutputsFromDesc(void)
+{
+    const auto &outputDesc = _impl->outputDesc;
+    if (not outputDesc) return;
+
+    //reload the port descriptions, clear the old first
+    _outputPorts.clear();
+    _signalPorts.clear();
 
     //reload outputs (and signals)
-    for (const auto &outputPortDesc : *portDesc->getArray("outputPorts"))
+    for (const auto &outputPortDesc : *outputDesc)
     {
         const auto &info = outputPortDesc.extract<Poco::JSON::Object::Ptr>();
         auto portKey = info->getValue<std::string>("name");
@@ -83,6 +101,26 @@ void GraphBlock::initPortsFromDesc(void)
         else this->addOutputPort(gbp);
         if (info->has("dtype")) this->setOutputPortTypeStr(gbp.getKey(), info->getValue<std::string>("dtype"));
     }
+}
+
+/***********************************************************************
+ * instantiate the block, check for errors, query the ports
+ **********************************************************************/
+
+//! helper to convert the port info vector into JSON for serialization of the block
+static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo> &infos)
+{
+    Poco::JSON::Array::Ptr array = new Poco::JSON::Array();
+    for (const auto &info : infos)
+    {
+        Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
+        portInfo->set("name", info.name);
+        portInfo->set("isSpecial", info.isSpecial);
+        portInfo->set("size", info.dtype.size());
+        portInfo->set("dtype", info.dtype.toString());
+        array->add(portInfo);
+    }
+    return array;
 }
 
 void GraphBlock::update(void)
@@ -146,10 +184,6 @@ void GraphBlock::update(void)
     try
     {
         _blockEval.callProxy("eval", this->getId().toStdString(), this->getBlockDesc());
-        auto portDesc = _blockEval.call<Poco::JSON::Object::Ptr>("getPortDesc");
-
-        //only modify portDesc when there is a successful return value
-        if (portDesc) _impl->portDesc = portDesc;
     }
 
     //parser errors report
@@ -160,5 +194,9 @@ void GraphBlock::update(void)
     }
 
     //update the ports after complete evaluation
-    this->initPortsFromDesc();
+    auto block = _blockEval.callProxy("getProxyBlock");
+    _impl->inputDesc = portInfosToJSON(block.call<std::vector<Pothos::PortInfo>>("inputPortInfo"));
+    _impl->outputDesc = portInfosToJSON(block.call<std::vector<Pothos::PortInfo>>("outputPortInfo"));
+    this->initInputsFromDesc();
+    this->initOutputsFromDesc();
 }

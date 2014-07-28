@@ -147,7 +147,8 @@ public:
     void update(void);
 private:
     void initPropertiesFromDesc(void);
-    void initPortsFromDesc(void);
+    void initInputsFromDesc(void);
+    void initOutputsFromDesc(void);
     void renderStaticText(void);
     struct Impl;
     std::shared_ptr<Impl> _impl;
