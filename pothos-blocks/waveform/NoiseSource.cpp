@@ -80,7 +80,8 @@ public:
         _wave("GAUSSIAN"),
         _mean(0.0),
         _b(1.0),
-        _gen(_rd())
+        _gen(_rd()),
+        _waveIndex(0, waveTableSize-1)
     {
         this->setupOutput(0, typeid(Type));
         this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setWaveform));
@@ -102,7 +103,7 @@ public:
 
     void work(void)
     {
-        _index += size_t(_uniform(_gen)*waveTableSize)%waveTableSize; //lookup into table is random each work()
+        _index += _waveIndex(_gen); //lookup into table is random each work()
         auto outPort = this->output(0);
         auto out = outPort->buffer().template as<Type *>();
         for (size_t i = 0; i < outPort->elements(); i++)
@@ -240,6 +241,7 @@ private:
 
     std::random_device _rd;
     std::mt19937 _gen;
+    std::uniform_int_distribution<size_t> _waveIndex;
     std::uniform_real_distribution<> _uniform;
     std::normal_distribution<> _normal;
     std::poisson_distribution<> _poisson;
