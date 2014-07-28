@@ -62,7 +62,14 @@ QIcon makeIconFromTheme(const QString &name)
 
 QColor typeStrToColor(const std::string &typeStr)
 {
+    //This first part does nothing more than create 3 random 8bit numbers
+    //by mapping a chunk of a repeatable hash function to a color hex code.
     Poco::MD5Engine md5; md5.update(typeStr);
     const auto hexHash = Poco::DigestEngine::digestToHex(md5.digest());
-    return QColor(QString::fromStdString("#" + hexHash.substr(0, 6)));
+    QColor c(QString::fromStdString("#" + hexHash.substr(0, 6)));
+
+    //Use the 3 random numbers to create a pastel color.
+    //Pastels have high value and low to intermediate saturation:
+    //http://en.wikipedia.org/wiki/Pastel_%28color%29
+    return QColor::fromHsv(c.hue(), int(c.saturationF()*128), int(c.valueF()*64)+191);
 }
