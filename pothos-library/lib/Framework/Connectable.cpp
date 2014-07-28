@@ -3,6 +3,12 @@
 
 #include <Pothos/Framework/Connectable.hpp>
 
+Pothos::PortInfo::PortInfo(void):
+    isSpecial(false)
+{
+    return;
+}
+
 Pothos::Connectable::~Connectable(void)
 {
     return;
@@ -18,6 +24,20 @@ const std::string &Pothos::Connectable::getName(void) const
     return _name;
 }
 
+std::vector<std::string> Pothos::Connectable::inputPortNames(void)
+{
+    std::vector<std::string> names;
+    for (const auto &info : this->inputPortInfo()) names.push_back(info.name);
+    return names;
+}
+
+std::vector<std::string> Pothos::Connectable::outputPortNames(void)
+{
+    std::vector<std::string> names;
+    for (const auto &info : this->outputPortInfo()) names.push_back(info.name);
+    return names;
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedConnectable = Pothos::ManagedClass()
@@ -25,6 +45,34 @@ static auto managedConnectable = Pothos::ManagedClass()
     .registerBaseClass<Pothos::Connectable, Pothos::Util::UID>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, setName))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, getName))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, inputPortInfo))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, outputPortInfo))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, inputPortNames))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, outputPortNames))
     .commit("Pothos/Connectable");
+
+#include <Pothos/Object/Serialize.hpp>
+
+namespace Pothos { namespace serialization {
+template<class Archive>
+void save(Archive & ar, const Pothos::PortInfo &t, const unsigned int)
+{
+    ar << t.name;
+    ar << t.isSpecial;
+    auto dtype = Pothos::Object(t.dtype);
+    ar << dtype;
+}
+
+template<class Archive>
+void load(Archive & ar, Pothos::PortInfo &t, const unsigned int)
+{
+    ar >> t.name;
+    ar >> t.isSpecial;
+    Pothos::Object dtype;
+    ar >> dtype;
+    t.dtype == dtype.extract<Pothos::DType>();
+}
+}}
+
+POTHOS_SERIALIZATION_SPLIT_FREE(Pothos::PortInfo)
+POTHOS_OBJECT_SERIALIZE(std::vector<Pothos::PortInfo>)

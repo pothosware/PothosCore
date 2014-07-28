@@ -180,6 +180,34 @@ std::shared_ptr<Pothos::BufferManager> Pothos::Block::getOutputBufferManager(con
     return Pothos::BufferManager::Sptr(); //abdicate
 }
 
+std::vector<Pothos::PortInfo> Pothos::Block::inputPortInfo(void)
+{
+    std::vector<PortInfo> infos;
+    for (const auto &name : _inputPortNames)
+    {
+        PortInfo info;
+        info.name = name;
+        info.isSpecial = this->input(name)->isSlot();
+        info.dtype = this->input(name)->dtype();
+        infos.push_back(info);
+    }
+    return infos;
+}
+
+std::vector<Pothos::PortInfo> Pothos::Block::outputPortInfo(void)
+{
+    std::vector<PortInfo> infos;
+    for (const auto &name : _outputPortNames)
+    {
+        PortInfo info;
+        info.name = name;
+        info.isSpecial = this->output(name)->isSignal();
+        info.dtype = this->output(name)->dtype();
+        infos.push_back(info);
+    }
+    return infos;
+}
+
 #include <Pothos/Managed.hpp>
 
 static Pothos::Block *getPointer(Pothos::Block &b)

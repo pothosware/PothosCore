@@ -144,14 +144,14 @@ protected:
 public:
 
     /*!
-     * Get the names of the input ports in the order they were allocated.
+     * Get a vector of info about all of the input ports available.
      */
-    std::vector<std::string> inputPortNames(void);
+    std::vector<PortInfo> inputPortInfo(void);
 
     /*!
-     * Get the names of the output ports in the order they were allocated.
+     * Get a vector of info about all of the output ports available.
      */
-    std::vector<std::string> outputPortNames(void);
+    std::vector<PortInfo> outputPortInfo(void);
 
     /*!
      * Get the input port at the specified port name.
