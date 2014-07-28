@@ -14,29 +14,35 @@ class BlockEval
 {
 public:
     BlockEval(EvalEnvironment &env):
-        evalEnv(env)
+        _evalEnv(env)
     {
         return;
     };
 
     Pothos::Object evalProperty(const std::string &key, const std::string &expr)
     {
-        auto val = evalEnv.eval(expr);
-        properties[key] = val;
+        auto val = _evalEnv.eval(expr);
+        _properties[key] = val;
         return val;
     }
 
     void eval(const std::string &id, const Poco::JSON::Object::Ptr &blockDesc);
 
-    Poco::JSON::Object::Ptr inspect(void);
+    Poco::JSON::Object::Ptr getPortDesc(void) const
+    {
+        return _portDesc;
+    }
 
     Pothos::Proxy getProxyBlock(void) const
     {
-        return proxyBlock;
+        return _proxyBlock;
     }
 
 private:
-    std::map<std::string, Pothos::Object> properties;
-    Pothos::Proxy proxyBlock;
-    EvalEnvironment &evalEnv;
+    std::map<std::string, Pothos::Object> _properties;
+    Pothos::Proxy _proxyBlock;
+    EvalEnvironment &_evalEnv;
+
+    Poco::JSON::Object::Ptr inspectPorts(void);
+    Poco::JSON::Object::Ptr _portDesc;
 };
