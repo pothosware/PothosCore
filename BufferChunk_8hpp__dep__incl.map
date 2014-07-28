@@ -1,8 +1,8 @@
 <map id="include/Pothos/Framework/BufferChunk.hpp" name="include/Pothos/Framework/BufferChunk.hpp">
-<area shape="rect" id="node2" href="$InputPort_8hpp.html" title="include/Pothos/Framework\l/InputPort.hpp" alt="" coords="64,97,240,138"/>
-<area shape="rect" id="node5" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="151,368,354,395"/>
-<area shape="rect" id="node6" href="$BufferAccumulator_8hpp.html" title="include/Pothos/Framework\l/BufferAccumulator.hpp" alt="" coords="405,187,582,229"/>
-<area shape="rect" id="node7" href="$OutputPort_8hpp.html" title="include/Pothos/Framework\l/OutputPort.hpp" alt="" coords="265,97,442,138"/>
-<area shape="rect" id="node3" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="126,187,303,229"/>
-<area shape="rect" id="node4" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="101,278,278,319"/>
+<area shape="rect" id="node2" href="$BufferAccumulator_8hpp.html" title="include/Pothos/Framework\l/BufferAccumulator.hpp" alt="" coords="5,187,181,229"/>
+<area shape="rect" id="node3" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="195,368,397,395"/>
+<area shape="rect" id="node4" href="$InputPort_8hpp.html" title="include/Pothos/Framework\l/InputPort.hpp" alt="" coords="258,97,435,138"/>
+<area shape="rect" id="node7" href="$OutputPort_8hpp.html" title="include/Pothos/Framework\l/OutputPort.hpp" alt="" coords="459,97,636,138"/>
+<area shape="rect" id="node5" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="334,187,511,229"/>
+<area shape="rect" id="node6" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="359,278,536,319"/>
 </map>

@@ -1,7 +1,9 @@
 var searchData=
 [
   ['nodeaffinity',['nodeAffinity',['../structPothos_1_1BufferManagerArgs.html#aaf55b223e6b9eb0b88687a3f42174149',1,'Pothos::BufferManagerArgs']]],
-  ['nodeid',['nodeId',['../classPothos_1_1System_1_1NodeInfo.html#a5c0250dc48a0c71e5da1ee2563473821',1,'Pothos::System::NodeInfo']]],
-  ['nodename',['nodeName',['../classPothos_1_1System_1_1NodeInfo.html#a427eddaa1be1be4bc522a7bc93dfb4e9',1,'Pothos::System::NodeInfo']]],
-  ['numbuffers',['numBuffers',['../structPothos_1_1BufferManagerArgs.html#a6a3e1cedc46c304ddfaa1157cf3a77b2',1,'Pothos::BufferManagerArgs']]]
+  ['nodeid',['nodeId',['../classPothos_1_1System_1_1HostInfo.html#a13fca75612b96cdeb58fec420a01d297',1,'Pothos::System::HostInfo']]],
+  ['nodename',['nodeName',['../classPothos_1_1System_1_1HostInfo.html#af91800c79c12a72a92ddfc4a2592ac9a',1,'Pothos::System::HostInfo']]],
+  ['nodenumber',['nodeNumber',['../classPothos_1_1System_1_1NumaInfo.html#adb4533594461e547aaedf4bba24c6681',1,'Pothos::System::NumaInfo']]],
+  ['numbuffers',['numBuffers',['../structPothos_1_1BufferManagerArgs.html#a6a3e1cedc46c304ddfaa1157cf3a77b2',1,'Pothos::BufferManagerArgs']]],
+  ['numthreads',['numThreads',['../classPothos_1_1ThreadPoolArgs.html#ae4bcae68446eaf4f540e361eaf8e2720',1,'Pothos::ThreadPoolArgs']]]
 ];

@@ -121,6 +121,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ab5c5a12c36c051c47948691af64746df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a638ae99b5d945051aeb7c533c823d86d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteClient.html#a638ae99b5d945051aeb7c533c823d86d">RemoteClient</a> (const std::string &amp;uri, const long timeoutUs=100000)</td></tr>
 <tr class="separator:a638ae99b5d945051aeb7c533c823d86d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89df956650ee841a35da76d1b9260054"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteClient.html#a89df956650ee841a35da76d1b9260054">getUri</a> (void) const </td></tr>
+<tr class="memdesc:a89df956650ee841a35da76d1b9260054"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the connection's URI.  <a href="#a89df956650ee841a35da76d1b9260054">More...</a><br/></td></tr>
+<tr class="separator:a89df956650ee841a35da76d1b9260054"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c5833551fe12b36fd851a1eef82f98c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteClient.html#a1c5833551fe12b36fd851a1eef82f98c">operator bool</a> (void) const </td></tr>
 <tr class="memdesc:a1c5833551fe12b36fd851a1eef82f98c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is this remote client connected?  <a href="#a1c5833551fe12b36fd851a1eef82f98c">More...</a><br/></td></tr>
 <tr class="separator:a1c5833551fe12b36fd851a1eef82f98c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -145,6 +148,8 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a3531b6af2294f3f078fb18006792e050"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5a3a17624455844750e3357acec8c83"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classPothos_1_1ProxyEnvironment.html#a89988a1d095522e7dd597c5ac145e265">ProxyEnvironment::Sptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteClient.html#af5a3a17624455844750e3357acec8c83">makeEnvironment</a> (std::iostream &amp;io, const std::string &amp;name, const <a class="el" href="namespacePothos.html#aab6f8e4397b12dd6bb40307b735bab94">ProxyEnvironmentArgs</a> &amp;args=<a class="el" href="namespacePothos.html#aab6f8e4397b12dd6bb40307b735bab94">ProxyEnvironmentArgs</a>())</td></tr>
 <tr class="separator:af5a3a17624455844750e3357acec8c83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab532f507a0a5e562792d6e9b5640f9ee"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteClient.html#ab532f507a0a5e562792d6e9b5640f9ee">lookupIpFromNodeId</a> (const std::string nodeId)</td></tr>
+<tr class="separator:ab532f507a0a5e562792d6e9b5640f9ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A remote client is a handle for a client socket. The socket can be interacted with through iostream. </p>
@@ -216,6 +221,57 @@ Static Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Get the iostream to interact with the client handle. This iostream can be passed to makeEnvironment to create a remote proxy. </p>
+
+</div>
+</div>
+<a class="anchor" id="a89df956650ee841a35da76d1b9260054"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string&amp; Pothos::RemoteClient::getUri </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the connection's URI. </p>
+
+</div>
+</div>
+<a class="anchor" id="ab532f507a0a5e562792d6e9b5640f9ee"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string Pothos::RemoteClient::lookupIpFromNodeId </td>
+          <td>(</td>
+          <td class="paramtype">const std::string&#160;</td>
+          <td class="paramname"><em>nodeId</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Lookup an IP address given the node identifier of the remote host. </p>
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classPothos_1_1ProxyEnvironment.html#a5da94ef01ef708921fdf936fcf5e1e34">Pothos::ProxyEnvironment::getNodeId()</a> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">nodeId</td><td>the unique ID of a host on the network </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the IP address as a string or empty if lookup fails </dd></dl>
 
 </div>
 </div>
@@ -358,7 +414,7 @@ Static Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 22 2014 18:25:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 26 2014 13:37:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

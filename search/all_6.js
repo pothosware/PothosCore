@@ -16,7 +16,7 @@ var searchData=
   ['findproxy',['findProxy',['../classPothos_1_1ProxyEnvironment.html#aa4d4ac935ea877a91e8b632843a6791a',1,'Pothos::ProxyEnvironment']]],
   ['flags',['flags',['../classPothos_1_1Util_1_1CompilerArgs.html#a9309cada5ad434c6d2cc6fc690d0a091',1,'Pothos::Util::CompilerArgs']]],
   ['framework_2ehpp',['Framework.hpp',['../Framework_8hpp.html',1,'']]],
-  ['fromkey',['fromKey',['../classPothos_1_1RemoteNode.html#a7c939d076e95c4b5e1a40f8ebc7f81fd',1,'Pothos::RemoteNode']]],
+  ['freememory',['freeMemory',['../classPothos_1_1System_1_1NumaInfo.html#abd1ffd0be70bc3ca5838f8c0b19d5d9b',1,'Pothos::System::NumaInfo']]],
   ['front',['front',['../classPothos_1_1BufferAccumulator.html#a1f0534906c81370351be4f725cae12ea',1,'Pothos::BufferAccumulator::front()'],['../classPothos_1_1BufferManager.html#a5b52470abe6763b1e4035f0077d8a6a4',1,'Pothos::BufferManager::front()'],['../classPothos_1_1Util_1_1RingDeque.html#ac365af93c599345cf25a8874c200f728',1,'Pothos::Util::RingDeque::front(void) const '],['../classPothos_1_1Util_1_1RingDeque.html#a32528e55a843c9a0eee086406bf4d40f',1,'Pothos::Util::RingDeque::front(void)']]],
   ['full',['full',['../classPothos_1_1Util_1_1RingDeque.html#a13fe50bc441de2272bec07466a59785a',1,'Pothos::Util::RingDeque']]]
 ];

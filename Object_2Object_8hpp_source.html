@@ -185,33 +185,35 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;</div>
 <div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;    std::string toString(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    <span class="keywordtype">bool</span> operator&lt;(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;obj) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;</div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;    <span class="keywordtype">bool</span> operator&gt;(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;obj) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;</div>
-<div class="line"><a name="l00256"></a><span class="lineno"><a class="line" href="classPothos_1_1Object.html#ae18c3e90ebf27064021f328285ef1bb3">  256</a></span>&#160;    Detail::ObjectContainer *<a class="code" href="classPothos_1_1Object.html#ae18c3e90ebf27064021f328285ef1bb3">_impl</a>;</div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;};</div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;</div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;<a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a118a5bc60dd2e389a1d7bc03ff061e4a">operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;rhs);</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;} <span class="comment">//namespace Pothos</span></div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;<span class="preprocessor">#ifdef _MSC_VER</span></div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#pragma warning(pop)</span></div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#endif //_MSC_VER</span></div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    std::string getTypeString(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    <span class="keywordtype">bool</span> operator&lt;(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;obj) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    <span class="keywordtype">bool</span> operator&gt;(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;obj) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;</div>
+<div class="line"><a name="l00261"></a><span class="lineno"><a class="line" href="classPothos_1_1Object.html#ae18c3e90ebf27064021f328285ef1bb3">  261</a></span>&#160;    Detail::ObjectContainer *<a class="code" href="classPothos_1_1Object.html#ae18c3e90ebf27064021f328285ef1bb3">_impl</a>;</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;};</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a05d2dce6549320129fc18aa10e72e30c">operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;rhs);</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;} <span class="comment">//namespace Pothos</span></div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;<span class="preprocessor">#ifdef _MSC_VER</span></div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#pragma warning(pop)</span></div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#endif //_MSC_VER</span></div>
 <div class="ttc" id="Config_8hpp_html_a8d78f57e80202fac856d4526459c4bbb"><div class="ttname"><a href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a></div><div class="ttdeci">#define pothos_explicit</div><div class="ttdef"><b>Definition:</b> Config.hpp:84</div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:40</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
-<div class="ttc" id="classPothos_1_1Object_html_ae18c3e90ebf27064021f328285ef1bb3"><div class="ttname"><a href="classPothos_1_1Object.html#ae18c3e90ebf27064021f328285ef1bb3">Pothos::Object::_impl</a></div><div class="ttdeci">Detail::ObjectContainer * _impl</div><div class="ttdoc">Private implementation details. </div><div class="ttdef"><b>Definition:</b> Object.hpp:256</div></div>
+<div class="ttc" id="namespacePothos_html_a05d2dce6549320129fc18aa10e72e30c"><div class="ttname"><a href="namespacePothos.html#a05d2dce6549320129fc18aa10e72e30c">Pothos::operator==</a></div><div class="ttdeci">POTHOS_API bool operator==(const Callable &amp;lhs, const Callable &amp;rhs)</div></div>
+<div class="ttc" id="classPothos_1_1Object_html_ae18c3e90ebf27064021f328285ef1bb3"><div class="ttname"><a href="classPothos_1_1Object.html#ae18c3e90ebf27064021f328285ef1bb3">Pothos::Object::_impl</a></div><div class="ttdeci">Detail::ObjectContainer * _impl</div><div class="ttdoc">Private implementation details. </div><div class="ttdef"><b>Definition:</b> Object.hpp:261</div></div>
 <div class="ttc" id="classPothos_1_1Object_html"><div class="ttname"><a href="classPothos_1_1Object.html">Pothos::Object</a></div><div class="ttdef"><b>Definition:</b> Object.hpp:54</div></div>
-<div class="ttc" id="namespacePothos_html_a118a5bc60dd2e389a1d7bc03ff061e4a"><div class="ttname"><a href="namespacePothos.html#a118a5bc60dd2e389a1d7bc03ff061e4a">Pothos::operator==</a></div><div class="ttdeci">POTHOS_API bool operator==(const ManagedBuffer &amp;lhs, const ManagedBuffer &amp;rhs)</div></div>
 <div class="ttc" id="namespacePothos_1_1serialization_html_a4ed1534bf24677dd94d889f63771821e"><div class="ttname"><a href="namespacePothos_1_1serialization.html#a4ed1534bf24677dd94d889f63771821e">Pothos::serialization::serialize</a></div><div class="ttdeci">void serialize(Archive &amp;, Pothos::Detail::ObjectContainer &amp;, const unsigned int)</div><div class="ttdef"><b>Definition:</b> Serialize.hpp:45</div></div>
 <div class="ttc" id="namespacePothos_1_1Util_html_ac8efd6ef8c73e83c859a4b37b8719abe"><div class="ttname"><a href="namespacePothos_1_1Util.html#ac8efd6ef8c73e83c859a4b37b8719abe">Pothos::Util::compareTo</a></div><div class="ttdeci">int compareTo(const T0 &amp;v0, const T1 &amp;v1)</div><div class="ttdef"><b>Definition:</b> CompareTo.hpp:26</div></div>
 <div class="ttc" id="classPothos_1_1NullObject_html"><div class="ttname"><a href="classPothos_1_1NullObject.html">Pothos::NullObject</a></div><div class="ttdef"><b>Definition:</b> Object.hpp:36</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 22 2014 18:25:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 26 2014 13:37:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

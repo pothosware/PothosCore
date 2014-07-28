@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['workinfo',['WorkInfo',['../structPothos_1_1WorkInfo.html',1,'Pothos']]],
-  ['writefileexception',['WriteFileException',['../classPothos_1_1WriteFileException.html',1,'Pothos']]]
+  ['uid',['UID',['../classPothos_1_1Util_1_1UID.html',1,'Pothos::Util']]],
+  ['unhandledexception',['UnhandledException',['../classPothos_1_1UnhandledException.html',1,'Pothos']]],
+  ['unknownurischemeexception',['UnknownURISchemeException',['../classPothos_1_1UnknownURISchemeException.html',1,'Pothos']]]
 ];

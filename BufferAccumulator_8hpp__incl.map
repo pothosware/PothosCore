@@ -1,7 +1,7 @@
 <map id="include/Pothos/Framework/BufferAccumulator.hpp" name="include/Pothos/Framework/BufferAccumulator.hpp">
-<area shape="rect" id="node2" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="104,336,234,363"/>
-<area shape="rect" id="node4" href="$BufferChunk_8hpp.html" title="Pothos/Framework/BufferChunk.hpp" alt="" coords="80,96,314,123"/>
-<area shape="rect" id="node8" href="$RingDeque_8hpp.html" title="Pothos/Util/RingDeque.hpp" alt="" coords="442,96,623,123"/>
-<area shape="rect" id="node5" href="$SharedBuffer_8hpp.html" title="Pothos/Framework/SharedBuffer.hpp" alt="" coords="51,261,287,288"/>
-<area shape="rect" id="node7" href="$ManagedBuffer_8hpp.html" title="Pothos/Framework/Managed\lBuffer.hpp" alt="" coords="178,171,367,213"/>
+<area shape="rect" id="node2" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="39,336,168,363"/>
+<area shape="rect" id="node4" href="$BufferChunk_8hpp.html" title="Pothos/Framework/BufferChunk.hpp" alt="" coords="73,96,307,123"/>
+<area shape="rect" id="node9" href="$RingDeque_8hpp.html" title="Pothos/Util/RingDeque.hpp" alt="" coords="383,96,564,123"/>
+<area shape="rect" id="node5" href="$SharedBuffer_8hpp.html" title="Pothos/Framework/SharedBuffer.hpp" alt="" coords="141,261,377,288"/>
+<area shape="rect" id="node7" href="$ManagedBuffer_8hpp.html" title="Pothos/Framework/Managed\lBuffer.hpp" alt="" coords="48,171,237,213"/>
 </map>

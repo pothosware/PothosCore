@@ -7,6 +7,7 @@ var searchData=
   ['_7ebugcheckexception',['~BugcheckException',['../classPothos_1_1BugcheckException.html#a56632929ede9640a9316e3cbaa9e4fdb',1,'Pothos::BugcheckException']]],
   ['_7ecallregistry',['~CallRegistry',['../classPothos_1_1CallRegistry.html#a1e3ecfcef30b867da641dbd1e1c714da',1,'Pothos::CallRegistry::~CallRegistry(void)'],['../classPothos_1_1CallRegistry.html#a1e3ecfcef30b867da641dbd1e1c714da',1,'Pothos::CallRegistry::~CallRegistry(void)']]],
   ['_7ecircularreferenceexception',['~CircularReferenceException',['../classPothos_1_1CircularReferenceException.html#abcc6162f29dd748823b8067f7bb61bdd',1,'Pothos::CircularReferenceException']]],
+  ['_7econnectable',['~Connectable',['../classPothos_1_1Connectable.html#aa355bfcfb08e95bfd2a3b92adb67815f',1,'Pothos::Connectable']]],
   ['_7ecreatefileexception',['~CreateFileException',['../classPothos_1_1CreateFileException.html#a32d9da1441bb97404c25f0ac87e2be9a',1,'Pothos::CreateFileException']]],
   ['_7edataexception',['~DataException',['../classPothos_1_1DataException.html#a207472bc21e27bbecfab20b8dddb44f0',1,'Pothos::DataException']]],
   ['_7edataformatexception',['~DataFormatException',['../classPothos_1_1DataFormatException.html#a284e096a69e1d1bd6c3f3098e094cc34',1,'Pothos::DataFormatException']]],

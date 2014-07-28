@@ -1,13 +1,17 @@
 var searchData=
 [
-  ['rangeexception',['RangeException',['../classPothos_1_1RangeException.html',1,'Pothos']]],
-  ['readfileexception',['ReadFileException',['../classPothos_1_1ReadFileException.html',1,'Pothos']]],
-  ['refholder',['RefHolder',['../classPothos_1_1Util_1_1RefHolder.html',1,'Pothos::Util']]],
-  ['regularexpressionexception',['RegularExpressionException',['../classPothos_1_1RegularExpressionException.html',1,'Pothos']]],
-  ['remoteclient',['RemoteClient',['../classPothos_1_1RemoteClient.html',1,'Pothos']]],
-  ['remotenode',['RemoteNode',['../classPothos_1_1RemoteNode.html',1,'Pothos']]],
-  ['remoteserver',['RemoteServer',['../classPothos_1_1RemoteServer.html',1,'Pothos']]],
-  ['ringdeque',['RingDeque',['../classPothos_1_1Util_1_1RingDeque.html',1,'Pothos::Util']]],
-  ['ringdeque_3c_20pothos_3a_3abufferchunk_20_3e',['RingDeque&lt; Pothos::BufferChunk &gt;',['../classPothos_1_1Util_1_1RingDeque.html',1,'Pothos::Util']]],
-  ['runtimeexception',['RuntimeException',['../classPothos_1_1RuntimeException.html',1,'Pothos']]]
+  ['pathnotfoundexception',['PathNotFoundException',['../classPothos_1_1PathNotFoundException.html',1,'Pothos']]],
+  ['pathsyntaxexception',['PathSyntaxException',['../classPothos_1_1PathSyntaxException.html',1,'Pothos']]],
+  ['plugin',['Plugin',['../classPothos_1_1Plugin.html',1,'Pothos']]],
+  ['pluginloader',['PluginLoader',['../classPothos_1_1PluginLoader.html',1,'Pothos']]],
+  ['pluginmodule',['PluginModule',['../classPothos_1_1PluginModule.html',1,'Pothos']]],
+  ['pluginpath',['PluginPath',['../classPothos_1_1PluginPath.html',1,'Pothos']]],
+  ['pluginregistry',['PluginRegistry',['../classPothos_1_1PluginRegistry.html',1,'Pothos']]],
+  ['pluginregistryinfodump',['PluginRegistryInfoDump',['../structPothos_1_1PluginRegistryInfoDump.html',1,'Pothos']]],
+  ['pooloverflowexception',['PoolOverflowException',['../classPothos_1_1PoolOverflowException.html',1,'Pothos']]],
+  ['propertynotsupportedexception',['PropertyNotSupportedException',['../classPothos_1_1PropertyNotSupportedException.html',1,'Pothos']]],
+  ['protocolexception',['ProtocolException',['../classPothos_1_1ProtocolException.html',1,'Pothos']]],
+  ['proxy',['Proxy',['../classPothos_1_1Proxy.html',1,'Pothos']]],
+  ['proxyenvironment',['ProxyEnvironment',['../classPothos_1_1ProxyEnvironment.html',1,'Pothos']]],
+  ['proxyhandle',['ProxyHandle',['../classPothos_1_1ProxyHandle.html',1,'Pothos']]]
 ];

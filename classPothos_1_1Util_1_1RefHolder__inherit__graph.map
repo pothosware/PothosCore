@@ -1,5 +1,8 @@
 <map id="Pothos::Util::RefHolder" name="Pothos::Util::RefHolder">
-<area shape="rect" id="node2" href="$classPothos_1_1ProxyEnvironment.html" title="Pothos::ProxyEnvironment" alt="" coords="5,80,184,107"/>
-<area shape="rect" id="node3" href="$classPothos_1_1RemoteClient.html" title="Pothos::RemoteClient" alt="" coords="209,80,359,107"/>
-<area shape="rect" id="node4" href="$classPothos_1_1RemoteServer.html" title="Pothos::RemoteServer" alt="" coords="384,80,537,107"/>
+<area shape="rect" id="node2" href="$classPothos_1_1Connectable.html" title="Pothos::Connectable" alt="" coords="231,31,375,57"/>
+<area shape="rect" id="node5" href="$classPothos_1_1ProxyEnvironment.html" title="Pothos::ProxyEnvironment" alt="" coords="213,81,392,108"/>
+<area shape="rect" id="node6" href="$classPothos_1_1RemoteClient.html" title="Pothos::RemoteClient" alt="" coords="227,132,378,159"/>
+<area shape="rect" id="node7" href="$classPothos_1_1RemoteServer.html" title="Pothos::RemoteServer" alt="" coords="225,183,380,209"/>
+<area shape="rect" id="node3" href="$classPothos_1_1Block.html" title="Pothos::Block" alt="" coords="451,5,555,32"/>
+<area shape="rect" id="node4" href="$classPothos_1_1Topology.html" title="Pothos::Topology" alt="" coords="441,56,565,83"/>
 </map>

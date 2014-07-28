@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['pid',['pid',['../classPothos_1_1System_1_1NodeInfo.html#a19c76e4a262395c3d7b3bd2eff9e236d',1,'Pothos::System::NodeInfo']]],
-  ['pluginpath',['pluginPath',['../structPothos_1_1PluginRegistryInfoDump.html#ab66d886eb856bc87e905dd4badf6f4af',1,'Pothos::PluginRegistryInfoDump']]]
+  ['pid',['pid',['../classPothos_1_1System_1_1HostInfo.html#a64eb19285a3d4240d73a807d7c974f66',1,'Pothos::System::HostInfo']]],
+  ['pluginpath',['pluginPath',['../structPothos_1_1PluginRegistryInfoDump.html#ab66d886eb856bc87e905dd4badf6f4af',1,'Pothos::PluginRegistryInfoDump']]],
+  ['priority',['priority',['../classPothos_1_1ThreadPoolArgs.html#aa82fdfe513ba77618742e115c03ae491',1,'Pothos::ThreadPoolArgs']]],
+  ['processorcount',['processorCount',['../classPothos_1_1System_1_1HostInfo.html#a51c00a46a622965fc2fe235b630f89a1',1,'Pothos::System::HostInfo']]]
 ];

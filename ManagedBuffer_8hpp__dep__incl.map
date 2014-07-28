@@ -1,10 +1,10 @@
 <map id="include/Pothos/Framework/ManagedBuffer.hpp" name="include/Pothos/Framework/ManagedBuffer.hpp">
-<area shape="rect" id="node2" href="$BufferChunk_8hpp.html" title="include/Pothos/Framework\l/BufferChunk.hpp" alt="" coords="359,97,536,138"/>
-<area shape="rect" id="node6" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="397,459,600,485"/>
-<area shape="rect" id="node9" href="$BufferManager_8hpp.html" title="include/Pothos/Framework\l/BufferManager.hpp" alt="" coords="663,369,840,410"/>
-<area shape="rect" id="node3" href="$InputPort_8hpp.html" title="include/Pothos/Framework\l/InputPort.hpp" alt="" coords="359,187,536,229"/>
-<area shape="rect" id="node7" href="$BufferAccumulator_8hpp.html" title="include/Pothos/Framework\l/BufferAccumulator.hpp" alt="" coords="5,278,181,319"/>
-<area shape="rect" id="node8" href="$OutputPort_8hpp.html" title="include/Pothos/Framework\l/OutputPort.hpp" alt="" coords="158,187,335,229"/>
-<area shape="rect" id="node4" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="283,278,460,319"/>
-<area shape="rect" id="node5" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="258,369,435,410"/>
+<area shape="rect" id="node2" href="$BufferChunk_8hpp.html" title="include/Pothos/Framework\l/BufferChunk.hpp" alt="" coords="258,97,435,138"/>
+<area shape="rect" id="node4" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="308,459,511,485"/>
+<area shape="rect" id="node9" href="$BufferManager_8hpp.html" title="include/Pothos/Framework\l/BufferManager.hpp" alt="" coords="713,369,889,410"/>
+<area shape="rect" id="node3" href="$BufferAccumulator_8hpp.html" title="include/Pothos/Framework\l/BufferAccumulator.hpp" alt="" coords="5,278,181,319"/>
+<area shape="rect" id="node5" href="$InputPort_8hpp.html" title="include/Pothos/Framework\l/InputPort.hpp" alt="" coords="258,187,435,229"/>
+<area shape="rect" id="node8" href="$OutputPort_8hpp.html" title="include/Pothos/Framework\l/OutputPort.hpp" alt="" coords="459,187,636,229"/>
+<area shape="rect" id="node6" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="359,278,536,319"/>
+<area shape="rect" id="node7" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="385,369,561,410"/>
 </map>

@@ -3,7 +3,7 @@ var searchData=
   ['waitinactive',['waitInactive',['../classPothos_1_1Topology.html#ad0dc5ef214ebd4a3c42bddbd07bf0337',1,'Pothos::Topology']]],
   ['what',['what',['../classPothos_1_1Exception.html#a84c74babbea8807735a1b4093bf4454b',1,'Pothos::Exception']]],
   ['work',['work',['../classPothos_1_1Block.html#a91f23dd0aa445d564523353bfa1b38a0',1,'Pothos::Block']]],
-  ['workeractor',['WorkerActor',['../classPothos_1_1InputPort.html#afdc68dcc8e20a7312562013e71feaf64',1,'Pothos::InputPort::WorkerActor()'],['../classPothos_1_1OutputPort.html#afdc68dcc8e20a7312562013e71feaf64',1,'Pothos::OutputPort::WorkerActor()'],['../classPothos_1_1Block.html#afdc68dcc8e20a7312562013e71feaf64',1,'Pothos::Block::WorkerActor()']]],
+  ['workeractor',['WorkerActor',['../classPothos_1_1Block.html#afdc68dcc8e20a7312562013e71feaf64',1,'Pothos::Block::WorkerActor()'],['../classPothos_1_1InputPort.html#afdc68dcc8e20a7312562013e71feaf64',1,'Pothos::InputPort::WorkerActor()'],['../classPothos_1_1OutputPort.html#afdc68dcc8e20a7312562013e71feaf64',1,'Pothos::OutputPort::WorkerActor()']]],
   ['workinfo',['WorkInfo',['../structPothos_1_1WorkInfo.html#a13aa17aa4bf402e9c39ad7933065465c',1,'Pothos::WorkInfo::WorkInfo()'],['../classPothos_1_1Block.html#a0e7b64625325128bfbcc861c32704fcf',1,'Pothos::Block::workInfo()']]],
   ['workinfo',['WorkInfo',['../structPothos_1_1WorkInfo.html',1,'Pothos']]],
   ['workinfo_2ehpp',['WorkInfo.hpp',['../WorkInfo_8hpp.html',1,'']]],

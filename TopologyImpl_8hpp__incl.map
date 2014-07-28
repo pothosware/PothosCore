@@ -1,6 +1,11 @@
 <map id="include/Pothos/Framework/TopologyImpl.hpp" name="include/Pothos/Framework/TopologyImpl.hpp">
-<area shape="rect" id="node2" href="$Topology_8hpp.html" title="Pothos/Framework/Topology.hpp" alt="" coords="162,96,376,123"/>
-<area shape="rect" id="node3" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="131,245,260,272"/>
-<area shape="rect" id="node5" href="$UID_8hpp.html" title="Pothos/Util/UID.hpp" alt="" coords="66,171,205,197"/>
-<area shape="rect" id="node8" href="$Object_2Object_8hpp.html" title="Pothos/Object/Object.hpp" alt="" coords="333,171,504,197"/>
+<area shape="rect" id="node2" href="$Topology_8hpp.html" title="Pothos/Framework/Topology.hpp" alt="" coords="680,96,894,123"/>
+<area shape="rect" id="node3" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="122,395,252,421"/>
+<area shape="rect" id="node5" href="$Connectable_8hpp.html" title="Pothos/Framework/Connectable.hpp" alt="" coords="593,171,826,197"/>
+<area shape="rect" id="node10" href="$Object_2Object_8hpp.html" title="Pothos/Object/Object.hpp" alt="" coords="363,320,534,347"/>
+<area shape="rect" id="node14" href="$CallRegistry_8hpp.html" title="Pothos/Framework/CallRegistry.hpp" alt="" coords="140,171,373,197"/>
+<area shape="rect" id="node16" href="$ThreadPool_8hpp.html" title="Pothos/Framework/ThreadPool.hpp" alt="" coords="881,245,1108,272"/>
+<area shape="rect" id="node6" href="$UID_8hpp.html" title="Pothos/Util/UID.hpp" alt="" coords="666,245,805,272"/>
+<area shape="rect" id="node9" href="$RefHolder_8hpp.html" title="Pothos/Util/RefHolder.hpp" alt="" coords="150,245,324,272"/>
+<area shape="rect" id="node15" href="$Callable_2Callable_8hpp.html" title="Pothos/Callable/Callable.hpp" alt="" coords="348,245,538,272"/>
 </map>

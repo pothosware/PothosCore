@@ -1,7 +1,12 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classPothos_1_1CallRegistry.html" title="Pothos::CallRegistry" alt="" coords="9,5,151,32"/>
-<area shape="rect" id="node2" href="$classPothos_1_1Block.html" title="Pothos::Block" alt="" coords="213,56,317,83"/>
-<area shape="rect" id="node3" href="$classPothos_1_1SignalEmitter.html" title="Pothos::SignalEmitter" alt="" coords="5,56,155,83"/>
-<area shape="rect" id="node4" href="$classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="19,107,141,133"/>
-<area shape="rect" id="node5" href="$classPothos_1_1Topology.html" title="Pothos::Topology" alt="" coords="203,107,327,133"/>
+<area shape="rect" id="node1" href="$classPothos_1_1CallRegistry.html" title="Pothos::CallRegistry" alt="" coords="239,56,382,83"/>
+<area shape="rect" id="node2" href="$classPothos_1_1Block.html" title="Pothos::Block" alt="" coords="459,56,563,83"/>
+<area shape="rect" id="node3" href="$classPothos_1_1Topology.html" title="Pothos::Topology" alt="" coords="449,107,573,133"/>
+<area shape="rect" id="node5" href="$classPothos_1_1ProxyEnvironment.html" title="Pothos::ProxyEnvironment" alt="" coords="221,259,400,285"/>
+<area shape="rect" id="node6" href="$classPothos_1_1Util_1_1RefHolder.html" title="Pothos::Util::RefHolder" alt="" coords="10,183,169,209"/>
+<area shape="rect" id="node7" href="$classPothos_1_1Connectable.html" title="Pothos::Connectable" alt="" coords="239,107,383,133"/>
+<area shape="rect" id="node8" href="$classPothos_1_1RemoteClient.html" title="Pothos::RemoteClient" alt="" coords="235,157,386,184"/>
+<area shape="rect" id="node9" href="$classPothos_1_1RemoteServer.html" title="Pothos::RemoteServer" alt="" coords="233,208,388,235"/>
+<area shape="rect" id="node10" href="$classPothos_1_1SignalEmitter.html" title="Pothos::SignalEmitter" alt="" coords="236,5,385,32"/>
+<area shape="rect" id="node11" href="$classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="28,107,151,133"/>
 </map>

@@ -91,7 +91,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classPothos_1_1BlockRegistry-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Pothos::BlockRegistry Class Reference</div>  </div>
@@ -104,14 +103,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a12b7bcfe72a7d95693183626e42b3339"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BlockRegistry.html#a12b7bcfe72a7d95693183626e42b3339">BlockRegistry</a> (const std::string &amp;path, const <a class="el" href="classPothos_1_1Callable.html">Callable</a> &amp;factory)</td></tr>
 <tr class="separator:a12b7bcfe72a7d95693183626e42b3339"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
-Static Public Member Functions</h2></td></tr>
-<tr class="memitem:af922ab831a80e02b954dfc931e35a2f2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classPothos_1_1Callable.html">Callable</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BlockRegistry.html#af922ab831a80e02b954dfc931e35a2f2">lookup</a> (const std::string &amp;path)</td></tr>
-<tr class="separator:af922ab831a80e02b954dfc931e35a2f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The <a class="el" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a> class registers a block's factory function. A <a class="el" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a> can be created at static initialization time so that modules providing blocks will automatically register. Usage example (put this at the bottom of your c++ source file) static <a class="el" href="classPothos_1_1BlockRegistry.html">Pothos::BlockRegistry</a> registerMyBlock("/my/factory/path", &amp;MyBlock::make); </p>
+<div class="textblock"><p>The <a class="el" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a> class registers factories for topological elements. These elements include Blocks and sub-Topologies (hierarchies of elements). A <a class="el" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a> can be created at static initialization time so that modules providing blocks will automatically register. Usage example (put this at the bottom of your c++ source file) static <a class="el" href="classPothos_1_1BlockRegistry.html">Pothos::BlockRegistry</a> registerMyBlock("/my/factory/path", &amp;MyBlock::make); </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a12b7bcfe72a7d95693183626e42b3339"></a>
 <div class="memitem">
@@ -138,52 +132,14 @@ Static Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Register a factory function into the plugin registry. The resulting factory path will be /blocks/path. Example: a path of /foo/bar will register to /blocks/foo/bar.</p>
 <p>Because this call is used at static initialization time, it does not throw. However, registration errors are logged, and the block will not be available at runtime.</p>
+<p>The return type of the call must be Block* or Topology*.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">path</td><td>the factory path begining with a slash ("/") </td></tr>
-    <tr><td class="paramname">factory</td><td>the bound factory function returning Block* </td></tr>
+    <tr><td class="paramname">factory</td><td>the <a class="el" href="classPothos_1_1Callable.html">Callable</a> factory function </td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="af922ab831a80e02b954dfc931e35a2f2"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="classPothos_1_1Callable.html">Callable</a> Pothos::BlockRegistry::lookup </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>path</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Lookup a block factory in the plugin registry. Path fallows the same rules as in the <a class="el" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a> constructor. </p>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">PluginRegistryError</td><td>if no factory registration is found </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">path</td><td>the factory path begining with a slash ("/") </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>the factory function that was registered to path </dd></dl>
 
 </div>
 </div>
@@ -193,7 +149,7 @@ Static Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 22 2014 18:25:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 26 2014 13:37:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

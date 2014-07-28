@@ -129,26 +129,28 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classPothos_1_1ProxyEnvironment.html">ProxyEnvironment</a>(<span class="keywordtype">void</span>);</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">virtual</span> std::string getName(<span class="keywordtype">void</span>) <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">virtual</span> std::string getNodeId(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> findProxy(<span class="keyword">const</span> std::string &amp;name) = 0;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> convertObjectToProxy(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;local);</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ValueType&gt;</div>
-<div class="line"><a name="l00089"></a><span class="lineno"><a class="line" href="classPothos_1_1ProxyEnvironment.html#a54879bc505d3b3f78141d8584520d284">   89</a></span>&#160;    <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> <a class="code" href="classPothos_1_1ProxyEnvironment.html#a54879bc505d3b3f78141d8584520d284">makeProxy</a>(<span class="keyword">const</span> ValueType &amp;local)</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    {</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keywordflow">return</span> convertObjectToProxy(<a class="code" href="classPothos_1_1Object.html#a5aa78cc430204dc43fd89950f15a87a9">Pothos::Object::make</a>(local));</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    }</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPothos_1_1Object.html">Object</a> convertProxyToObject(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> &amp;proxy);</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="namespacePothos_1_1serialization.html#a4ed1534bf24677dd94d889f63771821e">serialize</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> &amp;proxy, std::ostream &amp;os) = 0;</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> deserialize(std::istream &amp;is) = 0;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;};</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;} <span class="comment">//namespace Pothos</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">virtual</span> std::string getName(<span class="keywordtype">void</span>) <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> findProxy(<span class="keyword">const</span> std::string &amp;name) = 0;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> convertObjectToProxy(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;local);</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ValueType&gt;</div>
+<div class="line"><a name="l00095"></a><span class="lineno"><a class="line" href="classPothos_1_1ProxyEnvironment.html#a54879bc505d3b3f78141d8584520d284">   95</a></span>&#160;    <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> <a class="code" href="classPothos_1_1ProxyEnvironment.html#a54879bc505d3b3f78141d8584520d284">makeProxy</a>(<span class="keyword">const</span> ValueType &amp;local)</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    {</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keywordflow">return</span> convertObjectToProxy(<a class="code" href="classPothos_1_1Object.html#a5aa78cc430204dc43fd89950f15a87a9">Pothos::Object::make</a>(local));</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    }</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPothos_1_1Object.html">Object</a> convertProxyToObject(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> &amp;proxy);</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="namespacePothos_1_1serialization.html#a4ed1534bf24677dd94d889f63771821e">serialize</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> &amp;proxy, std::ostream &amp;os) = 0;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> deserialize(std::istream &amp;is) = 0;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;};</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;} <span class="comment">//namespace Pothos</span></div>
 <div class="ttc" id="RefHolder_8hpp_html"><div class="ttname"><a href="RefHolder_8hpp.html">RefHolder.hpp</a></div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:40</div></div>
 <div class="ttc" id="classPothos_1_1Object_html_a5aa78cc430204dc43fd89950f15a87a9"><div class="ttname"><a href="classPothos_1_1Object.html#a5aa78cc430204dc43fd89950f15a87a9">Pothos::Object::make</a></div><div class="ttdeci">static Object make(ValueType &amp;&amp;value)</div><div class="ttdef"><b>Definition:</b> ObjectImpl.hpp:183</div></div>
@@ -158,7 +160,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="Object_2Object_8hpp_html"><div class="ttname"><a href="Object_2Object_8hpp.html">Object.hpp</a></div></div>
 <div class="ttc" id="classPothos_1_1ProxyEnvironment_html_a89988a1d095522e7dd597c5ac145e265"><div class="ttname"><a href="classPothos_1_1ProxyEnvironment.html#a89988a1d095522e7dd597c5ac145e265">Pothos::ProxyEnvironment::Sptr</a></div><div class="ttdeci">std::shared_ptr&lt; ProxyEnvironment &gt; Sptr</div><div class="ttdef"><b>Definition:</b> Environment.hpp:44</div></div>
 <div class="ttc" id="classPothos_1_1Util_1_1RefHolder_html"><div class="ttname"><a href="classPothos_1_1Util_1_1RefHolder.html">Pothos::Util::RefHolder</a></div><div class="ttdef"><b>Definition:</b> RefHolder.hpp:23</div></div>
-<div class="ttc" id="classPothos_1_1ProxyEnvironment_html_a54879bc505d3b3f78141d8584520d284"><div class="ttname"><a href="classPothos_1_1ProxyEnvironment.html#a54879bc505d3b3f78141d8584520d284">Pothos::ProxyEnvironment::makeProxy</a></div><div class="ttdeci">Proxy makeProxy(const ValueType &amp;local)</div><div class="ttdef"><b>Definition:</b> Environment.hpp:89</div></div>
+<div class="ttc" id="classPothos_1_1ProxyEnvironment_html_a54879bc505d3b3f78141d8584520d284"><div class="ttname"><a href="classPothos_1_1ProxyEnvironment.html#a54879bc505d3b3f78141d8584520d284">Pothos::ProxyEnvironment::makeProxy</a></div><div class="ttdeci">Proxy makeProxy(const ValueType &amp;local)</div><div class="ttdef"><b>Definition:</b> Environment.hpp:95</div></div>
 <div class="ttc" id="classPothos_1_1Object_html"><div class="ttname"><a href="classPothos_1_1Object.html">Pothos::Object</a></div><div class="ttdef"><b>Definition:</b> Object.hpp:54</div></div>
 <div class="ttc" id="namespacePothos_1_1serialization_html_a4ed1534bf24677dd94d889f63771821e"><div class="ttname"><a href="namespacePothos_1_1serialization.html#a4ed1534bf24677dd94d889f63771821e">Pothos::serialization::serialize</a></div><div class="ttdeci">void serialize(Archive &amp;, Pothos::Detail::ObjectContainer &amp;, const unsigned int)</div><div class="ttdef"><b>Definition:</b> Serialize.hpp:45</div></div>
 <div class="ttc" id="namespacePothos_html_aab6f8e4397b12dd6bb40307b735bab94"><div class="ttname"><a href="namespacePothos.html#aab6f8e4397b12dd6bb40307b735bab94">Pothos::ProxyEnvironmentArgs</a></div><div class="ttdeci">std::map&lt; std::string, std::string &gt; ProxyEnvironmentArgs</div><div class="ttdef"><b>Definition:</b> Environment.hpp:24</div></div>
@@ -168,7 +170,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 22 2014 18:25:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 26 2014 13:37:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

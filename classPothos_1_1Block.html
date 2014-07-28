@@ -106,14 +106,14 @@ Inheritance diagram for Pothos::Block:</div>
 <div class="dyncontent">
 <div class="center"><img src="classPothos_1_1Block__inherit__graph.png" border="0" usemap="#Pothos_1_1Block_inherit__map" alt="Inheritance graph"/></div>
 <map name="Pothos_1_1Block_inherit__map" id="Pothos_1_1Block_inherit__map">
-<area shape="rect" id="node2" href="classPothos_1_1CallRegistry.html" title="Pothos::CallRegistry" alt="" coords="5,5,147,32"/><area shape="rect" id="node3" href="classPothos_1_1SignalEmitter.html" title="Pothos::SignalEmitter" alt="" coords="171,5,319,32"/><area shape="rect" id="node4" href="classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="344,5,467,32"/></map>
+<area shape="rect" id="node2" href="classPothos_1_1CallRegistry.html" title="Pothos::CallRegistry" alt="" coords="5,80,147,107"/><area shape="rect" id="node3" href="classPothos_1_1SignalEmitter.html" title="Pothos::SignalEmitter" alt="" coords="171,80,319,107"/><area shape="rect" id="node4" href="classPothos_1_1Connectable.html" title="Pothos::Connectable" alt="" coords="344,80,488,107"/><area shape="rect" id="node5" href="classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="272,5,395,32"/><area shape="rect" id="node6" href="classPothos_1_1Util_1_1RefHolder.html" title="Pothos::Util::RefHolder" alt="" coords="419,5,577,32"/></map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
 Collaboration diagram for Pothos::Block:</div>
 <div class="dyncontent">
 <div class="center"><img src="classPothos_1_1Block__coll__graph.png" border="0" usemap="#Pothos_1_1Block_coll__map" alt="Collaboration graph"/></div>
 <map name="Pothos_1_1Block_coll__map" id="Pothos_1_1Block_coll__map">
-<area shape="rect" id="node2" href="classPothos_1_1CallRegistry.html" title="Pothos::CallRegistry" alt="" coords="5,5,147,32"/><area shape="rect" id="node3" href="classPothos_1_1SignalEmitter.html" title="Pothos::SignalEmitter" alt="" coords="171,5,319,32"/><area shape="rect" id="node4" href="classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="344,5,467,32"/></map>
+<area shape="rect" id="node2" href="classPothos_1_1CallRegistry.html" title="Pothos::CallRegistry" alt="" coords="5,80,147,107"/><area shape="rect" id="node3" href="classPothos_1_1SignalEmitter.html" title="Pothos::SignalEmitter" alt="" coords="171,80,319,107"/><area shape="rect" id="node4" href="classPothos_1_1Connectable.html" title="Pothos::Connectable" alt="" coords="344,80,488,107"/><area shape="rect" id="node5" href="classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="272,5,395,32"/><area shape="rect" id="node6" href="classPothos_1_1Util_1_1RefHolder.html" title="Pothos::Util::RefHolder" alt="" coords="419,5,577,32"/></map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -124,10 +124,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a117d013cc7aa812c695ff222ab303e84"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#a117d013cc7aa812c695ff222ab303e84">~Block</a> (void)</td></tr>
 <tr class="memdesc:a117d013cc7aa812c695ff222ab303e84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual destructor.  <a href="#a117d013cc7aa812c695ff222ab303e84">More...</a><br/></td></tr>
 <tr class="separator:a117d013cc7aa812c695ff222ab303e84"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14d957eb1ed27656c97d311f2ec73eed"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#a14d957eb1ed27656c97d311f2ec73eed">setName</a> (const std::string &amp;name)</td></tr>
-<tr class="separator:a14d957eb1ed27656c97d311f2ec73eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a069d6ac5d35390aad99a94cdf46da241"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#a069d6ac5d35390aad99a94cdf46da241">getName</a> (void) const </td></tr>
-<tr class="separator:a069d6ac5d35390aad99a94cdf46da241"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67b1f65dce7f2b0b6a9db337d6f9c568"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#a67b1f65dce7f2b0b6a9db337d6f9c568">setThreadPool</a> (const <a class="el" href="classPothos_1_1ThreadPool.html">ThreadPool</a> &amp;threadPool)</td></tr>
+<tr class="memdesc:a67b1f65dce7f2b0b6a9db337d6f9c568"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the thread pool used by this block.  <a href="#a67b1f65dce7f2b0b6a9db337d6f9c568">More...</a><br/></td></tr>
+<tr class="separator:a67b1f65dce7f2b0b6a9db337d6f9c568"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac579f798c19501fe8908d1f8e839013e"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classPothos_1_1ThreadPool.html">ThreadPool</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#ac579f798c19501fe8908d1f8e839013e">getThreadPool</a> (void) const </td></tr>
+<tr class="memdesc:ac579f798c19501fe8908d1f8e839013e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the thread pool used by this block.  <a href="#ac579f798c19501fe8908d1f8e839013e">More...</a><br/></td></tr>
+<tr class="separator:ac579f798c19501fe8908d1f8e839013e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab4ec5616f18a05fb0210d0ef4e4d6a1b"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#ab4ec5616f18a05fb0210d0ef4e4d6a1b">inputPortNames</a> (void)</td></tr>
 <tr class="separator:ab4ec5616f18a05fb0210d0ef4e4d6a1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea07e4ad333a01ae63682e2b596fa35d"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#aea07e4ad333a01ae63682e2b596fa35d">outputPortNames</a> (void)</td></tr>
@@ -172,6 +174,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aa27aa556f71fcf883906a2444837a763"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aec686478c1e7c452b3857ed91d36faf5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1Object.html">Object</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#aec686478c1e7c452b3857ed91d36faf5">opaqueCall</a> (const std::string &amp;name, const <a class="el" href="classPothos_1_1Object.html">Object</a> *inputArgs, const size_t numArgs)</td></tr>
 <tr class="separator:aec686478c1e7c452b3857ed91d36faf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classPothos_1_1Connectable"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classPothos_1_1Connectable')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classPothos_1_1Connectable.html">Pothos::Connectable</a></td></tr>
+<tr class="memitem:aa355bfcfb08e95bfd2a3b92adb67815f inherit pub_methods_classPothos_1_1Connectable"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Connectable.html#aa355bfcfb08e95bfd2a3b92adb67815f">~Connectable</a> (void)</td></tr>
+<tr class="memdesc:aa355bfcfb08e95bfd2a3b92adb67815f inherit pub_methods_classPothos_1_1Connectable"><td class="mdescLeft">&#160;</td><td class="mdescRight">virtual destructor for inheritance  <a href="#aa355bfcfb08e95bfd2a3b92adb67815f">More...</a><br/></td></tr>
+<tr class="separator:aa355bfcfb08e95bfd2a3b92adb67815f inherit pub_methods_classPothos_1_1Connectable"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6931aea1689a0fd0e6d917df9503509 inherit pub_methods_classPothos_1_1Connectable"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Connectable.html#ac6931aea1689a0fd0e6d917df9503509">setName</a> (const std::string &amp;name)</td></tr>
+<tr class="separator:ac6931aea1689a0fd0e6d917df9503509 inherit pub_methods_classPothos_1_1Connectable"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae05720f2730a153a6d9d300b008e3766 inherit pub_methods_classPothos_1_1Connectable"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Connectable.html#ae05720f2730a153a6d9d300b008e3766">getName</a> (void) const </td></tr>
+<tr class="separator:ae05720f2730a153a6d9d300b008e3766 inherit pub_methods_classPothos_1_1Connectable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classPothos_1_1Util_1_1UID"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classPothos_1_1Util_1_1UID')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classPothos_1_1Util_1_1UID.html">Pothos::Util::UID</a></td></tr>
 <tr class="memitem:a2e78fd2e0659002bec62e006ee5c722a inherit pub_methods_classPothos_1_1Util_1_1UID"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1UID.html#a2e78fd2e0659002bec62e006ee5c722a">UID</a> (void)</td></tr>
 <tr class="memdesc:a2e78fd2e0659002bec62e006ee5c722a inherit pub_methods_classPothos_1_1Util_1_1UID"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <a href="#a2e78fd2e0659002bec62e006ee5c722a">More...</a><br/></td></tr>
@@ -179,6 +189,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afaa22dd0a922c7a5fc4b9c1dc577c74d inherit pub_methods_classPothos_1_1Util_1_1UID"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1UID.html#afaa22dd0a922c7a5fc4b9c1dc577c74d">uid</a> (void) const </td></tr>
 <tr class="memdesc:afaa22dd0a922c7a5fc4b9c1dc577c74d inherit pub_methods_classPothos_1_1Util_1_1UID"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the <a class="el" href="classPothos_1_1Util_1_1UID.html">UID</a> as a string.  <a href="#afaa22dd0a922c7a5fc4b9c1dc577c74d">More...</a><br/></td></tr>
 <tr class="separator:afaa22dd0a922c7a5fc4b9c1dc577c74d inherit pub_methods_classPothos_1_1Util_1_1UID"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classPothos_1_1Util_1_1RefHolder"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classPothos_1_1Util_1_1RefHolder')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classPothos_1_1Util_1_1RefHolder.html">Pothos::Util::RefHolder</a></td></tr>
+<tr class="memitem:a7491c8e2a416a12bc42eac8c6cf49246 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1RefHolder.html#a7491c8e2a416a12bc42eac8c6cf49246">~RefHolder</a> (void)</td></tr>
+<tr class="memdesc:a7491c8e2a416a12bc42eac8c6cf49246 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual destructor for derived classes.  <a href="#a7491c8e2a416a12bc42eac8c6cf49246">More...</a><br/></td></tr>
+<tr class="separator:a7491c8e2a416a12bc42eac8c6cf49246 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25a4c0c7ec94dace2bd87fae3e307ee8 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1RefHolder.html#a25a4c0c7ec94dace2bd87fae3e307ee8">holdRef</a> (const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;container)</td></tr>
+<tr class="memdesc:a25a4c0c7ec94dace2bd87fae3e307ee8 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store a copy of this object container.  <a href="#a25a4c0c7ec94dace2bd87fae3e307ee8">More...</a><br/></td></tr>
+<tr class="separator:a25a4c0c7ec94dace2bd87fae3e307ee8 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aebbe6cf934661997ffecfadc57bc7986 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1RefHolder.html#aebbe6cf934661997ffecfadc57bc7986">dropRef</a> (const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;container)</td></tr>
+<tr class="memdesc:aebbe6cf934661997ffecfadc57bc7986 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Drop a copy of this object container.  <a href="#aebbe6cf934661997ffecfadc57bc7986">More...</a><br/></td></tr>
+<tr class="separator:aebbe6cf934661997ffecfadc57bc7986 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -193,8 +213,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a78d4c9faf041626a5eeefb90508d9479"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d43b81d9297d0dcc8f8961357c610dc"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#a1d43b81d9297d0dcc8f8961357c610dc">deactivate</a> (void)</td></tr>
 <tr class="separator:a1d43b81d9297d0dcc8f8961357c610dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a01fc0487f3d0f3bf65b7137da11bd359"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#a01fc0487f3d0f3bf65b7137da11bd359">propagateLabels</a> (const <a class="el" href="classPothos_1_1InputPort.html">InputPort</a> *<a class="el" href="classPothos_1_1Block.html#a51ae971c7933cff34859e2250f8901ad">input</a>, const <a class="el" href="classPothos_1_1LabelIteratorRange.html">LabelIteratorRange</a> &amp;labels)</td></tr>
-<tr class="separator:a01fc0487f3d0f3bf65b7137da11bd359"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14b35f979d290e77c208376e9fc52f56"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#a14b35f979d290e77c208376e9fc52f56">propagateLabels</a> (const <a class="el" href="classPothos_1_1InputPort.html">InputPort</a> *<a class="el" href="classPothos_1_1Block.html#a51ae971c7933cff34859e2250f8901ad">input</a>)</td></tr>
+<tr class="separator:a14b35f979d290e77c208376e9fc52f56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43ce6dc07e58578c25a4e32cb4c9cdea"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classPothos_1_1Object.html">Object</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Block.html#a43ce6dc07e58578c25a4e32cb4c9cdea">opaqueCallHandler</a> (const std::string &amp;name, const <a class="el" href="classPothos_1_1Object.html">Object</a> *inputArgs, const size_t numArgs)</td></tr>
 <tr class="separator:a43ce6dc07e58578c25a4e32cb4c9cdea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a323b2577fca93ed31a9f7eda0d9a1107"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr<br class="typebreak"/>
@@ -315,6 +335,14 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a0890c879048cd612d3f8ddf28a1a12dd inherit pro_methods_classPothos_1_1SignalEmitter"><td class="memTemplParams" colspan="2">template&lt;typename A0 , typename A1 , typename A2 , typename A3 , typename A4 , typename A5 , typename A6 , typename A7 , typename A8 &gt; </td></tr>
 <tr class="memitem:a0890c879048cd612d3f8ddf28a1a12dd inherit pro_methods_classPothos_1_1SignalEmitter"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1SignalEmitter.html#a0890c879048cd612d3f8ddf28a1a12dd">emitSignal</a> (const std::string &amp;name, const A0 &amp;a0, const A1 &amp;a1, const A2 &amp;a2, const A3 &amp;a3, const A4 &amp;a4, const A5 &amp;a5, const A6 &amp;a6, const A7 &amp;a7, const A8 &amp;a8)</td></tr>
 <tr class="separator:a0890c879048cd612d3f8ddf28a1a12dd inherit pro_methods_classPothos_1_1SignalEmitter"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_classPothos_1_1Connectable"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classPothos_1_1Connectable')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classPothos_1_1Connectable.html">Pothos::Connectable</a></td></tr>
+<tr class="memitem:aa355bfcfb08e95bfd2a3b92adb67815f inherit pro_methods_classPothos_1_1Connectable"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Connectable.html#aa355bfcfb08e95bfd2a3b92adb67815f">~Connectable</a> (void)</td></tr>
+<tr class="memdesc:aa355bfcfb08e95bfd2a3b92adb67815f inherit pro_methods_classPothos_1_1Connectable"><td class="mdescLeft">&#160;</td><td class="mdescRight">virtual destructor for inheritance  <a href="#aa355bfcfb08e95bfd2a3b92adb67815f">More...</a><br/></td></tr>
+<tr class="separator:aa355bfcfb08e95bfd2a3b92adb67815f inherit pro_methods_classPothos_1_1Connectable"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6931aea1689a0fd0e6d917df9503509 inherit pro_methods_classPothos_1_1Connectable"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Connectable.html#ac6931aea1689a0fd0e6d917df9503509">setName</a> (const std::string &amp;name)</td></tr>
+<tr class="separator:ac6931aea1689a0fd0e6d917df9503509 inherit pro_methods_classPothos_1_1Connectable"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae05720f2730a153a6d9d300b008e3766 inherit pro_methods_classPothos_1_1Connectable"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Connectable.html#ae05720f2730a153a6d9d300b008e3766">getName</a> (void) const </td></tr>
+<tr class="separator:ae05720f2730a153a6d9d300b008e3766 inherit pro_methods_classPothos_1_1Connectable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classPothos_1_1Util_1_1UID"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classPothos_1_1Util_1_1UID')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classPothos_1_1Util_1_1UID.html">Pothos::Util::UID</a></td></tr>
 <tr class="memitem:a2e78fd2e0659002bec62e006ee5c722a inherit pro_methods_classPothos_1_1Util_1_1UID"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1UID.html#a2e78fd2e0659002bec62e006ee5c722a">UID</a> (void)</td></tr>
 <tr class="memdesc:a2e78fd2e0659002bec62e006ee5c722a inherit pro_methods_classPothos_1_1Util_1_1UID"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <a href="#a2e78fd2e0659002bec62e006ee5c722a">More...</a><br/></td></tr>
@@ -322,6 +350,16 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:afaa22dd0a922c7a5fc4b9c1dc577c74d inherit pro_methods_classPothos_1_1Util_1_1UID"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1UID.html#afaa22dd0a922c7a5fc4b9c1dc577c74d">uid</a> (void) const </td></tr>
 <tr class="memdesc:afaa22dd0a922c7a5fc4b9c1dc577c74d inherit pro_methods_classPothos_1_1Util_1_1UID"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the <a class="el" href="classPothos_1_1Util_1_1UID.html">UID</a> as a string.  <a href="#afaa22dd0a922c7a5fc4b9c1dc577c74d">More...</a><br/></td></tr>
 <tr class="separator:afaa22dd0a922c7a5fc4b9c1dc577c74d inherit pro_methods_classPothos_1_1Util_1_1UID"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_classPothos_1_1Util_1_1RefHolder"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classPothos_1_1Util_1_1RefHolder')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classPothos_1_1Util_1_1RefHolder.html">Pothos::Util::RefHolder</a></td></tr>
+<tr class="memitem:a7491c8e2a416a12bc42eac8c6cf49246 inherit pro_methods_classPothos_1_1Util_1_1RefHolder"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1RefHolder.html#a7491c8e2a416a12bc42eac8c6cf49246">~RefHolder</a> (void)</td></tr>
+<tr class="memdesc:a7491c8e2a416a12bc42eac8c6cf49246 inherit pro_methods_classPothos_1_1Util_1_1RefHolder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual destructor for derived classes.  <a href="#a7491c8e2a416a12bc42eac8c6cf49246">More...</a><br/></td></tr>
+<tr class="separator:a7491c8e2a416a12bc42eac8c6cf49246 inherit pro_methods_classPothos_1_1Util_1_1RefHolder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25a4c0c7ec94dace2bd87fae3e307ee8 inherit pro_methods_classPothos_1_1Util_1_1RefHolder"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1RefHolder.html#a25a4c0c7ec94dace2bd87fae3e307ee8">holdRef</a> (const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;container)</td></tr>
+<tr class="memdesc:a25a4c0c7ec94dace2bd87fae3e307ee8 inherit pro_methods_classPothos_1_1Util_1_1RefHolder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store a copy of this object container.  <a href="#a25a4c0c7ec94dace2bd87fae3e307ee8">More...</a><br/></td></tr>
+<tr class="separator:a25a4c0c7ec94dace2bd87fae3e307ee8 inherit pro_methods_classPothos_1_1Util_1_1RefHolder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aebbe6cf934661997ffecfadc57bc7986 inherit pro_methods_classPothos_1_1Util_1_1RefHolder"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1RefHolder.html#aebbe6cf934661997ffecfadc57bc7986">dropRef</a> (const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;container)</td></tr>
+<tr class="memdesc:aebbe6cf934661997ffecfadc57bc7986 inherit pro_methods_classPothos_1_1Util_1_1RefHolder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Drop a copy of this object container.  <a href="#aebbe6cf934661997ffecfadc57bc7986">More...</a><br/></td></tr>
+<tr class="separator:aebbe6cf934661997ffecfadc57bc7986 inherit pro_methods_classPothos_1_1Util_1_1RefHolder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -592,24 +630,6 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a069d6ac5d35390aad99a94cdf46da241"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">const std::string&amp; Pothos::Block::getName </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Get the displayable name for this topology. </p>
-<dl class="section return"><dt>Returns</dt><dd>the displayable name string </dd></dl>
-
-</div>
-</div>
 <a class="anchor" id="a3b68cfa9ff67a44d2b1dde409e1d11e7"></a>
 <div class="memitem">
 <div class="memproto">
@@ -662,6 +682,24 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>a new buffer manager for this port or null sptr </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ac579f798c19501fe8908d1f8e839013e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classPothos_1_1ThreadPool.html">ThreadPool</a>&amp; Pothos::Block::getThreadPool </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the thread pool used by this block. </p>
 
 </div>
 </div>
@@ -732,11 +770,13 @@ Friends</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 <p>Get the names of the input ports in the order they were allocated. </p>
+
+<p>Implements <a class="el" href="classPothos_1_1Connectable.html#a7de683ecd94224d98f96f27c3f0f222a">Pothos::Connectable</a>.</p>
 
 </div>
 </div>
@@ -922,11 +962,13 @@ Friends</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 <p>Get the names of the output ports in the order they were allocated. </p>
+
+<p>Implements <a class="el" href="classPothos_1_1Connectable.html#ab3f5a1c0128cde2c3219e926e9c61331">Pothos::Connectable</a>.</p>
 
 </div>
 </div>
@@ -956,7 +998,7 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a01fc0487f3d0f3bf65b7137da11bd359"></a>
+<a class="anchor" id="a14b35f979d290e77c208376e9fc52f56"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -967,18 +1009,8 @@ Friends</h2></td></tr>
           <td class="memname">virtual void Pothos::Block::propagateLabels </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classPothos_1_1InputPort.html">InputPort</a> *&#160;</td>
-          <td class="paramname"><em>input</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>input</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classPothos_1_1LabelIteratorRange.html">LabelIteratorRange</a> &amp;&#160;</td>
-          <td class="paramname"><em>labels</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -987,13 +1019,13 @@ Friends</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>The <a class="el" href="classPothos_1_1Block.html#a91f23dd0aa445d564523353bfa1b38a0">work()</a> thread calls the <a class="el" href="classPothos_1_1Block.html#a01fc0487f3d0f3bf65b7137da11bd359">propagateLabels()</a> method after <a class="el" href="classPothos_1_1Block.html#a91f23dd0aa445d564523353bfa1b38a0">work()</a> when labels are available to propagate to downstream consumers.</p>
+<p>The <a class="el" href="classPothos_1_1Block.html#a91f23dd0aa445d564523353bfa1b38a0">work()</a> thread calls the <a class="el" href="classPothos_1_1Block.html#a14b35f979d290e77c208376e9fc52f56">propagateLabels()</a> method after <a class="el" href="classPothos_1_1Block.html#a91f23dd0aa445d564523353bfa1b38a0">work()</a> when labels are available to propagate to downstream consumers.</p>
 <p>Default behavior: All labels with an index less than the number of consumed elements will be propagated to all output ports. Subclasses may override this call to customize its behavior.</p>
 <p>Only the <a class="el" href="classPothos_1_1Block.html#a91f23dd0aa445d564523353bfa1b38a0">work()</a> thread is allowed to call this method, therefore users should never directly invoke this method.</p>
+<p>Access the labels iterator with the call to input-&gt;labels(). This iterator will contain only labels from the consumed elements. Forward labels to the output ports using postLabel() on an output port object.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">input</td><td>a pointer to the input port with labels </td></tr>
-    <tr><td class="paramname">labels</td><td>the labels within the consumed region </td></tr>
   </table>
   </dd>
 </dl>
@@ -1090,26 +1122,21 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a14d957eb1ed27656c97d311f2ec73eed"></a>
+<a class="anchor" id="a67b1f65dce7f2b0b6a9db337d6f9c568"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void Pothos::Block::setName </td>
+          <td class="memname">void Pothos::Block::setThreadPool </td>
           <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>name</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1ThreadPool.html">ThreadPool</a> &amp;&#160;</td>
+          <td class="paramname"><em>threadPool</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set a displayable name for this topology. The name is a string to be used in debug outputs. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">name</td><td>a new displayable name </td></tr>
-  </table>
-  </dd>
-</dl>
+
+<p>Set the thread pool used by this block. </p>
 
 </div>
 </div>
@@ -1325,7 +1352,7 @@ Friends</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get information about a work session that is not port-specific. The info is valid during calls to <a class="el" href="classPothos_1_1Block.html#a91f23dd0aa445d564523353bfa1b38a0">work()</a> and <a class="el" href="classPothos_1_1Block.html#a01fc0487f3d0f3bf65b7137da11bd359">propagateLabels()</a>. </p>
+<p>Get information about a work session that is not port-specific. The info is valid during calls to <a class="el" href="classPothos_1_1Block.html#a91f23dd0aa445d564523353bfa1b38a0">work()</a> and <a class="el" href="classPothos_1_1Block.html#a14b35f979d290e77c208376e9fc52f56">propagateLabels()</a>. </p>
 
 </div>
 </div>
@@ -1387,7 +1414,7 @@ Friends</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 22 2014 18:25:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 26 2014 13:37:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -126,6 +126,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a20949c93a435532168a80f595aba97e2"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#a20949c93a435532168a80f595aba97e2">~ProxyEnvironment</a> (void)</td></tr>
 <tr class="memdesc:a20949c93a435532168a80f595aba97e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual destructor for subclassing.  <a href="#a20949c93a435532168a80f595aba97e2">More...</a><br/></td></tr>
 <tr class="separator:a20949c93a435532168a80f595aba97e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5da94ef01ef708921fdf936fcf5e1e34"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#a5da94ef01ef708921fdf936fcf5e1e34">getNodeId</a> (void) const </td></tr>
+<tr class="separator:a5da94ef01ef708921fdf936fcf5e1e34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a69cbde730d78e79feade2258414791a9"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#a69cbde730d78e79feade2258414791a9">getName</a> (void) const =0</td></tr>
 <tr class="separator:a69cbde730d78e79feade2258414791a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4d4ac935ea877a91e8b632843a6791a"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classPothos_1_1Proxy.html">Proxy</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#aa4d4ac935ea877a91e8b632843a6791a">findProxy</a> (const std::string &amp;name)=0</td></tr>
@@ -383,6 +385,31 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a5da94ef01ef708921fdf936fcf5e1e34"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::string Pothos::ProxyEnvironment::getNodeId </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the unique ID of the node that this environment is running on. Remote environments will report the node id of the remote server. </p>
+
+</div>
+</div>
 <a class="anchor" id="ab63154827e33db936927a5d8d75b1772"></a>
 <div class="memitem">
 <div class="memproto">
@@ -513,7 +540,7 @@ template&lt;typename ValueType &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 22 2014 18:25:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 26 2014 13:37:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

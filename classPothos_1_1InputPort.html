@@ -139,6 +139,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ad437630b90a5e962fa3ed53cd808038a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4248c5cd5a8562ca4bfd168a744c7e4f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1InputPort.html#a4248c5cd5a8562ca4bfd168a744c7e4f">isSlot</a> (void) const </td></tr>
 <tr class="separator:a4248c5cd5a8562ca4bfd168a744c7e4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bc9e7abe4fd62ab83db45d58b87db07"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1InputPort.html#a0bc9e7abe4fd62ab83db45d58b87db07">pushBuffer</a> (const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;<a class="el" href="classPothos_1_1InputPort.html#ac0831c0c794fb0adb6130f5993fe410a">buffer</a>)</td></tr>
+<tr class="separator:a0bc9e7abe4fd62ab83db45d58b87db07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a099fba30957fc0da07e63c9d6fc3ca"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1InputPort.html#a7a099fba30957fc0da07e63c9d6fc3ca">pushLabel</a> (const <a class="el" href="classPothos_1_1Label.html">Label</a> &amp;label)</td></tr>
+<tr class="separator:a7a099fba30957fc0da07e63c9d6fc3ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb5d3b67e435544906bd555646509f8e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1InputPort.html#afb5d3b67e435544906bd555646509f8e">pushMessage</a> (const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;message)</td></tr>
+<tr class="separator:afb5d3b67e435544906bd555646509f8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -431,6 +437,57 @@ Friends</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a0bc9e7abe4fd62ab83db45d58b87db07"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Pothos::InputPort::pushBuffer </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;&#160;</td>
+          <td class="paramname"><em>buffer</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Push a buffer into the buffer queue of this input port. This is a thread-safe call, it can be made from any context. Use pushBuffer to preload an input port with elements, example: a window-sized history of elements for a filter block, or a preloaded number of elements for a feedback loop. </p>
+
+</div>
+</div>
+<a class="anchor" id="a7a099fba30957fc0da07e63c9d6fc3ca"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Pothos::InputPort::pushLabel </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1Label.html">Label</a> &amp;&#160;</td>
+          <td class="paramname"><em>label</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Push a label into the label storage of this input port. This is a thread-safe call, it can be made from any context. When using this call, first push the buffer with the corresponding label index <em>before</em> pushing the label. </p>
+
+</div>
+</div>
+<a class="anchor" id="afb5d3b67e435544906bd555646509f8e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Pothos::InputPort::pushMessage </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;&#160;</td>
+          <td class="paramname"><em>message</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Push a message into the message queue of this input port. This is a thread-safe call, it can be made from any context. </p>
+
+</div>
+</div>
 <a class="anchor" id="ad16d52f7ef51cbaf0e3db2a2c6d3c6ed"></a>
 <div class="memitem">
 <div class="memproto">
@@ -548,7 +605,7 @@ Friends</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 22 2014 18:25:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 26 2014 13:37:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

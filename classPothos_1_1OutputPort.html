@@ -130,12 +130,15 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac8c69f13cb37e3099a3dd8b7bcc84a14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90611d871c0983bfb5fceae348e63e74"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a90611d871c0983bfb5fceae348e63e74">postLabel</a> (const <a class="el" href="classPothos_1_1Label.html">Label</a> &amp;label)</td></tr>
 <tr class="separator:a90611d871c0983bfb5fceae348e63e74"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f3bbe2e02c9637f914e6a65bbaf4971"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a3f3bbe2e02c9637f914e6a65bbaf4971">postMessage</a> (const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;message)</td></tr>
-<tr class="separator:a3f3bbe2e02c9637f914e6a65bbaf4971"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ebf13cae0a56328b0bdfc9f1769d954"><td class="memTemplParams" colspan="2">template&lt;typename ValueType &gt; </td></tr>
+<tr class="memitem:a6ebf13cae0a56328b0bdfc9f1769d954"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a6ebf13cae0a56328b0bdfc9f1769d954">postMessage</a> (ValueType &amp;&amp;message)</td></tr>
+<tr class="separator:a6ebf13cae0a56328b0bdfc9f1769d954"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace5ed3d4a5dfdc7196bf58f6fc167579"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#ace5ed3d4a5dfdc7196bf58f6fc167579">postBuffer</a> (const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;<a class="el" href="classPothos_1_1OutputPort.html#a79a691f4d4484ce9de5b2446d6f6a4c6">buffer</a>)</td></tr>
 <tr class="separator:ace5ed3d4a5dfdc7196bf58f6fc167579"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa57f62d76d3d2a8f055fa1f76525f0ee"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#aa57f62d76d3d2a8f055fa1f76525f0ee">isSignal</a> (void) const </td></tr>
 <tr class="separator:aa57f62d76d3d2a8f055fa1f76525f0ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8f81f9b517d9c93631f46e860370e4f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#ad8f81f9b517d9c93631f46e860370e4f">setReadBeforeWrite</a> (<a class="el" href="classPothos_1_1InputPort.html">InputPort</a> *port)</td></tr>
+<tr class="separator:ad8f81f9b517d9c93631f46e860370e4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -404,14 +407,16 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a3f3bbe2e02c9637f914e6a65bbaf4971"></a>
+<a class="anchor" id="a6ebf13cae0a56328b0bdfc9f1769d954"></a>
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename ValueType &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">void Pothos::OutputPort::postMessage </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;&#160;</td>
+          <td class="paramtype">ValueType &amp;&amp;&#160;</td>
           <td class="paramname"><em>message</em></td><td>)</td>
           <td></td>
         </tr>
@@ -452,6 +457,31 @@ Friends</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">numElements</td><td>the number of elements to produce </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ad8f81f9b517d9c93631f46e860370e4f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Pothos::OutputPort::setReadBeforeWrite </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classPothos_1_1InputPort.html">InputPort</a> *&#160;</td>
+          <td class="paramname"><em>port</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set read before write on this output port. Read before write indicates that an element will be read from the input before a corresponding element is written to an element from this output.</p>
+<p>This property implies that the input buffer can be used as an output buffer duing a call to the work operation. Also referred to as buffer inlining, the intention is to keep more memory in cache by using the same buffer for both reading and writing operations when possible.</p>
+<p>When this "read before write" property is enabled, and the only reference to the buffer is held by the input port, and the size of the input elements is the same as the output. then the input buffer may be substituted for an output buffer.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">port</td><td>the input port to borrow the buffer from </td></tr>
   </table>
   </dd>
 </dl>
@@ -504,7 +534,7 @@ Friends</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the total number of messages posted to this port. The value returned by this method will be incremented immediately upon calling <a class="el" href="classPothos_1_1OutputPort.html#a3f3bbe2e02c9637f914e6a65bbaf4971">postMessage()</a>. </p>
+<p>Get the total number of messages posted to this port. The value returned by this method will be incremented immediately upon calling <a class="el" href="classPothos_1_1OutputPort.html#a6ebf13cae0a56328b0bdfc9f1769d954">postMessage()</a>. </p>
 
 </div>
 </div>
@@ -535,7 +565,7 @@ Friends</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 22 2014 18:25:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 26 2014 13:37:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

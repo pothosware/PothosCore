@@ -91,6 +91,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="classPothos_1_1BufferChunk-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -121,8 +122,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2bf7507ead98077a1fef554e1b4e7be6"><td class="memTemplParams" colspan="2">template&lt;typename ElementType &gt; </td></tr>
 <tr class="memitem:a2bf7507ead98077a1fef554e1b4e7be6"><td class="memTemplItemLeft" align="right" valign="top">ElementType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#a2bf7507ead98077a1fef554e1b4e7be6">as</a> (void) const </td></tr>
 <tr class="separator:a2bf7507ead98077a1fef554e1b4e7be6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfa9f137d258bdc85561b6d560cda10f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#abfa9f137d258bdc85561b6d560cda10f">unique</a> (void) const </td></tr>
+<tr class="separator:abfa9f137d258bdc85561b6d560cda10f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61dfd65b1f750ef52f54cbc9d0ccc34c"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#a61dfd65b1f750ef52f54cbc9d0ccc34c">useCount</a> (void) const </td></tr>
+<tr class="separator:a61dfd65b1f750ef52f54cbc9d0ccc34c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb69ccab54cefce01e0c8c5a922dd049"><td class="memItemLeft" align="right" valign="top"><a class="el" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#abb69ccab54cefce01e0c8c5a922dd049">operator bool</a> (void) const </td></tr>
 <tr class="separator:abb69ccab54cefce01e0c8c5a922dd049"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a5c7a872a0729200aa82ecef33720d992"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#a5c7a872a0729200aa82ecef33720d992">null</a> (void)</td></tr>
+<tr class="memdesc:a5c7a872a0729200aa82ecef33720d992"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a const reference to a null/empty <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a>.  <a href="#a5c7a872a0729200aa82ecef33720d992">More...</a><br/></td></tr>
+<tr class="separator:a5c7a872a0729200aa82ecef33720d992"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -330,6 +341,32 @@ template&lt;typename ElementType &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a5c7a872a0729200aa82ecef33720d992"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a>&amp; Pothos::BufferChunk::null </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get a const reference to a null/empty <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a>. </p>
+
+</div>
+</div>
 <a class="anchor" id="abb69ccab54cefce01e0c8c5a922dd049"></a>
 <div class="memitem">
 <div class="memproto">
@@ -353,6 +390,57 @@ template&lt;typename ElementType &gt; </div>
 </div><div class="memdoc">
 <p>Is this buffer chunk valid? </p>
 <dl class="section return"><dt>Returns</dt><dd>true when there is underlying memory </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="abfa9f137d258bdc85561b6d560cda10f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Pothos::BufferChunk::unique </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Is the reference to the shared buffer unique? </p>
+<dl class="section return"><dt>Returns</dt><dd>true if this is the only copy of the shared buffer </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a61dfd65b1f750ef52f54cbc9d0ccc34c"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t Pothos::BufferChunk::useCount </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The number of copies of the shared buffer. An extra copy held by the managed buffer is not counted. </p>
 
 </div>
 </div>
@@ -389,7 +477,7 @@ template&lt;typename ElementType &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jun 22 2014 18:25:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 26 2014 13:37:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
