@@ -20,6 +20,7 @@ struct GraphBlock::Impl
     }
 
     Poco::JSON::Object::Ptr blockDesc;
+    Poco::JSON::Object::Ptr portDesc;
     QString affinityZone;
 
     bool changed;

@@ -47,6 +47,42 @@ void GraphBlock::initPropertiesFromDesc(void)
     }
 }
 
+void GraphBlock::initPortsFromDesc(void)
+{
+    const auto &portDesc = _impl->portDesc;
+    if (not portDesc) return;
+
+    //reload the port descriptions, clear the old first
+    _inputPorts.clear();
+    _outputPorts.clear();
+    _slotPorts.clear();
+    _signalPorts.clear();
+
+    //reload inputs (and slots)
+    for (const auto &inputPortDesc : *portDesc->getArray("inputPorts"))
+    {
+        const auto &info = inputPortDesc.extract<Poco::JSON::Object::Ptr>();
+        auto portKey = info->getValue<std::string>("name");
+        auto portName = portKey;
+        if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "in"+portName;
+        GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
+        if (info->getValue<bool>("isSlot")) this->addSlotPort(gbp);
+        else this->addInputPort(gbp);
+    }
+
+    //reload outputs (and signals)
+    for (const auto &outputPortDesc : *portDesc->getArray("outputPorts"))
+    {
+        const auto &info = outputPortDesc.extract<Poco::JSON::Object::Ptr>();
+        auto portKey = info->getValue<std::string>("name");
+        auto portName = portKey;
+        if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "out"+portName;
+        GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
+        if (info->getValue<bool>("isSignal")) this->addSignalPort(gbp);
+        else this->addOutputPort(gbp);
+    }
+}
+
 void GraphBlock::update(void)
 {
     assert(_impl->blockDesc);
@@ -108,37 +144,10 @@ void GraphBlock::update(void)
     try
     {
         _blockEval.callProxy("eval", this->getId().toStdString(), this->getBlockDesc());
-        auto portDesc = _blockEval.call<Poco::JSON::Object::Ptr>("inspect");
+        auto portDesc = _blockEval.call<Poco::JSON::Object::Ptr>("getPortDesc");
 
-        //reload the port descriptions, clear the old first
-        _inputPorts.clear();
-        _outputPorts.clear();
-        _slotPorts.clear();
-        _signalPorts.clear();
-
-        //reload inputs (and slots)
-        for (const auto &inputPortDesc : *portDesc->getArray("inputPorts"))
-        {
-            const auto &info = inputPortDesc.extract<Poco::JSON::Object::Ptr>();
-            auto portKey = info->getValue<std::string>("name");
-            auto portName = portKey;
-            if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "in"+portName;
-            GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
-            if (info->getValue<bool>("isSlot")) this->addSlotPort(gbp);
-            else this->addInputPort(gbp);
-        }
-
-        //reload outputs (and signals)
-        for (const auto &outputPortDesc : *portDesc->getArray("outputPorts"))
-        {
-            const auto &info = outputPortDesc.extract<Poco::JSON::Object::Ptr>();
-            auto portKey = info->getValue<std::string>("name");
-            auto portName = portKey;
-            if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "out"+portName;
-            GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
-            if (info->getValue<bool>("isSignal")) this->addSignalPort(gbp);
-            else this->addOutputPort(gbp);
-        }
+        //only modify portDesc when there is a successful return value
+        if (portDesc) _impl->portDesc = portDesc;
     }
 
     //parser errors report
@@ -147,4 +156,7 @@ void GraphBlock::update(void)
         poco_error(Poco::Logger::get("PothosGui.GraphBlock.update"), ex.displayText());
         this->setBlockErrorMsg(QString::fromStdString(ex.message()));
     }
+
+    //update the ports after complete evaluation
+    this->initPortsFromDesc();
 }

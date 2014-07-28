@@ -498,25 +498,7 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     }
     obj->set("properties", jPropsObj);
 
-    Poco::JSON::Array jInPortsObj;
-    for (const auto &port : this->getInputPorts())
-    {
-        Poco::JSON::Object jPortObj;
-        jPortObj.set("key", port.getKey().toStdString());
-        jPortObj.set("name", port.getName().toStdString());
-        jInPortsObj.add(jPortObj);
-    }
-    obj->set("inputPorts", jInPortsObj);
-
-    Poco::JSON::Array jOutPortsObj;
-    for (const auto &port : this->getOutputPorts())
-    {
-        Poco::JSON::Object jPortObj;
-        jPortObj.set("key", port.getKey().toStdString());
-        jPortObj.set("name", port.getName().toStdString());
-        jOutPortsObj.add(jPortObj);
-    }
-    obj->set("outputPorts", jOutPortsObj);
+    if (_impl->portDesc) obj->set("portDesc", _impl->portDesc);
     return obj;
 }
 
@@ -540,35 +522,12 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
         GraphBlockProp prop(
             QString::fromStdString(jPropObj->getValue<std::string>("key")),
             QString::fromStdString(jPropObj->getValue<std::string>("name")));
-        /*
-        this->addProperty(prop);
-        */
         this->setPropertyValue(prop.getKey(), QString::fromStdString(jPropObj->getValue<std::string>("value")));
     }
 
-    /*
-    auto inputPorts = jsonObj->getArray("inputPorts");
-    assert(inputPorts);
-    for (size_t i = 0; i < inputPorts->size(); i++)
-    {
-        const auto jInPortsObj = inputPorts->getObject(i);
-        GraphBlockPort port(
-            QString::fromStdString(jInPortsObj->getValue<std::string>("key")),
-            QString::fromStdString(jInPortsObj->getValue<std::string>("name")));
-        block->addInputPort(port);
-    }
-
-    auto outputPorts = jsonObj->getArray("outputPorts");
-    assert(outputPorts);
-    for (size_t i = 0; i < outputPorts->size(); i++)
-    {
-        const auto jOutPortsObj = outputPorts->getObject(i);
-        GraphBlockPort port(
-            QString::fromStdString(jOutPortsObj->getValue<std::string>("key")),
-            QString::fromStdString(jOutPortsObj->getValue<std::string>("name")));
-        block->addOutputPort(port);
-    }
-    */
+    //load port description and init from it -- in the case eval fails
+    if (obj->isObject("portDesc")) _impl->portDesc = obj->getObject("portDesc");
+    this->initPortsFromDesc();
 
     GraphObject::deserialize(obj);
 }
