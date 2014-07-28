@@ -119,6 +119,14 @@ public:
     void addSignalPort(const GraphBlockPort &port);
     const std::vector<GraphBlockPort> &getSignalPorts(void) const;
 
+    //! Set a descriptive type string for input ports
+    void setInputPortTypeStr(const QString &key, const std::string &type);
+    const std::string &getInputPortTypeStr(const QString &key) const;
+
+    //! Set a descriptive type string for output ports
+    void setOutputPortTypeStr(const QString &key, const std::string &type);
+    const std::string &getOutputPortTypeStr(const QString &key) const;
+
     std::vector<GraphConnectableKey> getConnectableKeys(void) const;
     GraphConnectableKey isPointingToConnectable(const QPointF &pos) const;
     GraphConnectableAttrs getConnectableAttrs(const GraphConnectableKey &key) const;

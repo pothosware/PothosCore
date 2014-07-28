@@ -66,8 +66,9 @@ void GraphBlock::initPortsFromDesc(void)
         auto portName = portKey;
         if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "in"+portName;
         GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
-        if (info->getValue<bool>("isSlot")) this->addSlotPort(gbp);
+        if (info->has("isSpecial") and info->getValue<bool>("isSpecial")) this->addSlotPort(gbp);
         else this->addInputPort(gbp);
+        if (info->has("dtype")) this->setInputPortTypeStr(gbp.getKey(), info->getValue<std::string>("dtype"));
     }
 
     //reload outputs (and signals)
@@ -78,8 +79,9 @@ void GraphBlock::initPortsFromDesc(void)
         auto portName = portKey;
         if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "out"+portName;
         GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
-        if (info->getValue<bool>("isSignal")) this->addSignalPort(gbp);
+        if (info->has("isSpecial") and info->getValue<bool>("isSpecial")) this->addSignalPort(gbp);
         else this->addOutputPort(gbp);
+        if (info->has("dtype")) this->setOutputPortTypeStr(gbp.getKey(), info->getValue<std::string>("dtype"));
     }
 }
 

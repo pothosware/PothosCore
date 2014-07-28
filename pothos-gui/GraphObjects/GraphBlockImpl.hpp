@@ -40,11 +40,13 @@ struct GraphBlock::Impl
     std::vector<QRectF> inputPortRects;
     std::vector<QPointF> inputPortPoints;
     std::vector<QColor> inputPortColors;
+    std::map<QString, std::string> inputPortTypeStr;
 
     std::vector<QStaticText> outputPortsText;
     std::vector<QRectF> outputPortRects;
     std::vector<QPointF> outputPortPoints;
     std::vector<QColor> outputPortColors;
+    std::map<QString, std::string> outputPortTypeStr;
 
     QRectF mainBlockRect;
 };

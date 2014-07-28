@@ -5,6 +5,7 @@
 #include <Pothos/System.hpp>
 #include <Poco/Path.h>
 #include <Poco/SingletonHolder.h>
+#include <Poco/MD5Engine.h>
 
 QMap<QString, QAction *> &getActionMap(void)
 {
@@ -57,4 +58,11 @@ QString makeIconPath(const QString &name)
 QIcon makeIconFromTheme(const QString &name)
 {
     return QIcon::fromTheme(name, QIcon(makeIconPath(name+".png")));
+}
+
+QColor typeStrToColor(const std::string &typeStr)
+{
+    Poco::MD5Engine md5; md5.update(typeStr);
+    const auto hexHash = Poco::DigestEngine::digestToHex(md5.digest());
+    return QColor(QString::fromStdString("#" + hexHash.substr(0, 6)));
 }
