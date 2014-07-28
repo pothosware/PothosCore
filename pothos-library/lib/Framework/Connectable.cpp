@@ -70,7 +70,7 @@ void load(Archive & ar, Pothos::PortInfo &t, const unsigned int)
     ar >> t.isSpecial;
     Pothos::Object dtype;
     ar >> dtype;
-    t.dtype == dtype.extract<Pothos::DType>();
+    t.dtype = dtype.extract<Pothos::DType>();
 }
 }}
 
