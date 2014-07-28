@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockEval.hpp"
+#include <Pothos/Framework.hpp>
 
 void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &blockDesc)
 {
@@ -58,39 +59,28 @@ void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &block
     _portDesc = this->inspectPorts();
 }
 
+static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo> &infos)
+{
+    Poco::JSON::Array::Ptr array = new Poco::JSON::Array();
+    for (const auto &info : infos)
+    {
+        Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
+        portInfo->set("name", info.name);
+        portInfo->set("isSpecial", info.isSpecial);
+        portInfo->set("size", info.dtype.size());
+        portInfo->set("dtype", info.dtype.toString());
+        array->add(portInfo);
+    }
+    return array;
+}
+
 Poco::JSON::Object::Ptr BlockEval::inspectPorts(void)
 {
     auto block = _proxyBlock;
     Poco::JSON::Object::Ptr info = new Poco::JSON::Object();
-
     info->set("uid", block.call<std::string>("uid"));
-
-    //TODO FIXME inspect will fail for topologies ATM, cant query isSignal/isSlot on topology
-
-    Poco::JSON::Array::Ptr inputPorts = new Poco::JSON::Array();
-    for (const auto &name : block.call<std::vector<std::string>>("inputPortNames"))
-    {
-        Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
-        portInfo->set("name", name);
-        portInfo->set("isSlot", block.callProxy("input", name).call<bool>("isSlot"));
-        portInfo->set("size", block.callProxy("input", name).callProxy("dtype").call<unsigned>("size"));
-        portInfo->set("dtype", block.callProxy("input", name).callProxy("dtype").call<std::string>("toString"));
-        inputPorts->add(portInfo);
-    }
-    info->set("inputPorts", inputPorts);
-
-    Poco::JSON::Array::Ptr outputPorts = new Poco::JSON::Array();
-    for (const auto &name : block.call<std::vector<std::string>>("outputPortNames"))
-    {
-        Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
-        portInfo->set("name", name);
-        portInfo->set("isSignal", block.callProxy("output", name).call<bool>("isSignal"));
-        portInfo->set("size", block.callProxy("output", name).callProxy("dtype").call<unsigned>("size"));
-        portInfo->set("dtype", block.callProxy("output", name).callProxy("dtype").call<std::string>("toString"));
-        outputPorts->add(portInfo);
-    }
-    info->set("outputPorts", outputPorts);
-
+    info->set("inputPorts", portInfosToJSON(block.call<std::vector<Pothos::PortInfo>>("inputPortInfo")));
+    info->set("outputPorts", portInfosToJSON(block.call<std::vector<Pothos::PortInfo>>("outputPortInfo")));
     return info;
 }
 
