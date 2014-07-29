@@ -37,11 +37,14 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
 
 void BlockPropertyEditWidget::setValue(const QString &value)
 {
+    if (this->value() == value) return;
+
     auto comboBox = dynamic_cast<QComboBox *>(_edit);
     if (comboBox != nullptr) for (int i = 0; i < comboBox->count(); i++)
     {
         if (comboBox->itemData(i).toString() == value) comboBox->setCurrentIndex(i);
     }
+
     auto lineEdit = dynamic_cast<QLineEdit *>(_edit);
     if (lineEdit != nullptr) lineEdit->setText(value);
 }
