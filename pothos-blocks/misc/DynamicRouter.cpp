@@ -51,19 +51,13 @@ public:
         {
             _destinations[i] = dests->getElement<int>(i);
         }
-        this->activate(); //causes resize to expected size
-    }
-
-    void activate(void)
-    {
-        _destinations.resize(this->inputs().size(), -1);
     }
 
     void work(void)
     {
         for (auto inputPort : this->inputs())
         {
-            auto dest = _destinations.at(inputPort->index());
+            auto dest = (size_t(inputPort->index()) < _destinations.size())? _destinations.at(inputPort->index()) : -1;
             auto outputPort = (dest > 0)? this->output(dest) : nullptr;
 
             if (inputPort->hasMessage())
