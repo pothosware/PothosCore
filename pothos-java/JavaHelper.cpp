@@ -94,7 +94,7 @@ std::string JavaProxyEnvironment::getClassName(jobject cls)
  **********************************************************************/
 jvalue JavaProxyEnvironment::CallMethodA(const char retType, jobject obj, jmethodID method, jvalue *args)
 {
-    jvalue result;
+    jvalue result = {};
     switch (retType)
     {
     case 'L': result.l = env->CallObjectMethodA(obj, method, args); break;
@@ -114,7 +114,7 @@ jvalue JavaProxyEnvironment::CallMethodA(const char retType, jobject obj, jmetho
 
 jvalue JavaProxyEnvironment::CallStaticMethodA(const char retType, jclass cls, jmethodID method, jvalue *args)
 {
-    jvalue result;
+    jvalue result = {};
     switch (retType)
     {
     case 'L': result.l = env->CallStaticObjectMethodA(cls, method, args); break;
