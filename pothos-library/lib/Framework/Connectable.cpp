@@ -52,27 +52,17 @@ static auto managedConnectable = Pothos::ManagedClass()
     .commit("Pothos/Connectable");
 
 #include <Pothos/Object/Serialize.hpp>
+#include "Framework/DTypeSerialization.hpp"
 
 namespace Pothos { namespace serialization {
 template<class Archive>
-void save(Archive & ar, const Pothos::PortInfo &t, const unsigned int)
+void serialize(Archive & ar, Pothos::PortInfo &t, const unsigned int)
 {
-    ar << t.name;
-    ar << t.isSpecial;
-    auto dtype = Pothos::Object(t.dtype);
-    ar << dtype;
-}
-
-template<class Archive>
-void load(Archive & ar, Pothos::PortInfo &t, const unsigned int)
-{
-    ar >> t.name;
-    ar >> t.isSpecial;
-    Pothos::Object dtype;
-    ar >> dtype;
-    t.dtype = dtype.extract<Pothos::DType>();
+    ar & t.name;
+    ar & t.isSpecial;
+    ar & t.dtype;
 }
 }}
 
-POTHOS_SERIALIZATION_SPLIT_FREE(Pothos::PortInfo)
+POTHOS_OBJECT_SERIALIZE(Pothos::PortInfo)
 POTHOS_OBJECT_SERIALIZE(std::vector<Pothos::PortInfo>)
