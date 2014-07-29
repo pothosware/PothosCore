@@ -8,7 +8,7 @@
 
 LoggerDisplay::LoggerDisplay(QWidget *parent):
     QScrollArea(parent),
-    _channel(new LoggerChannel(this)),
+    _channel(new LoggerChannel(nullptr)),
     _text(new QTextEdit(this))
 {
     this->setWidgetResizable(true);
@@ -20,6 +20,11 @@ LoggerDisplay::LoggerDisplay(QWidget *parent):
         _channel, SIGNAL(receivedLogMessage(const Poco::Message &)),
         this, SLOT(handleLogMessage(const Poco::Message &)),
         Qt::QueuedConnection);
+}
+
+LoggerDisplay::~LoggerDisplay(void)
+{
+    _channel->disconnect();
 }
 
 void LoggerDisplay::handleLogMessage(const Poco::Message &msg)

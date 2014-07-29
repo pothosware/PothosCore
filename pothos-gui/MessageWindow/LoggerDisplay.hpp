@@ -5,6 +5,7 @@
 #include <Pothos/Config.hpp>
 #include <QScrollArea>
 #include <Poco/Message.h>
+#include <Poco/AutoPtr.h>
 
 class LoggerChannel;
 class QTextEdit;
@@ -14,11 +15,12 @@ class LoggerDisplay : public QScrollArea
     Q_OBJECT
 public:
     LoggerDisplay(QWidget *parent);
+    ~LoggerDisplay(void);
 
 private slots:
     void handleLogMessage(const Poco::Message &msg);
 
 private:
-    LoggerChannel *_channel;
+    Poco::AutoPtr<LoggerChannel> _channel;
     QTextEdit *_text;
 };

@@ -19,6 +19,11 @@ LoggerChannel::LoggerChannel(QObject *parent):
 
 LoggerChannel::~LoggerChannel(void)
 {
+    return;
+}
+
+void LoggerChannel::disconnect(void)
+{
     _logger.setLevel(_oldLevel);
     _logger.setChannel(_oldChannel);
 }

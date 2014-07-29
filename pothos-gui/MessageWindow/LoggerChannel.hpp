@@ -22,6 +22,8 @@ public:
 
     ~LoggerChannel(void);
 
+    void disconnect(void);
+
     void log(const Poco::Message &msg)
     {
         emit receivedLogMessage(msg);
