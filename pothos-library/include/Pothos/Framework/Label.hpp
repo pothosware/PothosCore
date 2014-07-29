@@ -101,14 +101,14 @@ inline bool Pothos::Label::operator<(const Label &other) const
 
 template <typename IterType>
 Pothos::LabelIteratorRange::LabelIteratorRange(const IterType &begin, const IterType &end):
-    _begin(&(*begin)), _end(&(*end))
+    _begin(begin), _end(end)
 {
     return;
 }
 
 template <typename RangeType>
 Pothos::LabelIteratorRange::LabelIteratorRange(const RangeType &range):
-    _begin(&(*range.begin())), _end(&(*range.end()))
+    _begin(range.data()), _end(range.data() + range.size())
 {
     return;
 }

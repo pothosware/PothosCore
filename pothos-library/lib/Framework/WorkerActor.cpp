@@ -117,7 +117,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
         }
         if (numLabels != 0)
         {
-            port._labelIter = LabelIteratorRange(allLabels.begin(), allLabels.begin()+numLabels);
+            port._labelIter = LabelIteratorRange(allLabels.data(), allLabels.data()+numLabels);
             POTHOS_EXCEPTION_TRY
             {
                 block->propagateLabels(&port);
