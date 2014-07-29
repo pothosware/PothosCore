@@ -84,6 +84,7 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     this->restoreGeometry(getSettings().value("MainWindow/geometry").toByteArray());
     this->restoreState(getSettings().value("MainWindow/state").toByteArray());
     _propertiesPanelDock->hide(); //hidden until used
+    _showPortNamesAction->setChecked(getSettings().value("MainWindow/showPortNames", true).toBool());
 
     //create menus after docks and tool bars (view menu calls their toggleViewAction())
     this->createMenus();
@@ -97,6 +98,7 @@ PothosGuiMainWindow::~PothosGuiMainWindow(void)
 {
     getSettings().setValue("MainWindow/geometry", saveGeometry());
     getSettings().setValue("MainWindow/state", saveState());
+    getSettings().setValue("MainWindow/showPortNames", _showPortNamesAction->isChecked());
 }
 
 void PothosGuiMainWindow::handleNewTitleSubtext(const QString &s)
@@ -253,6 +255,10 @@ void PothosGuiMainWindow::createActions(void)
     _activateTopologyAction->setCheckable(true);
     _actionMap["activateTopology"] = _activateTopologyAction;
 
+    _showPortNamesAction = new QAction(tr("Show &port names"), this);
+    _showPortNamesAction->setCheckable(true);
+    _actionMap["showPortNamesAction"] = _showPortNamesAction;
+
     _showAboutAction = new QAction(makeIconFromTheme("help-about"), tr("&About Pothos"), this);
     _showAboutAction->setStatusTip(tr("Information about this version of Pothos"));
     connect(_showAboutAction, SIGNAL(triggered(void)), this, SLOT(handleShowAbout(void)));
@@ -317,11 +323,13 @@ void PothosGuiMainWindow::createMenus(void)
     _viewMenu->addAction(_blockTreeDock->toggleViewAction());
     _viewMenu->addAction(_affinityZonesDock->toggleViewAction());
     _viewMenu->addAction(_mainToolBar->toggleViewAction());
-    _fileMenu->addSeparator();
+    _viewMenu->addSeparator();
     _viewMenu->addAction(_zoomInAction);
     _viewMenu->addAction(_zoomOutAction);
     _viewMenu->addAction(_zoomOriginalAction);
-    _fileMenu->addSeparator();
+    _viewMenu->addSeparator();
+    _viewMenu->addAction(_showPortNamesAction);
+    _viewMenu->addSeparator();
 
     _debugMenu = _viewMenu->addMenu(tr("&Debug"));
     _debugMenu->addAction(_showGraphConnectionPointsAction);

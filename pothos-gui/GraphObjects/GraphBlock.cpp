@@ -6,6 +6,7 @@
 #include "GraphEditor/Constants.hpp"
 #include "BlockTree/BlockCache.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
+#include <QAction>
 #include <QPainter>
 #include <QPen>
 #include <QBrush>
@@ -364,6 +365,14 @@ void GraphBlock::renderStaticText(void)
             .arg(getTextColor(true, _impl->outputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
             .arg(_outputPorts[i].getName().toHtmlEscaped()));
+    }
+
+    if (not getActionMap()["showPortNamesAction"]->isChecked())
+    {
+        _impl->inputPortsText.clear();
+        _impl->inputPortsText.resize(_inputPorts.size(), QStaticText(" "));
+        _impl->outputPortsText.clear();
+        _impl->outputPortsText.resize(_outputPorts.size(), QStaticText(" "));
     }
 }
 

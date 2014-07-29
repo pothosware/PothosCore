@@ -75,6 +75,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getObjectMap()["affinityZonesDock"], SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
     connect(getActionMap()["showGraphFlattenedView"], SIGNAL(triggered(void)), this, SLOT(handleShowFlattenedDialog(void)));
     connect(getActionMap()["activateTopology"], SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
+    connect(getActionMap()["showPortNamesAction"], SIGNAL(changed(void)), this, SLOT(handleShowPortNames(void)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
 }
@@ -721,6 +722,17 @@ void GraphEditor::handleToggleActivateTopology(const bool enable)
     if (not this->isVisible()) return;
     if (enable) this->updateExecutionEngine();
     else _topologyEngine->clear();
+}
+
+void GraphEditor::handleShowPortNames(void)
+{
+    for (auto obj : this->getGraphObjects())
+    {
+        auto block = dynamic_cast<GraphBlock *>(obj);
+        if (block == nullptr) continue;
+        block->changed();
+    }
+    if (this->isVisible()) this->render();
 }
 
 void GraphEditor::updateExecutionEngine(void)

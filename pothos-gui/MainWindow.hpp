@@ -75,6 +75,7 @@ private:
     QAction *_showGraphBoundingBoxesAction;
     QAction *_showGraphFlattenedViewAction;
     QAction *_activateTopologyAction;
+    QAction *_showPortNamesAction;
     QMap<QString, QAction *> &_actionMap;
 
     void createMenus(void);

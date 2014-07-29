@@ -107,6 +107,7 @@ private slots:
     void handleStateChange(const GraphState &state);
     void handleShowFlattenedDialog(void);
     void handleToggleActivateTopology(bool);
+    void handleShowPortNames(void);
 
 private:
     QTabWidget *_parentTabWidget;
