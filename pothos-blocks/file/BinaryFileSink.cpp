@@ -14,6 +14,10 @@
 #include <stdio.h>
 #include <cerrno>
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 #include <Poco/Logger.h>
 
 /***********************************************************************
@@ -59,7 +63,7 @@ public:
 
     void activate(void)
     {
-        _fd = open(_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC);
+        _fd = open(_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY);
         if (_fd < 0)
         {
             poco_error_f4(Poco::Logger::get("BinaryFileSource"), "open(%s) returned %d -- %s(%d)", _path, _fd, std::string(strerror(errno)), errno);
@@ -75,10 +79,9 @@ public:
     void work(void)
     {
         auto in0 = this->input(0);
-        auto buff = in0->buffer();
-        if (not buff) return;
-        auto ptr = buff.as<const void *>();
-        auto r = write(_fd, ptr, buff.length);
+        if (in0->elements() == 0) return;
+        auto ptr = in0->buffer().as<const void *>();
+        auto r = write(_fd, ptr, in0->elements());
         if (r >= 0) in0->consume(size_t(r));
         else
         {
