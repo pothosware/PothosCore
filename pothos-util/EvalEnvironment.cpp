@@ -79,7 +79,6 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
 
     //write module to file and load
     const auto outPath = Poco::TemporaryFile::tempName() + Poco::SharedLibrary::suffix();
-    Poco::TemporaryFile::registerForDeletion(outPath);
     std::ofstream(outPath.c_str(), std::ios::binary).write(outMod.data(), outMod.size());
     Poco::ClassLoader<Pothos::Util::EvalInterface> loader;
     try
@@ -88,6 +87,7 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
     }
     catch (const Poco::Exception &ex)
     {
+        Poco::File(outPath).remove();
         throw Pothos::Exception("EvalEnvironment::eval", ex.displayText());
     }
 

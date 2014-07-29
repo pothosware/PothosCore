@@ -72,7 +72,11 @@ std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerAr
     //create args
     Poco::Process::Args args;
     args.push_back("/LD"); //Creates a dynamic-link library
+    #ifdef _DEBUG
+    args.push_back("/MDd"); //Creates a multithreaded DLL
+    #else
     args.push_back("/MD"); //Creates a multithreaded DLL
+    #endif
 
     //add libraries
     for (const auto &library : compilerArgs.libraries)
