@@ -160,6 +160,15 @@ void GraphDraw::render(void)
     painter.setRenderHint(QPainter::HighQualityAntialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
+    //clip the bounds
+    for (auto obj : allObjs)
+    {
+        auto oldPos = obj->getPosition();
+        oldPos.setX(std::min(std::max(oldPos.x(), 0.0), QSizeF(this->size()).width()));
+        oldPos.setY(std::min(std::max(oldPos.y(), 0.0), QSizeF(this->size()).height()));
+        obj->setPosition(oldPos);
+    }
+
     //render objects
     for (auto obj : allObjs)
     {

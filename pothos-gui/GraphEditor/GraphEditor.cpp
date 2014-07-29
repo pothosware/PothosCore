@@ -502,12 +502,20 @@ void GraphEditor::handlePaste(void)
         }
     }
 
+    //determine an acceptable position to center the paste
+    auto pastePos = QPointF(this->mapFromGlobal(QCursor::pos()));
+    if (not QRectF(QPointF(), this->size()).contains(pastePos))
+    {
+        auto scroll = dynamic_cast<QScrollArea *>(this->currentWidget());
+        pastePos.setX(scroll->horizontalScrollBar()->value() + this->size().width()/2);
+        pastePos.setY(scroll->verticalScrollBar()->value() + this->size().height()/2);
+    }
+
     //move objects into position
-    //TODO min max on this position
-    const auto myPos = QPointF(draw->mapFromGlobal(QCursor::pos()))/draw->zoomScale();
     for (auto obj : newObjects)
     {
-        obj->setPosition(obj->getPosition()-cornerest+myPos);
+        auto scaled = QPointF(pastePos/draw->zoomScale());
+        obj->setPosition(obj->getPosition()-cornerest+scaled);
     }
 
     //create connections
