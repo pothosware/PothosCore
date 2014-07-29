@@ -28,24 +28,28 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
     if (expr == "true") return Pothos::Object(true);
     if (expr == "false") return Pothos::Object(false);
 
-    //try to parse regular unsigned, signed integers
-    try {return Pothos::Object(Poco::NumberParser::parseUnsigned(expr));}
-    catch (const Poco::SyntaxException &){}
-    try {return Pothos::Object(Poco::NumberParser::parse(expr));}
-    catch (const Poco::SyntaxException &){}
+    //poco number parsers only work properly when expression has no spaces
+    if (expr.find_first_of("\t\n ") == std::string::npos)
+    {
+        //try to parse regular unsigned, signed integers
+        try {return Pothos::Object(Poco::NumberParser::parseUnsigned(expr));}
+        catch (const Poco::SyntaxException &){}
+        try {return Pothos::Object(Poco::NumberParser::parse(expr));}
+        catch (const Poco::SyntaxException &){}
 
-    //try to parse large unsigned, signed integers
-    try {return Pothos::Object(Poco::NumberParser::parseUnsigned64(expr));}
-    catch (const Poco::SyntaxException &){}
-    try {return Pothos::Object(Poco::NumberParser::parse64(expr));}
-    catch (const Poco::SyntaxException &){}
+        //try to parse large unsigned, signed integers
+        try {return Pothos::Object(Poco::NumberParser::parseUnsigned64(expr));}
+        catch (const Poco::SyntaxException &){}
+        try {return Pothos::Object(Poco::NumberParser::parse64(expr));}
+        catch (const Poco::SyntaxException &){}
 
-    //this hex parser does not require a 0x prefix -- dont want it
-    //try {return Pothos::Object(Poco::NumberParser::parseHex64(expr));}
-    //catch (const Poco::SyntaxException &){}
+        //this hex parser does not require a 0x prefix -- dont want it
+        //try {return Pothos::Object(Poco::NumberParser::parseHex64(expr));}
+        //catch (const Poco::SyntaxException &){}
 
-    try {return Pothos::Object(Poco::NumberParser::parseFloat(expr));}
-    catch (const Poco::SyntaxException &){}
+        try {return Pothos::Object(Poco::NumberParser::parseFloat(expr));}
+        catch (const Poco::SyntaxException &){}
+    }
 
     const auto compiler = Pothos::Util::Compiler::make();
 
@@ -75,6 +79,7 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
 
     //write module to file and load
     const auto outPath = Poco::TemporaryFile::tempName() + Poco::SharedLibrary::suffix();
+    Poco::TemporaryFile::registerForDeletion(outPath);
     std::ofstream(outPath.c_str(), std::ios::binary).write(outMod.data(), outMod.size());
     Poco::ClassLoader<Pothos::Util::EvalInterface> loader;
     try
@@ -83,7 +88,6 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
     }
     catch (const Poco::Exception &ex)
     {
-        Poco::File(outPath).remove();
         throw Pothos::Exception("EvalEnvironment::eval", ex.displayText());
     }
 

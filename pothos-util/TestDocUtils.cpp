@@ -8,7 +8,7 @@
 #include <Poco/JSON/Array.h>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/gui/tests", test_doc_utils_dump_json)
+POTHOS_TEST_BLOCK("/util/tests", test_doc_utils_dump_json)
 {
     //check that the following does not throw
     auto env = Pothos::ProxyEnvironment::make("managed");

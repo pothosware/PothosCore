@@ -7,7 +7,7 @@
 #include <Pothos/Exception.hpp>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/gui/tests", test_eval_expression)
+POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
 {
     //check that the following does not throw
     auto env = Pothos::ProxyEnvironment::make("managed");
@@ -15,8 +15,8 @@ POTHOS_TEST_BLOCK("/gui/tests", test_eval_expression)
     auto evalEnv = EvalEnvironment.callProxy("new");
 
     const auto result = evalEnv.call<Pothos::Object>("eval", "1 + 2");
-    std::cout << "result " << result.convert<int>() << std::endl;
+    POTHOS_TEST_EQUAL(result.convert<int>(), 3);
 
     const auto result2 = evalEnv.call<Pothos::Object>("eval", "DType(\"int32\")");
-    std::cout << "result " << result2.convert<Pothos::DType>().toString() << std::endl;
+    POTHOS_TEST_TRUE(result2.convert<Pothos::DType>() == Pothos::DType(typeid(int)));
 }
