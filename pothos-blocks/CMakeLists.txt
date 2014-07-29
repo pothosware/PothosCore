@@ -33,6 +33,7 @@ set(SOURCES
     misc/SlotToMessage.cpp
     misc/BlackHole.cpp
     misc/TestSignalsAndSlots.cpp
+    misc/DynamicRouter.cpp
 
     network/NetworkSource.cpp
     network/NetworkSink.cpp
