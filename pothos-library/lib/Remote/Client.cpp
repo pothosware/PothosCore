@@ -4,7 +4,6 @@
 #include <Pothos/Remote.hpp>
 #include <Poco/Net/StreamSocket.h>
 #include <Poco/Net/SocketStream.h>
-#include <Poco/Net/DNS.h>
 #include <Poco/URI.h>
 #include <Poco/NumberParser.h>
 #include <Poco/SingletonHolder.h>
@@ -61,26 +60,25 @@ struct Pothos::RemoteClient::Impl
             throw RemoteClientError("Pothos::RemoteClient("+uriStr+")", ex);
         }
 
-        //perform the dns lookup
+        //extract port, for unspecified port -- use the default locator port
         Poco::URI uri(uriStr);
+        auto port = uri.getPort();
+        if (port == 0) port = Poco::NumberParser::parseUnsigned(RemoteServer::getLocatorPort());
+
+        //perform the dns lookup
         try
         {
-            ipAddr = Poco::Net::DNS::resolveOne(uri.getHost());
+            this->sa = Poco::Net::SocketAddress(uri.getHost(), port);
         }
         catch (const Poco::Exception &ex)
         {
             throw RemoteClientError("Pothos::RemoteClient("+uriStr+")", ex.displayText());
         }
 
-        //extract port, for unspecified port -- use the default locator port
-        auto port = uri.getPort();
-        if (port == 0) port = Poco::NumberParser::parseUnsigned(RemoteServer::getLocatorPort());
-
         //try to connect to the server
         try
         {
-            Poco::Net::SocketAddress sa(ipAddr, port);
-            clientSocket.connect(sa, Poco::Timespan(0, timeoutUs));
+            clientSocket.connect(this->sa, Poco::Timespan(0, timeoutUs));
         }
         catch (const Poco::Exception &ex)
         {
@@ -90,7 +88,7 @@ struct Pothos::RemoteClient::Impl
     Poco::Net::StreamSocket clientSocket;
     Poco::Net::SocketStream socketStream;
     const std::string uriStr;
-    Poco::Net::IPAddress ipAddr;
+    Poco::Net::SocketAddress sa;
 };
 
 Pothos::RemoteClient::RemoteClient(void)
@@ -126,7 +124,7 @@ Pothos::ProxyEnvironment::Sptr Pothos::RemoteClient::makeEnvironment(const std::
     assert(_impl);
     auto env = RemoteClient::makeEnvironment(this->getIoStream(), name, args);
     env->holdRef(Object(*this));
-    updateNodeIdTable(env, _impl->ipAddr); //update the node id table with this remote host
+    updateNodeIdTable(env, _impl->sa.host()); //update the node id table with this remote host
     return env;
 }
 
