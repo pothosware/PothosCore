@@ -172,12 +172,9 @@ public:
 private:
     void updateTable(void)
     {
-        _uniform = std::uniform_real_distribution<>(_mean-_b, _mean+_b);
-        _normal = std::normal_distribution<>(_mean, _b);
-        _poisson = std::poisson_distribution<>(_mean);
-
         if (_wave == "UNIFORM")
         {
+            _uniform = std::uniform_real_distribution<>(_mean-_b, _mean+_b);
             for (size_t i = 0; i < _table.size(); i++)
             {
                 this->setElem(_table[i], std::complex<double>(_uniform(_gen), _uniform(_gen)));
@@ -185,6 +182,7 @@ private:
         }
         else if (_wave == "NORMAL")
         {
+            _normal = std::normal_distribution<>(_mean, _b);
             for (size_t i = 0; i < _table.size(); i++)
             {
                 this->setElem(_table[i], std::complex<double>(_normal(_gen), _normal(_gen)));
@@ -192,6 +190,7 @@ private:
         }
         else if (_wave == "LAPLACE")
         {
+            _uniform = std::uniform_real_distribution<>(_mean-_b, _mean+_b);
             for (size_t i = 0; i < _table.size(); i++)
             {
                 this->setElem(_table[i], std::complex<double>(_laplace(_gen), _laplace(_gen)));
@@ -199,6 +198,7 @@ private:
         }
         else if (_wave == "POISSON")
         {
+            _poisson = std::poisson_distribution<>(_mean);
             for (size_t i = 0; i < _table.size(); i++)
             {
                 this->setElem(_table[i], std::complex<double>(_poisson(_gen), _poisson(_gen)));
