@@ -258,8 +258,7 @@ void BlockPropertiesPanel::handleCancelButton(void)
 {
     _updateTimer->stop();
 
-    //empty state causes reset to the last known point
-    emit this->stateChanged(GraphState());
+    this->reset();
 
     this->deleteLater();
 }
@@ -289,6 +288,16 @@ void BlockPropertiesPanel::handleCommitButton(void)
 
     //done with this panel
     this->deleteLater();
+}
+
+void BlockPropertiesPanel::reset(void)
+{
+    _block->setId(_idOriginal);
+    _block->setAffinityZone(_affinityZoneOriginal);
+    for (const auto &prop : _block->getProperties())
+    {
+        _block->setPropertyValue(prop.getKey(), _propIdToOriginal[prop.getKey()]);
+    }
 }
 
 void BlockPropertiesPanel::updateAllForms(void)

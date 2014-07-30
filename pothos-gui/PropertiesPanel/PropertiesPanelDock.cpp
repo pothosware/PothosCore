@@ -19,7 +19,12 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     auto block = dynamic_cast<GraphBlock *>(obj);
     if (block != nullptr)
     {
-        if (_propertiesPanel) delete _propertiesPanel;
+        if (_propertiesPanel)
+        {
+            auto _blockPropertiesPanel = dynamic_cast<BlockPropertiesPanel *>(_propertiesPanel.data());
+            if (_blockPropertiesPanel != nullptr) _blockPropertiesPanel->reset();
+            delete _propertiesPanel;
+        }
         _propertiesPanel = new BlockPropertiesPanel(block, this);
         connect(_propertiesPanel, SIGNAL(destroyed(QObject*)), this, SLOT(handlePanelDestroyed(QObject *)));
         this->setWidget(_propertiesPanel);
