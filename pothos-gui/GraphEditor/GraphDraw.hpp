@@ -5,8 +5,6 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
-#include <QPainter>
-#include <QPointer>
 
 class GraphEditor;
 
@@ -16,11 +14,11 @@ class GraphDraw : public QWidget
 public:
     GraphDraw(QWidget *parent);
 
-    GraphObjectList getObjectsAtPos(const QPointF &pos);
+    GraphObjectList getObjectsAtPos(const QPointF &pos, const int selectionFlags = ~0);
 
-    GraphObjectList getObjectsSelected(const bool connections = true);
+    GraphObjectList getObjectsSelected(const int selectionFlags = ~0);
 
-    GraphObjectList getGraphObjects(const bool sorted = true);
+    GraphObjectList getGraphObjects(const int selectionFlags = ~0);
 
     /*!
      * Describe the selected objects in words.
@@ -28,7 +26,7 @@ public:
      * A single object selected? use the ID.
      * Otherwise, just report "selections".
      */
-    QString getSelectionDescription(void);
+    QString getSelectionDescription(const int selectionFlags = ~0);
 
     GraphEditor *getGraphEditor(void) const
     {

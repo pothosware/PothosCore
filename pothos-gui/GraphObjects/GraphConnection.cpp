@@ -248,7 +248,7 @@ void GraphConnection::deserialize(Poco::JSON::Object::Ptr obj)
     //resolve IO objects by id
     QPointer<GraphObject> inputObj = nullptr;
     QPointer<GraphObject> outputObj = nullptr;
-    for (const auto obj : draw->getGraphObjects(false))
+    for (const auto obj : draw->getGraphObjects(~GRAPH_CONNECTION))
     {
         if (obj->getId() == inputId) inputObj = obj;
         if (obj->getId() == outputId) outputObj = obj;

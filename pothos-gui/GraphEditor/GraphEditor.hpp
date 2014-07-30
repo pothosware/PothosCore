@@ -60,7 +60,7 @@ public:
     GraphDraw *getCurrentGraphDraw(void) const;
 
     //! Get a list of all graph objects in all pages
-    GraphObjectList getGraphObjects(void) const;
+    GraphObjectList getGraphObjects(const int selectionFlags = ~0) const;
 
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);

@@ -90,13 +90,7 @@ GraphEditor::~GraphEditor(void)
 QString GraphEditor::newId(const QString &hint) const
 {
     std::set<QString> allIds;
-    for (int pageNo = 0; pageNo < this->count(); pageNo++)
-    {
-        for (auto graphObj : this->getGraphDraw(pageNo)->getGraphObjects())
-        {
-            allIds.insert(graphObj->getId());
-        }
-    }
+    for (auto obj : this->getGraphObjects()) allIds.insert(obj->getId());
 
     //either use the hint or UUID if blank
     QString idBase = hint;
@@ -201,13 +195,14 @@ GraphConnection *GraphEditor::makeConnection(const GraphConnectionEndpoint &ep0,
     }
 
     //duplicate check
-    for (auto obj : this->getGraphObjects())
+    for (auto obj : this->getGraphObjects(GRAPH_CONNECTION))
     {
         auto conn = dynamic_cast<GraphConnection *>(obj);
-        if (conn != nullptr and (
+        assert(conn != nullptr);
+        if (
             (conn->getOutputEndpoint() == ep0 and conn->getInputEndpoint() == ep1) or
             (conn->getOutputEndpoint() == ep1 and conn->getInputEndpoint() == ep0)
-        )) throw Pothos::Exception("GraphEditor::makeConnection()", "connection already exists");
+        ) throw Pothos::Exception("GraphEditor::makeConnection()", "connection already exists");
     }
 
     auto conn = new GraphConnection(ep0.getObj()->parent());
@@ -231,10 +226,10 @@ GraphConnection *GraphEditor::makeConnection(const GraphConnectionEndpoint &ep0,
 
 static GraphBreaker *findInputBreaker(GraphEditor *editor, const GraphConnectionEndpoint &ep)
 {
-    for (auto obj : editor->getGraphObjects())
+    for (auto obj : editor->getGraphObjects(GRAPH_CONNECTION))
     {
         auto conn = dynamic_cast<GraphConnection *>(obj);
-        if (conn == nullptr) continue;
+        assert(conn != nullptr);
         if (not (conn->getOutputEndpoint().getObj()->parent() == conn->getInputEndpoint().getObj()->parent())) continue;
         if (not (conn->getOutputEndpoint() == ep)) continue;
         auto breaker = dynamic_cast<GraphBreaker *>(conn->getInputEndpoint().getObj().data());
@@ -249,7 +244,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
     if (not this->isVisible()) return;
     if (index >= this->count()) return;
     auto draw = this->getCurrentGraphDraw();
-    auto desc = tr("Move %1 to %2").arg(draw->getSelectionDescription(), this->tabText(index));
+    auto desc = tr("Move %1 to %2").arg(draw->getSelectionDescription(~GRAPH_CONNECTION), this->tabText(index));
 
     //move all selected objects
     for (auto obj : draw->getObjectsSelected())
@@ -260,10 +255,10 @@ void GraphEditor::handleMoveGraphObjects(const int index)
 
     //reparent all connections based on endpoints:
     std::vector<GraphConnection *> boundaryConnections;
-    for (auto obj : this->getGraphObjects())
+    for (auto obj : this->getGraphObjects(GRAPH_CONNECTION))
     {
         auto conn = dynamic_cast<GraphConnection *>(obj);
-        if (conn == nullptr) continue;
+        assert(conn != nullptr);
 
         //Connection has the same endpoints, so make sure that the parent is corrected to the endpoint
         if (conn->getOutputEndpoint().getObj()->parent() == conn->getInputEndpoint().getObj()->parent())
@@ -308,11 +303,11 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         //find the existing breaker or make a new one
         const auto name = findInputBreaker(this, epOut)->getNodeName();
         GraphBreaker *breaker = nullptr;
-        for (auto obj : this->getGraphObjects())
+        for (auto obj : this->getGraphObjects(GRAPH_BREAKER))
         {
             if (obj->parent() != epIn.getObj()->parent()) continue;
             auto outBreaker = dynamic_cast<GraphBreaker *>(obj);
-            if (outBreaker == nullptr) continue;
+            assert(outBreaker != nullptr);
             if (outBreaker->isInput()) continue;
             if (outBreaker->getNodeName() != name) continue;
             breaker = outBreaker;
@@ -475,7 +470,7 @@ void GraphEditor::handlePaste(void)
     QPointF cornerest(1e6, 1e6);
 
     //unselect all objects
-    for (auto obj : draw->getGraphObjects(false))
+    for (auto obj : draw->getGraphObjects())
     {
         obj->setSelected(false);
     }
@@ -557,7 +552,7 @@ void GraphEditor::handleSelectAll(void)
 {
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
-    for (auto obj : draw->getGraphObjects(false/*nosort*/))
+    for (auto obj : draw->getGraphObjects())
     {
         obj->setSelected(true);
     }
@@ -607,7 +602,7 @@ void GraphEditor::handleRotateLeft(void)
     {
         obj->rotateLeft();
     }
-    handleStateChange(GraphState("object-rotate-left", tr("Rotate %1 left").arg(draw->getSelectionDescription())));
+    handleStateChange(GraphState("object-rotate-left", tr("Rotate %1 left").arg(draw->getSelectionDescription(~GRAPH_CONNECTION))));
 }
 
 void GraphEditor::handleRotateRight(void)
@@ -618,7 +613,7 @@ void GraphEditor::handleRotateRight(void)
     {
         obj->rotateRight();
     }
-    handleStateChange(GraphState("object-rotate-right", tr("Rotate %1 right").arg(draw->getSelectionDescription())));
+    handleStateChange(GraphState("object-rotate-right", tr("Rotate %1 right").arg(draw->getSelectionDescription(~GRAPH_CONNECTION))));
 }
 
 void GraphEditor::handleProperties(void)
@@ -684,21 +679,21 @@ void GraphEditor::handleAffinityZoneClicked(const QString &zone)
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
 
-    for (auto obj : draw->getObjectsSelected(false/*nc*/))
+    for (auto obj : draw->getObjectsSelected(GRAPH_BLOCK))
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
-        if (block == nullptr) continue;
+        assert(block != nullptr);
         block->setAffinityZone(zone);
     }
-    handleStateChange(GraphState("document-export", tr("Set %1 affinity zone").arg(draw->getSelectionDescription())));
+    handleStateChange(GraphState("document-export", tr("Set %1 affinity zone").arg(draw->getSelectionDescription(GRAPH_BLOCK))));
 }
 
 void GraphEditor::handleAffinityZoneChanged(const QString &zone)
 {
-    for (auto obj : this->getGraphObjects())
+    for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
-        if (block == nullptr) continue;
+        assert(block != nullptr);
         if (block->getAffinityZone() == zone) block->changed();
     }
 
@@ -734,10 +729,10 @@ void GraphEditor::handleToggleActivateTopology(const bool enable)
 
 void GraphEditor::handleShowPortNames(void)
 {
-    for (auto obj : this->getGraphObjects())
+    for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
-        if (block == nullptr) continue;
+        assert(block != nullptr);
         block->changed();
     }
     if (this->isVisible()) this->render();
@@ -856,12 +851,12 @@ GraphDraw *GraphEditor::getCurrentGraphDraw(void) const
     return this->getGraphDraw(this->currentIndex());
 }
 
-GraphObjectList GraphEditor::getGraphObjects(void) const
+GraphObjectList GraphEditor::getGraphObjects(const int selectionFlags) const
 {
     GraphObjectList all;
     for (int i = 0; i < this->count(); i++)
     {
-        for (auto obj : this->getGraphDraw(i)->getGraphObjects(false))
+        for (auto obj : this->getGraphDraw(i)->getGraphObjects(selectionFlags))
         {
             all.push_back(obj);
         }

@@ -117,7 +117,7 @@ void GraphDraw::showEvent(QShowEvent *event)
 
 void GraphDraw::updateEnabledActions(void)
 {
-    auto selectedObjsNoC = this->getObjectsSelected(false/*NC*/);
+    auto selectedObjsNoC = this->getObjectsSelected(~GRAPH_CONNECTION);
     const bool selectedNoC = not selectedObjsNoC.empty();
 
     auto selectedObjs = this->getObjectsSelected();

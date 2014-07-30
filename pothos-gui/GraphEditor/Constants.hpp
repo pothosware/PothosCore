@@ -6,6 +6,11 @@
 #include <QSizeF>
 #include <QString>
 
+//! selection flags used for getting object lists
+static const int GRAPH_BLOCK = (1 << 0);
+static const int GRAPH_BREAKER = (1 << 1);
+static const int GRAPH_CONNECTION = (1 << 2);
+
 static const QString GraphObjectHighlightPenColor = "#33FFFF";
 static const QString GraphObjectDefaultPenColor = "#000000";
 static const QString GraphObjectDefaultFillColor = "#E8E8E8";

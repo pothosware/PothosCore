@@ -5,6 +5,8 @@
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/Constants.hpp"
+#include "GraphObjects/GraphBlock.hpp"
+#include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
 #include <Pothos/Exception.hpp>
 #include <Poco/Logger.h>
@@ -105,7 +107,7 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     //deal with the dragging of graph objects
     if (_mouseLeftDown and _selectionState == "move")
     {
-        for (auto obj : this->getObjectsSelected(false/*NC*/))
+        for (auto obj : this->getObjectsSelected(~GRAPH_CONNECTION))
         {
             obj->move((event->localPos() - _mouseLeftDownLastPoint)/this->zoomScale());
             //keep the block within the drawing space
@@ -159,8 +161,8 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     //emit the move event up to the graph editor
     if (event->button() == Qt::LeftButton and _selectionState == "move")
     {
-        auto selected = getObjectsSelected(false/*NC*/);
-        if (not selected.isEmpty()) emit stateChanged(GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription())));
+        auto selected = getObjectsSelected(~GRAPH_CONNECTION);
+        if (not selected.isEmpty()) emit stateChanged(GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription(~GRAPH_CONNECTION))));
     }
 
     if (event->button() == Qt::LeftButton)
@@ -191,22 +193,21 @@ int GraphDraw::getMaxZIndex(void)
     return index;
 }
 
-GraphObjectList GraphDraw::getObjectsAtPos(const QPointF &pos)
+GraphObjectList GraphDraw::getObjectsAtPos(const QPointF &pos, const int selectionFlags)
 {
     GraphObjectList objectsAtPos;
-    for (auto obj : this->getGraphObjects())
+    for (auto obj : this->getGraphObjects(selectionFlags))
     {
         if (obj->isPointing(pos/this->zoomScale())) objectsAtPos.push_back(obj);
     }
     return objectsAtPos;
 }
 
-GraphObjectList GraphDraw::getObjectsSelected(const bool connections)
+GraphObjectList GraphDraw::getObjectsSelected(const int selectionFlags)
 {
     GraphObjectList objectsSelected;
-    for (auto obj : this->getGraphObjects())
+    for (auto obj : this->getGraphObjects(selectionFlags))
     {
-        if (not connections and dynamic_cast<GraphConnection *>(obj) != nullptr) continue;
         if (obj->getSelected()) objectsSelected.push_back(obj);
     }
     return objectsSelected;
@@ -217,15 +218,18 @@ static bool cmpGraphObjects(const GraphObject *lhs, const GraphObject *rhs)
     return lhs->getZIndex() < rhs->getZIndex();
 }
 
-GraphObjectList GraphDraw::getGraphObjects(const bool sorted)
+GraphObjectList GraphDraw::getGraphObjects(const int selectionFlags)
 {
     GraphObjectList l;
     for (auto child : this->children())
     {
         auto o = dynamic_cast<GraphObject *>(child);
-        if (o != nullptr) l.push_back(o);
+        if (o == nullptr) continue;
+        if (((selectionFlags & GRAPH_BLOCK) != 0) and (dynamic_cast<GraphBlock *>(o) != nullptr)) l.push_back(o);
+        if (((selectionFlags & GRAPH_BREAKER) != 0) and (dynamic_cast<GraphBreaker *>(o) != nullptr)) l.push_back(o);
+        if (((selectionFlags & GRAPH_CONNECTION) != 0) and (dynamic_cast<GraphConnection *>(o) != nullptr)) l.push_back(o);
     }
-    if (sorted) std::sort(l.begin(), l.end(), &cmpGraphObjects);
+    std::sort(l.begin(), l.end(), &cmpGraphObjects);
     return l;
 }
 
@@ -296,14 +300,12 @@ void GraphDraw::doClickSelection(const QPointF &point)
     emit this->selectionChanged(this->getObjectsSelected());
 }
 
-QString GraphDraw::getSelectionDescription(void)
+QString GraphDraw::getSelectionDescription(const int selectionFlags)
 {
-    //ignore connections unless the only thing selected is connections
-    auto selected = this->getObjectsSelected(false/*NC*/);
-    if (selected.isEmpty()) selected = this->getObjectsSelected();
-
     //generate names based on the selected objects
+    const auto selected = this->getObjectsSelected(selectionFlags);
     if (selected.isEmpty()) return tr("no selection");
+
     //if a single connection is selected, pretty print its endpoint IDs
     if (selected.size() == 1)
     {
