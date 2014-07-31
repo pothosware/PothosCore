@@ -18,6 +18,13 @@
 #define O_BINARY 0
 #endif
 
+#include <sys/stat.h> //O_CREAT mode defines
+#ifdef _MSC_VER
+#define MY_S_IREADWRITE _S_IREAD | _S_IWRITE
+#else
+#define MY_S_IREADWRITE S_IRUSR | S_IWUSR
+#endif
+
 #include <Poco/Logger.h>
 
 /***********************************************************************
@@ -63,7 +70,7 @@ public:
 
     void activate(void)
     {
-        _fd = open(_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY);
+        _fd = open(_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, MY_S_IREADWRITE);
         if (_fd < 0)
         {
             poco_error_f4(Poco::Logger::get("BinaryFileSource"), "open(%s) returned %d -- %s(%d)", _path, _fd, std::string(strerror(errno)), errno);
