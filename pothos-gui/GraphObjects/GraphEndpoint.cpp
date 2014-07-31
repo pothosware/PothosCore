@@ -4,16 +4,16 @@
 #include "GraphObjects/GraphEndpoint.hpp"
 #include "GraphObjects/GraphObject.hpp"
 
-GraphConnectableKey::GraphConnectableKey(const QString &id, const bool isInput):
+GraphConnectableKey::GraphConnectableKey(const QString &id, const GraphConnectableDirection direction):
     id(id),
-    isInput(isInput)
+    direction(direction)
 {
     return;
 }
 
 bool operator==(const GraphConnectableKey &key0, const GraphConnectableKey &key1)
 {
-    return key0.id == key1.id and key0.isInput == key1.isInput;
+    return key0.id == key1.id and key0.direction == key1.direction;
 }
 
 GraphConnectionEndpoint::GraphConnectionEndpoint(const QPointer<GraphObject> &obj, const GraphConnectableKey &key)

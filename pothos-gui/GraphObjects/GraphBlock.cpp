@@ -264,11 +264,19 @@ std::vector<GraphConnectableKey> GraphBlock::getConnectableKeys(void) const
     std::vector<GraphConnectableKey> keys;
     for (size_t i = 0; i < _inputPorts.size(); i++)
     {
-        keys.push_back(GraphConnectableKey(_inputPorts[i].getKey(), true));
+        keys.push_back(GraphConnectableKey(_inputPorts[i].getKey(), GRAPH_CONN_INPUT));
     }
     for (size_t i = 0; i < _outputPorts.size(); i++)
     {
-        keys.push_back(GraphConnectableKey(_outputPorts[i].getKey(), false));
+        keys.push_back(GraphConnectableKey(_outputPorts[i].getKey(), GRAPH_CONN_OUTPUT));
+    }
+    if (not this->getSlotPorts().empty())
+    {
+        keys.push_back(GraphConnectableKey("", GRAPH_CONN_SLOT));
+    }
+    if (not this->getSignalPorts().empty())
+    {
+        keys.push_back(GraphConnectableKey("", GRAPH_CONN_SIGNAL));
     }
     return keys;
 }
@@ -278,12 +286,22 @@ GraphConnectableKey GraphBlock::isPointingToConnectable(const QPointF &pos) cons
     for (size_t i = 0; i < _inputPorts.size(); i++)
     {
         if (_impl->inputPortRects[i].contains(pos))
-            return GraphConnectableKey(_inputPorts[i].getKey(), true);
+            return GraphConnectableKey(_inputPorts[i].getKey(), GRAPH_CONN_INPUT);
     }
     for (size_t i = 0; i < _outputPorts.size(); i++)
     {
         if (_impl->outputPortRects[i].contains(pos))
-            return GraphConnectableKey(_outputPorts[i].getKey(), false);
+            return GraphConnectableKey(_outputPorts[i].getKey(), GRAPH_CONN_OUTPUT);
+    }
+    if (not this->getSlotPorts().empty())
+    {
+        if (_impl->mainBlockRect.contains(pos))
+            return GraphConnectableKey("", GRAPH_CONN_SLOT);
+    }
+    if (not this->getSignalPorts().empty())
+    {
+        if (_impl->signalPortRect.contains(pos))
+            return GraphConnectableKey("", GRAPH_CONN_SIGNAL);
     }
     return GraphConnectableKey();
 }
@@ -291,26 +309,33 @@ GraphConnectableKey GraphBlock::isPointingToConnectable(const QPointF &pos) cons
 GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey &key) const
 {
     GraphConnectableAttrs attrs;
+    attrs.direction = key.direction;
     attrs.rotation = this->getRotation();
-    if (key.isInput) for (size_t i = 0; i < _inputPorts.size(); i++)
+    if (key.direction == GRAPH_CONN_INPUT) for (size_t i = 0; i < _inputPorts.size(); i++)
     {
         if (key.id == _inputPorts[i].getKey())
         {
             if (_impl->inputPortPoints.size() > i) //may not be allocated yet
                 attrs.point = _impl->inputPortPoints[i];
-            attrs.isInput = true;
             return attrs;
         }
     }
-    else for (size_t i = 0; i < _outputPorts.size(); i++)
+    if (key.direction == GRAPH_CONN_OUTPUT) for (size_t i = 0; i < _outputPorts.size(); i++)
     {
         if (key.id == _outputPorts[i].getKey())
         {
             if (_impl->outputPortPoints.size() > i) //may not be allocated yet
                 attrs.point = _impl->outputPortPoints[i];
-            attrs.isInput = false;
             return attrs;
         }
+    }
+    if (key.direction == GRAPH_CONN_SLOT and key.id == "")
+    {
+        //TODO
+    }
+    if (key.direction == GRAPH_CONN_SIGNAL and key.id == "")
+    {
+        //TODO
     }
     return attrs;
 }
@@ -508,7 +533,7 @@ void GraphBlock::render(QPainter &painter)
     }
 
     //create signals port
-    if (not this->getSignalPorts().isEmpty())
+    if (not this->getSignalPorts().empty())
     {
         QSizeF rectSize(GraphBlockSignalPortWidth, GraphBlockSignalPortHeight+GraphBlockPortArc);
         QRectF portRect(p+QPointF(mainRect.width()/2-rectSize.width()/2, mainRect.height()-GraphBlockPortArc), rectSize);

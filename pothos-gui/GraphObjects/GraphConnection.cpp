@@ -30,14 +30,8 @@ GraphConnection::GraphConnection(QObject *parent):
 void GraphConnection::setupEndpoint(const GraphConnectionEndpoint &ep)
 {
     assert(_impl);
-    if (ep.getKey().isInput)
-    {
-        _impl->inputEp = ep;
-    }
-    else
-    {
-        _impl->outputEp = ep;
-    }
+    if (ep.getKey().direction == GRAPH_CONN_INPUT) _impl->inputEp = ep;
+    if (ep.getKey().direction == GRAPH_CONN_OUTPUT) _impl->outputEp = ep;
     connect(ep.getObj(), SIGNAL(destroyed(QObject *)), this, SLOT(handleEndPointDestroyed(QObject *)));
 }
 
@@ -257,8 +251,8 @@ void GraphConnection::deserialize(Poco::JSON::Object::Ptr obj)
     if (inputObj.isNull()) throw Pothos::Exception("GraphConnection::deserialize()", "cant resolve object with ID: '"+inputId.toStdString()+"'");
     if (outputObj.isNull()) throw Pothos::Exception("GraphConnection::deserialize()", "cant resolve object with ID: '"+outputId.toStdString()+"'");
 
-    this->setupEndpoint(GraphConnectionEndpoint(inputObj, GraphConnectableKey(inputKey, true)));
-    this->setupEndpoint(GraphConnectionEndpoint(outputObj, GraphConnectableKey(outputKey, false)));
+    this->setupEndpoint(GraphConnectionEndpoint(inputObj, GraphConnectableKey(inputKey, GRAPH_CONN_INPUT)));
+    this->setupEndpoint(GraphConnectionEndpoint(outputObj, GraphConnectableKey(outputKey, GRAPH_CONN_OUTPUT)));
 
     assert(this->getInputEndpoint().isValid());
     assert(this->getOutputEndpoint().isValid());

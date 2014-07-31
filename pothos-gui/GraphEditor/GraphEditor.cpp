@@ -189,7 +189,7 @@ void GraphEditor::handleDeleteGraphPage(void)
 GraphConnection *GraphEditor::makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1)
 {
     //direction check
-    if (ep0.getConnectableAttrs().isInput == ep1.getConnectableAttrs().isInput)
+    if (ep0.getConnectableAttrs().direction == ep1.getConnectableAttrs().direction)
     {
         throw Pothos::Exception("GraphEditor::makeConnection()", "cant connect endpoints of the same direction");
     }
@@ -535,8 +535,8 @@ void GraphEditor::handlePaste(void)
         if (outputObj.isNull()) continue;
 
         this->makeConnection(
-            GraphConnectionEndpoint(inputObj, GraphConnectableKey(inputKey, true)),
-            GraphConnectionEndpoint(outputObj, GraphConnectableKey(outputKey, false)));
+            GraphConnectionEndpoint(inputObj, GraphConnectableKey(inputKey, GRAPH_CONN_INPUT)),
+            GraphConnectionEndpoint(outputObj, GraphConnectableKey(outputKey, GRAPH_CONN_OUTPUT)));
     }
 
     handleStateChange(GraphState("edit-paste", tr("Paste %1").arg(draw->getSelectionDescription())));

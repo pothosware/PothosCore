@@ -73,14 +73,14 @@ QRectF GraphBreaker::getBoundingRect(void) const
 std::vector<GraphConnectableKey> GraphBreaker::getConnectableKeys(void) const
 {
     std::vector<GraphConnectableKey> keys;
-    keys.push_back(GraphConnectableKey("0", this->isInput()));
+    keys.push_back(GraphConnectableKey("0", this->isInput()?GRAPH_CONN_INPUT:GRAPH_CONN_OUTPUT));
     return keys;
 }
 
 GraphConnectableKey GraphBreaker::isPointingToConnectable(const QPointF &pos) const
 {
     assert(_impl);
-    GraphConnectableKey key("", this->isInput());
+    GraphConnectableKey key("", this->isInput()?GRAPH_CONN_INPUT:GRAPH_CONN_OUTPUT);
     if (_impl->polygon.containsPoint(pos, Qt::OddEvenFill)) key.id = "0";
     return key;
 }
@@ -90,7 +90,7 @@ GraphConnectableAttrs GraphBreaker::getConnectableAttrs(const GraphConnectableKe
     assert(_impl);
     GraphConnectableAttrs attrs;
     attrs.rotation = this->getRotation();
-    attrs.isInput = this->isInput();
+    attrs.direction = this->isInput()?GRAPH_CONN_INPUT:GRAPH_CONN_OUTPUT;
     attrs.point = _impl->connectPoint;
     return attrs;
 }
