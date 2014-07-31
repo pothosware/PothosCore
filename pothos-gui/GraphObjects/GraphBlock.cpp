@@ -507,6 +507,21 @@ void GraphBlock::render(QPainter &painter)
         _impl->outputPortPoints[i] = trans.map(connPoint);
     }
 
+    //create signals port
+    if (not this->getSignalPorts().isEmpty())
+    {
+        QSizeF rectSize(GraphBlockSignalPortWidth, GraphBlockSignalPortHeight+GraphBlockPortArc);
+        QRectF portRect(p+QPointF(mainRect.width()/2-rectSize.width()/2, mainRect.height()-GraphBlockPortArc), rectSize);
+
+        painter.save();
+        painter.setBrush(QBrush(_impl->mainBlockColor));
+        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
+        painter.restore();
+
+        _impl->signalPortRect = trans.mapRect(portRect);
+    }
+
     //draw main body of the block
     painter.save();
     painter.setBrush(QBrush(_impl->mainBlockColor));

@@ -49,5 +49,7 @@ struct GraphBlock::Impl
     std::vector<QColor> outputPortColors;
     std::map<QString, std::string> outputPortTypeStr;
 
+    QRectF signalPortRect;
+
     QRectF mainBlockRect;
 };
