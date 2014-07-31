@@ -21,6 +21,9 @@ public:
     const GraphConnectionEndpoint &getOutputEndpoint(void) const;
     const GraphConnectionEndpoint &getInputEndpoint(void) const;
 
+    //! true if an endpoint is a signal or slot
+    bool isSignalSlot(void) const;
+
     bool isPointing(const QRectF &rect) const;
 
     QRectF getBoundingRect(void) const;

@@ -170,7 +170,7 @@ void GraphBreaker::render(QPainter &painter)
     painter.drawStaticText(p+textOff, _impl->titleText);
 
     //connection point
-    const auto connectionPoint = QPointF(flipStyle?0:w, h/2) + p;
+    const auto connectionPoint = QPointF(flipStyle?-GraphObjectBorderWidth:w+GraphObjectBorderWidth, h/2) + p;
     _impl->connectPoint = trans.map(connectionPoint);
 }
 

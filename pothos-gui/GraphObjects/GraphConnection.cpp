@@ -10,6 +10,7 @@
 #include <QPolygonF>
 #include <iostream>
 #include <cassert>
+#include <QtMath>
 
 struct GraphConnection::Impl
 {
@@ -50,6 +51,15 @@ const GraphConnectionEndpoint &GraphConnection::getInputEndpoint(void) const
 {
     assert(_impl);
     return _impl->inputEp;
+}
+
+bool GraphConnection::isSignalSlot(void) const
+{
+    return
+        this->getOutputEndpoint().getKey().direction == GRAPH_CONN_SLOT or
+        this->getOutputEndpoint().getKey().direction == GRAPH_CONN_SIGNAL or
+        this->getInputEndpoint().getKey().direction == GRAPH_CONN_SLOT or
+        this->getInputEndpoint().getKey().direction == GRAPH_CONN_SIGNAL;
 }
 
 void GraphConnection::handleEndPointDestroyed(QObject *)
@@ -176,8 +186,8 @@ void GraphConnection::render(QPainter &painter)
     const auto op1 = outputAttrs.point + otrans.map(QPointF(GraphConnectionMinPling, 0));
 
     //make the minimal input protrusion
-    const auto ip0 = inputAttrs.point;
     QTransform itrans; itrans.rotate(inputAttrs.rotation);
+    const auto ip0 = inputAttrs.point + itrans.map(QPointF(GraphConnectionArrowLen, 0));
     const auto ip1 = inputAttrs.point + itrans.map(QPointF(GraphConnectionMinPling+GraphConnectionArrowLen, 0));
 
     //create a path for the connection lines
@@ -205,6 +215,7 @@ void GraphConnection::render(QPainter &painter)
     painter.setBrush(Qt::NoBrush);
     QPen pen(color);
     pen.setWidthF(GraphConnectionGirth);
+    if (this->isSignalSlot()) pen.setStyle(Qt::DashLine);
     painter.setPen(pen);
     painter.drawPath(path);
     _impl->points = points;
@@ -212,10 +223,13 @@ void GraphConnection::render(QPainter &painter)
     //create arrow head
     QTransform trans0; trans0.rotate(inputAttrs.rotation + 180 + GraphConnectionArrowAngle);
     QTransform trans1; trans1.rotate(inputAttrs.rotation + 180 - GraphConnectionArrowAngle);
-    const auto p0 = trans0.map(QPointF(-GraphConnectionArrowLen, 0));
-    const auto p1 = trans1.map(QPointF(-GraphConnectionArrowLen, 0));
+    const auto diagonalLength = GraphConnectionArrowLen/qCos(qDegreesToRadians(GraphConnectionArrowAngle));
+    const auto p0 = trans0.map(QPointF(-diagonalLength, 0));
+    const auto p1 = trans1.map(QPointF(-diagonalLength, 0));
     QPolygonF arrowHead;
-    arrowHead << ip0 << (ip0+p0) << (ip0+p1);
+    const auto tip = inputAttrs.point;
+    arrowHead << tip << (tip+p0) << (tip+p1);
+    painter.setPen(Qt::NoPen);
     painter.setBrush(QBrush(color));
     painter.drawPolygon(arrowHead);
     _impl->arrowHead = arrowHead;

@@ -283,11 +283,11 @@ std::vector<GraphConnectableKey> GraphBlock::getConnectableKeys(void) const
     }
     if (not this->getSlotPorts().empty())
     {
-        keys.push_back(GraphConnectableKey("*", GRAPH_CONN_SLOT));
+        keys.push_back(GraphConnectableKey("slots", GRAPH_CONN_SLOT));
     }
     if (not this->getSignalPorts().empty())
     {
-        keys.push_back(GraphConnectableKey("*", GRAPH_CONN_SIGNAL));
+        keys.push_back(GraphConnectableKey("signals", GRAPH_CONN_SIGNAL));
     }
     return keys;
 }
@@ -307,12 +307,12 @@ GraphConnectableKey GraphBlock::isPointingToConnectable(const QPointF &pos) cons
     if (not this->getSlotPorts().empty())
     {
         if (_impl->mainBlockRect.contains(pos))
-            return GraphConnectableKey("*", GRAPH_CONN_SLOT);
+            return GraphConnectableKey("slots", GRAPH_CONN_SLOT);
     }
     if (not this->getSignalPorts().empty())
     {
         if (_impl->signalPortRect.contains(pos))
-            return GraphConnectableKey("*", GRAPH_CONN_SIGNAL);
+            return GraphConnectableKey("signals", GRAPH_CONN_SIGNAL);
     }
     return GraphConnectableKey();
 }
@@ -342,13 +342,13 @@ GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey 
             return attrs;
         }
     }
-    if (key.direction == GRAPH_CONN_SLOT and key.id == "*")
+    if (key.direction == GRAPH_CONN_SLOT and key.id == "slots")
     {
         attrs.point = _impl->slotPortPoint;
         attrs.rotation += 270;
         return attrs;
     }
-    if (key.direction == GRAPH_CONN_SIGNAL and key.id == "*")
+    if (key.direction == GRAPH_CONN_SIGNAL and key.id == "signals")
     {
         attrs.point = _impl->signalPortPoint;
         attrs.rotation += 90;
@@ -516,7 +516,7 @@ void GraphBlock::render(QPainter &painter)
         painter.drawStaticText(portRect.topLeft()+QPointF(availablePortHPad/2.0, availablePortVPad/2.0), text);
 
         //connection point logic
-        const auto connPoint = portRect.topLeft() + QPointF(portFlip?rectSize.width():0, rectSize.height()/2);
+        const auto connPoint = portRect.topLeft() + QPointF(portFlip?rectSize.width()+GraphObjectBorderWidth:-GraphObjectBorderWidth, rectSize.height()/2);
         _impl->inputPortPoints[i] = trans.map(connPoint);
     }
 
@@ -545,7 +545,7 @@ void GraphBlock::render(QPainter &painter)
         painter.drawStaticText(portRect.topLeft()+QPointF(availablePortHPad/2.0-arcFix, availablePortVPad/2.0), text);
 
         //connection point logic
-        const auto connPoint = portRect.topLeft() + QPointF(portFlip?0:rectSize.width(), rectSize.height()/2);
+        const auto connPoint = portRect.topLeft() + QPointF(portFlip?-GraphObjectBorderWidth:rectSize.width()+GraphObjectBorderWidth, rectSize.height()/2);
         _impl->outputPortPoints[i] = trans.map(connPoint);
     }
 
@@ -566,7 +566,7 @@ void GraphBlock::render(QPainter &painter)
         _impl->signalPortRect = trans.mapRect(portRect);
 
         //connection point logic
-        const auto connPoint = portRect.topLeft() + QPointF(rectSize.width()/2, portFlip?0:rectSize.height());
+        const auto connPoint = portRect.topLeft() + QPointF(rectSize.width()/2, portFlip?-GraphObjectBorderWidth:rectSize.height()+GraphObjectBorderWidth);
         _impl->signalPortPoint = trans.map(connPoint);
     }
 
@@ -574,7 +574,7 @@ void GraphBlock::render(QPainter &painter)
     if (not this->getSlotPorts().empty())
     {
         //connection point logic
-        const auto connPoint = mainRect.topLeft() + QPointF(mainRect.width()/2, portFlip?mainRect.height():0);
+        const auto connPoint = mainRect.topLeft() + QPointF(mainRect.width()/2, portFlip?mainRect.height()+GraphObjectBorderWidth:-GraphObjectBorderWidth);
         _impl->slotPortPoint = trans.map(connPoint);
     }
 

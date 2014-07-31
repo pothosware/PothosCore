@@ -53,7 +53,7 @@ static const QString GraphBreakerTitleFontSize = "8pt";
 
 static const qreal GraphConnectionMinPling = 10;
 static const qreal GraphConnectionGirth = 1.5;
-static const qreal GraphConnectionArrowLen = 10;
+static const qreal GraphConnectionArrowLen = 12;
 static const qreal GraphConnectionArrowAngle = 30;
 static const qreal GraphConnectionMaxCurve = 10;
 static const qreal GraphConnectionSelectPad = 3;
