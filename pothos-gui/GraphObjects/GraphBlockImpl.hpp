@@ -50,6 +50,8 @@ struct GraphBlock::Impl
     std::map<QString, std::string> outputPortTypeStr;
 
     QRectF signalPortRect;
+    QPointF signalPortPoint;
+    QPointF slotPortPoint;
 
     QRectF mainBlockRect;
 };

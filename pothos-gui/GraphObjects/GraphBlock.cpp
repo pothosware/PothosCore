@@ -252,6 +252,13 @@ QRectF GraphBlock::getBoundingRect(void) const
         points.push_back(portRect.bottomRight());
         points.push_back(portRect.bottomLeft());
     }
+    if (not this->getSignalPorts().empty())
+    {
+        points.push_back(_impl->signalPortRect.topLeft());
+        points.push_back(_impl->signalPortRect.topRight());
+        points.push_back(_impl->signalPortRect.bottomRight());
+        points.push_back(_impl->signalPortRect.bottomLeft());
+    }
     points.push_back(_impl->mainBlockRect.topLeft());
     points.push_back(_impl->mainBlockRect.topRight());
     points.push_back(_impl->mainBlockRect.bottomRight());
@@ -331,11 +338,13 @@ GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey 
     }
     if (key.direction == GRAPH_CONN_SLOT and key.id == "")
     {
-        //TODO
+        attrs.point = _impl->slotPortPoint;
+        return attrs;
     }
     if (key.direction == GRAPH_CONN_SIGNAL and key.id == "")
     {
-        //TODO
+        attrs.point = _impl->signalPortPoint;
+        return attrs;
     }
     return attrs;
 }
@@ -536,7 +545,9 @@ void GraphBlock::render(QPainter &painter)
     if (not this->getSignalPorts().empty())
     {
         QSizeF rectSize(GraphBlockSignalPortWidth, GraphBlockSignalPortHeight+GraphBlockPortArc);
-        QRectF portRect(p+QPointF(mainRect.width()/2-rectSize.width()/2, mainRect.height()-GraphBlockPortArc), rectSize);
+        const qreal vOff = (portFlip)? 1-rectSize.height() : overallHeight;
+        const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
+        QRectF portRect(p+QPointF(mainRect.width()/2-rectSize.width()/2, vOff + arcFix), rectSize);
 
         painter.save();
         painter.setBrush(QBrush(_impl->mainBlockColor));
@@ -545,6 +556,18 @@ void GraphBlock::render(QPainter &painter)
         painter.restore();
 
         _impl->signalPortRect = trans.mapRect(portRect);
+
+        //connection point logic
+        const auto connPoint = portRect.topLeft() + QPointF(rectSize.width()/2, portFlip?0:rectSize.height());
+        _impl->signalPortPoint = trans.map(connPoint);
+    }
+
+    //create signals port
+    if (not this->getSlotPorts().empty())
+    {
+        //connection point logic
+        const auto connPoint = mainRect.topLeft() + QPointF(mainRect.width()/2, portFlip?mainRect.height():0);
+        _impl->slotPortPoint = trans.map(connPoint);
     }
 
     //draw main body of the block

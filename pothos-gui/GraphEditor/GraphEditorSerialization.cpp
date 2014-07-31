@@ -3,12 +3,6 @@
 
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
-#include "GraphObjects/GraphBlock.hpp"
-#include "GraphObjects/GraphBreaker.hpp"
-#include "GraphObjects/GraphConnection.hpp"
-#include <Poco/JSON/Parser.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Object.h>
 
 /***********************************************************************
  * Serialization routine

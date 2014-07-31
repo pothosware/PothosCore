@@ -10,16 +10,16 @@
 #include <QPointF>
 #include <memory>
 
-class GraphConnection : public GraphObject
+class GraphSigSlotConn : public GraphObject
 {
     Q_OBJECT
 public:
-    GraphConnection(QObject *parent);
+    GraphSigSlotConn(QObject *parent);
 
     void setupEndpoint(const GraphConnectionEndpoint &ep);
 
-    const GraphConnectionEndpoint &getOutputEndpoint(void) const;
-    const GraphConnectionEndpoint &getInputEndpoint(void) const;
+    const GraphConnectionEndpoint &getSignalEndpoint(void) const;
+    const GraphConnectionEndpoint &getSlotEndpoint(void) const;
 
     bool isPointing(const QRectF &rect) const;
 
