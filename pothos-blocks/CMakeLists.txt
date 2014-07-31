@@ -26,6 +26,7 @@ set(SOURCES
 
     misc/Delay.cpp
     misc/Pacer.cpp
+    misc/PeriodicTrigger.cpp
     misc/Forwarder.cpp
     misc/TestForwarder.cpp
     misc/Copier.cpp
