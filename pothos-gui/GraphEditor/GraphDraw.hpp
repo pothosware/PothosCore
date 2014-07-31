@@ -28,6 +28,9 @@ public:
      */
     QString getSelectionDescription(const int selectionFlags = ~0);
 
+    //! Get the graph object with the specified ID or nullptr
+    GraphObject *getObjectById(const QString &id, const int selectionFlags = ~0);
+
     GraphEditor *getGraphEditor(void) const
     {
         return _graphEditor;

@@ -8,7 +8,6 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
-#include "GraphObjects/GraphSigSlotConn.hpp"
 #include <Pothos/Exception.hpp>
 #include <Poco/Logger.h>
 #include <QScrollArea>
@@ -229,7 +228,6 @@ GraphObjectList GraphDraw::getGraphObjects(const int selectionFlags)
         if (((selectionFlags & GRAPH_BLOCK) != 0) and (dynamic_cast<GraphBlock *>(o) != nullptr)) l.push_back(o);
         if (((selectionFlags & GRAPH_BREAKER) != 0) and (dynamic_cast<GraphBreaker *>(o) != nullptr)) l.push_back(o);
         if (((selectionFlags & GRAPH_CONNECTION) != 0) and (dynamic_cast<GraphConnection *>(o) != nullptr)) l.push_back(o);
-        if (((selectionFlags & GRAPH_SIG_SLOT_CONN) != 0) and (dynamic_cast<GraphSigSlotConn *>(o) != nullptr)) l.push_back(o);
     }
     std::sort(l.begin(), l.end(), &cmpGraphObjects);
     return l;
@@ -263,7 +261,9 @@ void GraphDraw::doClickSelection(const QPointF &point)
 
         //valid keys, attempt to make a connection
         QPointer<GraphConnection> conn;
-        if (thisEp.isValid() and _lastClickSelectEp.isValid() and not (thisEp == _lastClickSelectEp))
+        if (thisEp.isValid() and _lastClickSelectEp.isValid() and not (thisEp == _lastClickSelectEp) and //end points valid
+            (_lastClickSelectEp.getConnectableAttrs().direction == GRAPH_CONN_OUTPUT or _lastClickSelectEp.getConnectableAttrs().direction == GRAPH_CONN_SIGNAL) and //last endpoint is output
+            (thisEp.getConnectableAttrs().direction == GRAPH_CONN_INPUT or thisEp.getConnectableAttrs().direction == GRAPH_CONN_SLOT)) //this click endpoint is input
         {
             try
             {
@@ -321,4 +321,13 @@ QString GraphDraw::getSelectionDescription(const int selectionFlags)
         );
     }
     return tr("selected");
+}
+
+GraphObject *GraphDraw::getObjectById(const QString &id, const int selectionFlags)
+{
+    for (auto obj : this->getGraphObjects(selectionFlags))
+    {
+        if (obj->getId() == id) return obj;
+    }
+    return nullptr;
 }

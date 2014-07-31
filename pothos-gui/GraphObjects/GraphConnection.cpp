@@ -30,8 +30,13 @@ GraphConnection::GraphConnection(QObject *parent):
 void GraphConnection::setupEndpoint(const GraphConnectionEndpoint &ep)
 {
     assert(_impl);
-    if (ep.getKey().direction == GRAPH_CONN_INPUT) _impl->inputEp = ep;
-    if (ep.getKey().direction == GRAPH_CONN_OUTPUT) _impl->outputEp = ep;
+    switch (ep.getKey().direction)
+    {
+    case GRAPH_CONN_INPUT:
+    case GRAPH_CONN_SLOT: _impl->inputEp = ep; break;
+    case GRAPH_CONN_OUTPUT:
+    case GRAPH_CONN_SIGNAL: _impl->outputEp = ep; break;
+    }
     connect(ep.getObj(), SIGNAL(destroyed(QObject *)), this, SLOT(handleEndPointDestroyed(QObject *)));
 }
 
@@ -172,14 +177,14 @@ void GraphConnection::render(QPainter &painter)
 
     //make the minimal input protrusion
     const auto ip0 = inputAttrs.point;
-    QTransform itrans; itrans.rotate(inputAttrs.rotation + 180);
+    QTransform itrans; itrans.rotate(inputAttrs.rotation);
     const auto ip1 = inputAttrs.point + itrans.map(QPointF(GraphConnectionMinPling+GraphConnectionArrowLen, 0));
 
     //create a path for the connection lines
     QVector<QPointF> points;
     points.push_back(op0);
     points.push_back(op1);
-    makeLines(points, op1, outputAttrs.rotation, ip1, inputAttrs.rotation + 180);
+    makeLines(points, op1, outputAttrs.rotation, ip1, inputAttrs.rotation);
     points.push_back(ip1);
     points.push_back(ip0);
 
@@ -205,8 +210,8 @@ void GraphConnection::render(QPainter &painter)
     _impl->points = points;
 
     //create arrow head
-    QTransform trans0; trans0.rotate(inputAttrs.rotation + GraphConnectionArrowAngle);
-    QTransform trans1; trans1.rotate(inputAttrs.rotation - GraphConnectionArrowAngle);
+    QTransform trans0; trans0.rotate(inputAttrs.rotation + 180 + GraphConnectionArrowAngle);
+    QTransform trans1; trans1.rotate(inputAttrs.rotation + 180 - GraphConnectionArrowAngle);
     const auto p0 = trans0.map(QPointF(-GraphConnectionArrowLen, 0));
     const auto p1 = trans1.map(QPointF(-GraphConnectionArrowLen, 0));
     QPolygonF arrowHead;
@@ -216,43 +221,70 @@ void GraphConnection::render(QPainter &painter)
     _impl->arrowHead = arrowHead;
 }
 
+/***********************************************************************
+ * serialize - connection to JSON
+ **********************************************************************/
+static std::string directionToStr(const GraphConnectableDirection direction)
+{
+    switch (direction)
+    {
+    case GRAPH_CONN_INPUT: return "input";
+    case GRAPH_CONN_OUTPUT: return "output";
+    case GRAPH_CONN_SLOT: return "slot";
+    case GRAPH_CONN_SIGNAL: return "signal";
+    }
+    return "";
+}
+
+static void endpointSerialize(Poco::JSON::Object::Ptr obj, const GraphConnectionEndpoint &ep)
+{
+    const auto key = directionToStr(ep.getConnectableAttrs().direction);
+    obj->set(key+"Id", ep.getObj()->getId().toStdString());
+    obj->set(key+"Key", ep.getKey().id.toStdString());
+}
+
 Poco::JSON::Object::Ptr GraphConnection::serialize(void) const
 {
     auto obj = GraphObject::serialize();
     assert(this->getOutputEndpoint().isValid());
     assert(this->getInputEndpoint().isValid());
     obj->set("what", std::string("Connection"));
-    obj->set("outputId", this->getOutputEndpoint().getObj()->getId().toStdString());
-    obj->set("inputId", this->getInputEndpoint().getObj()->getId().toStdString());
-    obj->set("outputKey", this->getOutputEndpoint().getKey().id.toStdString());
-    obj->set("inputKey", this->getInputEndpoint().getKey().id.toStdString());
+    endpointSerialize(obj, this->getOutputEndpoint());
+    endpointSerialize(obj, this->getInputEndpoint());
     return obj;
+}
+
+/***********************************************************************
+ * deserialize - JSON to connection
+ **********************************************************************/
+static GraphConnectionEndpoint endpointDeserialize(GraphDraw *draw, Poco::JSON::Object::Ptr obj, const GraphConnectableDirection &direction)
+{
+    const auto key = directionToStr(direction);
+    if (obj->has(key+"Id") and obj->has(key+"Key"))
+    {
+        auto portId = QString::fromStdString(obj->getValue<std::string>(key+"Id"));
+        auto portKey = QString::fromStdString(obj->getValue<std::string>(key+"Key"));
+        auto graphObj = draw->getObjectById(portId, ~GRAPH_CONNECTION);
+        if (graphObj == nullptr) throw Pothos::Exception("GraphConnection::deserialize()", "cant resolve object with ID: '"+portId.toStdString()+"'");
+        return GraphConnectionEndpoint(graphObj, GraphConnectableKey(portKey, direction));
+    }
+    return GraphConnectionEndpoint();
 }
 
 void GraphConnection::deserialize(Poco::JSON::Object::Ptr obj)
 {
-    auto outputId = QString::fromStdString(obj->getValue<std::string>("outputId"));
-    auto inputId = QString::fromStdString(obj->getValue<std::string>("inputId"));
-    auto outputKey = QString::fromStdString(obj->getValue<std::string>("outputKey"));
-    auto inputKey = QString::fromStdString(obj->getValue<std::string>("inputKey"));
-
     auto draw = dynamic_cast<GraphDraw *>(this->parent());
     assert(draw != nullptr);
 
-    //resolve IO objects by id
-    QPointer<GraphObject> inputObj = nullptr;
-    QPointer<GraphObject> outputObj = nullptr;
-    for (const auto obj : draw->getGraphObjects(GRAPH_BLOCK | GRAPH_BREAKER))
-    {
-        if (obj->getId() == inputId) inputObj = obj;
-        if (obj->getId() == outputId) outputObj = obj;
-    }
+    auto outputEp = endpointDeserialize(draw, obj, GRAPH_CONN_OUTPUT);
+    auto inputEp = endpointDeserialize(draw, obj, GRAPH_CONN_INPUT);
+    auto slotEp = endpointDeserialize(draw, obj, GRAPH_CONN_SLOT);
+    auto signalEp = endpointDeserialize(draw, obj, GRAPH_CONN_SIGNAL);
 
-    if (inputObj.isNull()) throw Pothos::Exception("GraphConnection::deserialize()", "cant resolve object with ID: '"+inputId.toStdString()+"'");
-    if (outputObj.isNull()) throw Pothos::Exception("GraphConnection::deserialize()", "cant resolve object with ID: '"+outputId.toStdString()+"'");
-
-    this->setupEndpoint(GraphConnectionEndpoint(inputObj, GraphConnectableKey(inputKey, GRAPH_CONN_INPUT)));
-    this->setupEndpoint(GraphConnectionEndpoint(outputObj, GraphConnectableKey(outputKey, GRAPH_CONN_OUTPUT)));
+    if (outputEp.isValid()) this->setupEndpoint(outputEp);
+    if (inputEp.isValid()) this->setupEndpoint(inputEp);
+    if (slotEp.isValid()) this->setupEndpoint(slotEp);
+    if (signalEp.isValid()) this->setupEndpoint(signalEp);
 
     assert(this->getInputEndpoint().isValid());
     assert(this->getOutputEndpoint().isValid());

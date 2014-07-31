@@ -90,6 +90,7 @@ GraphConnectableAttrs GraphBreaker::getConnectableAttrs(const GraphConnectableKe
     assert(_impl);
     GraphConnectableAttrs attrs;
     attrs.rotation = this->getRotation();
+    if (this->isInput()) attrs.rotation += 180;
     attrs.direction = this->isInput()?GRAPH_CONN_INPUT:GRAPH_CONN_OUTPUT;
     attrs.point = _impl->connectPoint;
     return attrs;

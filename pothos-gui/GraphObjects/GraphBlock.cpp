@@ -231,6 +231,10 @@ bool GraphBlock::isPointing(const QRectF &rect) const
     {
         if (portRect.intersects(rect)) return true;
     }
+    if (not this->getSignalPorts().empty())
+    {
+        if (_impl->signalPortRect.intersects(rect)) return true;
+    }
     //otherwise does it point to the main body
     return _impl->mainBlockRect.intersects(rect);
 }
@@ -279,11 +283,11 @@ std::vector<GraphConnectableKey> GraphBlock::getConnectableKeys(void) const
     }
     if (not this->getSlotPorts().empty())
     {
-        keys.push_back(GraphConnectableKey("", GRAPH_CONN_SLOT));
+        keys.push_back(GraphConnectableKey("*", GRAPH_CONN_SLOT));
     }
     if (not this->getSignalPorts().empty())
     {
-        keys.push_back(GraphConnectableKey("", GRAPH_CONN_SIGNAL));
+        keys.push_back(GraphConnectableKey("*", GRAPH_CONN_SIGNAL));
     }
     return keys;
 }
@@ -303,12 +307,12 @@ GraphConnectableKey GraphBlock::isPointingToConnectable(const QPointF &pos) cons
     if (not this->getSlotPorts().empty())
     {
         if (_impl->mainBlockRect.contains(pos))
-            return GraphConnectableKey("", GRAPH_CONN_SLOT);
+            return GraphConnectableKey("*", GRAPH_CONN_SLOT);
     }
     if (not this->getSignalPorts().empty())
     {
         if (_impl->signalPortRect.contains(pos))
-            return GraphConnectableKey("", GRAPH_CONN_SIGNAL);
+            return GraphConnectableKey("*", GRAPH_CONN_SIGNAL);
     }
     return GraphConnectableKey();
 }
@@ -324,6 +328,7 @@ GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey 
         {
             if (_impl->inputPortPoints.size() > i) //may not be allocated yet
                 attrs.point = _impl->inputPortPoints[i];
+            attrs.rotation += 180;
             return attrs;
         }
     }
@@ -333,17 +338,20 @@ GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey 
         {
             if (_impl->outputPortPoints.size() > i) //may not be allocated yet
                 attrs.point = _impl->outputPortPoints[i];
+            attrs.rotation += 0;
             return attrs;
         }
     }
-    if (key.direction == GRAPH_CONN_SLOT and key.id == "")
+    if (key.direction == GRAPH_CONN_SLOT and key.id == "*")
     {
         attrs.point = _impl->slotPortPoint;
+        attrs.rotation += 270;
         return attrs;
     }
-    if (key.direction == GRAPH_CONN_SIGNAL and key.id == "")
+    if (key.direction == GRAPH_CONN_SIGNAL and key.id == "*")
     {
         attrs.point = _impl->signalPortPoint;
+        attrs.rotation += 90;
         return attrs;
     }
     return attrs;
@@ -562,7 +570,7 @@ void GraphBlock::render(QPainter &painter)
         _impl->signalPortPoint = trans.map(connPoint);
     }
 
-    //create signals port
+    //create slots port
     if (not this->getSlotPorts().empty())
     {
         //connection point logic

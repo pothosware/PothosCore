@@ -189,7 +189,11 @@ void GraphEditor::handleDeleteGraphPage(void)
 GraphConnection *GraphEditor::makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1)
 {
     //direction check
-    if (ep0.getConnectableAttrs().direction == ep1.getConnectableAttrs().direction)
+    if (ep0.getConnectableAttrs().direction == ep1.getConnectableAttrs().direction or
+        (ep0.getConnectableAttrs().direction == GRAPH_CONN_INPUT and ep1.getConnectableAttrs().direction == GRAPH_CONN_SLOT) or
+        (ep0.getConnectableAttrs().direction == GRAPH_CONN_OUTPUT and ep1.getConnectableAttrs().direction == GRAPH_CONN_SIGNAL) or
+        (ep0.getConnectableAttrs().direction == GRAPH_CONN_SLOT and ep1.getConnectableAttrs().direction == GRAPH_CONN_INPUT) or
+        (ep0.getConnectableAttrs().direction == GRAPH_CONN_SIGNAL and ep1.getConnectableAttrs().direction == GRAPH_CONN_OUTPUT))
     {
         throw Pothos::Exception("GraphEditor::makeConnection()", "cant connect endpoints of the same direction");
     }
