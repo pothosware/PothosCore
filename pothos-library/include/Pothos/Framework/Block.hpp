@@ -210,6 +210,14 @@ public:
     const WorkInfo &workInfo(void) const;
 
     /*!
+     * Is the block in an active state?
+     * This is a thread-safe way for a block's methods
+     * to determine if the processing is currently active.
+     * \return true when the topology is executing
+     */
+    bool isActive(void) const;
+
+    /*!
      * Configure an input port with the given data type.
      * The data type parameter specifies the size in bytes per input element.
      * The data type is only relevant when the port is used for streaming data.

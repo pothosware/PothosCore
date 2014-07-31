@@ -88,6 +88,11 @@ void Pothos::Block::propagateLabels(const InputPort *input)
     }
 }
 
+bool Pothos::Block::isActive(void) const
+{
+    return _actor->activeState;
+}
+
 void Pothos::Block::setupInput(const std::string &name, const DType &dtype, const std::string &domain)
 {
     _actor->allocateInput(name, dtype, domain);
