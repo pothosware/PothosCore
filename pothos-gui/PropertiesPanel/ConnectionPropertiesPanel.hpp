@@ -15,16 +15,12 @@ public:
     ConnectionPropertiesPanel(GraphConnection *conn, QWidget *parent);
 
 public slots:
-    //! reset all settings to their original (pre-edit) values
-    void handleReset(void);
+    void handleCancel(void);
+    void handleCommit(void);
 
 private slots:
 
     void handleConnectionDestroyed(QObject *);
-
-    void handleCancelButton(void);
-
-    void handleCommitButton(void);
 
 private:
     QPointer<GraphConnection> _conn;

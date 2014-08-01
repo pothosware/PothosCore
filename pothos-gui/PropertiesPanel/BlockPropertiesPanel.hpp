@@ -27,8 +27,8 @@ public:
     QString getParamDocString(const Poco::JSON::Object::Ptr &paramDesc);
 
 public slots:
-    //! reset all settings to their original (pre-edit) values
-    void handleReset(void);
+    void handleCancel(void);
+    void handleCommit(void);
 
 private slots:
 
@@ -42,10 +42,6 @@ private slots:
     void handleEditWidgetChanged(void);
 
     void handleUpdateTimerExpired(void);
-
-    void handleCancelButton(void);
-
-    void handleCommitButton(void);
 
 signals:
     void stateChanged(const GraphState &);

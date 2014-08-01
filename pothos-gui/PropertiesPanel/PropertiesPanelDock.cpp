@@ -1,20 +1,48 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "PothosGuiUtils.hpp" //make icon theme
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
 #include "PropertiesPanel/BlockPropertiesPanel.hpp"
 #include "PropertiesPanel/ConnectionPropertiesPanel.hpp"
 #include <GraphObjects/GraphBlock.hpp>
 #include <GraphObjects/GraphBreaker.hpp>
 #include <GraphObjects/GraphConnection.hpp>
+#include <QPushButton>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QScrollArea>
 
 PropertiesPanelDock::PropertiesPanelDock(QWidget *parent):
     QDockWidget(parent),
-    _propertiesPanel(nullptr)
+    _propertiesPanel(nullptr),
+    _scroll(new QScrollArea(this)),
+    _commitButton(nullptr),
+    _cancelButton(nullptr)
 {
     this->setObjectName("PropertiesPanelDock");
     this->setWindowTitle(tr("Properties Panel"));
     this->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    this->setWidget(new QWidget(this));
+
+    //master layout for this widget
+    auto layout = new QVBoxLayout(this->widget());
+
+    //setup the scroller
+    _scroll->setWidgetResizable(true);
+    layout->addWidget(_scroll);
+
+    //setup the buttons
+    {
+        auto buttonLayout = new QHBoxLayout();
+        layout->addLayout(buttonLayout);
+        _commitButton = new QPushButton(makeIconFromTheme("dialog-ok-apply"), tr("Commit"), this);
+        connect(_commitButton, SIGNAL(pressed(void)), this, SLOT(handleDeletePanel(void)));
+        buttonLayout->addWidget(_commitButton);
+        _cancelButton = new QPushButton(makeIconFromTheme("dialog-cancel"), tr("Cancel"), this);
+        connect(_cancelButton, SIGNAL(pressed(void)), this, SLOT(handleDeletePanel(void)));
+        buttonLayout->addWidget(_cancelButton);
+    }
 }
 
 void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
@@ -38,10 +66,12 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
 
     //connect panel signals and slots into dock events
     connect(_propertiesPanel, SIGNAL(destroyed(QObject*)), this, SLOT(handlePanelDestroyed(QObject *)));
-    connect(this, SIGNAL(resetPanel(void)), _propertiesPanel, SLOT(handleReset(void)));
+    connect(this, SIGNAL(resetPanel(void)), _propertiesPanel, SLOT(handleCancel(void)));
+    connect(_commitButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCommit(void)));
+    connect(_cancelButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCancel(void)));
 
     //set the widget and make the entire dock visible
-    this->setWidget(_propertiesPanel);
+    _scroll->setWidget(_propertiesPanel);
     this->show();
     this->raise();
 }
@@ -49,4 +79,9 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
 void PropertiesPanelDock::handlePanelDestroyed(QObject *)
 {
     this->hide();
+}
+
+void PropertiesPanelDock::handleDeletePanel(void)
+{
+    if (_propertiesPanel) _propertiesPanel->deleteLater();
 }

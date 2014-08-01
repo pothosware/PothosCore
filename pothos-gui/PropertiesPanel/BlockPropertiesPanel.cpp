@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //make icon theme
+#include "PothosGuiUtils.hpp" //get object map
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "PropertiesPanel/BlockPropertiesPanel.hpp"
 #include "PropertiesPanel/BlockPropertyEditWidget.hpp"
@@ -15,8 +15,6 @@
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QComboBox>
-#include <QScrollArea>
-#include <QPushButton>
 #include <QLabel>
 #include <QPainter>
 #include <QTimer>
@@ -39,15 +37,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     auto blockDesc = block->getBlockDesc();
 
     //master layout for this widget
-    auto layout = new QVBoxLayout(this);
-
-    //create a scroller and a form layout
-    auto scroll = new QScrollArea(this);
-    scroll->setWidgetResizable(true);
-    scroll->setWidget(new QWidget(scroll));
-    _formLayout = new QFormLayout(scroll);
-    scroll->widget()->setLayout(_formLayout);
-    layout->addWidget(scroll);
+    _formLayout = new QFormLayout(this);
 
     //title
     {
@@ -66,7 +56,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _idOriginal = _block->getId();
         _formLayout->addRow(_idLabel, _idLineEdit);
         connect(_idLineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
-        connect(_idLineEdit, SIGNAL(returnPressed(void)), this, SLOT(handleCommitButton(void)));
+        connect(_idLineEdit, SIGNAL(returnPressed(void)), this, SLOT(handleCommit(void)));
     }
 
     //properties
@@ -79,7 +69,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         //create editable widget
         auto editWidget = new BlockPropertyEditWidget(paramDesc, this);
         connect(editWidget, SIGNAL(valueChanged(void)), this, SLOT(handleEditWidgetChanged(void)));
-        connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommitButton(void)));
+        connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
         _propIdToEditWidget[prop.getKey()] = editWidget;
 
         //create labels
@@ -180,18 +170,6 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _formLayout->addRow(text);
     }
 
-    //buttons
-    {
-        auto buttonLayout = new QHBoxLayout();
-        layout->addLayout(buttonLayout);
-        auto commitButton = new QPushButton(makeIconFromTheme("dialog-ok-apply"), tr("Commit"), this);
-        connect(commitButton, SIGNAL(pressed(void)), this, SLOT(handleCommitButton(void)));
-        buttonLayout->addWidget(commitButton);
-        auto cancelButton = new QPushButton(makeIconFromTheme("dialog-cancel"), tr("Cancel"), this);
-        connect(cancelButton, SIGNAL(pressed(void)), this, SLOT(handleCancelButton(void)));
-        buttonLayout->addWidget(cancelButton);
-    }
-
     //update timer
     _updateTimer->setSingleShot(true);
     _updateTimer->setInterval(UPDATE_TIMER_MS);
@@ -254,14 +232,20 @@ void BlockPropertiesPanel::handleUpdateTimerExpired(void)
     this->updateAllForms();
 }
 
-void BlockPropertiesPanel::handleCancelButton(void)
+void BlockPropertiesPanel::handleCancel(void)
 {
     _updateTimer->stop();
-    this->handleReset();
-    this->deleteLater();
+
+    //reset values in block to original setting
+    _block->setId(_idOriginal);
+    _block->setAffinityZone(_affinityZoneOriginal);
+    for (const auto &prop : _block->getProperties())
+    {
+        _block->setPropertyValue(prop.getKey(), _propIdToOriginal[prop.getKey()]);
+    }
 }
 
-void BlockPropertiesPanel::handleCommitButton(void)
+void BlockPropertiesPanel::handleCommit(void)
 {
     _updateTimer->stop();
 
@@ -278,24 +262,11 @@ void BlockPropertiesPanel::handleCommitButton(void)
     //was the affinity zone changed?
     if (_affinityZoneOriginal != _block->getAffinityZone()) propertiesModified.push_back(tr("Affinity Zone"));
 
-    if (propertiesModified.empty()) return this->handleCancelButton();
+    if (propertiesModified.empty()) return this->handleCancel();
 
     //emit a new graph state event
     auto desc = (propertiesModified.size() == 1)? propertiesModified.front() : tr("properties");
     emit this->stateChanged(GraphState("document-properties", tr("Edit %1 %2").arg(_block->getId()).arg(desc)));
-
-    //done with this panel
-    this->deleteLater();
-}
-
-void BlockPropertiesPanel::handleReset(void)
-{
-    _block->setId(_idOriginal);
-    _block->setAffinityZone(_affinityZoneOriginal);
-    for (const auto &prop : _block->getProperties())
-    {
-        _block->setPropertyValue(prop.getKey(), _propIdToOriginal[prop.getKey()]);
-    }
 }
 
 void BlockPropertiesPanel::updateAllForms(void)
