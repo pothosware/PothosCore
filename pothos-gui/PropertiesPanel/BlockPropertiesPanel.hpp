@@ -26,8 +26,9 @@ public:
 
     QString getParamDocString(const Poco::JSON::Object::Ptr &paramDesc);
 
+public slots:
     //! reset all settings to their original (pre-edit) values
-    void reset(void);
+    void handleReset(void);
 
 private slots:
 

@@ -3,7 +3,10 @@
 
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
 #include "PropertiesPanel/BlockPropertiesPanel.hpp"
+#include "PropertiesPanel/ConnectionPropertiesPanel.hpp"
 #include <GraphObjects/GraphBlock.hpp>
+#include <GraphObjects/GraphBreaker.hpp>
+#include <GraphObjects/GraphConnection.hpp>
 
 PropertiesPanelDock::PropertiesPanelDock(QWidget *parent):
     QDockWidget(parent),
@@ -16,21 +19,31 @@ PropertiesPanelDock::PropertiesPanelDock(QWidget *parent):
 
 void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
 {
-    auto block = dynamic_cast<GraphBlock *>(obj);
-    if (block != nullptr)
+    //clear old panel
+    if (_propertiesPanel)
     {
-        if (_propertiesPanel)
-        {
-            auto _blockPropertiesPanel = dynamic_cast<BlockPropertiesPanel *>(_propertiesPanel.data());
-            if (_blockPropertiesPanel != nullptr) _blockPropertiesPanel->reset();
-            delete _propertiesPanel;
-        }
-        _propertiesPanel = new BlockPropertiesPanel(block, this);
-        connect(_propertiesPanel, SIGNAL(destroyed(QObject*)), this, SLOT(handlePanelDestroyed(QObject *)));
-        this->setWidget(_propertiesPanel);
-        this->show();
-        this->raise();
+        emit this->resetPanel();
+        delete _propertiesPanel;
     }
+
+    //extract the graph object
+    auto block = dynamic_cast<GraphBlock *>(obj);
+    auto breaker = dynamic_cast<GraphBreaker *>(obj);
+    auto connection = dynamic_cast<GraphConnection *>(obj);
+
+    if (block != nullptr) _propertiesPanel = new BlockPropertiesPanel(block, this);
+    else if (breaker != nullptr) return; //TODO
+    else if (connection != nullptr) _propertiesPanel = new ConnectionPropertiesPanel(connection, this);
+    else return;
+
+    //connect panel signals and slots into dock events
+    connect(_propertiesPanel, SIGNAL(destroyed(QObject*)), this, SLOT(handlePanelDestroyed(QObject *)));
+    connect(this, SIGNAL(resetPanel(void)), _propertiesPanel, SLOT(handleReset(void)));
+
+    //set the widget and make the entire dock visible
+    this->setWidget(_propertiesPanel);
+    this->show();
+    this->raise();
 }
 
 void PropertiesPanelDock::handlePanelDestroyed(QObject *)

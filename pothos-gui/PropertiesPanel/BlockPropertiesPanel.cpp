@@ -257,9 +257,7 @@ void BlockPropertiesPanel::handleUpdateTimerExpired(void)
 void BlockPropertiesPanel::handleCancelButton(void)
 {
     _updateTimer->stop();
-
-    this->reset();
-
+    this->handleReset();
     this->deleteLater();
 }
 
@@ -290,7 +288,7 @@ void BlockPropertiesPanel::handleCommitButton(void)
     this->deleteLater();
 }
 
-void BlockPropertiesPanel::reset(void)
+void BlockPropertiesPanel::handleReset(void)
 {
     _block->setId(_idOriginal);
     _block->setAffinityZone(_affinityZoneOriginal);

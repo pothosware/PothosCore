@@ -14,6 +14,9 @@ class PropertiesPanelDock : public QDockWidget
 public:
     PropertiesPanelDock(QWidget *parent);
 
+signals:
+    void resetPanel(void);
+
 private slots:
 
     void handleGraphModifyProperties(GraphObject *obj);

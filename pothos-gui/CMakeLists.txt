@@ -80,6 +80,7 @@ set(SOURCES
     MainWindow.cpp
 
     PropertiesPanel/PropertiesPanelDock.cpp
+    PropertiesPanel/ConnectionPropertiesPanel.cpp
     PropertiesPanel/BlockPropertiesPanel.cpp
     PropertiesPanel/BlockPropertyEditWidget.cpp
 
