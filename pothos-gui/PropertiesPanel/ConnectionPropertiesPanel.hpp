@@ -3,6 +3,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include "GraphObjects/GraphEndpoint.hpp"
 #include "GraphEditor/GraphState.hpp"
 #include <QWidget>
 #include <QPointer>
@@ -48,4 +49,10 @@ private:
     std::map<QTreeWidgetItem *, QString> _outputItemToKey;
     std::map<QTreeWidgetItem *, std::pair<QString, QString>> _connItemToKeyPair;
     std::vector<std::pair<QString, QString>> _originalKeyPairs;
+
+    //! Helper routine to get a displayable string for a port
+    QString idToStr(const QString &id, const GraphConnectionEndpoint &ep);
+
+    //! Helper routine to build a port selector list widget
+    QTreeWidget *makePortListWidget(QWidget *parent, const GraphConnectionEndpoint &ep, std::map<QTreeWidgetItem *, QString> &itemToKey);
 };

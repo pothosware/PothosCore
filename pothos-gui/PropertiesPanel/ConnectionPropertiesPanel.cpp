@@ -12,54 +12,6 @@
 #include <QLabel>
 #include <algorithm> //std::set_difference
 
-/***********************************************************************
- * Helper routine to get a displayable string for a port
- **********************************************************************/
-static QString idToStr(const QString &id, const GraphConnectionEndpoint &ep)
-{
-    //TODO
-    return id;
-}
-
-/***********************************************************************
- * Helper routine to build a port selector list widget
- **********************************************************************/
-static QTreeWidget *makePortListWidget(QWidget *parent, const GraphConnectionEndpoint &ep, std::map<QTreeWidgetItem *, QString> &itemToKey)
-{
-    //create list widget
-    auto listWidget = new QTreeWidget(parent);
-    listWidget->setColumnCount(1);
-    listWidget->setHeaderLabels(QStringList(QString("%1[%2]").arg(ep.getObj()->getId(), ep.getKey().id)));
-
-    //query the signal/slot ports
-    QStringList portKeys;
-    auto block = dynamic_cast<GraphBlock *>(ep.getObj().data());
-    if (block != nullptr) switch(ep.getConnectableAttrs().direction)
-    {
-    case GRAPH_CONN_SLOT: portKeys = block->getSlotPorts(); break;
-    case GRAPH_CONN_SIGNAL: portKeys = block->getSignalPorts(); break;
-    default: break;
-    }
-
-    //populate
-    if (portKeys.empty())
-    {
-        auto item = new QTreeWidgetItem(listWidget, QStringList(idToStr(ep.getKey().id, ep)));
-        itemToKey[item] = ep.getKey().id;
-        listWidget->addTopLevelItem(item);
-    }
-    else for (const auto &portKey : portKeys)
-    {
-        auto item = new QTreeWidgetItem(listWidget, QStringList(idToStr(portKey, ep)));
-        itemToKey[item] = portKey;
-        listWidget->addTopLevelItem(item);
-    }
-    listWidget->resizeColumnToContents(0);
-
-    //return new widget
-    return listWidget;
-}
-
 ConnectionPropertiesPanel::ConnectionPropertiesPanel(GraphConnection *conn, QWidget *parent):
     QWidget(parent),
     _conn(conn),
@@ -90,12 +42,12 @@ ConnectionPropertiesPanel::ConnectionPropertiesPanel(GraphConnection *conn, QWid
         layout->addLayout(listWidgetLayout);
 
         //output list
-        _outputListWidget = makePortListWidget(this, outputEp, _outputItemToKey);
+        _outputListWidget = this->makePortListWidget(this, outputEp, _outputItemToKey);
         connect(_outputListWidget, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleItemSelectionChanged(void)));
         listWidgetLayout->addWidget(_outputListWidget);
 
         //input list
-        _inputListWidget = makePortListWidget(this, inputEp, _inputItemToKey);
+        _inputListWidget = this->makePortListWidget(this, inputEp, _inputItemToKey);
         connect(_inputListWidget, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleItemSelectionChanged(void)));
         listWidgetLayout->addWidget(_inputListWidget);
     }
@@ -163,11 +115,15 @@ void ConnectionPropertiesPanel::handleCommit(void)
     if (createdPairs.empty() and removedPairs.empty()) return this->handleCancel();
     else if (createdPairs.empty() and removedPairs.size() == 1)
     {
-        desc = tr("Removed %1->%2").arg(removedPairs.at(0).first).arg(removedPairs.at(0).second);
+        desc = tr("Removed %1->%2")
+            .arg(this->idToStr(removedPairs.at(0).first, _conn->getOutputEndpoint()))
+            .arg(this->idToStr(removedPairs.at(0).second, _conn->getInputEndpoint()));
     }
     else if (createdPairs.size() == 1 and removedPairs.empty())
     {
-        desc = tr("Created %1->%2").arg(createdPairs.at(0).first).arg(createdPairs.at(0).second);
+        desc = tr("Created %1->%2")
+            .arg(this->idToStr(createdPairs.at(0).first, _conn->getOutputEndpoint()))
+            .arg(this->idToStr(createdPairs.at(0).second, _conn->getInputEndpoint()));
     }
     else
     {
@@ -210,8 +166,8 @@ void ConnectionPropertiesPanel::populateConnectionsList(void)
     for (const auto &pair : _conn->getSigSlotPairs())
     {
         auto item = new QTreeWidgetItem(_connectionsListWidget, QStringList(QString("%1 -> %2")
-            .arg(idToStr(pair.first, _conn->getOutputEndpoint()))
-            .arg(idToStr(pair.second, _conn->getInputEndpoint()))));
+            .arg(this->idToStr(pair.first, _conn->getOutputEndpoint()))
+            .arg(this->idToStr(pair.second, _conn->getInputEndpoint()))));
         _connItemToKeyPair[item] = pair;
         _connectionsListWidget->addTopLevelItem(item);
     }
@@ -225,4 +181,51 @@ void ConnectionPropertiesPanel::handleRemoveConnection(void)
         delete item;
         this->populateConnectionsList();
     }
+}
+
+QString ConnectionPropertiesPanel::idToStr(const QString &id, const GraphConnectionEndpoint &ep)
+{
+    switch(ep.getConnectableAttrs().direction)
+    {
+    case GRAPH_CONN_INPUT: return tr("Input %1").arg(id);
+    case GRAPH_CONN_OUTPUT: return tr("Output %1").arg(id);
+    default: break;
+    }
+    return id;
+}
+
+QTreeWidget *ConnectionPropertiesPanel::makePortListWidget(QWidget *parent, const GraphConnectionEndpoint &ep, std::map<QTreeWidgetItem *, QString> &itemToKey)
+{
+    //create list widget
+    auto listWidget = new QTreeWidget(parent);
+    listWidget->setColumnCount(1);
+    listWidget->setHeaderLabels(QStringList(QString("%1[%2]").arg(ep.getObj()->getId(), ep.getKey().id)));
+
+    //query the signal/slot ports
+    QStringList portKeys;
+    auto block = dynamic_cast<GraphBlock *>(ep.getObj().data());
+    if (block != nullptr) switch(ep.getConnectableAttrs().direction)
+    {
+    case GRAPH_CONN_SLOT: portKeys = block->getSlotPorts(); break;
+    case GRAPH_CONN_SIGNAL: portKeys = block->getSignalPorts(); break;
+    default: break;
+    }
+
+    //populate
+    if (portKeys.empty())
+    {
+        auto item = new QTreeWidgetItem(listWidget, QStringList(this->idToStr(ep.getKey().id, ep)));
+        itemToKey[item] = ep.getKey().id;
+        listWidget->addTopLevelItem(item);
+    }
+    else for (const auto &portKey : portKeys)
+    {
+        auto item = new QTreeWidgetItem(listWidget, QStringList(this->idToStr(portKey, ep)));
+        itemToKey[item] = portKey;
+        listWidget->addTopLevelItem(item);
+    }
+    listWidget->resizeColumnToContents(0);
+
+    //return new widget
+    return listWidget;
 }
