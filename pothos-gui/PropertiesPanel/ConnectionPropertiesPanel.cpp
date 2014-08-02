@@ -10,6 +10,7 @@
 #include <QTreeWidget>
 #include <QPushButton>
 #include <QLabel>
+#include <algorithm> //std::set_difference
 
 ConnectionPropertiesPanel::ConnectionPropertiesPanel(GraphConnection *conn, QWidget *parent):
     QWidget(parent),
@@ -95,6 +96,9 @@ ConnectionPropertiesPanel::ConnectionPropertiesPanel(GraphConnection *conn, QWid
         _connectionsListWidget->setColumnCount(1);
         _connectionsListWidget->setHeaderLabels(QStringList(tr("Signal slot connections")));
         connect(_connectionsListWidget, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleItemSelectionChanged(void)));
+
+        //save pre-edit settings
+        _originalKeyPairs = _conn->getSigSlotPairs();
     }
 
     //remove button
@@ -106,19 +110,54 @@ ConnectionPropertiesPanel::ConnectionPropertiesPanel(GraphConnection *conn, QWid
 
     connect(_conn, SIGNAL(destroyed(QObject*)), this, SLOT(handleConnectionDestroyed(QObject*)));
     this->handleItemSelectionChanged(); //init state
+    this->populateConnectionsList(); //init state
 }
 
 void ConnectionPropertiesPanel::handleConnectionDestroyed(QObject *)
 {
+    this->deleteLater();
 }
 
 void ConnectionPropertiesPanel::handleCancel(void)
 {
+    //restore original settings
+    _conn->setSigSlotPairs(_originalKeyPairs);
+}
+
+template <typename T>
+T mySetDifference(const T &a, const T &b)
+{
+    T aSort = a; std::sort(aSort.begin(), aSort.end());
+    T bSort = b; std::sort(bSort.begin(), bSort.end());
+    T v(std::max(a.size(), b.size()));
+    auto it = std::set_difference(aSort.begin(), aSort.end(), bSort.begin(), bSort.end(), v.begin());
+    v.resize(it-v.begin());
+    return v;
 }
 
 void ConnectionPropertiesPanel::handleCommit(void)
 {
-    
+    const auto createdPairs = mySetDifference(_conn->getSigSlotPairs(), _originalKeyPairs);
+    const auto removedPairs = mySetDifference(_originalKeyPairs, _conn->getSigSlotPairs());
+
+    //description of the change
+    QString desc;
+    if (createdPairs.empty() and removedPairs.empty()) return this->handleCancel();
+    else if (createdPairs.empty() and removedPairs.size() == 1)
+    {
+        desc = tr("Removed %1->%2").arg(removedPairs.at(0).first).arg(removedPairs.at(0).second);
+    }
+    else if (createdPairs.size() == 1 and removedPairs.empty())
+    {
+        desc = tr("Created %1->%2").arg(createdPairs.at(0).first).arg(createdPairs.at(0).second);
+    }
+    else
+    {
+        desc = tr("Changed signals->slots");
+    }
+
+    //emit a new graph state event
+    emit this->stateChanged(GraphState("document-properties", desc));
 }
 
 void ConnectionPropertiesPanel::handleItemSelectionChanged(void)
@@ -140,13 +179,22 @@ void ConnectionPropertiesPanel::handleCreateConnection(void)
             auto pair = std::make_pair(
                 _outputItemToKey.at(signalItem),
                 _inputItemToKey.at(slotItem));
-            if (this->getKeyPairs().count(pair) != 0) continue;
-            auto item = new QTreeWidgetItem(_connectionsListWidget, QStringList(QString("%1 -> %2")
-                .arg(signalItem->text(0))
-                .arg(slotItem->text(0))));
-            _connItemToKeyPair[item] = pair;
-            _connectionsListWidget->addTopLevelItem(item);
+            _conn->addSigSlotPair(pair);
+            this->populateConnectionsList();
         }
+    }
+}
+
+void ConnectionPropertiesPanel::populateConnectionsList(void)
+{
+    _connectionsListWidget->clear();
+    _connItemToKeyPair.clear();
+    for (const auto &pair : _conn->getSigSlotPairs())
+    {
+        auto item = new QTreeWidgetItem(_connectionsListWidget, QStringList(QString("%1 -> %2")
+            .arg(pair.first).arg(pair.second)));
+        _connItemToKeyPair[item] = pair;
+        _connectionsListWidget->addTopLevelItem(item);
     }
 }
 
@@ -154,7 +202,8 @@ void ConnectionPropertiesPanel::handleRemoveConnection(void)
 {
     for (auto item : _connectionsListWidget->selectedItems())
     {
-        _connItemToKeyPair.erase(item);
+        _conn->removeSigSlotPair(_connItemToKeyPair.at(item));
         delete item;
+        this->populateConnectionsList();
     }
 }

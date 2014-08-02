@@ -7,8 +7,6 @@
 #include "PropertiesPanel/BlockPropertyEditWidget.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphObjects/GraphBlock.hpp"
-#include "GraphEditor/GraphDraw.hpp"
-#include "GraphEditor/GraphEditor.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -175,12 +173,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     _updateTimer->setInterval(UPDATE_TIMER_MS);
     connect(_updateTimer, SIGNAL(timeout(void)), this, SLOT(handleUpdateTimerExpired(void)));
 
-    //connect state change to the graph editor
-    auto draw = dynamic_cast<GraphDraw *>(_block->parent());
-    auto editor = draw->getGraphEditor();
-    connect(this, SIGNAL(stateChanged(const GraphState &)), editor, SLOT(handleStateChange(const GraphState &)));
     connect(_block, SIGNAL(destroyed(QObject*)), this, SLOT(handleBlockDestroyed(QObject*)));
-
     this->updateAllForms();
     _ignoreChanges = false;
 }
@@ -243,6 +236,10 @@ void BlockPropertiesPanel::handleCancel(void)
     {
         _block->setPropertyValue(prop.getKey(), _propIdToOriginal[prop.getKey()]);
     }
+
+    //an edit widget return press signal may have us here,
+    //and not the commit button, so make sure panel is deleted
+    this->deleteLater();
 }
 
 void BlockPropertiesPanel::handleCommit(void)
@@ -267,6 +264,10 @@ void BlockPropertiesPanel::handleCommit(void)
     //emit a new graph state event
     auto desc = (propertiesModified.size() == 1)? propertiesModified.front() : tr("properties");
     emit this->stateChanged(GraphState("document-properties", tr("Edit %1 %2").arg(_block->getId()).arg(desc)));
+
+    //an edit widget return press signal may have us here,
+    //and not the commit button, so make sure panel is deleted
+    this->deleteLater();
 }
 
 void BlockPropertiesPanel::updateAllForms(void)

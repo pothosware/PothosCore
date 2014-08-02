@@ -9,6 +9,9 @@
 #include <QString>
 #include <QPointF>
 #include <memory>
+#include <utility> //pair
+
+typedef std::pair<QString, QString> SigSlotPair;
 
 class GraphConnection : public GraphObject
 {
@@ -23,6 +26,18 @@ public:
 
     //! true if an endpoint is a signal or slot
     bool isSignalSlot(void) const;
+
+    //! Get all the connected endpoints inside the signal/slots connection
+    const std::vector<SigSlotPair> &getSigSlotPairs(void) const;
+
+    //! Set the connected endpoints to a new list of signal/slots connections
+    void setSigSlotPairs(const std::vector<SigSlotPair> &);
+
+    //! Add a new signal slot connection
+    void addSigSlotPair(const SigSlotPair &sigSlot);
+
+    //! Remove an existing signal slot connection
+    void removeSigSlotPair(const SigSlotPair &sigSlot);
 
     bool isPointing(const QRectF &rect) const;
 

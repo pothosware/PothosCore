@@ -5,9 +5,11 @@
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
 #include "PropertiesPanel/BlockPropertiesPanel.hpp"
 #include "PropertiesPanel/ConnectionPropertiesPanel.hpp"
-#include <GraphObjects/GraphBlock.hpp>
-#include <GraphObjects/GraphBreaker.hpp>
-#include <GraphObjects/GraphConnection.hpp>
+#include "GraphObjects/GraphBlock.hpp"
+#include "GraphObjects/GraphBreaker.hpp"
+#include "GraphObjects/GraphConnection.hpp"
+#include "GraphEditor/GraphDraw.hpp"
+#include "GraphEditor/GraphEditor.hpp"
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -69,6 +71,11 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     connect(this, SIGNAL(resetPanel(void)), _propertiesPanel, SLOT(handleCancel(void)));
     connect(_commitButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCommit(void)));
     connect(_cancelButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCancel(void)));
+
+    //connect state change to the graph editor
+    auto draw = dynamic_cast<GraphDraw *>(obj->parent());
+    auto editor = draw->getGraphEditor();
+    connect(_propertiesPanel, SIGNAL(stateChanged(const GraphState &)), editor, SLOT(handleStateChange(const GraphState &)));
 
     //set the widget and make the entire dock visible
     _scroll->setWidget(_propertiesPanel);
