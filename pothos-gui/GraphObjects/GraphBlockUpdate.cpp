@@ -71,7 +71,7 @@ void GraphBlock::initInputsFromDesc(void)
         auto portName = portKey;
         if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "in"+portName;
         GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
-        if (info->has("isSpecial") and info->getValue<bool>("isSpecial")) this->addSlotPort(gbp);
+        if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSlotPort(gbp);
         else this->addInputPort(gbp);
         if (info->has("dtype")) this->setInputPortTypeStr(gbp.getKey(), info->getValue<std::string>("dtype"));
     }
@@ -97,7 +97,7 @@ void GraphBlock::initOutputsFromDesc(void)
         auto portName = portKey;
         if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "out"+portName;
         GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
-        if (info->has("isSpecial") and info->getValue<bool>("isSpecial")) this->addSignalPort(gbp);
+        if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSignalPort(gbp);
         else this->addOutputPort(gbp);
         if (info->has("dtype")) this->setOutputPortTypeStr(gbp.getKey(), info->getValue<std::string>("dtype"));
     }
@@ -115,7 +115,7 @@ static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo
     {
         Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
         portInfo->set("name", info.name);
-        portInfo->set("isSpecial", info.isSpecial);
+        portInfo->set("isSigSlot", info.isSigSlot);
         portInfo->set("size", info.dtype.size());
         portInfo->set("dtype", info.dtype.toString());
         array->add(portInfo);

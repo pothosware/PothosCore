@@ -25,7 +25,7 @@ public:
 
     std::string name; //!< The port name
 
-    bool isSpecial; //!< Is signal or slot?
+    bool isSigSlot; //!< Is signal or slot?
 
     DType dtype; //!< The data type
 };
