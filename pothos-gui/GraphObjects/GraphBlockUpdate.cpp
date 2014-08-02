@@ -29,7 +29,8 @@ void GraphBlock::initPropertiesFromDesc(void)
         const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
         const auto key = QString::fromStdString(param->get("key").convert<std::string>());
         const auto name = QString::fromStdString(param->get("name").convert<std::string>());
-        this->addProperty(GraphBlockProp(key, name));
+        this->addProperty(key);
+        this->setPropertyName(key, name);
 
         const auto options = param->getArray("options");
         if (param->has("default"))
@@ -157,18 +158,18 @@ void GraphBlock::update(void)
 
     //evaluate the properties
     bool hasError = false;
-    for (const auto &prop : this->getProperties())
+    for (const auto &propKey : this->getProperties())
     {
-        const auto val = this->getPropertyValue(prop.getKey()).toStdString();
+        const auto val = this->getPropertyValue(propKey).toStdString();
         try
         {
-            auto obj = _blockEval.callProxy("evalProperty", prop.getKey().toStdString(), val);
-            this->setPropertyTypeStr(prop.getKey(), obj.call<std::string>("getTypeString"));
-            this->setPropertyErrorMsg(prop.getKey(), "");
+            auto obj = _blockEval.callProxy("evalProperty", propKey.toStdString(), val);
+            this->setPropertyTypeStr(propKey, obj.call<std::string>("getTypeString"));
+            this->setPropertyErrorMsg(propKey, "");
         }
         catch (const Pothos::Exception &ex)
         {
-            this->setPropertyErrorMsg(prop.getKey(), QString::fromStdString(ex.message()));
+            this->setPropertyErrorMsg(propKey, QString::fromStdString(ex.message()));
             hasError = true;
         }
     }

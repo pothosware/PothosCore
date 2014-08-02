@@ -60,13 +60,13 @@ const QString &GraphBlock::getBlockErrorMsg(void) const
     return _impl->blockErrorMsg;
 }
 
-void GraphBlock::addProperty(const GraphBlockProp &prop)
+void GraphBlock::addProperty(const QString &key)
 {
-    _properties.push_back(prop);
+    _properties.push_back(key);
     _impl->changed = true;
 }
 
-const std::vector<GraphBlockProp> &GraphBlock::getProperties(void) const
+const QStringList &GraphBlock::getProperties(void) const
 {
     return _properties;
 }
@@ -110,6 +110,19 @@ QString GraphBlock::getPropertyValue(const QString &key) const
 void GraphBlock::setPropertyValue(const QString &key, const QString &value)
 {
     _impl->propertiesValues[key] = value;
+    _impl->changed = true;
+}
+
+QString GraphBlock::getPropertyName(const QString &key) const
+{
+    auto it = _impl->propertiesNames.find(key);
+    if (it != _impl->propertiesNames.end()) return it->second;
+    return key;
+}
+
+void GraphBlock::setPropertyName(const QString &key, const QString &name)
+{
+    _impl->propertiesNames[key] = name;
     _impl->changed = true;
 }
 
@@ -380,14 +393,14 @@ void GraphBlock::renderStaticText(void)
         .arg(_impl->title.toHtmlEscaped()));
 
     _impl->propertiesText.clear();
-    for (size_t i = 0; i < _properties.size(); i++)
+    for (int i = 0; i < _properties.size(); i++)
     {
-        if (not this->getPropertyPreview(_properties[i].getKey())) continue;
+        if (not this->getPropertyPreview(_properties[i])) continue;
         auto text = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3: </b> %4</span>")
-            .arg(getTextColor(this->getPropertyErrorMsg(_properties[i].getKey()).isEmpty(), _impl->mainBlockColor))
+            .arg(getTextColor(this->getPropertyErrorMsg(_properties[i]).isEmpty(), _impl->mainBlockColor))
             .arg(GraphBlockPropFontSize)
-            .arg(_properties[i].getName().toHtmlEscaped())
-            .arg(this->getPropertyDisplayText(_properties[i].getKey()).toHtmlEscaped()));
+            .arg(this->getPropertyName(_properties[i]).toHtmlEscaped())
+            .arg(this->getPropertyDisplayText(_properties[i]).toHtmlEscaped()));
         _impl->propertiesText.push_back(text);
     }
 
@@ -606,12 +619,11 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     obj->set("affinityZone", this->getAffinityZone().toStdString());
 
     Poco::JSON::Array jPropsObj;
-    for (const auto &property : this->getProperties())
+    for (const auto &propKey : this->getProperties())
     {
         Poco::JSON::Object jPropObj;
-        jPropObj.set("key", property.getKey().toStdString());
-        jPropObj.set("name", property.getName().toStdString());
-        jPropObj.set("value", this->getPropertyValue(property.getKey()).toStdString());
+        jPropObj.set("key", propKey.toStdString());
+        jPropObj.set("value", this->getPropertyValue(propKey).toStdString());
         jPropsObj.add(jPropObj);
     }
     obj->set("properties", jPropsObj);
@@ -638,10 +650,8 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     for (size_t i = 0; i < properties->size(); i++)
     {
         const auto jPropObj = properties->getObject(i);
-        GraphBlockProp prop(
-            QString::fromStdString(jPropObj->getValue<std::string>("key")),
-            QString::fromStdString(jPropObj->getValue<std::string>("name")));
-        this->setPropertyValue(prop.getKey(), QString::fromStdString(jPropObj->getValue<std::string>("value")));
+        const auto propKey = QString::fromStdString(jPropObj->getValue<std::string>("key"));
+        this->setPropertyValue(propKey, QString::fromStdString(jPropObj->getValue<std::string>("value")));
     }
 
     //load port description and init from it -- in the case eval fails

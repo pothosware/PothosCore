@@ -58,28 +58,28 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     }
 
     //properties
-    for (const auto &prop : _block->getProperties())
+    for (const auto &propKey : _block->getProperties())
     {
-        _propIdToOriginal[prop.getKey()] = _block->getPropertyValue(prop.getKey());
-        auto paramDesc = _block->getParamDesc(prop.getKey());
+        _propIdToOriginal[propKey] = _block->getPropertyValue(propKey);
+        auto paramDesc = _block->getParamDesc(propKey);
         assert(paramDesc);
 
         //create editable widget
         auto editWidget = new BlockPropertyEditWidget(paramDesc, this);
         connect(editWidget, SIGNAL(valueChanged(void)), this, SLOT(handleEditWidgetChanged(void)));
         connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
-        _propIdToEditWidget[prop.getKey()] = editWidget;
+        _propIdToEditWidget[propKey] = editWidget;
 
         //create labels
-        _propIdToFormLabel[prop.getKey()] = new QLabel(this);
-        _propIdToErrorLabel[prop.getKey()] = new QLabel(this);
-        editWidget->setToolTip(this->getParamDocString(_block->getParamDesc(prop.getKey())));
+        _propIdToFormLabel[propKey] = new QLabel(this);
+        _propIdToErrorLabel[propKey] = new QLabel(this);
+        editWidget->setToolTip(this->getParamDocString(_block->getParamDesc(propKey)));
 
         //layout stuff
         auto editLayout = new QVBoxLayout();
         editLayout->addWidget(editWidget);
-        editLayout->addWidget(_propIdToErrorLabel[prop.getKey()]);
-        _formLayout->addRow(_propIdToFormLabel[prop.getKey()], editLayout);
+        editLayout->addWidget(_propIdToErrorLabel[propKey]);
+        _formLayout->addRow(_propIdToFormLabel[propKey], editLayout);
     }
 
     //affinity zone
@@ -132,9 +132,9 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         if (not _block->getProperties().empty())
         {
             output += QString("<h2>%1</h2>").arg(tr("Properties"));
-            for (const auto &prop : _block->getProperties())
+            for (const auto &propKey : _block->getProperties())
             {
-                output += this->getParamDocString(_block->getParamDesc(prop.getKey()));
+                output += this->getParamDocString(_block->getParamDesc(propKey));
             }
         }
 
@@ -209,10 +209,10 @@ void BlockPropertiesPanel::handleEditWidgetChanged(void)
     _block->setAffinityZone(_affinityZoneBox->itemData(_affinityZoneBox->currentIndex()).toString());
 
     //dump all values from edit widgets into the block's property values
-    for (const auto &prop : _block->getProperties())
+    for (const auto &propKey : _block->getProperties())
     {
-        QString newValue = _propIdToEditWidget[prop.getKey()]->value();
-        _block->setPropertyValue(prop.getKey(), newValue);
+        QString newValue = _propIdToEditWidget[propKey]->value();
+        _block->setPropertyValue(propKey, newValue);
     }
 
     this->updateAllForms(); //quick update for labels
@@ -232,9 +232,9 @@ void BlockPropertiesPanel::handleCancel(void)
     //reset values in block to original setting
     _block->setId(_idOriginal);
     _block->setAffinityZone(_affinityZoneOriginal);
-    for (const auto &prop : _block->getProperties())
+    for (const auto &propKey : _block->getProperties())
     {
-        _block->setPropertyValue(prop.getKey(), _propIdToOriginal[prop.getKey()]);
+        _block->setPropertyValue(propKey, _propIdToOriginal[propKey]);
     }
 
     //an edit widget return press signal may have us here,
@@ -248,9 +248,12 @@ void BlockPropertiesPanel::handleCommit(void)
 
     //were there changes?
     std::vector<QString> propertiesModified;
-    for (const auto &prop : _block->getProperties())
+    for (const auto &propKey : _block->getProperties())
     {
-        if (_block->getPropertyValue(prop.getKey()) != _propIdToOriginal[prop.getKey()]) propertiesModified.push_back(prop.getName());
+        if (_block->getPropertyValue(propKey) != _propIdToOriginal[propKey])
+        {
+            propertiesModified.push_back(_block->getPropertyName(propKey));
+        }
     }
 
     //was the ID changed?
@@ -303,36 +306,33 @@ void BlockPropertiesPanel::updateAllForms(void)
             .arg(_block->getBlockErrorMsg().toHtmlEscaped()));
     }
 
-    for (const auto &prop : _block->getProperties())
-    {
-        this->updatePropForms(prop);
-    }
+    for (const auto &key : _block->getProperties()) this->updatePropForms(key);
 }
 
-void BlockPropertiesPanel::updatePropForms(const GraphBlockProp &prop)
+void BlockPropertiesPanel::updatePropForms(const QString &propKey)
 {
-    auto paramDesc = _block->getParamDesc(prop.getKey());
-    auto editWidget = _propIdToEditWidget[prop.getKey()];
-    auto errorLabel = _propIdToErrorLabel[prop.getKey()];
-    auto formLabel = _propIdToFormLabel[prop.getKey()];
+    auto paramDesc = _block->getParamDesc(propKey);
+    auto editWidget = _propIdToEditWidget[propKey];
+    auto errorLabel = _propIdToErrorLabel[propKey];
+    auto formLabel = _propIdToFormLabel[propKey];
 
     //create label string
-    bool propChanged = (_propIdToOriginal[prop.getKey()] == _block->getPropertyValue(prop.getKey()));
+    bool propChanged = (_propIdToOriginal[propKey] == _block->getPropertyValue(propKey));
     auto label = QString("<span style='color:%1;'><b>%2%3</b></span>")
-        .arg(_block->getPropertyErrorMsg(prop.getKey()).isEmpty()?"black":"red")
-        .arg(prop.getName())
+        .arg(_block->getPropertyErrorMsg(propKey).isEmpty()?"black":"red")
+        .arg(_block->getPropertyName(propKey))
         .arg(propChanged?"":"*");
     if (paramDesc->has("units")) label += QString("<br /><i>%1</i>")
         .arg(QString::fromStdString(paramDesc->getValue<std::string>("units")));
     formLabel->setText(label);
 
     //error label
-    QString errorMsg = _block->getPropertyErrorMsg(prop.getKey());
+    QString errorMsg = _block->getPropertyErrorMsg(propKey);
     errorLabel->setVisible(not errorMsg.isEmpty());
     errorLabel->setText(QString("<span style='color:red;'><p><i>%1</i></p></span>").arg(errorMsg.toHtmlEscaped()));
     errorLabel->setWordWrap(true);
 
     //set the editor's value and type string colors
-    editWidget->setValue(_block->getPropertyValue(prop.getKey()));
-    editWidget->setColors(_block->getPropertyTypeStr(prop.getKey()));
+    editWidget->setValue(_block->getPropertyValue(propKey));
+    editWidget->setColors(_block->getPropertyTypeStr(propKey));
 }

@@ -62,7 +62,7 @@ private:
      * Update all the things that change when a property is modified.
      * Label string formatting, color of the box, tooltip...
      */
-    void updatePropForms(const GraphBlockProp &prop);
+    void updatePropForms(const QString &propKey);
 
     bool _ignoreChanges;
 

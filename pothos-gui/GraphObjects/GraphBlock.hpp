@@ -5,6 +5,7 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include <Pothos/Proxy.hpp>
+#include <QStringList>
 #include <QObject>
 #include <QString>
 #include <QPointF>
@@ -84,14 +85,17 @@ public:
     void setBlockErrorMsg(const QString &msg);
     const QString &getBlockErrorMsg(void) const;
 
-    void addProperty(const GraphBlockProp &prop);
-    const std::vector<GraphBlockProp> &getProperties(void) const;
+    void addProperty(const QString &key);
+    const QStringList &getProperties(void) const;
 
     //! Get the param desc from the block description
     Poco::JSON::Object::Ptr getParamDesc(const QString &key) const;
 
     QString getPropertyValue(const QString &key) const;
     void setPropertyValue(const QString &key, const QString &value);
+
+    QString getPropertyName(const QString &key) const;
+    void setPropertyName(const QString &key, const QString &name);
 
     //! Get the property display text: varies from actual value, enum name, error...
     QString getPropertyDisplayText(const QString &key) const;
@@ -152,7 +156,7 @@ private:
     void renderStaticText(void);
     struct Impl;
     std::shared_ptr<Impl> _impl;
-    std::vector<GraphBlockProp> _properties;
+    QStringList _properties;
     std::vector<GraphBlockPort> _inputPorts;
     std::vector<GraphBlockPort> _outputPorts;
     std::vector<GraphBlockPort> _slotPorts;
