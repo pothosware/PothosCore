@@ -63,7 +63,7 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
 
     if (block != nullptr) _propertiesPanel = new BlockPropertiesPanel(block, this);
     else if (breaker != nullptr) return; //TODO
-    else if (connection != nullptr) _propertiesPanel = new ConnectionPropertiesPanel(connection, this);
+    else if (connection != nullptr and connection->isSignalOrSlot()) _propertiesPanel = new ConnectionPropertiesPanel(connection, this);
     else return;
 
     //connect panel signals and slots into dock events

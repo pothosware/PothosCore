@@ -56,7 +56,7 @@ const GraphConnectionEndpoint &GraphConnection::getInputEndpoint(void) const
     return _impl->inputEp;
 }
 
-bool GraphConnection::isSignalSlot(void) const
+bool GraphConnection::isSignalOrSlot(void) const
 {
     return
         this->getOutputEndpoint().getKey().direction == GRAPH_CONN_SLOT or
@@ -77,6 +77,9 @@ void GraphConnection::setSigSlotPairs(const std::vector<SigSlotPair> &pairs)
 
 void GraphConnection::addSigSlotPair(const SigSlotPair &sigSlot)
 {
+    //TODO validate that keys exist...
+
+
     this->removeSigSlotPair(sigSlot);
     _impl->sigSlotsEndpointPairs.push_back(sigSlot);
 }
@@ -241,7 +244,7 @@ void GraphConnection::render(QPainter &painter)
     painter.setBrush(Qt::NoBrush);
     QPen pen(color);
     pen.setWidthF(GraphConnectionGirth);
-    if (this->isSignalSlot()) pen.setStyle(Qt::DashLine);
+    if (this->isSignalOrSlot()) pen.setStyle(Qt::DashLine);
     painter.setPen(pen);
     painter.drawPath(path);
     _impl->points = points;

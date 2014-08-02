@@ -25,7 +25,7 @@ public:
     const GraphConnectionEndpoint &getInputEndpoint(void) const;
 
     //! true if an endpoint is a signal or slot
-    bool isSignalSlot(void) const;
+    bool isSignalOrSlot(void) const;
 
     //! Get all the connected endpoints inside the signal/slots connection
     const std::vector<SigSlotPair> &getSigSlotPairs(void) const;
