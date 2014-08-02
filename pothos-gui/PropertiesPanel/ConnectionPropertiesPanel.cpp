@@ -32,26 +32,26 @@ static QTreeWidget *makePortListWidget(QWidget *parent, const GraphConnectionEnd
     listWidget->setHeaderLabels(QStringList(QString("%1[%2]").arg(ep.getObj()->getId(), ep.getKey().id)));
 
     //query the signal/slot ports
-    std::vector<GraphBlockPort> ports;
+    QStringList portKeys;
     auto block = dynamic_cast<GraphBlock *>(ep.getObj().data());
     if (block != nullptr) switch(ep.getConnectableAttrs().direction)
     {
-    case GRAPH_CONN_SLOT: ports = block->getSlotPorts(); break;
-    case GRAPH_CONN_SIGNAL: ports = block->getSignalPorts(); break;
+    case GRAPH_CONN_SLOT: portKeys = block->getSlotPorts(); break;
+    case GRAPH_CONN_SIGNAL: portKeys = block->getSignalPorts(); break;
     default: break;
     }
 
     //populate
-    if (ports.empty())
+    if (portKeys.empty())
     {
         auto item = new QTreeWidgetItem(listWidget, QStringList(idToStr(ep.getKey().id, ep)));
         itemToKey[item] = ep.getKey().id;
         listWidget->addTopLevelItem(item);
     }
-    else for (const auto &port : ports)
+    else for (const auto &portKey : portKeys)
     {
-        auto item = new QTreeWidgetItem(listWidget, QStringList(idToStr(port.getKey(), ep)));
-        itemToKey[item] = port.getKey();
+        auto item = new QTreeWidgetItem(listWidget, QStringList(idToStr(portKey, ep)));
+        itemToKey[item] = portKey;
         listWidget->addTopLevelItem(item);
     }
     listWidget->resizeColumnToContents(0);

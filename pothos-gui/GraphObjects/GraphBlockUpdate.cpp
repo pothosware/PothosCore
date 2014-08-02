@@ -68,13 +68,10 @@ void GraphBlock::initInputsFromDesc(void)
     for (const auto &inputPortDesc : *inputDesc)
     {
         const auto &info = inputPortDesc.extract<Poco::JSON::Object::Ptr>();
-        auto portKey = info->getValue<std::string>("name");
-        auto portName = portKey;
-        if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "in"+portName;
-        GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
-        if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSlotPort(gbp);
-        else this->addInputPort(gbp);
-        if (info->has("dtype")) this->setInputPortTypeStr(gbp.getKey(), info->getValue<std::string>("dtype"));
+        auto portKey = QString::fromStdString(info->getValue<std::string>("name"));
+        if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSlotPort(portKey);
+        else this->addInputPort(portKey);
+        if (info->has("dtype")) this->setInputPortTypeStr(portKey, info->getValue<std::string>("dtype"));
     }
 }
 
@@ -94,13 +91,10 @@ void GraphBlock::initOutputsFromDesc(void)
     for (const auto &outputPortDesc : *outputDesc)
     {
         const auto &info = outputPortDesc.extract<Poco::JSON::Object::Ptr>();
-        auto portKey = info->getValue<std::string>("name");
-        auto portName = portKey;
-        if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "out"+portName;
-        GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
-        if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSignalPort(gbp);
-        else this->addOutputPort(gbp);
-        if (info->has("dtype")) this->setOutputPortTypeStr(gbp.getKey(), info->getValue<std::string>("dtype"));
+        auto portKey = QString::fromStdString(info->getValue<std::string>("name"));
+        if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSignalPort(portKey);
+        else this->addOutputPort(portKey);
+        if (info->has("dtype")) this->setOutputPortTypeStr(portKey, info->getValue<std::string>("dtype"));
     }
 }
 

@@ -143,9 +143,9 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         {
             output += QString("<h2>%1</h2>").arg(tr("Slots"));
             output += "<ul>";
-            for (const auto &port : block->getSlotPorts())
+            for (const auto &portKey : block->getSlotPorts())
             {
-                output += QString("<li>%1(...)</li>").arg(port.getName());
+                output += QString("<li>%1(...)</li>").arg(portKey);
             }
             output += "</ul>";
         }
@@ -155,9 +155,9 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         {
             output += QString("<h2>%1</h2>").arg(tr("Signals"));
             output += "<ul>";
-            for (const auto &port : block->getSignalPorts())
+            for (const auto &portKey : block->getSignalPorts())
             {
-                output += QString("<li>%1(...)</li>").arg(port.getName());
+                output += QString("<li>%1(...)</li>").arg(portKey);
             }
             output += "</ul>";
         }
