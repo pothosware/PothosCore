@@ -130,6 +130,7 @@ list(APPEND POTHOS_SOURCES
     Plugin/Plugin.cpp
     Plugin/Registry.cpp
     Plugin/Module.cpp
+    Plugin/ModuleSafeLoad.cpp
     Plugin/ModulePaths.cpp
     Plugin/Static.cpp
     Plugin/Exception.cpp
