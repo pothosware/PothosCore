@@ -79,7 +79,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
     //run the topology
     std::cout << "run the topology\n";
     {
-        auto topology = Pothos::Topology();
+        Pothos::Topology topology;
         topology.connect(feeder, "0", forwarder, "0");
         topology.connect(forwarder, "0", collector, "0");
         topology.commit();
