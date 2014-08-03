@@ -112,7 +112,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
         auto &allLabels = port._impl->inlineMessages;
         for (size_t i = 0; i < allLabels.size(); i++)
         {
-            if (allLabels[i].index < port.totalElements()) numLabels++;
+            if (allLabels[i].index < port._pendingElements) numLabels++;
             else break;
         }
         if (numLabels != 0)
@@ -128,6 +128,12 @@ void Pothos::WorkerActor::postWorkTasks(void)
             }
 
             allLabels.erase(allLabels.begin(), allLabels.begin()+numLabels);
+        }
+
+        //adjust labels index for new relative position
+        for (size_t i = numLabels; i < allLabels.size(); i++)
+        {
+            allLabels[i].index -= port._pendingElements;
         }
     }
 

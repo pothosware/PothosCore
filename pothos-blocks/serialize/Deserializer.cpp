@@ -208,7 +208,7 @@ void Deserializer::handlePacket(const Pothos::BufferChunk &packetBuff)
         if (has_tsf)
         {
             Pothos::Label lbl;
-            lbl.index = tsf + outputPort->totalElements() - _nextExpectedIndex;
+            lbl.index = tsf - _nextExpectedIndex;
             lbl.data = obj;
             outputPort->postLabel(lbl);
         }

@@ -34,9 +34,9 @@ public:
     Object data;
 
     /*!
-     * The index specifies an absolute offset in a stream of elements.
-     * To associate with the first element of a stream, index should be 0.
-     * To associate with the Nth element of a stream, index should be N-1.
+     * The index specifies an offset into a buffer of elements.
+     * To associate with the first element of a buffer, index should be 0.
+     * To associate with the Nth element of a buffer, index should be N-1.
      */
     unsigned long long index;
 

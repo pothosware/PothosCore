@@ -104,7 +104,7 @@ void NetworkSource::work(void)
     {
         std::istringstream iss(std::string(buffer.as<char *>(), buffer.length));
         Pothos::Label label;
-        label.index = index + outputPort->totalElements() - _nextExpectedIndex;
+        label.index = index - _nextExpectedIndex;
         label.data.deserialize(iss);
         outputPort->postLabel(label);
     }

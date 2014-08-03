@@ -124,7 +124,7 @@ void Serializer::work(void)
             inputPort->removeLabel(lbl);
             const size_t hdr_words32 = 6; // a priori
             auto buff = objectToOffsetBuffer(hdr_words32, lbl.data);
-            auto index = lbl.index - inputPort->totalElements();
+            auto index = lbl.index + inputPort->totalElements();
             packBuffer(_seqs[i]++, i, true, index, true, buff);
             outputPort->postBuffer(buff);
         }

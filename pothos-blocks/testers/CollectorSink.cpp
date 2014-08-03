@@ -63,9 +63,10 @@ public:
         //store labels -- take all labels since we consume all the buffer
         while (inputPort->labels().begin() != inputPort->labels().end())
         {
-            const auto &label = *inputPort->labels().begin();
-            _labels.push_back(label);
+            auto label = *inputPort->labels().begin();
             inputPort->removeLabel(label);
+            label.index += inputPort->totalElements(); //rel -> abs
+            _labels.push_back(label);
         }
 
         //store messages

@@ -52,6 +52,10 @@ public:
         //do labels first so they remain ahead of buffers
         while (not _labels.empty())
         {
+            auto buffElems = _buffers.empty()?0:_buffers.front().length/outputPort->dtype().size();
+            if (_labels.front().index >= buffElems + outputPort->totalElements()) break;
+
+            _labels.front().index -= outputPort->totalElements(); //abs -> rel
             outputPort->postLabel(_labels.front());
             _labels.pop();
         }
@@ -59,11 +63,13 @@ public:
         {
             outputPort->postBuffer(_buffers.front());
             _buffers.pop();
+            return;
         }
         while (not _messages.empty())
         {
             outputPort->postMessage(_messages.front());
             _messages.pop();
+            return;
         }
 
         //enter backoff + wait for additional user stimulus

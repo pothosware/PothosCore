@@ -40,7 +40,6 @@ void Pothos::WorkerActor::handleLabelsPortMessage(const PortMessage<InputPort *,
     {
         auto label = byteOffsetLabel;
         auto elemSize = input.dtype().size();
-        label.index += input.totalElements()*elemSize; //increment by absolute byte count
         label.index += input._impl->bufferAccumulator.getTotalBytesAvailable(); //increment by enqueued bytes
         label.index /= elemSize; //convert from bytes to elements
         input._impl->inlineMessages.push_back(label);
