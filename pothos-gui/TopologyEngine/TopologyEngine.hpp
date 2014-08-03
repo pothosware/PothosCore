@@ -4,9 +4,9 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Proxy/Environment.hpp>
-#include <Pothos/Framework/Topology.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include <QObject>
+#include <memory>
 #include <string>
 #include <vector>
 #include <map>
@@ -17,6 +17,11 @@ struct ConnectionInfo
     std::string srcId, srcPort;
     std::string dstId, dstPort;
 };
+
+namespace Pothos
+{
+    class Topology;
+}
 
 class TopologyEngine : public QObject
 {
@@ -42,16 +47,12 @@ public:
      */
     Pothos::Proxy getThreadPoolFromZone(const QString &zone);
 
-    Pothos::Topology &getTopology(void)
+    std::shared_ptr<Pothos::Topology> &getTopology(void)
     {
         return _topology;
     }
 
-    void clear(void)
-    {
-        _topology.disconnectAll();
-        _topology.commit();
-    }
+    void clear(void);
 
 private:
     //! A host URI to a map of process names to server handles
@@ -62,5 +63,5 @@ private:
     static std::vector<ConnectionInfo> getConnectionInfo(const GraphObjectList &graphObjects);
 
     //! The topology object thats executing this design
-    Pothos::Topology _topology;
+    std::shared_ptr<Pothos::Topology> _topology;
 };

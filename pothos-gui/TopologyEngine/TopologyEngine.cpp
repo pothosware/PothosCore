@@ -14,7 +14,8 @@
 #include <cassert>
 
 TopologyEngine::TopologyEngine(QObject *parent):
-    QObject(parent)
+    QObject(parent),
+    _topology(new Pothos::Topology())
 {
     return;
 }
@@ -36,16 +37,16 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
     }
 
     //make all of the connections
-    _topology.disconnectAll();
+    _topology->disconnectAll();
     for (const auto &conn : getConnectionInfo(graphObjects))
     {
-        _topology.connect(
+        _topology->connect(
             idToBlock.at(conn.srcId), conn.srcPort,
             idToBlock.at(conn.dstId), conn.dstPort);
     }
 
     //commit the new design
-    _topology.commit();
+    _topology->commit();
 }
 
 Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QString &zone)
@@ -113,4 +114,10 @@ Pothos::Proxy TopologyEngine::getThreadPoolFromZone(const QString &zone)
     }
 
     return _zoneToThreadPool.at(zone);
+}
+
+void TopologyEngine::clear(void)
+{
+    _topology->disconnectAll();
+    _topology->commit();
 }
