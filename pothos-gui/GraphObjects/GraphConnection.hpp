@@ -39,6 +39,14 @@ public:
     //! Remove an existing signal slot connection
     void removeSigSlotPair(const SigSlotPair &sigSlot);
 
+    /*!
+     * Get a list of endpoint pairs.
+     * For a regular connection, this is just the output, input endpoint.
+     * For a signal/slot style connection, this is a list representing
+     * all connections involving signals and slots inside the connection.
+     */
+    std::vector<std::pair<GraphConnectionEndpoint, GraphConnectionEndpoint>> getEndpointPairs(void) const;
+
     bool isPointing(const QRectF &rect) const;
 
     QRectF getBoundingRect(void) const;

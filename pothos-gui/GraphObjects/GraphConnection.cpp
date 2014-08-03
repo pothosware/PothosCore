@@ -91,6 +91,22 @@ void GraphConnection::removeSigSlotPair(const SigSlotPair &sigSlot)
     if (it != v.end()) v.erase(it);
 }
 
+std::vector<std::pair<GraphConnectionEndpoint, GraphConnectionEndpoint>> GraphConnection::getEndpointPairs(void) const
+{
+    std::vector<std::pair<GraphConnectionEndpoint, GraphConnectionEndpoint>> pairs;
+    if (not this->isSignalOrSlot())
+    {
+        pairs.push_back(std::make_pair(this->getOutputEndpoint(), this->getInputEndpoint()));
+    }
+    else for (const auto &pair : this->getSigSlotPairs())
+    {
+        pairs.push_back(std::make_pair(
+            GraphConnectionEndpoint(this->getOutputEndpoint().getObj(), GraphConnectableKey(pair.first, this->getOutputEndpoint().getKey().direction)),
+            GraphConnectionEndpoint(this->getInputEndpoint().getObj(), GraphConnectableKey(pair.second, this->getInputEndpoint().getKey().direction))));
+    }
+    return pairs;
+}
+
 void GraphConnection::handleEndPointDestroyed(QObject *)
 {
     //an endpoint was destroyed, schedule for deletion
