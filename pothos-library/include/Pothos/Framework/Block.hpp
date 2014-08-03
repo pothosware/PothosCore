@@ -314,6 +314,8 @@ private:
     std::map<std::string, OutputPort*> _namedOutputs;
     std::map<std::string, Callable> _calls;
     ThreadPool _threadPool;
+    Block(const Block &){} // non construction-copyable
+    Block &operator=(const Block &){return *this;} // non copyable
 public:
     std::shared_ptr<WorkerActor> _actor;
     friend class WorkerActor;

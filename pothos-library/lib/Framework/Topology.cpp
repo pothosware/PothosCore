@@ -520,19 +520,40 @@ Pothos::Topology::Topology(void):
     return;
 }
 
+static void topologyImplCleanup(Pothos::Topology *topology)
+{
+    if (topology->_impl and topology->_impl.unique())
+    {
+        topology->disconnectAll();
+        topology->commit();
+        assert(topology->_impl->activeFlatFlows.empty());
+        assert(topology->_impl->flowToNetgressCache.empty());
+    }
+}
+
 Pothos::Topology::~Topology(void)
 {
     try
     {
-        this->disconnectAll();
-        this->commit();
-        assert(_impl->activeFlatFlows.empty());
-        assert(_impl->flowToNetgressCache.empty());
+        topologyImplCleanup(this);
     }
     catch (const Pothos::Exception &ex)
     {
         poco_error_f1(Poco::Logger::get("Pothos.Topology"), "Topology destructor threw: %s", ex.displayText());
     }
+}
+
+Pothos::Topology::Topology(const Topology &t):
+    _impl(t._impl)
+{
+    return;
+}
+
+Pothos::Topology &Pothos::Topology::operator=(const Topology &t)
+{
+    topologyImplCleanup(this);
+    _impl = t._impl;
+    return *this;
 }
 
 void Pothos::Topology::setThreadPool(const ThreadPool &threadPool)

@@ -40,6 +40,12 @@ public:
      */
     ~Topology(void);
 
+    //! Topology copy constructor
+    Topology(const Topology &);
+
+    //! Topology copy assignment
+    Topology &operator=(const Topology &);
+
     //! Set the thread pool used by all blocks in this topology.
     void setThreadPool(const ThreadPool &threadPool);
 
