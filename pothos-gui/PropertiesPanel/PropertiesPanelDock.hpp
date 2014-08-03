@@ -7,6 +7,8 @@
 #include <QPointer>
 
 class GraphObject;
+class QScrollArea;
+class QPushButton;
 
 class PropertiesPanelDock : public QDockWidget
 {
@@ -14,12 +16,20 @@ class PropertiesPanelDock : public QDockWidget
 public:
     PropertiesPanelDock(QWidget *parent);
 
+signals:
+    void resetPanel(void);
+
 private slots:
 
     void handleGraphModifyProperties(GraphObject *obj);
 
     void handlePanelDestroyed(QObject *);
 
+    void handleDeletePanel(void);
+
 private:
     QPointer<QWidget> _propertiesPanel;
+    QScrollArea *_scroll;
+    QPushButton *_commitButton;
+    QPushButton *_cancelButton;
 };

@@ -26,8 +26,9 @@ public:
 
     QString getParamDocString(const Poco::JSON::Object::Ptr &paramDesc);
 
-    //! reset all settings to their original (pre-edit) values
-    void reset(void);
+public slots:
+    void handleCancel(void);
+    void handleCommit(void);
 
 private slots:
 
@@ -41,10 +42,6 @@ private slots:
     void handleEditWidgetChanged(void);
 
     void handleUpdateTimerExpired(void);
-
-    void handleCancelButton(void);
-
-    void handleCommitButton(void);
 
 signals:
     void stateChanged(const GraphState &);
@@ -65,7 +62,7 @@ private:
      * Update all the things that change when a property is modified.
      * Label string formatting, color of the box, tooltip...
      */
-    void updatePropForms(const GraphBlockProp &prop);
+    void updatePropForms(const QString &propKey);
 
     bool _ignoreChanges;
 

@@ -187,7 +187,7 @@ void GraphObject::renderConnectablePoints(QPainter &painter)
 
         //draw vector
         painter.setPen(QPen(QColor(GraphObjectConnLineColor)));
-        QTransform trans; trans.rotate(attrs.rotation + (attrs.isInput?180:0));
+        QTransform trans; trans.rotate(attrs.rotation);
         painter.drawLine(attrs.point, attrs.point + trans.map(QPointF(GraphObjectConnLineLength, 0)));
     }
 }

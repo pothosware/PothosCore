@@ -36,9 +36,13 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnecti
                 auto connection = dynamic_cast<GraphConnection *>(graphSubObject);
                 if (connection == nullptr) continue;
                 if (connection->getOutputEndpoint().getObj() != breaker) continue;
-                for (const auto &subEp : traverseInputEps(connection->getInputEndpoint(), graphObjects))
+                for (const auto &epPair : connection->getEndpointPairs())
                 {
-                    inputEndpoints.push_back(subEp);
+                    const auto &inputEp = epPair.second;
+                    for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
+                    {
+                        inputEndpoints.push_back(subEp);
+                    }
                 }
             }
         }
@@ -54,22 +58,25 @@ std::vector<ConnectionInfo> TopologyEngine::getConnectionInfo(const GraphObjectL
     {
         auto connection = dynamic_cast<GraphConnection *>(graphObject);
         if (connection == nullptr) continue;
-        auto outputEp = connection->getOutputEndpoint();
-        auto inputEp = connection->getInputEndpoint();
-
-        //ignore connections from output breakers
-        //we will come back to them from the block to breaker to block path
-        auto outputBreaker = dynamic_cast<GraphBreaker *>(outputEp.getObj().data());
-        if (outputBreaker != nullptr) continue;
-
-        for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
+        for (const auto &epPair : connection->getEndpointPairs())
         {
-            ConnectionInfo info;
-            info.srcId = outputEp.getObj()->getId().toStdString();
-            info.srcPort = outputEp.getKey().id.toStdString();
-            info.dstId = subEp.getObj()->getId().toStdString();
-            info.dstPort = subEp.getKey().id.toStdString();
-            connections.push_back(info);
+            const auto &outputEp = epPair.first;
+            const auto &inputEp = epPair.second;
+
+            //ignore connections from output breakers
+            //we will come back to them from the block to breaker to block path
+            auto outputBreaker = dynamic_cast<GraphBreaker *>(outputEp.getObj().data());
+            if (outputBreaker != nullptr) continue;
+
+            for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
+            {
+                ConnectionInfo info;
+                info.srcId = outputEp.getObj()->getId().toStdString();
+                info.srcPort = outputEp.getKey().id.toStdString();
+                info.dstId = subEp.getObj()->getId().toStdString();
+                info.dstPort = subEp.getKey().id.toStdString();
+                connections.push_back(info);
+            }
         }
     }
     return connections;

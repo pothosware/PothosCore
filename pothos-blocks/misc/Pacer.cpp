@@ -87,8 +87,8 @@ public:
         //sleep to approximate the requested rate (sleep takes ms)
         if (actualTime < expectedTime)
         {
-            auto minTimeSleepMs = this->workInfo().maxTimeoutNs/1e6;
-            Poco::Thread::sleep(std::min(minTimeSleepMs, expectedTime-actualTime));
+            auto maxTimeSleepMs = this->workInfo().maxTimeoutNs/1e6;
+            Poco::Thread::sleep(std::min(maxTimeSleepMs, expectedTime-actualTime));
             return this->yield();
         }
 

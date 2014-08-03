@@ -60,13 +60,13 @@ const QString &GraphBlock::getBlockErrorMsg(void) const
     return _impl->blockErrorMsg;
 }
 
-void GraphBlock::addProperty(const GraphBlockProp &prop)
+void GraphBlock::addProperty(const QString &key)
 {
-    _properties.push_back(prop);
+    _properties.push_back(key);
     _impl->changed = true;
 }
 
-const std::vector<GraphBlockProp> &GraphBlock::getProperties(void) const
+const QStringList &GraphBlock::getProperties(void) const
 {
     return _properties;
 }
@@ -113,6 +113,19 @@ void GraphBlock::setPropertyValue(const QString &key, const QString &value)
     _impl->changed = true;
 }
 
+QString GraphBlock::getPropertyName(const QString &key) const
+{
+    auto it = _impl->propertiesNames.find(key);
+    if (it != _impl->propertiesNames.end()) return it->second;
+    return key;
+}
+
+void GraphBlock::setPropertyName(const QString &key, const QString &name)
+{
+    _impl->propertiesNames[key] = name;
+    _impl->changed = true;
+}
+
 bool GraphBlock::getPropertyPreview(const QString &key) const
 {
     auto it = _impl->propertiesPreview.find(key);
@@ -145,46 +158,46 @@ const std::string &GraphBlock::getPropertyTypeStr(const QString &key) const
     return _impl->propertiesTypeStr[key];
 }
 
-void GraphBlock::addInputPort(const GraphBlockPort &port)
+void GraphBlock::addInputPort(const QString &portKey)
 {
-    _inputPorts.push_back(port);
+    _inputPorts.push_back(portKey);
     _impl->changed = true;
 }
 
-const std::vector<GraphBlockPort> &GraphBlock::getInputPorts(void) const
+const QStringList &GraphBlock::getInputPorts(void) const
 {
     return _inputPorts;
 }
 
-void GraphBlock::addOutputPort(const GraphBlockPort &port)
+void GraphBlock::addOutputPort(const QString &portKey)
 {
-    _outputPorts.push_back(port);
+    _outputPorts.push_back(portKey);
     _impl->changed = true;
 }
 
-const std::vector<GraphBlockPort> &GraphBlock::getOutputPorts(void) const
+const QStringList &GraphBlock::getOutputPorts(void) const
 {
     return _outputPorts;
 }
 
-void GraphBlock::addSlotPort(const GraphBlockPort &port)
+void GraphBlock::addSlotPort(const QString &portKey)
 {
-    _slotPorts.push_back(port);
+    _slotPorts.push_back(portKey);
     _impl->changed = true;
 }
 
-const std::vector<GraphBlockPort> &GraphBlock::getSlotPorts(void) const
+const QStringList &GraphBlock::getSlotPorts(void) const
 {
     return _slotPorts;
 }
 
-void GraphBlock::addSignalPort(const GraphBlockPort &port)
+void GraphBlock::addSignalPort(const QString &portKey)
 {
-    _signalPorts.push_back(port);
+    _signalPorts.push_back(portKey);
     _impl->changed = true;
 }
 
-const std::vector<GraphBlockPort> &GraphBlock::getSignalPorts(void) const
+const QStringList &GraphBlock::getSignalPorts(void) const
 {
     return _signalPorts;
 }
@@ -231,6 +244,10 @@ bool GraphBlock::isPointing(const QRectF &rect) const
     {
         if (portRect.intersects(rect)) return true;
     }
+    if (not this->getSignalPorts().empty())
+    {
+        if (_impl->signalPortRect.intersects(rect)) return true;
+    }
     //otherwise does it point to the main body
     return _impl->mainBlockRect.intersects(rect);
 }
@@ -252,6 +269,13 @@ QRectF GraphBlock::getBoundingRect(void) const
         points.push_back(portRect.bottomRight());
         points.push_back(portRect.bottomLeft());
     }
+    if (not this->getSignalPorts().empty())
+    {
+        points.push_back(_impl->signalPortRect.topLeft());
+        points.push_back(_impl->signalPortRect.topRight());
+        points.push_back(_impl->signalPortRect.bottomRight());
+        points.push_back(_impl->signalPortRect.bottomLeft());
+    }
     points.push_back(_impl->mainBlockRect.topLeft());
     points.push_back(_impl->mainBlockRect.topRight());
     points.push_back(_impl->mainBlockRect.bottomRight());
@@ -262,28 +286,46 @@ QRectF GraphBlock::getBoundingRect(void) const
 std::vector<GraphConnectableKey> GraphBlock::getConnectableKeys(void) const
 {
     std::vector<GraphConnectableKey> keys;
-    for (size_t i = 0; i < _inputPorts.size(); i++)
+    for (int i = 0; i < _inputPorts.size(); i++)
     {
-        keys.push_back(GraphConnectableKey(_inputPorts[i].getKey(), true));
+        keys.push_back(GraphConnectableKey(_inputPorts[i], GRAPH_CONN_INPUT));
     }
-    for (size_t i = 0; i < _outputPorts.size(); i++)
+    for (int i = 0; i < _outputPorts.size(); i++)
     {
-        keys.push_back(GraphConnectableKey(_outputPorts[i].getKey(), false));
+        keys.push_back(GraphConnectableKey(_outputPorts[i], GRAPH_CONN_OUTPUT));
+    }
+    if (not this->getSlotPorts().empty())
+    {
+        keys.push_back(GraphConnectableKey("slots", GRAPH_CONN_SLOT));
+    }
+    if (not this->getSignalPorts().empty())
+    {
+        keys.push_back(GraphConnectableKey("signals", GRAPH_CONN_SIGNAL));
     }
     return keys;
 }
 
 GraphConnectableKey GraphBlock::isPointingToConnectable(const QPointF &pos) const
 {
-    for (size_t i = 0; i < _inputPorts.size(); i++)
+    for (int i = 0; i < _inputPorts.size(); i++)
     {
         if (_impl->inputPortRects[i].contains(pos))
-            return GraphConnectableKey(_inputPorts[i].getKey(), true);
+            return GraphConnectableKey(_inputPorts[i], GRAPH_CONN_INPUT);
     }
-    for (size_t i = 0; i < _outputPorts.size(); i++)
+    for (int i = 0; i < _outputPorts.size(); i++)
     {
         if (_impl->outputPortRects[i].contains(pos))
-            return GraphConnectableKey(_outputPorts[i].getKey(), false);
+            return GraphConnectableKey(_outputPorts[i], GRAPH_CONN_OUTPUT);
+    }
+    if (not this->getSlotPorts().empty())
+    {
+        if (_impl->mainBlockRect.contains(pos))
+            return GraphConnectableKey("slots", GRAPH_CONN_SLOT);
+    }
+    if (not this->getSignalPorts().empty())
+    {
+        if (_impl->signalPortRect.contains(pos))
+            return GraphConnectableKey("signals", GRAPH_CONN_SIGNAL);
     }
     return GraphConnectableKey();
 }
@@ -291,26 +333,39 @@ GraphConnectableKey GraphBlock::isPointingToConnectable(const QPointF &pos) cons
 GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey &key) const
 {
     GraphConnectableAttrs attrs;
+    attrs.direction = key.direction;
     attrs.rotation = this->getRotation();
-    if (key.isInput) for (size_t i = 0; i < _inputPorts.size(); i++)
+    if (key.direction == GRAPH_CONN_INPUT) for (int i = 0; i < _inputPorts.size(); i++)
     {
-        if (key.id == _inputPorts[i].getKey())
+        if (key.id == _inputPorts[i])
         {
-            if (_impl->inputPortPoints.size() > i) //may not be allocated yet
+            if (_impl->inputPortPoints.size() > size_t(i)) //may not be allocated yet
                 attrs.point = _impl->inputPortPoints[i];
-            attrs.isInput = true;
+            attrs.rotation += 180;
             return attrs;
         }
     }
-    else for (size_t i = 0; i < _outputPorts.size(); i++)
+    if (key.direction == GRAPH_CONN_OUTPUT) for (int i = 0; i < _outputPorts.size(); i++)
     {
-        if (key.id == _outputPorts[i].getKey())
+        if (key.id == _outputPorts[i])
         {
-            if (_impl->outputPortPoints.size() > i) //may not be allocated yet
+            if (_impl->outputPortPoints.size() > size_t(i)) //may not be allocated yet
                 attrs.point = _impl->outputPortPoints[i];
-            attrs.isInput = false;
+            attrs.rotation += 0;
             return attrs;
         }
+    }
+    if (key.direction == GRAPH_CONN_SLOT and key.id == "slots")
+    {
+        attrs.point = _impl->slotPortPoint;
+        attrs.rotation += 270;
+        return attrs;
+    }
+    if (key.direction == GRAPH_CONN_SIGNAL and key.id == "signals")
+    {
+        attrs.point = _impl->signalPortPoint;
+        attrs.rotation += 90;
+        return attrs;
     }
     return attrs;
 }
@@ -338,33 +393,33 @@ void GraphBlock::renderStaticText(void)
         .arg(_impl->title.toHtmlEscaped()));
 
     _impl->propertiesText.clear();
-    for (size_t i = 0; i < _properties.size(); i++)
+    for (int i = 0; i < _properties.size(); i++)
     {
-        if (not this->getPropertyPreview(_properties[i].getKey())) continue;
+        if (not this->getPropertyPreview(_properties[i])) continue;
         auto text = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3: </b> %4</span>")
-            .arg(getTextColor(this->getPropertyErrorMsg(_properties[i].getKey()).isEmpty(), _impl->mainBlockColor))
+            .arg(getTextColor(this->getPropertyErrorMsg(_properties[i]).isEmpty(), _impl->mainBlockColor))
             .arg(GraphBlockPropFontSize)
-            .arg(_properties[i].getName().toHtmlEscaped())
-            .arg(this->getPropertyDisplayText(_properties[i].getKey()).toHtmlEscaped()));
+            .arg(this->getPropertyName(_properties[i]).toHtmlEscaped())
+            .arg(this->getPropertyDisplayText(_properties[i]).toHtmlEscaped()));
         _impl->propertiesText.push_back(text);
     }
 
     _impl->inputPortsText.resize(_inputPorts.size());
-    for (size_t i = 0; i < _inputPorts.size(); i++)
+    for (int i = 0; i < _inputPorts.size(); i++)
     {
         _impl->inputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
             .arg(getTextColor(true, _impl->inputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
-            .arg(_inputPorts[i].getName().toHtmlEscaped()));
+            .arg(_inputPorts[i].toHtmlEscaped()));
     }
 
     _impl->outputPortsText.resize(_outputPorts.size());
-    for (size_t i = 0; i < _outputPorts.size(); i++)
+    for (int i = 0; i < _outputPorts.size(); i++)
     {
         _impl->outputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
             .arg(getTextColor(true, _impl->outputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
-            .arg(_outputPorts[i].getName().toHtmlEscaped()));
+            .arg(_outputPorts[i].toHtmlEscaped()));
     }
 
     if (not getActionMap()["showPortNamesAction"]->isChecked())
@@ -394,8 +449,8 @@ void GraphBlock::render(QPainter &painter)
         _impl->mainBlockColor = zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor);
         _impl->inputPortColors.resize(_inputPorts.size(), GraphObjectDefaultFillColor);
         _impl->outputPortColors.resize(_outputPorts.size(), GraphObjectDefaultFillColor);
-        for (size_t i = 0; i < _inputPorts.size(); i++) _impl->inputPortColors[i] = typeStrToColor(this->getInputPortTypeStr(_inputPorts.at(i).getKey()));
-        for (size_t i = 0; i < _outputPorts.size(); i++) _impl->outputPortColors[i] = typeStrToColor(this->getOutputPortTypeStr(_outputPorts.at(i).getKey()));
+        for (int i = 0; i < _inputPorts.size(); i++) _impl->inputPortColors[i] = typeStrToColor(this->getInputPortTypeStr(_inputPorts.at(i)));
+        for (int i = 0; i < _outputPorts.size(); i++) _impl->outputPortColors[i] = typeStrToColor(this->getOutputPortTypeStr(_outputPorts.at(i)));
         this->renderStaticText();
     }
 
@@ -455,7 +510,7 @@ void GraphBlock::render(QPainter &painter)
     _impl->inputPortRects.resize(numInputs);
     _impl->inputPortPoints.resize(numInputs);
     qreal inPortVdelta = (overallHeight - inputPortsMinHeight)/2.0 + GraphBlockPortVOutterPad;
-    for (size_t i = 0; i < numInputs; i++)
+    for (int i = 0; i < numInputs; i++)
     {
         const auto &text = _impl->inputPortsText.at(i);
         QSizeF rectSize = text.size() + QSizeF(GraphBlockPortTextHPad*2, GraphBlockPortTextVPad*2);
@@ -474,7 +529,7 @@ void GraphBlock::render(QPainter &painter)
         painter.drawStaticText(portRect.topLeft()+QPointF(availablePortHPad/2.0, availablePortVPad/2.0), text);
 
         //connection point logic
-        const auto connPoint = portRect.topLeft() + QPointF(portFlip?rectSize.width():0, rectSize.height()/2);
+        const auto connPoint = portRect.topLeft() + QPointF(portFlip?rectSize.width()+GraphObjectBorderWidth:-GraphObjectBorderWidth, rectSize.height()/2);
         _impl->inputPortPoints[i] = trans.map(connPoint);
     }
 
@@ -483,7 +538,7 @@ void GraphBlock::render(QPainter &painter)
     _impl->outputPortRects.resize(numOutputs);
     _impl->outputPortPoints.resize(numOutputs);
     qreal outPortVdelta = (overallHeight - outputPortsMinHeight)/2.0 + GraphBlockPortVOutterPad;
-    for (size_t i = 0; i < numOutputs; i++)
+    for (int i = 0; i < numOutputs; i++)
     {
         const auto &text = _impl->outputPortsText.at(i);
         QSizeF rectSize = text.size() + QSizeF(GraphBlockPortTextHPad*2+GraphBlockPortArc, GraphBlockPortTextVPad*2);
@@ -503,8 +558,37 @@ void GraphBlock::render(QPainter &painter)
         painter.drawStaticText(portRect.topLeft()+QPointF(availablePortHPad/2.0-arcFix, availablePortVPad/2.0), text);
 
         //connection point logic
-        const auto connPoint = portRect.topLeft() + QPointF(portFlip?0:rectSize.width(), rectSize.height()/2);
+        const auto connPoint = portRect.topLeft() + QPointF(portFlip?-GraphObjectBorderWidth:rectSize.width()+GraphObjectBorderWidth, rectSize.height()/2);
         _impl->outputPortPoints[i] = trans.map(connPoint);
+    }
+
+    //create signals port
+    if (not this->getSignalPorts().empty())
+    {
+        QSizeF rectSize(GraphBlockSignalPortWidth, GraphBlockSignalPortHeight+GraphBlockPortArc);
+        const qreal vOff = (portFlip)? 1-rectSize.height() : overallHeight;
+        const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
+        QRectF portRect(p+QPointF(mainRect.width()/2-rectSize.width()/2, vOff + arcFix), rectSize);
+
+        painter.save();
+        painter.setBrush(QBrush(_impl->mainBlockColor));
+        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
+        painter.restore();
+
+        _impl->signalPortRect = trans.mapRect(portRect);
+
+        //connection point logic
+        const auto connPoint = portRect.topLeft() + QPointF(rectSize.width()/2, portFlip?-GraphObjectBorderWidth:rectSize.height()+GraphObjectBorderWidth);
+        _impl->signalPortPoint = trans.map(connPoint);
+    }
+
+    //create slots port
+    if (not this->getSlotPorts().empty())
+    {
+        //connection point logic
+        const auto connPoint = mainRect.topLeft() + QPointF(mainRect.width()/2, portFlip?mainRect.height()+GraphObjectBorderWidth:-GraphObjectBorderWidth);
+        _impl->slotPortPoint = trans.map(connPoint);
     }
 
     //draw main body of the block
@@ -535,12 +619,11 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     obj->set("affinityZone", this->getAffinityZone().toStdString());
 
     Poco::JSON::Array jPropsObj;
-    for (const auto &property : this->getProperties())
+    for (const auto &propKey : this->getProperties())
     {
         Poco::JSON::Object jPropObj;
-        jPropObj.set("key", property.getKey().toStdString());
-        jPropObj.set("name", property.getName().toStdString());
-        jPropObj.set("value", this->getPropertyValue(property.getKey()).toStdString());
+        jPropObj.set("key", propKey.toStdString());
+        jPropObj.set("value", this->getPropertyValue(propKey).toStdString());
         jPropsObj.add(jPropObj);
     }
     obj->set("properties", jPropsObj);
@@ -567,10 +650,8 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     for (size_t i = 0; i < properties->size(); i++)
     {
         const auto jPropObj = properties->getObject(i);
-        GraphBlockProp prop(
-            QString::fromStdString(jPropObj->getValue<std::string>("key")),
-            QString::fromStdString(jPropObj->getValue<std::string>("name")));
-        this->setPropertyValue(prop.getKey(), QString::fromStdString(jPropObj->getValue<std::string>("value")));
+        const auto propKey = QString::fromStdString(jPropObj->getValue<std::string>("key"));
+        this->setPropertyValue(propKey, QString::fromStdString(jPropObj->getValue<std::string>("value")));
     }
 
     //load port description and init from it -- in the case eval fails

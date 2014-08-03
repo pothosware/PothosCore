@@ -10,20 +10,28 @@
 
 class GraphObject;
 
+enum GraphConnectableDirection
+{
+    GRAPH_CONN_INPUT,
+    GRAPH_CONN_OUTPUT,
+    GRAPH_CONN_SLOT,
+    GRAPH_CONN_SIGNAL,
+};
+
 //! An attribute struct used with connections
 struct GraphConnectableAttrs
 {
     int rotation; //multiple of 90 degrees
-    bool isInput;
+    GraphConnectableDirection direction;
     QPointF point;
 };
 
 //! A connection key describing name and direction
 struct GraphConnectableKey
 {
-    explicit GraphConnectableKey(const QString &id = "", const bool isInput = false);
+    explicit GraphConnectableKey(const QString &id = "", const GraphConnectableDirection direction = GRAPH_CONN_OUTPUT);
     QString id;
-    bool isInput;
+    GraphConnectableDirection direction;
 };
 
 extern bool operator==(const GraphConnectableKey &key0, const GraphConnectableKey &key1);
@@ -39,7 +47,7 @@ namespace std
         value_type operator()(argument_type const& s) const
         {
             return std::hash<std::string>()(s.id.toStdString()) ^
-            (std::hash<bool>()(s.isInput) << 1);
+            (std::hash<int>()(s.direction) << 1);
         }
     };
 }

@@ -5,59 +5,12 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include <Pothos/Proxy.hpp>
+#include <QStringList>
 #include <QObject>
 #include <QString>
 #include <QPointF>
 #include <memory>
 #include <vector>
-
-class GraphBlockPort
-{
-public:
-    GraphBlockPort(const QString &key = "", const QString &name = "")
-    {
-        _key = key;
-        _name = name;
-    }
-
-    const QString &getKey(void) const
-    {
-        return _key;
-    }
-
-    const QString &getName(void) const
-    {
-        return _name;
-    }
-
-private:
-    QString _key;
-    QString _name;
-};
-
-class GraphBlockProp
-{
-public:
-    GraphBlockProp(const QString &key = "", const QString &name = "")
-    {
-        _key = key;
-        _name = name;
-    }
-
-    const QString &getKey(void) const
-    {
-        return _key;
-    }
-
-    const QString &getName(void) const
-    {
-        return _name;
-    }
-
-private:
-    QString _key;
-    QString _name;
-};
 
 class GraphBlock : public GraphObject
 {
@@ -84,14 +37,17 @@ public:
     void setBlockErrorMsg(const QString &msg);
     const QString &getBlockErrorMsg(void) const;
 
-    void addProperty(const GraphBlockProp &prop);
-    const std::vector<GraphBlockProp> &getProperties(void) const;
+    void addProperty(const QString &key);
+    const QStringList &getProperties(void) const;
 
     //! Get the param desc from the block description
     Poco::JSON::Object::Ptr getParamDesc(const QString &key) const;
 
     QString getPropertyValue(const QString &key) const;
     void setPropertyValue(const QString &key, const QString &value);
+
+    QString getPropertyName(const QString &key) const;
+    void setPropertyName(const QString &key, const QString &name);
 
     //! Get the property display text: varies from actual value, enum name, error...
     QString getPropertyDisplayText(const QString &key) const;
@@ -107,17 +63,17 @@ public:
     bool getPropertyPreview(const QString &key) const;
     void setPropertyPreview(const QString &key, const bool value);
 
-    void addInputPort(const GraphBlockPort &port);
-    const std::vector<GraphBlockPort> &getInputPorts(void) const;
+    void addInputPort(const QString &portKey);
+    const QStringList &getInputPorts(void) const;
 
-    void addOutputPort(const GraphBlockPort &port);
-    const std::vector<GraphBlockPort> &getOutputPorts(void) const;
+    void addOutputPort(const QString &portKey);
+    const QStringList &getOutputPorts(void) const;
 
-    void addSlotPort(const GraphBlockPort &port);
-    const std::vector<GraphBlockPort> &getSlotPorts(void) const;
+    void addSlotPort(const QString &portKey);
+    const QStringList &getSlotPorts(void) const;
 
-    void addSignalPort(const GraphBlockPort &port);
-    const std::vector<GraphBlockPort> &getSignalPorts(void) const;
+    void addSignalPort(const QString &portKey);
+    const QStringList &getSignalPorts(void) const;
 
     //! Set a descriptive type string for input ports
     void setInputPortTypeStr(const QString &key, const std::string &type);
@@ -152,10 +108,10 @@ private:
     void renderStaticText(void);
     struct Impl;
     std::shared_ptr<Impl> _impl;
-    std::vector<GraphBlockProp> _properties;
-    std::vector<GraphBlockPort> _inputPorts;
-    std::vector<GraphBlockPort> _outputPorts;
-    std::vector<GraphBlockPort> _slotPorts;
-    std::vector<GraphBlockPort> _signalPorts;
+    QStringList _properties;
+    QStringList _inputPorts;
+    QStringList _outputPorts;
+    QStringList _slotPorts;
+    QStringList _signalPorts;
     Pothos::Proxy _blockEval;
 };

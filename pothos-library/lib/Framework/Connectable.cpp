@@ -4,7 +4,7 @@
 #include <Pothos/Framework/Connectable.hpp>
 
 Pothos::PortInfo::PortInfo(void):
-    isSpecial(false)
+    isSigSlot(false)
 {
     return;
 }
@@ -59,7 +59,7 @@ template<class Archive>
 void serialize(Archive & ar, Pothos::PortInfo &t, const unsigned int)
 {
     ar & t.name;
-    ar & t.isSpecial;
+    ar & t.isSigSlot;
     ar & t.dtype;
 }
 }}

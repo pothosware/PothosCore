@@ -261,7 +261,9 @@ void GraphDraw::doClickSelection(const QPointF &point)
 
         //valid keys, attempt to make a connection
         QPointer<GraphConnection> conn;
-        if (thisEp.isValid() and _lastClickSelectEp.isValid() and not (thisEp == _lastClickSelectEp))
+        if (thisEp.isValid() and _lastClickSelectEp.isValid() and not (thisEp == _lastClickSelectEp) and //end points valid
+            (_lastClickSelectEp.getConnectableAttrs().direction == GRAPH_CONN_OUTPUT or _lastClickSelectEp.getConnectableAttrs().direction == GRAPH_CONN_SIGNAL) and //last endpoint is output
+            (thisEp.getConnectableAttrs().direction == GRAPH_CONN_INPUT or thisEp.getConnectableAttrs().direction == GRAPH_CONN_SLOT)) //this click endpoint is input
         {
             try
             {
@@ -319,4 +321,13 @@ QString GraphDraw::getSelectionDescription(const int selectionFlags)
         );
     }
     return tr("selected");
+}
+
+GraphObject *GraphDraw::getObjectById(const QString &id, const int selectionFlags)
+{
+    for (auto obj : this->getGraphObjects(selectionFlags))
+    {
+        if (obj->getId() == id) return obj;
+    }
+    return nullptr;
 }

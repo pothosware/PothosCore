@@ -192,7 +192,7 @@ std::vector<Pothos::PortInfo> Pothos::Block::inputPortInfo(void)
     {
         PortInfo info;
         info.name = name;
-        info.isSpecial = this->input(name)->isSlot();
+        info.isSigSlot = this->input(name)->isSlot();
         info.dtype = this->input(name)->dtype();
         infos.push_back(info);
     }
@@ -206,7 +206,7 @@ std::vector<Pothos::PortInfo> Pothos::Block::outputPortInfo(void)
     {
         PortInfo info;
         info.name = name;
-        info.isSpecial = this->output(name)->isSignal();
+        info.isSigSlot = this->output(name)->isSignal();
         info.dtype = this->output(name)->dtype();
         infos.push_back(info);
     }

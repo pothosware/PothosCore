@@ -29,7 +29,8 @@ void GraphBlock::initPropertiesFromDesc(void)
         const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
         const auto key = QString::fromStdString(param->get("key").convert<std::string>());
         const auto name = QString::fromStdString(param->get("name").convert<std::string>());
-        this->addProperty(GraphBlockProp(key, name));
+        this->addProperty(key);
+        this->setPropertyName(key, name);
 
         const auto options = param->getArray("options");
         if (param->has("default"))
@@ -67,13 +68,10 @@ void GraphBlock::initInputsFromDesc(void)
     for (const auto &inputPortDesc : *inputDesc)
     {
         const auto &info = inputPortDesc.extract<Poco::JSON::Object::Ptr>();
-        auto portKey = info->getValue<std::string>("name");
-        auto portName = portKey;
-        if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "in"+portName;
-        GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
-        if (info->has("isSpecial") and info->getValue<bool>("isSpecial")) this->addSlotPort(gbp);
-        else this->addInputPort(gbp);
-        if (info->has("dtype")) this->setInputPortTypeStr(gbp.getKey(), info->getValue<std::string>("dtype"));
+        auto portKey = QString::fromStdString(info->getValue<std::string>("name"));
+        if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSlotPort(portKey);
+        else this->addInputPort(portKey);
+        if (info->has("dtype")) this->setInputPortTypeStr(portKey, info->getValue<std::string>("dtype"));
     }
 }
 
@@ -93,13 +91,10 @@ void GraphBlock::initOutputsFromDesc(void)
     for (const auto &outputPortDesc : *outputDesc)
     {
         const auto &info = outputPortDesc.extract<Poco::JSON::Object::Ptr>();
-        auto portKey = info->getValue<std::string>("name");
-        auto portName = portKey;
-        if (portName.find_first_not_of("0123456789") == std::string::npos) portName = "out"+portName;
-        GraphBlockPort gbp(QString::fromStdString(portKey), QString::fromStdString(portName));
-        if (info->has("isSpecial") and info->getValue<bool>("isSpecial")) this->addSignalPort(gbp);
-        else this->addOutputPort(gbp);
-        if (info->has("dtype")) this->setOutputPortTypeStr(gbp.getKey(), info->getValue<std::string>("dtype"));
+        auto portKey = QString::fromStdString(info->getValue<std::string>("name"));
+        if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSignalPort(portKey);
+        else this->addOutputPort(portKey);
+        if (info->has("dtype")) this->setOutputPortTypeStr(portKey, info->getValue<std::string>("dtype"));
     }
 }
 
@@ -115,7 +110,7 @@ static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo
     {
         Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
         portInfo->set("name", info.name);
-        portInfo->set("isSpecial", info.isSpecial);
+        portInfo->set("isSigSlot", info.isSigSlot);
         portInfo->set("size", info.dtype.size());
         portInfo->set("dtype", info.dtype.toString());
         array->add(portInfo);
@@ -157,18 +152,18 @@ void GraphBlock::update(void)
 
     //evaluate the properties
     bool hasError = false;
-    for (const auto &prop : this->getProperties())
+    for (const auto &propKey : this->getProperties())
     {
-        const auto val = this->getPropertyValue(prop.getKey()).toStdString();
+        const auto val = this->getPropertyValue(propKey).toStdString();
         try
         {
-            auto obj = _blockEval.callProxy("evalProperty", prop.getKey().toStdString(), val);
-            this->setPropertyTypeStr(prop.getKey(), obj.call<std::string>("getTypeString"));
-            this->setPropertyErrorMsg(prop.getKey(), "");
+            auto obj = _blockEval.callProxy("evalProperty", propKey.toStdString(), val);
+            this->setPropertyTypeStr(propKey, obj.call<std::string>("getTypeString"));
+            this->setPropertyErrorMsg(propKey, "");
         }
         catch (const Pothos::Exception &ex)
         {
-            this->setPropertyErrorMsg(prop.getKey(), QString::fromStdString(ex.message()));
+            this->setPropertyErrorMsg(propKey, QString::fromStdString(ex.message()));
             hasError = true;
         }
     }
