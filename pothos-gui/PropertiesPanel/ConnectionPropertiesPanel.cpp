@@ -116,14 +116,14 @@ void ConnectionPropertiesPanel::handleCommit(void)
     else if (createdPairs.empty() and removedPairs.size() == 1)
     {
         desc = tr("Removed %1->%2")
-            .arg(this->idToStr(removedPairs.at(0).first, _conn->getOutputEndpoint()))
-            .arg(this->idToStr(removedPairs.at(0).second, _conn->getInputEndpoint()));
+            .arg(_conn->getKeyName(removedPairs.at(0).first, _conn->getOutputEndpoint()))
+            .arg(_conn->getKeyName(removedPairs.at(0).second, _conn->getInputEndpoint()));
     }
     else if (createdPairs.size() == 1 and removedPairs.empty())
     {
         desc = tr("Created %1->%2")
-            .arg(this->idToStr(createdPairs.at(0).first, _conn->getOutputEndpoint()))
-            .arg(this->idToStr(createdPairs.at(0).second, _conn->getInputEndpoint()));
+            .arg(_conn->getKeyName(createdPairs.at(0).first, _conn->getOutputEndpoint()))
+            .arg(_conn->getKeyName(createdPairs.at(0).second, _conn->getInputEndpoint()));
     }
     else
     {
@@ -166,8 +166,8 @@ void ConnectionPropertiesPanel::populateConnectionsList(void)
     for (const auto &pair : _conn->getSigSlotPairs())
     {
         auto item = new QTreeWidgetItem(_connectionsListWidget, QStringList(QString("%1 -> %2")
-            .arg(this->idToStr(pair.first, _conn->getOutputEndpoint()))
-            .arg(this->idToStr(pair.second, _conn->getInputEndpoint()))));
+            .arg(_conn->getKeyName(pair.first, _conn->getOutputEndpoint()))
+            .arg(_conn->getKeyName(pair.second, _conn->getInputEndpoint()))));
         _connItemToKeyPair[item] = pair;
         _connectionsListWidget->addTopLevelItem(item);
     }
@@ -181,17 +181,6 @@ void ConnectionPropertiesPanel::handleRemoveConnection(void)
         delete item;
         this->populateConnectionsList();
     }
-}
-
-QString ConnectionPropertiesPanel::idToStr(const QString &id, const GraphConnectionEndpoint &ep)
-{
-    switch(ep.getConnectableAttrs().direction)
-    {
-    case GRAPH_CONN_INPUT: return tr("Input %1").arg(id);
-    case GRAPH_CONN_OUTPUT: return tr("Output %1").arg(id);
-    default: break;
-    }
-    return id;
 }
 
 QTreeWidget *ConnectionPropertiesPanel::makePortListWidget(QWidget *parent, const GraphConnectionEndpoint &ep, std::map<QTreeWidgetItem *, QString> &itemToKey)
@@ -214,13 +203,13 @@ QTreeWidget *ConnectionPropertiesPanel::makePortListWidget(QWidget *parent, cons
     //populate
     if (portKeys.empty())
     {
-        auto item = new QTreeWidgetItem(listWidget, QStringList(this->idToStr(ep.getKey().id, ep)));
+        auto item = new QTreeWidgetItem(listWidget, QStringList(_conn->getKeyName(ep.getKey().id, ep)));
         itemToKey[item] = ep.getKey().id;
         listWidget->addTopLevelItem(item);
     }
     else for (const auto &portKey : portKeys)
     {
-        auto item = new QTreeWidgetItem(listWidget, QStringList(this->idToStr(portKey, ep)));
+        auto item = new QTreeWidgetItem(listWidget, QStringList(_conn->getKeyName(portKey, ep)));
         itemToKey[item] = portKey;
         listWidget->addTopLevelItem(item);
     }

@@ -8,6 +8,7 @@
 #include <Pothos/Exception.hpp>
 #include <QPainter>
 #include <QPolygonF>
+#include <QStaticText>
 #include <iostream>
 #include <algorithm> //std::find
 #include <cassert>
@@ -15,10 +16,20 @@
 
 struct GraphConnection::Impl
 {
+    Impl(void):
+        changed(true)
+    {
+        return;
+    }
+
+    bool changed;
+
     GraphConnectionEndpoint inputEp;
     GraphConnectionEndpoint outputEp;
 
     std::vector<SigSlotPair> sigSlotsEndpointPairs;
+
+    QStaticText lineText;
 
     QVector<QPointF> points;
     QPolygonF arrowHead;
@@ -42,6 +53,7 @@ void GraphConnection::setupEndpoint(const GraphConnectionEndpoint &ep)
     case GRAPH_CONN_SIGNAL: _impl->outputEp = ep; break;
     }
     connect(ep.getObj(), SIGNAL(destroyed(QObject *)), this, SLOT(handleEndPointDestroyed(QObject *)));
+    _impl->changed = true;
 }
 
 const GraphConnectionEndpoint &GraphConnection::getOutputEndpoint(void) const
@@ -73,6 +85,7 @@ const std::vector<SigSlotPair> &GraphConnection::getSigSlotPairs(void) const
 void GraphConnection::setSigSlotPairs(const std::vector<SigSlotPair> &pairs)
 {
     _impl->sigSlotsEndpointPairs = pairs;
+    _impl->changed = true;
 }
 
 void GraphConnection::addSigSlotPair(const SigSlotPair &sigSlot)
@@ -82,6 +95,7 @@ void GraphConnection::addSigSlotPair(const SigSlotPair &sigSlot)
 
     this->removeSigSlotPair(sigSlot);
     _impl->sigSlotsEndpointPairs.push_back(sigSlot);
+    _impl->changed = true;
 }
 
 void GraphConnection::removeSigSlotPair(const SigSlotPair &sigSlot)
@@ -89,6 +103,7 @@ void GraphConnection::removeSigSlotPair(const SigSlotPair &sigSlot)
     auto &v = _impl->sigSlotsEndpointPairs;
     auto it = std::find(v.begin(), v.end(), sigSlot);
     if (it != v.end()) v.erase(it);
+    _impl->changed = true;
 }
 
 std::vector<std::pair<GraphConnectionEndpoint, GraphConnectionEndpoint>> GraphConnection::getEndpointPairs(void) const
@@ -105,6 +120,17 @@ std::vector<std::pair<GraphConnectionEndpoint, GraphConnectionEndpoint>> GraphCo
             GraphConnectionEndpoint(this->getInputEndpoint().getObj(), GraphConnectableKey(pair.second, this->getInputEndpoint().getKey().direction))));
     }
     return pairs;
+}
+
+QString GraphConnection::getKeyName(const QString &portKey, const GraphConnectionEndpoint &ep)
+{
+    switch(ep.getConnectableAttrs().direction)
+    {
+    case GRAPH_CONN_INPUT: return tr("Input %1").arg(portKey);
+    case GRAPH_CONN_OUTPUT: return tr("Output %1").arg(portKey);
+    default: break;
+    }
+    return portKey;
 }
 
 void GraphConnection::handleEndPointDestroyed(QObject *)
@@ -221,6 +247,25 @@ void GraphConnection::render(QPainter &painter)
     if (not _impl->outputEp.isValid()) return;
     if (not _impl->inputEp.isValid()) return;
 
+    //re-render the static texts upon change
+    if (_impl->changed)
+    {
+        _impl->changed = false;
+        QString text;
+        for (const auto &pair : this->getSigSlotPairs())
+        {
+            if (not text.isEmpty()) text += "<br />";
+            text += QString("%1:%2")
+                .arg(this->getKeyName(pair.first, this->getOutputEndpoint()).toHtmlEscaped())
+                .arg(this->getKeyName(pair.second, this->getInputEndpoint()).toHtmlEscaped());
+        }
+        if (text.isEmpty()) text = tr("<b>Empty</b>");
+        _impl->lineText = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
+            .arg(GraphConnectionLineTextColor)
+            .arg(GraphConnectionLineTextFontSize)
+            .arg(text));
+    }
+
     //query the connectable info
     const auto outputAttrs = _impl->outputEp.getConnectableAttrs();
     const auto inputAttrs = _impl->inputEp.getConnectableAttrs();
@@ -244,13 +289,16 @@ void GraphConnection::render(QPainter &painter)
     points.push_back(ip0);
 
     //create a painter path with curves for corners
+    QLineF largestLine;
     QPainterPath path(points.front());
     for (int i = 1; i < points.size()-1; i++)
     {
         const auto last = points[i-1];
         const auto curr = points[i];
         const auto next = points[i+1];
-        path.lineTo(lineShorten(QLineF(last, curr)).p2());
+        const QLineF line(last, curr);
+        if (line.length() > largestLine.length()) largestLine = line;
+        path.lineTo(lineShorten(line).p2());
         path.quadTo(curr, lineShorten(QLineF(next, curr)).p2());
     }
     path.lineTo(points.back());
@@ -264,6 +312,17 @@ void GraphConnection::render(QPainter &painter)
     painter.setPen(pen);
     painter.drawPath(path);
     _impl->points = points;
+
+    //draw text
+    if (this->isSignalOrSlot())
+    {
+        painter.save();
+        const auto &text = _impl->lineText;
+        painter.translate((largestLine.p1() + largestLine.p2())/2.0);
+        painter.rotate(int(largestLine.angle())%180);
+        painter.drawStaticText(QPointF(-text.size().width()/2, -text.size().height() - GraphConnectionGirth), text);
+        painter.restore();
+    }
 
     //create arrow head
     QTransform trans0; trans0.rotate(inputAttrs.rotation + 180 + GraphConnectionArrowAngle);

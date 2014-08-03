@@ -47,6 +47,9 @@ public:
      */
     std::vector<std::pair<GraphConnectionEndpoint, GraphConnectionEndpoint>> getEndpointPairs(void) const;
 
+    //! utility to get a displayable name for a port key knowing its endpoint
+    QString getKeyName(const QString &portKey, const GraphConnectionEndpoint &ep);
+
     bool isPointing(const QRectF &rect) const;
 
     QRectF getBoundingRect(void) const;
