@@ -138,7 +138,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     msgsConsumed -= this->workStats.msgsConsumed;
     this->workStats.msgsConsumed += msgsConsumed;
     const bool hadConsumption = (bytesConsumed !=0 or msgsConsumed != 0);
-    if (hadConsumption) this->workStats.ticksLastConsumed = Theron::Detail::Clock::GetTicks();
+    if (hadConsumption) this->workStats.timeLastConsumed = std::chrono::high_resolution_clock::now();
 
     ///////////////////// output handling ////////////////////////
     //Note: output buffer production must come after propagateLabels()
@@ -199,7 +199,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     msgsProduced -= this->workStats.msgsProduced;
     this->workStats.msgsProduced += msgsProduced;
     const bool hadProduction = (bytesProduced != 0 or msgsProduced != 0);
-    if (hadProduction) this->workStats.ticksLastProduced = Theron::Detail::Clock::GetTicks();
+    if (hadProduction) this->workStats.timeLastProduced = std::chrono::high_resolution_clock::now();
 
     //postwork bump logic
     if (this->workBump or hadConsumption or hadProduction) this->bump();

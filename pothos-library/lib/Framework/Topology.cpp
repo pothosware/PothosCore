@@ -814,7 +814,8 @@ void Pothos::Topology::disconnectAll(void)
 bool Pothos::Topology::waitInactive(const double idleDuration, const double timeout)
 {
     //how long to sleep between idle checks?
-    const std::chrono::nanoseconds pollSleepTime((long long)(idleDuration*1e9/3));
+    const std::chrono::nanoseconds idleDurationNs((long long)(idleDuration*1e9));
+    const std::chrono::nanoseconds pollSleepTime(idleDurationNs/3);
 
     //get a list of blocks to poll for idle time
     const auto blocks = getObjSetFromFlowList(_impl->activeFlatFlows);
@@ -827,10 +828,10 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
         for (auto block : blocks)
         {
             const auto stats = block.call<WorkerStats>("getWorkerStats");
-            const auto consumptionIdle = stats.ticksStatsQuery - stats.ticksLastConsumed;
-            const auto productionIdle = stats.ticksStatsQuery - stats.ticksLastProduced;
+            const auto consumptionIdle = stats.timeStatsQuery - stats.timeLastConsumed;
+            const auto productionIdle = stats.timeStatsQuery - stats.timeLastProduced;
             const auto workerIdleDuration = std::min(consumptionIdle, productionIdle);
-            if (workerIdleDuration < idleDuration*stats.tickRate) goto pollSleep;
+            if (workerIdleDuration < idleDurationNs) goto pollSleep;
         }
 
         //all workers reached the max idle time specified

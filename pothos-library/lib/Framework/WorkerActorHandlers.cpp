@@ -213,7 +213,7 @@ void Pothos::WorkerActor::handleRequestPortInfoMessage(const RequestPortInfoMess
 
 void Pothos::WorkerActor::handleRequestWorkerStatsMessage(const RequestWorkerStatsMessage &, const Theron::Address from)
 {
-    this->workStats.ticksStatsQuery = Theron::Detail::Clock::GetTicks();
+    this->workStats.timeStatsQuery = std::chrono::high_resolution_clock::now();
     this->Send(this->workStats, from);
     this->bump();
 }

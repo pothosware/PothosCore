@@ -3,15 +3,16 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <chrono>
 #include <Theron/Detail/Threading/Clock.h>
 
 /*
 struct PortStats
 {
     PortStats(void);
-    unsigned long long ticksLastBuffer;
-    unsigned long long ticksLastMessage;
-    unsigned long long ticksLastLabel;
+    unsigned long long timeLastBuffer;
+    unsigned long long timeLastMessage;
+    unsigned long long timeLastLabel;
     unsigned long long totalElements;
     unsigned long long totalMessages;
     unsigned long long totalLabels;
@@ -21,32 +22,31 @@ struct PortStats
 struct WorkerStats
 {
     WorkerStats(void);
-    unsigned long long tickRate;
-    unsigned long long totalTicksWork;
-    unsigned long long totalTicksPreWork;
-    unsigned long long totalTicksPostWork;
+    std::chrono::high_resolution_clock::duration totalTimeWork;
+    std::chrono::high_resolution_clock::duration totalTimePreWork;
+    std::chrono::high_resolution_clock::duration totalTimePostWork;
     unsigned long long numWorkCalls;
     unsigned long long bytesConsumed;
     unsigned long long bytesProduced;
     unsigned long long msgsConsumed;
     unsigned long long msgsProduced;
-    unsigned long long ticksLastConsumed;
-    unsigned long long ticksLastProduced;
-    unsigned long long ticksLastWork;
-    unsigned long long ticksStatsQuery;
+    std::chrono::high_resolution_clock::time_point timeLastConsumed;
+    std::chrono::high_resolution_clock::time_point timeLastProduced;
+    std::chrono::high_resolution_clock::time_point timeLastWork;
+    std::chrono::high_resolution_clock::time_point timeStatsQuery;
 };
 
-struct TicksAccumulator
+struct TimeAccumulator
 {
-    inline TicksAccumulator(unsigned long long &t):
-        t(t), start(Theron::Detail::Clock::GetTicks())
+    inline TimeAccumulator(std::chrono::high_resolution_clock::duration &t):
+        t(t), start(std::chrono::high_resolution_clock::now())
     {
         return;
     }
-    inline ~TicksAccumulator(void)
+    inline ~TimeAccumulator(void)
     {
-        t += Theron::Detail::Clock::GetTicks() - start;
+        t += std::chrono::high_resolution_clock::now() - start;
     }
-    unsigned long long &t;
-    unsigned long long start;
+    std::chrono::high_resolution_clock::duration &t;
+    const std::chrono::high_resolution_clock::time_point start;
 };

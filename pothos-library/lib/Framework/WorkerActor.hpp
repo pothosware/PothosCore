@@ -336,7 +336,7 @@ public:
 
         //prework
         {
-            TicksAccumulator preWorkTime(workStats.totalTicksPreWork);
+            TimeAccumulator preWorkTime(workStats.totalTimePreWork);
             if (not this->preWorkTasks()) return;
         }
 
@@ -344,7 +344,7 @@ public:
         POTHOS_EXCEPTION_TRY
         {
             workStats.numWorkCalls++;
-            TicksAccumulator preWorkTime(workStats.totalTicksWork);
+            TimeAccumulator preWorkTime(workStats.totalTimeWork);
             block->work();
         }
         POTHOS_EXCEPTION_CATCH(const Exception &ex)
@@ -354,11 +354,11 @@ public:
 
         //postwork
         {
-            TicksAccumulator preWorkTime(workStats.totalTicksPostWork);
+            TimeAccumulator preWorkTime(workStats.totalTimePostWork);
             this->postWorkTasks();
         }
 
-        workStats.ticksLastWork = Theron::Detail::Clock::GetTicks();
+        workStats.timeLastWork = std::chrono::high_resolution_clock::now();
     }
     bool preWorkTasks(void);
     void postWorkTasks(void);
