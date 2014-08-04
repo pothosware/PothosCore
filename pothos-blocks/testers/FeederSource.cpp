@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <Poco/Thread.h> //sleep
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/Types.h>
 #include <random>
 #include <chrono>
+#include <thread>
 #include <queue>
 #include <algorithm>
 
@@ -73,7 +73,7 @@ public:
         }
 
         //enter backoff + wait for additional user stimulus
-        Poco::Thread::sleep(this->workInfo().maxTimeoutNs/1000000); //ms
+        std::this_thread::sleep_for(std::chrono::nanoseconds(this->workInfo().maxTimeoutNs));
         this->yield();
     }
 
