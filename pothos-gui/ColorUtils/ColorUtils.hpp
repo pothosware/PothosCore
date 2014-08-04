@@ -3,6 +3,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <QIcon>
 #include <QColor>
 #include <string>
 #include <map>
@@ -12,3 +13,6 @@ QColor typeStrToColor(const std::string &typeStr);
 
 //! Get the map of known type strings to colors
 std::map<std::string, QColor> getTypeStrToColorMap(void);
+
+//! Create a decorative icon of the color
+QIcon colorToWidgetIcon(const QColor &color);

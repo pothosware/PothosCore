@@ -5,6 +5,7 @@
 #include <Poco/SingletonHolder.h>
 #include <Poco/MD5Engine.h>
 #include <Poco/RWLock.h>
+#include <QPixmap>
 
 static Poco::RWLock &getLookupMutex(void)
 {
@@ -47,4 +48,11 @@ std::map<std::string, QColor> getTypeStrToColorMap(void)
 {
     Poco::RWLock::ScopedReadLock lock(getLookupMutex());
     return getColorMap();
+}
+
+QIcon colorToWidgetIcon(const QColor &color)
+{
+    QPixmap pixmap(10, 10);
+    pixmap.fill(color);
+    return QIcon(pixmap);
 }

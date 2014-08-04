@@ -4,7 +4,6 @@
 #include "ColorUtils/ColorsDialog.hpp"
 #include "ColorUtils/ColorUtils.hpp"
 #include <QTreeWidget>
-#include <QPixmap>
 #include <string>
 #include <algorithm>
 
@@ -28,9 +27,7 @@ ColorsDialog::ColorsDialog(QWidget *parent):
     for (const auto &typeStr : typeStrs)
     {
         auto item = new QTreeWidgetItem(tree, QStringList(QString::fromStdString(typeStr)));
-        QPixmap pixmap(10, 10);
-        pixmap.fill(typeStrToColorMap.at(typeStr));
-        item->setIcon(0, pixmap);
+        item->setIcon(0, colorToWidgetIcon(typeStrToColorMap.at(typeStr)));
         tree->addTopLevelItem(item);
     }
     tree->resizeColumnToContents(0);
