@@ -3,7 +3,6 @@
 
 #include <Pothos/Framework/Topology.hpp>
 #include "Framework/PortsAndFlows.hpp"
-#include "Framework/WorkerStats.hpp"
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Remote.hpp>
@@ -827,7 +826,7 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
         //check each worker for idle time from the stats
         for (auto block : blocks)
         {
-            const auto stats = block.call<WorkerStats>("getWorkerStats");
+            const auto stats = block.call<WorkStats>("workStats");
             const auto consumptionIdle = stats.timeStatsQuery - stats.timeLastConsumed;
             const auto productionIdle = stats.timeStatsQuery - stats.timeLastProduced;
             const auto workerIdleDuration = std::min(consumptionIdle, productionIdle);

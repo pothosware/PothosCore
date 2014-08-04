@@ -102,10 +102,10 @@ list(APPEND POTHOS_SOURCES
     Framework/Block.cpp
     Framework/Topology.cpp
     Framework/WorkInfo.cpp
+    Framework/WorkStats.cpp
     Framework/WorkerActor.cpp
     Framework/WorkerActorPortAllocation.cpp
     Framework/WorkerActorHandlers.cpp
-    Framework/WorkerStats.cpp
     Framework/ThreadPool.cpp
     Framework/SharedBuffer.cpp
     Framework/ManagedBuffer.cpp

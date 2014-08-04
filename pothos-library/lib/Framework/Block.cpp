@@ -82,6 +82,13 @@ void Pothos::Block::propagateLabels(const InputPort *input)
     }
 }
 
+Pothos::WorkStats Pothos::Block::workStats(void) const
+{
+    InfoReceiver<WorkStats> receiver;
+    _actor->GetFramework().Send(RequestWorkerStatsMessage(), receiver.GetAddress(), _actor->GetAddress());
+    return receiver.WaitInfo();
+}
+
 bool Pothos::Block::isActive(void) const
 {
     return _actor->activeState;
@@ -214,21 +221,14 @@ static Pothos::Block *getPointer(Pothos::Block &b)
     return &b;
 }
 
-static WorkerStats getWorkerStats(const Pothos::Block &block)
-{
-    InfoReceiver<WorkerStats> receiver;
-    block._actor->GetFramework().Send(RequestWorkerStatsMessage(), receiver.GetAddress(), block._actor->GetAddress());
-    return receiver.WaitInfo();
-}
-
 static auto managedBlock = Pothos::ManagedClass()
     .registerClass<Pothos::Block>()
     .registerBaseClass<Pothos::Block, Pothos::Connectable>()
     .registerWildcardMethod(&Pothos::Block::opaqueCall)
     .registerMethod("getPointer", &getPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
-    .registerMethod("getWorkerStats", &getWorkerStats)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workStats))
 
     //all of the setups with default args set
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setThreadPool))

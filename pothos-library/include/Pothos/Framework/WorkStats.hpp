@@ -1,10 +1,17 @@
+//
+// Framework/WorkStats.hpp
+//
+// This file contains the interface for work statistics.
+//
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
+//
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <chrono>
-#include <Theron/Detail/Threading/Clock.h>
+
+namespace Pothos {
 
 /*
 struct PortStats
@@ -19,9 +26,12 @@ struct PortStats
 };
 */
 
-struct WorkerStats
+/*!
+ * Statistics about a block's processing function.
+ */
+struct POTHOS_API WorkStats
 {
-    WorkerStats(void);
+    WorkStats(void);
     std::chrono::high_resolution_clock::duration totalTimeWork;
     std::chrono::high_resolution_clock::duration totalTimePreWork;
     std::chrono::high_resolution_clock::duration totalTimePostWork;
@@ -36,6 +46,7 @@ struct WorkerStats
     std::chrono::high_resolution_clock::time_point timeStatsQuery;
 };
 
+//! Helper routine to deal with automatically accumulating time durations
 struct TimeAccumulator
 {
     inline TimeAccumulator(std::chrono::high_resolution_clock::duration &t):
@@ -50,3 +61,5 @@ struct TimeAccumulator
     std::chrono::high_resolution_clock::duration &t;
     const std::chrono::high_resolution_clock::time_point start;
 };
+
+} //namespace Pothos

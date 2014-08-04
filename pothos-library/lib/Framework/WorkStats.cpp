@@ -1,9 +1,9 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Framework/WorkerStats.hpp"
+#include <Pothos/Framework/WorkStats.hpp>
 
-WorkerStats::WorkerStats(void):
+Pothos::WorkStats::WorkStats(void):
     totalTimeWork(0),
     totalTimePreWork(0),
     totalTimePostWork(0),
@@ -54,7 +54,7 @@ POTHOS_SERIALIZATION_SPLIT_FREE(std::chrono::high_resolution_clock::time_point)
 
 namespace Pothos { namespace serialization {
 template <class Archive>
-void serialize(Archive &ar, WorkerStats &t, const unsigned int)
+void serialize(Archive &ar, Pothos::WorkStats &t, const unsigned int)
 {
     ar & t.totalTimeWork;
     ar & t.totalTimePreWork;
@@ -71,4 +71,4 @@ void serialize(Archive &ar, WorkerStats &t, const unsigned int)
 }
 }}
 
-POTHOS_OBJECT_SERIALIZE(WorkerStats)
+POTHOS_OBJECT_SERIALIZE(Pothos::WorkStats)

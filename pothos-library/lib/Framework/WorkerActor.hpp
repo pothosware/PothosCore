@@ -4,7 +4,6 @@
 #pragma once
 #include "Framework/InputPortImpl.hpp"
 #include "Framework/OutputPortImpl.hpp"
-#include "Framework/WorkerStats.hpp"
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object/Containers.hpp>
@@ -208,7 +207,7 @@ public:
     Block *block;
     bool workBump;
     bool activeState;
-    WorkerStats workStats;
+    WorkStats workStats;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
 
