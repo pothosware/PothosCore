@@ -8,6 +8,8 @@
 #include <Poco/NumberParser.h>
 #include <Poco/SingletonHolder.h>
 #include <Poco/RWLock.h>
+#include <future>
+#include <mutex>
 #include <map>
 #include <cassert>
 
@@ -41,6 +43,58 @@ static void updateNodeIdTable(const Pothos::ProxyEnvironment::Sptr &env, const P
 }
 
 /***********************************************************************
+ * lookupIpFromNodeId implementation
+ **********************************************************************/
+static std::mutex &getDNSLookupMutex(void)
+{
+    static Poco::SingletonHolder<std::mutex> sh;
+    return *sh.get();
+}
+
+static std::map<std::string, std::shared_future<Poco::Net::IPAddress>> &getDNSFutures(void)
+{
+    static Poco::SingletonHolder<std::map<std::string, std::shared_future<Poco::Net::IPAddress>>> sh;
+    return *sh.get();
+}
+
+//! The blocking DNS lookup routine -- perfomed by an async future
+static Poco::Net::IPAddress dnsLookupBlocking(const std::string &host)
+{
+    return Poco::Net::SocketAddress(host, 0).host();
+}
+
+//! Perform a DNS lookup with a timeout - throws Poco::Exception
+static Poco::Net::IPAddress dnsLookup(const std::string &host, const long timeoutUs)
+{
+    //create a future or get an existing one
+    std::shared_future<Poco::Net::IPAddress> dnsFuture;
+    {
+        std::lock_guard<std::mutex> l(getDNSLookupMutex());
+        if (getDNSFutures().count(host) == 0)
+        {
+            getDNSFutures()[host] = std::async(std::launch::async, &dnsLookupBlocking, host);
+        }
+        dnsFuture = getDNSFutures().at(host);
+    }
+
+    //wait with a timeout for the future to complete
+    if (dnsFuture.wait_for(std::chrono::microseconds(timeoutUs)) != std::future_status::ready)
+    {
+        throw Poco::TimeoutException("DNS lookup for "+host);
+    }
+
+    //get the future, may throw exceptions from SocketAddress
+    const auto ipAddr = dnsFuture.get();
+
+    //remove the completed future from the map
+    {
+        std::lock_guard<std::mutex> l(getDNSLookupMutex());
+        getDNSFutures().erase(host);
+    }
+    return ipAddr;
+}
+
+/***********************************************************************
  * RemoteClient implementation
  **********************************************************************/
 struct Pothos::RemoteClient::Impl
@@ -68,7 +122,7 @@ struct Pothos::RemoteClient::Impl
         //perform the dns lookup
         try
         {
-            this->sa = Poco::Net::SocketAddress(uri.getHost(), port);
+            this->sa = Poco::Net::SocketAddress(dnsLookup(uri.getHost(), timeoutUs), port);
         }
         catch (const Poco::Exception &ex)
         {
