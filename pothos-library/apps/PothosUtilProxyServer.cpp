@@ -9,6 +9,8 @@
 #include <Poco/Net/TCPServer.h>
 #include <Poco/Process.h>
 #include <Poco/URI.h>
+#include <chrono>
+#include <thread>
 #include <iostream>
 
 class MyTCPServerConnection : public Poco::Net::TCPServerConnection
@@ -54,7 +56,7 @@ struct MyTCPConnectionMonitor: public Poco::Runnable
     {
         while (running)
         {
-            Poco::Thread::sleep(100/*ms*/);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
             if (server.currentConnections() == 0)
             {
                 std::cerr << "Proxy server: No active connections - killing server" << std::endl;

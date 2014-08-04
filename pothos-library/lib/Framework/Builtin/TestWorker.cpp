@@ -3,8 +3,9 @@
 
 #include <Pothos/Testing.hpp>
 #include <Pothos/Framework.hpp>
+#include <chrono>
+#include <thread>
 #include <iostream>
-#include <Poco/Thread.h>
 
 struct MyWorker0 : Pothos::Block
 {
@@ -86,7 +87,7 @@ POTHOS_TEST_BLOCK("/framework/tests", test_workers)
         t.connect(w0, 0, w1, 0);
         t.commit();
 
-        Poco::Thread::sleep(1000);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     delete w0;

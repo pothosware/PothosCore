@@ -15,7 +15,6 @@
 #include <Poco/Format.h>
 #include <Poco/Timestamp.h>
 #include <Poco/Timespan.h>
-#include <Poco/Thread.h> //sleep
 #include <Poco/NumberParser.h>
 #include <algorithm>
 #include <unordered_map>
@@ -24,6 +23,8 @@
 #include <set>
 #include <sstream>
 #include <cctype>
+#include <chrono>
+#include <thread>
 #include <iostream>
 
 /***********************************************************************
@@ -813,13 +814,13 @@ void Pothos::Topology::disconnectAll(void)
 bool Pothos::Topology::waitInactive(const double idleDuration, const double timeout)
 {
     //how long to sleep between idle checks?
-    const double pollSleepTime = idleDuration/3;
+    const std::chrono::nanoseconds pollSleepTime((long long)(idleDuration*1e9/3));
 
     //get a list of blocks to poll for idle time
     const auto blocks = getObjSetFromFlowList(_impl->activeFlatFlows);
 
     //loop until exit time
-    const Poco::Timestamp exitTime = Poco::Timestamp() + Poco::Timespan(Poco::Timespan::TimeDiff(timeout*1e6));
+    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::nanoseconds((long long)(timeout*1e9));
     do
     {
         //check each worker for idle time from the stats
@@ -836,9 +837,9 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
         return true;
 
         //idle time not reached on any workers, therefore sleep
-        pollSleep: Poco::Thread::sleep(long(pollSleepTime*1e3));
+        pollSleep: std::this_thread::sleep_for(pollSleepTime);
     }
-    while (Poco::Timestamp() < exitTime);
+    while (std::chrono::high_resolution_clock::now() < exitTime);
 
     return false; //timeout
 }
