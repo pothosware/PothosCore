@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PropertiesPanel/BlockPropertyEditWidget.hpp"
-#include "ColorUtils.hpp"
+#include "ColorUtils/ColorUtils.hpp"
 #include <QComboBox>
 #include <QLineEdit>
 

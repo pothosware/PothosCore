@@ -1,11 +1,10 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "ColorUtils.hpp"
+#include "ColorUtils/ColorUtils.hpp"
 #include <Poco/SingletonHolder.h>
 #include <Poco/MD5Engine.h>
 #include <Poco/RWLock.h>
-#include <map>
 
 static Poco::RWLock &getLookupMutex(void)
 {
@@ -42,4 +41,10 @@ QColor typeStrToColor(const std::string &typeStr)
     }
     Poco::RWLock::ScopedWriteLock lock(getLookupMutex());
     return (getColorMap()[typeStr] = __typeStrToColor(typeStr));
+}
+
+std::map<std::string, QColor> getTypeStrToColorMap(void)
+{
+    Poco::RWLock::ScopedReadLock lock(getLookupMutex());
+    return getColorMap();
 }

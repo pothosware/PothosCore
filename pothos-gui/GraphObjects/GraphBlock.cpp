@@ -6,7 +6,7 @@
 #include "GraphEditor/Constants.hpp"
 #include "BlockTree/BlockCache.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
-#include "ColorUtils.hpp"
+#include "ColorUtils/ColorUtils.hpp"
 #include <QAction>
 #include <QPainter>
 #include <QPen>

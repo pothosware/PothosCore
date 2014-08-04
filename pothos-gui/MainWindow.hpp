@@ -34,6 +34,8 @@ private slots:
 
     void handleShowAboutQt(void);
 
+    void handleColorsDialogAction(void);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -76,6 +78,7 @@ private:
     QAction *_showGraphFlattenedViewAction;
     QAction *_activateTopologyAction;
     QAction *_showPortNamesAction;
+    QAction *_showColorsDialogAction;
     QMap<QString, QAction *> &_actionMap;
 
     void createMenus(void);
