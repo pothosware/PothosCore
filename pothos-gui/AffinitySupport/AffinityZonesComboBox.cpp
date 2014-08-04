@@ -3,7 +3,7 @@
 
 #include "AffinitySupport/AffinityZonesComboBox.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
-#include <QPixmap>
+#include "ColorUtils/ColorUtils.hpp"
 
 AffinityZonesComboBox::AffinityZonesComboBox(AffinityZonesDock *dock, QWidget *parent):
     QComboBox(parent),
@@ -25,9 +25,7 @@ void AffinityZonesComboBox::handleZonesChanged(void)
     for (const auto &zone : _dock->zones())
     {
         this->addItem(zone, zone);
-        QPixmap pixmap(10, 10);
-        pixmap.fill(_dock->zoneToColor(zone));
-        this->setItemData(this->count()-1, pixmap, Qt::DecorationRole);
+        this->setItemData(this->count()-1, colorToWidgetIcon(_dock->zoneToColor(zone)), Qt::DecorationRole);
         if (zone == oldSelection) this->setCurrentIndex(this->count()-1);
     }
 

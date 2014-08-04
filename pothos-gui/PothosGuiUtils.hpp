@@ -7,8 +7,6 @@
 #include <QSettings>
 #include <QMap>
 #include <QIcon>
-#include <QColor>
-#include <string>
 
 class QAction;
 class QMenu;
@@ -24,6 +22,3 @@ QMap<QString, QObject *> &getObjectMap(void);
 //! icon utils
 QString makeIconPath(const QString &name);
 QIcon makeIconFromTheme(const QString &name);
-
-//! Convert the type name to a displayable color
-QColor typeStrToColor(const std::string &typeStr);

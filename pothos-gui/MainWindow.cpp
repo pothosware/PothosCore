@@ -12,6 +12,7 @@
 #include "HostExplorer/HostExplorerDock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "MessageWindow/MessageWindowDock.hpp"
+#include "ColorUtils/ColorsDialog.hpp"
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QSettings>
@@ -114,6 +115,13 @@ void PothosGuiMainWindow::handleShowAbout(void)
 void PothosGuiMainWindow::handleShowAboutQt(void)
 {
     QMessageBox::aboutQt(this);
+}
+
+void PothosGuiMainWindow::handleColorsDialogAction(void)
+{
+    auto dialog = new ColorsDialog(this);
+    dialog->exec();
+    delete dialog;
 }
 
 void PothosGuiMainWindow::closeEvent(QCloseEvent *event)
@@ -266,6 +274,10 @@ void PothosGuiMainWindow::createActions(void)
     _showAboutQtAction = new QAction(makeIconFromTheme("help-about"), tr("About &Qt"), this);
     _showAboutQtAction->setStatusTip(tr("Information about this version of QT"));
     connect(_showAboutQtAction, SIGNAL(triggered(void)), this, SLOT(handleShowAboutQt(void)));
+
+    _showColorsDialogAction = new QAction(makeIconFromTheme("color-picker"), tr("&Colors Map"), this);
+    _showColorsDialogAction->setStatusTip(tr("Data type colors used for block proprties and ports"));
+    connect(_showColorsDialogAction, SIGNAL(triggered(void)), this, SLOT(handleColorsDialogAction(void)));
 }
 
 void PothosGuiMainWindow::createMenus(void)
@@ -339,6 +351,7 @@ void PothosGuiMainWindow::createMenus(void)
     _menuMap["help"] = _helpMenu;
     _helpMenu->addAction(_showAboutAction);
     _helpMenu->addAction(_showAboutQtAction);
+    _helpMenu->addAction(_showColorsDialogAction);
 }
 
 void PothosGuiMainWindow::createMainToolBar(void)

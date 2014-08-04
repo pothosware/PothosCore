@@ -63,7 +63,6 @@ void GraphEditor::handleShowFlattenedDialog(void)
         //create the dialog
         auto dialog = new QDialog(this);
         dialog->setWindowTitle(tr("Flattened graph"));
-        dialog->setMinimumSize(800, 600);
         auto layout = new QVBoxLayout(dialog);
         dialog->setLayout(layout);
         auto scroll = new QScrollArea(dialog);
@@ -72,6 +71,8 @@ void GraphEditor::handleShowFlattenedDialog(void)
         scroll->setWidget(label);
         scroll->setWidgetResizable(true);
         label->setPixmap(QPixmap::fromImage(image));
+        dialog->show();
+        dialog->adjustSize();
         dialog->exec();
         delete dialog;
     }

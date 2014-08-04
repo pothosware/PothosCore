@@ -79,6 +79,9 @@ set(SOURCES
     PothosGuiUtils.cpp
     MainWindow.cpp
 
+    ColorUtils/ColorUtils.cpp
+    ColorUtils/ColorsDialog.cpp
+
     PropertiesPanel/PropertiesPanelDock.cpp
     PropertiesPanel/ConnectionPropertiesPanel.cpp
     PropertiesPanel/BlockPropertiesPanel.cpp
