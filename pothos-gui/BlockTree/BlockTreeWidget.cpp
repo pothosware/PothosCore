@@ -117,6 +117,7 @@ void BlockTreeWidget::handleFilterTimerExpired(void)
     this->clear();
     _rootNodes.clear();
     this->populate();
+    for (auto item : this->findItems("", Qt::MatchContains, 0)) item->setExpanded(not _filter.isEmpty());
 }
 
 void BlockTreeWidget::handleFilter(const QString &filter)
