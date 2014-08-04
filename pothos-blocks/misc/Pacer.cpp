@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <Poco/Timestamp.h>
-#include <Poco/Thread.h>
+#include <chrono>
+#include <thread>
 #include <iostream>
 
 /***********************************************************************
@@ -52,7 +52,7 @@ public:
     {
         _rate = rate;
         auto in0 = this->input(0);
-        _startTime = Poco::Timestamp();
+        _startTime = std::chrono::high_resolution_clock::now();
         _startCount = in0->totalElements() + in0->totalMessages();
     }
 
@@ -78,17 +78,18 @@ public:
         auto outputPort = this->output(0);
 
         //calculate time passed since activate
-        auto currentTime = Poco::Timestamp();
+        auto currentTime = std::chrono::high_resolution_clock::now();
         auto currentCount = inputPort->totalElements() + inputPort->totalMessages();
-        const auto expectedTime = ((currentCount - _startCount)/_rate)*1e3; //convert s to ms
-        const auto actualTime = (currentTime - _startTime)/1e3; //convert us to ms
-        _actualRate = double((currentCount - _startCount))/(actualTime/1e3);
+        const auto expectedTime = std::chrono::nanoseconds((long long)((currentCount - _startCount)*1e9/_rate));
+        const auto actualTime = (currentTime - _startTime);
+        const auto actualTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(actualTime);
+        _actualRate = double(currentCount - _startCount)/actualTimeNs.count()/1e9;
 
         //sleep to approximate the requested rate (sleep takes ms)
         if (actualTime < expectedTime)
         {
-            auto maxTimeSleepMs = this->workInfo().maxTimeoutNs/1e6;
-            Poco::Thread::sleep(std::min(maxTimeSleepMs, expectedTime-actualTime));
+            auto maxSleepTime = std::chrono::nanoseconds(this->workInfo().maxTimeoutNs);
+            std::this_thread::sleep_for(std::min(maxSleepTime, expectedTime-actualTime));
             return this->yield();
         }
 
@@ -109,7 +110,7 @@ public:
 private:
     double _rate;
     double _actualRate;
-    Poco::Timestamp _startTime;
+    std::chrono::high_resolution_clock::time_point _startTime;
     unsigned long long _startCount;
 };
 

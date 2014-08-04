@@ -4,7 +4,6 @@
 #pragma once
 #include "Framework/InputPortImpl.hpp"
 #include "Framework/OutputPortImpl.hpp"
-#include "Framework/WorkerStats.hpp"
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object/Containers.hpp>
@@ -208,7 +207,7 @@ public:
     Block *block;
     bool workBump;
     bool activeState;
-    WorkerStats workStats;
+    WorkStats workStats;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
 
@@ -336,7 +335,7 @@ public:
 
         //prework
         {
-            TicksAccumulator preWorkTime(workStats.totalTicksPreWork);
+            TimeAccumulator preWorkTime(workStats.totalTimePreWork);
             if (not this->preWorkTasks()) return;
         }
 
@@ -344,7 +343,7 @@ public:
         POTHOS_EXCEPTION_TRY
         {
             workStats.numWorkCalls++;
-            TicksAccumulator preWorkTime(workStats.totalTicksWork);
+            TimeAccumulator preWorkTime(workStats.totalTimeWork);
             block->work();
         }
         POTHOS_EXCEPTION_CATCH(const Exception &ex)
@@ -354,11 +353,11 @@ public:
 
         //postwork
         {
-            TicksAccumulator preWorkTime(workStats.totalTicksPostWork);
+            TimeAccumulator preWorkTime(workStats.totalTimePostWork);
             this->postWorkTasks();
         }
 
-        workStats.ticksLastWork = Theron::Detail::Clock::GetTicks();
+        workStats.timeLastWork = std::chrono::high_resolution_clock::now();
     }
     bool preWorkTasks(void);
     void postWorkTasks(void);

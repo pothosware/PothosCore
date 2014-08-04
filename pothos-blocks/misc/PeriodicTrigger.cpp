@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <Poco/Timestamp.h>
-#include <Poco/Thread.h>
+#include <chrono>
+#include <thread>
 #include <iostream>
 
 /***********************************************************************
@@ -46,20 +46,32 @@ public:
         return _rate;
     }
 
+    void activate(void)
+    {
+        _nextTrigger = std::chrono::high_resolution_clock::now();
+        this->incrementNext();
+    }
+
+    void incrementNext(void)
+    {
+        const auto tps = std::chrono::nanoseconds((long long)(1e9/_rate));
+        _nextTrigger += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(tps);
+    }
+
     void work(void)
     {
-        auto currentTime = Poco::Timestamp();
+        auto currentTime = std::chrono::high_resolution_clock::now();
 
         if (currentTime > _nextTrigger)
         {
             this->emitSignal("triggered");
-            _nextTrigger += Poco::Timestamp::TimeDiff(1e6/_rate);
+            this->incrementNext();
         }
         else
         {
-            auto maxTimeSleepMs = this->workInfo().maxTimeoutNs/1e6; //ns to ms
-            auto deltaNextTrigMs = (_nextTrigger-currentTime)/1e3; //us to ms
-            Poco::Thread::sleep(std::min(maxTimeSleepMs, deltaNextTrigMs));
+            const auto maxSleepTime = std::chrono::nanoseconds(this->workInfo().maxTimeoutNs);
+            const std::chrono::nanoseconds deltaNextTrig(_nextTrigger-currentTime);
+            std::this_thread::sleep_for(std::min(maxSleepTime, deltaNextTrig));
         }
 
         return this->yield();
@@ -67,7 +79,7 @@ public:
 
 private:
     double _rate;
-    Poco::Timestamp _nextTrigger;
+    std::chrono::high_resolution_clock::time_point _nextTrigger;
 };
 
 static Pothos::BlockRegistry registerPeriodicTrigger(
