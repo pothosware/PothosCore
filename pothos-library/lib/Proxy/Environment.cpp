@@ -32,3 +32,14 @@ std::string Pothos::ProxyEnvironment::getNodeId(void) const
 {
     return System::HostInfo::get().nodeId;
 }
+
+std::string Pothos::ProxyEnvironment::getUniquePid(void) const
+{
+    return getLocalUniquePid();
+}
+
+std::string Pothos::ProxyEnvironment::getLocalUniquePid(void)
+{
+    const auto info = Pothos::System::HostInfo::get();
+    return info.nodeName + "/" + info.nodeId + "/" + info.pid;
+}

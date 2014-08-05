@@ -82,7 +82,7 @@ static void runHandlerOnce(std::istream &is, std::ostream &os, bool &done)
 
             //a unique process ID for this server
             const auto info = Pothos::System::HostInfo::get();
-            replyArgs["upid"] = Pothos::Object(info.nodeName + "/" + info.nodeId + "/" + info.pid);
+            replyArgs["upid"] = Pothos::Object(Pothos::ProxyEnvironment::getLocalUniquePid());
             replyArgs["nodeId"] = Pothos::Object(info.nodeId);
         }
         else if (action == "~RemoteProxyEnvironment")

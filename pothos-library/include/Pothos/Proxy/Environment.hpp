@@ -64,6 +64,18 @@ public:
     virtual std::string getNodeId(void) const;
 
     /*!
+     * Get the unique ID of the process that this environment is running on.
+     * Remote environments will report the process id of the remote server.
+     */
+    virtual std::string getUniquePid(void) const;
+
+    /*!
+     * Static method to get the unique ID of the caller process.
+     * The ID is universally unique, based on the nodeId and pid.
+     */
+    static std::string getLocalUniquePid(void);
+
+    /*!
      * Get the name of the environment.
      * This should be the same name passed into the factory.
      */

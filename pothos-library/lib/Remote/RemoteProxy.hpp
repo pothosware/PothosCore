@@ -30,6 +30,11 @@ public:
         return nodeId;
     }
 
+    std::string getUniquePid(void) const
+    {
+        return upid;
+    }
+
     std::string getName(void) const
     {
         return name;

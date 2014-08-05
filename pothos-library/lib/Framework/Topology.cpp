@@ -107,26 +107,6 @@ static bool checkObj(const Pothos::Object &o)
 }
 
 /***********************************************************************
- * get a unique process identifier for an environment
- **********************************************************************/
-static std::string getUpid(const Pothos::System::HostInfo &info)
-{
-    return info.nodeName + "/" + info.nodeId + "/" + info.pid;
-}
-
-static std::string getUpid(void)
-{
-    return getUpid(Pothos::System::HostInfo::get());
-}
-
-static std::string getUpid(const Pothos::ProxyEnvironment::Sptr &env)
-{
-    assert(env->getName() == "managed");
-    auto info = env->findProxy("Pothos/System/HostInfo").call<Pothos::System::HostInfo>("get");
-    return getUpid(info);
-}
-
-/***********************************************************************
  * helpers to deal with recursive topology comprehension
  **********************************************************************/
 static std::vector<Port> resolvePorts(const Port &port, const bool isSource);
@@ -223,7 +203,7 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<F
     for (const auto &flow : flatFlows)
     {
         //same process, keep this flow as-is
-        if (getUpid(flow.src.obj.getEnvironment()) == getUpid(flow.dst.obj.getEnvironment()))
+        if (flow.src.obj.getEnvironment()->getUniquePid() == flow.dst.obj.getEnvironment()->getUniquePid())
         {
             networkAwareFlows.push_back(flow);
             continue;
@@ -627,7 +607,7 @@ void Pothos::Topology::commit(void)
     //set thread pools for all blocks in this process
     if (this->getThreadPool()) for (auto block : getObjSetFromFlowList(flatFlows))
     {
-        if (getUpid(block.getEnvironment()) != getUpid()) continue; //is the block local?
+        if (block.getEnvironment()->getUniquePid() != Pothos::ProxyEnvironment::getLocalUniquePid()) continue; //is the block local?
         block.call<Block *>("getPointer")->setThreadPool(this->getThreadPool());
     }
 
