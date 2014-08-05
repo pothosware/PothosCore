@@ -11,6 +11,7 @@
 #include <Poco/MD5Engine.h>
 #include <Poco/File.h>
 #include <Poco/NumberParser.h>
+#include <Poco/RWLock.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -31,6 +32,7 @@ struct EvalEnvironment::EvalEnvironment::Impl
     Poco::ClassLoader<Pothos::Util::EvalInterface> loader;
     std::vector<std::string> tmpModuleFiles;
     std::map<std::string, Pothos::Object> evalCache;
+    Poco::RWLock mutex;
 };
 
 EvalEnvironment::EvalEnvironment(void):
@@ -42,8 +44,11 @@ EvalEnvironment::EvalEnvironment(void):
 Pothos::Object EvalEnvironment::eval(const std::string &expr)
 {
     //check the cache
-    auto it = _impl->evalCache.find(expr);
-    if (it != _impl->evalCache.end()) return it->second;
+    {
+        Poco::RWLock::ScopedReadLock l(_impl->mutex);
+        auto it = _impl->evalCache.find(expr);
+        if (it != _impl->evalCache.end()) return it->second;
+    }
 
     if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval", "expression is empty");
 
@@ -123,7 +128,10 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
     Pothos::Object result = eval0->eval();
 
     //cache result and return
-    _impl->evalCache[expr] = result;
+    {
+        Poco::RWLock::ScopedWriteLock l(_impl->mutex);
+        _impl->evalCache[expr] = result;
+    }
     return result;
 }
 
