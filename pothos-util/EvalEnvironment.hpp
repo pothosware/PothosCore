@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Object.hpp>
 #include <string>
+#include <memory>
 
 /*!
  * The evaluation environment can evaluate and inspect expressions.
@@ -13,10 +14,7 @@
 class EvalEnvironment
 {
 public:
-    EvalEnvironment(void)
-    {
-        return;
-    }
+    EvalEnvironment(void);
 
     /*!
      * Try to evaluate an expression in this environment.
@@ -34,4 +32,7 @@ public:
     {
         throw Pothos::Exception("registerConstant not yet supported", key +":"+ expression);
     }
+
+private:
+    struct Impl; std::shared_ptr<Impl> _impl;
 };

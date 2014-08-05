@@ -12,12 +12,39 @@
 #include <Poco/File.h>
 #include <Poco/NumberParser.h>
 #include <string>
+#include <vector>
+#include <map>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
+struct EvalEnvironment::EvalEnvironment::Impl
+{
+    ~Impl(void)
+    {
+        for (const auto &outPath : tmpModuleFiles)
+        {
+            try{loader.unloadLibrary(outPath);}catch(const Poco::Exception &){}
+            try{Poco::File(outPath).remove();}catch(const Poco::Exception &){}
+        }
+    }
+    Poco::ClassLoader<Pothos::Util::EvalInterface> loader;
+    std::vector<std::string> tmpModuleFiles;
+    std::map<std::string, Pothos::Object> evalCache;
+};
+
+EvalEnvironment::EvalEnvironment(void):
+    _impl(new Impl())
+{
+    return;
+}
+
 Pothos::Object EvalEnvironment::eval(const std::string &expr)
 {
+    //check the cache
+    auto it = _impl->evalCache.find(expr);
+    if (it != _impl->evalCache.end()) return it->second;
+
     if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval", "expression is empty");
 
     //is it a string in quotes?
@@ -80,6 +107,7 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
     //write module to file and load
     const auto outPath = Poco::TemporaryFile::tempName() + Poco::SharedLibrary::suffix();
     std::ofstream(outPath.c_str(), std::ios::binary).write(outMod.data(), outMod.size());
+    _impl->tmpModuleFiles.push_back(outPath);
     Poco::ClassLoader<Pothos::Util::EvalInterface> loader;
     try
     {
@@ -87,25 +115,15 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
     }
     catch (const Poco::Exception &ex)
     {
-        Poco::File(outPath).remove();
         throw Pothos::Exception("EvalEnvironment::eval", ex.displayText());
     }
 
     //extract the symbol and call its evaluation routine
-    std::stringstream ss;
-    {
-        Pothos::Util::EvalInterface* eval0 = loader.create("Eval_"+symName);
-        Pothos::Object result = eval0->eval();
-        result.serialize(ss);
-        delete eval0;
-    }
+    std::shared_ptr<Pothos::Util::EvalInterface> eval0(loader.create("Eval_"+symName));
+    Pothos::Object result = eval0->eval();
 
-    //cleanup
-    loader.unloadLibrary(outPath);
-    Poco::File(outPath).remove();
-
-    Pothos::Object result;
-    result.deserialize(ss);
+    //cache result and return
+    _impl->evalCache[expr] = result;
     return result;
 }
 
