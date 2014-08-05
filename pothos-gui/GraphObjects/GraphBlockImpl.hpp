@@ -57,4 +57,5 @@ struct GraphBlock::Impl
     QRectF mainBlockRect;
 
     Pothos::Proxy blockEval;
+    std::string lastConfigHash;
 };

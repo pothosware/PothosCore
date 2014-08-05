@@ -97,6 +97,13 @@ public:
     const QString &getAffinityZone(void) const;
     void setAffinityZone(const QString &zone);
 
+    /*!
+     * Get a hash that uniquely identifies all configuration about this block.
+     * Example: path, ID, property values, affinity zone, process id.
+     * The hash can be used to check for changes for handling re-evaluation.
+     */
+    std::string configHash(void);
+
     void update(void);
 private:
     void initPropertiesFromDesc(void);

@@ -49,6 +49,18 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
     _topology->commit();
 }
 
+
+Pothos::Proxy TopologyEngine::getEvalEnvironment(const QString &zone)
+{
+    if (_zoneToEvalEnvironment.count(zone) == 0)
+    {
+        auto env = this->getEnvironmentFromZone(zone);
+        auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
+        _zoneToEvalEnvironment[zone] = EvalEnvironment.callProxy("new");
+    }
+    return _zoneToEvalEnvironment.at(zone);
+}
+
 Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QString &zone)
 {
     auto dock = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]);
@@ -80,7 +92,7 @@ Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QStr
 Pothos::Proxy TopologyEngine::getThreadPoolFromZone(const QString &zone)
 {
     //make the thread pool if DNE
-    if (_zoneToThreadPool.find(zone) == _zoneToThreadPool.end())
+    if (_zoneToThreadPool.count(zone) == 0)
     {
         auto env = this->getEnvironmentFromZone(zone);
         auto dock = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]);

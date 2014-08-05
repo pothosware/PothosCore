@@ -37,6 +37,11 @@ public:
     void commitUpdate(const GraphObjectList &graphObjects);
 
     /*!
+     * Get an eval environment object given a zone.
+     */
+    Pothos::Proxy getEvalEnvironment(const QString &zone);
+
+    /*!
      * Get a proxy environment handle given a zone.
      */
     Pothos::ProxyEnvironment::Sptr getEnvironmentFromZone(const QString &zone);
@@ -59,6 +64,8 @@ private:
     std::map<std::string, std::map<std::string, Pothos::Proxy>> _uriToProcessToServerHandle;
 
     std::map<QString, Pothos::Proxy> _zoneToThreadPool;
+
+    std::map<QString, Pothos::Proxy> _zoneToEvalEnvironment;
 
     static std::vector<ConnectionInfo> getConnectionInfo(const GraphObjectList &graphObjects);
 
