@@ -91,10 +91,7 @@ public:
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
 
-    Pothos::Proxy getBlockEval(void) const
-    {
-        return _blockEval;
-    }
+    Pothos::Proxy getBlockEval(void) const;
 
     //! affinity zone support
     const QString &getAffinityZone(void) const;
@@ -113,5 +110,4 @@ private:
     QStringList _outputPorts;
     QStringList _slotPorts;
     QStringList _signalPorts;
-    Pothos::Proxy _blockEval;
 };

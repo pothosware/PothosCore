@@ -118,6 +118,11 @@ static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo
     return array;
 }
 
+Pothos::Proxy GraphBlock::getBlockEval(void) const
+{
+    return _impl->blockEval;
+}
+
 void GraphBlock::update(void)
 {
     assert(_impl->blockDesc);
@@ -140,7 +145,7 @@ void GraphBlock::update(void)
     auto BlockEval = env->findProxy("Pothos/Util/BlockEval");
 
     auto evalEnv = EvalEnvironment.callProxy("new");
-    _blockEval = BlockEval.callProxy("new", evalEnv);
+    _impl->blockEval = BlockEval.callProxy("new", evalEnv);
 
     this->setBlockErrorMsg("");
 
@@ -157,7 +162,7 @@ void GraphBlock::update(void)
         const auto val = this->getPropertyValue(propKey).toStdString();
         try
         {
-            auto obj = _blockEval.callProxy("evalProperty", propKey.toStdString(), val);
+            auto obj = _impl->blockEval.callProxy("evalProperty", propKey.toStdString(), val);
             this->setPropertyTypeStr(propKey, obj.call<std::string>("getTypeString"));
             this->setPropertyErrorMsg(propKey, "");
         }
@@ -178,7 +183,7 @@ void GraphBlock::update(void)
     //evaluate the block and load its port info
     try
     {
-        _blockEval.callProxy("eval", this->getId().toStdString(), this->getBlockDesc());
+        _impl->blockEval.callProxy("eval", this->getId().toStdString(), this->getBlockDesc());
     }
 
     //parser errors report
@@ -189,7 +194,7 @@ void GraphBlock::update(void)
     }
 
     //update the ports after complete evaluation
-    auto block = _blockEval.callProxy("getProxyBlock");
+    auto block = _impl->blockEval.callProxy("getProxyBlock");
     _impl->inputDesc = portInfosToJSON(block.call<std::vector<Pothos::PortInfo>>("inputPortInfo"));
     _impl->outputDesc = portInfosToJSON(block.call<std::vector<Pothos::PortInfo>>("outputPortInfo"));
     this->initInputsFromDesc();
