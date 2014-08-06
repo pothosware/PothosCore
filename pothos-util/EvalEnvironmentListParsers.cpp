@@ -54,6 +54,7 @@ std::vector<std::string> EvalEnvironment::splitExpr(const std::string &expr, con
             if (not field.empty() or not std::isspace(ch)) field.push_back(ch);
         }
 
+        previousCh = ch;
     }
 
     if (not field.empty()) tokens.push_back(field);

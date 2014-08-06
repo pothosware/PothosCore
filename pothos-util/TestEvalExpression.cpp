@@ -15,11 +15,17 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
     auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
     auto evalEnv = EvalEnvironment.callProxy("new");
 
+    //simple expression
     const auto result = evalEnv.call<Pothos::Object>("eval", "1 + 2");
     POTHOS_TEST_EQUAL(result.convert<int>(), 3);
 
+    //a pothos type
     const auto result2 = evalEnv.call<Pothos::Object>("eval", "DType(\"int32\")");
     POTHOS_TEST_TRUE(result2.convert<Pothos::DType>() == Pothos::DType(typeid(int)));
+
+    //test string w/ escape quote
+    const auto result3 = evalEnv.call<Pothos::Object>("eval", "\"hello \\\" world\"");
+    POTHOS_TEST_EQUAL(result3.convert<std::string>(), "hello \" world");
 }
 
 POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
@@ -50,6 +56,15 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
         const auto vec = result.convert<std::vector<int>>();
         POTHOS_TEST_EQUAL(vec.size(), 1);
         POTHOS_TEST_EQUAL(vec[0], 1);
+    }
+
+    //a quote test (including commas and escapes)
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "[\"comma, \\\"comma, comma, \", \"chameleon\"]");
+        const auto vec = result.convert<std::vector<std::string>>();
+        POTHOS_TEST_EQUAL(vec.size(), 2);
+        POTHOS_TEST_EQUAL(vec[0], "comma, \"comma, comma, ");
+        POTHOS_TEST_EQUAL(vec[1], "chameleon");
     }
 
     //a nested test
