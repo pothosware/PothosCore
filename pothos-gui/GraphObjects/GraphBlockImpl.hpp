@@ -55,7 +55,4 @@ struct GraphBlock::Impl
     QPointF slotPortPoint;
 
     QRectF mainBlockRect;
-
-    Pothos::Proxy blockEval;
-    std::string lastConfigHash;
 };

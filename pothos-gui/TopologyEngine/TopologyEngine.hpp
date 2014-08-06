@@ -23,6 +23,8 @@ namespace Pothos
     class Topology;
 }
 
+class GraphBlock;
+
 class TopologyEngine : public QObject
 {
     Q_OBJECT
@@ -52,6 +54,13 @@ public:
      */
     Pothos::Proxy getThreadPoolFromZone(const QString &zone);
 
+    /*!
+     * Evaluate the given graph block.
+     * This call will set the block's error messages,
+     * and determine the available connection ports.
+     */
+    Pothos::Proxy evalGraphBlock(GraphBlock *block);
+
     std::shared_ptr<Pothos::Topology> &getTopology(void)
     {
         return _topology;
@@ -71,4 +80,7 @@ private:
 
     //! The topology object thats executing this design
     std::shared_ptr<Pothos::Topology> _topology;
+
+    //! a cache of block IDs to a pair(settings hash, block eval)
+    std::map<QString, std::pair<std::string, Pothos::Proxy>> _idToBlockEval;
 };

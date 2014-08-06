@@ -28,7 +28,9 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
         if (block == nullptr) continue;
-        auto proxyBlock = block->getBlockEval().callProxy("getProxyBlock");
+        auto blockEval = this->evalGraphBlock(block);
+        if (not blockEval) continue;
+        auto proxyBlock = blockEval.callProxy("getProxyBlock");
         idToBlock[block->getId().toStdString()] = proxyBlock;
 
         //set the thread pool on the proxy block

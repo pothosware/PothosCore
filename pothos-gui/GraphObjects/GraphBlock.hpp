@@ -4,7 +4,6 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
-#include <Pothos/Proxy.hpp>
 #include <QStringList>
 #include <QObject>
 #include <QString>
@@ -20,6 +19,8 @@ public:
     void setBlockDesc(const Poco::JSON::Object::Ptr &);
     const Poco::JSON::Object::Ptr &getBlockDesc(void) const;
     std::string getBlockDescPath(void) const;
+
+    void setPortDesc(const Poco::JSON::Array::Ptr &, const Poco::JSON::Array::Ptr &);
 
     void setTitle(const QString &title);
     QString getTitle(void) const;
@@ -91,18 +92,9 @@ public:
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
 
-    Pothos::Proxy getBlockEval(void) const;
-
     //! affinity zone support
     const QString &getAffinityZone(void) const;
     void setAffinityZone(const QString &zone);
-
-    /*!
-     * Get a hash that uniquely identifies all configuration about this block.
-     * Example: path, ID, property values, affinity zone, process id.
-     * The hash can be used to check for changes for handling re-evaluation.
-     */
-    std::string configHash(void);
 
     void update(void);
 private:

@@ -7,6 +7,7 @@
 #include "BlockTree/BlockCache.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "ColorUtils/ColorUtils.hpp"
+#include <Pothos/Exception.hpp>
 #include <QAction>
 #include <QPainter>
 #include <QPen>
@@ -38,6 +39,15 @@ const Poco::JSON::Object::Ptr &GraphBlock::getBlockDesc(void) const
 {
     assert(_impl);
     return _impl->blockDesc;
+}
+
+void GraphBlock::setPortDesc(const Poco::JSON::Array::Ptr &in, const Poco::JSON::Array::Ptr &out)
+{
+    assert(_impl);
+    _impl->inputDesc = in;
+    _impl->outputDesc = out;
+    this->initInputsFromDesc();
+    this->initOutputsFromDesc();
 }
 
 void GraphBlock::setTitle(const QString &title)
