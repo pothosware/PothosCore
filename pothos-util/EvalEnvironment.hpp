@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Object.hpp>
 #include <string>
+#include <vector>
 #include <memory>
 
 /*!
@@ -33,6 +34,10 @@ public:
         throw Pothos::Exception("registerConstant not yet supported", key +":"+ expression);
     }
 
+    //! Split an expression given the tokenizer -- deals with quotes, nesting, escapes
+    static std::vector<std::string> splitExpr(const std::string &expr, const char tokenizer);
+
 private:
     struct Impl; std::shared_ptr<Impl> _impl;
+    Pothos::Object evalNoCache(const std::string &);
 };

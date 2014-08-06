@@ -29,6 +29,7 @@ POTHOS_MODULE_UTIL(
 ########################################################################
 set(SOURCES
     EvalEnvironment.cpp
+    EvalEnvironmentListParsers.cpp
     BlockEval.cpp
     DeviceInfoUtils.cpp
     DocUtils.cpp

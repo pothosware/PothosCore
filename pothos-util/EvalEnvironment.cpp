@@ -5,6 +5,7 @@
 #include <Pothos/Util/Compiler.hpp>
 #include <Pothos/Util/EvalInterface.hpp>
 #include <Pothos/Object.hpp>
+#include <Pothos/Object/Containers.hpp>
 #include <Poco/TemporaryFile.h>
 #include <Poco/ClassLoader.h>
 #include <Poco/DigestStream.h>
@@ -12,12 +13,14 @@
 #include <Poco/File.h>
 #include <Poco/NumberParser.h>
 #include <Poco/RWLock.h>
+#include <Poco/String.h>
 #include <string>
 #include <vector>
 #include <map>
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 struct EvalEnvironment::EvalEnvironment::Impl
 {
@@ -41,8 +44,10 @@ EvalEnvironment::EvalEnvironment(void):
     return;
 }
 
-Pothos::Object EvalEnvironment::eval(const std::string &expr)
+Pothos::Object EvalEnvironment::eval(const std::string &expr_)
 {
+    const auto expr = Poco::trim(expr_);
+
     //check the cache
     {
         Poco::RWLock::ScopedReadLock l(_impl->mutex);
@@ -50,11 +55,66 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
         if (it != _impl->evalCache.end()) return it->second;
     }
 
-    if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval", "expression is empty");
+    auto result = this->evalNoCache(expr);
+
+    //cache result and return
+    {
+        Poco::RWLock::ScopedWriteLock l(_impl->mutex);
+        _impl->evalCache[expr] = result;
+    }
+
+    return result;
+}
+
+Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
+{
+    if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval()", "expression is empty");
 
     //is it a string in quotes?
-    //TODO this would parse an invalid quoted string like "hello " world"
-    if (expr.size() >= 2 and expr.front() == '"' and expr.back() == '"') return Pothos::Object(expr.substr(1, expr.size()-2));
+    if (std::count(expr.begin(), expr.end(), '"') == 2 and expr.front() == '"' and expr.back() == '"')
+    {
+        return Pothos::Object(expr.substr(1, expr.size()-2));
+    }
+
+    //list syntax mode
+    if (expr.size() >= 2 and expr.front() == '[' and expr.back() == ']')
+    {
+        Pothos::ObjectVector vec;
+        const auto noBrackets = expr.substr(1, expr.size()-2);
+        for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
+        {
+            try
+            {
+                vec.emplace_back(this->eval(tok));
+            }
+            catch (const Pothos::Exception &ex)
+            {
+                throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.message());
+            }
+        }
+        return Pothos::Object(vec);
+    }
+
+    //map syntax mode
+    if (expr.size() >= 2 and expr.front() == '{' and expr.back() == '}')
+    {
+        Pothos::ObjectMap map;
+        const auto noBrackets = expr.substr(1, expr.size()-2);
+        for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
+        {
+            try
+            {
+                const auto keyVal = EvalEnvironment::splitExpr(tok, ':');
+                if (keyVal.size() != 2) throw Pothos::Exception("EvalEnvironment::eval("+tok+")", "not key:value");
+                map.emplace(this->eval(keyVal[0]), this->eval(keyVal[1]));
+            }
+            catch (const Pothos::Exception &ex)
+            {
+                throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.message());
+            }
+        }
+        return Pothos::Object(map);
+    }
 
     //support booleans
     if (expr == "true") return Pothos::Object(true);
@@ -120,18 +180,12 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
     }
     catch (const Poco::Exception &ex)
     {
-        throw Pothos::Exception("EvalEnvironment::eval", ex.displayText());
+        throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.displayText());
     }
 
     //extract the symbol and call its evaluation routine
     std::shared_ptr<Pothos::Util::EvalInterface> eval0(loader.create("Eval_"+symName));
     Pothos::Object result = eval0->eval();
-
-    //cache result and return
-    {
-        Poco::RWLock::ScopedWriteLock l(_impl->mutex);
-        _impl->evalCache[expr] = result;
-    }
     return result;
 }
 
