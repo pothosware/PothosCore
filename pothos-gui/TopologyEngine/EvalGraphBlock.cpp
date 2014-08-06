@@ -70,9 +70,12 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
     }
 
     //check the cache before re-evaluating
-    _idToBlockEval[block->getId()];
     const auto thisHash = makeGraphBlockConfigHash(block, env);
-    if (_idToBlockEval[block->getId()].first == thisHash) _idToBlockEval[block->getId()].second;
+    if (_idToBlockEval[block->getId()].first == thisHash)
+    {
+        return _idToBlockEval[block->getId()].second;
+    }
+    _idToBlockEval.erase(block->getId());
 
     //create a new block evaluator on the server
     auto BlockEval = env->findProxy("Pothos/Util/BlockEval");
