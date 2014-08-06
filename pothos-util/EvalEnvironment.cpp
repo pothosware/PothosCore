@@ -6,6 +6,7 @@
 #include <Pothos/Util/EvalInterface.hpp>
 #include <Pothos/Object.hpp>
 #include <Pothos/Object/Containers.hpp>
+#include <Pothos/Proxy.hpp>
 #include <Poco/TemporaryFile.h>
 #include <Poco/ClassLoader.h>
 #include <Poco/DigestStream.h>
@@ -79,13 +80,14 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
     //list syntax mode
     if (expr.size() >= 2 and expr.front() == '[' and expr.back() == ']')
     {
-        Pothos::ObjectVector vec;
+        auto env = Pothos::ProxyEnvironment::make("managed");
+        Pothos::ProxyVector vec;
         const auto noBrackets = expr.substr(1, expr.size()-2);
         for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
         {
             try
             {
-                vec.emplace_back(this->eval(tok));
+                vec.emplace_back(env->convertObjectToProxy(this->eval(tok)));
             }
             catch (const Pothos::Exception &ex)
             {
@@ -98,7 +100,8 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
     //map syntax mode
     if (expr.size() >= 2 and expr.front() == '{' and expr.back() == '}')
     {
-        Pothos::ObjectMap map;
+        auto env = Pothos::ProxyEnvironment::make("managed");
+        Pothos::ProxyMap map;
         const auto noBrackets = expr.substr(1, expr.size()-2);
         for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
         {
@@ -106,7 +109,9 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
             {
                 const auto keyVal = EvalEnvironment::splitExpr(tok, ':');
                 if (keyVal.size() != 2) throw Pothos::Exception("EvalEnvironment::eval("+tok+")", "not key:value");
-                map.emplace(this->eval(keyVal[0]), this->eval(keyVal[1]));
+                const auto key = env->convertObjectToProxy(this->eval(keyVal[0]));
+                const auto val = env->convertObjectToProxy(this->eval(keyVal[1]));
+                map.emplace(key, val);
             }
             catch (const Pothos::Exception &ex)
             {

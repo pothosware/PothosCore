@@ -22,7 +22,6 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
     POTHOS_TEST_TRUE(result2.convert<Pothos::DType>() == Pothos::DType(typeid(int)));
 }
 
-
 POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
