@@ -3,10 +3,9 @@
 
 #include <Pothos/Framework.hpp>
 #include <Poco/Types.h>
-#include <Poco/JSON/Parser.h>
-#include <Poco/JSON/Array.h>
 #include <iostream>
 #include <complex>
+#include <vector>
 #include <cstring> //memset
 
 /***********************************************************************
@@ -35,9 +34,9 @@
  * |preview disable
  *
  * |param preload The number of elements to preload into each input.
- * The value is a JSON array of integers where each element represents
+ * The value is an array of integers where each element represents
  * the number of elements to preload the port with.
- * |default "[0, 0]"
+ * |default [0, 0]
  * |preview disable
  *
  * |factory /blocks/add(dtype)
@@ -59,14 +58,12 @@ public:
         this->output(0)->setReadBeforeWrite(this->input(0));
     }
 
-    void setPreload(const std::string &preloadStr)
+    void setPreload(const std::vector<size_t> &preload)
     {
-        Poco::JSON::Parser p; p.parse(preloadStr);
-        const auto ports = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
-        for (size_t i = 0; i < ports->size(); i++)
+        for (size_t i = 0; i < preload.size(); i++)
         {
             if (i > 0) this->setupInput(i, this->input(0)->dtype());
-            auto bytes = ports->getElement<int>(i)*this->input(i)->dtype().size();
+            auto bytes = preload[i]*this->input(i)->dtype().size();
             if (bytes == 0) continue;
             Pothos::BufferChunk buffer(bytes);
             std::memset(buffer.as<void *>(), 0, buffer.length);
