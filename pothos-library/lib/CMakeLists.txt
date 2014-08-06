@@ -83,7 +83,6 @@ list(APPEND POTHOS_SOURCES
     Object/Builtin/ConvertVecs.cpp
     Object/Builtin/ConvertNums.cpp
     Object/Builtin/ConvertString.cpp
-    Object/Builtin/ConvertContainers.cpp
     Object/Builtin/Hash.cpp
     Object/Builtin/Serialize.cpp
     Object/Builtin/Tests.cpp

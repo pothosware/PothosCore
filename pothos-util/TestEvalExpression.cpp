@@ -27,12 +27,43 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("new");
 
-    const auto result = evalEnv.call<Pothos::Object>("eval", "[1, 2, 3]");
-    const auto vec = result.convert<Pothos::ObjectVector>();
-    POTHOS_TEST_EQUAL(vec.size(), 3);
-    POTHOS_TEST_EQUAL(vec[0].convert<int>(), 1);
-    POTHOS_TEST_EQUAL(vec[1].convert<int>(), 2);
-    POTHOS_TEST_EQUAL(vec[2].convert<int>(), 3);
+    //the empty test
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "[]");
+        const auto vec = result.convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec.size(), 0);
+    }
+
+    //a simple test
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "[1, 2, 3]");
+        const auto vec = result.convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec.size(), 3);
+        POTHOS_TEST_EQUAL(vec[0], 1);
+        POTHOS_TEST_EQUAL(vec[1], 2);
+        POTHOS_TEST_EQUAL(vec[2], 3);
+    }
+
+    //a trailing comma test
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "[1, ]");
+        const auto vec = result.convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec.size(), 1);
+        POTHOS_TEST_EQUAL(vec[0], 1);
+    }
+
+    //a nested test
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "[1, [\"hello\", \"world\"], 3]");
+        const auto vec = result.convert<Pothos::ObjectVector>();
+        POTHOS_TEST_EQUAL(vec.size(), 3);
+        POTHOS_TEST_EQUAL(vec[0].convert<int>(), 1);
+        const auto vec_1 = vec[1].convert<std::vector<std::string>>();
+        POTHOS_TEST_EQUAL(vec_1.size(), 2);
+        POTHOS_TEST_EQUAL(vec_1[0], "hello");
+        POTHOS_TEST_EQUAL(vec_1[1], "world");
+        POTHOS_TEST_EQUAL(vec[2].convert<int>(), 3);
+    }
 }
 
 POTHOS_TEST_BLOCK("/util/tests", test_eval_map_expression)
@@ -40,9 +71,40 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_map_expression)
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("new");
 
-    const auto result = evalEnv.call<Pothos::Object>("eval", "{\"hello\" : 1, \"world\" : 2}");
-    const auto map = result.convert<Pothos::ObjectMap>();
-    POTHOS_TEST_EQUAL(map.size(), 2);
-    POTHOS_TEST_EQUAL(map.at(Pothos::Object("hello")).convert<int>(), 1);
-    POTHOS_TEST_EQUAL(map.at(Pothos::Object("world")).convert<int>(), 2);
+    //the empty test
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "{}");
+        const auto map = result.convert<Pothos::ObjectMap>();
+        POTHOS_TEST_EQUAL(map.size(), 0);
+    }
+
+    //a simple test
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "{\"hello\" : 1, \"world\" : 2}");
+        const auto map = result.convert<Pothos::ObjectMap>();
+        POTHOS_TEST_EQUAL(map.size(), 2);
+        POTHOS_TEST_EQUAL(map.at(Pothos::Object("hello")).convert<int>(), 1);
+        POTHOS_TEST_EQUAL(map.at(Pothos::Object("world")).convert<int>(), 2);
+    }
+
+    //a trailing comma test
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "{1:2, }");
+        const auto map = result.convert<Pothos::ObjectMap>();
+        POTHOS_TEST_EQUAL(map.size(), 1);
+        POTHOS_TEST_EQUAL(map.at(Pothos::Object(1)).convert<int>(), 2);
+    }
+
+    //a nested test
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "{\"hello\" : 1, \"world\" : [1, 2, 3]}");
+        const auto map = result.convert<Pothos::ObjectMap>();
+        POTHOS_TEST_EQUAL(map.size(), 2);
+        POTHOS_TEST_EQUAL(map.at(Pothos::Object("hello")).convert<int>(), 1);
+        const auto vec_1 = map.at(Pothos::Object("world")).convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec_1.size(), 3);
+        POTHOS_TEST_EQUAL(vec_1[0], 1);
+        POTHOS_TEST_EQUAL(vec_1[1], 2);
+        POTHOS_TEST_EQUAL(vec_1[2], 3);
+    }
 }

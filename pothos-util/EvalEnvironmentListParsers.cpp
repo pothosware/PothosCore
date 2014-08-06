@@ -26,9 +26,9 @@ std::vector<std::string> EvalEnvironment::splitExpr(const std::string &expr, con
         else if (not specials.empty())
         {
             field.push_back(ch);
-            if (specials.top() == '(' and ch == ')') specials.pop();
-            if (specials.top() == '{' and ch == '}') specials.pop();
-            if (specials.top() == '[' and ch == ']') specials.pop();
+            if ((specials.top() == '(' and ch == ')') or
+                (specials.top() == '{' and ch == '}') or
+                (specials.top() == '[' and ch == ']')) specials.pop();
         }
 
         else if (ch == '(' or ch == '{' or ch == '[')
