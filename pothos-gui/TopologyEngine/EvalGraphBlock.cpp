@@ -53,7 +53,7 @@ static std::string makeGraphBlockConfigHash(GraphBlock *block, const Pothos::Pro
 
 Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
 {    
-    block->setBlockErrorMsg("");
+    block->clearBlockErrorMsgs();
 
     //try to get access to a remote environment object
     Pothos::ProxyEnvironment::Sptr env;
@@ -65,7 +65,7 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
     }
     POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
     {
-        block->setBlockErrorMsg(QString::fromStdString(ex.displayText()));
+        block->addBlockErrorMsg(QString::fromStdString(ex.displayText()));
         return Pothos::Proxy();
     }
 
@@ -84,7 +84,7 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
     //validate the id
     if (block->getId().isEmpty())
     {
-        block->setBlockErrorMsg(tr("Error: empty ID"));
+        block->addBlockErrorMsg(tr("Error: empty ID"));
     }
 
     //evaluate the properties
@@ -108,7 +108,7 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
     //property errors -- cannot continue
     if (hasError)
     {
-        block->setBlockErrorMsg(tr("Error: cannot evaluate this block with property errors"));
+        block->addBlockErrorMsg(tr("Error: cannot evaluate this block with property errors"));
         return Pothos::Proxy();
     }
 
@@ -122,7 +122,7 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
     catch(const Pothos::Exception &ex)
     {
         poco_error(Poco::Logger::get("PothosGui.GraphBlock.update"), ex.displayText());
-        block->setBlockErrorMsg(QString::fromStdString(ex.message()));
+        block->addBlockErrorMsg(QString::fromStdString(ex.message()));
     }
 
     //update the ports after complete evaluation

@@ -34,9 +34,10 @@ public:
 
     void render(QPainter &painter);
 
-    //! Set an error message when trying to eval the block -- blank msg for no error
-    void setBlockErrorMsg(const QString &msg);
-    const QString &getBlockErrorMsg(void) const;
+    //! Set an error message when trying to eval the block
+    void clearBlockErrorMsgs(void);
+    void addBlockErrorMsg(const QString &msg);
+    const QStringList &getBlockErrorMsgs(void) const;
 
     void addProperty(const QString &key);
     const QStringList &getProperties(void) const;
