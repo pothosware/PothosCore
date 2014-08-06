@@ -299,11 +299,18 @@ void BlockPropertiesPanel::updateAllForms(void)
 
     //update block errors
     {
-        _blockErrorLabel->setVisible(not _block->getBlockErrorMsg().isEmpty());
+        const auto &errors = _block->getBlockErrorMsgs();
+        _blockErrorLabel->setVisible(not errors.isEmpty());
         _blockErrorLabel->setWordWrap(true);
+        QString errorList;
+        for (const auto &errMsg : errors)
+        {
+            errorList += QString("<li><i>%1</i></li>").arg(errMsg.toHtmlEscaped());
+        }
+        if (errors.size() > 1) errorList = QString("<ul>%1</ul>").arg(errorList);
         _blockErrorLabel->setText(QString(
-            "<p><span style='color:red;'><i>%1</i></span></p>")
-            .arg(_block->getBlockErrorMsg().toHtmlEscaped()));
+            "<p><span style='color:red;'>%1</span></p>")
+            .arg(errorList));
     }
 
     for (const auto &key : _block->getProperties()) this->updatePropForms(key);

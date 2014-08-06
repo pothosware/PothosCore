@@ -53,7 +53,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_arithmetic_feedback)
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //adder has a preload on input1 for feedback loop
-    adder.callVoid("setPreload", "[0, 1]");
+    std::vector<size_t> preload(2, 0); preload[1] = 1;
+    adder.callVoid("setPreload", preload);
 
     //load feeder block
     auto b0 = Pothos::BufferChunk(10*sizeof(int));

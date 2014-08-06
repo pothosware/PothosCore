@@ -4,8 +4,7 @@
 #include "OpenClKernel.hpp"
 #include <Pothos/Framework.hpp>
 #include <Poco/NumberParser.h>
-#include <Poco/JSON/Parser.h>
-#include <Poco/JSON/Array.h>
+#include <vector>
 #include <iostream>
 
 /***********************************************************************
@@ -26,12 +25,13 @@
  * The device index represents a device ID found in clGetDeviceIDs().
  * |default "0:0"
  *
- * |param portMarkup[Port Markup] A JSON markup of input, output port sizes.
- * The port markup is an array of two arrays: [[input sizes], [output sizes]].
- * The port markup is used to determine the number of input and output ports,
- * and to specify the size in bytes per element for each input and output port.
+ * |param inputSizes[Input Sizes] An array of input port sizes.
  * |unit bytes
- * |default "[[4, 4], [4]]"
+ * |default [4]
+ *
+ * |param outputSizes[Output Sizes] An array of output port sizes.
+ * |unit bytes
+ * |default [4, 4]
  *
  * |param kernelName[Kernel Name] The name of a kernel in the source.
  * |default ""
@@ -52,7 +52,7 @@
  * For each call to work, elements produced = number of input elements * production factor.
  * |default 1.0
  *
- * |factory /blocks/opencl_kernel(deviceId, portMarkup)
+ * |factory /blocks/opencl_kernel(deviceId, inputSizes, outputSizes)
  * |setter setSource(kernelName, kernelSource)
  * |setter setLocalSize(localSize)
  * |setter setGlobalFactor(globalFactor)
@@ -61,12 +61,12 @@
 class OpenClKernel : public Pothos::Block
 {
 public:
-    static Pothos::Block *make(const std::string &deviceId, const std::string &portMarkup)
+    static Pothos::Block *make(const std::string &deviceId, const std::vector<size_t> &inputSizes, const std::vector<size_t> &outputSizes)
     {
-        return new OpenClKernel(deviceId, portMarkup);
+        return new OpenClKernel(deviceId, inputSizes, outputSizes);
     }
 
-    OpenClKernel(const std::string &deviceId, const std::string &portMarkup);
+    OpenClKernel(const std::string &deviceId, const std::vector<size_t> &inputSizes, const std::vector<size_t> &outputSizes);
 
     ~OpenClKernel(void)
     {
@@ -156,7 +156,7 @@ private:
     double _productionFactor;
 };
 
-OpenClKernel::OpenClKernel(const std::string &deviceId, const std::string &portMarkup):
+OpenClKernel::OpenClKernel(const std::string &deviceId, const std::vector<size_t> &inputSizes, const std::vector<size_t> &outputSizes):
     _localSize(1),
     _globalFactor(1.0),
     _productionFactor(1.0)
@@ -187,17 +187,13 @@ OpenClKernel::OpenClKernel(const std::string &deviceId, const std::string &portM
 
     /* Create ports */
     _myDomain = "OpenCl_"+std::to_string(size_t(_device));
-    Poco::JSON::Parser p; p.parse(portMarkup);
-    const auto ports = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
-    const auto inputs = ports->getArray(0);
-    const auto outputs = ports->getArray(1);
-    for (size_t i = 0; i < inputs->size(); i++)
+    for (size_t i = 0; i < inputSizes.size(); i++)
     {
-        this->setupInput(i, Pothos::DType("custom", inputs->getElement<int>(i)), _myDomain);
+        this->setupInput(i, Pothos::DType("custom", inputSizes[i]), _myDomain);
     }
-    for (size_t i = 0; i < outputs->size(); i++)
+    for (size_t i = 0; i < outputSizes.size(); i++)
     {
-        this->setupOutput(i, Pothos::DType("custom", outputs->getElement<int>(i)), _myDomain);
+        this->setupOutput(i, Pothos::DType("custom", outputSizes[i]), _myDomain);
     }
 
     this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setSource));

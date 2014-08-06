@@ -4,7 +4,6 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
-#include <Pothos/Proxy.hpp>
 #include <QStringList>
 #include <QObject>
 #include <QString>
@@ -21,6 +20,8 @@ public:
     const Poco::JSON::Object::Ptr &getBlockDesc(void) const;
     std::string getBlockDescPath(void) const;
 
+    void setPortDesc(const Poco::JSON::Array::Ptr &, const Poco::JSON::Array::Ptr &);
+
     void setTitle(const QString &title);
     QString getTitle(void) const;
 
@@ -33,9 +34,10 @@ public:
 
     void render(QPainter &painter);
 
-    //! Set an error message when trying to eval the block -- blank msg for no error
-    void setBlockErrorMsg(const QString &msg);
-    const QString &getBlockErrorMsg(void) const;
+    //! Set an error message when trying to eval the block
+    void clearBlockErrorMsgs(void);
+    void addBlockErrorMsg(const QString &msg);
+    const QStringList &getBlockErrorMsgs(void) const;
 
     void addProperty(const QString &key);
     const QStringList &getProperties(void) const;
@@ -91,11 +93,6 @@ public:
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
 
-    Pothos::Proxy getBlockEval(void) const
-    {
-        return _blockEval;
-    }
-
     //! affinity zone support
     const QString &getAffinityZone(void) const;
     void setAffinityZone(const QString &zone);
@@ -113,5 +110,4 @@ private:
     QStringList _outputPorts;
     QStringList _slotPorts;
     QStringList _signalPorts;
-    Pothos::Proxy _blockEval;
 };

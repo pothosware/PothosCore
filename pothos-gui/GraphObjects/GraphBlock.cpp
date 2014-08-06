@@ -7,6 +7,7 @@
 #include "BlockTree/BlockCache.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "ColorUtils/ColorUtils.hpp"
+#include <Pothos/Exception.hpp>
 #include <QAction>
 #include <QPainter>
 #include <QPen>
@@ -40,6 +41,15 @@ const Poco::JSON::Object::Ptr &GraphBlock::getBlockDesc(void) const
     return _impl->blockDesc;
 }
 
+void GraphBlock::setPortDesc(const Poco::JSON::Array::Ptr &in, const Poco::JSON::Array::Ptr &out)
+{
+    assert(_impl);
+    _impl->inputDesc = in;
+    _impl->outputDesc = out;
+    this->initInputsFromDesc();
+    this->initOutputsFromDesc();
+}
+
 void GraphBlock::setTitle(const QString &title)
 {
     _impl->title = title;
@@ -51,14 +61,19 @@ QString GraphBlock::getTitle(void) const
     return _impl->title;
 }
 
-void GraphBlock::setBlockErrorMsg(const QString &msg)
+void GraphBlock::clearBlockErrorMsgs(void)
 {
-    _impl->blockErrorMsg = msg;
+    _impl->blockErrorMsgs.clear();
 }
 
-const QString &GraphBlock::getBlockErrorMsg(void) const
+void GraphBlock::addBlockErrorMsg(const QString &msg)
 {
-    return _impl->blockErrorMsg;
+    _impl->blockErrorMsgs.push_back(msg);
+}
+
+const QStringList &GraphBlock::getBlockErrorMsgs(void) const
+{
+    return _impl->blockErrorMsgs;
 }
 
 void GraphBlock::addProperty(const QString &key)
@@ -389,7 +404,7 @@ static QString getTextColor(const bool isOk, const QColor &bg)
 void GraphBlock::renderStaticText(void)
 {
     _impl->titleText = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3</b></span>")
-        .arg(getTextColor(this->getBlockErrorMsg().isEmpty(), _impl->mainBlockColor))
+        .arg(getTextColor(this->getBlockErrorMsgs().isEmpty(), _impl->mainBlockColor))
         .arg(GraphBlockTitleFontSize)
         .arg(_impl->title.toHtmlEscaped()));
 

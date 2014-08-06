@@ -25,7 +25,7 @@ struct GraphBlock::Impl
     QString affinityZone;
 
     bool changed;
-    QString blockErrorMsg;
+    QStringList blockErrorMsgs;
 
     QString title;
     QStaticText titleText;

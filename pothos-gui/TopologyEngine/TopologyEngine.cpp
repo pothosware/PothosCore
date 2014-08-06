@@ -28,7 +28,9 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
         if (block == nullptr) continue;
-        auto proxyBlock = block->getBlockEval().callProxy("getProxyBlock");
+        auto blockEval = this->evalGraphBlock(block);
+        if (not blockEval) continue;
+        auto proxyBlock = blockEval.callProxy("getProxyBlock");
         idToBlock[block->getId().toStdString()] = proxyBlock;
 
         //set the thread pool on the proxy block
@@ -47,6 +49,18 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
 
     //commit the new design
     _topology->commit();
+}
+
+
+Pothos::Proxy TopologyEngine::getEvalEnvironment(const QString &zone)
+{
+    if (_zoneToEvalEnvironment.count(zone) == 0)
+    {
+        auto env = this->getEnvironmentFromZone(zone);
+        auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
+        _zoneToEvalEnvironment[zone] = EvalEnvironment.callProxy("new");
+    }
+    return _zoneToEvalEnvironment.at(zone);
 }
 
 Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QString &zone)
@@ -80,7 +94,7 @@ Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QStr
 Pothos::Proxy TopologyEngine::getThreadPoolFromZone(const QString &zone)
 {
     //make the thread pool if DNE
-    if (_zoneToThreadPool.find(zone) == _zoneToThreadPool.end())
+    if (_zoneToThreadPool.count(zone) == 0)
     {
         auto env = this->getEnvironmentFromZone(zone);
         auto dock = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]);

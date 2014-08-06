@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <Poco/JSON/Parser.h>
-#include <Poco/JSON/Array.h>
+#include <vector>
 
 /***********************************************************************
  * |PothosDoc Dynamic Router
@@ -22,7 +21,7 @@
  * <li>Example: [0, 2] -> input0 routes to output0, input1 routes to output2</li>
  * <li>Example: [1, -1] -> input0 routes to output1, input1 is dropped</li>
  * </ul>
- * |default "[0]"
+ * |default [0]
  *
  * |factory /blocks/dynamic_router()
  * |setter setDestinations(destinations)
@@ -42,15 +41,9 @@ public:
         this->registerCall(POTHOS_FCN_TUPLE(DynamicRouter, setDestinations));
     }
 
-    void setDestinations(const std::string &destJSON)
+    void setDestinations(const std::vector<int> &destinations)
     {
-        Poco::JSON::Parser p; p.parse(destJSON);
-        const auto dests = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
-        _destinations.resize(dests->size());
-        for (size_t i = 0; i < dests->size(); i++)
-        {
-            _destinations[i] = dests->getElement<int>(i);
-        }
+        _destinations = destinations;
     }
 
     void work(void)

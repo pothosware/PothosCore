@@ -28,7 +28,9 @@ POTHOS_MODULE_UTIL(
 # so it can be deployed on remote machines without the GUI installed.
 ########################################################################
 set(SOURCES
+    ConvertContainers.cpp
     EvalEnvironment.cpp
+    EvalEnvironmentListParsers.cpp
     BlockEval.cpp
     DeviceInfoUtils.cpp
     DocUtils.cpp
