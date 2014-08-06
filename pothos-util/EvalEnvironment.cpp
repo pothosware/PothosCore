@@ -23,7 +23,7 @@
 #include <iostream>
 #include <algorithm>
 
-struct EvalEnvironment::EvalEnvironment::Impl
+struct EvalEnvironment::Impl
 {
     ~Impl(void)
     {
