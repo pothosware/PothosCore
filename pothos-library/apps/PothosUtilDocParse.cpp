@@ -146,7 +146,6 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
     Poco::JSON::Array keywords;
     Poco::JSON::Array categories;
     Poco::JSON::Array params;
-    Poco::JSON::Array enables;
     Poco::JSON::Array::Ptr topDocs(new Poco::JSON::Array());
     Poco::JSON::Object::Ptr currentParam;
 
@@ -347,18 +346,6 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
 
             state = "DOC";
         }
-        else if (instruction == "enable" and (state == "DOC" or state == "PARAM"))
-        {
-            Poco::RegularExpression::MatchVec fields;
-            Poco::RegularExpression("^\\s*(\\w+)$").match(payload, 0, fields);
-            if (fields.empty()) throw Pothos::SyntaxException(
-                "Expected |enable someCoolOption",
-                codeLine.toString());
-
-            assert(fields.size() == 2);
-            const std::string enableOpt = Poco::trim(payload.substr(fields[1].offset, fields[1].length));
-            enables.add(enableOpt);
-        }
     }
 
     topDocs = stripDocArray(topDocs);
@@ -366,7 +353,6 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
     if (categories.size() > 0) topObj.set("categories", categories);
     if (keywords.size() > 0) topObj.set("keywords", keywords);
     if (params.size() > 0) topObj.set("params", params);
-    if (enables.size() > 0) topObj.set("enables", enables);
     if (calls.size() > 0) topObj.set("calls", calls);
 
     //sanity check for required stuff
