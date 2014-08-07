@@ -75,7 +75,9 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getObjectMap()["affinityZonesDock"], SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
     connect(getActionMap()["showGraphFlattenedView"], SIGNAL(triggered(void)), this, SLOT(handleShowFlattenedDialog(void)));
     connect(getActionMap()["activateTopology"], SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
-    connect(getActionMap()["showPortNamesAction"], SIGNAL(changed(void)), this, SLOT(handleShowPortNames(void)));
+    connect(getActionMap()["showPortNames"], SIGNAL(changed(void)), this, SLOT(handleShowPortNames(void)));
+    connect(getActionMap()["increment"], SIGNAL(triggered(void)), this, SLOT(handleBlockIncrement(void)));
+    connect(getActionMap()["decrement"], SIGNAL(triggered(void)), this, SLOT(handleBlockDecrement(void)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
 }
@@ -740,6 +742,44 @@ void GraphEditor::handleShowPortNames(void)
         block->changed();
     }
     if (this->isVisible()) this->render();
+}
+
+void GraphEditor::handleBlockIncrement(void)
+{
+    this->handleBlockXcrement(+1);
+}
+
+void GraphEditor::handleBlockDecrement(void)
+{
+    this->handleBlockXcrement(-1);
+}
+
+void GraphEditor::handleBlockXcrement(const int adj)
+{
+    if (not this->isVisible()) return;
+    auto draw = this->getCurrentGraphDraw();
+    GraphObjectList changedObjects;
+    for (auto obj : draw->getGraphObjects(GRAPH_BLOCK))
+    {
+        auto block = dynamic_cast<GraphBlock *>(obj);
+        assert(block != nullptr);
+        for (const auto &propKey : block->getProperties())
+        {
+            auto paramDesc = block->getParamDesc(propKey);
+            if (paramDesc->has("widget") and paramDesc->getValue<std::string>("widget") == "SpinBox")
+            {
+                const auto newValue = block->getPropertyValue(propKey).toInt() + adj;
+                block->setPropertyValue(propKey, QString("%1").arg(newValue));
+                changedObjects.push_back(block);
+                break;
+            }
+        }
+    }
+
+    if (changedObjects.empty()) return;
+    const auto desc = (changedObjects.size() == 1)? changedObjects.front()->getId() : tr("selected");
+    if (adj > 0) handleStateChange(GraphState("list-add", tr("Increment %1").arg(desc)));
+    if (adj < 0) handleStateChange(GraphState("list-remove", tr("Decrement %1").arg(desc)));
 }
 
 void GraphEditor::updateExecutionEngine(void)
