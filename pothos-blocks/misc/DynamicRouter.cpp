@@ -23,6 +23,9 @@
  * </ul>
  * |default [0]
  *
+ * |enable inputPortControl
+ * |enable outputPortControl
+ *
  * |factory /blocks/dynamic_router()
  * |setter setDestinations(destinations)
  **********************************************************************/

@@ -39,6 +39,8 @@
  * |default [0, 0]
  * |preview disable
  *
+ * |enable inputPortControl
+ *
  * |factory /blocks/add(dtype)
  * |setter setPreload(preload)
  **********************************************************************/
