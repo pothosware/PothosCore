@@ -249,6 +249,13 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
                 codeLine.toString());
             currentParam->set("units", payload);
         }
+        else if (instruction == "widget" and state == "PARAM")
+        {
+            if (currentParam->has("widget")) throw Pothos::SyntaxException(
+                "Multiple occurrence of widget for param",
+                codeLine.toString());
+            currentParam->set("widget", payload);
+        }
         else if (instruction == "preview" and state == "PARAM")
         {
             if (currentParam->has("preview")) throw Pothos::SyntaxException(
