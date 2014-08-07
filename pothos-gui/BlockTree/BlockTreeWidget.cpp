@@ -154,8 +154,7 @@ void BlockTreeWidget::populate(void)
             if (not this->blockDescMatchesFilter(blockDesc)) continue;
             const auto path = blockDesc->get("path").extract<std::string>();
             const auto name = blockDesc->get("name").extract<std::string>();
-            const auto categories = blockDesc->getArray("categories");
-            if (categories) for (auto categoryObj : *categories)
+            if (blockDesc->isArray("categories")) for (auto categoryObj : *blockDesc->getArray("categories"))
             {
                 const auto category = categoryObj.extract<std::string>().substr(1);
                 const auto key = category.substr(0, category.find("/"));
@@ -176,13 +175,12 @@ bool BlockTreeWidget::blockDescMatchesFilter(const Poco::JSON::Object::Ptr &bloc
 
     const auto path = blockDesc->get("path").extract<std::string>();
     const auto name = blockDesc->get("name").extract<std::string>();
-    const auto categories = blockDesc->getArray("categories");
 
     //construct a candidate string from path, name, categories, and keywords.
     std::string candidate = path+name;
-    if (categories) for(auto category : *categories)
+    if (blockDesc->isArray("categories")) for (auto categoryObj : *blockDesc->getArray("categories"))
     {
-        candidate += category.extract<std::string>();
+        candidate += categoryObj.extract<std::string>();
     }
     if(blockDesc->isArray("keywords"))
     {

@@ -11,7 +11,7 @@ void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &block
 
     //load up the constructor args
     std::vector<Pothos::Proxy> ctorArgs;
-    for (auto arg : *blockDesc->getArray("args"))
+    if (blockDesc->isArray("args")) for (auto arg : *blockDesc->getArray("args"))
     {
         const auto propKey = arg.extract<std::string>();
         const auto obj = _properties[propKey];
@@ -30,7 +30,7 @@ void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &block
     _proxyBlock.callVoid("setName", id);
 
     //make the calls
-    for (auto call : *blockDesc->getArray("calls"))
+    if (blockDesc->isArray("calls")) for (auto call : *blockDesc->getArray("calls"))
     {
         const auto callObj = call.extract<Poco::JSON::Object::Ptr>();
         const auto callName = callObj->get("name").extract<std::string>();
