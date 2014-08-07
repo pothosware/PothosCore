@@ -32,6 +32,7 @@ signals:
 
 private slots:
     void handleEditWidgetChanged(const QString &);
+    void handleEditWidgetChanged(void);
 
 private:
     QWidget *_edit;

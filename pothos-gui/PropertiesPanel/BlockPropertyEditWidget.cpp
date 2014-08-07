@@ -5,12 +5,19 @@
 #include "ColorUtils/ColorUtils.hpp"
 #include <QComboBox>
 #include <QLineEdit>
+#include <QSpinBox>
+#include <Poco/Logger.h>
 
 BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent):
     QStackedWidget(parent),
     _edit(nullptr)
 {
-    if (paramDesc->isArray("options"))
+    std::string widgetType;
+    if (paramDesc->has("widget")) widgetType = paramDesc->getValue<std::string>("widget");
+    else if (paramDesc->isArray("options")) widgetType = "ComboBox";
+    else widgetType = "LineEdit";
+
+    if (widgetType == "ComboBox")
     {
         auto comboBox = new QComboBox(this);
         _edit = comboBox;
@@ -24,8 +31,20 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
         }
         connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
     }
+    else if (widgetType == "SpinBox")
+    {
+        auto spinBox = new QSpinBox(this);
+        _edit = spinBox;
+        connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
+    }
     else
     {
+        if (widgetType != "LineEdit")
+        {
+            poco_warning_f2(Poco::Logger::get("PothosGui.BlockPropertyEditWidget"),
+                "unknown widget type '%s' for %s, defaulting to 'LineEdit'",
+                widgetType, paramDesc->getValue<std::string>("name"));
+        }
         auto lineEdit = new QLineEdit(this);
         connect(lineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
         connect(lineEdit, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
@@ -45,6 +64,9 @@ void BlockPropertyEditWidget::setValue(const QString &value)
         if (comboBox->itemData(i).toString() == value) comboBox->setCurrentIndex(i);
     }
 
+    auto spinBox = dynamic_cast<QSpinBox *>(_edit);
+    if (spinBox != nullptr) spinBox->setValue(value.toInt());
+
     auto lineEdit = dynamic_cast<QLineEdit *>(_edit);
     if (lineEdit != nullptr) lineEdit->setText(value);
 }
@@ -52,10 +74,16 @@ void BlockPropertyEditWidget::setValue(const QString &value)
 QString BlockPropertyEditWidget::value(void) const
 {
     QString newValue;
+
     auto comboBox = dynamic_cast<QComboBox *>(_edit);
     if (comboBox != nullptr) newValue = comboBox->itemData(comboBox->currentIndex()).toString();
+
+    auto spinBox = dynamic_cast<QSpinBox *>(_edit);
+    if (spinBox != nullptr) newValue = QString("%1").arg(spinBox->value());
+
     auto lineEdit = dynamic_cast<QLineEdit *>(_edit);
     if (lineEdit != nullptr) newValue = lineEdit->text();
+
     return newValue;
 }
 
@@ -66,6 +94,7 @@ void BlockPropertyEditWidget::setColors(const std::string &typeStr)
     //set the fg and bg colors for all possible widget types
     _edit->setStyleSheet(QString(
         "QComboBox{background:%1;color:%2;}"
+        "QSpinBox{background:%1;color:%2;}"
         "QLineEdit{background:%1;color:%2;}")
         .arg(typeColor.name())
         .arg((typeColor.lightnessF() > 0.5)?"black":"white")
@@ -73,6 +102,11 @@ void BlockPropertyEditWidget::setColors(const std::string &typeStr)
 }
 
 void BlockPropertyEditWidget::handleEditWidgetChanged(const QString &)
+{
+    emit this->valueChanged();
+}
+
+void BlockPropertyEditWidget::handleEditWidgetChanged(void)
 {
     emit this->valueChanged();
 }
