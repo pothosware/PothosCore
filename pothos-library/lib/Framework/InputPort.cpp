@@ -32,7 +32,7 @@ Pothos::Object Pothos::InputPort::popMessage(void)
 {
     assert(_impl);
     if (_impl->asyncMessages.empty()) return Pothos::Object();
-    auto msg = _impl->asyncMessages.front();
+    auto msg = _impl->asyncMessages.front().async;
     _impl->asyncMessages.pop_front();
     _totalMessages++;
     _impl->actor->workBump = true;

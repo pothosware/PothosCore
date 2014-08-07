@@ -17,6 +17,7 @@ public:
         readBeforeWritePort(nullptr),
         _bufferFromManager(false){}
     BufferManager::Sptr bufferManager;
+    BufferManager::Sptr tokenManager; //used for message backpressure
     std::vector<Label> postedLabels;
     Util::RingDeque<BufferChunk> postedBuffers;
     std::vector<PortSubscriber> subscribers;

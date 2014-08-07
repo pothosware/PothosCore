@@ -7,16 +7,17 @@
 #include <algorithm> //sort
 #include <cassert>
 
-void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, Object> &message, const Theron::Address)
+void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, TokenizedAsyncMessage> &message, const Theron::Address)
 {
     assert(message.id != nullptr);
     auto &input = *message.id;
+    auto &async = message.contents.async;
     if (input._impl->asyncMessages.full()) input._impl->asyncMessages.set_capacity(input._impl->asyncMessages.capacity()*2);
-    if (input._impl->isSlot and message.contents.type() == typeid(ObjectVector))
+    if (input._impl->isSlot and async.type() == typeid(ObjectVector))
     {
         POTHOS_EXCEPTION_TRY
         {
-            const auto &args = message.contents.extract<ObjectVector>();
+            const auto &args = async.extract<ObjectVector>();
             block->opaqueCallHandler(input.name(), args.data(), args.size());
         }
         POTHOS_EXCEPTION_CATCH(const Exception &ex)
@@ -163,8 +164,19 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
     for (auto &entry : this->outputs)
     {
         auto &port = *entry.second;
+
+        //setup buffer manager callback
         auto &mgr = port._impl->bufferManager;
         if (mgr) mgr->setCallback(std::bind(&bufferManagerPushExternal,
+            std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer()), this->GetAddress(), std::placeholders::_1));
+
+        //setup token manager for async messages
+        BufferManagerArgs tokenMgrArgs;
+        tokenMgrArgs.numBuffers = 16;
+        tokenMgrArgs.bufferSize = 0;
+        auto &tokenMgr = port._impl->tokenManager;
+        if (not tokenMgr) tokenMgr = BufferManager::make("generic", tokenMgrArgs);
+        tokenMgr->setCallback(std::bind(&bufferManagerPushExternal,
             std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer()), this->GetAddress(), std::placeholders::_1));
     }
 

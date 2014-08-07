@@ -4,6 +4,7 @@
 #pragma once
 #include "Framework/InputPortImpl.hpp"
 #include "Framework/OutputPortImpl.hpp"
+#include "Framework/WorkerActorMessages.hpp"
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object/Containers.hpp>
@@ -59,80 +60,6 @@ private:
 };
 
 /***********************************************************************
- * Messages that will be sent to the actor
- **********************************************************************/
-template <typename PortIdType, typename MessageType>
-struct PortMessage
-{
-    PortIdType id;
-    MessageType contents;
-};
-
-template <typename PortIdType, typename MessageType>
-PortMessage<PortIdType, MessageType> makePortMessage(const PortIdType &id, const MessageType &contents)
-{
-    PortMessage<PortIdType, MessageType> message;
-    message.id = id;
-    message.contents = contents;
-    return message;
-}
-
-struct LabeledBuffersMessage
-{
-    std::vector<Pothos::Label> labels;
-    std::vector<Pothos::BufferChunk> buffers;
-};
-
-struct BufferReturnMessage
-{
-    Pothos::ManagedBuffer buff;
-};
-
-struct BumpWorkMessage
-{
-    //
-};
-
-struct ActivateWorkMessage
-{
-    //
-};
-
-struct DeactivateWorkMessage
-{
-    //
-};
-
-struct ShutdownActorMessage
-{
-    //
-};
-
-struct RequestPortInfoMessage
-{
-    bool isInput;
-    std::string name;
-};
-
-struct RequestWorkerStatsMessage
-{
-    //
-};
-
-struct OpaqueCallMessage
-{
-    std::string name;
-    const Pothos::Object *inputArgs;
-    size_t numArgs;
-};
-
-struct OpaqueCallResultMessage
-{
-    Pothos::Object obj;
-    std::shared_ptr<Pothos::Exception> error;
-};
-
-/***********************************************************************
  * Actor definition
  **********************************************************************/
 class Pothos::WorkerActor : public Theron::Actor
@@ -168,7 +95,7 @@ public:
     }
 
     ///////////////////// message handlers ///////////////////////
-    void handleAsyncPortMessage(const PortMessage<InputPort *, Object> &message, const Theron::Address from);
+    void handleAsyncPortMessage(const PortMessage<InputPort *, TokenizedAsyncMessage> &message, const Theron::Address from);
     void handleLabelsPortMessage(const PortMessage<InputPort *, LabeledBuffersMessage> &message, const Theron::Address from);
     void handleBufferPortMessage(const PortMessage<InputPort *, BufferChunk> &message, const Theron::Address from);
     void handleBufferReturnMessage(const BufferReturnMessage &message, const Theron::Address from);

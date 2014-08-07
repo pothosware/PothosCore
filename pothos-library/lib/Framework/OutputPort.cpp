@@ -37,10 +37,17 @@ void Pothos::OutputPort::postLabel(const Label &label)
     _impl->actor->workBump = true;
 }
 
-void Pothos::OutputPort::_postMessage(const Object &message)
+void Pothos::OutputPort::_postMessage(const Object &async)
 {
     assert(_impl);
     assert(_impl->actor != nullptr);
+    TokenizedAsyncMessage message;
+    if (_impl->tokenManager and not _impl->tokenManager->empty())
+    {
+        message.token = _impl->tokenManager->front();
+        _impl->tokenManager->pop(0);
+    }
+    message.async = async;
     _impl->actor->sendOutputPortMessage(_impl->subscribers, message);
     _totalMessages++;
     _impl->actor->workBump = true;

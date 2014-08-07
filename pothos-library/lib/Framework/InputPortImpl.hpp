@@ -3,6 +3,7 @@
 
 #pragma once
 #include "Framework/PortSubscriber.hpp"
+#include "Framework/WorkerActorMessages.hpp"
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/BufferAccumulator.hpp>
 #include <Pothos/Util/RingDeque.hpp>
@@ -14,7 +15,7 @@ public:
     InputPortImpl(void):
         actor(nullptr),
         isSlot(false){}
-    Util::RingDeque<Object> asyncMessages;
+    Util::RingDeque<TokenizedAsyncMessage> asyncMessages;
     std::vector<Label> inlineMessages;
     BufferAccumulator bufferAccumulator;
     std::vector<PortSubscriber> subscribers;
