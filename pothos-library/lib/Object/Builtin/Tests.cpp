@@ -87,13 +87,18 @@ POTHOS_TEST_BLOCK("/object/tests", test_convert_numbers)
     POTHOS_TEST_TRUE(intObj.canConvert(typeid(int)));
     POTHOS_TEST_TRUE(intObj.canConvert(typeid(long)));
     POTHOS_TEST_TRUE(not intObj.canConvert(typeid(NeverHeardOfFooBar)));
+
+    //tests for range errors
+    POTHOS_TEST_THROWS(Pothos::Object(-1).convert<unsigned>(), Pothos::RangeException);
+    POTHOS_TEST_THROWS(Pothos::Object(1024).convert<char>(), Pothos::RangeException);
+    POTHOS_TEST_THROWS(Pothos::Object(-1024).convert<char>(), Pothos::RangeException);
 }
 
 POTHOS_TEST_BLOCK("/object/tests", test_convert_complex)
 {
     Pothos::Object complexObj(std::complex<double>(2, -3));
     POTHOS_TEST_EQUAL(complexObj.convert<std::complex<float>>(), std::complex<float>(2, -3));
-    POTHOS_TEST_EQUAL(complexObj.convert<int>(), 2);
+    POTHOS_TEST_THROWS(complexObj.convert<int>(), Pothos::RangeException);
 }
 
 POTHOS_TEST_BLOCK("/object/tests", test_convert_vectors)
