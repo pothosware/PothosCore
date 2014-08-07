@@ -33,15 +33,18 @@
  * |option [Int8] "int8"
  * |preview disable
  *
+ * |param numInputs[Num Inputs] The number of input ports.
+ * |default 2
+ * |preview disable
+ *
  * |param preload The number of elements to preload into each input.
  * The value is an array of integers where each element represents
  * the number of elements to preload the port with.
  * |default [0, 0]
  * |preview disable
  *
- * |enable inputPortControl
- *
  * |factory /blocks/add(dtype)
+ * |setter setNumInputs(numInputs)
  * |setter setPreload(preload)
  **********************************************************************/
 template <typename Type>
@@ -51,6 +54,7 @@ public:
     Add(void):
         _numInlineBuffers(0)
     {
+        this->registerCall(POTHOS_FCN_TUPLE(Add<Type>, setNumInputs));
         this->registerCall(POTHOS_FCN_TUPLE(Add<Type>, setPreload));
         this->registerCall(POTHOS_FCN_TUPLE(Add<Type>, getNumInlineBuffers));
         this->setupInput(0, typeid(Type));
@@ -60,11 +64,20 @@ public:
         this->output(0)->setReadBeforeWrite(this->input(0));
     }
 
+    void setNumInputs(const size_t numInputs)
+    {
+        if (numInputs < 2) throw Pothos::RangeException("Add::setNumInputs("+std::to_string(numInputs)+")", "require inputs >= 2");
+        for (size_t i = this->inputs().size(); i < numInputs; i++)
+        {
+            this->setupInput(i, this->input(0)->dtype());
+        }
+    }
+
     void setPreload(const std::vector<size_t> &preload)
     {
+        this->setNumInputs(std::max<size_t>(2, preload.size()));
         for (size_t i = 0; i < preload.size(); i++)
         {
-            if (i > 0) this->setupInput(i, this->input(0)->dtype());
             auto bytes = preload[i]*this->input(i)->dtype().size();
             if (bytes == 0) continue;
             Pothos::BufferChunk buffer(bytes);
