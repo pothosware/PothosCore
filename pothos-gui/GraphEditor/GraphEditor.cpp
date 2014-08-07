@@ -759,7 +759,7 @@ void GraphEditor::handleBlockXcrement(const int adj)
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
     GraphObjectList changedObjects;
-    for (auto obj : draw->getGraphObjects(GRAPH_BLOCK))
+    for (auto obj : draw->getObjectsSelected(GRAPH_BLOCK))
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
         assert(block != nullptr);
