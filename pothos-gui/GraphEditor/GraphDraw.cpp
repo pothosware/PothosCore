@@ -115,6 +115,13 @@ void GraphDraw::showEvent(QShowEvent *event)
     QWidget::showEvent(event);
 }
 
+void GraphDraw::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Plus) getActionMap()["increment"]->activate(QAction::Trigger);
+    if (event->key() == Qt::Key_Minus) getActionMap()["decrement"]->activate(QAction::Trigger);
+    QWidget::keyPressEvent(event);
+}
+
 void GraphDraw::updateEnabledActions(void)
 {
     auto selectedObjsNoC = this->getObjectsSelected(~GRAPH_CONNECTION);
@@ -129,6 +136,8 @@ void GraphDraw::updateEnabledActions(void)
     getActionMap()["rotateLeft"]->setEnabled(selectedNoC);
     getActionMap()["rotateRight"]->setEnabled(selectedNoC);
     getActionMap()["properties"]->setEnabled(selected);
+    getActionMap()["increment"]->setEnabled(selected);
+    getActionMap()["decrement"]->setEnabled(selected);
 
     //and enable/disable the actions in the move graph objects submenu
     for (auto child : getMenuMap()["moveGraphObjects"]->children())
@@ -215,31 +224,8 @@ void GraphDraw::render(void)
 
 void GraphDraw::handleCustomContextMenuRequested(const QPoint &pos)
 {
-    auto menu = new QMenu(this);
-    menu->addAction(getActionMap()["cut"]);
-    menu->addAction(getActionMap()["copy"]);
-    menu->addAction(getActionMap()["paste"]);
-    menu->addAction(getActionMap()["delete"]);
-    menu->addSeparator();
-    menu->addAction(getActionMap()["selectAll"]);
-    menu->addSeparator();
-    menu->addAction(getActionMap()["find"]);
-    menu->addSeparator();
-    menu->addAction(getActionMap()["createGraphPage"]);
-    menu->addAction(getActionMap()["renameGraphPage"]);
-    menu->addAction(getActionMap()["deleteGraphPage"]);
-    menu->addMenu(getMenuMap()["moveGraphObjects"]);
-    menu->addMenu(getMenuMap()["setAffinityZone"]);
-    menu->addSeparator();
-    menu->addAction(getActionMap()["createInputBreaker"]);
-    menu->addAction(getActionMap()["createOutputBreaker"]);
-    menu->addSeparator();
-    menu->addAction(getActionMap()["rotateLeft"]);
-    menu->addAction(getActionMap()["rotateRight"]);
-
     _lastContextMenuPos = pos;
-    menu->exec(this->mapToGlobal(pos));
-    delete menu;
+    getMenuMap()["edit"]->exec(this->mapToGlobal(pos));
 }
 
 QWidget *makeGraphDraw(QWidget *parent)

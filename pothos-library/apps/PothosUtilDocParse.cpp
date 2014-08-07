@@ -114,21 +114,21 @@ static std::vector<CodeBlock> extractContiguousBlocks(std::istream &is)
 /***********************************************************************
  * Strip top and bottom whitespace from a document array
  **********************************************************************/
-static Poco::JSON::Array::Ptr stripDocArray(const Poco::JSON::Array &in)
+static Poco::JSON::Array::Ptr stripDocArray(const Poco::JSON::Array::Ptr &in)
 {
     Poco::JSON::Array::Ptr out(new Poco::JSON::Array());
 
-    for (size_t i = 0; i < in.size(); i++)
+    for (size_t i = 0; i < in->size(); i++)
     {
         //dont add empty lines if the last line is empty
-        const auto line = in.get(i).convert<std::string>();
+        const auto line = in->getElement<std::string>(i);
         std::string lastLine;
-        if (out->size() != 0) lastLine = out->get(out->size()-1).convert<std::string>();
+        if (out->size() != 0) lastLine = out->getElement<std::string>(out->size()-1);
         if (not lastLine.empty() or not line.empty()) out->add(line);
     }
 
     //remove trailing empty line from docs
-    if (out->size() != 0 and out->get(out->size()-1).convert<std::string>().empty())
+    if (out->size() != 0 and out->getElement<std::string>(out->size()-1).empty())
     {
         out->remove(out->size()-1);
     }
@@ -146,7 +146,7 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
     Poco::JSON::Array keywords;
     Poco::JSON::Array categories;
     Poco::JSON::Array params;
-    Poco::JSON::Array topDocs;
+    Poco::JSON::Array::Ptr topDocs(new Poco::JSON::Array());
     Poco::JSON::Object::Ptr currentParam;
 
     std::string state;
@@ -192,13 +192,13 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
         }
         else if (matches.empty() and state == "DOC")
         {
-            topDocs.add(line);
+            topDocs->add(line);
         }
         else if (matches.empty() and state == "PARAM")
         {
             auto array = currentParam->getArray("desc");
             array->add(line);
-            currentParam->set("desc", stripDocArray(*array));
+            currentParam->set("desc", stripDocArray(array));
         }
         else if (instruction == "category" and state == "DOC")
         {
@@ -248,6 +248,13 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
                 "Multiple occurrence of units for param",
                 codeLine.toString());
             currentParam->set("units", payload);
+        }
+        else if (instruction == "widget" and state == "PARAM")
+        {
+            if (currentParam->has("widget")) throw Pothos::SyntaxException(
+                "Multiple occurrence of widget for param",
+                codeLine.toString());
+            currentParam->set("widget", payload);
         }
         else if (instruction == "preview" and state == "PARAM")
         {
@@ -311,7 +318,7 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
             {
                 throw Pothos::SyntaxException(codeLine.toString(), ex);
             }
-            topObj.set("args", args);
+            if (args.size() > 0) topObj.set("args", args);
 
             state = "DOC";
         }
@@ -348,11 +355,12 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
         }
     }
 
-    topObj.set("docs", stripDocArray(topDocs));
-    topObj.set("categories", categories);
-    topObj.set("keywords", keywords);
-    topObj.set("params", params);
-    topObj.set("calls", calls);
+    topDocs = stripDocArray(topDocs);
+    if (topDocs->size() > 0) topObj.set("docs", topDocs);
+    if (categories.size() > 0) topObj.set("categories", categories);
+    if (keywords.size() > 0) topObj.set("keywords", keywords);
+    if (params.size() > 0) topObj.set("params", params);
+    if (calls.size() > 0) topObj.set("calls", calls);
 
     //sanity check for required stuff
     if (not state.empty() and not topObj.has("path"))

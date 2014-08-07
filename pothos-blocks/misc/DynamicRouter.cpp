@@ -14,6 +14,16 @@
  * |category /Misc
  * |keywords router
  *
+ * |param numInputs[Num Inputs] The number of input ports.
+ * |default 2
+ * |widget SpinBox
+ * |preview disable
+ *
+ * |param numOutputs[Num Outputs] The number of output ports.
+ * |default 2
+ * |widget SpinBox
+ * |preview disable
+ *
  * |param destinations An array of output port indexes, one per input port.
  * Destinations is an array of integers where each element specifies an output port.
  * An output port of -1 indicates that the input will be consumed and dropped.
@@ -25,6 +35,7 @@
  *
  * |factory /blocks/dynamic_router()
  * |setter setDestinations(destinations)
+ * |setter setNumPorts(numInputs, numOutputs)
  **********************************************************************/
 class DynamicRouter : public Pothos::Block
 {
@@ -39,6 +50,13 @@ public:
         this->setupInput(0);
         this->setupOutput(0);
         this->registerCall(POTHOS_FCN_TUPLE(DynamicRouter, setDestinations));
+        this->registerCall(POTHOS_FCN_TUPLE(DynamicRouter, setNumPorts));
+    }
+
+    void setNumPorts(const size_t numInputs, const size_t numOutputs)
+    {
+        for (size_t i = this->inputs().size(); i < numInputs; i++) this->setupInput(i);
+        for (size_t i = this->outputs().size(); i < numOutputs; i++) this->setupOutput(i);
     }
 
     void setDestinations(const std::vector<int> &destinations)

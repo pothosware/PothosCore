@@ -62,6 +62,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void paintEvent(QPaintEvent *event);
     void showEvent(QShowEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
 private slots:
     void handleCustomContextMenuRequested(const QPoint &);

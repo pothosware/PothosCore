@@ -438,7 +438,7 @@ void GraphBlock::renderStaticText(void)
             .arg(_outputPorts[i].toHtmlEscaped()));
     }
 
-    if (not getActionMap()["showPortNamesAction"]->isChecked())
+    if (not getActionMap()["showPortNames"]->isChecked())
     {
         _impl->inputPortsText.clear();
         _impl->inputPortsText.resize(_inputPorts.size(), QStaticText(" "));

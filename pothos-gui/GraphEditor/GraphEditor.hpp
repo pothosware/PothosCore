@@ -108,6 +108,9 @@ private slots:
     void handleShowFlattenedDialog(void);
     void handleToggleActivateTopology(bool);
     void handleShowPortNames(void);
+    void handleBlockIncrement(void);
+    void handleBlockDecrement(void);
+    void handleBlockXcrement(const int adj);
 
 private:
     QTabWidget *_parentTabWidget;

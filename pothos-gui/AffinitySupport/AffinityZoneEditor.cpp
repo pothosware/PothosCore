@@ -88,7 +88,7 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         formLayout->addRow(tr("Thread count"), _numThreadsSpin);
         _numThreadsSpin->setRange(0, ARBITRARY_MAX_THREADS);
         _numThreadsSpin->setToolTip(tr("Number of threads to allocate, 0 means automatic"));
-        connect(_numThreadsSpin, SIGNAL(editingFinished(void)), this, SLOT(handleSpinSelChanged()));
+        connect(_numThreadsSpin, SIGNAL(editingFinished(void)), this, SLOT(handleSpinSelChanged(void)));
     }
 
     //priority selection
@@ -96,7 +96,7 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
         formLayout->addRow(tr("Process priority %"), _prioritySpin);
         _prioritySpin->setRange(-100, +100);
         _prioritySpin->setToolTip(tr("A priority percentage between -100% and 100%"));
-        connect(_prioritySpin, SIGNAL(editingFinished(void)), this, SLOT(handleSpinSelChanged()));
+        connect(_prioritySpin, SIGNAL(editingFinished(void)), this, SLOT(handleSpinSelChanged(void)));
     }
 
     //cpu/node selection

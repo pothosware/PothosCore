@@ -265,7 +265,7 @@ void PothosGuiMainWindow::createActions(void)
 
     _showPortNamesAction = new QAction(tr("Show &port names"), this);
     _showPortNamesAction->setCheckable(true);
-    _actionMap["showPortNamesAction"] = _showPortNamesAction;
+    _actionMap["showPortNames"] = _showPortNamesAction;
 
     _showAboutAction = new QAction(makeIconFromTheme("help-about"), tr("&About Pothos"), this);
     _showAboutAction->setStatusTip(tr("Information about this version of Pothos"));
@@ -276,8 +276,18 @@ void PothosGuiMainWindow::createActions(void)
     connect(_showAboutQtAction, SIGNAL(triggered(void)), this, SLOT(handleShowAboutQt(void)));
 
     _showColorsDialogAction = new QAction(makeIconFromTheme("color-picker"), tr("&Colors Map"), this);
-    _showColorsDialogAction->setStatusTip(tr("Data type colors used for block proprties and ports"));
+    _showColorsDialogAction->setStatusTip(tr("Data type colors used for block properties and ports"));
     connect(_showColorsDialogAction, SIGNAL(triggered(void)), this, SLOT(handleColorsDialogAction(void)));
+
+    _incrementAction = new QAction(makeIconFromTheme("list-add"), tr("Block &Increment"), this);
+    _incrementAction->setStatusTip(tr("Increment action on selected graph objects"));
+    _incrementAction->setShortcut(QKeySequence(Qt::Key_Plus));
+    _actionMap["increment"] = _incrementAction;
+
+    _decrementAction = new QAction(makeIconFromTheme("list-remove"), tr("Block &Decrement"), this);
+    _decrementAction->setStatusTip(tr("Decrement action on selected graph objects"));
+    _decrementAction->setShortcut(QKeySequence(Qt::Key_Minus));
+    _actionMap["decrement"] = _decrementAction;
 }
 
 void PothosGuiMainWindow::createMenus(void)
@@ -320,6 +330,10 @@ void PothosGuiMainWindow::createMenus(void)
     _editMenu->addSeparator();
     _editMenu->addAction(_rotateLeftAction);
     _editMenu->addAction(_rotateRightAction);
+    _editMenu->addSeparator();
+    _editMenu->addAction(_incrementAction);
+    _editMenu->addAction(_decrementAction);
+    _editMenu->addSeparator();
     _editMenu->addAction(_propertiesAction);
 
     _executeMenu = menuBar()->addMenu(tr("&Execute"));
