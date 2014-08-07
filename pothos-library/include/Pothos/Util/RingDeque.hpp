@@ -246,7 +246,7 @@ void RingDeque<T>::set_capacity(const size_t capacity)
     }
     _container = _newContainer;
     _frontIndex = 0;
-    _backIndex = size_t(_numElements - 1) % _container.size();
+    _backIndex = (_numElements + capacity - 1) % capacity;
 }
 
 } //namespace Util
