@@ -35,6 +35,7 @@
  *
  * |param numInputs[Num Inputs] The number of input ports.
  * |default 2
+ * |widget SpinBox
  * |preview disable
  *
  * |param preload The number of elements to preload into each input.

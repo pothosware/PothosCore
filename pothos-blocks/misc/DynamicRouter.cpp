@@ -16,10 +16,12 @@
  *
  * |param numInputs[Num Inputs] The number of input ports.
  * |default 2
+ * |widget SpinBox
  * |preview disable
  *
  * |param numOutputs[Num Outputs] The number of output ports.
  * |default 2
+ * |widget SpinBox
  * |preview disable
  *
  * |param destinations An array of output port indexes, one per input port.
