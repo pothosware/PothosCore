@@ -109,7 +109,12 @@ void PothosGuiMainWindow::handleNewTitleSubtext(const QString &s)
 
 void PothosGuiMainWindow::handleShowAbout(void)
 {
-    QMessageBox::about(this, "About Pothos", QString::fromStdString(Pothos::System::getApiVersion()));
+    QMessageBox::about(this, "About Pothos", QString(
+        "Pothos v%1\n"
+        "Install %2\n"
+        "www.pothosware.com")
+        .arg(QString::fromStdString(Pothos::System::getApiVersion()))
+        .arg(QString::fromStdString(Pothos::System::getRootPath())));
 }
 
 void PothosGuiMainWindow::handleShowAboutQt(void)
