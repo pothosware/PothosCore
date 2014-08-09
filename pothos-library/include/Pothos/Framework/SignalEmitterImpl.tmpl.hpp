@@ -15,7 +15,7 @@ namespace Pothos {
 
 #for $NARGS in range(1, $MAX_ARGS)
 template <$expand('typename A%d', $NARGS)>
-void SignalEmitter::emitSignal(const std::string &name, $expand('const A%d &a%d', $NARGS))
+void SignalEmitter::emitSignal(const std::string &name, $expand('A%d &&a%d', $NARGS))
 {
     std::vector<Object> args($(max(1, $NARGS)));
     #for $i in range($NARGS):

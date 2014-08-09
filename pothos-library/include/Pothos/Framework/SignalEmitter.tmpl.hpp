@@ -30,7 +30,7 @@ public:
      * Emit a signal with $NARGS args.
      */
     template <$expand('typename A%d', $NARGS)>
-    void emitSignal(const std::string &name, $expand('const A%d &a%d', $NARGS));
+    void emitSignal(const std::string &name, $expand('A%d &&a%d', $NARGS));
 
     #end for
     /*!

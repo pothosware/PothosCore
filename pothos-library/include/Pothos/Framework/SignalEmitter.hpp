@@ -35,55 +35,55 @@ public:
      * Emit a signal with 1 args.
      */
     template <typename A0>
-    void emitSignal(const std::string &name, const A0 &a0);
+    void emitSignal(const std::string &name, A0 &&a0);
 
     /*!
      * Emit a signal with 2 args.
      */
     template <typename A0, typename A1>
-    void emitSignal(const std::string &name, const A0 &a0, const A1 &a1);
+    void emitSignal(const std::string &name, A0 &&a0, A1 &&a1);
 
     /*!
      * Emit a signal with 3 args.
      */
     template <typename A0, typename A1, typename A2>
-    void emitSignal(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2);
+    void emitSignal(const std::string &name, A0 &&a0, A1 &&a1, A2 &&a2);
 
     /*!
      * Emit a signal with 4 args.
      */
     template <typename A0, typename A1, typename A2, typename A3>
-    void emitSignal(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3);
+    void emitSignal(const std::string &name, A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3);
 
     /*!
      * Emit a signal with 5 args.
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4>
-    void emitSignal(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4);
+    void emitSignal(const std::string &name, A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4);
 
     /*!
      * Emit a signal with 6 args.
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-    void emitSignal(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5);
+    void emitSignal(const std::string &name, A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5);
 
     /*!
      * Emit a signal with 7 args.
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-    void emitSignal(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6);
+    void emitSignal(const std::string &name, A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6);
 
     /*!
      * Emit a signal with 8 args.
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-    void emitSignal(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7);
+    void emitSignal(const std::string &name, A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7);
 
     /*!
      * Emit a signal with 9 args.
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-    void emitSignal(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8);
+    void emitSignal(const std::string &name, A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7, A8 &&a8);
 
     /*!
      * Emit a signal given the args as an array of opaque objects.
