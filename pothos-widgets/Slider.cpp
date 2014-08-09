@@ -30,6 +30,7 @@
  * |default 100
  * |widget SpinBox
  *
+ * |mode widget
  * |factory /widgets/slider(orientation)
  * |setter setValue(value)
  * |setter setMinimum(minimum)
@@ -48,7 +49,7 @@ public:
     Slider(const std::string &orientation):
         QSlider((orientation == "HORIZONTAL")? Qt::Horizontal : Qt::Vertical)
     {
-        this->registerCall(this, POTHOS_FCN_TUPLE(Slider, getWidget));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Slider, widget));
         this->registerCall(this, POTHOS_FCN_TUPLE(Slider, value));
         this->registerCall(this, POTHOS_FCN_TUPLE(Slider, setValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(Slider, setMinimum));
@@ -57,7 +58,7 @@ public:
         connect(this, SIGNAL(valueChanged(const int)), this, SLOT(handleValueChanged(const int)));
     }
 
-    QWidget *getWidget(void)
+    QWidget *widget(void)
     {
         return this;
     }
