@@ -38,6 +38,7 @@ typedef std::vector<CodeLine> CodeBlock;
  **********************************************************************/
 static std::string titleCase(const std::string &input)
 {
+    if (input.empty()) return input;
     return Poco::toUpper(input.substr(0, 1)) + input.substr(1);
 }
 
@@ -101,6 +102,24 @@ static void loadArgs(
 
     if (args->size() > 0) obj.set(argsKey, args);
     if (kwargs->size() > 0) obj.set(kwargsKey, kwargs);
+}
+
+//! Encode backslash escaped brackets to save them from regex
+static std::string bracketEscapeEncode(const std::string &payload)
+{
+    std::string out = payload;
+    Poco::replaceInPlace(out, "\\[", "\\x5b");
+    Poco::replaceInPlace(out, "\\]", "\\x5d");
+    return out;
+}
+
+//! Decode escaped brackets and remove the backslash for output
+static std::string bracketEscapeDecode(const std::string &payload)
+{
+    std::string out = payload;
+    Poco::replaceInPlace(out, "\\x5b", "[");
+    Poco::replaceInPlace(out, "\\x5d", "]");
+    return out;
 }
 
 /***********************************************************************
@@ -260,6 +279,7 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
         }
         else if (instruction == "param" and (state == "DOC" or state == "PARAM"))
         {
+            payload = bracketEscapeEncode(payload);
             Poco::RegularExpression::MatchVec fields;
             Poco::RegularExpression("^\\s*(\\w+)(\\s*\\[(.*)\\]\\s*)?(.*)$").match(payload, 0, fields);
             if (fields.empty()) throw Pothos::SyntaxException(
@@ -267,10 +287,10 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
                 codeLine.toString());
 
             assert(fields.size() == 5);
-            const std::string key = Poco::trim(payload.substr(fields[1].offset, fields[1].length));
+            const std::string key = bracketEscapeDecode(Poco::trim(payload.substr(fields[1].offset, fields[1].length)));
             std::string name = titleCase(key);
-            if (fields[3].length != 0) name = Poco::trim(payload.substr(fields[3].offset, fields[3].length));
-            const std::string desc = Poco::trim(payload.substr(fields[4].offset, fields[4].length));
+            if (fields[3].length != 0) name = bracketEscapeDecode(Poco::trim(payload.substr(fields[3].offset, fields[3].length)));
+            const std::string desc = bracketEscapeDecode(Poco::trim(payload.substr(fields[4].offset, fields[4].length)));
 
             currentParam = Poco::JSON::Object::Ptr(new Poco::JSON::Object());
             params.add(currentParam);
@@ -325,6 +345,7 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
         }
         else if (instruction == "option" and state == "PARAM")
         {
+            payload = bracketEscapeEncode(payload);
             Poco::RegularExpression::MatchVec fields;
             Poco::RegularExpression("^(\\s*\\[(.*)\\]\\s*)?(.*)$").match(payload, 0, fields);
             if (fields.empty()) throw Pothos::SyntaxException(
@@ -332,9 +353,9 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
                 codeLine.toString());
 
             assert(fields.size() == 4);
-            const std::string value = Poco::trim(payload.substr(fields[3].offset, fields[3].length));
+            const std::string value = bracketEscapeDecode(Poco::trim(payload.substr(fields[3].offset, fields[3].length)));
             std::string name = titleCase(value);
-            if (fields[2].length != 0) name = Poco::trim(payload.substr(fields[2].offset, fields[2].length));
+            if (fields[2].length != 0) name = bracketEscapeDecode(Poco::trim(payload.substr(fields[2].offset, fields[2].length)));
 
             Poco::JSON::Object option;
             option.set("value", value);
