@@ -16,162 +16,162 @@
 namespace Pothos {
 
 template <typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)())
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)())
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)() const)
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)() const)
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0))
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0))
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0) const)
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0) const)
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1))
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1))
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1) const)
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1) const)
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2))
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2))
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2) const)
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2) const)
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3))
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3))
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3) const)
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3) const)
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4))
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4))
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4) const)
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4) const)
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5))
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5))
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5) const)
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5) const)
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6))
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6))
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6) const)
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6) const)
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7))
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7))
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7) const)
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7) const)
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8))
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8))
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8) const)
+void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8) const)
 {
     Callable call(method);
-    call.bind(std::ref(*reinterpret_cast<ClassType *>(this)), 0);
+    call.bind(std::ref(*instance), 0);
     this->registerCallable(name, call);
 }
 

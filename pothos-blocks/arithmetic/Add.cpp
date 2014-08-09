@@ -55,9 +55,9 @@ public:
     Add(void):
         _numInlineBuffers(0)
     {
-        this->registerCall(POTHOS_FCN_TUPLE(Add<Type>, setNumInputs));
-        this->registerCall(POTHOS_FCN_TUPLE(Add<Type>, setPreload));
-        this->registerCall(POTHOS_FCN_TUPLE(Add<Type>, getNumInlineBuffers));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, setNumInputs));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, setPreload));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, getNumInlineBuffers));
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
 

@@ -84,16 +84,16 @@ public:
         _waveIndex(0, waveTableSize-1)
     {
         this->setupOutput(0, typeid(Type));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setWaveform));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getWaveform));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setOffset));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getOffset));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setAmplitude));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getAmplitude));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setMean));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getMean));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, setB));
-        this->registerCall(POTHOS_FCN_TUPLE(NoiseSource, getB));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NoiseSource, setWaveform));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NoiseSource, getWaveform));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NoiseSource, setOffset));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NoiseSource, getOffset));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NoiseSource, setAmplitude));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NoiseSource, getAmplitude));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NoiseSource, setMean));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NoiseSource, getMean));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NoiseSource, setB));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NoiseSource, getB));
     }
 
     void activate(void)

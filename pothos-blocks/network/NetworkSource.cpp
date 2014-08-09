@@ -49,7 +49,7 @@ public:
     {
         //std::cout << "NetworkSource " << opt << " " << uri << std::endl;
         this->setupOutput(0);
-        this->registerCall(POTHOS_FCN_TUPLE(NetworkSource, getActualPort));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NetworkSource, getActualPort));
     }
 
     std::string getActualPort(void) const

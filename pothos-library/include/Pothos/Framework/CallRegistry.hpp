@@ -26,143 +26,143 @@ public:
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)());
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)());
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)() const);
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)() const);
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0));
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0));
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0) const);
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0) const);
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1));
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1));
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1) const);
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1) const);
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2));
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2));
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2) const);
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2) const);
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3));
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3));
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3) const);
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3) const);
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4));
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4));
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4) const);
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4) const);
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5));
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5));
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5) const);
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5) const);
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6));
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6));
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6) const);
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6) const);
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7));
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7));
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7) const);
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7) const);
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8));
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8));
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8) const);
+    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8) const);
 
     /*!
      * Register a bound call with the given name.
