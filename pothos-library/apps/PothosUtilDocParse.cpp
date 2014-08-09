@@ -12,6 +12,7 @@
 #include <Poco/RegularExpression.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/NumberFormatter.h>
+#include <Poco/NumberParser.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -40,6 +41,7 @@ static std::string titleCase(const std::string &input)
     return Poco::toUpper(input.substr(0, 1)) + input.substr(1);
 }
 
+//! Split an args string into a vector of string at the comma separators
 static std::vector<std::string> splitCommaArgs(const std::string &argsStr)
 {
     std::vector<std::string> args(1);
@@ -54,7 +56,51 @@ static std::vector<std::string> splitCommaArgs(const std::string &argsStr)
             "bracket mismatch for comma-separated args", argsStr);
     }
     if (args.back().empty()) args.resize(args.size()-1);
+    for (auto &arg : args) arg = Poco::trim(arg);
     return args;
+}
+
+//! Turn a simple expression into a type-specific container
+static Poco::Dynamic::Var exprToDynVar(const std::string &expr)
+{
+    if (expr == "true") return true;
+    if (expr == "false") return false;
+    try {return Poco::NumberParser::parse(expr);} catch(const Poco::SyntaxException &){}
+    try {return Poco::NumberParser::parseFloat(expr);} catch(const Poco::SyntaxException &){}
+    return expr;
+}
+
+/*!
+ * Extract an args array and kwargs object parsed from an args string
+ */
+static void extractArgs(const std::string &argsStr, Poco::JSON::Array::Ptr &args, Poco::JSON::Object::Ptr &kwargs)
+{
+    for (const auto &arg : splitCommaArgs(argsStr))
+    {
+        const Poco::StringTokenizer kvpTok(arg, "=", Poco::StringTokenizer::TOK_TRIM);
+        const std::vector<std::string> kvp(kvpTok.begin(), kvpTok.end());
+        if (kwargs and kvp.size() == 2) kwargs->set(kvp[0], exprToDynVar(kvp[1]));
+        else if (args) args->add(exprToDynVar(arg));
+    }
+}
+
+/*!
+ * Load a JSON object with an args array and kwargs object parsed from the args string
+ */
+static void loadArgs(
+    const CodeLine &codeLine, Poco::JSON::Object &obj, const std::string &argsStr,
+    const std::string &argsKey = "args", const std::string &kwargsKey = "kwargs")
+{
+    Poco::JSON::Array::Ptr args(new Poco::JSON::Array());
+    Poco::JSON::Object::Ptr kwargs(new Poco::JSON::Object());
+    try {extractArgs(argsStr, args, kwargs);}
+    catch (const Pothos::Exception &ex)
+    {
+        throw Pothos::SyntaxException(codeLine.toString(), ex);
+    }
+
+    if (args->size() > 0) obj.set(argsKey, args);
+    if (kwargs->size() > 0) obj.set(kwargsKey, kwargs);
 }
 
 /***********************************************************************
@@ -238,23 +284,34 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
         else if (instruction == "default" and state == "PARAM")
         {
             if (currentParam->has("default")) throw Pothos::SyntaxException(
-                "Multiple occurrence of default for param",
+                "Multiple occurrence of |default for param",
                 codeLine.toString());
             currentParam->set("default", payload);
         }
         else if (instruction == "units" and state == "PARAM")
         {
             if (currentParam->has("units")) throw Pothos::SyntaxException(
-                "Multiple occurrence of units for param",
+                "Multiple occurrence of |units for param",
                 codeLine.toString());
             currentParam->set("units", payload);
         }
         else if (instruction == "widget" and state == "PARAM")
         {
-            if (currentParam->has("widget")) throw Pothos::SyntaxException(
-                "Multiple occurrence of widget for param",
+            if (currentParam->has("widgetType")) throw Pothos::SyntaxException(
+                "Multiple occurrence of |widget for param",
                 codeLine.toString());
-            currentParam->set("widget", payload);
+            Poco::RegularExpression::MatchVec fields;
+            Poco::RegularExpression("^\\s*(\\w+)\\s*\\((.*)\\)$").match(payload, 0, fields);
+            if (fields.empty()) throw Pothos::SyntaxException(
+                "Expected |widget SpinBox(args, )",
+                codeLine.toString());
+
+            assert(fields.size() == 3);
+            const std::string widgetType = Poco::trim(payload.substr(fields[1].offset, fields[1].length));
+            const std::string argsStr = Poco::trim(payload.substr(fields[2].offset, fields[2].length));
+
+            currentParam->set("widgetType", widgetType);
+            loadArgs(codeLine, *currentParam, argsStr, "widgetArgs", "widgetKwargs");
         }
         else if (instruction == "preview" and state == "PARAM")
         {
@@ -305,20 +362,11 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
                 throw Pothos::SyntaxException("Invalid factory path", codeLine.toString());
             }
             if (topObj.has("path")) throw Pothos::SyntaxException(
-                "Multiple occurrence of factory", codeLine.toString());
+                "Multiple occurrence of |factory", codeLine.toString());
             topObj.set("path", path);
 
             //split and extract args
-            Poco::JSON::Array args;
-            try
-            {
-                for (const auto &arg : splitCommaArgs(argsStr)) args.add(Poco::trim(arg));
-            }
-            catch (const Pothos::Exception &ex)
-            {
-                throw Pothos::SyntaxException(codeLine.toString(), ex);
-            }
-            if (args.size() > 0) topObj.set("args", args);
+            loadArgs(codeLine, topObj, argsStr);
 
             state = "DOC";
         }
@@ -334,24 +382,20 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
             const std::string callName = Poco::trim(payload.substr(fields[1].offset, fields[1].length));
             const std::string argsStr = Poco::trim(payload.substr(fields[2].offset, fields[2].length));
 
-            //split and extract args
-            Poco::JSON::Array args;
-            try
-            {
-                for (const auto &arg : splitCommaArgs(argsStr)) args.add(Poco::trim(arg));
-            }
-            catch (const Pothos::Exception &ex)
-            {
-                throw Pothos::SyntaxException(codeLine.toString(), ex);
-            }
-
             //add to calls
             Poco::JSON::Object call;
             call.set("name", callName);
-            call.set("args", args);
+            loadArgs(codeLine, call, argsStr);
             calls.add(call);
 
             state = "DOC";
+        }
+        else if (instruction == "mode" and (state == "DOC" or state == "PARAM"))
+        {
+            if (topObj.has("mode")) throw Pothos::SyntaxException(
+                "Multiple occurrence of |mode",
+                codeLine.toString());
+            topObj.set("mode", payload);
         }
     }
 
