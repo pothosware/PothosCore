@@ -15,10 +15,10 @@
  * |param value The initial value of this slider.
  * |default 0
  *
- * |param value The minimum integer value of this slider.
+ * |param minimum The minimum integer value of this slider.
  * |default 0
  *
- * |param value The maximum integer value of this slider.
+ * |param maximum The maximum integer value of this slider.
  * |default 100
  *
  * |factory /widgets/slider()
@@ -36,14 +36,13 @@ public:
         return new Slider();
     }
 
-    Slider(void):
-        QSlider(nullptr)
+    Slider(void)
     {
-        this->registerCall(POTHOS_FCN_TUPLE(Slider, getWidget));
-        this->registerCall(POTHOS_FCN_TUPLE(Slider, value));
-        this->registerCall(POTHOS_FCN_TUPLE(Slider, setValue));
-        this->registerCall(POTHOS_FCN_TUPLE(Slider, setMinimum));
-        this->registerCall(POTHOS_FCN_TUPLE(Slider, setMaximum));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Slider, getWidget));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Slider, value));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Slider, setValue));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Slider, setMinimum));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Slider, setMaximum));
         this->registerSignal("valueChanged");
         connect(this, SIGNAL(valueChanged(const int)), this, SLOT(handleValueChanged(const int)));
     }
