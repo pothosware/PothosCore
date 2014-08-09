@@ -17,10 +17,10 @@ public:
     FeederSource(const Pothos::DType &dtype)
     {
         this->setupOutput(0, dtype, this->uid()); //unique domain to force copies
-        this->registerCall(POTHOS_FCN_TUPLE(FeederSource, feedTestPlan));
-        this->registerCall(POTHOS_FCN_TUPLE(FeederSource, feedBuffer));
-        this->registerCall(POTHOS_FCN_TUPLE(FeederSource, feedLabel));
-        this->registerCall(POTHOS_FCN_TUPLE(FeederSource, feedMessage));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FeederSource, feedTestPlan));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FeederSource, feedBuffer));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FeederSource, feedLabel));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FeederSource, feedMessage));
     }
 
     static Block *make(const Pothos::DType &dtype)

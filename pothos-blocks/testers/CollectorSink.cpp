@@ -15,10 +15,10 @@ public:
     CollectorSink(const Pothos::DType &dtype)
     {
         this->setupInput(0, dtype);
-        this->registerCall(POTHOS_FCN_TUPLE(CollectorSink, getBuffer));
-        this->registerCall(POTHOS_FCN_TUPLE(CollectorSink, getLabels));
-        this->registerCall(POTHOS_FCN_TUPLE(CollectorSink, getMessages));
-        this->registerCall(POTHOS_FCN_TUPLE(CollectorSink, verifyTestPlan));
+        this->registerCall(this, POTHOS_FCN_TUPLE(CollectorSink, getBuffer));
+        this->registerCall(this, POTHOS_FCN_TUPLE(CollectorSink, getLabels));
+        this->registerCall(this, POTHOS_FCN_TUPLE(CollectorSink, getMessages));
+        this->registerCall(this, POTHOS_FCN_TUPLE(CollectorSink, verifyTestPlan));
     }
 
     static Block *make(const Pothos::DType &dtype)

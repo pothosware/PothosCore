@@ -196,13 +196,13 @@ OpenClKernel::OpenClKernel(const std::string &deviceId, const std::vector<size_t
         this->setupOutput(i, Pothos::DType("custom", outputSizes[i]), _myDomain);
     }
 
-    this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setSource));
-    this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setLocalSize));
-    this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, getLocalSize));
-    this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setGlobalFactor));
-    this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, getGlobalFactor));
-    this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, setProductionFactor));
-    this->registerCall(POTHOS_FCN_TUPLE(OpenClKernel, getProductionFactor));
+    this->registerCall(this, POTHOS_FCN_TUPLE(OpenClKernel, setSource));
+    this->registerCall(this, POTHOS_FCN_TUPLE(OpenClKernel, setLocalSize));
+    this->registerCall(this, POTHOS_FCN_TUPLE(OpenClKernel, getLocalSize));
+    this->registerCall(this, POTHOS_FCN_TUPLE(OpenClKernel, setGlobalFactor));
+    this->registerCall(this, POTHOS_FCN_TUPLE(OpenClKernel, getGlobalFactor));
+    this->registerCall(this, POTHOS_FCN_TUPLE(OpenClKernel, setProductionFactor));
+    this->registerCall(this, POTHOS_FCN_TUPLE(OpenClKernel, getProductionFactor));
 }
 
 void OpenClKernel::setSource(const std::string &kernelName, const std::string &kernelSource)

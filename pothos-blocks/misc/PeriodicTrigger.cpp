@@ -32,8 +32,8 @@ public:
         _rate(1.0)
     {
         this->registerSignal("triggered");
-        this->registerCall(POTHOS_FCN_TUPLE(PeriodicTrigger, setRate));
-        this->registerCall(POTHOS_FCN_TUPLE(PeriodicTrigger, getRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PeriodicTrigger, setRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PeriodicTrigger, getRate));
     }
 
     void setRate(const double rate)

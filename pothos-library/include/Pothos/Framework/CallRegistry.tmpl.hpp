@@ -27,17 +27,17 @@ public:
     #for $NARGS in range($MAX_ARGS)
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
-    template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)));
+    template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType, typename InstanceType>
+    void registerCall(InstanceType *instance, const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)));
 
     /*!
      * Register a class method with the given name.
-     * Usage: this->registerCall("foo", &MyClass::foo);
+     * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
-    template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType>
-    void registerCall(const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)) const);
+    template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType, typename InstanceType>
+    void registerCall(InstanceType *instance, const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)) const);
 
     #end for
     /*!

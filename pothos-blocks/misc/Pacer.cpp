@@ -43,9 +43,9 @@ public:
     {
         this->setupInput(0, dtype);
         this->setupOutput(0, dtype);
-        this->registerCall(POTHOS_FCN_TUPLE(Pacer, setRate));
-        this->registerCall(POTHOS_FCN_TUPLE(Pacer, getRate));
-        this->registerCall(POTHOS_FCN_TUPLE(Pacer, getActualRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Pacer, setRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Pacer, getRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Pacer, getActualRate));
     }
 
     void setRate(const double rate)
