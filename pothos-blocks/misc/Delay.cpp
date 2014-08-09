@@ -37,8 +37,8 @@ public:
     {
         this->setupInput(0, dtype);
         this->setupOutput(0, dtype);
-        this->registerCall(POTHOS_FCN_TUPLE(Delay, setDelay));
-        this->registerCall(POTHOS_FCN_TUPLE(Delay, getDelay));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Delay, setDelay));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Delay, getDelay));
     }
 
     void setDelay(const int elements)

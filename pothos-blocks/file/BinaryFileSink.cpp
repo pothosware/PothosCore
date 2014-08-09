@@ -54,7 +54,7 @@ public:
         _fd(-1)
     {
         this->setupInput(0, "byte");
-        this->registerCall(POTHOS_FCN_TUPLE(BinaryFileSink, setFilePath));
+        this->registerCall(this, POTHOS_FCN_TUPLE(BinaryFileSink, setFilePath));
     }
 
     void setFilePath(const std::string &path)

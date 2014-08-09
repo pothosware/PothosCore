@@ -49,8 +49,8 @@ public:
     {
         this->setupInput(0);
         this->setupOutput(0);
-        this->registerCall(POTHOS_FCN_TUPLE(DynamicRouter, setDestinations));
-        this->registerCall(POTHOS_FCN_TUPLE(DynamicRouter, setNumPorts));
+        this->registerCall(this, POTHOS_FCN_TUPLE(DynamicRouter, setDestinations));
+        this->registerCall(this, POTHOS_FCN_TUPLE(DynamicRouter, setNumPorts));
     }
 
     void setNumPorts(const size_t numInputs, const size_t numOutputs)

@@ -10,7 +10,7 @@ class PythonBlock : Pothos::Block
 public:
     PythonBlock(void)
     {
-        this->registerCall(POTHOS_FCN_TUPLE(PythonBlock, _setPyBlock));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PythonBlock, _setPyBlock));
     }
 
     static Block *make(void)

@@ -69,14 +69,14 @@ public:
         _wave("CONST")
     {
         this->setupOutput(0, typeid(Type));
-        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, setWaveform));
-        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, getWaveform));
-        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, setOffset));
-        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, getOffset));
-        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, setAmplitude));
-        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, getAmplitude));
-        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, setFrequency));
-        this->registerCall(POTHOS_FCN_TUPLE(WaveformSource<Type>, getFrequency));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, setWaveform));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, getWaveform));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, setOffset));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, getOffset));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, setAmplitude));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, getAmplitude));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, setFrequency));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, getFrequency));
     }
 
     void activate(void)
