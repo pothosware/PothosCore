@@ -52,7 +52,7 @@ static std::string makeGraphBlockConfigHash(GraphBlock *block, const Pothos::Pro
 }
 
 Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
-{    
+{
     block->clearBlockErrorMsgs();
 
     //try to get access to a remote environment object
@@ -116,20 +116,18 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
     try
     {
         blockEval.callProxy("eval", block->getId().toStdString(), block->getBlockDesc());
+        auto proxyBlock = blockEval.callProxy("getProxyBlock");
+        block->setPortDesc(
+            portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo")),
+            portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo")));
     }
 
     //parser errors report
     catch(const Pothos::Exception &ex)
     {
-        poco_error(Poco::Logger::get("PothosGui.GraphBlock.update"), ex.displayText());
+        poco_error(Poco::Logger::get("PothosGui.TopologyEngine.evalGraphBlock"), ex.displayText());
         block->addBlockErrorMsg(QString::fromStdString(ex.message()));
     }
-
-    //update the ports after complete evaluation
-    auto proxyBlock = blockEval.callProxy("getProxyBlock");
-    block->setPortDesc(
-        portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo")),
-        portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo")));
 
     //update the cache and return
     _idToBlockEval[block->getId()] = std::make_pair(thisHash, blockEval);
