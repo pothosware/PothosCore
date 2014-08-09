@@ -766,7 +766,7 @@ void GraphEditor::handleBlockXcrement(const int adj)
         for (const auto &propKey : block->getProperties())
         {
             auto paramDesc = block->getParamDesc(propKey);
-            if (paramDesc->has("widget") and paramDesc->getValue<std::string>("widget") == "SpinBox")
+            if (paramDesc->has("widgetType") and paramDesc->getValue<std::string>("widgetType") == "SpinBox")
             {
                 const auto newValue = block->getPropertyValue(propKey).toInt() + adj;
                 block->setPropertyValue(propKey, QString("%1").arg(newValue));

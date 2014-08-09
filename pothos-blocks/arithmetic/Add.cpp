@@ -35,13 +35,15 @@
  *
  * |param numInputs[Num Inputs] The number of input ports.
  * |default 2
- * |widget SpinBox
+ * |widget SpinBox(minimum=2)
  * |preview disable
  *
  * |param preload The number of elements to preload into each input.
  * The value is an array of integers where each element represents
  * the number of elements to preload the port with.
- * |default [0, 0]
+ * |default []
+ * |widget ComboBox(editable=true)
+ * |option [Ignored] \[\]
  * |preview disable
  *
  * |factory /blocks/add(dtype)

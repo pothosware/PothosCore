@@ -13,16 +13,20 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
     QStackedWidget(parent),
     _edit(nullptr)
 {
-    std::string widgetType;
-    if (paramDesc->has("widget")) widgetType = paramDesc->getValue<std::string>("widget");
-    else if (paramDesc->isArray("options")) widgetType = "ComboBox";
-    else widgetType = "LineEdit";
+    //extract widget args
+    Poco::JSON::Array::Ptr widgetArgs(new Poco::JSON::Array());
+    if (paramDesc->has("widgetArgs")) widgetArgs = paramDesc->getArray("widgetArgs");
+    Poco::JSON::Object::Ptr widgetKwargs(new Poco::JSON::Object());
+    if (paramDesc->has("widgetKwargs")) widgetKwargs = paramDesc->getObject("widgetKwargs");
+
+    //extract widget type
+    auto widgetType = paramDesc->optValue<std::string>("widgetType", "LineEdit");
+    if (paramDesc->isArray("options")) widgetType = "ComboBox";
 
     if (widgetType == "ComboBox")
     {
         auto comboBox = new QComboBox(this);
-        _edit = comboBox;
-        //combo->setEditable(true);
+        comboBox->setEditable(widgetKwargs->optValue<bool>("editable", false));
         for (const auto &optionObj : *paramDesc->getArray("options"))
         {
             const auto option = optionObj.extract<Poco::JSON::Object::Ptr>();
@@ -31,14 +35,16 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
                 QString::fromStdString(option->getValue<std::string>("value")));
         }
         connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        connect(comboBox, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        _edit = comboBox;
     }
     else if (widgetType == "SpinBox")
     {
         auto spinBox = new QSpinBox(this);
-        spinBox->setMinimum(std::numeric_limits<int>::min());
-        spinBox->setMaximum(std::numeric_limits<int>::max());
-        _edit = spinBox;
+        spinBox->setMinimum(widgetKwargs->optValue<int>("minimum", std::numeric_limits<int>::min()));
+        spinBox->setMaximum(widgetKwargs->optValue<int>("maximum", std::numeric_limits<int>::max()));
         connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
+        _edit = spinBox;
     }
     else
     {
@@ -62,9 +68,15 @@ void BlockPropertyEditWidget::setValue(const QString &value)
     if (this->value() == value) return;
 
     auto comboBox = dynamic_cast<QComboBox *>(_edit);
-    if (comboBox != nullptr) for (int i = 0; i < comboBox->count(); i++)
+    if (comboBox != nullptr)
     {
-        if (comboBox->itemData(i).toString() == value) comboBox->setCurrentIndex(i);
+        int index = -1;
+        for (int i = 0; i < comboBox->count(); i++)
+        {
+            if (comboBox->itemData(i).toString() == value) index = i;
+        }
+        if (index < 0) comboBox->setEditText(value);
+        else comboBox->setCurrentIndex(index);
     }
 
     auto spinBox = dynamic_cast<QSpinBox *>(_edit);
@@ -79,7 +91,12 @@ QString BlockPropertyEditWidget::value(void) const
     QString newValue;
 
     auto comboBox = dynamic_cast<QComboBox *>(_edit);
-    if (comboBox != nullptr) newValue = comboBox->itemData(comboBox->currentIndex()).toString();
+    if (comboBox != nullptr)
+    {
+        const auto index = comboBox->currentIndex();
+        if (index < 0 or comboBox->currentText() != comboBox->itemText(index)) newValue = comboBox->currentText();
+        else newValue = comboBox->itemData(index).toString();
+    }
 
     auto spinBox = dynamic_cast<QSpinBox *>(_edit);
     if (spinBox != nullptr) newValue = QString("%1").arg(spinBox->value());
