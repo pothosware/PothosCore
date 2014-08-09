@@ -35,6 +35,7 @@ static QColor __typeStrToColor(const std::string &typeStr)
 
 QColor typeStrToColor(const std::string &typeStr)
 {
+    if (typeStr.empty()) return "white"; //not specified
     {
         Poco::RWLock::ScopedReadLock lock(getLookupMutex());
         auto it = getColorMap().find(typeStr);

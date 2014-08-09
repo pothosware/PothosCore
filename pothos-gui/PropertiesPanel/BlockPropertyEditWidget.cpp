@@ -7,6 +7,7 @@
 #include <QLineEdit>
 #include <QSpinBox>
 #include <Poco/Logger.h>
+#include <limits>
 
 BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent):
     QStackedWidget(parent),
@@ -34,6 +35,8 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
     else if (widgetType == "SpinBox")
     {
         auto spinBox = new QSpinBox(this);
+        spinBox->setMinimum(std::numeric_limits<int>::min());
+        spinBox->setMaximum(std::numeric_limits<int>::max());
         _edit = spinBox;
         connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
     }
