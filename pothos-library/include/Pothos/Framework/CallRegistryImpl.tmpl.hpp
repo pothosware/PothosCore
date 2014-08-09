@@ -16,19 +16,19 @@
 namespace Pothos {
 
 #for $NARGS in range($MAX_ARGS)
-template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)))
+template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType, typename InstanceType>
+void CallRegistry::registerCall(InstanceType *instance, const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)))
 {
     Callable call(method);
-    call.bind(std::ref(*instance), 0);
+    call.bind(std::ref(*static_cast<ClassType *>(instance)), 0);
     this->registerCallable(name, call);
 }
 
-template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType>
-void CallRegistry::registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)) const)
+template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType, typename InstanceType>
+void CallRegistry::registerCall(InstanceType *instance, const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)) const)
 {
     Callable call(method);
-    call.bind(std::ref(*instance), 0);
+    call.bind(std::ref(*static_cast<ClassType *>(instance)), 0);
     this->registerCallable(name, call);
 }
 

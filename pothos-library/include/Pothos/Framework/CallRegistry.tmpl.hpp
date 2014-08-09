@@ -29,15 +29,15 @@ public:
      * Register a class method with the given name.
      * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
-    template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType>
-    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)));
+    template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType, typename InstanceType>
+    void registerCall(InstanceType *instance, const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)));
 
     /*!
      * Register a class method with the given name.
      * Usage: this->registerCall(this, "foo", &MyClass::foo);
      */
-    template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType>
-    void registerCall(ClassType *instance, const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)) const);
+    template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType, typename InstanceType>
+    void registerCall(InstanceType *instance, const std::string &name, ReturnType(ClassType::*method)($expand('A%d', $NARGS)) const);
 
     #end for
     /*!
