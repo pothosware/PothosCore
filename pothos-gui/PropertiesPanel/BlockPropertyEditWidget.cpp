@@ -13,10 +13,15 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
     QStackedWidget(parent),
     _edit(nullptr)
 {
-    std::string widgetType;
-    if (paramDesc->has("widget")) widgetType = paramDesc->getValue<std::string>("widget");
-    else if (paramDesc->isArray("options")) widgetType = "ComboBox";
-    else widgetType = "LineEdit";
+    //extract widget args
+    Poco::JSON::Array::Ptr widgetArgs(new Poco::JSON::Array());
+    if (paramDesc->has("widgetArgs")) widgetArgs = paramDesc->getArray("widgetArgs");
+    Poco::JSON::Object::Ptr widgetKwargs(new Poco::JSON::Object());
+    if (paramDesc->has("widgetKwargs")) widgetKwargs = paramDesc->getObject("widgetKwargs");
+
+    //extract widget type
+    auto widgetType = paramDesc->optValue<std::string>("widgetType", "LineEdit");
+    if (paramDesc->isArray("options")) widgetType = "ComboBox";
 
     if (widgetType == "ComboBox")
     {
@@ -35,8 +40,8 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
     else if (widgetType == "SpinBox")
     {
         auto spinBox = new QSpinBox(this);
-        spinBox->setMinimum(std::numeric_limits<int>::min());
-        spinBox->setMaximum(std::numeric_limits<int>::max());
+        spinBox->setMinimum(widgetKwargs->optValue<int>("minimum", std::numeric_limits<int>::min()));
+        spinBox->setMaximum(widgetKwargs->optValue<int>("maximum", std::numeric_limits<int>::max()));
         _edit = spinBox;
         connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
     }
