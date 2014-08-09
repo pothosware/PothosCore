@@ -12,16 +12,25 @@
  * |category /Widgets
  * |keywords slider
  *
+ * |param orientation The slider orientation (horizontal or veritical).
+ * |default "HORIZONTAL"
+ * |option [Horizontal] "HORIZONTAL"
+ * |option [Veritical] "VERTICAL"
+ * |preview disable
+ *
  * |param value The initial value of this slider.
  * |default 0
+ * |widget SpinBox
  *
  * |param minimum The minimum integer value of this slider.
  * |default 0
+ * |widget SpinBox
  *
  * |param maximum The maximum integer value of this slider.
  * |default 100
+ * |widget SpinBox
  *
- * |factory /widgets/slider()
+ * |factory /widgets/slider(orientation)
  * |setter setValue(value)
  * |setter setMinimum(minimum)
  * |setter setMaximum(maximum)
@@ -31,12 +40,13 @@ class Slider : public QSlider, public Pothos::Block
     Q_OBJECT
 public:
 
-    static Block *make(void)
+    static Block *make(const std::string &orientation)
     {
-        return new Slider();
+        return new Slider(orientation);
     }
 
-    Slider(void)
+    Slider(const std::string &orientation):
+        QSlider((orientation == "HORIZONTAL")? Qt::Horizontal : Qt::Vertical)
     {
         this->registerCall(this, POTHOS_FCN_TUPLE(Slider, getWidget));
         this->registerCall(this, POTHOS_FCN_TUPLE(Slider, value));
