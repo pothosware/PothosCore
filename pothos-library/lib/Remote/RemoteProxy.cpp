@@ -11,22 +11,36 @@ Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs
 {
     std::lock_guard<std::mutex> lock(mutex);
 
-    //request object
-    Pothos::Object request(reqArgs);
-    request.serialize(os);
-    os.flush();
+    if (not connectionActive)
+    {
+        throw Pothos::IOException("RemoteProxyEnvironment::transact()", "connection inactive");
+    }
 
-    //reply object
-    Pothos::Object reply;
-    reply.deserialize(is);
-    return reply.extract<Pothos::ObjectKwargs>();
+    try
+    {
+        //request object
+        Pothos::Object request(reqArgs);
+        request.serialize(os);
+        os.flush();
+
+        //reply object
+        Pothos::Object reply;
+        reply.deserialize(is);
+        return reply.extract<Pothos::ObjectKwargs>();
+    }
+
+    catch (const Poco::IOException &ex)
+    {
+        connectionActive = false;
+        throw Pothos::IOException("RemoteProxyEnvironment::transact()", ex.message());
+    }
 }
 
 RemoteProxyEnvironment::RemoteProxyEnvironment(
     std::istream &is, std::ostream &os,
     const std::string &name, const Pothos::ProxyEnvironmentArgs &args
 ):
-    is(is), os(os), name(name)
+    is(is), os(os), name(name), connectionActive(true)
 {
     //create request
     Pothos::ObjectKwargs req;
