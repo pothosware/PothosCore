@@ -66,6 +66,7 @@ public:
     std::ostream &os;
     const std::string name;
     std::mutex mutex;
+    bool connectionActive;
 };
 
 /***********************************************************************
