@@ -5,10 +5,12 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
+#include <QGraphicsView>
 
 class GraphEditor;
+class QGraphicsScene;
 
-class GraphDraw : public QWidget
+class GraphDraw : public QGraphicsView
 {
     Q_OBJECT
 public:
@@ -60,7 +62,7 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
-    void paintEvent(QPaintEvent *event);
+    //void paintEvent(QPaintEvent *event);
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
@@ -83,9 +85,9 @@ private:
 
     void updateEnabledActions(void);
 
+    QGraphicsScene *_scene;
     GraphEditor *_graphEditor;
     qreal _zoomScale;
-    QImage _image;
     bool _mouseLeftDown;
     QPointF _mouseLeftDownFirstPoint;
     QPointF _mouseLeftDownLastPoint;

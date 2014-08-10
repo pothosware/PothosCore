@@ -36,11 +36,14 @@ void GraphDraw::mouseDoubleClickEvent(QMouseEvent *event)
         const auto objs = this->getObjectsAtPos(event->localPos());
         if (not objs.isEmpty()) emit this->modifyProperties(objs.at(0));
     }
-    QWidget::mouseDoubleClickEvent(event);
+    QGraphicsView::mouseDoubleClickEvent(event);
 }
 
 void GraphDraw::mousePressEvent(QMouseEvent *event)
 {
+    return QGraphicsView::mousePressEvent(event);
+    //FIXME.........
+
     //record the conditions of this press event, nothing is changed
     if (event->button() == Qt::LeftButton)
     {
@@ -59,7 +62,7 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
         size_t numSelected = 0;
         for (auto obj : objs)
         {
-            if (obj->getSelected()) numSelected++;
+            if (obj->isSelected()) numSelected++;
         }
         if (numSelected == 0 and not objs.empty())
         {
@@ -68,7 +71,7 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
         }
     }
 
-    QWidget::mousePressEvent(event);
+    QGraphicsView::mousePressEvent(event);
 }
 
 static void handleAutoScroll(QScrollBar *bar, const qreal length, const qreal offset)
@@ -86,6 +89,9 @@ static void handleAutoScroll(QScrollBar *bar, const qreal length, const qreal of
 
 void GraphDraw::mouseMoveEvent(QMouseEvent *event)
 {
+    return QGraphicsView::mouseMoveEvent(event);
+    //FIXME.........
+
     const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
 
     //handle the first move event transition from a press event
@@ -94,7 +100,7 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
         auto objs = this->getObjectsAtPos(_mouseLeftDownFirstPoint);
         if (not objs.empty())
         {
-            if (not objs.back()->getSelected()) this->doClickSelection(_mouseLeftDownFirstPoint);
+            if (not objs.back()->isSelected()) this->doClickSelection(_mouseLeftDownFirstPoint);
             _selectionState = "move";
         }
         else
@@ -109,14 +115,14 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     {
         for (auto obj : this->getObjectsSelected(~GRAPH_CONNECTION))
         {
-            obj->move((event->localPos() - _mouseLeftDownLastPoint)/this->zoomScale());
+            //FIXME obj->move((event->localPos() - _mouseLeftDownLastPoint)/this->zoomScale());
             //keep the block within the drawing space
-            QPointF newPoint = obj->getPosition()*this->zoomScale();
+            QPointF newPoint = obj->pos()*this->zoomScale();
             if (newPoint.x() < 0) newPoint.setX(0);
             if (newPoint.y() < 0) newPoint.setY(0);
             if (newPoint.x() > this->size().width()) newPoint.setX(this->size().width()-1);
             if (newPoint.y() > this->size().height()) newPoint.setY(this->size().height()-1);
-            obj->setPosition(newPoint/this->zoomScale());
+            obj->setPos(newPoint/this->zoomScale());
         }
     }
 
@@ -135,11 +141,14 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
         handleAutoScroll(scrollArea->verticalScrollBar(), scrollArea->size().height(), event->localPos().y());
     }
 
-    QWidget::mouseMoveEvent(event);
+    QGraphicsView::mouseMoveEvent(event);
 }
 
 void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
 {
+    return QGraphicsView::mouseReleaseEvent(event);
+    //FIXME.........
+
     //mouse released from a pressed state - alter selections at point
     if (event->button() == Qt::LeftButton and _selectionState == "pressed")
     {
@@ -172,7 +181,7 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
         this->render();
     }
 
-    QWidget::mouseReleaseEvent(event);
+    QGraphicsView::mouseReleaseEvent(event);
 }
 
 void GraphDraw::deselectAllObjs(void)
@@ -185,10 +194,10 @@ void GraphDraw::deselectAllObjs(void)
 
 int GraphDraw::getMaxZIndex(void)
 {
-    int index = 0;
+    qreal index = 0;
     for (auto obj : this->getGraphObjects())
     {
-        index = std::max(index, obj->getZIndex());
+        index = std::max(index, obj->zValue());
     }
     return index;
 }
@@ -208,14 +217,14 @@ GraphObjectList GraphDraw::getObjectsSelected(const int selectionFlags)
     GraphObjectList objectsSelected;
     for (auto obj : this->getGraphObjects(selectionFlags))
     {
-        if (obj->getSelected()) objectsSelected.push_back(obj);
+        if (obj->isSelected()) objectsSelected.push_back(obj);
     }
     return objectsSelected;
 }
 
 static bool cmpGraphObjects(const GraphObject *lhs, const GraphObject *rhs)
 {
-    return lhs->getZIndex() < rhs->getZIndex();
+    return lhs->zValue() < rhs->zValue();
 }
 
 GraphObjectList GraphDraw::getGraphObjects(const int selectionFlags)
@@ -242,11 +251,11 @@ void GraphDraw::doClickSelection(const QPointF &point)
         auto topObj = objs.back();
         bool newSel = true;
         //the selected object will have its selection inverted if its the only selection or ctrl
-        if (this->getObjectsSelected().size() == 1 or ctrlDown) newSel = not topObj->getSelected();
+        if (this->getObjectsSelected().size() == 1 or ctrlDown) newSel = not topObj->isSelected();
         if (not ctrlDown) this->deselectAllObjs();
         topObj->setSelected(newSel);
         const int maxZIndex = this->getMaxZIndex();
-        topObj->setZIndex(maxZIndex+1);
+        topObj->setZValue(maxZIndex+1);
     }
     else if (not ctrlDown) this->deselectAllObjs();
 

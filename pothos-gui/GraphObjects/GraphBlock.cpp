@@ -350,7 +350,7 @@ GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey 
 {
     GraphConnectableAttrs attrs;
     attrs.direction = key.direction;
-    attrs.rotation = this->getRotation();
+    attrs.rotation = this->rotation();
     if (key.direction == GRAPH_CONN_INPUT) for (int i = 0; i < _inputPorts.size(); i++)
     {
         if (key.id == _inputPorts[i])
@@ -472,14 +472,14 @@ void GraphBlock::render(QPainter &painter)
 
     //setup rotations and translations
     QTransform trans;
-    trans.translate(this->getPosition().x(), this->getPosition().y());
-    painter.translate(this->getPosition());
+    trans.translate(this->pos().x(), this->pos().y());
+    painter.translate(this->pos());
 
     //dont rotate past 180 because we just do a port flip
     //this way text only ever has 2 rotations
-    trans.rotate(this->getRotation() % 180);
-    painter.rotate(this->getRotation() % 180);
-    const bool portFlip = this->getRotation() >= 180;
+    trans.rotate(int(this->rotation()) % 180);
+    painter.rotate(int(this->rotation()) % 180);
+    const bool portFlip = this->rotation() >= 180;
 
     //calculate dimensions
     qreal inputPortsMinHeight = GraphBlockPortVOutterPad*2;
@@ -535,7 +535,7 @@ void GraphBlock::render(QPainter &painter)
         inPortVdelta += rectSize.height() + GraphBlockPortVGap;
         painter.save();
         painter.setBrush(QBrush(_impl->inputPortColors.at(i)));
-        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRect(portRect);
         painter.restore();
         _impl->inputPortRects[i] = trans.mapRect(portRect);
@@ -564,7 +564,7 @@ void GraphBlock::render(QPainter &painter)
         outPortVdelta += rectSize.height() + GraphBlockPortVGap;
         painter.save();
         painter.setBrush(QBrush(_impl->outputPortColors.at(i)));
-        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
         painter.restore();
         _impl->outputPortRects[i] = trans.mapRect(portRect);
@@ -588,7 +588,7 @@ void GraphBlock::render(QPainter &painter)
 
         painter.save();
         painter.setBrush(QBrush(_impl->mainBlockColor));
-        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
         painter.restore();
 
@@ -610,7 +610,7 @@ void GraphBlock::render(QPainter &painter)
     //draw main body of the block
     painter.save();
     painter.setBrush(QBrush(_impl->mainBlockColor));
-    if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+    if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
     painter.drawRoundedRect(mainRect, GraphBlockMainArc, GraphBlockMainArc);
     painter.restore();
 

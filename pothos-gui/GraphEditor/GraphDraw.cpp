@@ -8,12 +8,12 @@
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphEditor/Constants.hpp"
 #include <Poco/JSON/Parser.h>
+#include <QGraphicsScene>
 #include <QMenu>
 #include <QPainter>
 #include <QPen>
 #include <QBrush>
 #include <QColor>
-#include <QImage>
 #include <QAction>
 #include <QChildEvent>
 #include <QMimeData>
@@ -23,13 +23,23 @@
 #include <cassert>
 
 GraphDraw::GraphDraw(QWidget *parent):
-    QWidget(parent),
+    QGraphicsView(parent),
+    _scene(new QGraphicsScene(this)),
     _graphEditor(dynamic_cast<GraphEditor *>(parent)),
     _zoomScale(1.0),
     _mouseLeftDown(false),
     _showGraphConnectionPoints(false),
     _showGraphBoundingBoxes(false)
 {
+    //setup scene
+    this->setScene(_scene);
+    _scene->setBackgroundBrush(QColor(GraphDrawBackgroundColor));
+
+    //set high quality rendering
+    this->setRenderHint(QPainter::Antialiasing);
+    this->setRenderHint(QPainter::HighQualityAntialiasing);
+    this->setRenderHint(QPainter::SmoothPixmapTransform);
+
     assert(this->getGraphEditor() != nullptr);
     this->setAcceptDrops(true);
 
@@ -85,19 +95,18 @@ void GraphDraw::setZoomScale(const qreal zoom)
 {
     _zoomScale = zoom;
     QSizeF newSize(GraphDrawCanvasSize*this->zoomScale());
-    _image = QImage(newSize.width(), newSize.height(), QImage::Format_ARGB32);
-    this->resize(_image.size());
+    this->resize(newSize.toSize());
     this->render();
 }
 
 void GraphDraw::setupCanvas(void)
 {
     QSizeF newSize(GraphDrawCanvasSize*this->zoomScale());
-    _image = QImage(newSize.width(), newSize.height(), QImage::Format_ARGB32);
-    this->resize(_image.size());
+    this->resize(newSize.toSize());
     this->render();
 }
 
+/*
 void GraphDraw::paintEvent(QPaintEvent *event)
 {
     QRectF target(QPointF(), this->size());
@@ -106,6 +115,7 @@ void GraphDraw::paintEvent(QPaintEvent *event)
 
     QWidget::paintEvent(event);
 }
+*/
 
 void GraphDraw::showEvent(QShowEvent *event)
 {
@@ -119,7 +129,7 @@ void GraphDraw::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Plus) getActionMap()["increment"]->activate(QAction::Trigger);
     if (event->key() == Qt::Key_Minus) getActionMap()["decrement"]->activate(QAction::Trigger);
-    QWidget::keyPressEvent(event);
+    QGraphicsView::keyPressEvent(event);
 }
 
 void GraphDraw::updateEnabledActions(void)
@@ -159,30 +169,34 @@ void GraphDraw::render(void)
     this->updateEnabledActions();
 
     //draw background
-    _image.fill(QColor(GraphDrawBackgroundColor));
+    //_image.fill(QColor(GraphDrawBackgroundColor));
 
     //setup painter
-    QPainter painter(&_image);
+    //QPainter painter(&_image);
 
     //pre-render to perform connection calculations
     const auto allObjs = this->getGraphObjects();
     for (auto obj : allObjs) obj->prerender();
 
     //set high quality rendering after drawing the background
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    //painter.setRenderHint(QPainter::Antialiasing);
+    //painter.setRenderHint(QPainter::HighQualityAntialiasing);
+    //painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     //clip the bounds
     for (auto obj : allObjs)
     {
-        auto oldPos = obj->getPosition();
+        auto oldPos = obj->pos();
         oldPos.setX(std::min(std::max(oldPos.x(), 0.0), QSizeF(this->size()).width()));
         oldPos.setY(std::min(std::max(oldPos.y(), 0.0), QSizeF(this->size()).height()));
-        obj->setPosition(oldPos);
+        obj->setPos(oldPos);
     }
 
+    this->setTransform(QTransform()); //clear
+    this->scale(this->zoomScale(), this->zoomScale());
+
     //render objects
+    /*
     for (auto obj : allObjs)
     {
         //draw the object
@@ -223,6 +237,7 @@ void GraphDraw::render(void)
     }
 
     painter.end();
+    */
     this->repaint();
 }
 

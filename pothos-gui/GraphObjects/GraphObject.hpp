@@ -6,6 +6,7 @@
 #include "GraphObjects/GraphEndpoint.hpp"
 #include <QList>
 #include <QObject>
+#include <QGraphicsItem>
 #include <QPointF>
 #include <QRectF>
 #include <vector>
@@ -20,18 +21,18 @@ class GraphObject;
 typedef QList<GraphObject *> GraphObjectList;
 
 //! Base class for graph objects
-class GraphObject : public QObject
+class GraphObject : public QObject, public QGraphicsItem
 {
 public:
     GraphObject(QObject *parent);
 
     ~GraphObject(void);
 
+    QRectF boundingRect(void) const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
+
     virtual void setId(const QString &id);
     const QString &getId(void) const;
-
-    virtual void setSelected(const bool on);
-    bool getSelected(void) const;
 
     virtual bool isPointing(const QPointF &pos) const;
     virtual bool isPointing(const QRectF &pos) const;
@@ -41,15 +42,6 @@ public:
     void prerender(void);
     virtual void render(QPainter &painter);
 
-    virtual void setZIndex(const int index);
-    int getZIndex(void) const;
-
-    virtual void setPosition(const QPointF &pos);
-    const QPointF &getPosition(void) const;
-    virtual void move(const QPointF &delta);
-
-    virtual void setRotation(const int degree);
-    int getRotation(void) const;
     void rotateLeft(void);
     void rotateRight(void);
 

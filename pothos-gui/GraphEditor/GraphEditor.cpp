@@ -4,7 +4,6 @@
 #include "PothosGuiUtils.hpp" //action map
 #include "TopologyEngine/TopologyEngine.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
-#include "GraphEditor/GraphPage.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/Constants.hpp"
@@ -158,7 +157,7 @@ void GraphEditor::handleCreateGraphPage(void)
     const QString newName = QInputDialog::getText(this, tr("Create page"),
         tr("New page name"), QLineEdit::Normal, tr("untitled"));
     if (newName.isEmpty()) return;
-    this->addTab(new GraphPage(this), newName);
+    this->addTab(new GraphDraw(this), newName);
     this->setupMoveGraphObjectsMenu();
 
     handleStateChange(GraphState("document-new", tr("Create graph page ") + newName));
@@ -293,8 +292,8 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         const auto name = QString("%1[%2]").arg(epOut.getObj()->getId(), epOut.getKey().id);
         breaker->setId(this->newId(name));
         breaker->setNodeName(breaker->getId()); //the first of its name
-        breaker->setRotation(epIn.getObj()->getRotation());
-        breaker->setPosition(epIn.getObj()->getPosition());
+        breaker->setRotation(epIn.getObj()->rotation());
+        breaker->setPos(epIn.getObj()->pos());
 
         auto outConn = this->makeConnection(epOut, GraphConnectionEndpoint(breaker, breaker->getConnectableKeys().at(0)));
         outConn->setParent(breaker->parent());
@@ -327,8 +326,8 @@ void GraphEditor::handleMoveGraphObjects(const int index)
             breaker->setInput(false);
             breaker->setId(this->newId(name));
             breaker->setNodeName(name);
-            breaker->setRotation(epOut.getObj()->getRotation());
-            breaker->setPosition(epOut.getObj()->getPosition());
+            breaker->setRotation(epOut.getObj()->rotation());
+            breaker->setPos(epOut.getObj()->pos());
         }
 
         //connect to this breaker
@@ -376,9 +375,9 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const
 
     //set highest z-index on new block
     const int maxZIndex = draw->getMaxZIndex();
-    block->setZIndex(maxZIndex+1);
+    block->setZValue(maxZIndex+1);
 
-    block->setPosition(QPointF(where)/draw->zoomScale());
+    block->setPos(QPointF(where)/draw->zoomScale());
     block->setRotation(0);
     handleStateChange(GraphState("list-add", tr("Create block %1").arg(title)));
 }
@@ -397,7 +396,7 @@ void GraphEditor::handleCreateBreaker(const bool isInput)
     breaker->setInput(isInput);
     breaker->setNodeName(newName);
     breaker->setId(this->newId(newName));
-    breaker->setPosition(draw->getLastContextMenuPos()/draw->zoomScale());
+    breaker->setPos(draw->getLastContextMenuPos()/draw->zoomScale());
 
     handleStateChange(GraphState("document-new", tr("Create %1 breaker %2").arg(dirName, newName)));
 }
@@ -498,8 +497,8 @@ void GraphEditor::handlePaste(void)
             obj->setId(this->newId(oldId)); //make sure id is unique
             obj->setSelected(true);
             newObjects.push_back(obj);
-            cornerest.setX(std::min(cornerest.x(), obj->getPosition().x()));
-            cornerest.setY(std::min(cornerest.y(), obj->getPosition().y()));
+            cornerest.setX(std::min(cornerest.x(), obj->pos().x()));
+            cornerest.setY(std::min(cornerest.y(), obj->pos().y()));
         }
     }
 
@@ -516,7 +515,7 @@ void GraphEditor::handlePaste(void)
     for (auto obj : newObjects)
     {
         auto scaled = QPointF(pastePos/draw->zoomScale());
-        obj->setPosition(obj->getPosition()-cornerest+scaled);
+        obj->setPos(obj->pos()-cornerest+scaled);
     }
 
     //create connections
@@ -883,9 +882,7 @@ void GraphEditor::setupMoveGraphObjectsMenu(void)
 
 GraphDraw *GraphEditor::getGraphDraw(const int index) const
 {
-    auto scroll = dynamic_cast<QScrollArea *>(this->widget(index));
-    assert(scroll != nullptr);
-    auto draw = dynamic_cast<GraphDraw *>(scroll->widget());
+    auto draw = dynamic_cast<GraphDraw *>(this->widget(index));
     assert(draw != nullptr);
     return draw;
 }
@@ -910,7 +907,7 @@ GraphObjectList GraphEditor::getGraphObjects(const int selectionFlags) const
 
 void GraphEditor::makeDefaultPage(void)
 {
-    this->insertTab(0, new GraphPage(this), tr("Main"));
+    this->insertTab(0, new GraphDraw(this), tr("Main"));
 }
 
 QWidget *makeGraphEditor(QWidget *parent)

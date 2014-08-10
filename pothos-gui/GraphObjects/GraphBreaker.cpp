@@ -89,7 +89,7 @@ GraphConnectableAttrs GraphBreaker::getConnectableAttrs(const GraphConnectableKe
 {
     assert(_impl);
     GraphConnectableAttrs attrs;
-    attrs.rotation = this->getRotation();
+    attrs.rotation = this->rotation();
     if (this->isInput()) attrs.rotation += 180;
     attrs.direction = this->isInput()?GRAPH_CONN_INPUT:GRAPH_CONN_OUTPUT;
     attrs.point = _impl->connectPoint;
@@ -116,14 +116,14 @@ void GraphBreaker::render(QPainter &painter)
 
     //setup rotations and translations
     QTransform trans;
-    trans.translate(this->getPosition().x(), this->getPosition().y());
-    painter.translate(this->getPosition());
+    trans.translate(this->pos().x(), this->pos().y());
+    painter.translate(this->pos());
 
     //dont rotate past 180 because we just do a breaker flip
     //this way text only ever has 2 rotations
-    trans.rotate(this->getRotation() % 180);
-    painter.rotate(this->getRotation() % 180);
-    const bool breakerFlip = this->getRotation() >= 180;
+    trans.rotate(int(this->rotation()) % 180);
+    painter.rotate(int(this->rotation()) % 180);
+    const bool breakerFlip = this->rotation() >= 180;
 
     //set painter for drawing the figure
     auto pen = QPen(QColor(GraphObjectDefaultPenColor));
@@ -161,7 +161,7 @@ void GraphBreaker::render(QPainter &painter)
     QPointF p(-w/2, -h/2);
     polygon.translate(p);
     painter.save();
-    if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+    if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
     painter.drawPolygon(polygon);
     painter.restore();
     _impl->polygon = trans.map(polygon);
