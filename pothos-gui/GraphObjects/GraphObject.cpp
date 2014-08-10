@@ -37,15 +37,7 @@ GraphObject::~GraphObject(void)
 
 void GraphObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    //painter->save();
     this->render(*painter);
-    //painter->restore();
-
-    this->renderConnectablePoints(*painter);
-
-    //painter->setPen(QPen(QColor("red")));
-    //painter->setBrush(Qt::NoBrush);
-    //painter->drawRect(this->boundingRect());
 }
 
 void GraphObject::setId(const QString &id)

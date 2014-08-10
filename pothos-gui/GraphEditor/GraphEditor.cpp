@@ -597,7 +597,8 @@ void GraphEditor::handleRotateLeft(void)
 {
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
-    for (auto obj : draw->getObjectsSelected())
+    //TODO rotate group of objects around central point
+    for (auto obj : draw->getObjectsSelected(~GRAPH_CONNECTION))
     {
         obj->rotateLeft();
     }
@@ -608,7 +609,8 @@ void GraphEditor::handleRotateRight(void)
 {
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
-    for (auto obj : draw->getObjectsSelected())
+    //TODO rotate group of objects around central point
+    for (auto obj : draw->getObjectsSelected(~GRAPH_CONNECTION))
     {
         obj->rotateRight();
     }

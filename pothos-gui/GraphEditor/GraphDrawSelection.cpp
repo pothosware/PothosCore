@@ -40,6 +40,8 @@ void GraphDraw::mouseDoubleClickEvent(QMouseEvent *event)
 
 void GraphDraw::mousePressEvent(QMouseEvent *event)
 {
+    QGraphicsView::mousePressEvent(event);
+
     //record the conditions of this press event, nothing is changed
     if (event->button() == Qt::LeftButton)
     {
@@ -67,11 +69,10 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
         if (numSelected == 0 and not objs.empty())
         {
             objs.front()->setSelected(true);
-            this->render();
         }
     }
 
-    QGraphicsView::mousePressEvent(event);
+    this->render();
 }
 
 static void handleAutoScroll(QScrollBar *bar, const qreal length, const qreal offset)
@@ -89,47 +90,29 @@ static void handleAutoScroll(QScrollBar *bar, const qreal length, const qreal of
 
 void GraphDraw::mouseMoveEvent(QMouseEvent *event)
 {
+    QGraphicsView::mouseMoveEvent(event);
+
     //handle the first move event transition from a press event
-    if (_mouseLeftDown and _selectionState == "pressed")
-    {
-        auto objs = this->items(this->mapFromScene(_mouseLeftDownFirstPoint));
-        _selectionState = objs.empty()? "highlight" : "move";
-    }
+    if (_mouseLeftDown and _selectionState == "pressed") _selectionState = "move";
 
     //store current position for tracking
-    if (_mouseLeftDown)
-    {
-        _mouseLeftDownLastPoint = this->mapToScene(event->pos());
-        const auto p0 = _mouseLeftDownFirstPoint;
-        const auto p1 = _mouseLeftDownLastPoint;
-        _highlightRect = QRectF(
-            QPointF(std::min(p0.x(), p1.x()), std::min(p0.y(), p1.y())),
-            QPointF(std::max(p0.x(), p1.x()), std::max(p0.y(), p1.y())));
-        this->render();
-    }
+    if (_mouseLeftDown) _mouseLeftDownLastPoint = this->mapToScene(event->pos());
+
+    this->render();
 
     //auto scroll near boundaries
     handleAutoScroll(this->horizontalScrollBar(), this->size().width(), _mouseLeftDownLastPoint.x());
     handleAutoScroll(this->verticalScrollBar(), this->size().height(), _mouseLeftDownLastPoint.y());
-
-    QGraphicsView::mouseMoveEvent(event);
 }
 
 void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
 {
+    QGraphicsView::mouseReleaseEvent(event);
+
     //mouse released from a pressed state - alter selections at point
     if (event->button() == Qt::LeftButton and _selectionState == "pressed")
     {
         this->doClickSelection(_mouseLeftDownFirstPoint);
-    }
-
-    //mouse released from highlight box - alter selections with those in box
-    if (event->button() == Qt::LeftButton and _selectionState == "highlight")
-    {
-        for (auto obj : this->items(this->mapFromScene(_highlightRect.toRect())))
-        {
-            obj->setSelected(true);
-        }
     }
 
     //emit the move event up to the graph editor
@@ -144,8 +127,6 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
         _selectionState = "";
         _mouseLeftDown = false;
     }
-
-    QGraphicsView::mouseReleaseEvent(event);
 
     this->render();
 }

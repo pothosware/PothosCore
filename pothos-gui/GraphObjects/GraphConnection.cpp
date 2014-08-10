@@ -235,6 +235,9 @@ static QLineF lineShorten(const QLineF &l)
 void GraphConnection::render(QPainter &painter)
 {
     assert(_impl);
+    assert(this->rotation() == 0.0);
+    assert(this->pos() == QPointF());
+
     //dont draw connections with missing endpoints
     if (not _impl->outputEp.isValid()) return;
     if (not _impl->inputEp.isValid()) return;

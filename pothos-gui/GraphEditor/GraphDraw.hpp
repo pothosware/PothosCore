@@ -93,6 +93,4 @@ private:
 
     bool _showGraphConnectionPoints;
     bool _showGraphBoundingBoxes;
-    QGraphicsItem *_highlightBox;
-    QRectF _highlightRect;
 };
