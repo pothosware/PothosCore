@@ -20,17 +20,17 @@
  *
  * |param value The initial value of this slider.
  * |default 0
- * |widget SpinBox
+ * |widget SpinBox()
  *
  * |param minimum The minimum integer value of this slider.
  * |default 0
- * |widget SpinBox
+ * |widget SpinBox()
  *
  * |param maximum The maximum integer value of this slider.
  * |default 100
- * |widget SpinBox
+ * |widget SpinBox()
  *
- * |mode widget
+ * |mode displayWidget
  * |factory /widgets/slider(orientation)
  * |setter setValue(value)
  * |setter setMinimum(minimum)
