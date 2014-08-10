@@ -12,7 +12,7 @@
 #include <Poco/RegularExpression.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/NumberFormatter.h>
-#include <Poco/NumberParser.h>
+#include <Poco/Types.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -66,8 +66,8 @@ static Poco::Dynamic::Var exprToDynVar(const std::string &expr)
 {
     if (expr == "true") return true;
     if (expr == "false") return false;
-    try {return Poco::NumberParser::parse(expr);} catch(const Poco::SyntaxException &){}
-    try {return Poco::NumberParser::parseFloat(expr);} catch(const Poco::SyntaxException &){}
+    try {return Poco::Int64(std::stoll(expr));} catch(const std::exception &){}
+    try {return std::stod(expr);} catch(const std::exception &){}
     return expr;
 }
 
