@@ -99,7 +99,7 @@ void GraphDraw::dropEvent(QDropEvent *event)
     Poco::JSON::Parser p; p.parse(std::string(byteArray.constData(), byteArray.size()));
     const auto blockDesc = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
 
-    this->getGraphEditor()->handleAddBlock(blockDesc, event->pos());
+    this->getGraphEditor()->handleAddBlock(blockDesc, this->mapToScene(event->pos()));
     event->acceptProposedAction();
 }
 
@@ -166,10 +166,10 @@ void GraphDraw::render(void)
     //clip the bounds
     for (auto obj : allObjs)
     {
-        auto oldPos = obj->pos();
-        oldPos.setX(std::min(std::max(oldPos.x(), 0.0), QSizeF(this->size()).width()));
-        oldPos.setY(std::min(std::max(oldPos.y(), 0.0), QSizeF(this->size()).height()));
-        obj->setPos(oldPos);
+        auto oldPos = obj->mapToScene(obj->pos());
+        oldPos.setX(std::min(std::max(oldPos.x(), 0.0), this->sceneRect().width()));
+        oldPos.setY(std::min(std::max(oldPos.y(), 0.0), this->sceneRect().height()));
+        obj->setPos(obj->mapFromScene(oldPos));
     }
 
     //cause full redraw

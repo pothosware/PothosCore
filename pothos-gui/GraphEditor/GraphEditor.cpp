@@ -15,8 +15,6 @@
 #include <QInputDialog>
 #include <QAction>
 #include <QMenu>
-#include <QScrollArea>
-#include <QScrollBar>
 #include <QSignalMapper>
 #include <QDockWidget>
 #include <QApplication>
@@ -343,18 +341,16 @@ void GraphEditor::handleMoveGraphObjects(const int index)
 void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc)
 {
     if (not this->isVisible()) return;
-    QPoint where(std::rand()%100, std::rand()%100);
+    QPointF where(std::rand()%100, std::rand()%100);
 
     //determine where, a nice point on the visible drawing area sort of upper left
     auto view = dynamic_cast<QGraphicsView *>(this->currentWidget());
-    if (view != nullptr) where += QPoint(
-        view->horizontalScrollBar()->value() + view->size().width()/4,
-        view->verticalScrollBar()->value() + view->size().height()/4);
+    where += view->mapToScene(this->size().width()/4, this->size().height()/4);
 
     this->handleAddBlock(blockDesc, where);
 }
 
-void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const QPoint &where)
+void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const QPointF &where)
 {
     if (not blockDesc) return;
     auto draw = this->getCurrentGraphDraw();
@@ -377,7 +373,7 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const
     const int maxZIndex = draw->getMaxZIndex();
     block->setZValue(maxZIndex+1);
 
-    block->setPos(QPointF(where)/draw->zoomScale());
+    block->setPos(where);
     block->setRotation(0);
     handleStateChange(GraphState("list-add", tr("Create block %1").arg(title)));
 }
@@ -503,12 +499,11 @@ void GraphEditor::handlePaste(void)
     }
 
     //determine an acceptable position to center the paste
-    auto pastePos = QPointF(this->mapFromGlobal(QCursor::pos()));
+    auto view = dynamic_cast<QGraphicsView *>(this->currentWidget());
+    auto pastePos = view->mapToScene(this->mapFromGlobal(QCursor::pos()));
     if (not QRectF(QPointF(), this->size()).contains(pastePos))
     {
-        auto scroll = dynamic_cast<QScrollArea *>(this->currentWidget());
-        pastePos.setX(scroll->horizontalScrollBar()->value() + this->size().width()/2);
-        pastePos.setY(scroll->verticalScrollBar()->value() + this->size().height()/2);
+        pastePos = view->mapToScene(this->size().width()/2, this->size().height()/2);
     }
 
     //move objects into position

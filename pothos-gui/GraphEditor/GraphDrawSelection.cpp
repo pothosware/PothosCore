@@ -196,7 +196,7 @@ GraphObjectList GraphDraw::getGraphObjects(const int selectionFlags)
 void GraphDraw::doClickSelection(const QPointF &point)
 {
     const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
-    const auto objs = this->items(point.toPoint());
+    const auto objs = this->items(this->mapFromScene(point));
 
     //make the clicked object topmost
     if (not objs.empty())
