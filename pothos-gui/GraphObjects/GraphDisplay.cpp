@@ -45,8 +45,6 @@ void GraphDisplay::setGraphBlock(GraphBlock *block)
 
     _impl->block = block;
     connect(block, SIGNAL(destroyed(QObject *)), this, SLOT(handleBlockDestroyed(QObject *)));
-
-    _impl->mainRect = QRectF(QPointF(0, 0), QSizeF(150, 100)); //TODO tmp
 }
 
 GraphBlock *GraphDisplay::getGraphBlock(void) const
@@ -81,8 +79,8 @@ void GraphDisplay::render(QPainter &painter)
         _impl->changed = false;
     }
 
-    //QTransform trans;
-    //trans.translate(this->getPosition().x(), this->getPosition().y());
+    QTransform trans;
+    trans.translate(this->getPosition().x(), this->getPosition().y());
     painter.translate(this->getPosition());
 
     auto pen = QPen(QColor(GraphObjectDefaultPenColor));
@@ -90,7 +88,11 @@ void GraphDisplay::render(QPainter &painter)
     painter.setPen(pen);
     painter.setBrush(QBrush(QColor(GraphObjectDefaultFillColor)));
 
-    painter.drawRect(_impl->mainRect);
+    QRectF mainRect(QPointF(), QSizeF(150, 100));
+    mainRect.moveCenter(QPointF());
+    _impl->mainRect = trans.mapRect(mainRect);
+
+    painter.drawRect(mainRect);
 }
 
 Poco::JSON::Object::Ptr GraphDisplay::serialize(void) const

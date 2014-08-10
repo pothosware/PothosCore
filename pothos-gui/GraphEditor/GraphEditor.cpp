@@ -11,6 +11,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
+#include "GraphObjects/GraphDisplay.hpp"
 #include <Poco/Logger.h>
 #include <QTabBar>
 #include <QInputDialog>
@@ -377,6 +378,19 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const
     //set highest z-index on new block
     const int maxZIndex = draw->getMaxZIndex();
     block->setZIndex(maxZIndex+1);
+
+
+    //TODO this is temp to test things
+    if (block->isDisplayWidget())
+    {
+        auto display = new GraphDisplay(draw);
+        display->setId("Display"+block->getId());
+        display->setGraphBlock(block);
+        display->setPosition(QPointF(where)/draw->zoomScale());
+        display->setRotation(0);
+        display->setZIndex(maxZIndex+2);
+    }
+
 
     block->setPosition(QPointF(where)/draw->zoomScale());
     block->setRotation(0);

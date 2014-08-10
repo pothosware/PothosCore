@@ -8,6 +8,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
+#include "GraphObjects/GraphDisplay.hpp"
 #include <Pothos/Exception.hpp>
 #include <Poco/Logger.h>
 #include <QScrollArea>
@@ -228,6 +229,7 @@ GraphObjectList GraphDraw::getGraphObjects(const int selectionFlags)
         if (((selectionFlags & GRAPH_BLOCK) != 0) and (dynamic_cast<GraphBlock *>(o) != nullptr)) l.push_back(o);
         if (((selectionFlags & GRAPH_BREAKER) != 0) and (dynamic_cast<GraphBreaker *>(o) != nullptr)) l.push_back(o);
         if (((selectionFlags & GRAPH_CONNECTION) != 0) and (dynamic_cast<GraphConnection *>(o) != nullptr)) l.push_back(o);
+        if (((selectionFlags & GRAPH_DISPLAY) != 0) and (dynamic_cast<GraphDisplay *>(o) != nullptr)) l.push_back(o);
     }
     std::sort(l.begin(), l.end(), &cmpGraphObjects);
     return l;
