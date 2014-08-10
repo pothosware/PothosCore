@@ -51,7 +51,7 @@ public:
         return _lastContextMenuPos;
     }
 
-    int getMaxZIndex(void);
+    qreal getMaxZValue(void);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event);
@@ -72,7 +72,6 @@ private slots:
 
 signals:
     void stateChanged(const GraphState &);
-    void selectionChanged(const GraphObjectList &);
     void modifyProperties(GraphObject *);
 
 private:

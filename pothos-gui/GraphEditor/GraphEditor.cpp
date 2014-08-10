@@ -370,8 +370,7 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const
     block->setId(this->newId(hint));
 
     //set highest z-index on new block
-    const int maxZIndex = draw->getMaxZIndex();
-    block->setZValue(maxZIndex+1);
+    block->setZValue(draw->getMaxZValue()+1);
 
     block->setPos(where);
     block->setRotation(0);

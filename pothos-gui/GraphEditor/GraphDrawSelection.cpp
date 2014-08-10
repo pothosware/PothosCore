@@ -47,6 +47,10 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
         _mouseLeftDownFirstPoint = this->mapToScene(event->pos());
         _mouseLeftDownLastPoint = this->mapToScene(event->pos());
         _selectionState = "pressed";
+
+        //make the clicked object topmost
+        auto objs = this->items(this->mapFromScene(_mouseLeftDownFirstPoint));
+        if (not objs.empty()) objs.front()->setZValue(this->getMaxZValue()+1);
     }
 
     //Right-click will add a selection if nothing was selected.
@@ -89,15 +93,7 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     if (_mouseLeftDown and _selectionState == "pressed")
     {
         auto objs = this->items(this->mapFromScene(_mouseLeftDownFirstPoint));
-        if (not objs.empty())
-        {
-            if (not objs.front()->isSelected()) this->doClickSelection(_mouseLeftDownFirstPoint);
-            _selectionState = "move";
-        }
-        else
-        {
-            _selectionState = "highlight";
-        }
+        _selectionState = objs.empty()? "highlight" : "move";
     }
 
     //store current position for tracking
@@ -147,10 +143,11 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     {
         _selectionState = "";
         _mouseLeftDown = false;
-        this->render();
     }
 
     QGraphicsView::mouseReleaseEvent(event);
+
+    this->render();
 }
 
 void GraphDraw::deselectAllObjs(void)
@@ -161,12 +158,15 @@ void GraphDraw::deselectAllObjs(void)
     }
 }
 
-int GraphDraw::getMaxZIndex(void)
+qreal GraphDraw::getMaxZValue(void)
 {
     qreal index = 0;
+    bool first = true;
     for (auto obj : this->getGraphObjects())
     {
+        if (first) index = obj->zValue();
         index = std::max(index, obj->zValue());
+        first = false;
     }
     return index;
 }
@@ -205,14 +205,6 @@ void GraphDraw::doClickSelection(const QPointF &point)
 {
     const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
     const auto objs = this->items(this->mapFromScene(point));
-
-    //make the clicked object topmost
-    if (not objs.empty())
-    {
-        auto topObj = objs.front();
-        const int maxZIndex = this->getMaxZIndex();
-        topObj->setZValue(maxZIndex+1);
-    }
 
     //nothing selected, clear the last selected endpoint
     if (objs.empty()) _lastClickSelectEp = GraphConnectionEndpoint();
@@ -262,8 +254,6 @@ void GraphDraw::doClickSelection(const QPointF &point)
             _lastClickSelectEp = thisEp;
         }
     }
-
-    emit this->selectionChanged(this->getObjectsSelected());
 }
 
 QString GraphDraw::getSelectionDescription(const int selectionFlags)

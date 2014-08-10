@@ -142,10 +142,10 @@ Poco::JSON::Object::Ptr GraphObject::serialize(void) const
 {
     Poco::JSON::Object::Ptr obj(new Poco::JSON::Object());
     obj->set("id", this->getId().toStdString());
-    obj->set("zIndex", int(this->zValue()));
-    obj->set("positionX", int(this->pos().x()));
-    obj->set("positionY", int(this->pos().y()));
-    obj->set("rotation", int(this->rotation()));
+    obj->set("zValue", double(this->zValue()));
+    obj->set("positionX", double(this->pos().x()));
+    obj->set("positionY", double(this->pos().y()));
+    obj->set("rotation", double(this->rotation()));
     obj->set("selected", this->isSelected());
     return obj;
 }
@@ -153,8 +153,8 @@ Poco::JSON::Object::Ptr GraphObject::serialize(void) const
 void GraphObject::deserialize(Poco::JSON::Object::Ptr obj)
 {
     this->setId(QString::fromStdString(obj->getValue<std::string>("id")));
-    this->setZValue(obj->getValue<int>("zIndex"));
-    this->setPos(QPointF(obj->getValue<int>("positionX"), obj->getValue<int>("positionY")));
-    this->setRotation(obj->getValue<int>("rotation"));
-    this->setSelected(obj->getValue<bool>("selected"));
+    this->setZValue(obj->optValue<double>("zValue", 0.0));
+    this->setPos(QPointF(obj->optValue<double>("positionX", 0.0), obj->optValue<double>("positionY", 0.0)));
+    this->setRotation(obj->optValue<double>("rotation", 0.0));
+    this->setSelected(obj->optValue<bool>("selected", false));
 }
