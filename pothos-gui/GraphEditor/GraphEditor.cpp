@@ -499,18 +499,14 @@ void GraphEditor::handlePaste(void)
 
     //determine an acceptable position to center the paste
     auto view = dynamic_cast<QGraphicsView *>(this->currentWidget());
-    auto pastePos = view->mapToScene(this->mapFromGlobal(QCursor::pos()));
-    if (not QRectF(QPointF(), this->size()).contains(pastePos))
+    auto pastePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
+    if (not view->sceneRect().contains(pastePos))
     {
         pastePos = view->mapToScene(this->size().width()/2, this->size().height()/2);
     }
 
     //move objects into position
-    for (auto obj : newObjects)
-    {
-        auto scaled = QPointF(pastePos/draw->zoomScale());
-        obj->setPos(obj->pos()-cornerest+scaled);
-    }
+    for (auto obj : newObjects) obj->setPos(obj->pos()-cornerest+pastePos);
 
     //create connections
     for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
