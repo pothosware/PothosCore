@@ -24,7 +24,6 @@
 
 GraphDraw::GraphDraw(QWidget *parent):
     QGraphicsView(parent),
-    _scene(new QGraphicsScene(QRectF(QPointF(), GraphDrawCanvasSize), this)),
     _graphEditor(dynamic_cast<GraphEditor *>(parent)),
     _zoomScale(1.0),
     _mouseLeftDown(false),
@@ -32,8 +31,10 @@ GraphDraw::GraphDraw(QWidget *parent):
     _showGraphBoundingBoxes(false)
 {
     //setup scene
-    this->setScene(_scene);
-    _scene->setBackgroundBrush(QColor(GraphDrawBackgroundColor));
+    this->setScene(new QGraphicsScene(QRectF(QPointF(), GraphDrawCanvasSize), this));
+    //required: BspTreeIndex is too smart for its own good, connections will not render properly
+    this->scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
+    this->scene()->setBackgroundBrush(QColor(GraphDrawBackgroundColor));
     this->setDragMode(QGraphicsView::RubberBandDrag);
 
     //set high quality rendering
@@ -55,7 +56,7 @@ GraphDraw::GraphDraw(QWidget *parent):
         parent, SLOT(handleStateChange(const GraphState &)));
     connect(this, SIGNAL(modifyProperties(GraphObject *)),
         getObjectMap()["propertiesPanel"], SLOT(handleGraphModifyProperties(GraphObject *)));
-    connect(_scene, SIGNAL(selectionChanged(void)), this, SLOT(updateEnabledActions(void)));
+    connect(this->scene(), SIGNAL(selectionChanged(void)), this, SLOT(updateEnabledActions(void)));
 
     //debug view - connect and initialize
     connect(getActionMap()["showGraphConnectionPoints"], SIGNAL(triggered(void)),
@@ -172,7 +173,7 @@ void GraphDraw::render(void)
     }
 
     //cause full redraw
-    _scene->update();
+    this->scene()->update();
 
     //render objects
     /*

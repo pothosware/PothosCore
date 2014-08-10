@@ -8,7 +8,6 @@
 #include <QGraphicsView>
 
 class GraphEditor;
-class QGraphicsScene;
 class QGraphicsItem;
 
 class GraphDraw : public QGraphicsView
@@ -80,7 +79,6 @@ private:
 
     void doClickSelection(const QPointF &point);
 
-    QGraphicsScene *_scene;
     GraphEditor *_graphEditor;
     qreal _zoomScale;
     bool _mouseLeftDown;
