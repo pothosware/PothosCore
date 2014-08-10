@@ -83,4 +83,7 @@ private:
 
     //! a cache of block IDs to a pair(settings hash, block eval)
     std::map<QString, std::pair<std::string, Pothos::Proxy>> _idToBlockEval;
+
+    void setupPorts(GraphBlock *block);
+    std::map<QString, std::pair<Poco::JSON::Array::Ptr, Poco::JSON::Array::Ptr>> _idToPortDesc;
 };
