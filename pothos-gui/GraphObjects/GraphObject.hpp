@@ -28,7 +28,7 @@ public:
 
     ~GraphObject(void);
 
-    QRectF boundingRect(void) const;
+    virtual QRectF boundingRect(void) const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
 
     virtual void setId(const QString &id);
@@ -36,7 +36,6 @@ public:
 
     virtual bool isPointing(const QPointF &pos) const;
     virtual bool isPointing(const QRectF &pos) const;
-    virtual QRectF getBoundingRect(void) const;
 
     //! render without a painter to do-precalculations
     void prerender(void);

@@ -9,6 +9,7 @@
 
 class GraphEditor;
 class QGraphicsScene;
+class QGraphicsItem;
 
 class GraphDraw : public QGraphicsView
 {
@@ -93,4 +94,6 @@ private:
 
     bool _showGraphConnectionPoints;
     bool _showGraphBoundingBoxes;
+    QGraphicsItem *_highlightBox;
+    QRectF _highlightRect;
 };

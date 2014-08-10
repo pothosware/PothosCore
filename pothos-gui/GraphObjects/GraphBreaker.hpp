@@ -34,7 +34,7 @@ public:
 
     bool isPointing(const QRectF &rect) const;
 
-    QRectF getBoundingRect(void) const;
+    QRectF boundingRect(void) const;
 
     void render(QPainter &painter);
 

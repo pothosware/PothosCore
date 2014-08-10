@@ -65,7 +65,7 @@ bool GraphBreaker::isPointing(const QRectF &rect) const
     return not _impl->polygon.intersected(rect).isEmpty();
 }
 
-QRectF GraphBreaker::getBoundingRect(void) const
+QRectF GraphBreaker::boundingRect(void) const
 {
     return _impl->polygon.boundingRect();
 }
@@ -116,13 +116,9 @@ void GraphBreaker::render(QPainter &painter)
 
     //setup rotations and translations
     QTransform trans;
-    //trans.translate(this->pos().x(), this->pos().y());
-    //painter.translate(this->pos());
 
     //dont rotate past 180 because we just do a breaker flip
     //this way text only ever has 2 rotations
-    //trans.rotate(int(this->rotation()) % 180);
-    //painter.rotate(int(this->rotation()) % 180);
     const bool breakerFlip = this->rotation() >= 180;
     if (breakerFlip) painter.rotate(-180);
     if (breakerFlip) trans.rotate(-180);

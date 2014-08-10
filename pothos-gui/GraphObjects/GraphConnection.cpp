@@ -154,7 +154,7 @@ bool GraphConnection::isPointing(const QRectF &rect) const
     return not _impl->arrowHead.intersected(rect).isEmpty();
 }
 
-QRectF GraphConnection::getBoundingRect(void) const
+QRectF GraphConnection::boundingRect(void) const
 {
     QVector<QPointF> points = _impl->points;
     const auto arrowRect = _impl->arrowHead.boundingRect();

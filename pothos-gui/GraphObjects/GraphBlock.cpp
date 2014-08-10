@@ -268,7 +268,7 @@ bool GraphBlock::isPointing(const QRectF &rect) const
     return _impl->mainBlockRect.intersects(rect);
 }
 
-QRectF GraphBlock::getBoundingRect(void) const
+QRectF GraphBlock::boundingRect(void) const
 {
     QVector<QPointF> points;
     for (const auto &portRect : _impl->inputPortRects)
@@ -472,13 +472,9 @@ void GraphBlock::render(QPainter &painter)
 
     //setup rotations and translations
     QTransform trans;
-    //trans.translate(this->pos().x(), this->pos().y());
-    //painter.translate(this->pos());
 
     //dont rotate past 180 because we just do a port flip
     //this way text only ever has 2 rotations
-    //trans.rotate(int(this->rotation()) % 180);
-    //painter.rotate(int(this->rotation()) % 180);
     const bool portFlip = this->rotation() >= 180;
     if (portFlip) painter.rotate(-180);
     if (portFlip) trans.rotate(-180);

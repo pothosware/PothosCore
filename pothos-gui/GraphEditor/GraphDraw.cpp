@@ -29,7 +29,8 @@ GraphDraw::GraphDraw(QWidget *parent):
     _zoomScale(1.0),
     _mouseLeftDown(false),
     _showGraphConnectionPoints(false),
-    _showGraphBoundingBoxes(false)
+    _showGraphBoundingBoxes(false),
+    _highlightBox(nullptr)
 {
     //setup scene
     this->setScene(_scene);
@@ -158,20 +159,9 @@ void GraphDraw::render(void)
     //its convenient to always update this here
     this->updateEnabledActions();
 
-    //draw background
-    //_image.fill(QColor(GraphDrawBackgroundColor));
-
-    //setup painter
-    //QPainter painter(&_image);
-
     //pre-render to perform connection calculations
     const auto allObjs = this->getGraphObjects();
     for (auto obj : allObjs) obj->prerender();
-
-    //set high quality rendering after drawing the background
-    //painter.setRenderHint(QPainter::Antialiasing);
-    //painter.setRenderHint(QPainter::HighQualityAntialiasing);
-    //painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     //clip the bounds
     for (auto obj : allObjs)
@@ -181,6 +171,9 @@ void GraphDraw::render(void)
         oldPos.setY(std::min(std::max(oldPos.y(), 0.0), QSizeF(this->size()).height()));
         obj->setPos(oldPos);
     }
+
+    //cause full redraw
+    _scene->update();
 
     this->setTransform(QTransform()); //clear
     this->scale(this->zoomScale(), this->zoomScale());
@@ -216,18 +209,19 @@ void GraphDraw::render(void)
             painter.restore();
         }
     }
+    */
+
+    if (_highlightBox != nullptr) delete _highlightBox;
+    _highlightBox = nullptr;
 
     if (_selectionState == "highlight")
     {
         QColor hc(GraphDrawHighlightColor);
         hc.setAlpha(GraphDrawHighlightAlpha);
-        painter.setBrush(QBrush(hc));
-        painter.setPen(Qt::NoPen);
-        painter.drawRect(QRectF(_mouseLeftDownFirstPoint, _mouseLeftDownLastPoint));
+        _highlightBox = _scene->addRect(_highlightRect, Qt::NoPen, QBrush(hc));
+        _highlightBox->setZValue(1e9); //topmost
     }
 
-    painter.end();
-    */
     this->repaint();
 }
 

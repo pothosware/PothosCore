@@ -35,11 +35,6 @@ GraphObject::~GraphObject(void)
     return;
 }
 
-QRectF GraphObject::boundingRect(void) const
-{
-    return this->getBoundingRect();
-}
-
 void GraphObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     //painter->save();
@@ -71,7 +66,7 @@ bool GraphObject::isPointing(const QRectF &) const
     return false;
 }
 
-QRectF GraphObject::getBoundingRect(void) const
+QRectF GraphObject::boundingRect(void) const
 {
     return QRectF(this->pos(), this->pos());
 }

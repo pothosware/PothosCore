@@ -27,7 +27,7 @@ public:
 
     bool isPointing(const QRectF &rect) const;
 
-    QRectF getBoundingRect(void) const;
+    QRectF boundingRect(void) const;
 
     //! indicate an external change -- thats not applied through the other setters
     void changed(void);
