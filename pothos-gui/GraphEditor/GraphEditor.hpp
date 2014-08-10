@@ -62,6 +62,9 @@ public:
     //! Get a list of all graph objects in all pages
     GraphObjectList getGraphObjects(const int selectionFlags = ~0) const;
 
+    //! Get the graph object with the specified ID or nullptr
+    GraphObject *getObjectById(const QString &id, const int selectionFlags = ~0);
+
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);
 

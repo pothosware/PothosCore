@@ -10,6 +10,7 @@
 static const int GRAPH_BLOCK = (1 << 0);
 static const int GRAPH_BREAKER = (1 << 1);
 static const int GRAPH_CONNECTION = (1 << 2);
+static const int GRAPH_DISPLAY = (1 << 3);
 
 static const QString GraphObjectHighlightPenColor = "#33FFFF";
 static const QString GraphObjectDefaultPenColor = "#000000";

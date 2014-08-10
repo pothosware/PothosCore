@@ -22,6 +22,9 @@ public:
 
     void setPortDesc(const Poco::JSON::Array::Ptr &, const Poco::JSON::Array::Ptr &);
 
+    //! Does this graph block represent a display widget
+    bool isDisplayWidget(void) const;
+
     void setTitle(const QString &title);
     QString getTitle(void) const;
 

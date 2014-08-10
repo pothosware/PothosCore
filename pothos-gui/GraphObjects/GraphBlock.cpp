@@ -50,6 +50,11 @@ void GraphBlock::setPortDesc(const Poco::JSON::Array::Ptr &in, const Poco::JSON:
     this->initOutputsFromDesc();
 }
 
+bool GraphBlock::isDisplayWidget(void) const
+{
+    return this->getBlockDesc()->optValue<std::string>("mode", "") == "displayWidget";
+}
+
 void GraphBlock::setTitle(const QString &title)
 {
     _impl->title = title;
