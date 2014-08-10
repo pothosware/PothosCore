@@ -41,7 +41,11 @@ void GraphObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWi
     this->render(*painter);
     //painter->restore();
 
-    //this->renderConnectablePoints(*painter);
+    this->renderConnectablePoints(*painter);
+
+    //painter->setPen(QPen(QColor("red")));
+    //painter->setBrush(Qt::NoBrush);
+    //painter->drawRect(this->boundingRect());
 }
 
 void GraphObject::setId(const QString &id)
@@ -56,19 +60,14 @@ const QString &GraphObject::getId(void) const
     return _impl->id;
 }
 
-bool GraphObject::isPointing(const QPointF &point) const
-{
-    return this->isPointing(QRectF(point-QPointF(1, 1), point+QPointF(1, 1)));
-}
-
-bool GraphObject::isPointing(const QRectF &) const
-{
-    return false;
-}
-
 QRectF GraphObject::boundingRect(void) const
 {
-    return QRectF(this->pos(), this->pos());
+    return this->shape().boundingRect();
+}
+
+QPainterPath GraphObject::shape(void) const
+{
+    return QGraphicsItem::shape();
 }
 
 void GraphObject::prerender(void)

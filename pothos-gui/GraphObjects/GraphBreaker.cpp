@@ -60,14 +60,11 @@ const QString &GraphBreaker::getNodeName(void) const
     return _impl->nodeName;
 }
 
-bool GraphBreaker::isPointing(const QRectF &rect) const
+QPainterPath GraphBreaker::shape(void) const
 {
-    return not _impl->polygon.intersected(rect).isEmpty();
-}
-
-QRectF GraphBreaker::boundingRect(void) const
-{
-    return _impl->polygon.boundingRect();
+    QPainterPath path;
+    path.addPolygon(_impl->polygon);
+    return path;
 }
 
 std::vector<GraphConnectableKey> GraphBreaker::getConnectableKeys(void) const

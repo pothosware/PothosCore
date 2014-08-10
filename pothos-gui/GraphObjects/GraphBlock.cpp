@@ -249,54 +249,14 @@ void GraphBlock::setAffinityZone(const QString &zone)
     _impl->affinityZone = zone;
 }
 
-bool GraphBlock::isPointing(const QRectF &rect) const
+QPainterPath GraphBlock::shape(void) const
 {
-    //true if it points to a port
-    for (const auto &portRect : _impl->inputPortRects)
-    {
-        if (portRect.intersects(rect)) return true;
-    }
-    for (const auto &portRect : _impl->outputPortRects)
-    {
-        if (portRect.intersects(rect)) return true;
-    }
-    if (not this->getSignalPorts().empty())
-    {
-        if (_impl->signalPortRect.intersects(rect)) return true;
-    }
-    //otherwise does it point to the main body
-    return _impl->mainBlockRect.intersects(rect);
-}
-
-QRectF GraphBlock::boundingRect(void) const
-{
-    QVector<QPointF> points;
-    for (const auto &portRect : _impl->inputPortRects)
-    {
-        points.push_back(portRect.topLeft());
-        points.push_back(portRect.topRight());
-        points.push_back(portRect.bottomRight());
-        points.push_back(portRect.bottomLeft());
-    }
-    for (const auto &portRect : _impl->outputPortRects)
-    {
-        points.push_back(portRect.topLeft());
-        points.push_back(portRect.topRight());
-        points.push_back(portRect.bottomRight());
-        points.push_back(portRect.bottomLeft());
-    }
-    if (not this->getSignalPorts().empty())
-    {
-        points.push_back(_impl->signalPortRect.topLeft());
-        points.push_back(_impl->signalPortRect.topRight());
-        points.push_back(_impl->signalPortRect.bottomRight());
-        points.push_back(_impl->signalPortRect.bottomLeft());
-    }
-    points.push_back(_impl->mainBlockRect.topLeft());
-    points.push_back(_impl->mainBlockRect.topRight());
-    points.push_back(_impl->mainBlockRect.bottomRight());
-    points.push_back(_impl->mainBlockRect.bottomLeft());
-    return QPolygonF(points).boundingRect();
+    QPainterPath path;
+    for (const auto &portRect : _impl->inputPortRects) path.addRect(portRect);
+    for (const auto &portRect : _impl->outputPortRects) path.addRect(portRect);
+    if (not this->getSignalPorts().empty()) path.addRect(_impl->signalPortRect);
+    path.addRect(_impl->mainBlockRect);
+    return path;
 }
 
 std::vector<GraphConnectableKey> GraphBlock::getConnectableKeys(void) const

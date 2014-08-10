@@ -140,29 +140,21 @@ void GraphConnection::handleEndPointDestroyed(QObject *)
     this->flagForDelete();
 }
 
-bool GraphConnection::isPointing(const QRectF &rect) const
+QPainterPath GraphConnection::shape(void) const
 {
-    //check individual line segments
+    QPainterPath path;
+
+    //individual line segments
     for (int i = 1; i < _impl->points.size(); i++)
     {
         const QLineF line(_impl->points[i-1], _impl->points[i]);
         QLineF norm = line.normalVector(); norm.setLength(GraphConnectionSelectPad);
-        if (QRectF(line.p2(), norm.p2()).intersects(rect)) return true;
+        path.addRect(QRectF(line.p2(), norm.p2()));
     }
 
-    //check arrow head
-    return not _impl->arrowHead.intersected(rect).isEmpty();
-}
-
-QRectF GraphConnection::boundingRect(void) const
-{
-    QVector<QPointF> points = _impl->points;
-    const auto arrowRect = _impl->arrowHead.boundingRect();
-    points.push_back(arrowRect.topLeft());
-    points.push_back(arrowRect.topRight());
-    points.push_back(arrowRect.bottomRight());
-    points.push_back(arrowRect.bottomLeft());
-    return QPolygonF(points).boundingRect();
+    //arrow head
+    path.addPolygon(_impl->arrowHead);
+    return path;
 }
 
 static int getAngle(const QPointF &p0_, const QPointF &p1_)

@@ -20,7 +20,7 @@
 void GraphDraw::wheelEvent(QWheelEvent *event)
 {
     const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
-    if (not ctrlDown) return QWidget::wheelEvent(event);
+    if (not ctrlDown) return QGraphicsView::wheelEvent(event);
 
     //ctrl was down, wheel event means zoom in or out:
     if (event->delta() > 0) getActionMap()["zoomIn"]->activate(QAction::Trigger);
@@ -31,7 +31,7 @@ void GraphDraw::mouseDoubleClickEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
     {
-        const auto objs = this->items(event->localPos().toPoint());
+        const auto objs = this->items(event->pos());
         if (not objs.isEmpty()) emit this->modifyProperties(dynamic_cast<GraphObject *>(objs.at(0)));
     }
     QGraphicsView::mouseDoubleClickEvent(event);
@@ -43,8 +43,8 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton)
     {
         _mouseLeftDown = true;
-        _mouseLeftDownFirstPoint = this->mapToScene(event->localPos().toPoint());
-        _mouseLeftDownLastPoint = this->mapToScene(event->localPos().toPoint());
+        _mouseLeftDownFirstPoint = this->mapToScene(event->pos());
+        _mouseLeftDownLastPoint = this->mapToScene(event->pos());
         _selectionState = "pressed";
     }
 
@@ -53,7 +53,7 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
     //when a graph object, that is not selected, is right-clicked.
     if (event->button() == Qt::RightButton)
     {
-        const auto objs = this->items(event->localPos().toPoint());
+        const auto objs = this->items(event->pos());
         size_t numSelected = 0;
         for (auto obj : objs)
         {
@@ -76,7 +76,7 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     //handle the first move event transition from a press event
     if (_mouseLeftDown and _selectionState == "pressed")
     {
-        auto objs = this->items(_mouseLeftDownFirstPoint.toPoint());
+        auto objs = this->items(this->mapFromScene(_mouseLeftDownFirstPoint));
         if (not objs.empty())
         {
             if (not objs.back()->isSelected()) this->doClickSelection(_mouseLeftDownFirstPoint);
@@ -92,7 +92,7 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     //store current position for tracking
     if (_mouseLeftDown)
     {
-        _mouseLeftDownLastPoint = this->mapToScene(event->localPos().toPoint());
+        _mouseLeftDownLastPoint = this->mapToScene(event->pos());
         const auto p0 = _mouseLeftDownFirstPoint;
         const auto p1 = _mouseLeftDownLastPoint;
         _highlightRect = QRectF(
@@ -116,7 +116,7 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     //mouse released from a pressed state - alter selections at point
     if (event->button() == Qt::LeftButton and _selectionState == "pressed")
     {
-        //this->doClickSelection(_mouseLeftDownFirstPoint);
+        this->doClickSelection(_mouseLeftDownFirstPoint);
     }
 
     //mouse released from highlight box - alter selections with those in box
@@ -197,18 +197,14 @@ void GraphDraw::doClickSelection(const QPointF &point)
 {
     const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
     const auto objs = this->items(point.toPoint());
+
+    //make the clicked object topmost
     if (not objs.empty())
     {
-        auto topObj = objs.back();
-        bool newSel = true;
-        //the selected object will have its selection inverted if its the only selection or ctrl
-        if (this->getObjectsSelected().size() == 1 or ctrlDown) newSel = not topObj->isSelected();
-        if (not ctrlDown) this->deselectAllObjs();
-        topObj->setSelected(newSel);
+        auto topObj = objs.front();
         const int maxZIndex = this->getMaxZIndex();
         topObj->setZValue(maxZIndex+1);
     }
-    else if (not ctrlDown) this->deselectAllObjs();
 
     //nothing selected, clear the last selected endpoint
     if (objs.empty()) _lastClickSelectEp = GraphConnectionEndpoint();
@@ -216,8 +212,8 @@ void GraphDraw::doClickSelection(const QPointF &point)
     //connection creation logic
     if (not ctrlDown and not objs.empty())
     {
-        auto topObj = dynamic_cast<GraphObject *>(objs.back());
-        GraphConnectionEndpoint thisEp(topObj, topObj->isPointingToConnectable(point));
+        auto topObj = dynamic_cast<GraphObject *>(objs.front());
+        GraphConnectionEndpoint thisEp(topObj, topObj->isPointingToConnectable(topObj->mapFromParent(point)));
 
         //valid keys, attempt to make a connection
         QPointer<GraphConnection> conn;

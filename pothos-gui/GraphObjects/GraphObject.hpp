@@ -30,12 +30,10 @@ public:
 
     virtual QRectF boundingRect(void) const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
+    virtual QPainterPath shape(void) const;
 
     virtual void setId(const QString &id);
     const QString &getId(void) const;
-
-    virtual bool isPointing(const QPointF &pos) const;
-    virtual bool isPointing(const QRectF &pos) const;
 
     //! render without a painter to do-precalculations
     void prerender(void);
