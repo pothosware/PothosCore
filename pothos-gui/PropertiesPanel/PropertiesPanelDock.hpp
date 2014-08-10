@@ -28,6 +28,7 @@ private slots:
     void handleDeletePanel(void);
 
 private:
+    QPointer<GraphObject> _currentGraphObject;
     QPointer<QWidget> _propertiesPanel;
     QScrollArea *_scroll;
     QPushButton *_commitButton;

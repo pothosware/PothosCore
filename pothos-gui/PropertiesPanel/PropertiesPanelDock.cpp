@@ -52,7 +52,7 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     //clear old panel
     if (_propertiesPanel)
     {
-        emit this->resetPanel();
+        if (_currentGraphObject) emit this->resetPanel();
         delete _propertiesPanel;
     }
 
@@ -78,6 +78,7 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     connect(_propertiesPanel, SIGNAL(stateChanged(const GraphState &)), editor, SLOT(handleStateChange(const GraphState &)));
 
     //set the widget and make the entire dock visible
+    _currentGraphObject = obj;
     _scroll->setWidget(_propertiesPanel);
     this->show();
     this->raise();
