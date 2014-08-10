@@ -166,10 +166,10 @@ void GraphDraw::render(void)
     //clip the bounds
     for (auto obj : allObjs)
     {
-        auto oldPos = obj->mapToScene(obj->pos());
+        auto oldPos = obj->pos();
         oldPos.setX(std::min(std::max(oldPos.x(), 0.0), this->sceneRect().width()));
         oldPos.setY(std::min(std::max(oldPos.y(), 0.0), this->sceneRect().height()));
-        obj->setPos(obj->mapFromScene(oldPos));
+        obj->setPos(oldPos);
     }
 
     //cause full redraw

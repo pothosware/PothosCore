@@ -14,6 +14,7 @@
 #include <QMouseEvent>
 #include <QAction>
 #include <QMenu>
+#include <QScrollBar>
 #include <iostream>
 #include <algorithm>
 
@@ -69,22 +70,32 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
     QGraphicsView::mousePressEvent(event);
 }
 
+static void handleAutoScroll(QScrollBar *bar, const qreal length, const qreal offset)
+{
+    const qreal delta = offset - bar->value();
+    if (delta + GraphDrawScrollFudge > length)
+    {
+        bar->setValue(std::min(bar->maximum(), int(bar->value() + (delta + GraphDrawScrollFudge - length)/2)));
+    }
+    if (delta - GraphDrawScrollFudge < 0)
+    {
+        bar->setValue(std::max(0, int(bar->value() + (delta - GraphDrawScrollFudge)/2)));
+    }
+}
+
 void GraphDraw::mouseMoveEvent(QMouseEvent *event)
 {
-    const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
-
     //handle the first move event transition from a press event
     if (_mouseLeftDown and _selectionState == "pressed")
     {
         auto objs = this->items(this->mapFromScene(_mouseLeftDownFirstPoint));
         if (not objs.empty())
         {
-            if (not objs.back()->isSelected()) this->doClickSelection(_mouseLeftDownFirstPoint);
+            if (not objs.front()->isSelected()) this->doClickSelection(_mouseLeftDownFirstPoint);
             _selectionState = "move";
         }
         else
         {
-            if (not ctrlDown) this->deselectAllObjs();
             _selectionState = "highlight";
         }
     }
@@ -102,11 +113,8 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     }
 
     //auto scroll near boundaries
-    if (_mouseLeftDown)
-    {
-        //TODO
-        //this->centerOn(event->localPos());
-    }
+    handleAutoScroll(this->horizontalScrollBar(), this->size().width(), _mouseLeftDownLastPoint.x());
+    handleAutoScroll(this->verticalScrollBar(), this->size().height(), _mouseLeftDownLastPoint.y());
 
     QGraphicsView::mouseMoveEvent(event);
 }
