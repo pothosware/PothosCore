@@ -55,8 +55,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["createGraphPage"], SIGNAL(triggered(void)), this, SLOT(handleCreateGraphPage(void)));
     connect(getActionMap()["renameGraphPage"], SIGNAL(triggered(void)), this, SLOT(handleRenameGraphPage(void)));
     connect(getActionMap()["deleteGraphPage"], SIGNAL(triggered(void)), this, SLOT(handleDeleteGraphPage(void)));
-    connect(getActionMap()["createInputBreaker"], SIGNAL(triggered(void)), this, SLOT(handleCreateInputBreaker(void)));
-    connect(getActionMap()["createOutputBreaker"], SIGNAL(triggered(void)), this, SLOT(handleCreateOutputBreaker(void)));
+    connect(getActionMap()["inputBreaker"], SIGNAL(triggered(void)), this, SLOT(handleCreateInputBreaker(void)));
+    connect(getActionMap()["outputBreaker"], SIGNAL(triggered(void)), this, SLOT(handleCreateOutputBreaker(void)));
     connect(getActionMap()["cut"], SIGNAL(triggered(void)), this, SLOT(handleCut(void)));
     connect(getActionMap()["copy"], SIGNAL(triggered(void)), this, SLOT(handleCopy(void)));
     connect(getActionMap()["paste"], SIGNAL(triggered(void)), this, SLOT(handlePaste(void)));

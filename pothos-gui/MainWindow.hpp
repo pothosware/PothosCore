@@ -63,8 +63,8 @@ private:
     QAction *_createGraphPageAction;
     QAction *_renameGraphPageAction;
     QAction *_deleteGraphPageAction;
-    QAction *_createInputBreakerAction;
-    QAction *_createOutputBreakerAction;
+    QAction *_inputBreakerAction;
+    QAction *_outputBreakerAction;
     QAction *_rotateLeftAction;
     QAction *_rotateRightAction;
     QAction *_zoomInAction;

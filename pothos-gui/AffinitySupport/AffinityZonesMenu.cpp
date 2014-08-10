@@ -6,7 +6,7 @@
 #include <QSignalMapper>
 
 AffinityZonesMenu::AffinityZonesMenu(AffinityZonesDock *dock, QWidget *parent):
-    QMenu(tr("Set graph blocks affinity..."), parent),
+    QMenu(tr("Graph blocks affinity..."), parent),
     _clickMapper(new QSignalMapper(this)),
     _dock(dock)
 {
@@ -26,7 +26,7 @@ void AffinityZonesMenu::handleZonesChanged(void)
 
     if (_dock) for (const auto &name : _dock->zones())
     {
-        auto action = this->addAction(name);
+        auto action = this->addAction(tr("Apply %1").arg(name));
         connect(action, SIGNAL(triggered(void)), _clickMapper, SLOT(map(void)));
         _clickMapper->setMapping(action, name);
     }

@@ -130,14 +130,18 @@ void GraphDraw::updateEnabledActions(void)
     auto selectedObjs = this->getObjectsSelected();
     const bool selected = not selectedObjs.empty();
 
+    auto selectedObjBlocks = this->getObjectsSelected(GRAPH_BLOCK);
+    const bool selectedBlocks = not selectedObjBlocks.empty();
+
     getActionMap()["cut"]->setEnabled(selectedNoC);
     getActionMap()["copy"]->setEnabled(selectedNoC);
     getActionMap()["delete"]->setEnabled(selected);
     getActionMap()["rotateLeft"]->setEnabled(selectedNoC);
     getActionMap()["rotateRight"]->setEnabled(selectedNoC);
     getActionMap()["properties"]->setEnabled(selected);
-    getActionMap()["increment"]->setEnabled(selected);
-    getActionMap()["decrement"]->setEnabled(selected);
+    getActionMap()["increment"]->setEnabled(selectedBlocks);
+    getActionMap()["decrement"]->setEnabled(selectedBlocks);
+    getMenuMap()["setAffinityZone"]->setEnabled(selectedBlocks);
 
     //and enable/disable the actions in the move graph objects submenu
     for (auto child : getMenuMap()["moveGraphObjects"]->children())

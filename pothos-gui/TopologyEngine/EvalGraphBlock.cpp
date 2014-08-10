@@ -81,9 +81,11 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
     const auto thisHash = makeGraphBlockConfigHash(block, env);
     if (_idToBlockEval[block->getId()].first == thisHash)
     {
+        this->setupPorts(block);
         return _idToBlockEval[block->getId()].second;
     }
     _idToBlockEval.erase(block->getId());
+    _idToPortDesc.erase(block->getId());
 
     //create a new block evaluator on the server
     auto BlockEval = env->findProxy("Pothos/Util/BlockEval");
@@ -125,9 +127,9 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
     {
         blockEval.callProxy("eval", block->getId().toStdString(), block->getBlockDesc());
         auto proxyBlock = blockEval.callProxy("getProxyBlock");
-        block->setPortDesc(
+        _idToPortDesc.emplace(block->getId(), std::make_pair(
             portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo")),
-            portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo")));
+            portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo"))));
     }
 
     //parser errors report
@@ -139,5 +141,12 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
 
     //update the cache and return
     _idToBlockEval[block->getId()] = std::make_pair(thisHash, blockEval);
+    this->setupPorts(block);
     return blockEval;
+}
+
+void TopologyEngine::setupPorts(GraphBlock *block)
+{
+    if (_idToPortDesc.count(block->getId()) == 0) return;
+    block->setPortDesc(_idToPortDesc[block->getId()].first, _idToPortDesc[block->getId()].second);
 }

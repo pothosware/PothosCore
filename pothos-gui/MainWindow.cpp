@@ -211,7 +211,7 @@ void PothosGuiMainWindow::createActions(void)
     _actionMap["selectAll"] = _selectAllAction;
 
     _propertiesAction = new QAction(makeIconFromTheme("document-properties"), tr("Properti&es"), this);
-    _selectAllAction->setShortcut(QKeySequence("Enter"));
+    _propertiesAction->setShortcut(Qt::Key_Return);
     _actionMap["properties"] = _propertiesAction;
 
     _createGraphPageAction = new QAction(makeIconFromTheme("document-new"), tr("Create new graph page"), this);
@@ -223,18 +223,18 @@ void PothosGuiMainWindow::createActions(void)
     _deleteGraphPageAction = new QAction(makeIconFromTheme("edit-delete"), tr("Delete this graph page"), this);
     _actionMap["deleteGraphPage"] = _deleteGraphPageAction;
 
-    _createInputBreakerAction = new QAction(makeIconFromTheme("document-new"), tr("Create input breaker"), this);
-    _actionMap["createInputBreaker"] = _createInputBreakerAction;
+    _inputBreakerAction = new QAction(makeIconFromTheme("edit-table-insert-column-right"), tr("Insert input breaker"), this);
+    _actionMap["inputBreaker"] = _inputBreakerAction;
 
-    _createOutputBreakerAction = new QAction(makeIconFromTheme("document-new"), tr("Create output breaker"), this);
-    _actionMap["createOutputBreaker"] = _createOutputBreakerAction;
+    _outputBreakerAction = new QAction(makeIconFromTheme("edit-table-insert-column-left"), tr("Insert output breaker"), this);
+    _actionMap["outputBreaker"] = _outputBreakerAction;
 
     _rotateLeftAction = new QAction(makeIconFromTheme("object-rotate-left"), tr("Rotate Left"), this);
-    _rotateLeftAction->setShortcut(QKeySequence("Left"));
+    _rotateLeftAction->setShortcut(Qt::Key_Left);
     _actionMap["rotateLeft"] = _rotateLeftAction;
 
     _rotateRightAction = new QAction(makeIconFromTheme("object-rotate-right"), tr("Rotate Right"), this);
-    _rotateRightAction->setShortcut(QKeySequence("Right"));
+    _rotateRightAction->setShortcut(Qt::Key_Right);
     _actionMap["rotateRight"] = _rotateRightAction;
 
     _zoomInAction = new QAction(makeIconFromTheme("zoom-in"), tr("Zoom in"), this);
@@ -318,20 +318,9 @@ void PothosGuiMainWindow::createMenus(void)
     _editMenu->addAction(_copyAction);
     _editMenu->addAction(_pasteAction);
     _editMenu->addAction(_deleteAction);
-    _editMenu->addSeparator();
     _editMenu->addAction(_selectAllAction);
     _editMenu->addSeparator();
     _editMenu->addAction(_findAction);
-    _editMenu->addSeparator();
-    _editMenu->addAction(_createGraphPageAction);
-    _editMenu->addAction(_renameGraphPageAction);
-    _editMenu->addAction(_deleteGraphPageAction);
-    _menuMap["moveGraphObjects"] = _editMenu->addMenu(makeIconFromTheme("transform-move"), tr("Move selected graph objects..."));
-    _menuMap["setAffinityZone"] = dynamic_cast<AffinityZonesDock *>(_affinityZonesDock)->makeMenu(_editMenu);
-    _editMenu->addMenu(_menuMap["setAffinityZone"]);
-    _editMenu->addSeparator();
-    _editMenu->addAction(_createInputBreakerAction);
-    _editMenu->addAction(_createOutputBreakerAction);
     _editMenu->addSeparator();
     _editMenu->addAction(_rotateLeftAction);
     _editMenu->addAction(_rotateRightAction);
@@ -340,6 +329,17 @@ void PothosGuiMainWindow::createMenus(void)
     _editMenu->addAction(_decrementAction);
     _editMenu->addSeparator();
     _editMenu->addAction(_propertiesAction);
+    _editMenu->addSeparator();
+    auto pageMenu = _editMenu->addMenu(tr("Graph page options..."));
+    pageMenu->addAction(_createGraphPageAction);
+    pageMenu->addAction(_renameGraphPageAction);
+    pageMenu->addAction(_deleteGraphPageAction);
+    pageMenu->addSeparator();
+    pageMenu->addAction(_inputBreakerAction);
+    pageMenu->addAction(_outputBreakerAction);
+    _menuMap["moveGraphObjects"] = _editMenu->addMenu(makeIconFromTheme("transform-move"), tr("Move graph objects..."));
+    _menuMap["setAffinityZone"] = dynamic_cast<AffinityZonesDock *>(_affinityZonesDock)->makeMenu(_editMenu);
+    _editMenu->addMenu(_menuMap["setAffinityZone"]);
 
     _executeMenu = menuBar()->addMenu(tr("&Execute"));
     _executeMenu->addSeparator();
@@ -414,5 +414,7 @@ void PothosGuiMainWindow::createMainToolBar(void)
 
     _mainToolBar->addAction(_rotateLeftAction);
     _mainToolBar->addAction(_rotateRightAction);
+    _mainToolBar->addSeparator();
+
     _mainToolBar->addAction(_propertiesAction);
 }
