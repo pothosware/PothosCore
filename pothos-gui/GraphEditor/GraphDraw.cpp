@@ -24,7 +24,7 @@
 
 GraphDraw::GraphDraw(QWidget *parent):
     QGraphicsView(parent),
-    _scene(new QGraphicsScene(this)),
+    _scene(new QGraphicsScene(QRectF(QPointF(), GraphDrawCanvasSize), this)),
     _graphEditor(dynamic_cast<GraphEditor *>(parent)),
     _zoomScale(1.0),
     _mouseLeftDown(false),
@@ -54,6 +54,7 @@ GraphDraw::GraphDraw(QWidget *parent):
         parent, SLOT(handleStateChange(const GraphState &)));
     connect(this, SIGNAL(modifyProperties(GraphObject *)),
         getObjectMap()["propertiesPanel"], SLOT(handleGraphModifyProperties(GraphObject *)));
+    connect(_scene, SIGNAL(selectionChanged(void)), this, SLOT(updateEnabledActions(void)));
 
     //debug view - connect and initialize
     connect(getActionMap()["showGraphConnectionPoints"], SIGNAL(triggered(void)),
@@ -78,7 +79,17 @@ void GraphDraw::dragEnterEvent(QDragEnterEvent *event)
     {
         event->acceptProposedAction();
     }
-    QWidget::dragEnterEvent(event);
+    else QGraphicsView::dragEnterEvent(event);
+}
+
+void GraphDraw::dragMoveEvent(QDragMoveEvent *event)
+{
+    if (event->mimeData()->hasFormat("text/json/pothos_block") and
+        not event->mimeData()->data("text/json/pothos_block").isEmpty())
+    {
+        event->acceptProposedAction();
+    }
+    else QGraphicsView::dragMoveEvent(event);
 }
 
 void GraphDraw::dropEvent(QDropEvent *event)
@@ -88,39 +99,18 @@ void GraphDraw::dropEvent(QDropEvent *event)
     const auto blockDesc = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
 
     this->getGraphEditor()->handleAddBlock(blockDesc, event->pos());
-    QWidget::dropEvent(event);
+    event->acceptProposedAction();
 }
 
 void GraphDraw::setZoomScale(const qreal zoom)
 {
     _zoomScale = zoom;
-    QSizeF newSize(GraphDrawCanvasSize*this->zoomScale());
-    this->resize(newSize.toSize());
     this->render();
 }
-
-void GraphDraw::setupCanvas(void)
-{
-    QSizeF newSize(GraphDrawCanvasSize*this->zoomScale());
-    this->resize(newSize.toSize());
-    this->render();
-}
-
-/*
-void GraphDraw::paintEvent(QPaintEvent *event)
-{
-    QRectF target(QPointF(), this->size());
-    QRectF source(QPointF(), _image.size());
-    QPainter(this).drawImage(target, _image, source);
-
-    QWidget::paintEvent(event);
-}
-*/
 
 void GraphDraw::showEvent(QShowEvent *event)
 {
     emit this->modifyProperties(nullptr); //resets the state of whoever is modding the properties
-    this->setupCanvas(); //size could have changed, resize to fit
     this->render();
     QWidget::showEvent(event);
 }

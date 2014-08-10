@@ -346,10 +346,10 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc)
     QPoint where(std::rand()%100, std::rand()%100);
 
     //determine where, a nice point on the visible drawing area sort of upper left
-    auto scrollArea = dynamic_cast<QScrollArea *>(this->currentWidget());
-    if (scrollArea != nullptr) where += QPoint(
-        scrollArea->horizontalScrollBar()->value() + scrollArea->size().width()/4,
-        scrollArea->verticalScrollBar()->value() + scrollArea->size().height()/4);
+    auto view = dynamic_cast<QGraphicsView *>(this->currentWidget());
+    if (view != nullptr) where += QPoint(
+        view->horizontalScrollBar()->value() + view->size().width()/4,
+        view->verticalScrollBar()->value() + view->size().height()/4);
 
     this->handleAddBlock(blockDesc, where);
 }

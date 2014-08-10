@@ -33,8 +33,8 @@ void GraphDraw::mouseDoubleClickEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
     {
-        const auto objs = this->getObjectsAtPos(event->localPos());
-        if (not objs.isEmpty()) emit this->modifyProperties(objs.at(0));
+        const auto objs = this->items(event->localPos().toPoint());
+        if (not objs.isEmpty()) emit this->modifyProperties(dynamic_cast<GraphObject *>(objs.at(0)));
     }
     QGraphicsView::mouseDoubleClickEvent(event);
 }
@@ -58,7 +58,7 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
     //when a graph object, that is not selected, is right-clicked.
     if (event->button() == Qt::RightButton)
     {
-        const auto objs = this->getObjectsAtPos(event->localPos());
+        const auto objs = this->items(event->localPos().toPoint());
         size_t numSelected = 0;
         for (auto obj : objs)
         {
@@ -97,7 +97,7 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     //handle the first move event transition from a press event
     if (_mouseLeftDown and _selectionState == "pressed")
     {
-        auto objs = this->getObjectsAtPos(_mouseLeftDownFirstPoint);
+        auto objs = this->items(_mouseLeftDownFirstPoint.toPoint());
         if (not objs.empty())
         {
             if (not objs.back()->isSelected()) this->doClickSelection(_mouseLeftDownFirstPoint);
@@ -202,16 +202,6 @@ int GraphDraw::getMaxZIndex(void)
     return index;
 }
 
-GraphObjectList GraphDraw::getObjectsAtPos(const QPointF &pos, const int selectionFlags)
-{
-    GraphObjectList objectsAtPos;
-    for (auto obj : this->getGraphObjects(selectionFlags))
-    {
-        if (obj->isPointing(pos/this->zoomScale())) objectsAtPos.push_back(obj);
-    }
-    return objectsAtPos;
-}
-
 GraphObjectList GraphDraw::getObjectsSelected(const int selectionFlags)
 {
     GraphObjectList objectsSelected;
@@ -245,7 +235,7 @@ GraphObjectList GraphDraw::getGraphObjects(const int selectionFlags)
 void GraphDraw::doClickSelection(const QPointF &point)
 {
     const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
-    const auto objs = this->getObjectsAtPos(point);
+    const auto objs = this->items(point.toPoint());
     if (not objs.empty())
     {
         auto topObj = objs.back();
@@ -265,7 +255,7 @@ void GraphDraw::doClickSelection(const QPointF &point)
     //connection creation logic
     if (not ctrlDown and not objs.empty())
     {
-        auto topObj = objs.back();
+        auto topObj = dynamic_cast<GraphObject *>(objs.back());
         GraphConnectionEndpoint thisEp(topObj, topObj->isPointingToConnectable(point));
 
         //valid keys, attempt to make a connection

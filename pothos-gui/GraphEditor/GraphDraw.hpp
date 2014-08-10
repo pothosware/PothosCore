@@ -16,8 +16,6 @@ class GraphDraw : public QGraphicsView
 public:
     GraphDraw(QWidget *parent);
 
-    GraphObjectList getObjectsAtPos(const QPointF &pos, const int selectionFlags = ~0);
-
     GraphObjectList getObjectsSelected(const int selectionFlags = ~0);
 
     GraphObjectList getGraphObjects(const int selectionFlags = ~0);
@@ -56,19 +54,20 @@ public:
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent *event);
     void wheelEvent(QWheelEvent *event);
     void mouseDoubleClickEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
-    //void paintEvent(QPaintEvent *event);
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 private slots:
     void handleCustomContextMenuRequested(const QPoint &);
     void handleGraphDebugViewChange(void);
+    void updateEnabledActions(void);
 
 signals:
     void stateChanged(const GraphState &);
@@ -77,13 +76,9 @@ signals:
 
 private:
 
-    void setupCanvas(void);
-
     void deselectAllObjs(void);
 
     void doClickSelection(const QPointF &point);
-
-    void updateEnabledActions(void);
 
     QGraphicsScene *_scene;
     GraphEditor *_graphEditor;

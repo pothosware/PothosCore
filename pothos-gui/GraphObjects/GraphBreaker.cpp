@@ -32,7 +32,7 @@ GraphBreaker::GraphBreaker(QObject *parent):
     GraphObject(parent),
     _impl(new Impl())
 {
-    return;
+    this->setFlag(QGraphicsItem::ItemIsMovable);
 }
 
 void GraphBreaker::setInput(const bool isInput)
@@ -116,14 +116,16 @@ void GraphBreaker::render(QPainter &painter)
 
     //setup rotations and translations
     QTransform trans;
-    trans.translate(this->pos().x(), this->pos().y());
-    painter.translate(this->pos());
+    //trans.translate(this->pos().x(), this->pos().y());
+    //painter.translate(this->pos());
 
     //dont rotate past 180 because we just do a breaker flip
     //this way text only ever has 2 rotations
-    trans.rotate(int(this->rotation()) % 180);
-    painter.rotate(int(this->rotation()) % 180);
+    //trans.rotate(int(this->rotation()) % 180);
+    //painter.rotate(int(this->rotation()) % 180);
     const bool breakerFlip = this->rotation() >= 180;
+    if (breakerFlip) painter.rotate(-180);
+    if (breakerFlip) trans.rotate(-180);
 
     //set painter for drawing the figure
     auto pen = QPen(QColor(GraphObjectDefaultPenColor));

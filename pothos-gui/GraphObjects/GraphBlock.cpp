@@ -20,7 +20,7 @@ GraphBlock::GraphBlock(QObject *parent):
     GraphObject(parent),
     _impl(new Impl())
 {
-    return;
+    this->setFlag(QGraphicsItem::ItemIsMovable);
 }
 
 void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
@@ -472,14 +472,16 @@ void GraphBlock::render(QPainter &painter)
 
     //setup rotations and translations
     QTransform trans;
-    trans.translate(this->pos().x(), this->pos().y());
-    painter.translate(this->pos());
+    //trans.translate(this->pos().x(), this->pos().y());
+    //painter.translate(this->pos());
 
     //dont rotate past 180 because we just do a port flip
     //this way text only ever has 2 rotations
-    trans.rotate(int(this->rotation()) % 180);
-    painter.rotate(int(this->rotation()) % 180);
+    //trans.rotate(int(this->rotation()) % 180);
+    //painter.rotate(int(this->rotation()) % 180);
     const bool portFlip = this->rotation() >= 180;
+    if (portFlip) painter.rotate(-180);
+    if (portFlip) trans.rotate(-180);
 
     //calculate dimensions
     qreal inputPortsMinHeight = GraphBlockPortVOutterPad*2;

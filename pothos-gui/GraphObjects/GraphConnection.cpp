@@ -267,8 +267,10 @@ void GraphConnection::render(QPainter &painter)
     }
 
     //query the connectable info
-    const auto outputAttrs = _impl->outputEp.getConnectableAttrs();
-    const auto inputAttrs = _impl->inputEp.getConnectableAttrs();
+    auto outputAttrs = _impl->outputEp.getConnectableAttrs();
+    outputAttrs.point = this->mapFromItem(_impl->outputEp.getObj(), outputAttrs.point);
+    auto inputAttrs = _impl->inputEp.getConnectableAttrs();
+    inputAttrs.point = this->mapFromItem(_impl->inputEp.getObj(), inputAttrs.point);
 
     //make the minimal output protrusion
     const auto op0 = outputAttrs.point;

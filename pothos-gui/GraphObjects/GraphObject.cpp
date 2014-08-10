@@ -27,7 +27,6 @@ GraphObject::GraphObject(QObject *parent):
     auto view = dynamic_cast<QGraphicsView *>(parent);
     assert(view != nullptr);
     view->scene()->addItem(this);
-    this->setFlag(QGraphicsItem::ItemIsMovable);
     this->setFlag(QGraphicsItem::ItemIsSelectable);
 }
 
@@ -43,7 +42,11 @@ QRectF GraphObject::boundingRect(void) const
 
 void GraphObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
+    //painter->save();
     this->render(*painter);
+    //painter->restore();
+
+    //this->renderConnectablePoints(*painter);
 }
 
 void GraphObject::setId(const QString &id)
