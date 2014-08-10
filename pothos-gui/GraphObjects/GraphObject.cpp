@@ -125,7 +125,7 @@ void GraphObject::renderConnectablePoints(QPainter &painter)
 
         //draw vector
         painter.setPen(QPen(QColor(GraphObjectConnLineColor)));
-        QTransform trans; trans.rotate(attrs.rotation);
+        QTransform trans; trans.rotate(attrs.rotation-this->rotation());
         painter.drawLine(attrs.point, attrs.point + trans.map(QPointF(GraphObjectConnLineLength, 0)));
     }
 }

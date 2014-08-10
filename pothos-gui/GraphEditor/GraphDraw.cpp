@@ -9,6 +9,7 @@
 #include "GraphEditor/Constants.hpp"
 #include <Poco/JSON/Parser.h>
 #include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
 #include <QMenu>
 #include <QPainter>
 #include <QPen>
@@ -21,14 +22,13 @@
 #include <QDropEvent>
 #include <iostream>
 #include <cassert>
+#include <limits>
 
 GraphDraw::GraphDraw(QWidget *parent):
     QGraphicsView(parent),
     _graphEditor(dynamic_cast<GraphEditor *>(parent)),
     _zoomScale(1.0),
-    _mouseLeftDown(false),
-    _showGraphConnectionPoints(false),
-    _showGraphBoundingBoxes(false)
+    _mouseLeftDown(false)
 {
     //setup scene
     this->setScene(new QGraphicsScene(QRectF(QPointF(), GraphDrawCanvasSize), this));
@@ -68,8 +68,20 @@ GraphDraw::GraphDraw(QWidget *parent):
 
 void GraphDraw::handleGraphDebugViewChange(void)
 {
-    _showGraphConnectionPoints = getActionMap()["showGraphConnectionPoints"]->isChecked();
-    _showGraphBoundingBoxes = getActionMap()["showGraphBoundingBoxes"]->isChecked();
+    _graphConnectionPoints.reset();
+    if (getActionMap()["showGraphConnectionPoints"]->isChecked())
+    {
+        _graphConnectionPoints.reset(new QGraphicsPixmapItem());
+        this->scene()->addItem(_graphConnectionPoints.get());
+    }
+
+    _graphBoundingBoxes.reset();
+    if (getActionMap()["showGraphBoundingBoxes"]->isChecked())
+    {
+        _graphBoundingBoxes.reset(new QGraphicsPixmapItem());
+        this->scene()->addItem(_graphBoundingBoxes.get());
+    }
+
     if (not this->isVisible()) return;
     this->render();
 }
@@ -172,42 +184,47 @@ void GraphDraw::render(void)
         obj->setPos(oldPos);
     }
 
-    //cause full redraw
-    this->scene()->update();
-
-    //render objects
-    /*
-    for (auto obj : allObjs)
+    //optional debug pixmap overlay for connection points
+    if (_graphConnectionPoints)
     {
-        //draw the object
-        painter.save();
-        painter.scale(this->zoomScale(), this->zoomScale());
-        obj->render(painter);
-        painter.restore();
-
-        //draw connection points (for debug)
-        if (_showGraphConnectionPoints)
+        QPixmap pixmap(this->sceneRect().size().toSize());
+        pixmap.fill(Qt::transparent);
+        QPainter painter(&pixmap);
+        for (auto obj : allObjs)
         {
             painter.save();
-            painter.scale(this->zoomScale(), this->zoomScale());
+            painter.translate(obj->pos());
+            painter.rotate(obj->rotation());
             obj->renderConnectablePoints(painter);
             painter.restore();
         }
+        _graphConnectionPoints->setPixmap(pixmap);
+        _graphConnectionPoints->setZValue(std::numeric_limits<qreal>::max());
+    }
 
-        //draw bounding boxes (for debug)
-        if (_showGraphBoundingBoxes)
+    //optional debug pixmap overlay for bounding boxes
+    if (_graphBoundingBoxes)
+    {
+        QPixmap pixmap(this->sceneRect().size().toSize());
+        pixmap.fill(Qt::transparent);
+        QPainter painter(&pixmap);
+        for (auto obj : allObjs)
         {
             painter.save();
-            painter.scale(this->zoomScale(), this->zoomScale());
-            auto boundingRect = obj->getBoundingRect();
-            painter.setPen(QPen(QColor("red")));
+            painter.translate(obj->pos());
+            painter.rotate(obj->rotation());
+            auto boundingRect = obj->boundingRect();
+            painter.setPen(QPen(Qt::red));
             painter.setBrush(Qt::NoBrush);
             painter.drawRect(boundingRect);
             painter.restore();
         }
+        _graphBoundingBoxes->setPixmap(pixmap);
+        _graphBoundingBoxes->setZValue(std::numeric_limits<qreal>::max());
     }
-    */
 
+    //cause full redraw
+    this->scene()->update();
     this->repaint();
 }
 

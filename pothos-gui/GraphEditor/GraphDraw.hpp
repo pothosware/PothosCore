@@ -6,9 +6,11 @@
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
 #include <QGraphicsView>
+#include <memory>
 
 class GraphEditor;
 class QGraphicsItem;
+class QGraphicsPixmapItem;
 
 class GraphDraw : public QGraphicsView
 {
@@ -89,6 +91,6 @@ private:
 
     GraphConnectionEndpoint _lastClickSelectEp;
 
-    bool _showGraphConnectionPoints;
-    bool _showGraphBoundingBoxes;
+    std::shared_ptr<QGraphicsPixmapItem> _graphConnectionPoints;
+    std::shared_ptr<QGraphicsPixmapItem> _graphBoundingBoxes;
 };
