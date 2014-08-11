@@ -132,7 +132,9 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
             const auto val = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>()->get(0);
             if (val.isNumeric() and val.isInteger())
             {
+                try {return Pothos::Object(val.convert<Poco::UInt32>());} catch (const Poco::Exception &){}
                 try {return Pothos::Object(val.convert<Poco::Int32>());} catch (const Poco::Exception &){}
+                try {return Pothos::Object(val.convert<Poco::UInt64>());} catch (const Poco::Exception &){}
                 try {return Pothos::Object(val.convert<Poco::Int64>());} catch (const Poco::Exception &){}
             }
             else if (val.isNumeric())
