@@ -177,7 +177,7 @@ CircularBufferContainer::CircularBufferContainer(const size_t numBytes, const lo
  **********************************************************************/
 Pothos::SharedBuffer Pothos::SharedBuffer::make(const size_t numBytes, const long nodeAffinity)
 {
-    std::shared_ptr<GenericBufferContainer> container(new GenericBufferContainer(numBytes, nodeAffinity));
+    std::shared_ptr<GenericBufferContainer> container(new GenericBufferContainer(std::max<size_t>(1, numBytes), nodeAffinity));
     return SharedBuffer(container->getAddress(), numBytes, container);
 }
 

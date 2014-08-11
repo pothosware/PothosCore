@@ -36,6 +36,11 @@ POTHOS_TEST_BLOCK("/framework/tests", test_generic_shared_buffer)
         Pothos::SharedBuffer(b1.getAddress() + 512, b1.getLength(), b1),
         Pothos::SharedBufferError);
     auto b2 = Pothos::SharedBuffer(b1.getAddress() + 512, b1.getLength() - 512, b1);
+
+    //test a size zero allocation
+    POTHOS_TEST_CHECKPOINT();
+    auto bEmpty = Pothos::SharedBuffer::make(0);
+    POTHOS_TEST_EQUAL(bEmpty.getLength(), 0);
 }
 
 POTHOS_TEST_BLOCK("/framework/tests", test_circular_shared_buffer)
