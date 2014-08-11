@@ -28,7 +28,7 @@ GraphDraw::GraphDraw(QWidget *parent):
     QGraphicsView(parent),
     _graphEditor(dynamic_cast<GraphEditor *>(parent)),
     _zoomScale(1.0),
-    _mouseLeftDown(false)
+    _selectionState(0)
 {
     //setup scene
     this->setScene(new QGraphicsScene(QRectF(QPointF(), GraphDrawCanvasSize), this));

@@ -83,10 +83,7 @@ private:
 
     GraphEditor *_graphEditor;
     qreal _zoomScale;
-    bool _mouseLeftDown;
-    QPointF _mouseLeftDownFirstPoint;
-    QPointF _mouseLeftDownLastPoint;
-    QString _selectionState;
+    int _selectionState;
     QPointF _lastContextMenuPos;
 
     GraphConnectionEndpoint _lastClickSelectEp;

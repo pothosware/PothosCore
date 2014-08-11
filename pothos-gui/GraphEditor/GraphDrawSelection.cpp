@@ -18,6 +18,10 @@
 #include <iostream>
 #include <algorithm>
 
+static const int SELECTION_STATE_NONE = 0;
+static const int SELECTION_STATE_PRESS = 1;
+static const int SELECTION_STATE_MOVE = 2;
+
 void GraphDraw::wheelEvent(QWheelEvent *event)
 {
     const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
@@ -45,13 +49,10 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
     //record the conditions of this press event, nothing is changed
     if (event->button() == Qt::LeftButton)
     {
-        _mouseLeftDown = true;
-        _mouseLeftDownFirstPoint = this->mapToScene(event->pos());
-        _mouseLeftDownLastPoint = this->mapToScene(event->pos());
-        _selectionState = "pressed";
+        _selectionState = SELECTION_STATE_PRESS;
 
         //make the clicked object topmost
-        auto objs = this->items(this->mapFromScene(_mouseLeftDownFirstPoint));
+        const auto objs = this->items(event->pos());
         if (not objs.empty()) objs.front()->setZValue(this->getMaxZValue()+1);
     }
 
@@ -93,16 +94,16 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     QGraphicsView::mouseMoveEvent(event);
 
     //handle the first move event transition from a press event
-    if (_mouseLeftDown and _selectionState == "pressed") _selectionState = "move";
-
-    //store current position for tracking
-    if (_mouseLeftDown) _mouseLeftDownLastPoint = this->mapToScene(event->pos());
+    if (_selectionState == SELECTION_STATE_PRESS)
+    {
+        _selectionState = (this->items(event->pos()).empty())? SELECTION_STATE_NONE : SELECTION_STATE_MOVE;
+    }
 
     this->render();
 
     //auto scroll near boundaries
-    handleAutoScroll(this->horizontalScrollBar(), this->size().width(), _mouseLeftDownLastPoint.x());
-    handleAutoScroll(this->verticalScrollBar(), this->size().height(), _mouseLeftDownLastPoint.y());
+    handleAutoScroll(this->horizontalScrollBar(), this->size().width(), this->mapToScene(event->pos()).x());
+    handleAutoScroll(this->verticalScrollBar(), this->size().height(), this->mapToScene(event->pos()).y());
 }
 
 void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
@@ -110,22 +111,18 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     QGraphicsView::mouseReleaseEvent(event);
 
     //mouse released from a pressed state - alter selections at point
-    if (event->button() == Qt::LeftButton and _selectionState == "pressed")
+    if (_selectionState == SELECTION_STATE_PRESS)
     {
-        this->doClickSelection(_mouseLeftDownFirstPoint);
+        _selectionState = SELECTION_STATE_NONE;
+        this->doClickSelection(this->mapToScene(event->pos()));
     }
 
     //emit the move event up to the graph editor
-    if (event->button() == Qt::LeftButton and _selectionState == "move")
+    if (_selectionState == SELECTION_STATE_MOVE)
     {
+        _selectionState = SELECTION_STATE_NONE;
         auto selected = getObjectsSelected(~GRAPH_CONNECTION);
         if (not selected.isEmpty()) emit stateChanged(GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription(~GRAPH_CONNECTION))));
-    }
-
-    if (event->button() == Qt::LeftButton)
-    {
-        _selectionState = "";
-        _mouseLeftDown = false;
     }
 
     this->render();
