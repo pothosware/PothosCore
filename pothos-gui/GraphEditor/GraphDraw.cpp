@@ -128,7 +128,7 @@ void GraphDraw::showEvent(QShowEvent *event)
 {
     emit this->modifyProperties(nullptr); //resets the state of whoever is modding the properties
     this->render();
-    QWidget::showEvent(event);
+    QGraphicsView::showEvent(event);
 }
 
 void GraphDraw::keyPressEvent(QKeyEvent *event)
@@ -233,8 +233,3 @@ void GraphDraw::handleCustomContextMenuRequested(const QPoint &pos)
     _lastContextMenuPos = pos;
     getMenuMap()["edit"]->exec(this->mapToGlobal(pos));
 }
-
-QWidget *makeGraphDraw(QWidget *parent)
-{
-    return new GraphDraw(parent);
-};

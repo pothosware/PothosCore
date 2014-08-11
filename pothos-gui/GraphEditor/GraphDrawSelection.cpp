@@ -191,6 +191,7 @@ void GraphDraw::doClickSelection(const QPointF &point)
     if (not ctrlDown and not objs.empty())
     {
         auto topObj = dynamic_cast<GraphObject *>(objs.front());
+        if (topObj == nullptr) return;
         GraphConnectionEndpoint thisEp(topObj, topObj->isPointingToConnectable(topObj->mapFromParent(point)));
 
         //valid keys, attempt to make a connection
