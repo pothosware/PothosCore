@@ -53,7 +53,7 @@ void convertNumCheck(const InType &in)
 {
     if (in > std::numeric_limits<OutType>::max() or //too large
         (std::is_signed<InType>::value and typename my_make_signed<InType>::type(in) <
-        typename my_make_signed<OutType>::type(std::numeric_limits<OutType>::min()))) //too small
+        typename my_make_signed<OutType>::type(std::numeric_limits<OutType>::lowest()))) //too small
     {
         throw Pothos::RangeException(Poco::format("value %s out of range for output type %s",
             std::to_string(in), Pothos::Util::typeInfoToString(typeid(OutType))));
