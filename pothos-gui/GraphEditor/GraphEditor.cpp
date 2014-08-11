@@ -901,8 +901,3 @@ void GraphEditor::makeDefaultPage(void)
 {
     this->insertTab(0, new GraphDraw(this), tr("Main"));
 }
-
-QWidget *makeGraphEditor(QWidget *parent)
-{
-    return new GraphEditor(parent);
-};
