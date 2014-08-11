@@ -897,6 +897,15 @@ GraphObjectList GraphEditor::getGraphObjects(const int selectionFlags) const
     return all;
 }
 
+GraphObject *GraphEditor::getObjectById(const QString &id, const int selectionFlags)
+{
+    for (auto obj : this->getGraphObjects(selectionFlags))
+    {
+        if (obj->getId() == id) return obj;
+    }
+    return nullptr;
+}
+
 void GraphEditor::makeDefaultPage(void)
 {
     this->insertTab(0, new GraphDraw(this), tr("Main"));

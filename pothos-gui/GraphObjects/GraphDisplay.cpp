@@ -64,9 +64,11 @@ bool GraphDisplay::isPointing(const QRectF &rect) const
     return _impl->mainRect.intersects(rect);
 }
 
-QRectF GraphDisplay::getBoundingRect(void) const
+QPainterPath GraphDisplay::shape(void) const
 {
-    return _impl->mainRect;
+    QPainterPath path;
+    path.addRect(_impl->mainRect);
+    return path;
 }
 
 void GraphDisplay::render(QPainter &painter)
@@ -80,8 +82,6 @@ void GraphDisplay::render(QPainter &painter)
     }
 
     QTransform trans;
-    trans.translate(this->getPosition().x(), this->getPosition().y());
-    painter.translate(this->getPosition());
 
     auto pen = QPen(QColor(GraphObjectDefaultPenColor));
     pen.setWidthF(GraphObjectBorderWidth);

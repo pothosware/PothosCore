@@ -25,7 +25,7 @@ public:
 
     bool isPointing(const QRectF &rect) const;
 
-    QRectF getBoundingRect(void) const;
+    QPainterPath shape(void) const;
 
     void render(QPainter &painter);
 
