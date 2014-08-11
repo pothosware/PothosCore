@@ -12,7 +12,9 @@
 #include <Poco/DigestStream.h>
 #include <Poco/MD5Engine.h>
 #include <Poco/File.h>
-#include <Poco/NumberParser.h>
+#include <Poco/JSON/Array.h>
+#include <Poco/JSON/Parser.h>
+#include <Poco/Types.h>
 #include <Poco/RWLock.h>
 #include <Poco/String.h>
 #include <string>
@@ -121,31 +123,24 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
         return Pothos::Object(map);
     }
 
-    //support booleans
-    if (expr == "true") return Pothos::Object(true);
-    if (expr == "false") return Pothos::Object(false);
-
-    //poco number parsers only work properly when expression has no spaces
+    //support simple numbers and booleans with JSON parser
     if (expr.find_first_of("\t\n ") == std::string::npos)
     {
-        //try to parse regular unsigned, signed integers
-        try {return Pothos::Object(Poco::NumberParser::parseUnsigned(expr));}
-        catch (const Poco::SyntaxException &){}
-        try {return Pothos::Object(Poco::NumberParser::parse(expr));}
-        catch (const Poco::SyntaxException &){}
-
-        //try to parse large unsigned, signed integers
-        try {return Pothos::Object(Poco::NumberParser::parseUnsigned64(expr));}
-        catch (const Poco::SyntaxException &){}
-        try {return Pothos::Object(Poco::NumberParser::parse64(expr));}
-        catch (const Poco::SyntaxException &){}
-
-        //this hex parser does not require a 0x prefix -- dont want it
-        //try {return Pothos::Object(Poco::NumberParser::parseHex64(expr));}
-        //catch (const Poco::SyntaxException &){}
-
-        try {return Pothos::Object(Poco::NumberParser::parseFloat(expr));}
-        catch (const Poco::SyntaxException &){}
+        try
+        {
+            Poco::JSON::Parser p; p.parse("["+expr+"]");
+            const auto val = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>()->get(0);
+            if (val.isNumeric() and val.isInteger())
+            {
+                try {return Pothos::Object(val.convert<Poco::Int32>());} catch (const Poco::Exception &){}
+                try {return Pothos::Object(val.convert<Poco::Int64>());} catch (const Poco::Exception &){}
+            }
+            else if (val.isNumeric())
+            {
+                try {return Pothos::Object(val.convert<double>());} catch (const Poco::Exception &){}
+            }
+        }
+        catch (const Poco::Exception &){}
     }
 
     const auto compiler = Pothos::Util::Compiler::make();
