@@ -20,7 +20,7 @@ GraphBlock::GraphBlock(QObject *parent):
     GraphObject(parent),
     _impl(new Impl())
 {
-    return;
+    this->setFlag(QGraphicsItem::ItemIsMovable);
 }
 
 void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
@@ -254,54 +254,14 @@ void GraphBlock::setAffinityZone(const QString &zone)
     _impl->affinityZone = zone;
 }
 
-bool GraphBlock::isPointing(const QRectF &rect) const
+QPainterPath GraphBlock::shape(void) const
 {
-    //true if it points to a port
-    for (const auto &portRect : _impl->inputPortRects)
-    {
-        if (portRect.intersects(rect)) return true;
-    }
-    for (const auto &portRect : _impl->outputPortRects)
-    {
-        if (portRect.intersects(rect)) return true;
-    }
-    if (not this->getSignalPorts().empty())
-    {
-        if (_impl->signalPortRect.intersects(rect)) return true;
-    }
-    //otherwise does it point to the main body
-    return _impl->mainBlockRect.intersects(rect);
-}
-
-QRectF GraphBlock::getBoundingRect(void) const
-{
-    QVector<QPointF> points;
-    for (const auto &portRect : _impl->inputPortRects)
-    {
-        points.push_back(portRect.topLeft());
-        points.push_back(portRect.topRight());
-        points.push_back(portRect.bottomRight());
-        points.push_back(portRect.bottomLeft());
-    }
-    for (const auto &portRect : _impl->outputPortRects)
-    {
-        points.push_back(portRect.topLeft());
-        points.push_back(portRect.topRight());
-        points.push_back(portRect.bottomRight());
-        points.push_back(portRect.bottomLeft());
-    }
-    if (not this->getSignalPorts().empty())
-    {
-        points.push_back(_impl->signalPortRect.topLeft());
-        points.push_back(_impl->signalPortRect.topRight());
-        points.push_back(_impl->signalPortRect.bottomRight());
-        points.push_back(_impl->signalPortRect.bottomLeft());
-    }
-    points.push_back(_impl->mainBlockRect.topLeft());
-    points.push_back(_impl->mainBlockRect.topRight());
-    points.push_back(_impl->mainBlockRect.bottomRight());
-    points.push_back(_impl->mainBlockRect.bottomLeft());
-    return QPolygonF(points).boundingRect();
+    QPainterPath path;
+    for (const auto &portRect : _impl->inputPortRects) path.addRect(portRect);
+    for (const auto &portRect : _impl->outputPortRects) path.addRect(portRect);
+    if (not this->getSignalPorts().empty()) path.addRect(_impl->signalPortRect);
+    path.addRect(_impl->mainBlockRect);
+    return path;
 }
 
 std::vector<GraphConnectableKey> GraphBlock::getConnectableKeys(void) const
@@ -355,7 +315,7 @@ GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey 
 {
     GraphConnectableAttrs attrs;
     attrs.direction = key.direction;
-    attrs.rotation = this->getRotation();
+    attrs.rotation = this->rotation();
     if (key.direction == GRAPH_CONN_INPUT) for (int i = 0; i < _inputPorts.size(); i++)
     {
         if (key.id == _inputPorts[i])
@@ -477,14 +437,12 @@ void GraphBlock::render(QPainter &painter)
 
     //setup rotations and translations
     QTransform trans;
-    trans.translate(this->getPosition().x(), this->getPosition().y());
-    painter.translate(this->getPosition());
 
     //dont rotate past 180 because we just do a port flip
     //this way text only ever has 2 rotations
-    trans.rotate(this->getRotation() % 180);
-    painter.rotate(this->getRotation() % 180);
-    const bool portFlip = this->getRotation() >= 180;
+    const bool portFlip = this->rotation() >= 180;
+    if (portFlip) painter.rotate(-180);
+    if (portFlip) trans.rotate(-180);
 
     //calculate dimensions
     qreal inputPortsMinHeight = GraphBlockPortVOutterPad*2;
@@ -540,7 +498,7 @@ void GraphBlock::render(QPainter &painter)
         inPortVdelta += rectSize.height() + GraphBlockPortVGap;
         painter.save();
         painter.setBrush(QBrush(_impl->inputPortColors.at(i)));
-        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRect(portRect);
         painter.restore();
         _impl->inputPortRects[i] = trans.mapRect(portRect);
@@ -569,7 +527,7 @@ void GraphBlock::render(QPainter &painter)
         outPortVdelta += rectSize.height() + GraphBlockPortVGap;
         painter.save();
         painter.setBrush(QBrush(_impl->outputPortColors.at(i)));
-        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
         painter.restore();
         _impl->outputPortRects[i] = trans.mapRect(portRect);
@@ -593,7 +551,7 @@ void GraphBlock::render(QPainter &painter)
 
         painter.save();
         painter.setBrush(QBrush(_impl->mainBlockColor));
-        if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
         painter.restore();
 
@@ -615,7 +573,7 @@ void GraphBlock::render(QPainter &painter)
     //draw main body of the block
     painter.save();
     painter.setBrush(QBrush(_impl->mainBlockColor));
-    if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+    if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
     painter.drawRoundedRect(mainRect, GraphBlockMainArc, GraphBlockMainArc);
     painter.restore();
 

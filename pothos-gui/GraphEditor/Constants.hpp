@@ -22,8 +22,6 @@ static const QString GraphObjectConnLineColor = "#000000";
 static const qreal GraphObjectConnPointRadius = 3;
 static const qreal GraphObjectConnLineLength = 10;
 
-static const QString GraphDrawHighlightColor = "#6464C8";
-static const qreal GraphDrawHighlightAlpha = 100;
 static const qreal GraphDrawScrollFudge = 20;
 static const QString GraphDrawBackgroundColor = "#FCFFFF";
 static const QSizeF GraphDrawCanvasSize(1920, 1080);

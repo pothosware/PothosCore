@@ -114,7 +114,6 @@ set(SOURCES
     GraphEditor/GraphEditorSerialization.cpp
     GraphEditor/GraphEditorDeserialization.cpp
     GraphEditor/GraphEditorFlattenedDialog.cpp
-    GraphEditor/GraphPage.cpp
     GraphEditor/GraphDraw.cpp
     GraphEditor/GraphDrawSelection.cpp
     GraphEditor/GraphActionsDock.cpp

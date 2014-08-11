@@ -50,9 +50,7 @@ public:
     //! utility to get a displayable name for a port key knowing its endpoint
     QString getKeyName(const QString &portKey, const GraphConnectionEndpoint &ep);
 
-    bool isPointing(const QRectF &rect) const;
-
-    QRectF getBoundingRect(void) const;
+    QPainterPath shape(void) const;
 
     void render(QPainter &painter);
 

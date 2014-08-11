@@ -28,9 +28,7 @@ public:
     void setTitle(const QString &title);
     QString getTitle(void) const;
 
-    bool isPointing(const QRectF &rect) const;
-
-    QRectF getBoundingRect(void) const;
+    QPainterPath shape(void) const;
 
     //! indicate an external change -- thats not applied through the other setters
     void changed(void);

@@ -50,7 +50,7 @@ public:
         return not _stateManager->isCurrentSaved();
     }
 
-    void handleAddBlock(const Poco::JSON::Object::Ptr &, const QPoint &);
+    void handleAddBlock(const Poco::JSON::Object::Ptr &, const QPointF &);
 
     //! force a re-rendering of the graph page
     void render(void);

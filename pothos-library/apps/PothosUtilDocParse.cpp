@@ -6,13 +6,14 @@
 #include <Pothos/Plugin.hpp>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
+#include <Poco/JSON/Parser.h>
 #include <Poco/String.h>
 #include <Poco/Format.h>
 #include <Poco/Path.h>
 #include <Poco/RegularExpression.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/NumberFormatter.h>
-#include <Poco/NumberParser.h>
+#include <Poco/Types.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -64,10 +65,12 @@ static std::vector<std::string> splitCommaArgs(const std::string &argsStr)
 //! Turn a simple expression into a type-specific container
 static Poco::Dynamic::Var exprToDynVar(const std::string &expr)
 {
-    if (expr == "true") return true;
-    if (expr == "false") return false;
-    try {return Poco::NumberParser::parse(expr);} catch(const Poco::SyntaxException &){}
-    try {return Poco::NumberParser::parseFloat(expr);} catch(const Poco::SyntaxException &){}
+    try
+    {
+        Poco::JSON::Parser p; p.parse("["+expr+"]");
+        return p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>()->get(0);
+    }
+    catch (const Poco::Exception &){}
     return expr;
 }
 

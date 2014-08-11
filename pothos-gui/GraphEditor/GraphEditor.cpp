@@ -4,21 +4,17 @@
 #include "PothosGuiUtils.hpp" //action map
 #include "TopologyEngine/TopologyEngine.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
-#include "GraphEditor/GraphPage.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/Constants.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
-#include "GraphObjects/GraphDisplay.hpp"
 #include <Poco/Logger.h>
 #include <QTabBar>
 #include <QInputDialog>
 #include <QAction>
 #include <QMenu>
-#include <QScrollArea>
-#include <QScrollBar>
 #include <QSignalMapper>
 #include <QDockWidget>
 #include <QApplication>
@@ -159,7 +155,7 @@ void GraphEditor::handleCreateGraphPage(void)
     const QString newName = QInputDialog::getText(this, tr("Create page"),
         tr("New page name"), QLineEdit::Normal, tr("untitled"));
     if (newName.isEmpty()) return;
-    this->addTab(new GraphPage(this), newName);
+    this->addTab(new GraphDraw(this), newName);
     this->setupMoveGraphObjectsMenu();
 
     handleStateChange(GraphState("document-new", tr("Create graph page ") + newName));
@@ -294,8 +290,8 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         const auto name = QString("%1[%2]").arg(epOut.getObj()->getId(), epOut.getKey().id);
         breaker->setId(this->newId(name));
         breaker->setNodeName(breaker->getId()); //the first of its name
-        breaker->setRotation(epIn.getObj()->getRotation());
-        breaker->setPosition(epIn.getObj()->getPosition());
+        breaker->setRotation(epIn.getObj()->rotation());
+        breaker->setPos(epIn.getObj()->pos());
 
         auto outConn = this->makeConnection(epOut, GraphConnectionEndpoint(breaker, breaker->getConnectableKeys().at(0)));
         outConn->setParent(breaker->parent());
@@ -328,8 +324,8 @@ void GraphEditor::handleMoveGraphObjects(const int index)
             breaker->setInput(false);
             breaker->setId(this->newId(name));
             breaker->setNodeName(name);
-            breaker->setRotation(epOut.getObj()->getRotation());
-            breaker->setPosition(epOut.getObj()->getPosition());
+            breaker->setRotation(epOut.getObj()->rotation());
+            breaker->setPos(epOut.getObj()->pos());
         }
 
         //connect to this breaker
@@ -345,18 +341,16 @@ void GraphEditor::handleMoveGraphObjects(const int index)
 void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc)
 {
     if (not this->isVisible()) return;
-    QPoint where(std::rand()%100, std::rand()%100);
+    QPointF where(std::rand()%100, std::rand()%100);
 
     //determine where, a nice point on the visible drawing area sort of upper left
-    auto scrollArea = dynamic_cast<QScrollArea *>(this->currentWidget());
-    if (scrollArea != nullptr) where += QPoint(
-        scrollArea->horizontalScrollBar()->value() + scrollArea->size().width()/4,
-        scrollArea->verticalScrollBar()->value() + scrollArea->size().height()/4);
+    auto view = dynamic_cast<QGraphicsView *>(this->currentWidget());
+    where += view->mapToScene(this->size().width()/4, this->size().height()/4);
 
     this->handleAddBlock(blockDesc, where);
 }
 
-void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const QPoint &where)
+void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const QPointF &where)
 {
     if (not blockDesc) return;
     auto draw = this->getCurrentGraphDraw();
@@ -376,23 +370,9 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const
     block->setId(this->newId(hint));
 
     //set highest z-index on new block
-    const int maxZIndex = draw->getMaxZIndex();
-    block->setZIndex(maxZIndex+1);
+    block->setZValue(draw->getMaxZValue()+1);
 
-
-    //TODO this is temp to test things
-    if (block->isDisplayWidget())
-    {
-        auto display = new GraphDisplay(draw);
-        display->setId("Display"+block->getId());
-        display->setGraphBlock(block);
-        display->setPosition(QPointF(where)/draw->zoomScale());
-        display->setRotation(0);
-        display->setZIndex(maxZIndex+2);
-    }
-
-
-    block->setPosition(QPointF(where)/draw->zoomScale());
+    block->setPos(where);
     block->setRotation(0);
     handleStateChange(GraphState("list-add", tr("Create block %1").arg(title)));
 }
@@ -411,7 +391,7 @@ void GraphEditor::handleCreateBreaker(const bool isInput)
     breaker->setInput(isInput);
     breaker->setNodeName(newName);
     breaker->setId(this->newId(newName));
-    breaker->setPosition(draw->getLastContextMenuPos()/draw->zoomScale());
+    breaker->setPos(draw->getLastContextMenuPos()/draw->zoomScale());
 
     handleStateChange(GraphState("document-new", tr("Create %1 breaker %2").arg(dirName, newName)));
 }
@@ -512,26 +492,21 @@ void GraphEditor::handlePaste(void)
             obj->setId(this->newId(oldId)); //make sure id is unique
             obj->setSelected(true);
             newObjects.push_back(obj);
-            cornerest.setX(std::min(cornerest.x(), obj->getPosition().x()));
-            cornerest.setY(std::min(cornerest.y(), obj->getPosition().y()));
+            cornerest.setX(std::min(cornerest.x(), obj->pos().x()));
+            cornerest.setY(std::min(cornerest.y(), obj->pos().y()));
         }
     }
 
     //determine an acceptable position to center the paste
-    auto pastePos = QPointF(this->mapFromGlobal(QCursor::pos()));
-    if (not QRectF(QPointF(), this->size()).contains(pastePos))
+    auto view = dynamic_cast<QGraphicsView *>(this->currentWidget());
+    auto pastePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
+    if (not view->sceneRect().contains(pastePos))
     {
-        auto scroll = dynamic_cast<QScrollArea *>(this->currentWidget());
-        pastePos.setX(scroll->horizontalScrollBar()->value() + this->size().width()/2);
-        pastePos.setY(scroll->verticalScrollBar()->value() + this->size().height()/2);
+        pastePos = view->mapToScene(this->size().width()/2, this->size().height()/2);
     }
 
     //move objects into position
-    for (auto obj : newObjects)
-    {
-        auto scaled = QPointF(pastePos/draw->zoomScale());
-        obj->setPosition(obj->getPosition()-cornerest+scaled);
-    }
+    for (auto obj : newObjects) obj->setPos(obj->pos()-cornerest+pastePos);
 
     //create connections
     for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
@@ -618,7 +593,8 @@ void GraphEditor::handleRotateLeft(void)
 {
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
-    for (auto obj : draw->getObjectsSelected())
+    //TODO rotate group of objects around central point
+    for (auto obj : draw->getObjectsSelected(~GRAPH_CONNECTION))
     {
         obj->rotateLeft();
     }
@@ -629,7 +605,8 @@ void GraphEditor::handleRotateRight(void)
 {
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
-    for (auto obj : draw->getObjectsSelected())
+    //TODO rotate group of objects around central point
+    for (auto obj : draw->getObjectsSelected(~GRAPH_CONNECTION))
     {
         obj->rotateRight();
     }
@@ -897,9 +874,7 @@ void GraphEditor::setupMoveGraphObjectsMenu(void)
 
 GraphDraw *GraphEditor::getGraphDraw(const int index) const
 {
-    auto scroll = dynamic_cast<QScrollArea *>(this->widget(index));
-    assert(scroll != nullptr);
-    auto draw = dynamic_cast<GraphDraw *>(scroll->widget());
+    auto draw = dynamic_cast<GraphDraw *>(this->widget(index));
     assert(draw != nullptr);
     return draw;
 }
@@ -922,18 +897,9 @@ GraphObjectList GraphEditor::getGraphObjects(const int selectionFlags) const
     return all;
 }
 
-GraphObject *GraphEditor::getObjectById(const QString &id, const int selectionFlags)
-{
-    for (auto obj : this->getGraphObjects(selectionFlags))
-    {
-        if (obj->getId() == id) return obj;
-    }
-    return nullptr;
-}
-
 void GraphEditor::makeDefaultPage(void)
 {
-    this->insertTab(0, new GraphPage(this), tr("Main"));
+    this->insertTab(0, new GraphDraw(this), tr("Main"));
 }
 
 QWidget *makeGraphEditor(QWidget *parent)

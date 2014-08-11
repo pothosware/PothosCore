@@ -32,7 +32,7 @@ GraphBreaker::GraphBreaker(QObject *parent):
     GraphObject(parent),
     _impl(new Impl())
 {
-    return;
+    this->setFlag(QGraphicsItem::ItemIsMovable);
 }
 
 void GraphBreaker::setInput(const bool isInput)
@@ -60,14 +60,11 @@ const QString &GraphBreaker::getNodeName(void) const
     return _impl->nodeName;
 }
 
-bool GraphBreaker::isPointing(const QRectF &rect) const
+QPainterPath GraphBreaker::shape(void) const
 {
-    return not _impl->polygon.intersected(rect).isEmpty();
-}
-
-QRectF GraphBreaker::getBoundingRect(void) const
-{
-    return _impl->polygon.boundingRect();
+    QPainterPath path;
+    path.addPolygon(_impl->polygon);
+    return path;
 }
 
 std::vector<GraphConnectableKey> GraphBreaker::getConnectableKeys(void) const
@@ -89,7 +86,7 @@ GraphConnectableAttrs GraphBreaker::getConnectableAttrs(const GraphConnectableKe
 {
     assert(_impl);
     GraphConnectableAttrs attrs;
-    attrs.rotation = this->getRotation();
+    attrs.rotation = this->rotation();
     if (this->isInput()) attrs.rotation += 180;
     attrs.direction = this->isInput()?GRAPH_CONN_INPUT:GRAPH_CONN_OUTPUT;
     attrs.point = _impl->connectPoint;
@@ -116,14 +113,12 @@ void GraphBreaker::render(QPainter &painter)
 
     //setup rotations and translations
     QTransform trans;
-    trans.translate(this->getPosition().x(), this->getPosition().y());
-    painter.translate(this->getPosition());
 
     //dont rotate past 180 because we just do a breaker flip
     //this way text only ever has 2 rotations
-    trans.rotate(this->getRotation() % 180);
-    painter.rotate(this->getRotation() % 180);
-    const bool breakerFlip = this->getRotation() >= 180;
+    const bool breakerFlip = this->rotation() >= 180;
+    if (breakerFlip) painter.rotate(-180);
+    if (breakerFlip) trans.rotate(-180);
 
     //set painter for drawing the figure
     auto pen = QPen(QColor(GraphObjectDefaultPenColor));
@@ -161,7 +156,7 @@ void GraphBreaker::render(QPainter &painter)
     QPointF p(-w/2, -h/2);
     polygon.translate(p);
     painter.save();
-    if (getSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+    if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
     painter.drawPolygon(polygon);
     painter.restore();
     _impl->polygon = trans.map(polygon);
