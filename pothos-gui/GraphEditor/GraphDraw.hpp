@@ -5,16 +5,18 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
+#include <QGraphicsView>
+#include <memory>
 
 class GraphEditor;
+class QGraphicsItem;
+class QGraphicsPixmapItem;
 
-class GraphDraw : public QWidget
+class GraphDraw : public QGraphicsView
 {
     Q_OBJECT
 public:
     GraphDraw(QWidget *parent);
-
-    GraphObjectList getObjectsAtPos(const QPointF &pos, const int selectionFlags = ~0);
 
     GraphObjectList getObjectsSelected(const int selectionFlags = ~0);
 
@@ -50,50 +52,42 @@ public:
         return _lastContextMenuPos;
     }
 
-    int getMaxZIndex(void);
+    qreal getMaxZValue(void);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent *event);
     void wheelEvent(QWheelEvent *event);
     void mouseDoubleClickEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
-    void paintEvent(QPaintEvent *event);
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 private slots:
     void handleCustomContextMenuRequested(const QPoint &);
     void handleGraphDebugViewChange(void);
+    void updateEnabledActions(void);
 
 signals:
     void stateChanged(const GraphState &);
-    void selectionChanged(const GraphObjectList &);
     void modifyProperties(GraphObject *);
 
 private:
-
-    void setupCanvas(void);
 
     void deselectAllObjs(void);
 
     void doClickSelection(const QPointF &point);
 
-    void updateEnabledActions(void);
-
     GraphEditor *_graphEditor;
     qreal _zoomScale;
-    QImage _image;
-    bool _mouseLeftDown;
-    QPointF _mouseLeftDownFirstPoint;
-    QPointF _mouseLeftDownLastPoint;
-    QString _selectionState;
+    int _selectionState;
     QPointF _lastContextMenuPos;
 
     GraphConnectionEndpoint _lastClickSelectEp;
 
-    bool _showGraphConnectionPoints;
-    bool _showGraphBoundingBoxes;
+    std::shared_ptr<QGraphicsPixmapItem> _graphConnectionPoints;
+    std::shared_ptr<QGraphicsPixmapItem> _graphBoundingBoxes;
 };

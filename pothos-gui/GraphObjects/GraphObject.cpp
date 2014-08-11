@@ -3,6 +3,7 @@
 
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/Constants.hpp"
+#include <QGraphicsView>
 #include <QPainter>
 #include <cassert>
 #include <iostream>
@@ -10,31 +11,33 @@
 struct GraphObject::Impl
 {
     Impl(void):
-        deleteFlag(false),
-        selected(false),
-        zIndex(0),
-        rotation(0)
+        deleteFlag(false)
     {
         return;
     }
     QString id;
-    QPointF position;
     bool deleteFlag;
-    bool selected;
-    int zIndex;
-    int rotation;
 };
 
 GraphObject::GraphObject(QObject *parent):
     QObject(parent),
+    QGraphicsItem(),
     _impl(new Impl())
 {
-    return;
+    auto view = dynamic_cast<QGraphicsView *>(parent);
+    assert(view != nullptr);
+    view->scene()->addItem(this);
+    this->setFlag(QGraphicsItem::ItemIsSelectable);
 }
 
 GraphObject::~GraphObject(void)
 {
     return;
+}
+
+void GraphObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    this->render(*painter);
 }
 
 void GraphObject::setId(const QString &id)
@@ -49,31 +52,14 @@ const QString &GraphObject::getId(void) const
     return _impl->id;
 }
 
-void GraphObject::setSelected(const bool on)
+QRectF GraphObject::boundingRect(void) const
 {
-    assert(_impl);
-    _impl->selected = on;
+    return this->shape().boundingRect();
 }
 
-bool GraphObject::getSelected(void) const
+QPainterPath GraphObject::shape(void) const
 {
-    assert(_impl);
-    return _impl->selected;
-}
-
-bool GraphObject::isPointing(const QPointF &point) const
-{
-    return this->isPointing(QRectF(point-QPointF(1, 1), point+QPointF(1, 1)));
-}
-
-bool GraphObject::isPointing(const QRectF &) const
-{
-    return false;
-}
-
-QRectF GraphObject::getBoundingRect(void) const
-{
-    return QRectF(this->getPosition(), this->getPosition());
+    return QGraphicsItem::shape();
 }
 
 void GraphObject::prerender(void)
@@ -88,62 +74,14 @@ void GraphObject::render(QPainter &)
     return;
 }
 
-void GraphObject::setZIndex(const int index)
-{
-    assert(_impl);
-    _impl->zIndex = index;
-}
-
-int GraphObject::getZIndex(void) const
-{
-    assert(_impl);
-    return _impl->zIndex;
-}
-
-void GraphObject::setPosition(const QPointF &pos)
-{
-    assert(_impl);
-    _impl->position = pos;
-}
-
-const QPointF &GraphObject::getPosition(void) const
-{
-    assert(_impl);
-    return _impl->position;
-}
-
-void GraphObject::move(const QPointF &delta)
-{
-    assert(_impl);
-    _impl->position += delta;
-}
-
-void GraphObject::setRotation(const int degree)
-{
-    assert(_impl);
-    _impl->rotation = degree;
-}
-
-int GraphObject::getRotation(void) const
-{
-    assert(_impl);
-    return _impl->rotation;
-}
-
 void GraphObject::rotateLeft(void)
 {
-    assert(_impl);
-    _impl->rotation = (_impl->rotation + 270) % 360;
-    assert((_impl->rotation % 90) == 0);
-    assert((_impl->rotation >= 0) and (_impl->rotation <= 270));
+    this->setRotation(int(this->rotation() + 270) % 360);
 }
 
 void GraphObject::rotateRight(void)
 {
-    assert(_impl);
-    _impl->rotation = (_impl->rotation + 90) % 360;
-    assert((_impl->rotation % 90) == 0);
-    assert((_impl->rotation >= 0) and (_impl->rotation <= 270));
+    this->setRotation(int(this->rotation() + 90) % 360);
 }
 
 std::vector<GraphConnectableKey> GraphObject::getConnectableKeys(void) const
@@ -187,7 +125,7 @@ void GraphObject::renderConnectablePoints(QPainter &painter)
 
         //draw vector
         painter.setPen(QPen(QColor(GraphObjectConnLineColor)));
-        QTransform trans; trans.rotate(attrs.rotation);
+        QTransform trans; trans.rotate(attrs.rotation-this->rotation());
         painter.drawLine(attrs.point, attrs.point + trans.map(QPointF(GraphObjectConnLineLength, 0)));
     }
 }
@@ -196,19 +134,19 @@ Poco::JSON::Object::Ptr GraphObject::serialize(void) const
 {
     Poco::JSON::Object::Ptr obj(new Poco::JSON::Object());
     obj->set("id", this->getId().toStdString());
-    obj->set("zIndex", int(this->getZIndex()));
-    obj->set("positionX", int(this->getPosition().x()));
-    obj->set("positionY", int(this->getPosition().y()));
-    obj->set("rotation", int(this->getRotation()));
-    obj->set("selected", this->getSelected());
+    obj->set("zValue", double(this->zValue()));
+    obj->set("positionX", double(this->pos().x()));
+    obj->set("positionY", double(this->pos().y()));
+    obj->set("rotation", double(this->rotation()));
+    obj->set("selected", this->isSelected());
     return obj;
 }
 
 void GraphObject::deserialize(Poco::JSON::Object::Ptr obj)
 {
     this->setId(QString::fromStdString(obj->getValue<std::string>("id")));
-    this->setZIndex(obj->getValue<int>("zIndex"));
-    this->setPosition(QPointF(obj->getValue<int>("positionX"), obj->getValue<int>("positionY")));
-    this->setRotation(obj->getValue<int>("rotation"));
-    this->setSelected(obj->getValue<bool>("selected"));
+    this->setZValue(obj->optValue<double>("zValue", 0.0));
+    this->setPos(QPointF(obj->optValue<double>("positionX", 0.0), obj->optValue<double>("positionY", 0.0)));
+    this->setRotation(obj->optValue<double>("rotation", 0.0));
+    this->setSelected(obj->optValue<bool>("selected", false));
 }

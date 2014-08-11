@@ -101,4 +101,5 @@ void GraphBlock::update(void)
     assert(draw != nullptr);
     auto engine = draw->getGraphEditor()->getTopologyEngine();
     engine->evalGraphBlock(this);
+    QGraphicsItem::update();
 }

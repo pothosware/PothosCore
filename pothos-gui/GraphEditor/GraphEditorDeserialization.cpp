@@ -1,7 +1,6 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "GraphEditor/GraphPage.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphObjects/GraphBlock.hpp"
@@ -12,7 +11,6 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/Logger.h>
-#include <QScrollArea>
 #include <cassert>
 
 /***********************************************************************
@@ -24,7 +22,7 @@ static void loadPages(GraphEditor *editor, Poco::JSON::Array::Ptr pages, const s
     {
         auto pageObj = pages->getObject(pageNo);
         auto graphObjects = pageObj->getArray("graphObjects");
-        auto parent = dynamic_cast<QScrollArea *>(editor->widget(pageNo))->widget();
+        auto parent = editor->widget(pageNo);
 
         for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
         {
@@ -81,7 +79,7 @@ void GraphEditor::loadState(std::istream &is)
         auto pageObj = pages->getObject(pageNo);
         auto pageName = pageObj->getValue<std::string>("pageName");
         auto graphObjects = pageObj->getArray("graphObjects");
-        auto page = new GraphPage(this);
+        auto page = new GraphDraw(this);
         this->insertTab(int(pageNo), page, QString::fromStdString(pageName));
         if (pageObj->getValue<bool>("selected")) this->setCurrentIndex(pageNo);
     }

@@ -140,29 +140,21 @@ void GraphConnection::handleEndPointDestroyed(QObject *)
     this->flagForDelete();
 }
 
-bool GraphConnection::isPointing(const QRectF &rect) const
+QPainterPath GraphConnection::shape(void) const
 {
-    //check individual line segments
+    QPainterPath path;
+
+    //individual line segments
     for (int i = 1; i < _impl->points.size(); i++)
     {
         const QLineF line(_impl->points[i-1], _impl->points[i]);
         QLineF norm = line.normalVector(); norm.setLength(GraphConnectionSelectPad);
-        if (QRectF(line.p2(), norm.p2()).intersects(rect)) return true;
+        path.addRect(QRectF(line.p2(), norm.p2()));
     }
 
-    //check arrow head
-    return not _impl->arrowHead.intersected(rect).isEmpty();
-}
-
-QRectF GraphConnection::getBoundingRect(void) const
-{
-    QVector<QPointF> points = _impl->points;
-    const auto arrowRect = _impl->arrowHead.boundingRect();
-    points.push_back(arrowRect.topLeft());
-    points.push_back(arrowRect.topRight());
-    points.push_back(arrowRect.bottomRight());
-    points.push_back(arrowRect.bottomLeft());
-    return QPolygonF(points).boundingRect();
+    //arrow head
+    path.addPolygon(_impl->arrowHead);
+    return path;
 }
 
 static int getAngle(const QPointF &p0_, const QPointF &p1_)
@@ -243,6 +235,9 @@ static QLineF lineShorten(const QLineF &l)
 void GraphConnection::render(QPainter &painter)
 {
     assert(_impl);
+    assert(this->rotation() == 0.0);
+    assert(this->pos() == QPointF());
+
     //dont draw connections with missing endpoints
     if (not _impl->outputEp.isValid()) return;
     if (not _impl->inputEp.isValid()) return;
@@ -267,8 +262,10 @@ void GraphConnection::render(QPainter &painter)
     }
 
     //query the connectable info
-    const auto outputAttrs = _impl->outputEp.getConnectableAttrs();
-    const auto inputAttrs = _impl->inputEp.getConnectableAttrs();
+    auto outputAttrs = _impl->outputEp.getConnectableAttrs();
+    outputAttrs.point = this->mapFromItem(_impl->outputEp.getObj(), outputAttrs.point);
+    auto inputAttrs = _impl->inputEp.getConnectableAttrs();
+    inputAttrs.point = this->mapFromItem(_impl->inputEp.getObj(), inputAttrs.point);
 
     //make the minimal output protrusion
     const auto op0 = outputAttrs.point;
@@ -304,7 +301,7 @@ void GraphConnection::render(QPainter &painter)
     path.lineTo(points.back());
 
     //draw the painter path
-    QColor color(getSelected()?GraphConnectionHighlightColor:GraphConnectionDefaultColor);
+    QColor color(isSelected()?GraphConnectionHighlightColor:GraphConnectionDefaultColor);
     painter.setBrush(Qt::NoBrush);
     QPen pen(color);
     pen.setWidthF(GraphConnectionGirth);

@@ -32,9 +32,7 @@ public:
     //! Get the name of the node that joins this breaker to others
     const QString &getNodeName(void) const;
 
-    bool isPointing(const QRectF &rect) const;
-
-    QRectF getBoundingRect(void) const;
+    QPainterPath shape(void) const;
 
     void render(QPainter &painter);
 

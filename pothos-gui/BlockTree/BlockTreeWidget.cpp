@@ -78,7 +78,7 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
     std::shared_ptr<GraphBlock> renderBlock(new GraphBlock(draw));
     renderBlock->setBlockDesc(blockItem->getBlockDesc());
     renderBlock->prerender(); //precalculate so we can get bounds
-    const auto bounds = renderBlock->getBoundingRect();
+    const auto bounds = renderBlock->boundingRect();
 
     //draw the block's preview onto a mini pixmap
     QPixmap pixmap(bounds.size().toSize()+QSize(2,2));
