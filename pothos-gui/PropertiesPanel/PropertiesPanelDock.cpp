@@ -73,8 +73,7 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     connect(_cancelButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCancel(void)));
 
     //connect state change to the graph editor
-    auto draw = dynamic_cast<GraphDraw *>(obj->parent());
-    auto editor = draw->getGraphEditor();
+    auto editor = obj->draw()->getGraphEditor();
     connect(_propertiesPanel, SIGNAL(stateChanged(const GraphState &)), editor, SLOT(handleStateChange(const GraphState &)));
 
     //set the widget and make the entire dock visible
