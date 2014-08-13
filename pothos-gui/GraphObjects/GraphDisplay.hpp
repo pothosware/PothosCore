@@ -19,6 +19,7 @@ class GraphDisplay : public GraphObject
     Q_OBJECT
 public:
     GraphDisplay(QObject *parent);
+    ~GraphDisplay(void);
 
     void setGraphBlock(GraphBlock *block);
     GraphBlock *getGraphBlock(void) const;
@@ -35,6 +36,7 @@ public:
 
 private slots:
     void handleBlockDestroyed(QObject *);
+    void handleWidgetDestroyed(QObject *);
 
 private:
     struct Impl;

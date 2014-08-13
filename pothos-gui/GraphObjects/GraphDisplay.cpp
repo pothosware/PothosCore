@@ -40,6 +40,13 @@ GraphDisplay::GraphDisplay(QObject *parent):
     this->setFlag(QGraphicsItem::ItemIsMovable);
 }
 
+GraphDisplay::~GraphDisplay(void)
+{
+    //special destroy that causes the graphicsWidget to relinquish widget ownership
+    //thats because the block and not the graphicsWidget really owns the widget
+    this->handleWidgetDestroyed(nullptr);
+}
+
 void GraphDisplay::setGraphBlock(GraphBlock *block)
 {
     //can only set block once
@@ -60,6 +67,15 @@ void GraphDisplay::handleBlockDestroyed(QObject *)
     //an endpoint was destroyed, schedule for deletion
     //however, the top level code should handle this deletion
     this->flagForDelete();
+}
+
+void GraphDisplay::handleWidgetDestroyed(QObject *)
+{
+    if (_impl->graphicsWidget)
+    {
+        _impl->graphicsWidget->setWidget(nullptr);
+        _impl->graphicsWidget.reset();
+    }
 }
 
 bool GraphDisplay::isPointing(const QRectF &rect) const
@@ -84,14 +100,20 @@ void GraphDisplay::render(QPainter &painter)
         _impl->changed = false;
     }
 
+    //update display widget when not set
     auto displayWidget = _impl->block->getDisplayWidget();
     if (displayWidget and not _impl->graphicsWidget)
     {
+        connect(displayWidget, SIGNAL(destroyed(QObject *)), this, SLOT(handleWidgetDestroyed(QObject *)));
         _impl->graphicsWidget.reset(new QGraphicsProxyWidget(this));
         _impl->graphicsWidget->setWidget(displayWidget);
     }
 
-    QTransform trans;
+    if (_impl->graphicsWidget)
+    {
+        //std::cout << _impl->graphicsWidget->widget()->size().width() << std::endl;
+        //std::cout << _impl->graphicsWidget->widget()->size().height() << std::endl;
+    }
 
     auto pen = QPen(QColor(GraphObjectDefaultPenColor));
     pen.setWidthF(GraphObjectBorderWidth);
@@ -100,7 +122,7 @@ void GraphDisplay::render(QPainter &painter)
 
     QRectF mainRect(QPointF(), QSizeF(150, 100));
     mainRect.moveCenter(QPointF());
-    _impl->mainRect = trans.mapRect(mainRect);
+    _impl->mainRect = mainRect;
 
     painter.drawRect(mainRect);
 }
@@ -118,9 +140,7 @@ Poco::JSON::Object::Ptr GraphDisplay::serialize(void) const
 
 void GraphDisplay::deserialize(Poco::JSON::Object::Ptr obj)
 {
-    auto draw = dynamic_cast<GraphDraw *>(this->parent());
-    assert(draw != nullptr);
-    auto editor = draw->getGraphEditor();
+    auto editor = this->draw()->getGraphEditor();
 
     //locate the associated block
     auto blockId = QString::fromStdString(obj->getValue<std::string>("blockId"));
