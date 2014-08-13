@@ -111,20 +111,19 @@ void GraphDisplay::render(QPainter &painter)
 
     if (_impl->graphicsWidget)
     {
-        //std::cout << _impl->graphicsWidget->widget()->size().width() << std::endl;
-        //std::cout << _impl->graphicsWidget->widget()->size().height() << std::endl;
+        const auto widgetSize = _impl->graphicsWidget->size();
+
+        auto pen = QPen(QColor(GraphObjectDefaultPenColor));
+        pen.setWidthF(GraphObjectBorderWidth);
+        painter.setPen(pen);
+        painter.setBrush(QBrush(Qt::transparent));
+
+        QRectF mainRect(_impl->graphicsWidget->pos(), widgetSize);
+        mainRect.adjust(-10, -10, 10, 10);
+        _impl->mainRect = mainRect;
+
+        painter.drawRect(mainRect);
     }
-
-    auto pen = QPen(QColor(GraphObjectDefaultPenColor));
-    pen.setWidthF(GraphObjectBorderWidth);
-    painter.setPen(pen);
-    painter.setBrush(QBrush(QColor(GraphObjectDefaultFillColor)));
-
-    QRectF mainRect(QPointF(), QSizeF(150, 100));
-    mainRect.moveCenter(QPointF());
-    _impl->mainRect = mainRect;
-
-    painter.drawRect(mainRect);
 }
 
 Poco::JSON::Object::Ptr GraphDisplay::serialize(void) const
