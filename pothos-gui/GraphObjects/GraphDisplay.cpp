@@ -90,6 +90,17 @@ QPainterPath GraphDisplay::shape(void) const
     return path;
 }
 
+bool GraphDisplay::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
+{
+    //clicking the internal widget causes the same behaviour as clicking no widgets -- unselect everything
+    //this also has the added bennefit of preventing a false move event if the internal widget has a drag
+    if (watched == _impl->graphicsWidget.get() and this->isSelected() and event->type() == QEvent::GraphicsSceneMousePress)
+    {
+        this->draw()->deselectAllObjs();
+    }
+    return GraphObject::sceneEventFilter(watched, event);
+}
+
 void GraphDisplay::render(QPainter &painter)
 {
     assert(_impl);
@@ -107,6 +118,7 @@ void GraphDisplay::render(QPainter &painter)
         connect(displayWidget, SIGNAL(destroyed(QObject *)), this, SLOT(handleWidgetDestroyed(QObject *)));
         _impl->graphicsWidget.reset(new QGraphicsProxyWidget(this));
         _impl->graphicsWidget->setWidget(displayWidget);
+        _impl->graphicsWidget->installSceneEventFilter(this);
     }
 
     if (_impl->graphicsWidget)
@@ -116,6 +128,7 @@ void GraphDisplay::render(QPainter &painter)
         auto pen = QPen(QColor(GraphObjectDefaultPenColor));
         pen.setWidthF(GraphObjectBorderWidth);
         painter.setPen(pen);
+        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
         painter.setBrush(QBrush(Qt::transparent));
 
         QRectF mainRect(_impl->graphicsWidget->pos(), widgetSize);

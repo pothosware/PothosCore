@@ -38,6 +38,9 @@ private slots:
     void handleBlockDestroyed(QObject *);
     void handleWidgetDestroyed(QObject *);
 
+protected:
+    bool sceneEventFilter(QGraphicsItem *watched, QEvent *event);
+
 private:
     struct Impl;
     std::shared_ptr<Impl> _impl;
