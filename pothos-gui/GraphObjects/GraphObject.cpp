@@ -3,7 +3,7 @@
 
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/Constants.hpp"
-#include <QGraphicsView>
+#include "GraphEditor/GraphDraw.hpp"
 #include <QPainter>
 #include <cassert>
 #include <iostream>
@@ -20,8 +20,7 @@ struct GraphObject::Impl
 };
 
 GraphObject::GraphObject(QObject *parent):
-    QObject(parent),
-    QGraphicsItem(),
+    QGraphicsObject(),
     _impl(new Impl())
 {
     auto view = dynamic_cast<QGraphicsView *>(parent);
@@ -33,6 +32,13 @@ GraphObject::GraphObject(QObject *parent):
 GraphObject::~GraphObject(void)
 {
     return;
+}
+
+GraphDraw *GraphObject::draw(void) const
+{
+    auto draw = dynamic_cast<GraphDraw *>(this->scene()->views().at(0));
+    assert(draw != nullptr);
+    return draw;
 }
 
 void GraphObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)

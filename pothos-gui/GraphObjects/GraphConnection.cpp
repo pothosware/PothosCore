@@ -400,13 +400,10 @@ static GraphConnectionEndpoint endpointDeserialize(GraphDraw *draw, Poco::JSON::
 
 void GraphConnection::deserialize(Poco::JSON::Object::Ptr obj)
 {
-    auto draw = dynamic_cast<GraphDraw *>(this->parent());
-    assert(draw != nullptr);
-
-    auto outputEp = endpointDeserialize(draw, obj, GRAPH_CONN_OUTPUT);
-    auto inputEp = endpointDeserialize(draw, obj, GRAPH_CONN_INPUT);
-    auto slotEp = endpointDeserialize(draw, obj, GRAPH_CONN_SLOT);
-    auto signalEp = endpointDeserialize(draw, obj, GRAPH_CONN_SIGNAL);
+    auto outputEp = endpointDeserialize(this->draw(), obj, GRAPH_CONN_OUTPUT);
+    auto inputEp = endpointDeserialize(this->draw(), obj, GRAPH_CONN_INPUT);
+    auto slotEp = endpointDeserialize(this->draw(), obj, GRAPH_CONN_SLOT);
+    auto signalEp = endpointDeserialize(this->draw(), obj, GRAPH_CONN_SIGNAL);
 
     if (outputEp.isValid()) this->setupEndpoint(outputEp);
     if (inputEp.isValid()) this->setupEndpoint(inputEp);

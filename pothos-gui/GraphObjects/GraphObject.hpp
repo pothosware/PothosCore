@@ -5,8 +5,7 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphEndpoint.hpp"
 #include <QList>
-#include <QObject>
-#include <QGraphicsItem>
+#include <QGraphicsObject>
 #include <QPointF>
 #include <QRectF>
 #include <vector>
@@ -14,19 +13,23 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 
+class QObject;
 class QPainter;
 class GraphObject;
+class GraphDraw;
 
 //! Represent a list of graph objects
 typedef QList<GraphObject *> GraphObjectList;
 
 //! Base class for graph objects
-class GraphObject : public QObject, public QGraphicsItem
+class GraphObject : public QGraphicsObject
 {
 public:
     GraphObject(QObject *parent);
 
     ~GraphObject(void);
+
+    GraphDraw *draw(void) const;
 
     virtual QRectF boundingRect(void) const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);

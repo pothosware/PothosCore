@@ -97,9 +97,7 @@ void GraphBlock::initOutputsFromDesc(void)
  **********************************************************************/
 void GraphBlock::update(void)
 {
-    auto draw = dynamic_cast<GraphDraw *>(this->parent());
-    assert(draw != nullptr);
-    auto engine = draw->getGraphEditor()->getTopologyEngine();
+    auto engine = this->draw()->getGraphEditor()->getTopologyEngine();
     engine->evalGraphBlock(this);
     QGraphicsItem::update();
 }
