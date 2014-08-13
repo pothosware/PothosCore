@@ -21,6 +21,7 @@
 static const int SELECTION_STATE_NONE = 0;
 static const int SELECTION_STATE_PRESS = 1;
 static const int SELECTION_STATE_MOVE = 2;
+static const int SELECTION_STATE_BAND = 3; //RubberBandDrag
 
 void GraphDraw::wheelEvent(QWheelEvent *event)
 {
@@ -96,15 +97,18 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     //handle the first move event transition from a press event
     if (_selectionState == SELECTION_STATE_PRESS)
     {
-        _selectionState = (this->items(event->pos()).empty())? SELECTION_STATE_NONE : SELECTION_STATE_MOVE;
+        _selectionState = (this->items(event->pos()).empty())? SELECTION_STATE_BAND : SELECTION_STATE_MOVE;
     }
 
     //cause full render when moving objects for clean animation
     if (_selectionState == SELECTION_STATE_MOVE) this->render();
 
     //auto scroll near boundaries
-    handleAutoScroll(this->horizontalScrollBar(), this->size().width(), this->mapToScene(event->pos()).x());
-    handleAutoScroll(this->verticalScrollBar(), this->size().height(), this->mapToScene(event->pos()).y());
+    if (_selectionState != SELECTION_STATE_NONE)
+    {
+        handleAutoScroll(this->horizontalScrollBar(), this->size().width(), this->mapToScene(event->pos()).x());
+        handleAutoScroll(this->verticalScrollBar(), this->size().height(), this->mapToScene(event->pos()).y());
+    }
 }
 
 void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
