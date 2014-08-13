@@ -5,6 +5,8 @@
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "TopologyEngine/TopologyEngine.hpp"
+#include <QWidget>
+#include <Pothos/Proxy.hpp>
 
 /***********************************************************************
  * initialize the block's properties
@@ -100,6 +102,10 @@ void GraphBlock::update(void)
     auto draw = dynamic_cast<GraphDraw *>(this->parent());
     assert(draw != nullptr);
     auto engine = draw->getGraphEditor()->getTopologyEngine();
-    engine->evalGraphBlock(this);
+    auto blockProxy = engine->evalGraphBlock(this);
+    if (this->isDisplayWidget() and blockProxy)
+    {
+        _impl->displayWidget = blockProxy.callProxy("getProxyBlock").call<QWidget *>("widget");
+    }
     QGraphicsItem::update();
 }

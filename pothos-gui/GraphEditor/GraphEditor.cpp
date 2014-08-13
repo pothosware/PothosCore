@@ -10,6 +10,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
+#include "GraphObjects/GraphDisplay.hpp"
 #include <Poco/Logger.h>
 #include <QTabBar>
 #include <QInputDialog>
@@ -374,6 +375,18 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const
 
     block->setPos(where);
     block->setRotation(0);
+    //// temp //////////
+    //insert the display widget
+    if (block->isDisplayWidget())
+    {
+        auto display = new GraphDisplay(draw);
+        display->setGraphBlock(block);
+        display->setId(this->newId("Display"+block->getId()));
+        display->setZValue(draw->getMaxZValue()+1);
+        display->setPos(where);
+        display->setRotation(0);
+    }
+    //// temp //////////
     handleStateChange(GraphState("list-add", tr("Create block %1").arg(title)));
 }
 

@@ -7,6 +7,7 @@
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include <Pothos/Exception.hpp>
+#include <QGraphicsProxyWidget>
 #include <QPainter>
 #include <QPen>
 #include <QBrush>
@@ -28,13 +29,15 @@ struct GraphDisplay::Impl
     QPointer<GraphBlock> block;
 
     QRectF mainRect;
+
+    std::shared_ptr<QGraphicsProxyWidget> graphicsWidget;
 };
 
 GraphDisplay::GraphDisplay(QObject *parent):
     GraphObject(parent),
     _impl(new Impl())
 {
-    return;
+    this->setFlag(QGraphicsItem::ItemIsMovable);
 }
 
 void GraphDisplay::setGraphBlock(GraphBlock *block)
@@ -79,6 +82,13 @@ void GraphDisplay::render(QPainter &painter)
     if (_impl->changed)
     {
         _impl->changed = false;
+    }
+
+    auto displayWidget = _impl->block->getDisplayWidget();
+    if (displayWidget and not _impl->graphicsWidget)
+    {
+        _impl->graphicsWidget.reset(new QGraphicsProxyWidget(this));
+        _impl->graphicsWidget->setWidget(displayWidget);
     }
 
     QTransform trans;

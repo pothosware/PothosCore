@@ -55,6 +55,11 @@ bool GraphBlock::isDisplayWidget(void) const
     return this->getBlockDesc()->optValue<std::string>("mode", "") == "displayWidget";
 }
 
+QWidget *GraphBlock::getDisplayWidget(void) const
+{
+    return _impl->displayWidget.data();
+}
+
 void GraphBlock::setTitle(const QString &title)
 {
     _impl->title = title;

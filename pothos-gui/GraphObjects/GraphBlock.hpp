@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 
+class QWidget;
+
 class GraphBlock : public GraphObject
 {
 public:
@@ -24,6 +26,7 @@ public:
 
     //! Does this graph block represent a display widget
     bool isDisplayWidget(void) const;
+    QWidget *getDisplayWidget(void) const;
 
     void setTitle(const QString &title);
     QString getTitle(void) const;
