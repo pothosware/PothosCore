@@ -127,7 +127,7 @@ template <typename T>
 void RingDeque<T>::push_front(const T &elem)
 {
     assert(not this->full());
-    _frontIndex = size_t(_frontIndex - 1) % _container.size();
+    _frontIndex = size_t(_frontIndex + _container.size() - 1) % _container.size();
     _container[_frontIndex] = elem;
     _numElements++;
 }
@@ -136,7 +136,7 @@ template <typename T>
 void RingDeque<T>::push_front(T &&elem)
 {
     assert(not this->full());
-    _frontIndex = size_t(_frontIndex - 1) % _container.size();
+    _frontIndex = size_t(_frontIndex + _container.size() - 1) % _container.size();
     _container[_frontIndex] = elem;
     _numElements++;
 }
@@ -191,7 +191,7 @@ void RingDeque<T>::pop_back(void)
     assert(not this->empty());
     assert(_backIndex < _container.size());
     _container[_backIndex] = T();
-    _backIndex = size_t(_backIndex - 1) % _container.size();
+    _backIndex = size_t(_backIndex + _container.size() - 1) % _container.size();
     _numElements--;
 }
 
