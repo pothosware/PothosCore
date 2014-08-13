@@ -100,7 +100,8 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
         _selectionState = (this->items(event->pos()).empty())? SELECTION_STATE_NONE : SELECTION_STATE_MOVE;
     }
 
-    this->render();
+    //cause full render when moving objects for clean animation
+    if (_selectionState == SELECTION_STATE_MOVE) this->render();
 
     //auto scroll near boundaries
     handleAutoScroll(this->horizontalScrollBar(), this->size().width(), this->mapToScene(event->pos()).x());
