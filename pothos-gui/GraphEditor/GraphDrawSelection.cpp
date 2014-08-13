@@ -24,6 +24,11 @@ static const int SELECTION_STATE_PRESS = 1;
 static const int SELECTION_STATE_MOVE = 2;
 static const int SELECTION_STATE_BAND = 3; //RubberBandDrag
 
+void GraphDraw::clearSelectionState(void)
+{
+    _selectionState = SELECTION_STATE_NONE;
+}
+
 void GraphDraw::wheelEvent(QWheelEvent *event)
 {
     const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
@@ -119,24 +124,23 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     //mouse released from a pressed state - alter selections at point
     if (_selectionState == SELECTION_STATE_PRESS)
     {
-        _selectionState = SELECTION_STATE_NONE;
         this->doClickSelection(this->mapToScene(event->pos()));
     }
 
     //emit the move event up to the graph editor
     if (_selectionState == SELECTION_STATE_MOVE)
     {
-        _selectionState = SELECTION_STATE_NONE;
         auto selected = getObjectsSelected(~GRAPH_CONNECTION);
         if (not selected.isEmpty()) emit stateChanged(GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription(~GRAPH_CONNECTION))));
     }
 
+    this->clearSelectionState();
     this->render();
 }
 
 void GraphDraw::deselectAllObjs(void)
 {
-    for (auto obj : this->getGraphObjects())
+    for (auto obj : this->scene()->selectedItems())
     {
         obj->setSelected(false);
     }

@@ -52,7 +52,17 @@ public:
         return _lastContextMenuPos;
     }
 
+    //! get the largest z value of all objects
     qreal getMaxZValue(void);
+
+    //! unselect all selected objects
+    void deselectAllObjs(void);
+
+    /*!
+     * The GraphDraw maintains a selection state to detect drag events.
+     * Calling this method will clear that selection state to stop a move.
+     */
+    void clearSelectionState(void);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event);
@@ -76,8 +86,6 @@ signals:
     void modifyProperties(GraphObject *);
 
 private:
-
-    void deselectAllObjs(void);
 
     void doClickSelection(const QPointF &point);
 

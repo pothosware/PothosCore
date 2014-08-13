@@ -43,11 +43,11 @@ GraphDraw::GraphDraw(QWidget *parent):
     this->setRenderHint(QPainter::HighQualityAntialiasing);
     this->setRenderHint(QPainter::SmoothPixmapTransform);
 
+    //init settings
     assert(this->getGraphEditor() != nullptr);
     this->setAcceptDrops(true);
-
     this->setZoomScale(1.0);
-
+    this->clearSelectionState();
     this->setFocusPolicy(Qt::ClickFocus);
 
     this->setContextMenuPolicy(Qt::CustomContextMenu);
