@@ -63,6 +63,13 @@ void Pothos::WorkerActor::handleBufferPortMessage(const PortMessage<InputPort *,
     this->notify();
 }
 
+void Pothos::WorkerActor::handleBufferManagerMessage(const PortMessage<std::string, BufferManagerMessage> &message, const Theron::Address from)
+{
+    outputs.at(message.id)->_impl->bufferManager = message.contents.manager;
+    if (from != Theron::Address::Null()) this->Send(std::string(""), from);
+    this->notify();
+}
+
 void Pothos::WorkerActor::handleBufferReturnMessage(const BufferReturnMessage &message, const Theron::Address)
 {
     auto mgr = message.buff.getBufferManager();

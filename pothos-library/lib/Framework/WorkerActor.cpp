@@ -38,6 +38,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
             port._buffer = port._impl->bufferManager->front();
             port._impl->_bufferFromManager = true;
         }
+        assert(not port._impl->_bufferFromManager or port._buffer.getManagedBuffer() == port._impl->bufferManager->front());
         port._elements = port._buffer.length/port.dtype().size();
         if (port._elements == 0) allOutputsReady = false;
         if (not port._impl->tokenManager or port._impl->tokenManager->empty()) allOutputsReady = false;

@@ -403,6 +403,9 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         }
     }
 
+    //result list is used to ack all install messages
+    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
+
     //for each source port -- install managers
     for (const auto &pair : srcs)
     {
@@ -437,8 +440,20 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
             assert(dstMode == "ABDICATE");
             manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
         }
-        src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, manager);
+
+        auto result = src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, manager);
+        const auto msg = Poco::format("%s.setOutputBufferManager(%s)", src.obj.call<std::string>("getName"), src.name);
+        infoReceivers.push_back(std::make_pair(msg, result));
     }
+
+    //check all subscribe message results
+    std::string errors;
+    for (auto infoReceiver : infoReceivers)
+    {
+        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
+        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
+    }
+    if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
 }
 
 /***********************************************************************
