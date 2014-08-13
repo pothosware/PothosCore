@@ -160,15 +160,10 @@ GraphObjectList GraphDraw::getObjectsSelected(const int selectionFlags)
     return objectsSelected;
 }
 
-static bool cmpGraphObjects(const GraphObject *lhs, const GraphObject *rhs)
-{
-    return lhs->zValue() < rhs->zValue();
-}
-
 GraphObjectList GraphDraw::getGraphObjects(const int selectionFlags)
 {
     GraphObjectList l;
-    for (auto child : this->children())
+    for (auto child : this->items())
     {
         auto o = dynamic_cast<GraphObject *>(child);
         if (o == nullptr) continue;
@@ -177,7 +172,6 @@ GraphObjectList GraphDraw::getGraphObjects(const int selectionFlags)
         if (((selectionFlags & GRAPH_CONNECTION) != 0) and (dynamic_cast<GraphConnection *>(o) != nullptr)) l.push_back(o);
         if (((selectionFlags & GRAPH_DISPLAY) != 0) and (dynamic_cast<GraphDisplay *>(o) != nullptr)) l.push_back(o);
     }
-    std::sort(l.begin(), l.end(), &cmpGraphObjects);
     return l;
 }
 

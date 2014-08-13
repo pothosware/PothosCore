@@ -99,13 +99,11 @@ void GraphBlock::initOutputsFromDesc(void)
  **********************************************************************/
 void GraphBlock::update(void)
 {
-    auto draw = dynamic_cast<GraphDraw *>(this->parent());
-    assert(draw != nullptr);
-    auto engine = draw->getGraphEditor()->getTopologyEngine();
+    auto engine = this->draw()->getGraphEditor()->getTopologyEngine();
     auto blockProxy = engine->evalGraphBlock(this);
     if (this->isDisplayWidget() and blockProxy)
     {
         _impl->displayWidget = blockProxy.callProxy("getProxyBlock").call<QWidget *>("widget");
     }
-    QGraphicsItem::update();
+    QGraphicsObject::update();
 }

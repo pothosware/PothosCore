@@ -209,7 +209,7 @@ GraphConnection *GraphEditor::makeConnection(const GraphConnectionEndpoint &ep0,
         ) throw Pothos::Exception("GraphEditor::makeConnection()", "connection already exists");
     }
 
-    auto conn = new GraphConnection(ep0.getObj()->parent());
+    auto conn = new GraphConnection(ep0.getObj()->draw());
     conn->setupEndpoint(ep0);
     conn->setupEndpoint(ep1);
 
@@ -234,7 +234,7 @@ static GraphBreaker *findInputBreaker(GraphEditor *editor, const GraphConnection
     {
         auto conn = dynamic_cast<GraphConnection *>(obj);
         assert(conn != nullptr);
-        if (not (conn->getOutputEndpoint().getObj()->parent() == conn->getInputEndpoint().getObj()->parent())) continue;
+        if (not (conn->getOutputEndpoint().getObj()->scene() == conn->getInputEndpoint().getObj()->scene())) continue;
         if (not (conn->getOutputEndpoint() == ep)) continue;
         auto breaker = dynamic_cast<GraphBreaker *>(conn->getInputEndpoint().getObj().data());
         if (breaker == nullptr) continue;
@@ -254,7 +254,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
     for (auto obj : draw->getObjectsSelected())
     {
         obj->setSelected(false);
-        obj->setParent(this->getGraphDraw(index));
+        this->getGraphDraw(index)->scene()->addItem(obj);
     }
 
     //reparent all connections based on endpoints:
@@ -265,9 +265,12 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         assert(conn != nullptr);
 
         //Connection has the same endpoints, so make sure that the parent is corrected to the endpoint
-        if (conn->getOutputEndpoint().getObj()->parent() == conn->getInputEndpoint().getObj()->parent())
+        if (conn->getOutputEndpoint().getObj()->scene() == conn->getInputEndpoint().getObj()->scene())
         {
-            conn->setParent(conn->getInputEndpoint().getObj()->parent());
+            if (conn->getOutputEndpoint().getObj()->scene() != conn->scene())
+            {
+                conn->getInputEndpoint().getObj()->scene()->addItem(conn);
+            }
         }
 
         //otherwise stash it for more processing
@@ -286,7 +289,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         auto breaker = findInputBreaker(this, epOut);
         if (breaker != nullptr) continue;
 
-        breaker = new GraphBreaker(epOut.getObj()->parent());
+        breaker = new GraphBreaker(epOut.getObj()->draw());
         breaker->setInput(true);
         const auto name = QString("%1[%2]").arg(epOut.getObj()->getId(), epOut.getKey().id);
         breaker->setId(this->newId(name));
@@ -295,7 +298,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         breaker->setPos(epIn.getObj()->pos());
 
         auto outConn = this->makeConnection(epOut, GraphConnectionEndpoint(breaker, breaker->getConnectableKeys().at(0)));
-        outConn->setParent(breaker->parent());
+        if (outConn->scene() != breaker->scene()) breaker->scene()->addItem(outConn); //use desired parent
     }
 
     //create breakers for input endpoints that have to cross
@@ -309,7 +312,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         GraphBreaker *breaker = nullptr;
         for (auto obj : this->getGraphObjects(GRAPH_BREAKER))
         {
-            if (obj->parent() != epIn.getObj()->parent()) continue;
+            if (obj->draw() != epIn.getObj()->draw()) continue;
             auto outBreaker = dynamic_cast<GraphBreaker *>(obj);
             assert(outBreaker != nullptr);
             if (outBreaker->isInput()) continue;
@@ -321,7 +324,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         //make a new output breaker
         if (breaker == nullptr)
         {
-            breaker = new GraphBreaker(epIn.getObj()->parent());
+            breaker = new GraphBreaker(epIn.getObj()->draw());
             breaker->setInput(false);
             breaker->setId(this->newId(name));
             breaker->setNodeName(name);
@@ -331,7 +334,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
 
         //connect to this breaker
         auto inConn = this->makeConnection(epIn, GraphConnectionEndpoint(breaker, breaker->getConnectableKeys().at(0)));
-        inConn->setParent(breaker->parent());
+        if (inConn->scene() != breaker->scene()) breaker->scene()->addItem(inConn); //use desired parent
 
         delete conn;
     }
@@ -923,8 +926,3 @@ void GraphEditor::makeDefaultPage(void)
 {
     this->insertTab(0, new GraphDraw(this), tr("Main"));
 }
-
-QWidget *makeGraphEditor(QWidget *parent)
-{
-    return new GraphEditor(parent);
-};
