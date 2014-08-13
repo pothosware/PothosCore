@@ -259,6 +259,8 @@ void GraphConnection::render(QPainter &painter)
             .arg(GraphConnectionLineTextColor)
             .arg(GraphConnectionLineTextFontSize)
             .arg(text));
+        QTextOption to; to.setWrapMode(QTextOption::NoWrap);
+        _impl->lineText.setTextOption(to);
     }
 
     //query the connectable info
