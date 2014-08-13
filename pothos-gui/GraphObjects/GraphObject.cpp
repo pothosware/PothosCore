@@ -4,6 +4,7 @@
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/Constants.hpp"
 #include "GraphEditor/GraphDraw.hpp"
+#include <QGraphicsView>
 #include <QPainter>
 #include <cassert>
 #include <iostream>
