@@ -394,7 +394,7 @@ void GraphEditor::handleCreateBreaker(const bool isInput)
     breaker->setInput(isInput);
     breaker->setNodeName(newName);
     breaker->setId(this->newId(newName));
-    breaker->setPos(draw->getLastContextMenuPos()/draw->zoomScale());
+    breaker->setPos(draw->getLastContextMenuPos());
 
     handleStateChange(GraphState("document-new", tr("Create %1 breaker %2").arg(dirName, newName)));
 }
