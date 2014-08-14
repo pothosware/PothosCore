@@ -94,8 +94,8 @@ Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QStr
     auto env = client.makeEnvironment("managed");
     if (serverProcessNew) //enable log forwarding
     {
-        //TODO localhost is not the correct host, we need to the know the GUI's real host name or IP
-        env->findProxy("Pothos/System/Logger").callVoid("startSyslogForwarding", "localhost:"+_syslogListenPort);
+        const auto serverAddr = env->getPeeringAddress() + ":" + _syslogListenPort;
+        env->findProxy("Pothos/System/Logger").callVoid("startSyslogForwarding", serverAddr);
         const auto logSource = (not zone.isEmpty())? zone.toStdString() : newHostUri.getHost();
         env->findProxy("Pothos/System/Logger").callVoid("forwardStdIoToLogging", logSource);
     }
