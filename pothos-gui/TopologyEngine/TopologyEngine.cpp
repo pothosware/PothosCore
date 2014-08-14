@@ -6,6 +6,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include <Pothos/Proxy.hpp>
+#include <Pothos/System/Logger.hpp>
 #include <Pothos/Remote.hpp>
 #include <Pothos/Framework.hpp>
 #include <Poco/URI.h>
@@ -17,7 +18,7 @@ TopologyEngine::TopologyEngine(QObject *parent):
     QObject(parent),
     _topology(new Pothos::Topology())
 {
-    return;
+    _syslogListenPort = Pothos::System::startSyslogListener();
 }
 
 void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
@@ -72,6 +73,7 @@ Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QStr
     auto processName = config?config->getValue<std::string>("processName"):"";
 
     //find if the environment already exists
+    bool serverProcessNew = false;
     auto &processToServer = _uriToProcessToServerHandle[hostUri];
     if (processToServer.find(processName) == processToServer.end())
     {
@@ -79,6 +81,7 @@ Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QStr
         auto env = Pothos::RemoteClient(hostUri).makeEnvironment("managed");
         auto serverHandle = env->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://0.0.0.0");
         processToServer[processName] = serverHandle;
+        serverProcessNew = true;
     }
 
     //connect to the new server and make the communication environment
@@ -88,7 +91,15 @@ Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QStr
     newHostUri.setPort(Poco::NumberParser::parseUnsigned(actualPort));
     auto client = Pothos::RemoteClient(newHostUri.toString());
     client.holdRef(Pothos::Object(serverHandle));
-    return client.makeEnvironment("managed");
+    auto env = client.makeEnvironment("managed");
+    if (serverProcessNew) //enable log forwarding
+    {
+        //TODO localhost is not the correct host, we need to the know the GUI's real host name or IP
+        env->findProxy("Pothos/System/Logger").callVoid("startSyslogForwarding", "localhost:"+_syslogListenPort);
+        const auto logSource = (not zone.isEmpty())? zone.toStdString() : newHostUri.getHost();
+        env->findProxy("Pothos/System/Logger").callVoid("forwardStdIoToLogging", logSource);
+    }
+    return env;
 }
 
 Pothos::Proxy TopologyEngine::getThreadPoolFromZone(const QString &zone)
