@@ -36,6 +36,8 @@ list(APPEND POTHOS_LIBRARIES ${Qt5Widgets_LIBRARIES})
 ########################################################################
 set(SOURCES
     Slider.cpp
+    TimeDomainPlot/TimeDomainPlot.hpp #scanned for block desc
+    TimeDomainPlot/TimeDomainPlot.cpp
 )
 
 POTHOS_MODULE_UTIL(
