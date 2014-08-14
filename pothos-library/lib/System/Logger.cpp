@@ -103,6 +103,10 @@ void Pothos::System::forwardStdIoToLogging(const std::string &source)
 {
     static std::shared_ptr<InterceptStream> clogRedirected;
     clogRedirected.reset(new InterceptStream(std::clog, source));
+    static std::shared_ptr<InterceptStream> coutRedirected;
+    coutRedirected.reset(new InterceptStream(std::cout, source));
+    static std::shared_ptr<InterceptStream> cerrRedirected;
+    cerrRedirected.reset(new InterceptStream(std::cerr, source));
 }
 
 void Pothos::System::setupDefaultLogging(void)
