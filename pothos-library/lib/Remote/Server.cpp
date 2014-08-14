@@ -82,7 +82,10 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr)
             break;
         }
     }
+
+    //close pipes to not overfill and backup
     outPipe.close();
+    errPipe.close();
 
     //An error spawning the process above could have caused a problem,
     //which can be detected when the parsing of the port fails.
