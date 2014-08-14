@@ -39,6 +39,12 @@ public:
      */
     void runHandler(std::iostream &io);
 
+    /*!
+     * Run the handler for a single request/response transaction.
+     * \return done true when the client shuts-down the environment
+     */
+    bool runHandlerOnce(std::istream &is, std::ostream &os);
+
 private:
     const std::string _peerAddr;
 };
