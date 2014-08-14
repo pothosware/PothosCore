@@ -132,6 +132,4 @@ static auto managedRemoteServer = Pothos::ManagedClass()
     .registerConstructor<Pothos::RemoteServer>()
     .registerConstructor<Pothos::RemoteServer, std::string>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::RemoteServer, getActualPort))
-    .registerStaticMethod<std::iostream &>(POTHOS_FCN_TUPLE(Pothos::RemoteServer, runHandler))
-    .registerStaticMethod<std::istream &, std::ostream &>(POTHOS_FCN_TUPLE(Pothos::RemoteServer, runHandler))
     .commit("Pothos/RemoteServer");

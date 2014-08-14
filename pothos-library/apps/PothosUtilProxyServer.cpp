@@ -17,7 +17,8 @@ class MyTCPServerConnection : public Poco::Net::TCPServerConnection
 {
 public:
     MyTCPServerConnection(const Poco::Net::StreamSocket &socket):
-        Poco::Net::TCPServerConnection(socket)
+        Poco::Net::TCPServerConnection(socket),
+        _handler(Pothos::RemoteHandler(socket.peerAddress().toString()))
     {
         return;
     }
@@ -25,8 +26,11 @@ public:
     void run(void)
     {
         Poco::Net::SocketStream socketStream(this->socket());
-        Pothos::RemoteServer::runHandler(socketStream, socketStream);
+        _handler.runHandler(socketStream, socketStream);
     }
+
+private:
+    Pothos::RemoteHandler _handler;
 };
 
 class MyTCPServerConnectionFactory : public Poco::Net::TCPServerConnectionFactory

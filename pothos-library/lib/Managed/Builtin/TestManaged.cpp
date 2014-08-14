@@ -164,7 +164,8 @@ private:
         //std::cout << "run start \n";
         Poco::PipeInputStream is(p0);
         Poco::PipeOutputStream os(p1);
-        Pothos::RemoteServer::runHandler(is, os);
+        Pothos::RemoteHandler handler;
+        handler.runHandler(is, os);
         //std::cout << "run exit \n";
     }
 };

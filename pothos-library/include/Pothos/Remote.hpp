@@ -11,4 +11,5 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Remote/Client.hpp>
 #include <Pothos/Remote/Server.hpp>
+#include <Pothos/Remote/Handler.hpp>
 #include <Pothos/Remote/Exception.hpp>
