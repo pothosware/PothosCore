@@ -5,6 +5,8 @@
 #include <Pothos/Framework.hpp>
 #include <QGraphicsView>
 
+class QGraphicsPathItem;
+
 /***********************************************************************
  * |PothosDoc Time Domain Plot
  *
@@ -51,5 +53,12 @@ public:
 
     void work(void);
 
+signals:
+    void newPath(const QPainterPath &);
+
+private slots:
+    void handleNewPath(const QPainterPath &);
+
 private:
+    QGraphicsPathItem *_plotterElements;
 };
