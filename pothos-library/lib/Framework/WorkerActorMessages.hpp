@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include <Pothos/Framework/BufferManager.hpp>
 #include <Pothos/Framework/ManagedBuffer.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Framework/Label.hpp>
@@ -39,6 +40,11 @@ struct TokenizedAsyncMessage
 {
     Pothos::ManagedBuffer token;
     Pothos::Object async;
+};
+
+struct BufferManagerMessage
+{
+    Pothos::BufferManager::Sptr manager;
 };
 
 struct BufferReturnMessage

@@ -231,6 +231,6 @@ void GraphDraw::render(void)
 
 void GraphDraw::handleCustomContextMenuRequested(const QPoint &pos)
 {
-    _lastContextMenuPos = pos;
+    _lastContextMenuPos = this->mapToScene(pos);
     getMenuMap()["edit"]->exec(this->mapToGlobal(pos));
 }

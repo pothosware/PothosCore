@@ -21,6 +21,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QMimeData>
+#include <QRegExp>
 #include <fstream>
 #include <iostream>
 #include <cassert>
@@ -102,9 +103,17 @@ QString GraphEditor::newId(const QString &hint) const
         idBase = QString::fromStdString(generator.createRandom().toString());
     }
 
-    //loop for a unique ID name
-    QString possibleId = idBase;
+    //find a reasonable name and index
     size_t index = 0;
+    QRegExp rx("(.*)(\\d+)"); rx.indexIn(idBase);
+    if (rx.captureCount() == 2 and not rx.cap(1).isEmpty() and not rx.cap(2).isEmpty())
+    {
+        idBase = rx.cap(1);
+        index = rx.cap(2).toInt();
+    }
+
+    //loop for a unique ID name
+    QString possibleId;
     do
     {
         possibleId = QString("%1%2").arg(idBase).arg(index++);
@@ -397,7 +406,7 @@ void GraphEditor::handleCreateBreaker(const bool isInput)
     breaker->setInput(isInput);
     breaker->setNodeName(newName);
     breaker->setId(this->newId(newName));
-    breaker->setPos(draw->getLastContextMenuPos()/draw->zoomScale());
+    breaker->setPos(draw->getLastContextMenuPos());
 
     handleStateChange(GraphState("document-new", tr("Create %1 breaker %2").arg(dirName, newName)));
 }

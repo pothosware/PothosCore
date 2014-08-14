@@ -74,6 +74,7 @@ public:
         this->RegisterHandler(this, &WorkerActor::handleAsyncPortMessage);
         this->RegisterHandler(this, &WorkerActor::handleLabelsPortMessage);
         this->RegisterHandler(this, &WorkerActor::handleBufferPortMessage);
+        this->RegisterHandler(this, &WorkerActor::handleBufferManagerMessage);
         this->RegisterHandler(this, &WorkerActor::handleBufferReturnMessage);
         this->RegisterHandler(this, &WorkerActor::handleSubscriberPortMessage);
         this->RegisterHandler(this, &WorkerActor::handleBumpWorkMessage);
@@ -98,6 +99,7 @@ public:
     void handleAsyncPortMessage(const PortMessage<InputPort *, TokenizedAsyncMessage> &message, const Theron::Address from);
     void handleLabelsPortMessage(const PortMessage<InputPort *, LabeledBuffersMessage> &message, const Theron::Address from);
     void handleBufferPortMessage(const PortMessage<InputPort *, BufferChunk> &message, const Theron::Address from);
+    void handleBufferManagerMessage(const PortMessage<std::string, BufferManagerMessage> &message, const Theron::Address from);
     void handleBufferReturnMessage(const BufferReturnMessage &message, const Theron::Address from);
     void handleSubscriberPortMessage(const PortMessage<std::string, PortSubscriberMessage> &message, const Theron::Address from);
     void handleBumpWorkMessage(const BumpWorkMessage &message, const Theron::Address from);
@@ -248,10 +250,19 @@ public:
         return m;
     }
 
-    void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
+    std::shared_ptr<InfoReceiver<std::string>> setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
     {
+        //create a new receiver to handle async reply
+        auto receiver = InfoReceiver<std::string>::make();
+
+        //create the message
+        BufferManagerMessage message;
+        message.manager = manager;
         assert(manager);
-        outputs[name]->_impl->bufferManager = manager;
+
+        //send it to the actor
+        this->GetFramework().Send(makePortMessage(name, message), receiver->GetAddress(), this->GetAddress());
+        return receiver;
     }
 
     ///////////////////// work helper methods ///////////////////////
