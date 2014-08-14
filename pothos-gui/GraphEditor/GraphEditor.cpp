@@ -430,12 +430,12 @@ void GraphEditor::handleInsertDisplayWidget(QObject *obj)
     auto draw = this->getCurrentGraphDraw();
     auto display = new GraphDisplay(draw);
     display->setGraphBlock(block);
-    display->setId(this->newId("Display"+block->getId()));
+    display->setId(this->newId("Widget"+block->getId()));
     display->setZValue(draw->getMaxZValue()+1);
     display->setPos(draw->getLastContextMenuPos());
     display->setRotation(0);
 
-    handleStateChange(GraphState("insert-image", tr("Insert %1").arg(display->getId())));
+    handleStateChange(GraphState("insert-image", tr("Insert widget %1").arg(block->getId())));
 }
 
 void GraphEditor::handleCut(void)
