@@ -8,6 +8,9 @@ static PyTypeObject ProxyType = {
     PyObject_HEAD_INIT(NULL)
 };
 
+static PyNumberMethods ProxyNumberMethods = {
+};
+
 static void Proxy_dealloc(ProxyObject *self)
 {
     delete self->proxy;
@@ -159,9 +162,9 @@ static PyObject *Proxy_call(ProxyObject *self, PyObject *args)
     }
 }
 
-static PyObject *Proxy_bool(ProxyObject *self)
+static int Proxy_bool(ProxyObject *self)
 {
-    return PyBool_FromLong(bool(*self->proxy));
+    return bool(*self->proxy)? 1 : 0;
 }
 
 static PyObject *Proxy_getEnvironment(ProxyObject *self)
@@ -180,8 +183,6 @@ static PyMethodDef Proxy_methods[] = {
     {"convert", (PyCFunction)Proxy_convert, METH_NOARGS, "Pothos::Proxy::convert()"},
     {"callProxy", (PyCFunction)Proxy_callProxy, METH_VARARGS, "Pothos::Proxy::callProxy(name, args...)"},
     {"call", (PyCFunction)Proxy_call, METH_VARARGS, "Pothos::Proxy::call(name, args...)"},
-    {"__bool__", (PyCFunction)Proxy_bool, METH_NOARGS, "Pothos::Proxy::bool()"},
-    {"__nonzero__", (PyCFunction)Proxy_bool, METH_NOARGS, "Pothos::Proxy::bool()"}, //2.7
     {"getEnvironment", (PyCFunction)Proxy_getEnvironment, METH_NOARGS, "Pothos::Proxy::getEnvironment()"},
     {"getClassName", (PyCFunction)Proxy_getClassName, METH_NOARGS, "Pothos::Proxy::getClassName()"},
     {nullptr}  /* Sentinel */
@@ -249,6 +250,13 @@ void registerProxyType(PyObject *m)
     ProxyType.tp_init = (initproc)Proxy_init;
     ProxyType.tp_getattro = (getattrofunc)Proxy_getattr;
     ProxyType.tp_setattro = (setattrofunc)Proxy_setattr;
+
+    ProxyType.tp_as_number = &ProxyNumberMethods;
+    #if PY_MAJOR_VERSION >= 3
+    ProxyNumberMethods.nb_bool = (inquiry)Proxy_bool;
+    #else
+    ProxyNumberMethods.nb_nonzero = (inquiry)Proxy_bool;
+    #endif
 
     if (PyType_Ready(&ProxyType) < 0) return;
 

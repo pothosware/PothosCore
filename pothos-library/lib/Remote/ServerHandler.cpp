@@ -4,7 +4,7 @@
 #include <Pothos/Object.hpp>
 #include <Pothos/Object/Containers.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Pothos/Remote/Server.hpp>
+#include <Pothos/Remote/Handler.hpp>
 #include <Pothos/System/HostInfo.hpp>
 #include <Poco/SingletonHolder.h>
 #include <mutex>
@@ -56,8 +56,10 @@ static void removeObjectAtId(const Pothos::Object &id)
 /***********************************************************************
  * Handler implementation
  **********************************************************************/
-static void runHandlerOnce(std::istream &is, std::ostream &os, bool &done)
+bool Pothos::RemoteHandler::runHandlerOnce(std::istream &is, std::ostream &os)
 {
+    bool done = false;
+
     //deserialize the request
     Pothos::Object request;
     request.deserialize(is);
@@ -84,6 +86,7 @@ static void runHandlerOnce(std::istream &is, std::ostream &os, bool &done)
             const auto info = Pothos::System::HostInfo::get();
             replyArgs["upid"] = Pothos::Object(Pothos::ProxyEnvironment::getLocalUniquePid());
             replyArgs["nodeId"] = Pothos::Object(info.nodeId);
+            replyArgs["peerAddr"] = Pothos::Object(_peerAddr);
         }
         else if (action == "~RemoteProxyEnvironment")
         {
@@ -174,18 +177,41 @@ static void runHandlerOnce(std::istream &is, std::ostream &os, bool &done)
     Pothos::Object reply(replyArgs);
     reply.serialize(os);
     os.flush();
+
+    return done;
 }
 
-void Pothos::RemoteServer::runHandler(std::istream &is, std::ostream &os)
+Pothos::RemoteHandler::RemoteHandler(void)
+{
+    return;
+}
+
+Pothos::RemoteHandler::RemoteHandler(const std::string &peerAddr):
+    _peerAddr(peerAddr)
+{
+    return;
+}
+
+void Pothos::RemoteHandler::runHandler(std::istream &is, std::ostream &os)
 {
     bool done = false;
     while (is.good() and os.good() and not done)
     {
-        runHandlerOnce(is, os, done);
+        done = runHandlerOnce(is, os);
     }
 }
 
-void Pothos::RemoteServer::runHandler(std::iostream &io)
+void Pothos::RemoteHandler::runHandler(std::iostream &io)
 {
     return runHandler(io, io);
 }
+
+#include <Pothos/Managed.hpp>
+
+static auto managedRemoteHandler = Pothos::ManagedClass()
+    .registerConstructor<Pothos::RemoteHandler>()
+    .registerConstructor<Pothos::RemoteHandler, std::string>()
+    .registerMethod<std::iostream &>(POTHOS_FCN_TUPLE(Pothos::RemoteHandler, runHandler))
+    .registerMethod<std::istream &, std::ostream &>(POTHOS_FCN_TUPLE(Pothos::RemoteHandler, runHandler))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::RemoteHandler, runHandlerOnce))
+    .commit("Pothos/RemoteHandler");

@@ -51,12 +51,13 @@ class TestPothosModule(unittest.TestCase):
     def test_block(self):
         reg = self.env.findProxy("Pothos/BlockRegistry")
         self.assertTrue(reg)
-        print(reg.callProxy("/blocks/sources/feeder_source", "int"))
+        print(reg.callProxy("/blocks/feeder_source", "int"))
         print(hash(reg))
 
 def main():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestPothosModule)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    if not result.wasSuccessful(): raise Exception("unittest FAIL")
 
 if __name__ == '__main__':
     main()
