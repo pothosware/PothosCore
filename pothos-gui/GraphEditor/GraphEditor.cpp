@@ -36,6 +36,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
     _parentTabWidget(dynamic_cast<QTabWidget *>(parent)),
     _moveGraphObjectsMapper(new QSignalMapper(this)),
+    _insertDisplayWidgetsMapper(new QSignalMapper(this)),
     _stateManager(new GraphStateManager(this)),
     _topologyEngine(new TopologyEngine(this))
 {
@@ -77,6 +78,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["increment"], SIGNAL(triggered(void)), this, SLOT(handleBlockIncrement(void)));
     connect(getActionMap()["decrement"], SIGNAL(triggered(void)), this, SLOT(handleBlockDecrement(void)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
+    connect(_insertDisplayWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertDisplayWidget(QObject *)));
     connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
 }
 
@@ -118,7 +120,7 @@ void GraphEditor::showEvent(QShowEvent *event)
     assert(actionsDock != nullptr);
     actionsDock->setActiveWidget(_stateManager);
 
-    this->setupMoveGraphObjectsMenu();
+    this->updateGraphEditorMenus();
     this->updateEnabledActions();
     QWidget::showEvent(event);
 }
@@ -147,7 +149,7 @@ void GraphEditor::updateEnabledActions(void)
 void GraphEditor::handleCurrentChanged(int)
 {
     if (not this->isVisible()) return;
-    this->setupMoveGraphObjectsMenu();
+    this->updateGraphEditorMenus();
 }
 
 void GraphEditor::handleCreateGraphPage(void)
@@ -157,7 +159,7 @@ void GraphEditor::handleCreateGraphPage(void)
         tr("New page name"), QLineEdit::Normal, tr("untitled"));
     if (newName.isEmpty()) return;
     this->addTab(new GraphDraw(this), newName);
-    this->setupMoveGraphObjectsMenu();
+    this->updateGraphEditorMenus();
 
     handleStateChange(GraphState("document-new", tr("Create graph page ") + newName));
 }
@@ -170,7 +172,7 @@ void GraphEditor::handleRenameGraphPage(void)
         tr("New page name"), QLineEdit::Normal, oldName);
     if (newName.isEmpty()) return;
     this->setTabText(this->currentIndex(), newName);
-    this->setupMoveGraphObjectsMenu();
+    this->updateGraphEditorMenus();
 
     handleStateChange(GraphState("edit-rename", tr("Rename graph page ") + oldName + " -> " + newName));
 }
@@ -181,7 +183,7 @@ void GraphEditor::handleDeleteGraphPage(void)
     const auto oldName = this->tabText(this->currentIndex());
     this->removeTab(this->currentIndex());
     if (this->count() == 0) this->makeDefaultPage();
-    this->setupMoveGraphObjectsMenu();
+    this->updateGraphEditorMenus();
 
     handleStateChange(GraphState("edit-delete", tr("Delete graph page ") + oldName));
 }
@@ -378,18 +380,6 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const
 
     block->setPos(where);
     block->setRotation(0);
-    //// temp //////////
-    //insert the display widget
-    if (block->isDisplayWidget())
-    {
-        auto display = new GraphDisplay(draw);
-        display->setGraphBlock(block);
-        display->setId(this->newId("Display"+block->getId()));
-        display->setZValue(draw->getMaxZValue()+1);
-        display->setPos(where);
-        display->setRotation(0);
-    }
-    //// temp //////////
     handleStateChange(GraphState("list-add", tr("Create block %1").arg(title)));
 }
 
@@ -420,6 +410,23 @@ void GraphEditor::handleCreateInputBreaker(void)
 void GraphEditor::handleCreateOutputBreaker(void)
 {
     this->handleCreateBreaker(false);
+}
+
+void GraphEditor::handleInsertDisplayWidget(QObject *obj)
+{
+    auto block = dynamic_cast<GraphBlock *>(obj);
+    assert(block != nullptr);
+    assert(block->isDisplayWidget());
+
+    auto draw = this->getCurrentGraphDraw();
+    auto display = new GraphDisplay(draw);
+    display->setGraphBlock(block);
+    display->setId(this->newId("Display"+block->getId()));
+    display->setZValue(draw->getMaxZValue()+1);
+    display->setPos(draw->getLastContextMenuPos());
+    display->setRotation(0);
+
+    handleStateChange(GraphState("insert-image", tr("Insert %1").arg(display->getId())));
 }
 
 void GraphEditor::handleCut(void)
@@ -681,7 +688,7 @@ void GraphEditor::handleResetState(int stateNo)
     const auto dump = _stateManager->current().dump;
     std::istringstream iss(std::string(dump.constData(), dump.size()));
     this->loadState(iss);
-    this->setupMoveGraphObjectsMenu();
+    this->updateGraphEditorMenus();
     this->render();
 
     this->updateExecutionEngine();
@@ -730,6 +737,7 @@ void GraphEditor::handleStateChange(const GraphState &state)
     _stateManager->post(stateWithDump);
     this->render();
 
+    this->updateGraphEditorMenus();
     this->updateExecutionEngine();
 }
 
@@ -848,7 +856,7 @@ void GraphEditor::load(void)
     _stateManager->resetToDefault();
     handleStateChange(GraphState("document-new", tr("Load topology from file")));
     _stateManager->saveCurrent();
-    this->setupMoveGraphObjectsMenu();
+    this->updateGraphEditorMenus();
     this->render();
 }
 
@@ -874,9 +882,10 @@ void GraphEditor::render(void)
     this->updateEnabledActions();
 }
 
-void GraphEditor::setupMoveGraphObjectsMenu(void)
+void GraphEditor::updateGraphEditorMenus(void)
 {
     if (not this->isVisible()) return;
+
     auto menu = getMenuMap()["moveGraphObjects"];
     menu->clear();
     for (int i = 0; i < this->count(); i++)
@@ -885,6 +894,32 @@ void GraphEditor::setupMoveGraphObjectsMenu(void)
         auto action = menu->addAction(QString("%1 (%2)").arg(this->tabText(i)).arg(i));
         connect(action, SIGNAL(triggered(void)), _moveGraphObjectsMapper, SLOT(map(void)));
         _moveGraphObjectsMapper->setMapping(action, i);
+    }
+
+    menu = getMenuMap()["insertDisplayWidgets"];
+    menu->clear();
+    for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
+    {
+        auto block = dynamic_cast<GraphBlock *>(obj);
+        assert(block != nullptr);
+        if (not block->isDisplayWidget()) continue;
+
+        //does block have an active graph display?
+        for (auto subObj : this->getGraphObjects(GRAPH_DISPLAY))
+        {
+            auto display = dynamic_cast<GraphDisplay *>(subObj);
+            assert(display != nullptr);
+            if (display->getGraphBlock() == block) goto next_block;
+        }
+
+        //block is a display widget with no active displays:
+        {
+            auto action = menu->addAction(QString("%1 (%2)").arg(block->getTitle()).arg(block->getId()));
+            connect(action, SIGNAL(triggered(void)), _insertDisplayWidgetsMapper, SLOT(map(void)));
+            _insertDisplayWidgetsMapper->setMapping(action, block);
+        }
+
+        next_block: continue;
     }
 }
 

@@ -340,6 +340,7 @@ void PothosGuiMainWindow::createMenus(void)
     _menuMap["moveGraphObjects"] = _editMenu->addMenu(makeIconFromTheme("transform-move"), tr("Move graph objects..."));
     _menuMap["setAffinityZone"] = dynamic_cast<AffinityZonesDock *>(_affinityZonesDock)->makeMenu(_editMenu);
     _editMenu->addMenu(_menuMap["setAffinityZone"]);
+    _menuMap["insertDisplayWidgets"] = _editMenu->addMenu(makeIconFromTheme("insert-image"), tr("Insert display widgets..."));
 
     _executeMenu = menuBar()->addMenu(tr("&Execute"));
     _executeMenu->addSeparator();

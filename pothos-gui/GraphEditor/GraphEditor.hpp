@@ -90,6 +90,7 @@ private slots:
     void handleCreateBreaker(const bool isInput);
     void handleCreateInputBreaker(void);
     void handleCreateOutputBreaker(void);
+    void handleInsertDisplayWidget(QObject *);
     void handleCut(void);
     void handleCopy(void);
     void handlePaste(void);
@@ -118,13 +119,14 @@ private slots:
 private:
     QTabWidget *_parentTabWidget;
 
-    void setupMoveGraphObjectsMenu(void);
+    void updateGraphEditorMenus(void);
 
     void makeDefaultPage(void);
 
     void deleteFlagged(void);
 
     QSignalMapper *_moveGraphObjectsMapper;
+    QSignalMapper *_insertDisplayWidgetsMapper;
 
     QString _currentFilePath;
     QPointer<GraphStateManager> _stateManager;
