@@ -72,6 +72,7 @@ struct MyTCPConnectionMonitor: public Poco::Runnable
 
 void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
 {
+    //set stdio to be unbuffered to prevent IO backup when this is a subprocess
     std::cout.setf(std::ios::unitbuf);
     std::cerr.setf(std::ios::unitbuf);
     std::clog.setf(std::ios::unitbuf);
