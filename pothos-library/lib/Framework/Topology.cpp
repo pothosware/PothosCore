@@ -248,13 +248,13 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<F
             netConn = connEnv->findProxy("Pothos/BlockRegistry").callProxy(netConnPath, connectUri, "CONNECT");
 
             //create the flows
-            netSink.get().callVoid("setName", "NetOut");
+            netSink.get().callVoid("setName", "NetTo: "+flow.dst.obj.call<std::string>("getName")+"["+flow.dst.name+"]");
             Flow srcFlow;
             srcFlow.src = flow.src;
             srcFlow.dst.obj = netSink;
             srcFlow.dst.name = "0";
 
-            netSource.get().callVoid("setName", "NetIn");
+            netSource.get().callVoid("setName", "NetFrom: "+flow.src.obj.call<std::string>("getName")+"["+flow.src.name+"]");
             Flow dstFlow;
             dstFlow.src.obj = netSource;
             dstFlow.src.name = "0";
