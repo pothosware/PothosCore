@@ -18,7 +18,7 @@ class MyTCPServerConnection : public Poco::Net::TCPServerConnection
 public:
     MyTCPServerConnection(const Poco::Net::StreamSocket &socket):
         Poco::Net::TCPServerConnection(socket),
-        _handler(Pothos::RemoteHandler(socket.peerAddress().toString()))
+        _handler(Pothos::RemoteHandler(socket.peerAddress().host().toString()))
     {
         return;
     }

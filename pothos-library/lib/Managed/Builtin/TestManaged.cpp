@@ -189,7 +189,8 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_server)
 {
     Pothos::RemoteServer server("tcp://0.0.0.0");
     Pothos::RemoteClient client("tcp://localhost:"+server.getActualPort());
-    Pothos::RemoteClient::makeEnvironment(client.getIoStream(), "managed");
+    auto env = Pothos::RemoteClient::makeEnvironment(client.getIoStream(), "managed");
+    std::cout << "Env peering address " << env->getPeeringAddress() << std::endl;
 }
 
 POTHOS_TEST_BLOCK("/proxy/managed/tests", test_containers)

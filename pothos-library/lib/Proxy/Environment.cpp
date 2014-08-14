@@ -43,3 +43,8 @@ std::string Pothos::ProxyEnvironment::getLocalUniquePid(void)
     const auto info = Pothos::System::HostInfo::get();
     return info.nodeName + "/" + info.nodeId + "/" + info.pid;
 }
+
+std::string Pothos::ProxyEnvironment::getPeeringAddress(void)
+{
+    return "localhost";
+}
