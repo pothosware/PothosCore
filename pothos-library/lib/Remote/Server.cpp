@@ -82,7 +82,10 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr)
             break;
         }
     }
+
+    //close pipes to not overfill and backup
     outPipe.close();
+    errPipe.close();
 
     //An error spawning the process above could have caused a problem,
     //which can be detected when the parsing of the port fails.
@@ -132,6 +135,4 @@ static auto managedRemoteServer = Pothos::ManagedClass()
     .registerConstructor<Pothos::RemoteServer>()
     .registerConstructor<Pothos::RemoteServer, std::string>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::RemoteServer, getActualPort))
-    .registerStaticMethod<std::iostream &>(POTHOS_FCN_TUPLE(Pothos::RemoteServer, runHandler))
-    .registerStaticMethod<std::istream &, std::ostream &>(POTHOS_FCN_TUPLE(Pothos::RemoteServer, runHandler))
     .commit("Pothos/RemoteServer");

@@ -11,7 +11,7 @@ LoggerChannel::LoggerChannel(QObject *parent):
     _oldChannel(_logger.getChannel()),
     _splitter(new Poco::SplitterChannel())
 {
-    _logger.setLevel("information");
+    _logger.setLevel("trace"); //lowest level -> shows everything
     _logger.setChannel(_splitter);
     _splitter->addChannel(_oldChannel);
     _splitter->addChannel(this);

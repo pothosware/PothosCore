@@ -28,6 +28,17 @@ namespace System {
     POTHOS_API void startSyslogForwarding(const std::string &addr);
 
     /*!
+     * Redirect standard IO to the logging facility.
+     * This allows the user to capture standard IO debug messages
+     * from subprocesses and servers that would otherwise be lost.
+     * Because the default logging output directs to standard IO,
+     * it is recommended to first change the default logging channel.
+     * For example, startSyslogForwarding() will direct logs to UDP.
+     * \param source the repoted source of the forwarded log messages
+     */
+    POTHOS_API void forwardStdIoToLogging(const std::string &source);
+
+    /*!
      * Setup default logging for this process.
      * The default logger will log all non-informational logs to the console.
      * The logger can be configured with the following environment vars:

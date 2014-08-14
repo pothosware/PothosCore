@@ -86,4 +86,6 @@ private:
 
     void setupPorts(GraphBlock *block);
     std::map<QString, std::pair<Poco::JSON::Array::Ptr, Poco::JSON::Array::Ptr>> _idToPortDesc;
+
+    std::string _syslogListenPort;
 };

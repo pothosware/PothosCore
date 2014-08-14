@@ -62,6 +62,7 @@ RemoteProxyEnvironment::RemoteProxyEnvironment(
     remoteID = reply["envID"].convert<size_t>();
     upid = reply["upid"].convert<std::string>();
     nodeId = reply["nodeId"].convert<std::string>();
+    peerAddr = reply["peerAddr"].convert<std::string>();
 }
 
 RemoteProxyEnvironment::~RemoteProxyEnvironment(void)

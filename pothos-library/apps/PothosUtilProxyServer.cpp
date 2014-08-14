@@ -17,7 +17,8 @@ class MyTCPServerConnection : public Poco::Net::TCPServerConnection
 {
 public:
     MyTCPServerConnection(const Poco::Net::StreamSocket &socket):
-        Poco::Net::TCPServerConnection(socket)
+        Poco::Net::TCPServerConnection(socket),
+        _handler(Pothos::RemoteHandler(socket.peerAddress().host().toString()))
     {
         return;
     }
@@ -25,8 +26,11 @@ public:
     void run(void)
     {
         Poco::Net::SocketStream socketStream(this->socket());
-        Pothos::RemoteServer::runHandler(socketStream, socketStream);
+        _handler.runHandler(socketStream, socketStream);
     }
+
+private:
+    Pothos::RemoteHandler _handler;
 };
 
 class MyTCPServerConnectionFactory : public Poco::Net::TCPServerConnectionFactory
@@ -72,6 +76,11 @@ struct MyTCPConnectionMonitor: public Poco::Runnable
 
 void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
 {
+    //set stdio to be unbuffered to prevent IO backup when this is a subprocess
+    std::cout.setf(std::ios::unitbuf);
+    std::cerr.setf(std::ios::unitbuf);
+    std::clog.setf(std::ios::unitbuf);
+
     Pothos::init();
 
     //parse the URI

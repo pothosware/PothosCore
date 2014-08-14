@@ -12,7 +12,6 @@
 #include <Pothos/Util/RefHolder.hpp>
 #include <memory>
 #include <string>
-#include <iosfwd>
 
 namespace Pothos {
 
@@ -52,18 +51,6 @@ public:
 
     //! Get the actual port that the server is running on
     std::string getActualPort(void) const;
-
-    /*!
-     * Run a handler for a remote proxy that is interfaced over an iostream.
-     * This call blocks until the client's remote environment session destructs.
-     */
-    static void runHandler(std::istream &is, std::ostream &os);
-
-    /*!
-     * Run a handler for a remote proxy that is interfaced over an iostream.
-     * This call blocks until the client's remote environment session destructs.
-     */
-    static void runHandler(std::iostream &io);
 
 private:
     struct Impl;

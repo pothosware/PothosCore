@@ -35,6 +35,11 @@ public:
         return upid;
     }
 
+    std::string getPeeringAddress(void)
+    {
+        return peerAddr;
+    }
+
     std::string getName(void) const
     {
         return name;
@@ -61,6 +66,7 @@ public:
     size_t remoteID;
     std::string upid;
     std::string nodeId;
+    std::string peerAddr;
 
     std::istream &is;
     std::ostream &os;

@@ -76,6 +76,13 @@ public:
     static std::string getLocalUniquePid(void);
 
     /*!
+     * Get the peering address of the connection for this environment.
+     * Remote environment will report the peering address of the
+     * caller as seen by the remote server's socket acceptor.
+     */
+    virtual std::string getPeeringAddress(void);
+
+    /*!
      * Get the name of the environment.
      * This should be the same name passed into the factory.
      */
