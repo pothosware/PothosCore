@@ -5,7 +5,6 @@
 #include <Poco/Net/StreamSocket.h>
 #include <Poco/Net/SocketStream.h>
 #include <Poco/URI.h>
-#include <Poco/NumberParser.h>
 #include <Poco/SingletonHolder.h>
 #include <Poco/RWLock.h>
 #include <future>
@@ -117,7 +116,7 @@ struct Pothos::RemoteClient::Impl
         //extract port, for unspecified port -- use the default locator port
         Poco::URI uri(uriStr);
         auto port = uri.getPort();
-        if (port == 0) port = Poco::NumberParser::parseUnsigned(RemoteServer::getLocatorPort());
+        if (port == 0) port = std::stoi(RemoteServer::getLocatorPort());
 
         //perform the dns lookup
         try

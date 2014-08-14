@@ -7,8 +7,6 @@
 #include <Poco/Types.h>
 #include <Poco/HashMap.h>
 #include <Poco/SingletonHolder.h>
-#include <Poco/NumberFormatter.h>
-#include <Poco/NumberParser.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/RegularExpression.h>
 #include <complex>
@@ -154,7 +152,7 @@ static void parseMarkupName(const std::string &markup, std::string &name, Pothos
             {
                 throw Pothos::DTypeUnknownError("Pothos::DType("+markup+")", "bad markup format");
             }
-            shape.push_back(size_t(Poco::NumberParser::parseUnsigned(tok)));
+            shape.push_back(size_t(std::stoull(tok)));
         }
     }
 }
@@ -219,7 +217,7 @@ std::string Pothos::DType::toString(void) const
         out += " [";
         for (size_t i = 0; i < this->shape().size(); i++)
         {
-            out += Poco::NumberFormatter::format(this->shape()[i]);
+            out += std::to_string(this->shape()[i]);
             if (i+1 != this->shape().size()) out += " x ";
         }
         out += "]";
