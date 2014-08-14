@@ -72,6 +72,10 @@ struct MyTCPConnectionMonitor: public Poco::Runnable
 
 void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
 {
+    std::cout.setf(std::ios::unitbuf);
+    std::cerr.setf(std::ios::unitbuf);
+    std::clog.setf(std::ios::unitbuf);
+
     Pothos::init();
 
     //parse the URI
