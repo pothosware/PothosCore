@@ -15,6 +15,7 @@
 #include <QSizeGrip>
 #include <QVBoxLayout>
 #include <QStaticText>
+#include <QPainter>
 #include <vector>
 #include <iostream>
 #include <cassert>
@@ -101,6 +102,11 @@ public:
         this->setShowGrip(false);
     }
 
+    void setGripLabel(const QString &name)
+    {
+        _gripLabel = QStaticText(QString("<b><span color='black'>%1</span></b>").arg(name.toHtmlEscaped()));
+    }
+
 signals:
     void resized(void);
 
@@ -139,7 +145,21 @@ protected:
         _widget->setSizePolicy(oldPolicy);
     }
 
+    void paintEvent(QPaintEvent *event)
+    {
+        QWidget::paintEvent(event);
+        if (not _widget) return;
+        if (not _grip->isVisible()) return;
+
+        QPainter painter(this);
+        auto panelH = this->height() - _widget->height();
+        painter.drawStaticText(QPointF((this->width()-_gripLabel.size().width())/2.,
+            _widget->height()+(panelH-_gripLabel.size().height())/2.), _gripLabel);
+        painter.end();
+    }
+
 private:
+    QStaticText _gripLabel;
     QVBoxLayout *_layout;
     QSizeGrip *_grip;
     QPointer<QWidget> _widget;
@@ -252,6 +272,7 @@ void GraphDisplay::render(QPainter &painter)
     if (_impl->changed)
     {
         _impl->changed = false;
+        _impl->container->setGripLabel(_impl->block->getId());
     }
 
     //update display widget when not set
