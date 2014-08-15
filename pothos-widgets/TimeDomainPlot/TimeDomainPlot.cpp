@@ -4,6 +4,8 @@
 #include "TimeDomainPlot.hpp"
 #include <QGraphicsScene>
 #include <QGraphicsPathItem>
+#include <QResizeEvent>
+#include <QRectF>
 
 TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
     _plotterElements(new QGraphicsPathItem())
@@ -21,6 +23,12 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
 void TimeDomainPlot::handleNewPath(const QPainterPath &path)
 {
     _plotterElements->setPath(path);
+}
+
+void TimeDomainPlot::resizeEvent(QResizeEvent *event)
+{
+    this->scene()->setSceneRect(QRectF(QPointF(0, 0), event->size()));
+    QGraphicsView::resizeEvent(event);
 }
 
 void TimeDomainPlot::work(void)

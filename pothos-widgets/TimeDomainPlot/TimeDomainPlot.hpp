@@ -59,6 +59,9 @@ signals:
 private slots:
     void handleNewPath(const QPainterPath &);
 
+protected:
+    void resizeEvent(QResizeEvent *event);
+
 private:
     QGraphicsPathItem *_plotterElements;
 };
