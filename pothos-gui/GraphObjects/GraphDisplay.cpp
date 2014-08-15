@@ -22,29 +22,65 @@
 /***********************************************************************
  * A resizable container with a QSizeGrip handle
  **********************************************************************/
+class MySizeGrip : public QSizeGrip
+{
+    Q_OBJECT
+public:
+    MySizeGrip(QWidget *parent):
+        QSizeGrip(parent)
+    {
+        return;
+    }
+
+signals:
+    void resized(void);
+
+protected:
+    void mousePressEvent(QMouseEvent *event)
+    {
+        if (event->button() == Qt::LeftButton)
+        {
+            _pressPos = this->pos();
+        }
+        QSizeGrip::mousePressEvent(event);
+    }
+
+    void mouseReleaseEvent(QMouseEvent *event)
+    {
+        if (event->button() == Qt::LeftButton)
+        {
+            if (_pressPos != this->pos())
+            {
+                emit this->resized();
+            }
+        }
+        QSizeGrip::mouseReleaseEvent(event);
+    }
+
+private:
+    QPointF _pressPos;
+};
+
+
 class ResizableWidgetContainer : public QWidget
 {
     Q_OBJECT
 public:
     ResizableWidgetContainer(void):
         _layout(new QVBoxLayout(this)),
-        _grip(new QSizeGrip(this)),
+        _grip(new MySizeGrip(this)),
         _widget(nullptr)
     {
         this->setLayout(_layout);
-
-        // To remove any space between the borders and the QSizeGrip...
-        _layout->setContentsMargins(QMargins());
-
-        // and between the other widget and the QSizeGrip
-        _layout->setSpacing(0);
-
-        // The QSizeGrip position (here Bottom Right Corner)
+        _layout->setContentsMargins(QMargins(3, 3, 3, 0));
+        _layout->setSpacing(1);
         _layout->addWidget(_grip, 0, Qt::AlignBottom | Qt::AlignRight);
+        connect(_grip, SIGNAL(resized(void)), this, SIGNAL(resized(void)));
     }
 
     ~ResizableWidgetContainer(void)
     {
+        //remove this container as a parent to widget
         this->setWidget(nullptr);
     }
 
@@ -65,6 +101,9 @@ public:
         _widget = widget;
         if (_widget) _layout->insertWidget(0, _widget);
     }
+
+signals:
+    void resized(void);
 
 private:
     QVBoxLayout *_layout;
@@ -109,6 +148,7 @@ GraphDisplay::GraphDisplay(QObject *parent):
 {
     this->setFlag(QGraphicsItem::ItemIsMovable);
     _impl->graphicsWidget->installSceneEventFilter(this);
+    connect(_impl->container, SIGNAL(resized(void)), this, SLOT(handleWidgetResized(void)));
 }
 
 GraphDisplay::~GraphDisplay(void)
@@ -137,6 +177,12 @@ void GraphDisplay::handleBlockDestroyed(QObject *)
     //however, the top level code should handle this deletion
     _impl->container->setWidget(nullptr);
     this->flagForDelete();
+}
+
+void GraphDisplay::handleWidgetResized(void)
+{
+    auto editor = this->draw()->getGraphEditor();
+    editor->handleStateChange(GraphState("transform-scale", tr("Resize %1").arg(this->getId())));
 }
 
 bool GraphDisplay::isPointing(const QRectF &rect) const

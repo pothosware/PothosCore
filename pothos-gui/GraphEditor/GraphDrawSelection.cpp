@@ -131,7 +131,8 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     if (_selectionState == SELECTION_STATE_MOVE)
     {
         auto selected = getObjectsSelected(~GRAPH_CONNECTION);
-        if (not selected.isEmpty()) emit stateChanged(GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription(~GRAPH_CONNECTION))));
+        if (not selected.isEmpty()) this->getGraphEditor()->handleStateChange(
+            GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription(~GRAPH_CONNECTION))));
     }
 
     this->clearSelectionState();
@@ -208,7 +209,7 @@ void GraphDraw::doClickSelection(const QPointF &point)
             try
             {
                 conn = this->getGraphEditor()->makeConnection(thisEp, _lastClickSelectEp);
-                emit stateChanged(GraphState("connect-arrow", tr("Connect %1[%2] to %3[%4]").arg(
+                this->getGraphEditor()->handleStateChange(GraphState("connect-arrow", tr("Connect %1[%2] to %3[%4]").arg(
                     conn->getOutputEndpoint().getObj()->getId(),
                     conn->getOutputEndpoint().getKey().id,
                     conn->getInputEndpoint().getObj()->getId(),

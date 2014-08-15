@@ -53,8 +53,6 @@ GraphDraw::GraphDraw(QWidget *parent):
     this->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
         this, SLOT(handleCustomContextMenuRequested(const QPoint &)));
-    connect(this, SIGNAL(stateChanged(const GraphState &)),
-        parent, SLOT(handleStateChange(const GraphState &)));
     connect(this, SIGNAL(modifyProperties(GraphObject *)),
         getObjectMap()["propertiesPanel"], SLOT(handleGraphModifyProperties(GraphObject *)));
     connect(this->scene(), SIGNAL(selectionChanged(void)), this, SLOT(updateEnabledActions(void)));

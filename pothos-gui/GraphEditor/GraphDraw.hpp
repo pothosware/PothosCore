@@ -4,7 +4,6 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
-#include "GraphEditor/GraphState.hpp"
 #include <QGraphicsView>
 #include <memory>
 
@@ -82,7 +81,6 @@ private slots:
     void updateEnabledActions(void);
 
 signals:
-    void stateChanged(const GraphState &);
     void modifyProperties(GraphObject *);
 
 private:
