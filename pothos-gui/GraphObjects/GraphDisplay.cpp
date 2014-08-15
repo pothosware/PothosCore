@@ -97,7 +97,8 @@ public:
 
         //stash new widget and add to layout
         _widget = widget;
-        if (_widget) _layout->insertWidget(0, _widget, 0, Qt::AlignTop);
+        if (_widget) _layout->insertWidget(0, _widget);
+        this->setShowGrip(false);
     }
 
 signals:
@@ -106,14 +107,36 @@ signals:
 protected:
     void enterEvent(QEvent *event)
     {
-        _grip->show();
+        this->setShowGrip(true);
         QWidget::enterEvent(event);
     }
 
     void leaveEvent(QEvent *event)
     {
-        _grip->hide();
+        this->setShowGrip(false);
         QWidget::leaveEvent(event);
+    }
+
+    void setShowGrip(const bool visible)
+    {
+        if (not _widget) return;
+        _widget->show(); //needs visibility to calculate size
+
+        //stash the relevant settings
+        auto oldPolicy = _widget->sizePolicy();
+        auto oldMinSize = _widget->minimumSize();
+
+        //fix the sizes so the widget wont be hurt by adjustSize
+        _widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        _widget->setMinimumSize(_widget->size());
+
+        //change the visibility and adjust to the new overall size
+        _grip->setVisible(visible);
+        this->adjustSize();
+
+        //restore settings to the widget
+        _widget->setMinimumSize(oldMinSize);
+        _widget->setSizePolicy(oldPolicy);
     }
 
 private:
