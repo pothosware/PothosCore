@@ -49,10 +49,7 @@ protected:
     {
         if (event->button() == Qt::LeftButton)
         {
-            if (_pressPos != this->pos())
-            {
-                emit this->resized();
-            }
+            if (_pressPos != this->pos()) emit this->resized();
         }
         QSizeGrip::mouseReleaseEvent(event);
     }
@@ -72,10 +69,11 @@ public:
         _widget(nullptr)
     {
         this->setLayout(_layout);
-        _layout->setContentsMargins(QMargins(3, 3, 3, 0));
+        _layout->setContentsMargins(QMargins(3, 3, 3, 3));
         _layout->setSpacing(1);
         _layout->addWidget(_grip, 0, Qt::AlignBottom | Qt::AlignRight);
         connect(_grip, SIGNAL(resized(void)), this, SIGNAL(resized(void)));
+        _grip->hide();
     }
 
     ~ResizableWidgetContainer(void)
@@ -99,11 +97,24 @@ public:
 
         //stash new widget and add to layout
         _widget = widget;
-        if (_widget) _layout->insertWidget(0, _widget);
+        if (_widget) _layout->insertWidget(0, _widget, 0, Qt::AlignTop);
     }
 
 signals:
     void resized(void);
+
+protected:
+    void enterEvent(QEvent *event)
+    {
+        _grip->show();
+        QWidget::enterEvent(event);
+    }
+
+    void leaveEvent(QEvent *event)
+    {
+        _grip->hide();
+        QWidget::leaveEvent(event);
+    }
 
 private:
     QVBoxLayout *_layout;
@@ -204,6 +215,8 @@ bool GraphDisplay::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
     if (watched == _impl->graphicsWidget and event->type() == QEvent::GraphicsSceneMousePress)
     {
         this->draw()->deselectAllObjs();
+        const auto maxZValue = this->draw()->getMaxZValue();
+        if (this->zValue() <= maxZValue) this->setZValue(maxZValue+1);
     }
     return GraphObject::sceneEventFilter(watched, event);
 }
