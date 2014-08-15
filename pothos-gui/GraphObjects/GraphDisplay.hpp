@@ -36,7 +36,6 @@ public:
 
 private slots:
     void handleBlockDestroyed(QObject *);
-    void handleWidgetDestroyed(QObject *);
 
 protected:
     bool sceneEventFilter(QGraphicsItem *watched, QEvent *event);
