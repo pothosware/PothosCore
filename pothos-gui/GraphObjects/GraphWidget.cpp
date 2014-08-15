@@ -128,8 +128,8 @@ void GraphWidget::render(QPainter &painter)
     }
 
     //update display widget when not set
-    auto displayWidget = _impl->block->getDisplayWidget();
-    _impl->container->setWidget(displayWidget);
+    auto graphWidget = _impl->block->getGraphWidget();
+    _impl->container->setWidget(graphWidget);
 
     //calculate the bounds and draw the highlight box
     const auto widgetSize = _impl->graphicsWidget->size();

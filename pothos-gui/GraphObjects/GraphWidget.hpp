@@ -12,7 +12,7 @@
 class GraphBlock;
 
 /*!
- * A graph display represents a widget from a GraphBlock in displayWidget mode.
+ * A graph display represents a widget from a GraphBlock in graphWidget mode.
  */
 class GraphWidget : public GraphObject
 {

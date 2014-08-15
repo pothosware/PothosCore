@@ -101,9 +101,9 @@ void GraphBlock::update(void)
 {
     auto engine = this->draw()->getGraphEditor()->getTopologyEngine();
     auto blockProxy = engine->evalGraphBlock(this);
-    if (this->isDisplayWidget() and blockProxy)
+    if (this->isGraphWidget() and blockProxy)
     {
-        _impl->displayWidget = blockProxy.callProxy("getProxyBlock").call<QWidget *>("widget");
+        _impl->graphWidget = blockProxy.callProxy("getProxyBlock").call<QWidget *>("widget");
     }
     QGraphicsObject::update();
 }

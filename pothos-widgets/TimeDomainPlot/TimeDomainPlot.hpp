@@ -31,7 +31,7 @@ class QGraphicsPathItem;
  * |default "float32"
  * |preview disable
  *
- * |mode displayWidget
+ * |mode graphWidget
  * |factory /widgets/time_domain_plot(dtype)
  **********************************************************************/
 class TimeDomainPlot : public QGraphicsView, public Pothos::Block

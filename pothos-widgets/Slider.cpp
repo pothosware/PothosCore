@@ -30,7 +30,7 @@
  * |default 100
  * |widget SpinBox()
  *
- * |mode displayWidget
+ * |mode graphWidget
  * |factory /widgets/slider(orientation)
  * |setter setValue(value)
  * |setter setMinimum(minimum)

@@ -37,7 +37,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
     _parentTabWidget(dynamic_cast<QTabWidget *>(parent)),
     _moveGraphObjectsMapper(new QSignalMapper(this)),
-    _insertDisplayWidgetsMapper(new QSignalMapper(this)),
+    _insertGraphWidgetsMapper(new QSignalMapper(this)),
     _stateManager(new GraphStateManager(this)),
     _topologyEngine(new TopologyEngine(this))
 {
@@ -79,7 +79,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["increment"], SIGNAL(triggered(void)), this, SLOT(handleBlockIncrement(void)));
     connect(getActionMap()["decrement"], SIGNAL(triggered(void)), this, SLOT(handleBlockDecrement(void)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
-    connect(_insertDisplayWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertDisplayWidget(QObject *)));
+    connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
     connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
 }
 
@@ -421,11 +421,11 @@ void GraphEditor::handleCreateOutputBreaker(void)
     this->handleCreateBreaker(false);
 }
 
-void GraphEditor::handleInsertDisplayWidget(QObject *obj)
+void GraphEditor::handleInsertGraphWidget(QObject *obj)
 {
     auto block = dynamic_cast<GraphBlock *>(obj);
     assert(block != nullptr);
-    assert(block->isDisplayWidget());
+    assert(block->isGraphWidget());
 
     auto draw = this->getCurrentGraphDraw();
     auto display = new GraphWidget(draw);
@@ -905,13 +905,13 @@ void GraphEditor::updateGraphEditorMenus(void)
         _moveGraphObjectsMapper->setMapping(action, i);
     }
 
-    menu = getMenuMap()["insertDisplayWidgets"];
+    menu = getMenuMap()["insertGraphWidgets"];
     menu->clear();
     for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
         assert(block != nullptr);
-        if (not block->isDisplayWidget()) continue;
+        if (not block->isGraphWidget()) continue;
 
         //does block have an active graph display?
         for (auto subObj : this->getGraphObjects(GRAPH_WIDGET))
@@ -924,8 +924,8 @@ void GraphEditor::updateGraphEditorMenus(void)
         //block is a display widget with no active displays:
         {
             auto action = menu->addAction(QString("%1 (%2)").arg(block->getTitle()).arg(block->getId()));
-            connect(action, SIGNAL(triggered(void)), _insertDisplayWidgetsMapper, SLOT(map(void)));
-            _insertDisplayWidgetsMapper->setMapping(action, block);
+            connect(action, SIGNAL(triggered(void)), _insertGraphWidgetsMapper, SLOT(map(void)));
+            _insertGraphWidgetsMapper->setMapping(action, block);
         }
 
         next_block: continue;

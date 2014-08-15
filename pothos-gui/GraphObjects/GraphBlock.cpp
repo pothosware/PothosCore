@@ -50,14 +50,14 @@ void GraphBlock::setPortDesc(const Poco::JSON::Array::Ptr &in, const Poco::JSON:
     this->initOutputsFromDesc();
 }
 
-bool GraphBlock::isDisplayWidget(void) const
+bool GraphBlock::isGraphWidget(void) const
 {
-    return this->getBlockDesc()->optValue<std::string>("mode", "") == "displayWidget";
+    return this->getBlockDesc()->optValue<std::string>("mode", "") == "graphWidget";
 }
 
-QWidget *GraphBlock::getDisplayWidget(void) const
+QWidget *GraphBlock::getGraphWidget(void) const
 {
-    return _impl->displayWidget.data();
+    return _impl->graphWidget.data();
 }
 
 void GraphBlock::setTitle(const QString &title)

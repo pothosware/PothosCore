@@ -93,7 +93,7 @@ private slots:
     void handleCreateBreaker(const bool isInput);
     void handleCreateInputBreaker(void);
     void handleCreateOutputBreaker(void);
-    void handleInsertDisplayWidget(QObject *);
+    void handleInsertGraphWidget(QObject *);
     void handleCut(void);
     void handleCopy(void);
     void handlePaste(void);
@@ -128,7 +128,7 @@ private:
     void deleteFlagged(void);
 
     QSignalMapper *_moveGraphObjectsMapper;
-    QSignalMapper *_insertDisplayWidgetsMapper;
+    QSignalMapper *_insertGraphWidgetsMapper;
 
     QString _currentFilePath;
     QPointer<GraphStateManager> _stateManager;
