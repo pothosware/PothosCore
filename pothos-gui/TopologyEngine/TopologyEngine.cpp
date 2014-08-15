@@ -18,7 +18,7 @@ TopologyEngine::TopologyEngine(QObject *parent):
     QObject(parent),
     _topology(new Pothos::Topology())
 {
-    _syslogListenPort = Pothos::System::startSyslogListener();
+    _syslogListenPort = Pothos::System::Logger::startSyslogListener();
 }
 
 void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)

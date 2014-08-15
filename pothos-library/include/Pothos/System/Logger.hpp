@@ -14,18 +14,24 @@
 namespace Pothos {
 namespace System {
 
+/*!
+ * Logger class contains static methods to deal with log configuration.
+ */
+class POTHOS_API Logger
+{
+public:
     /*!
      * Start a listener for syslog messages from other processes.
      * The log messages will be forwarded to the default logger.
      * \return the port that this process is listening
      */
-    POTHOS_API std::string startSyslogListener(void);
+    static std::string startSyslogListener(void);
 
     /*!
      * Start syslog forwarding to the given address.
      * \param addr the log destination in host:port format
      */
-    POTHOS_API void startSyslogForwarding(const std::string &addr);
+    static void startSyslogForwarding(const std::string &addr);
 
     /*!
      * Redirect standard IO to the logging facility.
@@ -36,7 +42,7 @@ namespace System {
      * For example, startSyslogForwarding() will direct logs to UDP.
      * \param source the repoted source of the forwarded log messages
      */
-    POTHOS_API void forwardStdIoToLogging(const std::string &source);
+    static void forwardStdIoToLogging(const std::string &source);
 
     /*!
      * Setup default logging for this process.
@@ -46,7 +52,12 @@ namespace System {
      * POTHOS_LOG_CHANNEL - how to display the logs (default color)
      * POTHOS_LOG_FILE - log file path if POTHOS_LOG_CHANNEL=file specified
      */
-    POTHOS_API void setupDefaultLogging(void);
+    static void setupDefaultLogging(void);
+
+private:
+    //! private constructor: we dont make Logger instances
+    Logger(void){}
+};
 
 } //namespace System
 } //namespace Pothos

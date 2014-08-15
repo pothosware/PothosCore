@@ -21,7 +21,7 @@ public:
         this->setUnixOptions(true); //always unix style --option
 
         //restore logging config after Poco::Util::Application::initialize() obliterates it
-        Pothos::System::setupDefaultLogging();
+        Pothos::System::Logger::setupDefaultLogging();
     }
 
     ~PothosUtil()
