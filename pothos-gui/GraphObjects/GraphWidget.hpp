@@ -14,12 +14,12 @@ class GraphBlock;
 /*!
  * A graph display represents a widget from a GraphBlock in displayWidget mode.
  */
-class GraphDisplay : public GraphObject
+class GraphWidget : public GraphObject
 {
     Q_OBJECT
 public:
-    GraphDisplay(QObject *parent);
-    ~GraphDisplay(void);
+    GraphWidget(QObject *parent);
+    ~GraphWidget(void);
 
     void setGraphBlock(GraphBlock *block);
     GraphBlock *getGraphBlock(void) const;

@@ -10,7 +10,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
-#include "GraphObjects/GraphDisplay.hpp"
+#include "GraphObjects/GraphWidget.hpp"
 #include <Poco/Logger.h>
 #include <QTabBar>
 #include <QInputDialog>
@@ -428,7 +428,7 @@ void GraphEditor::handleInsertDisplayWidget(QObject *obj)
     assert(block->isDisplayWidget());
 
     auto draw = this->getCurrentGraphDraw();
-    auto display = new GraphDisplay(draw);
+    auto display = new GraphWidget(draw);
     display->setGraphBlock(block);
     display->setId(this->newId("Widget"+block->getId()));
     display->setZValue(draw->getMaxZValue()+1);
@@ -914,9 +914,9 @@ void GraphEditor::updateGraphEditorMenus(void)
         if (not block->isDisplayWidget()) continue;
 
         //does block have an active graph display?
-        for (auto subObj : this->getGraphObjects(GRAPH_DISPLAY))
+        for (auto subObj : this->getGraphObjects(GRAPH_WIDGET))
         {
-            auto display = dynamic_cast<GraphDisplay *>(subObj);
+            auto display = dynamic_cast<GraphWidget *>(subObj);
             assert(display != nullptr);
             if (display->getGraphBlock() == block) goto next_block;
         }

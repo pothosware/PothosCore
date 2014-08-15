@@ -1,7 +1,7 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "GraphObjects/GraphDisplay.hpp"
+#include "GraphObjects/GraphWidget.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphEditor/Constants.hpp"
 #include "GraphEditor/GraphDraw.hpp"
@@ -166,9 +166,9 @@ private:
 };
 
 /***********************************************************************
- * GraphDisplay private container
+ * GraphWidget private container
  **********************************************************************/
-struct GraphDisplay::Impl
+struct GraphWidget::Impl
 {
     Impl(QGraphicsItem *parent):
         changed(true),
@@ -194,9 +194,9 @@ struct GraphDisplay::Impl
 };
 
 /***********************************************************************
- * GraphDisplay Implementation
+ * GraphWidget Implementation
  **********************************************************************/
-GraphDisplay::GraphDisplay(QObject *parent):
+GraphWidget::GraphWidget(QObject *parent):
     GraphObject(parent),
     _impl(new Impl(this))
 {
@@ -205,12 +205,12 @@ GraphDisplay::GraphDisplay(QObject *parent):
     connect(_impl->container, SIGNAL(resized(void)), this, SLOT(handleWidgetResized(void)));
 }
 
-GraphDisplay::~GraphDisplay(void)
+GraphWidget::~GraphWidget(void)
 {
     return;
 }
 
-void GraphDisplay::setGraphBlock(GraphBlock *block)
+void GraphWidget::setGraphBlock(GraphBlock *block)
 {
     //can only set block once
     assert(_impl);
@@ -220,12 +220,12 @@ void GraphDisplay::setGraphBlock(GraphBlock *block)
     connect(block, SIGNAL(destroyed(QObject *)), this, SLOT(handleBlockDestroyed(QObject *)));
 }
 
-GraphBlock *GraphDisplay::getGraphBlock(void) const
+GraphBlock *GraphWidget::getGraphBlock(void) const
 {
     return _impl->block;
 }
 
-void GraphDisplay::handleBlockDestroyed(QObject *)
+void GraphWidget::handleBlockDestroyed(QObject *)
 {
     //an endpoint was destroyed, schedule for deletion
     //however, the top level code should handle this deletion
@@ -233,25 +233,25 @@ void GraphDisplay::handleBlockDestroyed(QObject *)
     this->flagForDelete();
 }
 
-void GraphDisplay::handleWidgetResized(void)
+void GraphWidget::handleWidgetResized(void)
 {
     auto editor = this->draw()->getGraphEditor();
     editor->handleStateChange(GraphState("transform-scale", tr("Resize %1").arg(this->getId())));
 }
 
-bool GraphDisplay::isPointing(const QRectF &rect) const
+bool GraphWidget::isPointing(const QRectF &rect) const
 {
     return _impl->mainRect.intersects(rect);
 }
 
-QPainterPath GraphDisplay::shape(void) const
+QPainterPath GraphWidget::shape(void) const
 {
     QPainterPath path;
     path.addRect(_impl->mainRect);
     return path;
 }
 
-bool GraphDisplay::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
+bool GraphWidget::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
 {
     //clicking the internal widget causes the same behaviour as clicking no widgets -- unselect everything
     //this also has the added bennefit of preventing a false move event if the internal widget has a drag
@@ -264,7 +264,7 @@ bool GraphDisplay::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
     return GraphObject::sceneEventFilter(watched, event);
 }
 
-void GraphDisplay::render(QPainter &painter)
+void GraphWidget::render(QPainter &painter)
 {
     assert(_impl);
 
@@ -287,24 +287,24 @@ void GraphDisplay::render(QPainter &painter)
     painter.drawRect(_impl->mainRect);
 }
 
-Poco::JSON::Object::Ptr GraphDisplay::serialize(void) const
+Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
 {
     auto obj = GraphObject::serialize();
-    obj->set("what", std::string("Display"));
+    obj->set("what", std::string("Widget"));
     obj->set("blockId", _impl->block->getId().toStdString());
     obj->set("width", _impl->graphicsWidget->size().width());
     obj->set("height", _impl->graphicsWidget->size().height());
     return obj;
 }
 
-void GraphDisplay::deserialize(Poco::JSON::Object::Ptr obj)
+void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
 {
     auto editor = this->draw()->getGraphEditor();
 
     //locate the associated block
     auto blockId = QString::fromStdString(obj->getValue<std::string>("blockId"));
     auto graphObj = editor->getObjectById(blockId, GRAPH_BLOCK);
-    if (graphObj == nullptr) throw Pothos::Exception("GraphDisplay::deserialize()", "cant resolve block with ID: '"+blockId.toStdString()+"'");
+    if (graphObj == nullptr) throw Pothos::Exception("GraphWidget::deserialize()", "cant resolve block with ID: '"+blockId.toStdString()+"'");
     auto graphBlock = dynamic_cast<GraphBlock *>(graphObj);
     assert(graphBlock != nullptr);
     this->setGraphBlock(graphBlock);
@@ -319,4 +319,4 @@ void GraphDisplay::deserialize(Poco::JSON::Object::Ptr obj)
     GraphObject::deserialize(obj);
 }
 
-#include "GraphDisplay.moc"
+#include "GraphWidget.moc"

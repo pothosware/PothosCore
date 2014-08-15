@@ -124,7 +124,7 @@ set(SOURCES
     GraphObjects/GraphBlockUpdate.cpp
     GraphObjects/GraphBreaker.cpp
     GraphObjects/GraphConnection.cpp
-    GraphObjects/GraphDisplay.cpp
+    GraphObjects/GraphWidget.cpp
 
     TopologyEngine/TopologyEngine.cpp
     TopologyEngine/TopologyTraversal.cpp
