@@ -35,6 +35,7 @@ list(APPEND POTHOS_LIBRARIES ${Qt5Widgets_LIBRARIES})
 # Build widgets module
 ########################################################################
 set(SOURCES
+    QStringSupport.cpp
     Slider.cpp
     TimeDomainPlot/TimeDomainPlot.hpp #scanned for block desc
     TimeDomainPlot/TimeDomainPlot.cpp
