@@ -62,6 +62,9 @@ public:
     //! Get a list of all graph objects in all pages
     GraphObjectList getGraphObjects(const int selectionFlags = ~0) const;
 
+    //! Get the graph object with the specified ID or nullptr
+    GraphObject *getObjectById(const QString &id, const int selectionFlags = ~0);
+
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);
 
@@ -77,6 +80,9 @@ protected:
     //this widget is visible, populate menu with its tabs
     void showEvent(QShowEvent *event);
 
+public slots:
+    void handleStateChange(const GraphState &state);
+
 private slots:
     void handleCurrentChanged(int);
     void handleCreateGraphPage(void);
@@ -87,6 +93,7 @@ private slots:
     void handleCreateBreaker(const bool isInput);
     void handleCreateInputBreaker(void);
     void handleCreateOutputBreaker(void);
+    void handleInsertGraphWidget(QObject *);
     void handleCut(void);
     void handleCopy(void);
     void handlePaste(void);
@@ -104,7 +111,6 @@ private slots:
     void handleResetState(int);
     void handleAffinityZoneClicked(const QString &zone);
     void handleAffinityZoneChanged(const QString &zone);
-    void handleStateChange(const GraphState &state);
     void handleShowFlattenedDialog(void);
     void handleToggleActivateTopology(bool);
     void handleShowPortNames(void);
@@ -115,13 +121,14 @@ private slots:
 private:
     QTabWidget *_parentTabWidget;
 
-    void setupMoveGraphObjectsMenu(void);
+    void updateGraphEditorMenus(void);
 
     void makeDefaultPage(void);
 
     void deleteFlagged(void);
 
     QSignalMapper *_moveGraphObjectsMapper;
+    QSignalMapper *_insertGraphWidgetsMapper;
 
     QString _currentFilePath;
     QPointer<GraphStateManager> _stateManager;

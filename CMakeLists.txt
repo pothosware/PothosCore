@@ -134,6 +134,7 @@ if(MSVC)
 endif(MSVC)
 
 add_subdirectory(pothos-gui)
+add_subdirectory(pothos-widgets)
 add_subdirectory(pothos-blocks)
 add_subdirectory(pothos-python)
 add_subdirectory(pothos-java)

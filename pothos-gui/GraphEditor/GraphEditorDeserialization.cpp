@@ -6,6 +6,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
+#include "GraphObjects/GraphWidget.hpp"
 #include <Pothos/Exception.hpp>
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Array.h>
@@ -36,6 +37,7 @@ static void loadPages(GraphEditor *editor, Poco::JSON::Array::Ptr pages, const s
                 if (type == "Block") obj = new GraphBlock(parent);
                 if (type == "Breaker") obj = new GraphBreaker(parent);
                 if (type == "Connection") obj = new GraphConnection(parent);
+                if (type == "Widget") obj = new GraphWidget(parent);
                 if (obj != nullptr) obj->deserialize(jGraphObj);
             }
             POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
@@ -90,4 +92,5 @@ void GraphEditor::loadState(std::istream &is)
     loadPages(this, pages, "Block");
     loadPages(this, pages, "Breaker");
     loadPages(this, pages, "Connection");
+    loadPages(this, pages, "Widget");
 }

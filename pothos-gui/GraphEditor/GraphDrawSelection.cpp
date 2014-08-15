@@ -8,6 +8,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
+#include "GraphObjects/GraphWidget.hpp"
 #include <Pothos/Exception.hpp>
 #include <Poco/Logger.h>
 #include <QApplication> //control modifier
@@ -130,7 +131,8 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     if (_selectionState == SELECTION_STATE_MOVE)
     {
         auto selected = getObjectsSelected(~GRAPH_CONNECTION);
-        if (not selected.isEmpty()) emit stateChanged(GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription(~GRAPH_CONNECTION))));
+        if (not selected.isEmpty()) this->getGraphEditor()->handleStateChange(
+            GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription(~GRAPH_CONNECTION))));
     }
 
     this->clearSelectionState();
@@ -178,6 +180,7 @@ GraphObjectList GraphDraw::getGraphObjects(const int selectionFlags)
         if (((selectionFlags & GRAPH_BLOCK) != 0) and (dynamic_cast<GraphBlock *>(o) != nullptr)) l.push_back(o);
         if (((selectionFlags & GRAPH_BREAKER) != 0) and (dynamic_cast<GraphBreaker *>(o) != nullptr)) l.push_back(o);
         if (((selectionFlags & GRAPH_CONNECTION) != 0) and (dynamic_cast<GraphConnection *>(o) != nullptr)) l.push_back(o);
+        if (((selectionFlags & GRAPH_WIDGET) != 0) and (dynamic_cast<GraphWidget *>(o) != nullptr)) l.push_back(o);
     }
     return l;
 }
@@ -206,7 +209,7 @@ void GraphDraw::doClickSelection(const QPointF &point)
             try
             {
                 conn = this->getGraphEditor()->makeConnection(thisEp, _lastClickSelectEp);
-                emit stateChanged(GraphState("connect-arrow", tr("Connect %1[%2] to %3[%4]").arg(
+                this->getGraphEditor()->handleStateChange(GraphState("connect-arrow", tr("Connect %1[%2] to %3[%4]").arg(
                     conn->getOutputEndpoint().getObj()->getId(),
                     conn->getOutputEndpoint().getKey().id,
                     conn->getInputEndpoint().getObj()->getId(),

@@ -58,7 +58,15 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
     //try to get access to a remote environment object
     Pothos::ProxyEnvironment::Sptr env;
     Pothos::Proxy evalEnv;
-    POTHOS_EXCEPTION_TRY
+    if (block->isGraphWidget())
+    {
+        //display widgets must run in the gui process
+        //TODO this doesnt really support hierarchies + affinity zones
+        //eventually, we want only the block with the widget to be local
+        env = Pothos::ProxyEnvironment::make("managed");
+        evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("new");
+    }
+    else POTHOS_EXCEPTION_TRY
     {
         env = this->getEnvironmentFromZone(block->getAffinityZone());
         evalEnv = this->getEvalEnvironment(block->getAffinityZone());

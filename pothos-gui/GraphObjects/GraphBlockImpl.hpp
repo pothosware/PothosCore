@@ -55,4 +55,5 @@ struct GraphBlock::Impl
     QPointF slotPortPoint;
 
     QRectF mainBlockRect;
+    QPointer<QWidget> graphWidget;
 };

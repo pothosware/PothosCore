@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 
+class QWidget;
+
 class GraphBlock : public GraphObject
 {
 public:
@@ -21,6 +23,10 @@ public:
     std::string getBlockDescPath(void) const;
 
     void setPortDesc(const Poco::JSON::Array::Ptr &, const Poco::JSON::Array::Ptr &);
+
+    //! Does this graph block represent a display widget
+    bool isGraphWidget(void) const;
+    QWidget *getGraphWidget(void) const;
 
     void setTitle(const QString &title);
     QString getTitle(void) const;
