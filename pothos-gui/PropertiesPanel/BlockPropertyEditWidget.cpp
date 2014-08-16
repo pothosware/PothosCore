@@ -128,12 +128,9 @@ void BlockPropertyEditWidget::setColors(const std::string &typeStr)
 {
     auto typeColor = typeStrToColor(typeStr);
 
-    //set the fg and bg colors for all possible widget types
-    _edit->setStyleSheet(QString(
-        "QComboBox{background:%1;color:%2;}"
-        "QSpinBox{background:%1;color:%2;}"
-        "QDoubleSpinBox{background:%1;color:%2;}"
-        "QLineEdit{background:%1;color:%2;}")
+    //set the fg and bg colors on the edit widget
+    _edit->setObjectName("MyEditWidget");
+    _edit->setStyleSheet(QString("#MyEditWidget{background:%1;color:%2;}")
         .arg(typeColor.name())
         .arg((typeColor.lightnessF() > 0.5)?"black":"white")
     );
