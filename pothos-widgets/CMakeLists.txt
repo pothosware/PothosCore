@@ -56,6 +56,7 @@ set(SOURCES
     QStringSupport.cpp
     Slider.cpp
     QwtSlider.cpp
+    Label.cpp
     TimeDomainPlot/TimeDomainPlot.hpp #scanned for block desc
     TimeDomainPlot/TimeDomainPlot.cpp
 )

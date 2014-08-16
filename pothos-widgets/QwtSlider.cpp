@@ -109,9 +109,6 @@ private slots:
     {
         this->emitSignal("valueChanged", value);
     }
-
-private:
-    QwtSlider *_slider;
 };
 
 static Pothos::BlockRegistry registerAdd(
