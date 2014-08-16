@@ -54,21 +54,12 @@
 #include <QtCore/QEvent>
 #include <QFocusEvent>
 
-#if defined(Q_OS_WIN)
-#  if !defined(QT_QTCOLORPICKER_EXPORT) && !defined(QT_QTCOLORPICKER_IMPORT)
-#    define QT_QTCOLORPICKER_EXPORT
-#  elif defined(QT_QTCOLORPICKER_IMPORT)
-#    if defined(QT_QTCOLORPICKER_EXPORT)
-#      undef QT_QTCOLORPICKER_EXPORT
-#    endif
-#    define QT_QTCOLORPICKER_EXPORT __declspec(dllimport)
-#  elif defined(QT_QTCOLORPICKER_EXPORT)
-#    undef QT_QTCOLORPICKER_EXPORT
-#    define QT_QTCOLORPICKER_EXPORT __declspec(dllexport)
-#  endif
-#else
+#if defined(QT_QTCOLORPICKER_EXPORT)     // create a DLL library
 #  undef QT_QTCOLORPICKER_EXPORT
-#  define QT_QTCOLORPICKER_EXPORT __attribute__ ((visibility ("default")))
+#  define QT_QTCOLORPICKER_EXPORT Q_DECL_EXPORT
+#else                        // use a DLL library
+#  undef QT_QTCOLORPICKER_EXPORT
+#  define QT_QTCOLORPICKER_EXPORT Q_DECL_IMPORT
 #endif
 
 class ColorPickerPopup;
