@@ -7,7 +7,7 @@
 /***********************************************************************
  * |PothosDoc QWT Slider
  *
- * A slider widget for graphical control of an integer value.
+ * A slider widget for graphical control of an floating point value.
  *
  * |category /Widgets
  * |keywords slider
@@ -29,11 +29,11 @@
  * |default 0.0
  * |widget DoubleSpinBox()
  *
- * |param lowerBound[Lower Bound] The minimum integer value of this slider.
+ * |param lowerBound[Lower Bound] The minimum value of this slider.
  * |default 1.0
  * |widget DoubleSpinBox()
  *
- * |param upperBound[Upper Bound] The maximum integer value of this slider.
+ * |param upperBound[Upper Bound] The maximum value of this slider.
  * |default +1.0
  * |widget DoubleSpinBox()
  *
