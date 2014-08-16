@@ -52,6 +52,8 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
         auto spinBox = new QDoubleSpinBox(this);
         spinBox->setMinimum(widgetKwargs->optValue<double>("minimum", -1e12));
         spinBox->setMaximum(widgetKwargs->optValue<double>("maximum", +1e12));
+        spinBox->setSingleStep(widgetKwargs->optValue<double>("step", 0.01));
+        spinBox->setDecimals(widgetKwargs->optValue<int>("decimals", 2));
         connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
         _edit = spinBox;
     }
