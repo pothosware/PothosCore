@@ -336,8 +336,11 @@ void Pothos::Topology::_connect(
         _impl->inputPortNames.push_back(srcName);
         for (const auto &info : getConnectable(dst).call<std::vector<PortInfo>>("inputPortInfo"))
         {
-            if (info.name == dstName) _impl->inputPortInfo[info.name] = info;
-            _impl->inputPortInfo[info.name].name = srcName;
+            if (info.name == dstName)
+            {
+                _impl->inputPortInfo[srcName] = info;
+                _impl->inputPortInfo[srcName].name = srcName;
+            }
         }
     }
     if (dstIsSelf)
@@ -345,8 +348,11 @@ void Pothos::Topology::_connect(
         _impl->outputPortNames.push_back(dstName);
         for (const auto &info : getConnectable(src).call<std::vector<PortInfo>>("outputPortInfo"))
         {
-            if (info.name == srcName) _impl->outputPortInfo[info.name] = info;
-            _impl->outputPortInfo[info.name].name = dstName;
+            if (info.name == srcName)
+            {
+                _impl->outputPortInfo[dstName] = info;
+                _impl->outputPortInfo[dstName].name = dstName;
+            }
         }
     }
 
