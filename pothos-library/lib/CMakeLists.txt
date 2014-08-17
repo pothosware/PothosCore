@@ -100,6 +100,7 @@ list(APPEND POTHOS_SOURCES
     Framework/Connectable.cpp
     Framework/Block.cpp
     Framework/Topology.cpp
+    Framework/TopologyDotMarkup.cpp
     Framework/WorkInfo.cpp
     Framework/WorkStats.cpp
     Framework/WorkerActor.cpp

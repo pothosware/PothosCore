@@ -14,7 +14,7 @@ struct Port
     std::string name;
 };
 
-bool operator==(const Port &lhs, const Port &rhs)
+inline bool operator==(const Port &lhs, const Port &rhs)
 {
     if (not lhs.obj and not rhs.obj) return true; //both null
     if (not lhs.obj) return false;
@@ -49,7 +49,7 @@ struct Flow
     Port dst;
 };
 
-bool operator==(const Flow &lhs, const Flow &rhs)
+inline bool operator==(const Flow &lhs, const Flow &rhs)
 {
     if (not (rhs.src == lhs.src)) return false;
     if (not (rhs.dst == lhs.dst)) return false;
