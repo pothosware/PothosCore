@@ -100,6 +100,9 @@ list(APPEND POTHOS_SOURCES
     Framework/Connectable.cpp
     Framework/Block.cpp
     Framework/Topology.cpp
+    Framework/TopologySquashFlows.cpp
+    Framework/TopologyNetworkFlows.cpp
+    Framework/TopologyDomainFlows.cpp
     Framework/TopologyDotMarkup.cpp
     Framework/WorkInfo.cpp
     Framework/WorkStats.cpp
