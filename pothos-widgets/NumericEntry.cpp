@@ -13,7 +13,7 @@
  * with increment and decrement buttons.
  *
  * |category /Widgets
- * |keywords nuymeric entry spinbox
+ * |keywords numeric entry spinbox
  *
  * |param title The name of the value displayed by this widget
  * |default "MyValue"
@@ -32,6 +32,7 @@
  *
  * |param precision The number of decimal points to display
  * |default 2
+ * |widget SpinBox(minimum=0, maximum=10)
  * |preview disable
  *
  * |mode graphWidget
