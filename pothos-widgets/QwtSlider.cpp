@@ -30,7 +30,7 @@
  * |widget DoubleSpinBox()
  *
  * |param lowerBound[Lower Bound] The minimum value of this slider.
- * |default 1.0
+ * |default -1.0
  * |widget DoubleSpinBox()
  *
  * |param upperBound[Upper Bound] The maximum value of this slider.

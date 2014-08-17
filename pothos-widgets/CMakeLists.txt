@@ -25,6 +25,7 @@ foreach(comp Widgets Concurrent OpenGL Svg PrintSupport)
     find_package(Qt5${comp})
 
     if(NOT Qt5${comp}_FOUND)
+        MESSAGE(WARNING "Cant find Qt5${comp}")
         return()
     endif()
 

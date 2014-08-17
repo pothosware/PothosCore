@@ -58,8 +58,11 @@ public:
         _spinBox(new QDoubleSpinBox(this))
     {
         auto layout = new QHBoxLayout(this);
+        layout->setContentsMargins(QMargins());
+        layout->setSpacing(0);
         layout->addWidget(_label);
         layout->addWidget(_spinBox);
+
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, widget));
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, setTitle));
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, setValue));
@@ -67,6 +70,11 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, setMaximum));
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, setDecimals));
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, setSingleStep));
+
+        connect(this, SIGNAL(_setLabelText(const QString &)), _label, SLOT(setText(const QString &)));
+
+        this->registerSignal("valueChanged");
+        connect(_spinBox, SIGNAL(valueChanged(const double)), this, SLOT(handleValueChanged(const double)));
     }
 
     QWidget *widget(void)
@@ -74,9 +82,16 @@ public:
         return this;
     }
 
+    void activate(void)
+    {
+        //emit current value when design becomes active
+        this->emitSignal("valueChanged", _spinBox->value());
+    }
+
     void setTitle(const QString &title)
     {
-        _label->setText(QString("<b>%1</b>").arg(title.toHtmlEscaped()));
+        //cannot call setText in calling thread, forward to the label slot
+        emit this->_setLabelText(QString("<b>%1</b>").arg(title.toHtmlEscaped()));
     }
 
     void setValue(const double val)
@@ -102,6 +117,15 @@ public:
     void setSingleStep(const double val)
     {
         _spinBox->setSingleStep(val);
+    }
+
+signals:
+    void _setLabelText(const QString &text);
+
+private slots:
+    void handleValueChanged(const double value)
+    {
+        this->emitSignal("valueChanged", value);
     }
 
 private:
