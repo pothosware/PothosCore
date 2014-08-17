@@ -14,9 +14,9 @@
  * |keywords slider
  *
  * |param orientation The slider orientation (horizontal or veritical).
- * |default "HORIZONTAL"
- * |option [Horizontal] "HORIZONTAL"
- * |option [Veritical] "VERTICAL"
+ * |default "Horizontal"
+ * |option [Horizontal] "Horizontal"
+ * |option [Veritical] "Veritical"
  * |preview disable
  *
  * |param value The initial value of this slider.
@@ -49,7 +49,7 @@ public:
     }
 
     Slider(const std::string &orientation):
-        _slider(new QSlider((orientation == "HORIZONTAL")? Qt::Horizontal : Qt::Vertical, this))
+        _slider(new QSlider((orientation == "Horizontal")? Qt::Horizontal : Qt::Vertical, this))
     {
         auto layout = new QHBoxLayout(this);
         layout->setContentsMargins(QMargins());
