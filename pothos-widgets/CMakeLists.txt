@@ -55,10 +55,10 @@ list(APPEND Qt5_LIBRARIES PothosQwt)
 ########################################################################
 set(SOURCES
     QStringSupport.cpp
+    MyDoubleSlider.cpp
     Slider.cpp
     NumericEntry.cpp
     TextDisplay.cpp
-    SliderEntry.cpp
     QwtSlider.cpp
     TimeDomainPlot/TimeDomainPlot.hpp #scanned for block desc
     TimeDomainPlot/TimeDomainPlot.cpp
