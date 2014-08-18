@@ -166,6 +166,18 @@ std::string Pothos::Object::getTypeString(void) const
     return Util::typeInfoToString(this->type());
 }
 
+bool Pothos::Object::equals(const Object &obj) const
+{
+    try
+    {
+        return this->compareTo(obj) == 0;
+    }
+    catch (const Pothos::ObjectCompareError &)
+    {
+        return this->hashCode() == obj.hashCode();
+    }
+}
+
 bool Pothos::Object::operator<(const Pothos::Object &obj) const
 {
     try

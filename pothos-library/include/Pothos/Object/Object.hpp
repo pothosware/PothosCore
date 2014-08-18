@@ -251,10 +251,25 @@ public:
      */
     std::string getTypeString(void) const;
 
-    //! Comparable operator for stl containers
+    /*!
+     * Value-based equality operator.
+     * When supported, the implementation uses the compareTo() method.
+     * Otherwise, the hash codes are compared for checking equality.
+     */
+    bool equals(const Object &obj) const;
+
+    /*!
+     * Less than comparable operator.
+     * When supported, the implementation uses the compareTo() method.
+     * Otherwise, the hash codes are compared for sorting purposes.
+     */
     bool operator<(const Object &obj) const;
 
-    //! Comparable operator for stl containers
+    /*!
+     * Greater than comparable operator.
+     * When supported, the implementation uses the compareTo() method.
+     * Otherwise, the hash codes are compared for sorting purposes.
+     */
     bool operator>(const Object &obj) const;
 
     //! Private implementation details
