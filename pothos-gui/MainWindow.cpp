@@ -211,7 +211,6 @@ void PothosGuiMainWindow::createActions(void)
     _actionMap["selectAll"] = _selectAllAction;
 
     _propertiesAction = new QAction(makeIconFromTheme("document-properties"), tr("Properti&es"), this);
-    _propertiesAction->setShortcut(Qt::Key_Return);
     _actionMap["properties"] = _propertiesAction;
 
     _createGraphPageAction = new QAction(makeIconFromTheme("document-new"), tr("Create new graph page"), this);
