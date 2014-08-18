@@ -6,7 +6,6 @@
 #include <QGroupBox>
 #include <QRadioButton>
 #include <QVBoxLayout>
-#include <iostream>
 #include <map>
 
 /***********************************************************************
@@ -16,7 +15,7 @@
  * from a group of radio buttons.
  *
  * |category /Widgets
- * |keywords numeric entry spinbox
+ * |keywords radio buttons
  *
  * |param title The name of the value displayed by this widget
  * |default "My Radio Value"
@@ -57,9 +56,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(RadioGroup, setOptions));
         this->registerSignal("valueChanged");
 
+        qRegisterMetaType<Pothos::Object>("Pothos::Object");
         qRegisterMetaType<Pothos::ObjectVector>("Pothos::ObjectVector");
-        connect(this, SIGNAL(optionsChanged(const Pothos::ObjectVector &)),
-                this, SLOT(handleOptionsChanged(const Pothos::ObjectVector &)));
     }
 
     QWidget *widget(void)
@@ -84,35 +82,27 @@ public:
 
     void setValue(const Pothos::Object &value)
     {
-        for (auto pair : _radioToOption)
-        {
-            try
-            {
-                pair.first->setChecked(pair.second.compareTo(value) == 0);
-            }
-            catch (const Pothos::ObjectCompareError &ex){}
-        }
+        QMetaObject::invokeMethod(this, "__setValue", Qt::QueuedConnection, Q_ARG(Pothos::Object, value));
     }
 
     void setOptions(const Pothos::ObjectVector &options)
     {
-        emit this->optionsChanged(options);
+        QMetaObject::invokeMethod(this, "__setOptions", Qt::QueuedConnection, Q_ARG(Pothos::ObjectVector, options));
     }
-
-signals:
-
-    void optionsChanged(const Pothos::ObjectVector &);
 
 private slots:
 
-    void handleOptionsChanged(const Pothos::ObjectVector &options)
+    void __setOptions(const Pothos::ObjectVector &options)
     {
         auto oldValue = this->value();
         this->clear();
 
         for (const auto &option : options)
         {
+            if (not option.canConvert(typeid(Pothos::ObjectVector))) throw Pothos::DataFormatException("RadioGroup::setOptions()", "entry is not ObjectVector");
             auto optPair = option.convert<Pothos::ObjectVector>();
+            if (optPair.size() != 2) throw Pothos::DataFormatException("RadioGroup::setOptions()", "entry must be ObjectVector of size == 2");
+            if (not optPair.at(0).canConvert(typeid(QString))) throw Pothos::DataFormatException("RadioGroup::setOptions()", "entry[0] must be a string");
             auto title = optPair.at(0).convert<QString>();
             auto value = optPair.at(1);
             auto radio = new QRadioButton(title, this);
@@ -122,6 +112,14 @@ private slots:
         }
 
         this->setValue(oldValue);
+    }
+
+    void __setValue(const Pothos::Object &value)
+    {
+        for (auto pair : _radioToOption)
+        {
+            pair.first->setChecked(pair.second.equals(value));
+        }
     }
 
     void handleRadioChanged(bool)

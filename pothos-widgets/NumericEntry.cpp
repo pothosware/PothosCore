@@ -88,8 +88,6 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, setSingleStep));
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, setSliderVisible));
 
-        connect(this, SIGNAL(_setLabelText(const QString &)), _label, SLOT(setText(const QString &)));
-
         this->registerSignal("valueChanged");
         connect(_spinBox, SIGNAL(valueChanged(const double)), this, SLOT(handleValueChanged(const double)));
         connect(_slider, SIGNAL(valueChanged(const double)), this, SLOT(handleValueChanged(const double)));
@@ -108,8 +106,9 @@ public:
 
     void setTitle(const QString &title)
     {
+        const auto text = QString("<b>%1</b>").arg(title.toHtmlEscaped());
         //cannot call setText in calling thread, forward to the label slot
-        emit this->_setLabelText(QString("<b>%1</b>").arg(title.toHtmlEscaped()));
+        QMetaObject::invokeMethod(_label, "setText", Qt::QueuedConnection, Q_ARG(QString, text));
     }
 
     void setValue(const double val)
@@ -145,9 +144,6 @@ public:
     {
         _slider->setVisible(visible);
     }
-
-signals:
-    void _setLabelText(const QString &text);
 
 private slots:
     void handleValueChanged(const double value)
