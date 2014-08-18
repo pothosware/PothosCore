@@ -78,7 +78,7 @@ private slots:
     }
 };
 
-static Pothos::BlockRegistry registerAdd(
+static Pothos::BlockRegistry registerSlider(
     "/widgets/slider", &Slider::make);
 
 #include "Slider.moc"

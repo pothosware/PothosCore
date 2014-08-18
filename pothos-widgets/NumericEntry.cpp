@@ -18,7 +18,7 @@
  * |keywords numeric entry spinbox
  *
  * |param title The name of the value displayed by this widget
- * |default "MyValue"
+ * |default "My Numeric Value"
  *
  * |param value The initial value of this entry.
  * |default 0.0
@@ -167,7 +167,7 @@ private:
     MyDoubleSlider *_slider;
 };
 
-static Pothos::BlockRegistry registerAdd(
+static Pothos::BlockRegistry registerNumericEntry(
     "/widgets/numeric_entry", &NumericEntry::make);
 
 #include "NumericEntry.moc"

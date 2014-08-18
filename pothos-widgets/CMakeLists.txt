@@ -59,6 +59,8 @@ set(SOURCES
     Slider.cpp
     NumericEntry.cpp
     TextDisplay.cpp
+    DropDown.cpp
+    RadioGroup.cpp
     QwtSlider.cpp
     TimeDomainPlot/TimeDomainPlot.hpp #scanned for block desc
     TimeDomainPlot/TimeDomainPlot.cpp

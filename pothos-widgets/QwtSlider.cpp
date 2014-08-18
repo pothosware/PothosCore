@@ -111,7 +111,7 @@ private slots:
     }
 };
 
-static Pothos::BlockRegistry registerAdd(
+static Pothos::BlockRegistry registerQwtSliderBlock(
     "/widgets/qwt_slider", &QwtSliderBlock::make);
 
 #include "QwtSlider.moc"

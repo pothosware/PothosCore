@@ -15,7 +15,7 @@
  * |keywords text display label
  *
  * |param title The name of the value displayed by this widget
- * |default "MyValue"
+ * |default "My Text Value"
  *
  * |param formatStr [Formatter] The format string with a %1 to sub in the value.
  * |default "%1"
@@ -95,7 +95,7 @@ private:
     QString _formatStr;
 };
 
-static Pothos::BlockRegistry registerAdd(
+static Pothos::BlockRegistry registerTextDisplay(
     "/widgets/text_display", &TextDisplay::make);
 
 #include "TextDisplay.moc"
