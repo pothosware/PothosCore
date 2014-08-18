@@ -134,6 +134,7 @@ void GraphDraw::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Plus) getActionMap()["increment"]->activate(QAction::Trigger);
     if (event->key() == Qt::Key_Minus) getActionMap()["decrement"]->activate(QAction::Trigger);
+    if (event->key() == Qt::Key_Return) getActionMap()["properties"]->activate(QAction::Trigger);
     QGraphicsView::keyPressEvent(event);
 }
 

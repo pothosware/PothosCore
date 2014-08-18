@@ -44,8 +44,8 @@ static Pothos::Topology* makeForwardingTopology(void)
     auto registry = env->findProxy("Pothos/BlockRegistry");
     auto forwarder = registry.callProxy("/blocks/forwarder");
     auto t = new Pothos::Topology();
-    t->connect(t, "0", forwarder, "0");
-    t->connect(forwarder, "0", t, "0");
+    t->connect(t, "t_in", forwarder, "0");
+    t->connect(forwarder, "0", t, "t_out");
     return t;
 }
 
@@ -69,6 +69,19 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
     std::cout << "make the remote subtopology\n";
     auto forwarder = registryRemote.callProxy("/blocks/tests/forwarder_topology");
 
+    //check port info
+    auto inputInfo = forwarder.call<std::vector<Pothos::PortInfo>>("inputPortInfo");
+    POTHOS_TEST_EQUAL(inputInfo.size(), 1);
+    POTHOS_TEST_EQUAL(inputInfo[0].name, "t_in");
+    POTHOS_TEST_TRUE(not inputInfo[0].isSigSlot);
+    POTHOS_TEST_TRUE(inputInfo[0].dtype == Pothos::DType("byte"));
+
+    auto outputInfo = forwarder.call<std::vector<Pothos::PortInfo>>("outputPortInfo");
+    POTHOS_TEST_EQUAL(outputInfo.size(), 1);
+    POTHOS_TEST_EQUAL(outputInfo[0].name, "t_out");
+    POTHOS_TEST_TRUE(not outputInfo[0].isSigSlot);
+    POTHOS_TEST_TRUE(outputInfo[0].dtype == Pothos::DType("byte"));
+
     //create a test plan
     Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
     testPlan->set("enableBuffers", true);
@@ -80,8 +93,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
     std::cout << "run the topology\n";
     {
         Pothos::Topology topology;
-        topology.connect(feeder, "0", forwarder, "0");
-        topology.connect(forwarder, "0", collector, "0");
+        topology.connect(feeder, "0", forwarder, "t_in");
+        topology.connect(forwarder, "t_out", collector, "0");
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());
     }

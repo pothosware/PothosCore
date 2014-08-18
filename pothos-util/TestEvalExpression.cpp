@@ -15,6 +15,13 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
     auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
     auto evalEnv = EvalEnvironment.callProxy("new");
 
+    //booleans
+    const auto resultT = evalEnv.call<Pothos::Object>("eval", "true");
+    POTHOS_TEST_TRUE(resultT.convert<bool>());
+
+    const auto resultF = evalEnv.call<Pothos::Object>("eval", "false");
+    POTHOS_TEST_TRUE(not resultF.convert<bool>());
+
     //simple expression
     const auto result = evalEnv.call<Pothos::Object>("eval", "1 + 2");
     POTHOS_TEST_EQUAL(result.convert<int>(), 3);
