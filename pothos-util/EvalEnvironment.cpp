@@ -73,12 +73,6 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
 {
     if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval()", "expression is empty");
 
-    //is it a string in quotes?
-    if (std::count(expr.begin(), expr.end(), '"') == 2 and expr.front() == '"' and expr.back() == '"')
-    {
-        return Pothos::Object(expr.substr(1, expr.size()-2));
-    }
-
     //list syntax mode
     if (expr.size() >= 2 and expr.front() == '[' and expr.back() == ']')
     {
@@ -131,6 +125,7 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
             Poco::JSON::Parser p; p.parse("["+expr+"]");
             const auto val = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>()->get(0);
             if (val.type() == typeid(bool)) return Pothos::Object(val.convert<bool>());
+            if (val.type() == typeid(std::string)) return Pothos::Object(val.convert<std::string>());
             if (val.isNumeric() and val.isInteger())
             {
                 try {return Pothos::Object(val.convert<Poco::UInt32>());} catch (const Poco::Exception &){}
