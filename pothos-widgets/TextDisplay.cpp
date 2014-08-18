@@ -87,7 +87,8 @@ private:
 
     void update(void)
     {
-        this->setText(QString("<b>%1:</b> %2").arg(_title.toHtmlEscaped()).arg(_valueStr.toHtmlEscaped()));
+        const auto text = QString("<b>%1:</b> %2").arg(_title.toHtmlEscaped()).arg(_valueStr.toHtmlEscaped());
+        QMetaObject::invokeMethod(this, "setText", Qt::QueuedConnection, Q_ARG(QString, text));
     }
 
     QString _title;

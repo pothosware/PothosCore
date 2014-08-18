@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QHBoxLayout>
+#include <QEvent>
 #include <vector>
 
 /***********************************************************************
@@ -57,6 +58,7 @@ public:
         hlayout->addWidget(_comboBox);
 
         this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, widget));
+        this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, value));
         this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, setTitle));
         this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, setValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, setOptions));
@@ -65,6 +67,27 @@ public:
         qRegisterMetaType<Pothos::Object>("Pothos::Object");
         qRegisterMetaType<Pothos::ObjectVector>("Pothos::ObjectVector");
         connect(_comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleIndexChanged(int)));
+    }
+
+    /*!
+     * FIXME -- This is almost certainly a Qt bug-workaround.
+     * Changing this widget's parent causes a segfault in QComboBox.
+     * Start with no parent, set parent, clear parent, set again -> segfault.
+     * The workaround is to create a new QComboBox and restore its state.
+     */
+    bool event(QEvent *e)
+    {
+        if (e->type() == QEvent::ParentAboutToChange)
+        {
+            const auto oldIndex = _comboBox->currentIndex();
+            QStringList oldItems; for (int i = 0; i < _comboBox->count(); i++) oldItems.push_back(_comboBox->itemText(i));
+            delete _comboBox;
+            _comboBox = (new QComboBox(this));
+            layout()->addWidget(_comboBox);
+            _comboBox->addItems(oldItems);
+            _comboBox->setCurrentIndex(oldIndex);
+        }
+        return QWidget::event(e);
     }
 
     QWidget *widget(void)

@@ -80,6 +80,7 @@ public:
         hlayout->addWidget(_spinBox);
 
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, widget));
+        this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, value));
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, setTitle));
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, setValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(NumericEntry, setMinimum));
@@ -101,7 +102,12 @@ public:
     void activate(void)
     {
         //emit current value when design becomes active
-        this->emitSignal("valueChanged", _spinBox->value());
+        this->emitSignal("valueChanged", this->value());
+    }
+
+    double value(void) const
+    {
+        return _spinBox->value();
     }
 
     void setTitle(const QString &title)

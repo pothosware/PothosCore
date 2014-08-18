@@ -51,6 +51,7 @@ public:
     {
         this->setStyleSheet("QGroupBox {font-weight: bold;}");
         this->registerCall(this, POTHOS_FCN_TUPLE(RadioGroup, widget));
+        this->registerCall(this, POTHOS_FCN_TUPLE(RadioGroup, value));
         this->registerCall(this, POTHOS_FCN_TUPLE(RadioGroup, setTitle));
         this->registerCall(this, POTHOS_FCN_TUPLE(RadioGroup, setValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(RadioGroup, setOptions));
