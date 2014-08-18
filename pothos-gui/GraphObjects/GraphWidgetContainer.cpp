@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphWidgetContainer.hpp"
+#include "GraphEditor/Constants.hpp"
 #include <QSizeGrip>
 #include <QVBoxLayout>
 #include <QStaticText>
@@ -51,7 +52,7 @@ private:
  * GraphWidgetContainer implementation
  **********************************************************************/
 GraphWidgetContainer::GraphWidgetContainer(QWidget *parent):
-    QWidget(parent),
+    QFrame(parent),
     _layout(new QVBoxLayout(this)),
     _grip(new MySizeGrip(this)),
     _widget(nullptr)
@@ -62,6 +63,11 @@ GraphWidgetContainer::GraphWidgetContainer(QWidget *parent):
     _layout->addWidget(_grip, 0, Qt::AlignBottom | Qt::AlignRight);
     connect(_grip, SIGNAL(resized(void)), this, SIGNAL(resized(void)));
     _grip->hide();
+    this->setStyleSheet(QString("GraphWidgetContainer {"
+        "border-width: %1px;"
+        "border-style: solid;"
+        "border-radius: 4px;"
+    "}").arg(GraphObjectBorderWidth));
 }
 
 GraphWidgetContainer::~GraphWidgetContainer(void)

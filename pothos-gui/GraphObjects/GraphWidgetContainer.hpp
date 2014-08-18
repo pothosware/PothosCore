@@ -3,7 +3,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <QWidget>
+#include <QFrame>
 #include <QPointer>
 #include <QStaticText>
 
@@ -12,7 +12,7 @@ class QVBoxLayout;
 /*!
  * A container for a graph widget with resize grip and label.
  */
-class GraphWidgetContainer : public QWidget
+class GraphWidgetContainer : public QFrame
 {
     Q_OBJECT
 public:

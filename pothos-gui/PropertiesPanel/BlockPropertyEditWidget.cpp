@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <Poco/Logger.h>
 #include <limits>
 
@@ -46,6 +47,16 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
         connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
         _edit = spinBox;
     }
+    else if (widgetType == "DoubleSpinBox")
+    {
+        auto spinBox = new QDoubleSpinBox(this);
+        spinBox->setMinimum(widgetKwargs->optValue<double>("minimum", -1e12));
+        spinBox->setMaximum(widgetKwargs->optValue<double>("maximum", +1e12));
+        spinBox->setSingleStep(widgetKwargs->optValue<double>("step", 0.01));
+        spinBox->setDecimals(widgetKwargs->optValue<int>("decimals", 2));
+        connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
+        _edit = spinBox;
+    }
     else
     {
         if (widgetType != "LineEdit")
@@ -82,6 +93,9 @@ void BlockPropertyEditWidget::setValue(const QString &value)
     auto spinBox = dynamic_cast<QSpinBox *>(_edit);
     if (spinBox != nullptr) spinBox->setValue(value.toInt());
 
+    auto dSpinBox = dynamic_cast<QDoubleSpinBox *>(_edit);
+    if (dSpinBox != nullptr) dSpinBox->setValue(value.toDouble());
+
     auto lineEdit = dynamic_cast<QLineEdit *>(_edit);
     if (lineEdit != nullptr) lineEdit->setText(value);
 }
@@ -101,6 +115,9 @@ QString BlockPropertyEditWidget::value(void) const
     auto spinBox = dynamic_cast<QSpinBox *>(_edit);
     if (spinBox != nullptr) newValue = QString("%1").arg(spinBox->value());
 
+    auto dSpinBox = dynamic_cast<QDoubleSpinBox *>(_edit);
+    if (dSpinBox != nullptr) newValue = QString("%1").arg(dSpinBox->value());
+
     auto lineEdit = dynamic_cast<QLineEdit *>(_edit);
     if (lineEdit != nullptr) newValue = lineEdit->text();
 
@@ -111,11 +128,9 @@ void BlockPropertyEditWidget::setColors(const std::string &typeStr)
 {
     auto typeColor = typeStrToColor(typeStr);
 
-    //set the fg and bg colors for all possible widget types
-    _edit->setStyleSheet(QString(
-        "QComboBox{background:%1;color:%2;}"
-        "QSpinBox{background:%1;color:%2;}"
-        "QLineEdit{background:%1;color:%2;}")
+    //set the fg and bg colors on the edit widget
+    _edit->setObjectName("MyEditWidget");
+    _edit->setStyleSheet(QString("#MyEditWidget{background:%1;color:%2;}")
         .arg(typeColor.name())
         .arg((typeColor.lightnessF() > 0.5)?"black":"white")
     );
