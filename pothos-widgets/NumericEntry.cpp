@@ -114,8 +114,8 @@ public:
 
     void setValue(const double val)
     {
-        if (val != _spinBox->value()) _spinBox->setValue(val);
-        if (val != _slider->value()) _slider->setValue(val);
+        _spinBox->setValue(val);
+        _slider->setValue(val);
     }
 
     void setMinimum(const double min)
@@ -152,8 +152,13 @@ signals:
 private slots:
     void handleValueChanged(const double value)
     {
-        this->emitSignal("valueChanged", value);
+        _spinBox->blockSignals(true);
+        _slider->blockSignals(true);
         this->setValue(value);
+        _spinBox->blockSignals(false);
+        _slider->blockSignals(false);
+
+        this->emitSignal("valueChanged", value);
     }
 
 private:
