@@ -130,6 +130,7 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
         {
             Poco::JSON::Parser p; p.parse("["+expr+"]");
             const auto val = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>()->get(0);
+            if (val.type() == typeid(bool)) return Pothos::Object(val.convert<bool>());
             if (val.isNumeric() and val.isInteger())
             {
                 try {return Pothos::Object(val.convert<Poco::UInt32>());} catch (const Poco::Exception &){}
