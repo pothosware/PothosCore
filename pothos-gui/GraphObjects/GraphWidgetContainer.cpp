@@ -97,7 +97,7 @@ void GraphWidgetContainer::setWidget(QWidget *widget)
 
 void GraphWidgetContainer::setGripLabel(const QString &name)
 {
-    _gripLabel = QStaticText(QString("<b><span color='black'>%1</span></b>").arg(name.toHtmlEscaped()));
+    _gripLabel = QStaticText(QString("<span style='color:#484848;font-size:6pt;'>(%1)</span>").arg(name.toHtmlEscaped()));
 }
 
 void GraphWidgetContainer::enterEvent(QEvent *event)
