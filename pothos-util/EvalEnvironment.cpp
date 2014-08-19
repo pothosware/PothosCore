@@ -72,9 +72,12 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr_)
 Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
 {
     if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval()", "expression is empty");
+    const auto inQuotes = expr.size() >= 2 and expr.front() == '"' and expr.back() == '"';
+    const auto inBrackets = expr.size() >= 2 and expr.front() == '[' and expr.back() == ']';
+    const auto inBraces = expr.size() >= 2 and expr.front() == '{' and expr.back() == '}';
 
     //list syntax mode
-    if (expr.size() >= 2 and expr.front() == '[' and expr.back() == ']')
+    if (inBrackets)
     {
         auto env = Pothos::ProxyEnvironment::make("managed");
         Pothos::ProxyVector vec;
@@ -94,7 +97,7 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
     }
 
     //map syntax mode
-    if (expr.size() >= 2 and expr.front() == '{' and expr.back() == '}')
+    if (inBraces)
     {
         auto env = Pothos::ProxyEnvironment::make("managed");
         Pothos::ProxyMap map;
@@ -118,7 +121,7 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
     }
 
     //support simple numbers and booleans with JSON parser
-    if (expr.find_first_of("\t\n ") == std::string::npos)
+    if (expr.find_first_of("\t\n ") == std::string::npos or inQuotes)
     {
         try
         {
