@@ -110,7 +110,7 @@ Poco::JSON::Object::Ptr GraphBlock::getParamDesc(const QString &key) const
 
 QString GraphBlock::getPropertyDisplayText(const QString &key) const
 {
-    const auto value = this->getPropertyValue(key);
+    auto value = this->getPropertyValue(key);
     auto paramDesc = this->getParamDesc(key);
     if (paramDesc and paramDesc->isArray("options"))
     {
@@ -123,6 +123,19 @@ QString GraphBlock::getPropertyDisplayText(const QString &key) const
             }
         }
     }
+
+    //strip quotes if present
+    if (value.size() >= 2 and value.startsWith("\"") and value.endsWith("\""))
+    {
+        value.remove(-1, 1).remove(0, 1);
+    }
+
+    //shorten
+    if (value.size() > 23) value = QString("%1%2%3")
+        .arg(value.leftRef(10).toString())
+        .arg(QString::fromUtf8("\u2026")) //&hellip;
+        .arg(value.rightRef(10).toString());
+
     return value;
 }
 
