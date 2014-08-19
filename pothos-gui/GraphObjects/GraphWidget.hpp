@@ -37,9 +37,11 @@ public:
 private slots:
     void handleBlockDestroyed(QObject *);
     void handleWidgetResized(void);
+    void handleBlockIdChanged(const QString &id);
 
 protected:
     bool sceneEventFilter(QGraphicsItem *watched, QEvent *event);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
 private:
     struct Impl;

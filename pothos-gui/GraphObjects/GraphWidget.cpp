@@ -23,7 +23,6 @@
 struct GraphWidget::Impl
 {
     Impl(QGraphicsItem *parent):
-        changed(true),
         container(new GraphWidgetContainer()),
         graphicsWidget(new QGraphicsProxyWidget(parent))
     {
@@ -34,8 +33,6 @@ struct GraphWidget::Impl
     {
         graphicsWidget->setWidget(nullptr);
     }
-
-    bool changed;
 
     QPointer<GraphBlock> block;
 
@@ -70,6 +67,8 @@ void GraphWidget::setGraphBlock(GraphBlock *block)
 
     _impl->block = block;
     connect(block, SIGNAL(destroyed(QObject *)), this, SLOT(handleBlockDestroyed(QObject *)));
+    connect(block, SIGNAL(IDChanged(const QString &)), this, SLOT(handleBlockIdChanged(const QString &)));
+    this->handleBlockIdChanged(block->getId()); //init value
 }
 
 GraphBlock *GraphWidget::getGraphBlock(void) const
@@ -89,6 +88,11 @@ void GraphWidget::handleWidgetResized(void)
 {
     auto editor = this->draw()->getGraphEditor();
     editor->handleStateChange(GraphState("transform-scale", tr("Resize %1").arg(this->getId())));
+}
+
+void GraphWidget::handleBlockIdChanged(const QString &id)
+{
+    _impl->container->setGripLabel(id);
 }
 
 bool GraphWidget::isPointing(const QRectF &rect) const
@@ -116,27 +120,26 @@ bool GraphWidget::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
     return GraphObject::sceneEventFilter(watched, event);
 }
 
-void GraphWidget::render(QPainter &painter)
+QVariant GraphWidget::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    if (change == QGraphicsItem::ItemSelectedHasChanged)
+    {
+        _impl->container->setSelected(this->isSelected());
+    }
+
+    return QGraphicsItem::itemChange(change, value);
+}
+
+void GraphWidget::render(QPainter &)
 {
     assert(_impl);
-
-    //render text
-    if (_impl->changed)
-    {
-        _impl->changed = false;
-        _impl->container->setGripLabel(_impl->block->getId());
-    }
 
     //update display widget when not set
     auto graphWidget = _impl->block->getGraphWidget();
     _impl->container->setWidget(graphWidget);
 
-    //calculate the bounds and draw the highlight box
-    const auto widgetSize = _impl->graphicsWidget->size();
-    painter.setPen(isSelected()?QColor(GraphObjectHighlightPenColor):Qt::transparent);
-    painter.setBrush(QBrush(Qt::transparent));
-    _impl->mainRect = QRectF(_impl->graphicsWidget->pos(), widgetSize);
-    painter.drawRect(_impl->mainRect);
+    //calculate the bounds for the shape() method
+    _impl->mainRect = QRectF(_impl->graphicsWidget->pos(), _impl->graphicsWidget->size());
 }
 
 Poco::JSON::Object::Ptr GraphWidget::serialize(void) const

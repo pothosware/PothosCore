@@ -29,6 +29,9 @@ public:
     //! set a label for the resize grip
     void setGripLabel(const QString &name);
 
+    //! set the selection state -- drawing highlight border
+    void setSelected(const bool selected);
+
 signals:
     //! emit when the resize operation completes
     void resized(void);

@@ -24,6 +24,7 @@ typedef QList<GraphObject *> GraphObjectList;
 //! Base class for graph objects
 class GraphObject : public QGraphicsObject
 {
+    Q_OBJECT
 public:
     GraphObject(QObject *parent);
 
@@ -57,6 +58,9 @@ public:
     virtual Poco::JSON::Object::Ptr serialize(void) const;
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
+
+signals:
+    void IDChanged(const QString &);
 
 private:
     struct Impl;

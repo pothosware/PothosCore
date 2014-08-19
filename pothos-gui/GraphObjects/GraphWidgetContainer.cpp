@@ -63,11 +63,7 @@ GraphWidgetContainer::GraphWidgetContainer(QWidget *parent):
     _layout->addWidget(_grip, 0, Qt::AlignBottom | Qt::AlignRight);
     connect(_grip, SIGNAL(resized(void)), this, SIGNAL(resized(void)));
     _grip->hide();
-    this->setStyleSheet(QString("GraphWidgetContainer {"
-        "border-width: %1px;"
-        "border-style: solid;"
-        "border-radius: 4px;"
-    "}").arg(GraphObjectBorderWidth));
+    this->setSelected(false);
 }
 
 GraphWidgetContainer::~GraphWidgetContainer(void)
@@ -97,7 +93,24 @@ void GraphWidgetContainer::setWidget(QWidget *widget)
 
 void GraphWidgetContainer::setGripLabel(const QString &name)
 {
-    _gripLabel = QStaticText(QString("<span style='color:#484848;font-size:6pt;'>(%1)</span>").arg(name.toHtmlEscaped()));
+    _gripLabel = QStaticText(QString("<span style='color:%1;font-size:%2'>(%3)</span>")
+        .arg(GraphWidgetGripLabelColor)
+        .arg(GraphWidgetGripLabelFontSize)
+        .arg(name.toHtmlEscaped()));
+}
+
+void GraphWidgetContainer::setSelected(const bool selected)
+{
+    this->setStyleSheet(QString("GraphWidgetContainer {"
+        "border-width: %1px;"
+        "border-style: solid;"
+        "border-radius: %2px;"
+        "border-color: %3;"
+        "background-color: %4;"
+    "}").arg(GraphObjectBorderWidth)
+        .arg(GraphBlockMainArc)
+        .arg(selected?GraphObjectHighlightPenColor:GraphObjectDefaultPenColor)
+        .arg(GraphWidgetBackgroundColor));
 }
 
 void GraphWidgetContainer::enterEvent(QEvent *event)

@@ -51,6 +51,7 @@ void GraphObject::setId(const QString &id)
 {
     assert(_impl);
     _impl->id = id;
+    emit this->IDChanged(id);
 }
 
 const QString &GraphObject::getId(void) const

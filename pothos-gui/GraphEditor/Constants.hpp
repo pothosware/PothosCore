@@ -60,3 +60,7 @@ static const QString GraphConnectionLineTextColor = "#848482";
 static const QString GraphConnectionLineTextFontSize = "8pt";
 static const QString GraphConnectionDefaultColor = "#000000";
 static const QString GraphConnectionHighlightColor = "#0040FF";
+
+static const QString GraphWidgetGripLabelFontSize = "6pt";
+static const QString GraphWidgetGripLabelColor = "#484848";
+static const QString GraphWidgetBackgroundColor = "beige";
