@@ -14,9 +14,20 @@
 #include <Poco/Net/RemoteSyslogChannel.h>
 #include <Poco/Net/RemoteSyslogListener.h>
 #include <Poco/Net/DatagramSocket.h>
+#include <Poco/SingletonHolder.h>
 #include <Poco/AutoPtr.h>
 #include <iostream>
 #include <memory>
+#include <mutex>
+
+/***********************************************************************
+ * mutex for protecting logger methods
+ **********************************************************************/
+static std::mutex &getSetupLoggerMutex(void)
+{
+    static Poco::SingletonHolder<std::mutex> sh;
+    return *sh.get();
+}
 
 /***********************************************************************
  * InterceptStream custom streambuf to redirect to logger
@@ -77,16 +88,22 @@ private:
  **********************************************************************/
 std::string Pothos::System::Logger::startSyslogListener(void)
 {
-    //find an available udp port
-    Poco::Net::DatagramSocket sock;
-    sock.bind(Poco::Net::SocketAddress("0.0.0.0:0"));
-    const auto port = sock.address().port();
-    sock.close();
+    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
+    static Poco::AutoPtr<Poco::Net::RemoteSyslogListener> listener;
 
-    //create a new listener and feed it the root channel
-    auto listener = new Poco::Net::RemoteSyslogListener(port);
-    listener->addChannel(Poco::Logger::get("").getChannel());
-    listener->open();
+    if (not listener)
+    {
+        //find an available udp port
+        Poco::Net::DatagramSocket sock;
+        sock.bind(Poco::Net::SocketAddress("0.0.0.0:0"));
+        const auto port = sock.address().port();
+        sock.close();
+
+        //create a new listener and feed it the root channel
+        listener = new Poco::Net::RemoteSyslogListener(port);
+        listener->addChannel(Poco::Logger::get("").getChannel());
+        listener->open();
+    }
 
     //return the port number of the log service
     return listener->getProperty(Poco::Net::RemoteSyslogListener::PROP_PORT);
@@ -94,6 +111,7 @@ std::string Pothos::System::Logger::startSyslogListener(void)
 
 void Pothos::System::Logger::startSyslogForwarding(const std::string &addr)
 {
+    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
     Poco::AutoPtr<Poco::Channel> channel(new Poco::Net::RemoteSyslogChannel(addr, ""/*empty name*/));
     Poco::Logger::get("").setChannel(channel);
     Poco::Logger::get("").setLevel("trace"); //lowest level -> forward everything
@@ -101,6 +119,7 @@ void Pothos::System::Logger::startSyslogForwarding(const std::string &addr)
 
 void Pothos::System::Logger::forwardStdIoToLogging(const std::string &source)
 {
+    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
     static std::shared_ptr<InterceptStream> clogRedirected;
     clogRedirected.reset(new InterceptStream(std::clog, source));
     static std::shared_ptr<InterceptStream> coutRedirected;
@@ -111,6 +130,7 @@ void Pothos::System::Logger::forwardStdIoToLogging(const std::string &source)
 
 void Pothos::System::Logger::setupDefaultLogging(void)
 {
+    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
     const std::string logLevel = Poco::Environment::get("POTHOS_LOG_LEVEL", "notice");
     const std::string logChannel = Poco::Environment::get("POTHOS_LOG_CHANNEL", "color");
     const std::string logFile = Poco::Environment::get("POTHOS_LOG_FILE", "pothos.log");
