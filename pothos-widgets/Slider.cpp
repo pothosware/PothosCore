@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <QSlider>
+#include "MyDoubleSlider.hpp"
 
 /***********************************************************************
  * |PothosDoc Slider
@@ -13,30 +13,31 @@
  * |keywords slider
  *
  * |param orientation The slider orientation (horizontal or veritical).
- * |default "HORIZONTAL"
- * |option [Horizontal] "HORIZONTAL"
- * |option [Veritical] "VERTICAL"
+ * |default "Horizontal"
+ * |option [Horizontal] "Horizontal"
+ * |option [Veritical] "Veritical"
  * |preview disable
  *
  * |param value The initial value of this slider.
- * |default 0
- * |widget SpinBox()
+ * |default 0.0
  *
- * |param minimum The minimum integer value of this slider.
- * |default 0
- * |widget SpinBox()
+ * |param minimum The minimum value of this slider.
+ * |default -1.0
  *
- * |param maximum The maximum integer value of this slider.
- * |default 100
- * |widget SpinBox()
+ * |param maximum The maximum value of this slider.
+ * |default +1.0
+ *
+ * |param step [Step Size] The increment between discrete values.
+ * |default 0.01
  *
  * |mode graphWidget
  * |factory /widgets/slider(orientation)
  * |setter setValue(value)
  * |setter setMinimum(minimum)
  * |setter setMaximum(maximum)
+ * |setter setSingleStep(step)
  **********************************************************************/
-class Slider : public QSlider, public Pothos::Block
+class Slider : public MyDoubleSlider, public Pothos::Block
 {
     Q_OBJECT
 public:
@@ -47,15 +48,16 @@ public:
     }
 
     Slider(const std::string &orientation):
-        QSlider((orientation == "HORIZONTAL")? Qt::Horizontal : Qt::Vertical)
+        MyDoubleSlider((orientation == "Horizontal")? Qt::Horizontal : Qt::Vertical)
     {
         this->registerCall(this, POTHOS_FCN_TUPLE(Slider, widget));
         this->registerCall(this, POTHOS_FCN_TUPLE(Slider, value));
         this->registerCall(this, POTHOS_FCN_TUPLE(Slider, setValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(Slider, setMinimum));
         this->registerCall(this, POTHOS_FCN_TUPLE(Slider, setMaximum));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Slider, setSingleStep));
         this->registerSignal("valueChanged");
-        connect(this, SIGNAL(valueChanged(const int)), this, SLOT(handleValueChanged(const int)));
+        connect(this, SIGNAL(valueChanged(const double)), this, SLOT(handleValueChanged(const double)));
     }
 
     QWidget *widget(void)
@@ -70,13 +72,13 @@ public:
     }
 
 private slots:
-    void handleValueChanged(const int value)
+    void handleValueChanged(const double value)
     {
         this->emitSignal("valueChanged", value);
     }
 };
 
-static Pothos::BlockRegistry registerAdd(
+static Pothos::BlockRegistry registerSlider(
     "/widgets/slider", &Slider::make);
 
 #include "Slider.moc"

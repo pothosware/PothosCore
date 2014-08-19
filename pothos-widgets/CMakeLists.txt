@@ -21,22 +21,47 @@ set(CMAKE_AUTOMOC ON)
 # to always look for includes there:
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# Widgets finds its own dependencies.
-find_package(Qt5Widgets)
+foreach(comp Widgets Concurrent OpenGL Svg PrintSupport)
+    find_package(Qt5${comp})
 
-if(NOT Qt5Widgets_FOUND)
-    return()
-endif()
-include_directories(${Qt5Widgets_INCLUDE_DIRS})
-add_definitions(${Qt5Widgets_DEFINITIONS})
-list(APPEND POTHOS_LIBRARIES ${Qt5Widgets_LIBRARIES})
+    if(NOT Qt5${comp}_FOUND)
+        MESSAGE(WARNING "Cant find Qt5${comp}")
+        return()
+    endif()
+
+    include_directories(${Qt5${comp}_INCLUDE_DIRS})
+    add_definitions(${Qt5${comp}_DEFINITIONS})
+    list(APPEND Qt5_LIBRARIES ${Qt5${comp}_LIBRARIES})
+endforeach(comp)
+
+########################################################################
+# Qwt setup
+########################################################################
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qwt/src)
+add_definitions(-DQWT_DLL)
+file(GLOB QWT_SOURCES "qwt/src/*.cpp")
+add_library(PothosQwt SHARED ${QWT_SOURCES})
+set_target_properties(PothosQwt PROPERTIES DEFINE_SYMBOL "QWT_MAKEDLL")
+target_link_libraries(PothosQwt ${Qt5_LIBRARIES})
+install(TARGETS PothosQwt
+    LIBRARY DESTINATION lib${LIB_SUFFIX} # .so file
+    ARCHIVE DESTINATION lib${LIB_SUFFIX} # .lib file
+    RUNTIME DESTINATION bin              # .dll file
+)
+list(APPEND Qt5_LIBRARIES PothosQwt)
 
 ########################################################################
 # Build widgets module
 ########################################################################
 set(SOURCES
     QStringSupport.cpp
+    MyDoubleSlider.cpp
     Slider.cpp
+    NumericEntry.cpp
+    TextDisplay.cpp
+    DropDown.cpp
+    RadioGroup.cpp
+    QwtSlider.cpp
     TimeDomainPlot/TimeDomainPlot.hpp #scanned for block desc
     TimeDomainPlot/TimeDomainPlot.cpp
 )
@@ -44,7 +69,7 @@ set(SOURCES
 POTHOS_MODULE_UTIL(
     TARGET GeneralWidgets
     SOURCES ${SOURCES}
-    LIBRARIES ${POTHOS_LIBRARIES}
+    LIBRARIES ${Qt5_LIBRARIES}
     DESTINATION widgets
     ENABLE_DOCS
 )
