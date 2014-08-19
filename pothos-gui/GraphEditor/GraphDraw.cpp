@@ -125,6 +125,7 @@ void GraphDraw::setZoomScale(const qreal zoom)
 
 void GraphDraw::showEvent(QShowEvent *event)
 {
+    this->updateEnabledActions();
     emit this->modifyProperties(nullptr); //resets the state of whoever is modding the properties
     this->render();
     QGraphicsView::showEvent(event);
