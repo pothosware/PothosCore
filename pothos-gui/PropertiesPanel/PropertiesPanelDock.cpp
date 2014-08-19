@@ -8,6 +8,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
+#include "GraphObjects/GraphWidget.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include <QPushButton>
@@ -60,7 +61,9 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     auto block = dynamic_cast<GraphBlock *>(obj);
     auto breaker = dynamic_cast<GraphBreaker *>(obj);
     auto connection = dynamic_cast<GraphConnection *>(obj);
+    auto widget = dynamic_cast<GraphWidget *>(obj);
 
+    if (widget != nullptr) block = widget->getGraphBlock();
     if (block != nullptr) _propertiesPanel = new BlockPropertiesPanel(block, this);
     else if (breaker != nullptr) return; //TODO
     else if (connection != nullptr and connection->isSignalOrSlot()) _propertiesPanel = new ConnectionPropertiesPanel(connection, this);

@@ -15,6 +15,7 @@ class QWidget;
 
 class GraphBlock : public GraphObject
 {
+    Q_OBJECT
 public:
     GraphBlock(QObject *parent);
 

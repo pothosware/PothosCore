@@ -44,7 +44,13 @@ void GraphDraw::mouseDoubleClickEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton)
     {
         const auto objs = this->items(event->pos());
-        if (not objs.isEmpty()) emit this->modifyProperties(dynamic_cast<GraphObject *>(objs.at(0)));
+        for (auto obj : objs)
+        {
+            auto graphObj = dynamic_cast<GraphObject *>(obj);
+            if (graphObj == nullptr) continue;
+            emit this->modifyProperties(graphObj);
+            break;
+        }
     }
     QGraphicsView::mouseDoubleClickEvent(event);
 }
