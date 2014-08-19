@@ -34,7 +34,7 @@
  * |widget DoubleSpinBox()
  *
  * |param upperBound[Upper Bound] The maximum value of this slider.
- * |default +1.0
+ * |default 1.0
  * |widget DoubleSpinBox()
  *
  * |param stepSize[Step Size] The delta inbetween discrete values in this slider.

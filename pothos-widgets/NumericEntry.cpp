@@ -27,7 +27,7 @@
  * |default -1.0
  *
  * |param maximum The maximum value of this entry.
- * |default +1.0
+ * |default 1.0
  *
  * |param step [Step Size] The increment between discrete values.
  * |default 0.01
