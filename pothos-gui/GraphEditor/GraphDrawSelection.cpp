@@ -43,14 +43,8 @@ void GraphDraw::mouseDoubleClickEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
     {
-        const auto objs = this->items(event->pos());
-        for (auto obj : objs)
-        {
-            auto graphObj = dynamic_cast<GraphObject *>(obj);
-            if (graphObj == nullptr) continue;
-            emit this->modifyProperties(graphObj);
-            break;
-        }
+        const auto objs = this->getObjectsAtPos(event->pos());
+        if (not objs.empty()) emit this->modifyProperties(objs.front());
     }
     QGraphicsView::mouseDoubleClickEvent(event);
 }
@@ -65,7 +59,7 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
         _selectionState = SELECTION_STATE_PRESS;
 
         //make the clicked object topmost
-        const auto objs = this->items(event->pos());
+        const auto objs = this->getObjectsAtPos(event->pos());
         if (not objs.empty()) objs.front()->setZValue(this->getMaxZValue()+1);
     }
 
@@ -74,7 +68,7 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
     //when a graph object, that is not selected, is right-clicked.
     if (event->button() == Qt::RightButton)
     {
-        const auto objs = this->items(event->pos());
+        const auto objs = this->getObjectsAtPos(event->pos());
         size_t numSelected = 0;
         for (auto obj : objs)
         {
@@ -109,7 +103,7 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     //handle the first move event transition from a press event
     if (_selectionState == SELECTION_STATE_PRESS)
     {
-        _selectionState = (this->items(event->pos()).empty())? SELECTION_STATE_BAND : SELECTION_STATE_MOVE;
+        _selectionState = (this->getObjectsAtPos(event->pos()).empty())? SELECTION_STATE_BAND : SELECTION_STATE_MOVE;
     }
 
     //cause full render when moving objects for clean animation
@@ -245,6 +239,18 @@ void GraphDraw::doClickSelection(const QPointF &point)
             _lastClickSelectEp = thisEp;
         }
     }
+}
+
+GraphObjectList GraphDraw::getObjectsAtPos(const QPoint &pos)
+{
+    GraphObjectList graphObjs;
+    const auto objs = this->items(pos);
+    for (auto obj : objs)
+    {
+        auto graphObj = dynamic_cast<GraphObject *>(obj);
+        if (graphObj != nullptr) graphObjs.push_back(graphObj);
+    }
+    return graphObjs;
 }
 
 QString GraphDraw::getSelectionDescription(const int selectionFlags)

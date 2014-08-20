@@ -63,6 +63,9 @@ public:
      */
     void clearSelectionState(void);
 
+    //! Get a list of graph objects at the given point
+    GraphObjectList getObjectsAtPos(const QPoint &pos);
+
 protected:
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);

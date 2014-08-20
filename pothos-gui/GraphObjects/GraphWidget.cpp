@@ -111,7 +111,8 @@ bool GraphWidget::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
 {
     //clicking the internal widget causes the same behaviour as clicking no widgets -- unselect everything
     //this also has the added bennefit of preventing a false move event if the internal widget has a drag
-    if (watched == _impl->graphicsWidget and event->type() == QEvent::GraphicsSceneMousePress)
+    if (watched == _impl->graphicsWidget and event->type() == QEvent::GraphicsSceneMousePress and
+        _impl->container->widget() != nullptr and _impl->container->widget()->underMouse())
     {
         this->draw()->deselectAllObjs();
         const auto maxZValue = this->draw()->getMaxZValue();

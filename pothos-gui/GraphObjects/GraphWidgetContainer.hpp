@@ -26,6 +26,12 @@ public:
      */
     void setWidget(QWidget *widget);
 
+    //! get container widget
+    QWidget *widget(void) const
+    {
+        return _widget;
+    }
+
     //! set a label for the resize grip
     void setGripLabel(const QString &name);
 
