@@ -64,6 +64,7 @@ set(SOURCES
     QwtSlider.cpp
     TimeDomainPlot/TimeDomainPlot.hpp #scanned for block desc
     TimeDomainPlot/TimeDomainPlot.cpp
+    TimeDomainPlot/TimeDomainPlotWork.cpp
 )
 
 POTHOS_MODULE_UTIL(

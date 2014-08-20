@@ -3,9 +3,15 @@
 
 #pragma once
 #include <Pothos/Framework.hpp>
-#include <QGraphicsView>
+#include <QWidget>
+#include <memory>
+#include <chrono>
+#include <map>
+#include <vector>
+#include <functional>
 
-class QGraphicsPathItem;
+class QwtPlot;
+class QwtPlotCurve;
 
 /***********************************************************************
  * |PothosDoc Time Domain Plot
@@ -31,10 +37,26 @@ class QGraphicsPathItem;
  * |default "float32"
  * |preview disable
  *
+ * |param numInputs[Num Inputs] The number of input ports.
+ * |default 1
+ * |widget SpinBox(minimum=1)
+ * |preview disable
+ *
+ * |param displayRate[Display Rate] How often the plotter updates.
+ * |default 10.0
+ * |units updates/sec
+ *
+ * |param sampleRate[Sample Rate] The rate of the input elements.
+ * |default 1e6
+ * |units samples/sec
+ *
  * |mode graphWidget
  * |factory /widgets/time_domain_plot(dtype)
+ * |setter setNumInputs(numInputs)
+ * |setter setDisplayRate(displayRate)
+ * |setter setSampleRate(sampleRate)
  **********************************************************************/
-class TimeDomainPlot : public QGraphicsView, public Pothos::Block
+class TimeDomainPlot : public QWidget, public Pothos::Block
 {
     Q_OBJECT
 public:
@@ -51,17 +73,33 @@ public:
         return this;
     }
 
+    void setNumInputs(const size_t numInputs);
+
+    /*!
+     * update rate for the plotter
+     * how often to update the display
+     */
+    void setDisplayRate(const double displayRate);
+
+    /*!
+     * sample rate for the plotter
+     * controls the time scaling display
+     */
+    void setSampleRate(const double sampleRate);
+
+    void activate(void);
     void work(void);
 
-signals:
-    void newPath(const QPainterPath &);
-
 private slots:
-    void handleNewPath(const QPainterPath &);
-
-protected:
-    void resizeEvent(QResizeEvent *event);
+    void setupPlotterCurves(void);
 
 private:
-    QGraphicsPathItem *_plotterElements;
+    QwtPlot *_mainPlot;
+    double _displayRate;
+    double _sampleRate;
+    std::chrono::high_resolution_clock::time_point _timeLastUpdate;
+
+    //set of curves per index
+    std::map<size_t, std::vector<std::shared_ptr<QwtPlotCurve>>> _curves;
+    std::map<size_t, std::function<void(Pothos::InputPort *, const size_t, const double)>> _curveUpdaters;
 };

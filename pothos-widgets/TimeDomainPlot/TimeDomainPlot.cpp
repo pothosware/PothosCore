@@ -2,54 +2,43 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "TimeDomainPlot.hpp"
-#include <QGraphicsScene>
-#include <QGraphicsPathItem>
 #include <QResizeEvent>
-#include <QRectF>
+#include <qwt_plot.h>
+#include <QHBoxLayout>
 
 TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
-    _plotterElements(new QGraphicsPathItem())
+    _mainPlot(new QwtPlot(this)),
+    _displayRate(1.0),
+    _sampleRate(1.0)
 {
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, widget));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setNumInputs));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setDisplayRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setSampleRate));
     this->setupInput(0, dtype);
 
-    this->setScene(new QGraphicsScene(this));
-    this->scene()->addItem(_plotterElements);
-
-    qRegisterMetaType<QPainterPath>("QPainterPath");
-    connect(this, SIGNAL(newPath(const QPainterPath &)), this, SLOT(handleNewPath(const QPainterPath &)), Qt::QueuedConnection);
+    auto layout = new QHBoxLayout(this);
+    layout->setSpacing(0);
+    layout->setContentsMargins(QMargins());
+    layout->addWidget(_mainPlot);
 }
 
-void TimeDomainPlot::handleNewPath(const QPainterPath &path)
+void TimeDomainPlot::setNumInputs(const size_t numInputs)
 {
-    _plotterElements->setPath(path);
-}
-
-void TimeDomainPlot::resizeEvent(QResizeEvent *event)
-{
-    this->scene()->setSceneRect(QRectF(QPointF(0, 0), event->size()));
-    QGraphicsView::resizeEvent(event);
-}
-
-void TimeDomainPlot::work(void)
-{
-    auto inPort = this->input(0);
-
-    if (inPort->elements() > 100)
+    for (size_t i = this->inputs().size(); i < numInputs; i++)
     {
-        if (inPort->dtype() == Pothos::DType("float32"))
-        {
-            auto points = inPort->buffer().as<const float *>();
-            QPainterPath path(QPointF(0, points[0]*100));
-            for (size_t i = 1; i < inPort->elements(); i++)
-            {
-                path.lineTo(i, points[i]*100);
-            }
-            emit this->newPath(path);
-        }
+        this->setupInput(i, this->input(0)->dtype());
     }
+}
 
-    inPort->consume(inPort->elements());
+void TimeDomainPlot::setDisplayRate(const double displayRate)
+{
+    _displayRate = displayRate;
+}
+
+void TimeDomainPlot::setSampleRate(const double sampleRate)
+{
+    _sampleRate = sampleRate;
 }
 
 /***********************************************************************
