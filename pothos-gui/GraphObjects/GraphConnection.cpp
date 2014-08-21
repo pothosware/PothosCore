@@ -401,7 +401,7 @@ static GraphConnectionEndpoint endpointDeserialize(GraphDraw *draw, Poco::JSON::
         auto portId = QString::fromStdString(obj->getValue<std::string>(key+"Id"));
         auto portKey = QString::fromStdString(obj->getValue<std::string>(key+"Key"));
         auto graphObj = draw->getObjectById(portId, ~GRAPH_CONNECTION);
-        if (graphObj == nullptr) throw Pothos::Exception("GraphConnection::deserialize()", "cant resolve object with ID: '"+portId.toStdString()+"'");
+        if (graphObj == nullptr) throw Pothos::NotFoundException("GraphConnection::deserialize()", "cant resolve object with ID: '"+portId.toStdString()+"'");
         return GraphConnectionEndpoint(graphObj, GraphConnectableKey(portKey, direction));
     }
     return GraphConnectionEndpoint();

@@ -479,6 +479,35 @@ void GraphEditor::handleCopy(void)
     QApplication::clipboard()->setMimeData(mimeData);
 }
 
+/*!
+ * paste only one object type so handlePaste can control the order of creation
+ */
+static GraphObjectList handlePasteType(GraphDraw *draw, const Poco::JSON::Array::Ptr &graphObjects, const std::string &type)
+{
+    GraphObjectList newObjects;
+    for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
+    {
+        const auto jGraphObj = graphObjects->getObject(objIndex);
+        const auto what = jGraphObj->getValue<std::string>("what");
+        GraphObject *obj = nullptr;
+        if (what != type) continue;
+        if (what == "Block") obj = new GraphBlock(draw);
+        if (what == "Breaker") obj = new GraphBreaker(draw);
+        if (what == "Connection") obj = new GraphConnection(draw);
+        if (what == "Widget") obj = new GraphWidget(draw);
+        if (obj == nullptr) continue;
+        try {obj->deserialize(jGraphObj);}
+        catch (const Pothos::NotFoundException &)
+        {
+            delete obj;
+            continue;
+        }
+        obj->setSelected(true);
+        newObjects.push_back(obj);
+    }
+    return newObjects;
+}
+
 void GraphEditor::handlePaste(void)
 {
     if (not this->isVisible()) return;
@@ -497,36 +526,49 @@ void GraphEditor::handlePaste(void)
     auto graphObjects = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
     assert(graphObjects);
 
-    //deal with initial positions of pasted objects
-    GraphObjectList newObjects;
-    QPointF cornerest(1e6, 1e6);
-
-    //unselect all objects
-    for (auto obj : draw->getGraphObjects())
-    {
-        obj->setSelected(false);
-    }
-
-    //create objects
-    std::map<QString, QPointer<GraphObject>> oldIdToObj;
+    //rewrite ids
+    std::map<std::string, std::string> oldIdToNew;
     for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
     {
         const auto jGraphObj = graphObjects->getObject(objIndex);
-        const auto what = jGraphObj->getValue<std::string>("what");
-        GraphObject *obj = nullptr;
-        if (what == "Block") obj = new GraphBlock(draw);
-        if (what == "Breaker") obj = new GraphBreaker(draw);
-        if (obj != nullptr)
+        auto oldId = jGraphObj->getValue<std::string>("id");
+        oldIdToNew[oldId] = this->newId(QString::fromStdString(oldId)).toStdString();
+    }
+    for (size_t objIndex = 0; objIndex < graphObjects->size();)
+    {
+        for (auto &pair : *graphObjects->getObject(objIndex))
         {
-            obj->deserialize(jGraphObj);
-            const auto oldId = obj->getId();
-            oldIdToObj[oldId] = obj;
-            obj->setId(this->newId(oldId)); //make sure id is unique
-            obj->setSelected(true);
-            newObjects.push_back(obj);
-            cornerest.setX(std::min(cornerest.x(), obj->pos().x()));
-            cornerest.setY(std::min(cornerest.y(), obj->pos().y()));
+            if (QString::fromStdString(pair.first).endsWith("id", Qt::CaseInsensitive))
+            {
+                //if not in oldIdToNew, remove from list
+                if (oldIdToNew.count(pair.second) == 0)
+                {
+                    graphObjects->remove(objIndex);
+                    goto nextObj;
+                }
+                pair.second = oldIdToNew[pair.second];
+            }
         }
+        objIndex++;
+        nextObj: continue;
+    }
+
+    //unselect all objects
+    draw->deselectAllObjs();
+
+    //create objects
+    GraphObjectList objsToMove;
+    objsToMove.append(handlePasteType(draw, graphObjects, "Block"));
+    objsToMove.append(handlePasteType(draw, graphObjects, "Breaker"));
+    handlePasteType(draw, graphObjects, "Connection"); //dont append, connection position doesnt matter
+    objsToMove.append(handlePasteType(draw, graphObjects, "Widget"));
+
+    //deal with initial positions of pasted objects
+    QPointF cornerest(1e6, 1e6);
+    for (auto obj : objsToMove)
+    {
+        cornerest.setX(std::min(cornerest.x(), obj->pos().x()));
+        cornerest.setY(std::min(cornerest.y(), obj->pos().y()));
     }
 
     //determine an acceptable position to center the paste
@@ -538,33 +580,7 @@ void GraphEditor::handlePaste(void)
     }
 
     //move objects into position
-    for (auto obj : newObjects) obj->setPos(obj->pos()-cornerest+pastePos);
-
-    //create connections
-    for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
-    {
-        const auto jGraphObj = graphObjects->getObject(objIndex);
-        const auto what = jGraphObj->getValue<std::string>("what");
-        if (what != "Connection") continue;
-
-        //extract fields
-        auto outputId = QString::fromStdString(jGraphObj->getValue<std::string>("outputId"));
-        auto inputId = QString::fromStdString(jGraphObj->getValue<std::string>("inputId"));
-        auto outputKey = QString::fromStdString(jGraphObj->getValue<std::string>("outputKey"));
-        auto inputKey = QString::fromStdString(jGraphObj->getValue<std::string>("inputKey"));
-
-        //get the objects
-        auto inputObj = oldIdToObj[inputId];
-        auto outputObj = oldIdToObj[outputId];
-
-        //did we get both endpoints in this paste? if not its ok, we dont make the connection
-        if (inputObj.isNull()) continue;
-        if (outputObj.isNull()) continue;
-
-        this->makeConnection(
-            GraphConnectionEndpoint(inputObj, GraphConnectableKey(inputKey, GRAPH_CONN_INPUT)),
-            GraphConnectionEndpoint(outputObj, GraphConnectableKey(outputKey, GRAPH_CONN_OUTPUT)));
-    }
+    for (auto obj : objsToMove) obj->setPos(obj->pos()-cornerest+pastePos);
 
     handleStateChange(GraphState("edit-paste", tr("Paste %1").arg(draw->getSelectionDescription())));
 }
