@@ -69,22 +69,22 @@ function(POTHOS_MODULE_UTIL)
 
         #turn sources into an absolute path
         unset(__POTHOS_SOURCES)
-        foreach(source ${POTHOS_MODULE_UTIL_SOURCES})
+        foreach(source ${POTHOS_MODULE_UTIL_DOC_SOURCES})
             if (EXISTS ${source})
                 list(APPEND __POTHOS_SOURCES ${source})
             else()
                 list(APPEND __POTHOS_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${source})
             endif()
         endforeach(source)
-        set(POTHOS_MODULE_UTIL_SOURCES ${__POTHOS_SOURCES})
+        set(POTHOS_MODULE_UTIL_DOC_SOURCES ${__POTHOS_SOURCES})
 
         set(cpp_doc_file ${CMAKE_CURRENT_BINARY_DIR}/${POTHOS_MODULE_UTIL_TARGET}Docs.cpp)
         add_custom_command(
             OUTPUT ${cpp_doc_file}
             COMMAND ${POTHOS_UTIL_EXE}
-                --doc-parse ${POTHOS_MODULE_UTIL_SOURCES}
+                --doc-parse ${POTHOS_MODULE_UTIL_DOC_SOURCES}
                 --output ${cpp_doc_file}
-            DEPENDS ${POTHOS_MODULE_UTIL_SOURCES}
+            DEPENDS ${POTHOS_MODULE_UTIL_DOC_SOURCES}
             DEPENDS ${POTHOS_UTIL_EXE}
         )
         list(APPEND POTHOS_MODULE_UTIL_SOURCES ${cpp_doc_file})

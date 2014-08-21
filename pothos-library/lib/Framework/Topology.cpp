@@ -210,9 +210,6 @@ void Pothos::Topology::commit(void)
     //3) deal with domain crossing
     flatFlows = _impl->rectifyDomainFlows(flatFlows);
 
-    //4) install buffer managers
-    installBufferManagers(flatFlows);
-
     const auto &activeFlatFlows = _impl->activeFlatFlows;
 
     //new flows are in flat flows but not in current
@@ -247,6 +244,10 @@ void Pothos::Topology::commit(void)
 
     //remove old data acceptors
     updateFlows(oldFlows, "UNSUBINPUT");
+
+    //install buffer managers on sources for all new flows
+    //Sometimes this will replace previous buffer managers.
+    installBufferManagers(newFlows);
 
     //result list is used to ack all de/activate messages
     std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;

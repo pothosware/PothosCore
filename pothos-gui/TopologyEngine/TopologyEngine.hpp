@@ -16,6 +16,10 @@ struct ConnectionInfo
 {
     std::string srcId, srcPort;
     std::string dstId, dstPort;
+    std::string toString(void) const
+    {
+        return "("+srcId+"["+srcPort+"], "+dstId+"["+dstPort+"])";
+    }
 };
 
 namespace Pothos
@@ -89,4 +93,5 @@ private:
     std::map<QString, std::map<QString, std::string>> _idToPropKeyToTypeStr;
 
     std::string _syslogListenPort;
+    std::string _previousSignature;
 };
