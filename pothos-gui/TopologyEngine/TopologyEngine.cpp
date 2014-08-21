@@ -11,6 +11,7 @@
 #include <Pothos/Framework.hpp>
 #include <Poco/URI.h>
 #include <Poco/NumberParser.h>
+#include <Poco/MD5Engine.h>
 #include <iostream>
 #include <cassert>
 
@@ -39,9 +40,19 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
         if (threadPool) proxyBlock.callVoid("setThreadPool", threadPool);
     }
 
+    //get all connections in the topology
+    const auto connections = getConnectionInfo(graphObjects);
+
+    //generate a signature to detect if this commit has changes
+    Poco::MD5Engine md5;
+    for (const auto &pair : _idToBlockEval) md5.update(pair.second.first);
+    for (const auto &conn : connections) md5.update(conn.toString());
+    const auto thisSignature = Poco::DigestEngine::digestToHex(md5.digest());
+    if (thisSignature == _previousSignature) return;
+
     //make all of the connections
     _topology->disconnectAll();
-    for (const auto &conn : getConnectionInfo(graphObjects))
+    for (const auto &conn : connections)
     {
         _topology->connect(
             idToBlock.at(conn.srcId), conn.srcPort,
@@ -50,6 +61,7 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
 
     //commit the new design
     _topology->commit();
+    _previousSignature = thisSignature;
 }
 
 
