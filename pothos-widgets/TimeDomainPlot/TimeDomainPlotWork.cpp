@@ -66,6 +66,13 @@ static QColor getDefaultCurveColor(const size_t whichCurve)
     return QColor();
 }
 
+static QColor pastelize(const QColor &c)
+{
+    //Pastels have high value and low to intermediate saturation:
+    //http://en.wikipedia.org/wiki/Pastel_%28color%29
+    return QColor::fromHsv(c.hue(), int(c.saturationF()*128), int(c.valueF()*64)+191);
+}
+
 void TimeDomainPlot::setupPlotterCurves(void)
 {
     for (auto inPort : this->inputs())
@@ -116,7 +123,7 @@ void TimeDomainPlot::setupPlotterCurves(void)
         for (const auto &curve : pair.second)
         {
             curve->attach(_mainPlot);
-            curve->setPen(getDefaultCurveColor(whichCurve));
+            curve->setPen(pastelize(getDefaultCurveColor(whichCurve)));
             whichCurve++;
         }
     }
