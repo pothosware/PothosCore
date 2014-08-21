@@ -57,7 +57,7 @@ protected:
         //Output to new stream with old buffer (to e.g. screen [std::cout])
         //_newstream->write(msg, count);
         //Output to logger
-        poco_information(_logger, std::string(msg, count));
+        _outbuf.append(msg, count);
         return count;
     }
 
@@ -73,11 +73,17 @@ protected:
 
     int sync(void)
     {
+        if (not _outbuf.empty() and _outbuf.back() == '\n')
+        {
+            poco_information(_logger, _outbuf);
+            _outbuf.clear();
+        }
         return 0;
     }
 
 private:
     Poco::Logger &_logger;
+    std::string _outbuf;
     std::streambuf*    _orgbuf;
     std::ostream&      _orgstream;
     std::unique_ptr<std::ostream>  _newstream;
