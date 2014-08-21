@@ -160,7 +160,7 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
     //locate the associated block
     auto blockId = QString::fromStdString(obj->getValue<std::string>("blockId"));
     auto graphObj = editor->getObjectById(blockId, GRAPH_BLOCK);
-    if (graphObj == nullptr) throw Pothos::Exception("GraphWidget::deserialize()", "cant resolve block with ID: '"+blockId.toStdString()+"'");
+    if (graphObj == nullptr) throw Pothos::NotFoundException("GraphWidget::deserialize()", "cant resolve block with ID: '"+blockId.toStdString()+"'");
     auto graphBlock = dynamic_cast<GraphBlock *>(graphObj);
     assert(graphBlock != nullptr);
     this->setGraphBlock(graphBlock);
