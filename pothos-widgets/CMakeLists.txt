@@ -62,9 +62,6 @@ set(SOURCES
     DropDown.cpp
     RadioGroup.cpp
     QwtSlider.cpp
-    TimeDomainPlot/TimeDomainPlot.hpp #scanned for block desc
-    TimeDomainPlot/TimeDomainPlot.cpp
-    TimeDomainPlot/TimeDomainPlotWork.cpp
 )
 
 POTHOS_MODULE_UTIL(
@@ -74,3 +71,7 @@ POTHOS_MODULE_UTIL(
     DESTINATION widgets
     ENABLE_DOCS
 )
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(TimeDomainPlot)
+add_subdirectory(FreqDomainPlot)

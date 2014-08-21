@@ -2,78 +2,77 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MyPlotterUtils.hpp"
-#include "TimeDomainPlot.hpp"
+#include "MyFFTUtils.hpp"
+#include "FreqDomainPlot.hpp"
 #include <qwt_plot_curve.h>
 #include <qwt_plot.h>
 #include <complex>
 
-static const size_t pointsPerPlot = 1024; //TODO variable later
-
-template <typename T>
-void plotCurvesFromElements(Pothos::InputPort *inPort, const size_t numElems, const double elemRate,
-    std::shared_ptr<QwtPlotCurve> curve)
+void FreqDomainPlot::activate(void)
 {
-    auto buff = inPort->buffer().as<const T *>();
-    QVector<QPointF> points;
-    for (size_t i = 0; i < numElems; i++)
-    {
-        points.push_back(QPointF(i/elemRate, buff[i]));
-    }
-
-    curve->setSamples(points);
-}
-
-template <typename T>
-void plotCurvesFromComplexElements(Pothos::InputPort *inPort, const size_t numElems, const double elemRate,
-    std::shared_ptr<QwtPlotCurve> curveRe, std::shared_ptr<QwtPlotCurve> curveIm)
-{
-    auto buff = inPort->buffer().as<const std::complex<T> *>();
-    QVector<QPointF> pointsRe, pointsIm;
-    for (size_t i = 0; i < numElems; i++)
-    {
-        pointsRe.push_back(QPointF(i/elemRate, buff[i].real()));
-        pointsIm.push_back(QPointF(i/elemRate, buff[i].imag()));
-    }
-    curveRe->setSamples(pointsRe);
-    curveIm->setSamples(pointsIm);
-}
-
-void TimeDomainPlot::activate(void)
-{
-    for (auto inPort : this->inputs()) inPort->setReserve(pointsPerPlot);
+    //reload num bins so we know inPort->setReserve is set
+    this->setNumFFTBins(_numBins);
 
     //clear old curves
     _curves.clear();
     _curveUpdaters.clear();
 }
 
-void TimeDomainPlot::setupPlotterCurves(void)
+template <typename InType>
+Complex toComplex(const InType &in)
+{
+    return Complex(in);
+}
+
+template <typename InType>
+Complex toComplex(const std::complex<InType> &in)
+{
+    return Complex(in.real(), in.imag());
+}
+
+template <typename T>
+void plotCurvesFromElements(Pothos::InputPort *inPort, const size_t numElems, const double elemRate,
+    std::shared_ptr<QwtPlotCurve> curve)
+{
+    //create an array of complex doubles to transform with FFT
+    auto buff = inPort->buffer().as<const T *>();
+    CArray fftBins(numElems);
+    for (size_t i = 0; i < numElems; i++) fftBins[i] = toComplex(buff[i]);
+    fft(fftBins);
+
+    //TODO windowing
+
+    //TODO power calculation
+
+    //TODO bin reorder
+
+    QVector<QPointF> points;
+    for (size_t i = 0; i < fftBins.size(); i++)
+    {
+        points.push_back(QPointF(elemRate/i, std::abs(fftBins[i])));
+    }
+
+    curve->setSamples(points);
+}
+
+void FreqDomainPlot::setupPlotterCurves(void)
 {
     for (auto inPort : this->inputs())
     {
-        #define doForThisType(type) \
-        else if (inPort->dtype() == Pothos::DType(typeid(std::complex<type>))) \
-        { \
-            _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Ch%1.Re").arg(inPort->index()))); \
-            _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Ch%1.Im").arg(inPort->index()))); \
-            _curveUpdaters[inPort->index()] = std::bind( \
-                &plotCurvesFromComplexElements<type>, \
-                std::placeholders::_1, \
-                std::placeholders::_2, \
-                std::placeholders::_3, \
-                _curves[inPort->index()][0], \
-                _curves[inPort->index()][1]); \
-        } \
+        #define doForThisType__(type) \
         else if (inPort->dtype() == Pothos::DType(typeid(type))) \
         { \
-            _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Ch%1").arg(inPort->index()))); \
+            _curves[inPort->index()].reset(new QwtPlotCurve(QString("Ch%1").arg(inPort->index()))); \
             _curveUpdaters[inPort->index()] = std::bind( \
                 &plotCurvesFromElements<type>, \
                 std::placeholders::_1, \
                 std::placeholders::_2, \
                 std::placeholders::_3, \
-                _curves[inPort->index()][0]); \
+                _curves[inPort->index()]); \
         }
+        #define doForThisType(type) \
+            doForThisType__(type) \
+            doForThisType__(std::complex<type>)
         if (false){}
         doForThisType(double)
         doForThisType(float)
@@ -94,7 +93,7 @@ void TimeDomainPlot::setupPlotterCurves(void)
     size_t whichCurve = 0;
     for (const auto &pair : _curves)
     {
-        for (const auto &curve : pair.second)
+        auto &curve = pair.second;
         {
             curve->attach(_mainPlot);
             curve->setPen(pastelize(getDefaultCurveColor(whichCurve)));
@@ -103,7 +102,7 @@ void TimeDomainPlot::setupPlotterCurves(void)
     }
 }
 
-void TimeDomainPlot::work(void)
+void FreqDomainPlot::work(void)
 {
     //initialize the curves with a blocking call to setup
     if (_curves.empty()) QMetaObject::invokeMethod(this, "setupPlotterCurves", Qt::BlockingQueuedConnection);
@@ -116,7 +115,7 @@ void TimeDomainPlot::work(void)
     const size_t nsamps = this->workInfo().minElements;
     for (auto inPort : this->inputs())
     {
-        if (doUpdate) _curveUpdaters.at(inPort->index())(inPort, std::min(nsamps, pointsPerPlot), _sampleRate);
+        if (doUpdate) _curveUpdaters.at(inPort->index())(inPort, std::min(nsamps, _numBins), _sampleRate);
         inPort->consume(nsamps);
     }
 
