@@ -11,6 +11,7 @@
 #include <functional>
 
 class QwtPlot;
+class QwtPlotGrid;
 class QwtPlotCurve;
 
 /***********************************************************************
@@ -42,6 +43,9 @@ class QwtPlotCurve;
  * |widget SpinBox(minimum=1)
  * |preview disable
  *
+ * |param title The title of the plot
+ * |default "Amplitude vs Time"
+ *
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0
  * |units updates/sec
@@ -53,6 +57,7 @@ class QwtPlotCurve;
  * |mode graphWidget
  * |factory /widgets/time_domain_plot(dtype)
  * |setter setNumInputs(numInputs)
+ * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  **********************************************************************/
@@ -68,12 +73,17 @@ public:
 
     TimeDomainPlot(const Pothos::DType &dtype);
 
+    ~TimeDomainPlot(void);
+
     QWidget *widget(void)
     {
         return this;
     }
 
     void setNumInputs(const size_t numInputs);
+
+    //! set the plotter's title
+    void setTitle(const QString &title);
 
     /*!
      * update rate for the plotter
@@ -95,6 +105,7 @@ private slots:
 
 private:
     QwtPlot *_mainPlot;
+    QwtPlotGrid *_plotGrid;
     double _displayRate;
     double _sampleRate;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;

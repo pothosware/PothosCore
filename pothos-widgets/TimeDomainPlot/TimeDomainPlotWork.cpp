@@ -46,6 +46,26 @@ void TimeDomainPlot::activate(void)
     _curveUpdaters.clear();
 }
 
+static QColor getDefaultCurveColor(const size_t whichCurve)
+{
+    switch(whichCurve % 12)
+    {
+    case 0: return Qt::blue;
+    case 1: return Qt::green;
+    case 2: return Qt::red;
+    case 3: return Qt::cyan;
+    case 4: return Qt::magenta;
+    case 5: return Qt::yellow;
+    case 6: return Qt::darkBlue;
+    case 7: return Qt::darkGreen;
+    case 8: return Qt::darkRed;
+    case 9: return Qt::darkCyan;
+    case 10: return Qt::darkMagenta;
+    case 11: return Qt::darkYellow;
+    };
+    return QColor();
+}
+
 void TimeDomainPlot::setupPlotterCurves(void)
 {
     for (auto inPort : this->inputs())
@@ -53,8 +73,8 @@ void TimeDomainPlot::setupPlotterCurves(void)
         #define doForThisType(type) \
         else if (inPort->dtype() == Pothos::DType(typeid(std::complex<type>))) \
         { \
-            _curves[inPort->index()].emplace_back(new QwtPlotCurve()); \
-            _curves[inPort->index()].emplace_back(new QwtPlotCurve()); \
+            _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Ch%1.Re").arg(inPort->index()))); \
+            _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Ch%1.Im").arg(inPort->index()))); \
             _curveUpdaters[inPort->index()] = std::bind( \
                 &plotCurvesFromComplexElements<type>, \
                 std::placeholders::_1, \
@@ -65,7 +85,7 @@ void TimeDomainPlot::setupPlotterCurves(void)
         } \
         else if (inPort->dtype() == Pothos::DType(typeid(type))) \
         { \
-            _curves[inPort->index()].emplace_back(new QwtPlotCurve()); \
+            _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Ch%1").arg(inPort->index()))); \
             _curveUpdaters[inPort->index()] = std::bind( \
                 &plotCurvesFromElements<type>, \
                 std::placeholders::_1, \
@@ -89,11 +109,15 @@ void TimeDomainPlot::setupPlotterCurves(void)
         doForThisType(char)
     }
 
+    //continued setup for the curves
+    size_t whichCurve = 0;
     for (const auto &pair : _curves)
     {
         for (const auto &curve : pair.second)
         {
             curve->attach(_mainPlot);
+            curve->setPen(getDefaultCurveColor(whichCurve));
+            whichCurve++;
         }
     }
 }
