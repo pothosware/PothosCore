@@ -33,6 +33,7 @@ struct GraphConnection::Impl
 
     QVector<QPointF> points;
     QPolygonF arrowHead;
+    QRectF textRect;
 };
 
 GraphConnection::GraphConnection(QObject *parent):
@@ -154,6 +155,10 @@ QPainterPath GraphConnection::shape(void) const
 
     //arrow head
     path.addPolygon(_impl->arrowHead);
+
+    //text
+    path.addRect(_impl->textRect);
+
     return path;
 }
 
@@ -319,7 +324,9 @@ void GraphConnection::render(QPainter &painter)
         const auto &text = _impl->lineText;
         painter.translate((largestLine.p1() + largestLine.p2())/2.0);
         painter.rotate(int(largestLine.angle())%180);
-        painter.drawStaticText(QPointF(-text.size().width()/2, -text.size().height() - GraphConnectionGirth), text);
+        const QRectF textRect(QPointF(-text.size().width()/2, -text.size().height() - GraphConnectionGirth), text.size());
+        painter.drawStaticText(textRect.topLeft(), text);
+        _impl->textRect = painter.worldTransform().mapRect(textRect);
         painter.restore();
     }
 

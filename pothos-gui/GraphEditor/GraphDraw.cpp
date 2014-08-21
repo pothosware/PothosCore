@@ -214,10 +214,9 @@ void GraphDraw::render(void)
             painter.save();
             painter.translate(obj->pos());
             painter.rotate(obj->rotation());
-            auto boundingRect = obj->boundingRect();
             painter.setPen(QPen(Qt::red));
             painter.setBrush(Qt::NoBrush);
-            painter.drawRect(boundingRect);
+            painter.drawPath(obj->shape());
             painter.restore();
         }
         _graphBoundingBoxes->setPixmap(pixmap);
