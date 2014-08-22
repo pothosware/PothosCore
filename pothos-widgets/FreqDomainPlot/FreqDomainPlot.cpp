@@ -41,7 +41,6 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
         //missing from qwt:
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
         _mainPlot->setCanvasBackground(QBrush(QColor("white")));
-        _mainPlot->insertLegend(new QwtLegend(_mainPlot));
         _mainPlot->setAxisScale(QwtPlot::yLeft, -100, 0);
     }
 
@@ -108,6 +107,11 @@ void FreqDomainPlot::setNumFFTBins(const size_t numBins)
 QString FreqDomainPlot::title(void) const
 {
     return _mainPlot->title().text();
+}
+
+void FreqDomainPlot::installLegend(void)
+{
+    _mainPlot->insertLegend(new QwtLegend(_mainPlot));
 }
 
 /***********************************************************************

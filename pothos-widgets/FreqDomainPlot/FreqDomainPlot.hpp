@@ -141,7 +141,7 @@ public:
     }
 
 private slots:
-    void setupPlotterCurves(void);
+    void installLegend(void);
 
 private:
     QwtPlot *_mainPlot;
@@ -153,6 +153,7 @@ private:
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
     //set of curves per index
+    void setupPlotterCurves(void);
     std::map<size_t, std::shared_ptr<QwtPlotCurve>> _curves;
     std::map<size_t, std::function<void(Pothos::InputPort *, CArray &)>> _inputConverters;
 };

@@ -41,7 +41,6 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
         //missing from qwt:
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
         _mainPlot->setCanvasBackground(QBrush(QColor("white")));
-        _mainPlot->insertLegend(new QwtLegend(_mainPlot));
     }
 
     //setup grid
@@ -113,6 +112,11 @@ void TimeDomainPlot::updateXAxis(void)
     }
     _mainPlot->setAxisTitle(QwtPlot::xBottom, axisTitle);
     _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
+}
+
+void TimeDomainPlot::installLegend(void)
+{
+    _mainPlot->insertLegend(new QwtLegend(_mainPlot));
 }
 
 /***********************************************************************

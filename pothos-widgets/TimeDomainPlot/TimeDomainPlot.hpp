@@ -140,7 +140,7 @@ public:
     }
 
 private slots:
-    void setupPlotterCurves(void);
+    void installLegend(void);
 
 private:
     QwtPlot *_mainPlot;
@@ -154,6 +154,7 @@ private:
     //set of curves per index
     std::map<size_t, std::vector<std::shared_ptr<QwtPlotCurve>>> _curves;
     std::map<size_t, std::function<void(Pothos::InputPort *, const size_t, const double)>> _curveUpdaters;
+    void setupPlotterCurves(void);
 
     void updateXAxis(void);
 };

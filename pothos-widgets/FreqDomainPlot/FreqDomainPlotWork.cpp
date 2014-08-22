@@ -86,6 +86,9 @@ void FreqDomainPlot::setupPlotterCurves(void)
             whichCurve++;
         }
     }
+
+    //install legend for multiple channels
+    if (whichCurve > 1) QMetaObject::invokeMethod(this, "installLegend", Qt::QueuedConnection);
 }
 
 /***********************************************************************
