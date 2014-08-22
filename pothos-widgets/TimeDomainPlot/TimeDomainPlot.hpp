@@ -129,6 +129,16 @@ public:
     void work(void);
     void updateCurve(Pothos::InputPort *inPort);
 
+    //allow for standard resize controls with the default size policy
+    QSize minimumSizeHint(void) const
+    {
+        return QSize(300, 150);
+    }
+    QSize sizeHint(void) const
+    {
+        return this->minimumSizeHint();
+    }
+
 private slots:
     void setupPlotterCurves(void);
 
