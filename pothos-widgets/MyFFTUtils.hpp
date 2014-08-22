@@ -3,10 +3,14 @@
 
 #pragma once
 #include <complex>
-#include <iostream>
 #include <valarray>
 
+//TODO window functions...
+
+////////////////////////////////////////////////////////////////////////
+//FFT code can be foound at:
 //http://rosettacode.org/wiki/Fast_Fourier_transform
+////////////////////////////////////////////////////////////////////////
 const double PI = 3.141592653589793238460;
 
 typedef std::complex<double> Complex;

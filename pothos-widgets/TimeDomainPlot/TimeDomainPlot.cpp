@@ -20,6 +20,10 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setTitle));
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setSampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, numInputs));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, title));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, displayRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, sampleRate));
     this->setupInput(0, dtype);
 
     //layout
@@ -69,6 +73,11 @@ void TimeDomainPlot::setDisplayRate(const double displayRate)
 void TimeDomainPlot::setSampleRate(const double sampleRate)
 {
     _sampleRate = sampleRate;
+}
+
+QString TimeDomainPlot::title(void) const
+{
+    return _mainPlot->title().text();
 }
 
 /***********************************************************************

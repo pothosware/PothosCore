@@ -97,6 +97,23 @@ public:
      */
     void setSampleRate(const double sampleRate);
 
+    QString title(void) const;
+
+    size_t numInputs(void) const
+    {
+        return this->inputs().size();
+    }
+
+    double displayRate(void) const
+    {
+        return _displayRate;
+    }
+
+    double sampleRate(void) const
+    {
+        return _sampleRate;
+    }
+
     void activate(void);
     void work(void);
 

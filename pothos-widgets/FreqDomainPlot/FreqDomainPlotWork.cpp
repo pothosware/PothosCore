@@ -2,22 +2,14 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MyPlotterUtils.hpp"
-#include "MyFFTUtils.hpp"
 #include "FreqDomainPlot.hpp"
 #include <qwt_plot_curve.h>
 #include <qwt_plot.h>
 #include <complex>
 
-void FreqDomainPlot::activate(void)
-{
-    //reload num bins so we know inPort->setReserve is set
-    this->setNumFFTBins(_numBins);
-
-    //clear old curves
-    _curves.clear();
-    _curveUpdaters.clear();
-}
-
+/***********************************************************************
+ * conversion to complex double support
+ **********************************************************************/
 template <typename InType>
 Complex toComplex(const InType &in)
 {
@@ -31,44 +23,37 @@ Complex toComplex(const std::complex<InType> &in)
 }
 
 template <typename T>
-void plotCurvesFromElements(Pothos::InputPort *inPort, const size_t numElems, const double elemRate,
-    std::shared_ptr<QwtPlotCurve> curve)
+void convertElementsToCArray(Pothos::InputPort *inPort, CArray &bins)
 {
-    //create an array of complex doubles to transform with FFT
     auto buff = inPort->buffer().as<const T *>();
-    CArray fftBins(numElems);
-    for (size_t i = 0; i < numElems; i++) fftBins[i] = toComplex(buff[i]);
-    fft(fftBins);
+    for (size_t i = 0; i < bins.size(); i++) bins[i] = toComplex(buff[i]);
+}
 
-    //TODO windowing
-
-    //TODO power calculation
-
-    //TODO bin reorder
-
-    QVector<QPointF> points;
-    for (size_t i = 0; i < fftBins.size(); i++)
-    {
-        points.push_back(QPointF(elemRate/i, std::abs(fftBins[i])));
-    }
-
-    curve->setSamples(points);
+/***********************************************************************
+ * initialization functions
+ **********************************************************************/
+void FreqDomainPlot::activate(void)
+{
+    //reload num bins so we know inPort->setReserve is set
+    this->setNumFFTBins(this->numFFTBins());
+    this->setupPlotterCurves();
 }
 
 void FreqDomainPlot::setupPlotterCurves(void)
 {
+    //clear old curves
+    _curves.clear();
+    _inputConverters.clear();
     for (auto inPort : this->inputs())
     {
         #define doForThisType__(type) \
         else if (inPort->dtype() == Pothos::DType(typeid(type))) \
         { \
             _curves[inPort->index()].reset(new QwtPlotCurve(QString("Ch%1").arg(inPort->index()))); \
-            _curveUpdaters[inPort->index()] = std::bind( \
-                &plotCurvesFromElements<type>, \
+            _inputConverters[inPort->index()] = std::bind( \
+                &convertElementsToCArray<type>, \
                 std::placeholders::_1, \
-                std::placeholders::_2, \
-                std::placeholders::_3, \
-                _curves[inPort->index()]); \
+                std::placeholders::_2); \
         }
         #define doForThisType(type) \
             doForThisType__(type) \
@@ -102,11 +87,40 @@ void FreqDomainPlot::setupPlotterCurves(void)
     }
 }
 
+/***********************************************************************
+ * work functions
+ **********************************************************************/
+void FreqDomainPlot::updateCurve(Pothos::InputPort *inPort)
+{
+    //create an array of complex doubles to transform with FFT
+    CArray fftBins(std::min(inPort->elements(), this->numFFTBins()));
+    _inputConverters.at(inPort->index())(inPort, std::ref(fftBins));
+    fft(fftBins);
+
+    //TODO windowing
+
+    //TODO power calculation
+    std::valarray<double> powerBins(fftBins.size());
+    for (size_t i = 0; i < fftBins.size(); i++) powerBins[i] = std::abs(fftBins[i]);
+
+    //TODO bin reorder
+    for (size_t i = 0; i < powerBins.size()/2; i++)
+    {
+        std::swap(powerBins[i], powerBins[i+powerBins.size()/2]);
+    }
+
+    //power bins to points on the curve
+    QVector<QPointF> points;
+    for (size_t i = 0; i < powerBins.size(); i++)
+    {
+        auto freq = (_sampleRateWoAxisUnits*i)/(fftBins.size()-1) - _sampleRateWoAxisUnits/2;
+        points.push_back(QPointF(freq, powerBins[i]));
+    }
+    _curves.at(inPort->index())->setSamples(points);
+}
+
 void FreqDomainPlot::work(void)
 {
-    //initialize the curves with a blocking call to setup
-    if (_curves.empty()) QMetaObject::invokeMethod(this, "setupPlotterCurves", Qt::BlockingQueuedConnection);
-
     //should we update the plotter with these values?
     const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/_displayRate));
     bool doUpdate = (std::chrono::high_resolution_clock::now() - _timeLastUpdate) > timeBetweenUpdates;
@@ -115,7 +129,7 @@ void FreqDomainPlot::work(void)
     const size_t nsamps = this->workInfo().minElements;
     for (auto inPort : this->inputs())
     {
-        if (doUpdate) _curveUpdaters.at(inPort->index())(inPort, std::min(nsamps, _numBins), _sampleRate);
+        if (doUpdate) this->updateCurve(inPort);
         inPort->consume(nsamps);
     }
 

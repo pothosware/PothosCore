@@ -13,6 +13,7 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
     _plotGrid(new QwtPlotGrid()),
     _displayRate(1.0),
     _sampleRate(1.0),
+    _sampleRateWoAxisUnits(1.0),
     _numBins(1024)
 {
     //setup block
@@ -22,6 +23,11 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, setNumFFTBins));
+    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, numInputs));
+    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, title));
+    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, displayRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, sampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, numFFTBins));
     this->setupInput(0, dtype);
 
     //layout
@@ -71,12 +77,36 @@ void FreqDomainPlot::setDisplayRate(const double displayRate)
 void FreqDomainPlot::setSampleRate(const double sampleRate)
 {
     _sampleRate = sampleRate;
+    QString axisTitle("Hz");
+    _sampleRateWoAxisUnits = sampleRate;
+    if (sampleRate >= 2e9)
+    {
+        _sampleRateWoAxisUnits /= 1e9;
+        axisTitle = "GHz";
+    }
+    else if (sampleRate >= 2e6)
+    {
+        _sampleRateWoAxisUnits /= 1e6;
+        axisTitle = "MHz";
+    }
+    else if (sampleRate >= 2e3)
+    {
+        _sampleRateWoAxisUnits /= 1e3;
+        axisTitle = "kHz";
+    }
+    _mainPlot->setAxisTitle(QwtPlot::xBottom, axisTitle);
+    _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
 }
 
 void FreqDomainPlot::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
     for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
+}
+
+QString FreqDomainPlot::title(void) const
+{
+    return _mainPlot->title().text();
 }
 
 /***********************************************************************

@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 #include <functional>
+#include "MyFFTUtils.hpp"
 
 class QwtPlot;
 class QwtPlotGrid;
@@ -103,8 +104,31 @@ public:
 
     void setNumFFTBins(const size_t numBins);
 
+    QString title(void) const;
+
+    size_t numInputs(void) const
+    {
+        return this->inputs().size();
+    }
+
+    double displayRate(void) const
+    {
+        return _displayRate;
+    }
+
+    double sampleRate(void) const
+    {
+        return _sampleRate;
+    }
+
+    size_t numFFTBins(void) const
+    {
+        return _numBins;
+    }
+
     void activate(void);
     void work(void);
+    void updateCurve(Pothos::InputPort *inPort);
 
 private slots:
     void setupPlotterCurves(void);
@@ -114,10 +138,11 @@ private:
     QwtPlotGrid *_plotGrid;
     double _displayRate;
     double _sampleRate;
+    double _sampleRateWoAxisUnits;
     size_t _numBins;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
     //set of curves per index
     std::map<size_t, std::shared_ptr<QwtPlotCurve>> _curves;
-    std::map<size_t, std::function<void(Pothos::InputPort *, const size_t, const double)>> _curveUpdaters;
+    std::map<size_t, std::function<void(Pothos::InputPort *, CArray &)>> _inputConverters;
 };

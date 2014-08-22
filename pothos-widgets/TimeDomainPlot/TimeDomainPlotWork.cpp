@@ -41,14 +41,14 @@ void plotCurvesFromComplexElements(Pothos::InputPort *inPort, const size_t numEl
 void TimeDomainPlot::activate(void)
 {
     for (auto inPort : this->inputs()) inPort->setReserve(pointsPerPlot);
-
-    //clear old curves
-    _curves.clear();
-    _curveUpdaters.clear();
+    this->setupPlotterCurves();
 }
 
 void TimeDomainPlot::setupPlotterCurves(void)
 {
+    //clear old curves
+    _curves.clear();
+    _curveUpdaters.clear();
     for (auto inPort : this->inputs())
     {
         #define doForThisType(type) \
@@ -105,9 +105,6 @@ void TimeDomainPlot::setupPlotterCurves(void)
 
 void TimeDomainPlot::work(void)
 {
-    //initialize the curves with a blocking call to setup
-    if (_curves.empty()) QMetaObject::invokeMethod(this, "setupPlotterCurves", Qt::BlockingQueuedConnection);
-
     //should we update the plotter with these values?
     const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/_displayRate));
     bool doUpdate = (std::chrono::high_resolution_clock::now() - _timeLastUpdate) > timeBetweenUpdates;
