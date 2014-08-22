@@ -56,7 +56,7 @@ struct Pothos::BufferAccumulator::Impl
         return;
     }
 
-    size_t inPoolBuffer;
+    bool inPoolBuffer;
     HelperBufferPool pool;
 };
 
@@ -140,19 +140,18 @@ void Pothos::BufferAccumulator::pop(const size_t numBytes)
     assert(queue.front().length >= numBytes);
     queue.front().address += numBytes;
     queue.front().length -= numBytes;
+    const size_t queueSize = queue.size();
 
     //If the front buffer is from the pool,
     //and the remainder bytes are in front+1,
     //then pop the front and move into front+1.
-    assert(_impl->inPoolBuffer == 0 or queue.size() > 1);
     if (
-        _impl->inPoolBuffer and //pool in front
+        _impl->inPoolBuffer and queue.size() > 1 and //pool in front
         queue.front().length <= (queue[1].address - queue[1].getBuffer().getAddress()))
     {
         queue[1].address -= queue.front().length;
         queue[1].length += queue.front().length;
         queue.pop_front();
-        _impl->inPoolBuffer = false;
     }
 
     //pop the front buffer if its now empty
@@ -175,6 +174,9 @@ void Pothos::BufferAccumulator::pop(const size_t numBytes)
             queue.pop_front();
         }
     }
+
+    //clear the pool buffer state when the queue size shrinks
+    if (_impl->inPoolBuffer and queueSize != queue.size()) _impl->inPoolBuffer = false;
 
     //never let the queue become empty -- hold an empty buffer
     if (queue.empty()) queue.push_front(BufferChunk());
