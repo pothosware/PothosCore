@@ -42,6 +42,7 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
         _mainPlot->setCanvasBackground(QBrush(QColor("white")));
         _mainPlot->insertLegend(new QwtLegend(_mainPlot));
+        _mainPlot->setAxisScale(QwtPlot::yLeft, -100, 0);
     }
 
     //setup grid

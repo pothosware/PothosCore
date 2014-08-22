@@ -2,10 +2,19 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include <Pothos/Config.hpp>
+#include <cmath>
 #include <complex>
 #include <valarray>
 
-//TODO window functions...
+////////////////////////////////////////////////////////////////////////
+//Window functions https://en.wikipedia.org/wiki/Window_function
+//TODO more to come
+////////////////////////////////////////////////////////////////////////
+inline double hann(const size_t n, const size_t N)
+{
+    return 0.5*(1- std::cos((2.0*M_PI*n)/N-1));
+}
 
 ////////////////////////////////////////////////////////////////////////
 //FFT code can be foound at:
