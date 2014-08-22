@@ -157,4 +157,5 @@ void TopologyEngine::clear(void)
 {
     _topology->disconnectAll();
     _topology->commit();
+    _previousSignature.clear();
 }
