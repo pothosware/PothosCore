@@ -116,6 +116,14 @@ public:
 
     void setOptions(const Pothos::ObjectVector &options)
     {
+        //validate first
+        for (const auto &option : options)
+        {
+            if (not option.canConvert(typeid(Pothos::ObjectVector))) throw Pothos::DataFormatException("DropDown::setOptions()", "entry is not ObjectVector");
+            auto optPair = option.convert<Pothos::ObjectVector>();
+            if (optPair.size() != 2) throw Pothos::DataFormatException("DropDown::setOptions()", "entry must be ObjectVector of size == 2");
+            if (not optPair.at(0).canConvert(typeid(QString))) throw Pothos::DataFormatException("DropDown::setOptions()", "entry[0] must be a string");
+        }
         QMetaObject::invokeMethod(this, "__setOptions", Qt::QueuedConnection, Q_ARG(Pothos::ObjectVector, options));
     }
 
@@ -136,10 +144,7 @@ private slots:
 
         for (const auto &option : options)
         {
-            if (not option.canConvert(typeid(Pothos::ObjectVector))) throw Pothos::DataFormatException("DropDown::setOptions()", "entry is not ObjectVector");
             auto optPair = option.convert<Pothos::ObjectVector>();
-            if (optPair.size() != 2) throw Pothos::DataFormatException("DropDown::setOptions()", "entry must be ObjectVector of size == 2");
-            if (not optPair.at(0).canConvert(typeid(QString))) throw Pothos::DataFormatException("DropDown::setOptions()", "entry[0] must be a string");
             auto title = optPair.at(0).convert<QString>();
             auto value = optPair.at(1);
             _comboBox->addItem(title);
