@@ -28,6 +28,8 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, numFFTBins));
+    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, enableXAxis));
+    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, enableYAxis));
     this->setupInput(0, dtype);
 
     //layout
@@ -107,6 +109,16 @@ void FreqDomainPlot::setNumFFTBins(const size_t numBins)
 QString FreqDomainPlot::title(void) const
 {
     return _mainPlot->title().text();
+}
+
+void FreqDomainPlot::enableXAxis(const bool enb)
+{
+    _mainPlot->enableAxis(QwtPlot::xBottom, enb);
+}
+
+void FreqDomainPlot::enableYAxis(const bool enb)
+{
+    _mainPlot->enableAxis(QwtPlot::yLeft, enb);
 }
 
 void FreqDomainPlot::installLegend(void)

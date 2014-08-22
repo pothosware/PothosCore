@@ -28,6 +28,8 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, numPoints));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, enableXAxis));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, enableYAxis));
     this->setupInput(0, dtype);
 
     //layout
@@ -89,6 +91,16 @@ void TimeDomainPlot::setNumPoints(const size_t numPoints)
 QString TimeDomainPlot::title(void) const
 {
     return _mainPlot->title().text();
+}
+
+void TimeDomainPlot::enableXAxis(const bool enb)
+{
+    _mainPlot->enableAxis(QwtPlot::xBottom, enb);
+}
+
+void TimeDomainPlot::enableYAxis(const bool enb)
+{
+    _mainPlot->enableAxis(QwtPlot::yLeft, enb);
 }
 
 void TimeDomainPlot::updateXAxis(void)

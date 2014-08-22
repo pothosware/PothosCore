@@ -58,6 +58,18 @@ class QwtPlotCurve;
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
  *
+ * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
+ * |option [Show] true
+ * |option [Hide] false
+ * |default true
+ * |preview disable
+ *
+ * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
+ * |option [Show] true
+ * |option [Hide] false
+ * |default true
+ * |preview disable
+ *
  * |mode graphWidget
  * |factory /widgets/freq_domain_plot(dtype)
  * |setter setNumInputs(numInputs)
@@ -65,6 +77,8 @@ class QwtPlotCurve;
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
+ * |setter enableXAxis(enableXAxis)
+ * |setter enableYAxis(enableYAxis)
  **********************************************************************/
 class FreqDomainPlot : public QWidget, public Pothos::Block
 {
@@ -125,6 +139,9 @@ public:
     {
         return _numBins;
     }
+
+    void enableXAxis(const bool enb);
+    void enableYAxis(const bool enb);
 
     void activate(void);
     void work(void);

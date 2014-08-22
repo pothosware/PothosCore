@@ -59,8 +59,8 @@ void TimeDomainPlot::setupPlotterCurves(void)
         #define doForThisType(type) \
         else if (inPort->dtype() == Pothos::DType(typeid(std::complex<type>))) \
         { \
-            _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Ch%1.Re").arg(inPort->index()))); \
-            _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Ch%1.Im").arg(inPort->index()))); \
+            _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Re%1").arg(inPort->index()))); \
+            _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Im%1").arg(inPort->index()))); \
             _curveUpdaters[inPort->index()] = std::bind( \
                 &plotCurvesFromComplexElements<type>, \
                 std::placeholders::_1, \

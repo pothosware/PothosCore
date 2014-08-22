@@ -57,6 +57,18 @@ class QwtPlotCurve;
  * |param numPoints[Num Points] The number of points per plot capture.
  * |default 1024
  *
+ * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
+ * |option [Show] true
+ * |option [Hide] false
+ * |default true
+ * |preview disable
+ *
+ * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
+ * |option [Show] true
+ * |option [Hide] false
+ * |default true
+ * |preview disable
+ *
  * |mode graphWidget
  * |factory /widgets/time_domain_plot(dtype)
  * |setter setNumInputs(numInputs)
@@ -64,6 +76,8 @@ class QwtPlotCurve;
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumPoints(numPoints)
+ * |setter enableXAxis(enableXAxis)
+ * |setter enableYAxis(enableYAxis)
  **********************************************************************/
 class TimeDomainPlot : public QWidget, public Pothos::Block
 {
@@ -124,6 +138,9 @@ public:
     {
         return _numPoints;
     }
+
+    void enableXAxis(const bool enb);
+    void enableYAxis(const bool enb);
 
     void activate(void);
     void work(void);
