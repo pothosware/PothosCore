@@ -54,12 +54,16 @@ class QwtPlotCurve;
  * |default 1e6
  * |units samples/sec
  *
+ * |param numPoints[Num Points] The number of points per plot capture.
+ * |default 1024
+ *
  * |mode graphWidget
  * |factory /widgets/time_domain_plot(dtype)
  * |setter setNumInputs(numInputs)
  * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
+ * |setter setNumPoints(numPoints)
  **********************************************************************/
 class TimeDomainPlot : public QWidget, public Pothos::Block
 {
@@ -97,6 +101,8 @@ public:
      */
     void setSampleRate(const double sampleRate);
 
+    void setNumPoints(const size_t numPoints);
+
     QString title(void) const;
 
     size_t numInputs(void) const
@@ -114,8 +120,14 @@ public:
         return _sampleRate;
     }
 
+    size_t numPoints(void) const
+    {
+        return _numPoints;
+    }
+
     void activate(void);
     void work(void);
+    void updateCurve(Pothos::InputPort *inPort);
 
 private slots:
     void setupPlotterCurves(void);
@@ -125,9 +137,13 @@ private:
     QwtPlotGrid *_plotGrid;
     double _displayRate;
     double _sampleRate;
+    double _timeSpan;
+    size_t _numPoints;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
     //set of curves per index
     std::map<size_t, std::vector<std::shared_ptr<QwtPlotCurve>>> _curves;
     std::map<size_t, std::function<void(Pothos::InputPort *, const size_t, const double)>> _curveUpdaters;
+
+    void updateXAxis(void);
 };

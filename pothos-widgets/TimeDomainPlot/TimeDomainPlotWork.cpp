@@ -7,40 +7,45 @@
 #include <qwt_plot.h>
 #include <complex>
 
-static const size_t pointsPerPlot = 1024; //TODO variable later
-
+/***********************************************************************
+ * conversion support
+ **********************************************************************/
 template <typename T>
-void plotCurvesFromElements(Pothos::InputPort *inPort, const size_t numElems, const double elemRate,
+void plotCurvesFromElements(Pothos::InputPort *inPort, const size_t numElems, const double timeSpan,
     std::shared_ptr<QwtPlotCurve> curve)
 {
     auto buff = inPort->buffer().as<const T *>();
     QVector<QPointF> points;
     for (size_t i = 0; i < numElems; i++)
     {
-        points.push_back(QPointF(i/elemRate, buff[i]));
+        points.push_back(QPointF((i*timeSpan)/(numElems-1), buff[i]));
     }
 
     curve->setSamples(points);
 }
 
 template <typename T>
-void plotCurvesFromComplexElements(Pothos::InputPort *inPort, const size_t numElems, const double elemRate,
+void plotCurvesFromComplexElements(Pothos::InputPort *inPort, const size_t numElems, const double timeSpan,
     std::shared_ptr<QwtPlotCurve> curveRe, std::shared_ptr<QwtPlotCurve> curveIm)
 {
     auto buff = inPort->buffer().as<const std::complex<T> *>();
     QVector<QPointF> pointsRe, pointsIm;
     for (size_t i = 0; i < numElems; i++)
     {
-        pointsRe.push_back(QPointF(i/elemRate, buff[i].real()));
-        pointsIm.push_back(QPointF(i/elemRate, buff[i].imag()));
+        pointsRe.push_back(QPointF((i*timeSpan)/(numElems-1), buff[i].real()));
+        pointsIm.push_back(QPointF((i*timeSpan)/(numElems-1), buff[i].imag()));
     }
     curveRe->setSamples(pointsRe);
     curveIm->setSamples(pointsIm);
 }
 
+/***********************************************************************
+ * initialization functions
+ **********************************************************************/
 void TimeDomainPlot::activate(void)
 {
-    for (auto inPort : this->inputs()) inPort->setReserve(pointsPerPlot);
+    //reload num bins so we know inPort->setReserve is set
+    this->setNumPoints(this->numPoints());
     this->setupPlotterCurves();
 }
 
@@ -88,6 +93,7 @@ void TimeDomainPlot::setupPlotterCurves(void)
         doForThisType(signed char)
         doForThisType(unsigned char)
         doForThisType(char)
+        else throw Pothos::InvalidArgumentException("TimeDomainPlot::setupPlotterCurves("+inPort->dtype().toString()+")", "dtype not supported");
     }
 
     //continued setup for the curves
@@ -103,6 +109,14 @@ void TimeDomainPlot::setupPlotterCurves(void)
     }
 }
 
+/***********************************************************************
+ * work functions
+ **********************************************************************/
+void TimeDomainPlot::updateCurve(Pothos::InputPort *inPort)
+{
+    _curveUpdaters.at(inPort->index())(inPort, std::min(inPort->elements(), this->numPoints()), _timeSpan);
+}
+
 void TimeDomainPlot::work(void)
 {
     //should we update the plotter with these values?
@@ -113,7 +127,7 @@ void TimeDomainPlot::work(void)
     const size_t nsamps = this->workInfo().minElements;
     for (auto inPort : this->inputs())
     {
-        if (doUpdate) _curveUpdaters.at(inPort->index())(inPort, std::min(nsamps, pointsPerPlot), _sampleRate);
+        if (doUpdate) this->updateCurve(inPort);
         inPort->consume(nsamps);
     }
 

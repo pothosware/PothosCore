@@ -12,7 +12,9 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
     _mainPlot(new QwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
     _displayRate(1.0),
-    _sampleRate(1.0)
+    _sampleRate(1.0),
+    _timeSpan(1.0),
+    _numPoints(1024)
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, widget));
@@ -20,10 +22,12 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setTitle));
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setSampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setNumPoints));
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, numInputs));
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, title));
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, sampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, numPoints));
     this->setupInput(0, dtype);
 
     //layout
@@ -73,11 +77,42 @@ void TimeDomainPlot::setDisplayRate(const double displayRate)
 void TimeDomainPlot::setSampleRate(const double sampleRate)
 {
     _sampleRate = sampleRate;
+    this->updateXAxis();
+}
+
+void TimeDomainPlot::setNumPoints(const size_t numPoints)
+{
+    _numPoints = numPoints;
+    for (auto inPort : this->inputs()) inPort->setReserve(_numPoints);
+    this->updateXAxis();
 }
 
 QString TimeDomainPlot::title(void) const
 {
     return _mainPlot->title().text();
+}
+
+void TimeDomainPlot::updateXAxis(void)
+{
+    QString axisTitle("s");
+    _timeSpan = _numPoints/_sampleRate;
+    if (_timeSpan <= 100e-9)
+    {
+        _timeSpan *= 1e9;
+        axisTitle = "ns";
+    }
+    else if (_timeSpan <= 100e-6)
+    {
+        _timeSpan *= 1e6;
+        axisTitle = "us";
+    }
+    else if (_timeSpan <= 100e-3)
+    {
+        _timeSpan *= 1e3;
+        axisTitle = "ms";
+    }
+    _mainPlot->setAxisTitle(QwtPlot::xBottom, axisTitle);
+    _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
 }
 
 /***********************************************************************

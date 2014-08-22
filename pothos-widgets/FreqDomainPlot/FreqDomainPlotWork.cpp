@@ -72,6 +72,7 @@ void FreqDomainPlot::setupPlotterCurves(void)
         doForThisType(signed char)
         doForThisType(unsigned char)
         doForThisType(char)
+        else throw Pothos::InvalidArgumentException("FreqDomainPlot::setupPlotterCurves("+inPort->dtype().toString()+")", "dtype not supported");
     }
 
     //continued setup for the curves
