@@ -128,7 +128,15 @@ void TimeDomainPlot::updateXAxis(void)
 
 void TimeDomainPlot::installLegend(void)
 {
-    _mainPlot->insertLegend(new QwtLegend(_mainPlot));
+    auto legend = new QwtLegend(_mainPlot);
+    legend->setDefaultItemMode(QwtLegendData::Checkable);
+    connect(legend, SIGNAL(checked(const QVariant &, bool, int)), this, SLOT(handleLegendChecked(const QVariant &, bool, int)));
+    _mainPlot->insertLegend(legend);
+}
+
+void TimeDomainPlot::handleLegendChecked(const QVariant &itemInfo, bool on, int)
+{
+    _mainPlot->infoToItem(itemInfo)->setVisible(not on);
 }
 
 /***********************************************************************

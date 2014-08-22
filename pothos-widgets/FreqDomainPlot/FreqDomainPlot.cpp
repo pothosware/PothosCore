@@ -123,7 +123,15 @@ void FreqDomainPlot::enableYAxis(const bool enb)
 
 void FreqDomainPlot::installLegend(void)
 {
-    _mainPlot->insertLegend(new QwtLegend(_mainPlot));
+    auto legend = new QwtLegend(_mainPlot);
+    legend->setDefaultItemMode(QwtLegendData::Checkable);
+    connect(legend, SIGNAL(checked(const QVariant &, bool, int)), this, SLOT(handleLegendChecked(const QVariant &, bool, int)));
+    _mainPlot->insertLegend(legend);
+}
+
+void FreqDomainPlot::handleLegendChecked(const QVariant &itemInfo, bool on, int)
+{
+    _mainPlot->infoToItem(itemInfo)->setVisible(not on);
 }
 
 /***********************************************************************

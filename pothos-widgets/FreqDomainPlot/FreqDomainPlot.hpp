@@ -159,6 +159,7 @@ public:
 
 private slots:
     void installLegend(void);
+    void handleLegendChecked(const QVariant &, bool, int);
 
 private:
     QwtPlot *_mainPlot;
