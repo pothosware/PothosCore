@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "MyPlotPicker.hpp"
 #include "TimeDomainPlot.hpp"
 #include <QResizeEvent>
 #include <qwt_plot.h>
@@ -43,6 +44,7 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
         //missing from qwt:
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
         _mainPlot->setCanvasBackground(QBrush(QColor("white")));
+        new MyPlotPicker(_mainPlot->canvas());
     }
 
     //setup grid
@@ -50,6 +52,7 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
         _plotGrid->attach(_mainPlot);
         _plotGrid->setPen(QColor("#999999"), 0.5, Qt::DashLine);
     }
+
 }
 
 TimeDomainPlot::~TimeDomainPlot(void)

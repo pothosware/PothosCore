@@ -37,10 +37,15 @@ endforeach(comp)
 ########################################################################
 # Qwt setup
 ########################################################################
+set(CUSTOM_QWT_SOURCES #sources not part of QWT that we are building into this library
+    MyPlotPicker.cpp
+    MyPlotterUtils.cpp
+)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qwt/src)
 add_definitions(-DQWT_DLL)
 file(GLOB QWT_SOURCES "qwt/src/*.cpp")
-add_library(PothosQwt SHARED ${QWT_SOURCES})
+add_library(PothosQwt SHARED ${QWT_SOURCES} ${CUSTOM_QWT_SOURCES})
 set_target_properties(PothosQwt PROPERTIES DEFINE_SYMBOL "QWT_MAKEDLL")
 target_link_libraries(PothosQwt ${Qt5_LIBRARIES})
 install(TARGETS PothosQwt

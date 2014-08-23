@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "MyPlotPicker.hpp"
 #include "FreqDomainPlot.hpp"
 #include <QResizeEvent>
 #include <qwt_plot.h>
@@ -44,6 +45,8 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
         _mainPlot->setCanvasBackground(QBrush(QColor("white")));
         _mainPlot->setAxisScale(QwtPlot::yLeft, -100, 0);
+        _mainPlot->setAxisTitle(QwtPlot::yLeft, "dB");
+        new MyPlotPicker(_mainPlot->canvas());
     }
 
     //setup grid
