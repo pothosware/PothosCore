@@ -82,7 +82,7 @@ public:
      * \param numArgs the size of the input array
      * \return the return value as type Object
      */
-    virtual Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) = 0;
+    virtual Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) const = 0;
 
 private:
     Object opaqueCall(const Object *inputArgs, const size_t numArgs) const;

@@ -45,7 +45,7 @@ Pothos::Object Pothos::Connectable::opaqueCall(const Object *inputArgs, const si
     {
         throw Pothos::BlockCallNotFound("Pothos::Connectable::call()", "missing method name");
     }
-    return const_cast<Connectable *>(this)->opaqueCallMethod(inputArgs[0].convert<std::string>(), inputArgs+1, numArgs-1);
+    return this->opaqueCallMethod(inputArgs[0].convert<std::string>(), inputArgs+1, numArgs-1);
 }
 
 #include <Pothos/Managed.hpp>

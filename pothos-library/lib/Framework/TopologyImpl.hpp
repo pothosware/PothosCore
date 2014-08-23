@@ -14,6 +14,8 @@
  **********************************************************************/
 struct Pothos::Topology::Impl
 {
+    Impl(Topology *self): self(self){}
+    Topology *self;
     ThreadPool threadPool;
     std::vector<Flow> flows;
     std::vector<Flow> activeFlatFlows;

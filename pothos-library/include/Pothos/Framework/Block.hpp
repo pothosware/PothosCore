@@ -307,7 +307,7 @@ public:
      * \param numArgs the size of the input array
      * \return the return value as type Object
      */
-    Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs);
+    Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) const;
 
 private:
     WorkInfo _workInfo;

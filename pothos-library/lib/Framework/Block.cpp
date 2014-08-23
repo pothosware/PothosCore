@@ -141,7 +141,7 @@ Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const P
     return it->second.opaqueCall(inputArgs, numArgs);
 }
 
-Pothos::Object Pothos::Block::opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
+Pothos::Object Pothos::Block::opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
 {
     //call into a signal
     auto out = _actor->outputs.find(name);

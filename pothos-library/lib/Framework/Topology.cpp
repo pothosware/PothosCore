@@ -120,7 +120,7 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
  * Topology implementation
  **********************************************************************/
 Pothos::Topology::Topology(void):
-    _impl(new Impl())
+    _impl(new Impl(this))
 {
     return;
 }
@@ -461,9 +461,9 @@ void Pothos::Topology::registerCallable(const std::string &name, const Callable 
     _impl->calls[name] = call;
 }
 
-Pothos::Object Pothos::Topology::opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs)
+Pothos::Object Pothos::Topology::opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) const
 {
-    return this->opaqueCallHandler(name, inputArgs, numArgs);
+    return _impl->self->opaqueCallHandler(name, inputArgs, numArgs);
 }
 
 Pothos::Object Pothos::Topology::opaqueCallHandler(const std::string &name, const Object *inputArgs, const size_t numArgs)
