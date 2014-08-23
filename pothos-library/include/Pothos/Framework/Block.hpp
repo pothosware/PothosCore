@@ -17,6 +17,7 @@
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/OutputPort.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>
+#include <Pothos/Callable/CallInterface.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -325,7 +326,8 @@ private:
 public:
     std::shared_ptr<WorkerActor> _actor;
     friend class WorkerActor;
-    Object opaqueCall(const std::string &name, const Object *inputArgs, const size_t numArgs);
+    Object opaqueCall(const Object *inputArgs, const size_t numArgs) const;
+    Object opaqueCallMethodName(const std::string &name, const Object *inputArgs, const size_t numArgs) const;
 };
 
 } //namespace Pothos

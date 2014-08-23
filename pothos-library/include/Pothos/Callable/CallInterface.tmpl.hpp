@@ -25,15 +25,6 @@ public:
      */
     virtual ~CallInterface(void);
 
-    /*!
-     * Call into the function/method with opaque input and return types.
-     * For a void return type of call, the returned Object will be null.
-     * \param inputArgs an array of call arguments of type Object
-     * \param numArgs the number of arguments in inputArgs
-     * \return the return value of the call as type Object
-     */
-    virtual Object opaqueCall(const Object *inputArgs, const size_t numArgs) const = 0;
-
     #for $NARGS in range($MAX_ARGS)
     //! Call a bound method/function with a return type and $NARGS args
     template <typename ReturnType, $expand('typename A%d', $NARGS)>
@@ -48,6 +39,16 @@ public:
     void callVoid($expand('A%d &&a%d', $NARGS)) const;
 
     #end for
+
+protected:
+    /*!
+     * Call into the function/method with opaque input and return types.
+     * For a void return type of call, the returned Object will be null.
+     * \param inputArgs an array of call arguments of type Object
+     * \param numArgs the number of arguments in inputArgs
+     * \return the return value of the call as type Object
+     */
+    virtual Object opaqueCall(const Object *inputArgs, const size_t numArgs) const = 0;
 };
 
 } //namespace Pothos
