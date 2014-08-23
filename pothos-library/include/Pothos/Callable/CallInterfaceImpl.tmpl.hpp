@@ -40,7 +40,7 @@ Object CallInterface::callObject($expand('A%d &&a%d', $NARGS)) const
 {
     Object args[$(max(1, $NARGS))];
     #for $i in range($NARGS):
-    args[$i] = Object::make(std::forward<A$i>(a$i));
+    args[$i] = Object(std::forward<A$i>(a$i));
     #end for
     return this->opaqueCall(args, $NARGS);
 }

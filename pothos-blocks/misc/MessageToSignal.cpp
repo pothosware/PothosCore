@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <Pothos/Object/Containers.hpp>
 #include <iostream>
 
 /***********************************************************************
@@ -40,10 +39,7 @@ public:
         auto input = this->input(0);
         if (input->hasMessage())
         {
-            Pothos::ObjectVector args;
-            args.emplace_back(_emitName);
-            args.emplace_back(input->popMessage());
-            this->opaqueCall(args.data(), args.size());
+            this->callVoid(_emitName, input->popMessage());
         }
     }
 

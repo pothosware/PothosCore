@@ -55,7 +55,7 @@ template <typename A0>
 Object CallInterface::callObject(A0 &&a0) const
 {
     Object args[1];
-    args[0] = Object::make(std::forward<A0>(a0));
+    args[0] = Object(std::forward<A0>(a0));
     return this->opaqueCall(args, 1);
 }
 
@@ -86,8 +86,8 @@ template <typename A0, typename A1>
 Object CallInterface::callObject(A0 &&a0, A1 &&a1) const
 {
     Object args[2];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
+    args[0] = Object(std::forward<A0>(a0));
+    args[1] = Object(std::forward<A1>(a1));
     return this->opaqueCall(args, 2);
 }
 
@@ -118,9 +118,9 @@ template <typename A0, typename A1, typename A2>
 Object CallInterface::callObject(A0 &&a0, A1 &&a1, A2 &&a2) const
 {
     Object args[3];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
+    args[0] = Object(std::forward<A0>(a0));
+    args[1] = Object(std::forward<A1>(a1));
+    args[2] = Object(std::forward<A2>(a2));
     return this->opaqueCall(args, 3);
 }
 
@@ -151,10 +151,10 @@ template <typename A0, typename A1, typename A2, typename A3>
 Object CallInterface::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3) const
 {
     Object args[4];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
+    args[0] = Object(std::forward<A0>(a0));
+    args[1] = Object(std::forward<A1>(a1));
+    args[2] = Object(std::forward<A2>(a2));
+    args[3] = Object(std::forward<A3>(a3));
     return this->opaqueCall(args, 4);
 }
 
@@ -185,11 +185,11 @@ template <typename A0, typename A1, typename A2, typename A3, typename A4>
 Object CallInterface::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4) const
 {
     Object args[5];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    args[4] = Object::make(std::forward<A4>(a4));
+    args[0] = Object(std::forward<A0>(a0));
+    args[1] = Object(std::forward<A1>(a1));
+    args[2] = Object(std::forward<A2>(a2));
+    args[3] = Object(std::forward<A3>(a3));
+    args[4] = Object(std::forward<A4>(a4));
     return this->opaqueCall(args, 5);
 }
 
@@ -220,12 +220,12 @@ template <typename A0, typename A1, typename A2, typename A3, typename A4, typen
 Object CallInterface::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5) const
 {
     Object args[6];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    args[4] = Object::make(std::forward<A4>(a4));
-    args[5] = Object::make(std::forward<A5>(a5));
+    args[0] = Object(std::forward<A0>(a0));
+    args[1] = Object(std::forward<A1>(a1));
+    args[2] = Object(std::forward<A2>(a2));
+    args[3] = Object(std::forward<A3>(a3));
+    args[4] = Object(std::forward<A4>(a4));
+    args[5] = Object(std::forward<A5>(a5));
     return this->opaqueCall(args, 6);
 }
 
@@ -256,13 +256,13 @@ template <typename A0, typename A1, typename A2, typename A3, typename A4, typen
 Object CallInterface::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6) const
 {
     Object args[7];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    args[4] = Object::make(std::forward<A4>(a4));
-    args[5] = Object::make(std::forward<A5>(a5));
-    args[6] = Object::make(std::forward<A6>(a6));
+    args[0] = Object(std::forward<A0>(a0));
+    args[1] = Object(std::forward<A1>(a1));
+    args[2] = Object(std::forward<A2>(a2));
+    args[3] = Object(std::forward<A3>(a3));
+    args[4] = Object(std::forward<A4>(a4));
+    args[5] = Object(std::forward<A5>(a5));
+    args[6] = Object(std::forward<A6>(a6));
     return this->opaqueCall(args, 7);
 }
 
@@ -293,14 +293,14 @@ template <typename A0, typename A1, typename A2, typename A3, typename A4, typen
 Object CallInterface::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7) const
 {
     Object args[8];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    args[4] = Object::make(std::forward<A4>(a4));
-    args[5] = Object::make(std::forward<A5>(a5));
-    args[6] = Object::make(std::forward<A6>(a6));
-    args[7] = Object::make(std::forward<A7>(a7));
+    args[0] = Object(std::forward<A0>(a0));
+    args[1] = Object(std::forward<A1>(a1));
+    args[2] = Object(std::forward<A2>(a2));
+    args[3] = Object(std::forward<A3>(a3));
+    args[4] = Object(std::forward<A4>(a4));
+    args[5] = Object(std::forward<A5>(a5));
+    args[6] = Object(std::forward<A6>(a6));
+    args[7] = Object(std::forward<A7>(a7));
     return this->opaqueCall(args, 8);
 }
 
@@ -331,15 +331,15 @@ template <typename A0, typename A1, typename A2, typename A3, typename A4, typen
 Object CallInterface::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7, A8 &&a8) const
 {
     Object args[9];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    args[4] = Object::make(std::forward<A4>(a4));
-    args[5] = Object::make(std::forward<A5>(a5));
-    args[6] = Object::make(std::forward<A6>(a6));
-    args[7] = Object::make(std::forward<A7>(a7));
-    args[8] = Object::make(std::forward<A8>(a8));
+    args[0] = Object(std::forward<A0>(a0));
+    args[1] = Object(std::forward<A1>(a1));
+    args[2] = Object(std::forward<A2>(a2));
+    args[3] = Object(std::forward<A3>(a3));
+    args[4] = Object(std::forward<A4>(a4));
+    args[5] = Object(std::forward<A5>(a5));
+    args[6] = Object(std::forward<A6>(a6));
+    args[7] = Object(std::forward<A7>(a7));
+    args[8] = Object(std::forward<A8>(a8));
     return this->opaqueCall(args, 9);
 }
 

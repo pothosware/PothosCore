@@ -69,15 +69,7 @@ public:
     void activate(void)
     {
         //emit current value when design becomes active
-        this->emitValueChanged();
-    }
-
-    void emitValueChanged(void)
-    {
-        Pothos::ObjectVector args;
-        args.emplace_back("valueChanged");
-        args.emplace_back(this->value());
-        this->opaqueCall(args.data(), args.size());
+        this->callVoid("valueChanged", this->value());
     }
 
     Pothos::Object value(void) const
@@ -138,7 +130,7 @@ private slots:
 
     void handleRadioChanged(bool)
     {
-        this->emitValueChanged();
+        this->callVoid("valueChanged", this->value());
     }
 
 private:
