@@ -89,6 +89,7 @@ list(APPEND POTHOS_SOURCES
 
     Callable/Callable.cpp
     Callable/CallInterface.cpp
+    Callable/CallRegistry.cpp
     Callable/Exception.cpp
     Callable/Tests.cpp
 
@@ -96,7 +97,6 @@ list(APPEND POTHOS_SOURCES
     Framework/Label.cpp
     Framework/InputPort.cpp
     Framework/OutputPort.cpp
-    Framework/CallRegistry.cpp
     Framework/Connectable.cpp
     Framework/Block.cpp
     Framework/Topology.cpp

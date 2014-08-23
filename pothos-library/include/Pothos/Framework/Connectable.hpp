@@ -10,10 +10,10 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/DType.hpp>
-#include <Pothos/Framework/CallRegistry.hpp>
 #include <Pothos/Util/UID.hpp>
 #include <Pothos/Util/RefHolder.hpp>
 #include <Pothos/Callable/CallInterface.hpp>
+#include <Pothos/Callable/CallRegistry.hpp>
 #include <string>
 #include <vector>
 
@@ -83,13 +83,6 @@ public:
      * \return the return value as type Object
      */
     virtual Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) = 0;
-
-protected:
-    /*!
-     * Register a bound call with the given name.
-     * The first argument of the call should have the class instance bound.
-     */
-    virtual void registerCallable(const std::string &name, const Callable &call) = 0;
 
 private:
     Object opaqueCall(const Object *inputArgs, const size_t numArgs) const;

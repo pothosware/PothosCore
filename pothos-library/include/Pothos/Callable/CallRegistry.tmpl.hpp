@@ -1,5 +1,5 @@
 //
-// Framework/CallRegistry.hpp
+// Callable/CallRegistry.hpp
 //
 // CallRegistry is an interface for registering class methods.
 //
