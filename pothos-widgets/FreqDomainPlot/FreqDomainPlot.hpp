@@ -160,6 +160,7 @@ public:
 private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);
+    void handlePickerSelected(const QPointF &);
 
 private:
     QwtPlot *_mainPlot;

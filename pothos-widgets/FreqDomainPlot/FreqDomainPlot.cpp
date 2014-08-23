@@ -31,6 +31,7 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, numFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, enableYAxis));
+    this->registerSignal("frequencySelected");
     this->setupInput(0, dtype);
 
     //layout
@@ -46,7 +47,8 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
         _mainPlot->setCanvasBackground(QBrush(QColor("white")));
         _mainPlot->setAxisScale(QwtPlot::yLeft, -100, 0);
         _mainPlot->setAxisTitle(QwtPlot::yLeft, "dB");
-        new MyPlotPicker(_mainPlot->canvas());
+        auto picker = new MyPlotPicker(_mainPlot->canvas());
+        connect(picker, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
     }
 
     //setup grid
@@ -135,6 +137,12 @@ void FreqDomainPlot::installLegend(void)
 void FreqDomainPlot::handleLegendChecked(const QVariant &itemInfo, bool on, int)
 {
     _mainPlot->infoToItem(itemInfo)->setVisible(not on);
+}
+
+void FreqDomainPlot::handlePickerSelected(const QPointF &p)
+{
+    const double freq = p.x()*_sampleRate/_sampleRateWoAxisUnits;
+    this->emitSignal("frequencySelected", freq);
 }
 
 /***********************************************************************

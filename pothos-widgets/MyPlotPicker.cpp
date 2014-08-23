@@ -3,12 +3,18 @@
 
 #include "MyPlotPicker.hpp"
 #include <qwt_plot.h>
+#include <QMouseEvent>
 
 MyPlotPicker::MyPlotPicker(QWidget *parent):
     QwtPlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, QwtPlotPicker::CrossRubberBand, QwtPicker::AlwaysOn, parent)
 {
     return;
 };
+
+void MyPlotPicker::widgetMouseDoubleClickEvent(QMouseEvent *event)
+{
+    emit this->selected(this->invTransform(event->pos()));
+}
 
 QwtText MyPlotPicker::trackerTextF(const QPointF &pos) const
 {

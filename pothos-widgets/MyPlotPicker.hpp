@@ -15,4 +15,5 @@ public:
 
 protected:
     QwtText trackerTextF(const QPointF &pos) const;
+    void widgetMouseDoubleClickEvent(QMouseEvent *);
 };
