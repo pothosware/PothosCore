@@ -10,7 +10,6 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/Connectable.hpp>
-#include <Pothos/Framework/CallRegistry.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>
 #include <Pothos/Object/Object.hpp>
 #include <string>
@@ -27,7 +26,7 @@ namespace Pothos {
  * To create hierarchy, a topology's connections can be made with itself;
  * this action creates input and output ports for the topology.
  */
-class POTHOS_API Topology : protected CallRegistry, public Connectable
+class POTHOS_API Topology : public Connectable
 {
 public:
 
@@ -155,7 +154,20 @@ public:
      * \param numArgs the size of the input array
      * \return the return value as type Object
      */
-    Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) const;
+    Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs);
+
+protected:
+    /*!
+     * The opaque call handler handles dispatching calls to registered methods.
+     * The user may overload this call to install their own custom handler.
+     * \throws BlockCallNotFound when no call registered for the provided name
+     * \throws Exception when the registered call itself throws an exception
+     * \param name the name of a call registered to this Block with registerCall()
+     * \param inputArgs an array of input arguments wrapped in type Object
+     * \param numArgs the number of arguments in the array inputArgs
+     * \return the result of making the registered call, wrapped in type Object
+     */
+    virtual Object opaqueCallHandler(const std::string &name, const Object *inputArgs, const size_t numArgs);
 
 public:
     struct Impl;

@@ -10,7 +10,6 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/Connectable.hpp>
-#include <Pothos/Framework/CallRegistry.hpp>
 #include <Pothos/Framework/WorkInfo.hpp>
 #include <Pothos/Framework/WorkStats.hpp>
 #include <Pothos/Framework/InputPort.hpp>
@@ -34,7 +33,7 @@ namespace Pothos {
  * Any resources produced at the Block's output ports will be
  * make available to the other Block's connected input ports.
  */
-class POTHOS_API Block : protected CallRegistry, public Connectable
+class POTHOS_API Block : public Connectable
 {
 public:
 
@@ -308,7 +307,7 @@ public:
      * \param numArgs the size of the input array
      * \return the return value as type Object
      */
-    Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) const;
+    Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs);
 
 private:
     WorkInfo _workInfo;

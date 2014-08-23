@@ -10,7 +10,6 @@
 #pragma once
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/Exception.hpp>
-#include <Pothos/Callable/CallInterfaceImpl.hpp>
 
 inline const Pothos::WorkInfo &Pothos::Block::workInfo(void) const
 {
