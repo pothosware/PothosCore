@@ -46,6 +46,7 @@ public:
     //! Call a bound method/function with a void return and $NARGS args
     template <$expand('typename A%d', $NARGS)>
     void callVoid($expand('A%d &&a%d', $NARGS)) const;
+
     #end for
 };
 

@@ -9,6 +9,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Callable/CallInterface.hpp>
 #include <Pothos/Object/Object.hpp>
 #include <vector>
 #include <memory>
@@ -25,7 +26,7 @@ struct CallableContainer;
  * The method/function can be called through an opaque Object interface,
  * or through a templated call interface with an arbitrary number of args.
  */
-class POTHOS_API Callable
+class POTHOS_API Callable : public CallInterface
 {
 public:
 
@@ -168,19 +169,7 @@ public:
     template <typename ClassType, $expand('typename A%d', $NARGS)>
     static Callable factoryShared(void);
 
-    //! Call a bound method/function with a return type and $NARGS args
-    template <typename ReturnType, $expand('typename A%d', $NARGS)>
-    ReturnType call($expand('A%d &&a%d', $NARGS)) const;
-
-    //! Call a bound method/function with an Object return and $NARGS args
-    template <$expand('typename A%d', $NARGS)>
-    Object callObject($expand('A%d &&a%d', $NARGS)) const;
-
-    //! Call a bound method/function with a void return and $NARGS args
-    template <$expand('typename A%d', $NARGS)>
-    void callVoid($expand('A%d &&a%d', $NARGS)) const;
     #end for
-
 private:
     std::vector<Object> _boundArgs;
     std::shared_ptr<Detail::CallableContainer> _impl;
@@ -198,13 +187,3 @@ private:
 POTHOS_API bool operator==(const Callable &lhs, const Callable &rhs);
 
 } //namespace Pothos
-
-inline Pothos::Object Pothos::Callable::callObject(void) const
-{
-    return this->opaqueCall(nullptr, 0);
-}
-
-inline void Pothos::Callable::callVoid(void) const
-{
-    this->callObject();
-}

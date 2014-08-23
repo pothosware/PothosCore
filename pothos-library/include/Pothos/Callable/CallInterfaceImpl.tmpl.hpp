@@ -53,5 +53,4 @@ void CallInterface::callVoid($expand('A%d &&a%d', $NARGS)) const
 #end if
 
 #end for
-
 } //namespace Pothos

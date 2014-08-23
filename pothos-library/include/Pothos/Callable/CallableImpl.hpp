@@ -10,7 +10,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Callable/Callable.hpp>
-#include <Pothos/Callable/Exception.hpp>
+#include <Pothos/Callable/CallInterfaceImpl.hpp>
 #include <Pothos/Object/ObjectImpl.hpp>
 #include <functional> //std::function
 #include <type_traits> //std::type_info, std::is_void
@@ -948,24 +948,6 @@ Callable Callable::factoryShared(void)
 }
 
 /***********************************************************************
- * Templated call gateways with 0 args
- **********************************************************************/
-template <typename ReturnType>
-ReturnType Callable::call() const
-{
-    Object r = this->callObject();
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-
-/***********************************************************************
  * Templated factory/constructor calls with 1 args
  **********************************************************************/
 template <typename ReturnType, typename ClassType, typename A0>
@@ -1023,37 +1005,6 @@ template <typename ClassType, typename A0>
 Callable Callable::factoryShared(void)
 {
     return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0>);
-}
-
-/***********************************************************************
- * Templated call gateways with 1 args
- **********************************************************************/
-template <typename ReturnType, typename A0>
-ReturnType Callable::call(A0 &&a0) const
-{
-    Object r = this->callObject(std::forward<A0>(a0));
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-template <typename A0>
-Object Callable::callObject(A0 &&a0) const
-{
-    Object args[1];
-    args[0] = Object::make(std::forward<A0>(a0));
-    return this->opaqueCall(args, 1);
-}
-
-template <typename A0>
-void Callable::callVoid(A0 &&a0) const
-{
-    this->callObject(std::forward<A0>(a0));
 }
 
 /***********************************************************************
@@ -1117,38 +1068,6 @@ Callable Callable::factoryShared(void)
 }
 
 /***********************************************************************
- * Templated call gateways with 2 args
- **********************************************************************/
-template <typename ReturnType, typename A0, typename A1>
-ReturnType Callable::call(A0 &&a0, A1 &&a1) const
-{
-    Object r = this->callObject(std::forward<A0>(a0), std::forward<A1>(a1));
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-template <typename A0, typename A1>
-Object Callable::callObject(A0 &&a0, A1 &&a1) const
-{
-    Object args[2];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    return this->opaqueCall(args, 2);
-}
-
-template <typename A0, typename A1>
-void Callable::callVoid(A0 &&a0, A1 &&a1) const
-{
-    this->callObject(std::forward<A0>(a0), std::forward<A1>(a1));
-}
-
-/***********************************************************************
  * Templated factory/constructor calls with 3 args
  **********************************************************************/
 template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2>
@@ -1206,39 +1125,6 @@ template <typename ClassType, typename A0, typename A1, typename A2>
 Callable Callable::factoryShared(void)
 {
     return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2>);
-}
-
-/***********************************************************************
- * Templated call gateways with 3 args
- **********************************************************************/
-template <typename ReturnType, typename A0, typename A1, typename A2>
-ReturnType Callable::call(A0 &&a0, A1 &&a1, A2 &&a2) const
-{
-    Object r = this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2));
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-template <typename A0, typename A1, typename A2>
-Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2) const
-{
-    Object args[3];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    return this->opaqueCall(args, 3);
-}
-
-template <typename A0, typename A1, typename A2>
-void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2) const
-{
-    this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2));
 }
 
 /***********************************************************************
@@ -1302,40 +1188,6 @@ Callable Callable::factoryShared(void)
 }
 
 /***********************************************************************
- * Templated call gateways with 4 args
- **********************************************************************/
-template <typename ReturnType, typename A0, typename A1, typename A2, typename A3>
-ReturnType Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3) const
-{
-    Object r = this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3));
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-template <typename A0, typename A1, typename A2, typename A3>
-Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3) const
-{
-    Object args[4];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    return this->opaqueCall(args, 4);
-}
-
-template <typename A0, typename A1, typename A2, typename A3>
-void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3) const
-{
-    this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3));
-}
-
-/***********************************************************************
  * Templated factory/constructor calls with 5 args
  **********************************************************************/
 template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
@@ -1393,41 +1245,6 @@ template <typename ClassType, typename A0, typename A1, typename A2, typename A3
 Callable Callable::factoryShared(void)
 {
     return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2, A3, A4>);
-}
-
-/***********************************************************************
- * Templated call gateways with 5 args
- **********************************************************************/
-template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4>
-ReturnType Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4) const
-{
-    Object r = this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4));
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4>
-Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4) const
-{
-    Object args[5];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    args[4] = Object::make(std::forward<A4>(a4));
-    return this->opaqueCall(args, 5);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4>
-void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4) const
-{
-    this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4));
 }
 
 /***********************************************************************
@@ -1491,42 +1308,6 @@ Callable Callable::factoryShared(void)
 }
 
 /***********************************************************************
- * Templated call gateways with 6 args
- **********************************************************************/
-template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-ReturnType Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5) const
-{
-    Object r = this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5));
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5) const
-{
-    Object args[6];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    args[4] = Object::make(std::forward<A4>(a4));
-    args[5] = Object::make(std::forward<A5>(a5));
-    return this->opaqueCall(args, 6);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5) const
-{
-    this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5));
-}
-
-/***********************************************************************
  * Templated factory/constructor calls with 7 args
  **********************************************************************/
 template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
@@ -1584,43 +1365,6 @@ template <typename ClassType, typename A0, typename A1, typename A2, typename A3
 Callable Callable::factoryShared(void)
 {
     return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6>);
-}
-
-/***********************************************************************
- * Templated call gateways with 7 args
- **********************************************************************/
-template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-ReturnType Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6) const
-{
-    Object r = this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5), std::forward<A6>(a6));
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6) const
-{
-    Object args[7];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    args[4] = Object::make(std::forward<A4>(a4));
-    args[5] = Object::make(std::forward<A5>(a5));
-    args[6] = Object::make(std::forward<A6>(a6));
-    return this->opaqueCall(args, 7);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6) const
-{
-    this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5), std::forward<A6>(a6));
 }
 
 /***********************************************************************
@@ -1684,44 +1428,6 @@ Callable Callable::factoryShared(void)
 }
 
 /***********************************************************************
- * Templated call gateways with 8 args
- **********************************************************************/
-template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-ReturnType Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7) const
-{
-    Object r = this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5), std::forward<A6>(a6), std::forward<A7>(a7));
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7) const
-{
-    Object args[8];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    args[4] = Object::make(std::forward<A4>(a4));
-    args[5] = Object::make(std::forward<A5>(a5));
-    args[6] = Object::make(std::forward<A6>(a6));
-    args[7] = Object::make(std::forward<A7>(a7));
-    return this->opaqueCall(args, 8);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7) const
-{
-    this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5), std::forward<A6>(a6), std::forward<A7>(a7));
-}
-
-/***********************************************************************
  * Templated factory/constructor calls with 9 args
  **********************************************************************/
 template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
@@ -1780,45 +1486,5 @@ Callable Callable::factoryShared(void)
 {
     return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6, A7, A8>);
 }
-
-/***********************************************************************
- * Templated call gateways with 9 args
- **********************************************************************/
-template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-ReturnType Callable::call(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7, A8 &&a8) const
-{
-    Object r = this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5), std::forward<A6>(a6), std::forward<A7>(a7), std::forward<A8>(a8));
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-Object Callable::callObject(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7, A8 &&a8) const
-{
-    Object args[9];
-    args[0] = Object::make(std::forward<A0>(a0));
-    args[1] = Object::make(std::forward<A1>(a1));
-    args[2] = Object::make(std::forward<A2>(a2));
-    args[3] = Object::make(std::forward<A3>(a3));
-    args[4] = Object::make(std::forward<A4>(a4));
-    args[5] = Object::make(std::forward<A5>(a5));
-    args[6] = Object::make(std::forward<A6>(a6));
-    args[7] = Object::make(std::forward<A7>(a7));
-    args[8] = Object::make(std::forward<A8>(a8));
-    return this->opaqueCall(args, 9);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-void Callable::callVoid(A0 &&a0, A1 &&a1, A2 &&a2, A3 &&a3, A4 &&a4, A5 &&a5, A6 &&a6, A7 &&a7, A8 &&a8) const
-{
-    this->callObject(std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2), std::forward<A3>(a3), std::forward<A4>(a4), std::forward<A5>(a5), std::forward<A6>(a6), std::forward<A7>(a7), std::forward<A8>(a8));
-}
-
 
 } //namespace Pothos
