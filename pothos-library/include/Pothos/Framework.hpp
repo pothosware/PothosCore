@@ -11,8 +11,6 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/CallRegistry.hpp>
 #include <Pothos/Framework/CallRegistryImpl.hpp>
-#include <Pothos/Framework/SignalEmitter.hpp>
-#include <Pothos/Framework/SignalEmitterImpl.hpp>
 #include <Pothos/Framework/WorkInfo.hpp>
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>

@@ -68,13 +68,13 @@ public:
     void activate(void)
     {
         //emit current value when design becomes active
-        this->emitSignal("valueChanged", this->value());
+        this->callVoid("valueChanged", this->value());
     }
 
 private slots:
     void handleValueChanged(const double value)
     {
-        this->emitSignal("valueChanged", value);
+        this->callVoid("valueChanged", value);
     }
 };
 

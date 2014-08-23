@@ -102,7 +102,7 @@ public:
     void activate(void)
     {
         //emit current value when design becomes active
-        this->emitSignal("valueChanged", this->value());
+        this->callVoid("valueChanged", this->value());
     }
 
     double value(void) const
@@ -160,7 +160,7 @@ private slots:
         _spinBox->blockSignals(false);
         _slider->blockSignals(false);
 
-        this->emitSignal("valueChanged", value);
+        this->callVoid("valueChanged", value);
     }
 
 private:

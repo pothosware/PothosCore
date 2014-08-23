@@ -11,7 +11,6 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/Connectable.hpp>
 #include <Pothos/Framework/CallRegistry.hpp>
-#include <Pothos/Framework/SignalEmitter.hpp>
 #include <Pothos/Framework/WorkInfo.hpp>
 #include <Pothos/Framework/WorkStats.hpp>
 #include <Pothos/Framework/InputPort.hpp>
@@ -36,7 +35,7 @@ namespace Pothos {
  * Any resources produced at the Block's output ports will be
  * make available to the other Block's connected input ports.
  */
-class POTHOS_API Block : protected CallRegistry, protected SignalEmitter, public Connectable
+class POTHOS_API Block : public CallInterface, protected CallRegistry, public Connectable
 {
 public:
 
@@ -291,14 +290,6 @@ public:
      * \param name the name of the slot
      */
     void registerSlot(const std::string &name);
-
-    /*!
-     * Emit a signal given the args as an array of opaque objects.
-     * \param name the name of the signal to emit
-     * \param args the opaque array of signal args
-     * \throws BlockCallNotFound when no signal registered for the provided name
-     */
-    void emitSignalArgs(const std::string &name, const std::vector<Object> &args);
 
     /*!
      * Notify the scheduler that the work() method will yeild the thread context.

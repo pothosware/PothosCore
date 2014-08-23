@@ -97,7 +97,6 @@ list(APPEND POTHOS_SOURCES
     Framework/InputPort.cpp
     Framework/OutputPort.cpp
     Framework/CallRegistry.cpp
-    Framework/SignalEmitter.cpp
     Framework/Connectable.cpp
     Framework/Block.cpp
     Framework/Topology.cpp
