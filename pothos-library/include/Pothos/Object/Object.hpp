@@ -72,16 +72,6 @@ public:
     static Object make(ValueType &&value);
 
     /*!
-     * Create an Object from a string char array.
-     * This resulting object type will be std::string.
-     * This is a convenience function to use null-terminated
-     * char arrays without the explicit cast to std::string.
-     * \param s the char array held by the new Object
-     * \return a new Object of type std::string
-     */
-    static Object make(const char *s);
-
-    /*!
      * Copy constructor for Object -- does not copy the internal data.
      * Both obj and the resulting Object will point to the same data.
      * \param obj another Object
@@ -108,15 +98,6 @@ public:
      * \param obj another Object
      */
     Object(const Object &&obj);
-
-    /*!
-     * Create an Object from a string char array.
-     * This resulting object type will be std::string.
-     * This is a convenience function to use null-terminated
-     * char arrays without the explicit cast to std::string.
-     * \param s the char array held by the new Object
-     */
-    explicit Object(const char *s);
 
     /*!
      * Create a new Object from an an arbitrary value.
