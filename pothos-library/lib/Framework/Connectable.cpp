@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Connectable.hpp>
+#include <Pothos/Framework/Exception.hpp>
 
 Pothos::PortInfo::PortInfo(void):
     isSigSlot(false)
@@ -38,6 +39,15 @@ std::vector<std::string> Pothos::Connectable::outputPortNames(void)
     return names;
 }
 
+Pothos::Object Pothos::Connectable::opaqueCall(const Object *inputArgs, const size_t numArgs) const
+{
+    if (numArgs == 0 or not inputArgs[0].canConvert(typeid(std::string)))
+    {
+        throw Pothos::BlockCallNotFound("Pothos::Connectable::call()", "missing method name");
+    }
+    return this->opaqueCallMethod(inputArgs[0].convert<std::string>(), inputArgs+1, numArgs-1);
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedConnectable = Pothos::ManagedClass()
@@ -49,6 +59,7 @@ static auto managedConnectable = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, outputPortInfo))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, inputPortNames))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, outputPortNames))
+    .registerWildcardMethod(&Pothos::Connectable::opaqueCallMethod)
     .commit("Pothos/Connectable");
 
 #include <Pothos/Object/Serialize.hpp>

@@ -141,7 +141,7 @@ Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const P
     return it->second.opaqueCall(inputArgs, numArgs);
 }
 
-Pothos::Object Pothos::Block::opaqueCallMethodName(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
+Pothos::Object Pothos::Block::opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
 {
     //call into a signal
     auto out = _actor->outputs.find(name);
@@ -170,15 +170,6 @@ Pothos::Object Pothos::Block::opaqueCallMethodName(const std::string &name, cons
     OpaqueCallResultMessage result = receiver.WaitInfo();
     if (result.error) result.error->rethrow();
     return result.obj;
-}
-
-Pothos::Object Pothos::Block::opaqueCall(const Object *inputArgs, const size_t numArgs) const
-{
-    if (numArgs == 0 or not inputArgs[0].canConvert(typeid(std::string)))
-    {
-        throw Pothos::BlockCallNotFound("Pothos::Block::call()", "missing method name");
-    }
-    return this->opaqueCallMethodName(inputArgs[0].convert<std::string>(), inputArgs+1, numArgs-1);
 }
 
 void Pothos::Block::yield(void)
@@ -234,7 +225,6 @@ static Pothos::Block *getPointer(Pothos::Block &b)
 static auto managedBlock = Pothos::ManagedClass()
     .registerClass<Pothos::Block>()
     .registerBaseClass<Pothos::Block, Pothos::Connectable>()
-    .registerWildcardMethod(&Pothos::Block::opaqueCallMethodName)
     .registerMethod("getPointer", &getPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))

@@ -461,7 +461,7 @@ void Pothos::Topology::registerCallable(const std::string &name, const Callable 
     _impl->calls[name] = call;
 }
 
-Pothos::Object Pothos::Topology::opaqueCall(const std::string &name, const Object *inputArgs, const size_t numArgs)
+Pothos::Object Pothos::Topology::opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) const
 {
     auto it = _impl->calls.find(name);
     if (it == _impl->calls.end())
@@ -488,7 +488,6 @@ std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std:
 static auto managedTopology = Pothos::ManagedClass()
     .registerConstructor<Pothos::Topology>()
     .registerBaseClass<Pothos::Topology, Pothos::Connectable>()
-    .registerWildcardMethod(&Pothos::Topology::opaqueCall)
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setThreadPool))

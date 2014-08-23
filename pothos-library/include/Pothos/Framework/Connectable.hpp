@@ -12,6 +12,7 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Util/UID.hpp>
 #include <Pothos/Util/RefHolder.hpp>
+#include <Pothos/Callable/CallInterface.hpp>
 #include <string>
 #include <vector>
 
@@ -33,7 +34,7 @@ public:
 /*!
  * Connectable interface for topological elements.
  */
-class POTHOS_API Connectable : public Util::UID, public Util::RefHolder
+class POTHOS_API Connectable : public CallInterface, public Util::UID, public Util::RefHolder
 {
 public:
 
@@ -73,7 +74,17 @@ public:
      */
     std::vector<std::string> outputPortNames(void);
 
+    /*!
+     * Call a method on a derived instance of block with opaque input and return types.
+     * \param name the name of the method as a string
+     * \param inputArgs an array of input arguments
+     * \param numArgs the size of the input array
+     * \return the return value as type Object
+     */
+    virtual Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) const = 0;
+
 private:
+    Object opaqueCall(const Object *inputArgs, const size_t numArgs) const;
     std::string _name;
 };
 

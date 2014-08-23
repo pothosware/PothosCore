@@ -16,7 +16,6 @@
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/OutputPort.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>
-#include <Pothos/Callable/CallInterface.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -35,7 +34,7 @@ namespace Pothos {
  * Any resources produced at the Block's output ports will be
  * make available to the other Block's connected input ports.
  */
-class POTHOS_API Block : public CallInterface, protected CallRegistry, public Connectable
+class POTHOS_API Block : protected CallRegistry, public Connectable
 {
 public:
 
@@ -302,6 +301,15 @@ public:
      */
     void yield(void);
 
+    /*!
+     * Call a method on a derived instance with opaque input and return types.
+     * \param name the name of the method as a string
+     * \param inputArgs an array of input arguments
+     * \param numArgs the size of the input array
+     * \return the return value as type Object
+     */
+    Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) const;
+
 private:
     WorkInfo _workInfo;
     std::vector<std::string> _inputPortNames;
@@ -317,8 +325,6 @@ private:
 public:
     std::shared_ptr<WorkerActor> _actor;
     friend class WorkerActor;
-    Object opaqueCall(const Object *inputArgs, const size_t numArgs) const;
-    Object opaqueCallMethodName(const std::string &name, const Object *inputArgs, const size_t numArgs) const;
 };
 
 } //namespace Pothos

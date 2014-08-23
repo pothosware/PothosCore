@@ -148,10 +148,18 @@ public:
      */
     std::string toDotMarkup(const bool flat = true);
 
+    /*!
+     * Call a method on a derived instance with opaque input and return types.
+     * \param name the name of the method as a string
+     * \param inputArgs an array of input arguments
+     * \param numArgs the size of the input array
+     * \return the return value as type Object
+     */
+    Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) const;
+
 public:
     struct Impl;
     std::shared_ptr<Impl> _impl;
-    Object opaqueCall(const std::string &name, const Object *inputArgs, const size_t numArgs);
 };
 
 } //namespace Pothos
