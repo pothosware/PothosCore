@@ -18,13 +18,28 @@
 #include <cassert>
 
 /***********************************************************************
+ * custom QGraphicsProxyWidget to accept the mouseDoubleClickEvent
+ **********************************************************************/
+class MyGraphicsProxyWidget : public QGraphicsProxyWidget
+{
+public:
+    MyGraphicsProxyWidget(QGraphicsItem *parent):
+        QGraphicsProxyWidget(parent){}
+
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+    {
+        QGraphicsProxyWidget::mouseDoubleClickEvent(event);
+    }
+};
+
+/***********************************************************************
  * GraphWidget private container
  **********************************************************************/
 struct GraphWidget::Impl
 {
     Impl(QGraphicsItem *parent):
         container(new GraphWidgetContainer()),
-        graphicsWidget(new QGraphicsProxyWidget(parent))
+        graphicsWidget(new MyGraphicsProxyWidget(parent))
     {
         graphicsWidget->setWidget(container);
     }
@@ -36,10 +51,8 @@ struct GraphWidget::Impl
 
     QPointer<GraphBlock> block;
 
-    QRectF mainRect;
-
     GraphWidgetContainer *container;
-    QGraphicsProxyWidget *graphicsWidget;
+    MyGraphicsProxyWidget *graphicsWidget;
 };
 
 /***********************************************************************
@@ -95,16 +108,15 @@ void GraphWidget::handleBlockIdChanged(const QString &id)
     _impl->container->setGripLabel(id);
 }
 
-bool GraphWidget::isPointing(const QRectF &rect) const
-{
-    return _impl->mainRect.intersects(rect);
-}
-
 QPainterPath GraphWidget::shape(void) const
 {
-    QPainterPath path;
-    path.addRect(_impl->mainRect);
-    return path;
+    return _impl->graphicsWidget->shape();
+}
+
+void GraphWidget::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    _impl->graphicsWidget->mouseDoubleClickEvent(event);
+    QGraphicsObject::mouseDoubleClickEvent(event);
 }
 
 bool GraphWidget::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
@@ -138,9 +150,6 @@ void GraphWidget::render(QPainter &)
     //update display widget when not set
     auto graphWidget = _impl->block->getGraphWidget();
     _impl->container->setWidget(graphWidget);
-
-    //calculate the bounds for the shape() method
-    _impl->mainRect = QRectF(_impl->graphicsWidget->pos(), _impl->graphicsWidget->size());
 }
 
 Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
