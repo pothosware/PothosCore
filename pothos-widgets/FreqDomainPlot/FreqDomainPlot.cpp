@@ -31,6 +31,7 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, numFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, enableYAxis));
+    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, setYAxisTitle));
     this->registerSignal("frequencySelected");
     this->setupInput(0, dtype);
 
@@ -46,7 +47,6 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
         _mainPlot->setCanvasBackground(QBrush(QColor("white")));
         _mainPlot->setAxisScale(QwtPlot::yLeft, -100, 0);
-        _mainPlot->setAxisTitle(QwtPlot::yLeft, "dB");
         auto picker = new MyPlotPicker(_mainPlot->canvas());
         connect(picker, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
     }
@@ -124,6 +124,11 @@ void FreqDomainPlot::enableXAxis(const bool enb)
 void FreqDomainPlot::enableYAxis(const bool enb)
 {
     _mainPlot->enableAxis(QwtPlot::yLeft, enb);
+}
+
+void FreqDomainPlot::setYAxisTitle(const QString &title)
+{
+    _mainPlot->setAxisTitle(QwtPlot::yLeft, title);
 }
 
 void FreqDomainPlot::installLegend(void)

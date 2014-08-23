@@ -70,6 +70,9 @@ class QwtPlotCurve;
  * |default true
  * |preview disable
  *
+ * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
+ * |default "dB"
+ *
  * |mode graphWidget
  * |factory /widgets/freq_domain_plot(dtype)
  * |setter setNumInputs(numInputs)
@@ -79,6 +82,7 @@ class QwtPlotCurve;
  * |setter setNumFFTBins(numBins)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
+ * |setter setYAxisTitle(yAxisTitle)
  **********************************************************************/
 class FreqDomainPlot : public QWidget, public Pothos::Block
 {
@@ -142,6 +146,7 @@ public:
 
     void enableXAxis(const bool enb);
     void enableYAxis(const bool enb);
+    void setYAxisTitle(const QString &title);
 
     void activate(void);
     void work(void);

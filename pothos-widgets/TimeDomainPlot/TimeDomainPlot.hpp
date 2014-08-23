@@ -69,6 +69,9 @@ class QwtPlotCurve;
  * |default true
  * |preview disable
  *
+ * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
+ * |default ""
+ *
  * |mode graphWidget
  * |factory /widgets/time_domain_plot(dtype)
  * |setter setNumInputs(numInputs)
@@ -78,6 +81,7 @@ class QwtPlotCurve;
  * |setter setNumPoints(numPoints)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
+ * |setter setYAxisTitle(yAxisTitle)
  **********************************************************************/
 class TimeDomainPlot : public QWidget, public Pothos::Block
 {
@@ -141,6 +145,7 @@ public:
 
     void enableXAxis(const bool enb);
     void enableYAxis(const bool enb);
+    void setYAxisTitle(const QString &title);
 
     void activate(void);
     void work(void);
