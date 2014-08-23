@@ -151,9 +151,8 @@ void Pothos::System::Logger::forwardStdIoToLogging(const std::string &source)
     cerrRedirected.reset(new InterceptStream(std::cerr, source));
 }
 
-void Pothos::System::Logger::setupDefaultLogging(void)
+static void __setupDefaultLogging(void)
 {
-    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
     const std::string logLevel = Poco::Environment::get("POTHOS_LOG_LEVEL", "notice");
     const std::string logChannel = Poco::Environment::get("POTHOS_LOG_CHANNEL", "color");
     const std::string logFile = Poco::Environment::get("POTHOS_LOG_FILE", "pothos.log");
@@ -180,9 +179,15 @@ void Pothos::System::Logger::setupDefaultLogging(void)
     Poco::Logger::get("").setChannel(formattingChannel);
 }
 
+void Pothos::System::Logger::setupDefaultLogging(void)
+{
+    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
+    __setupDefaultLogging();
+}
+
 pothos_static_block(pothosLoggingInit)
 {
-    Pothos::System::Logger::setupDefaultLogging();
+    __setupDefaultLogging();
 }
 
 #include <Pothos/Managed.hpp>
