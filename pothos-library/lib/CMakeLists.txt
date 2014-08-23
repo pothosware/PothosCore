@@ -88,6 +88,7 @@ list(APPEND POTHOS_SOURCES
     Object/Builtin/Tests.cpp
 
     Callable/Callable.cpp
+    Callable/CallInterface.cpp
     Callable/Exception.cpp
     Callable/Tests.cpp
 
