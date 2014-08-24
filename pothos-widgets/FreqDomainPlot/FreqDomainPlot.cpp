@@ -147,7 +147,7 @@ void FreqDomainPlot::handleLegendChecked(const QVariant &itemInfo, bool on, int)
 void FreqDomainPlot::handlePickerSelected(const QPointF &p)
 {
     const double freq = p.x()*_sampleRate/_sampleRateWoAxisUnits;
-    this->emitSignal("frequencySelected", freq);
+    this->callVoid("frequencySelected", freq);
 }
 
 /***********************************************************************
