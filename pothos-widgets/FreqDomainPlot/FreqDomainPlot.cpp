@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "MyPlotStyler.hpp"
 #include "MyPlotPicker.hpp"
 #include "FreqDomainPlot.hpp"
 #include <QResizeEvent>
@@ -45,16 +46,18 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
     {
         //missing from qwt:
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
-        _mainPlot->setCanvasBackground(QBrush(QColor("white")));
+        _mainPlot->setCanvasBackground(MyPlotCanvasBg());
         _mainPlot->setAxisScale(QwtPlot::yLeft, -100, 0);
         auto picker = new MyPlotPicker(_mainPlot->canvas());
         connect(picker, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
+        _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
+        _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
     }
 
     //setup grid
     {
         _plotGrid->attach(_mainPlot);
-        _plotGrid->setPen(QColor("#999999"), 0.5, Qt::DashLine);
+        _plotGrid->setPen(MyPlotGridPen());
     }
 }
 
@@ -73,7 +76,7 @@ void FreqDomainPlot::setNumInputs(const size_t numInputs)
 
 void FreqDomainPlot::setTitle(const QString &title)
 {
-    _mainPlot->setTitle(title);
+    _mainPlot->setTitle(MyPlotTitle(title));
 }
 
 void FreqDomainPlot::setDisplayRate(const double displayRate)
@@ -101,7 +104,7 @@ void FreqDomainPlot::setSampleRate(const double sampleRate)
         _sampleRateWoAxisUnits /= 1e3;
         axisTitle = "kHz";
     }
-    _mainPlot->setAxisTitle(QwtPlot::xBottom, axisTitle);
+    _mainPlot->setAxisTitle(QwtPlot::xBottom, MyPlotAxisTitle(axisTitle));
     _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
 }
 
@@ -128,7 +131,7 @@ void FreqDomainPlot::enableYAxis(const bool enb)
 
 void FreqDomainPlot::setYAxisTitle(const QString &title)
 {
-    _mainPlot->setAxisTitle(QwtPlot::yLeft, title);
+    _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle(title));
 }
 
 void FreqDomainPlot::installLegend(void)

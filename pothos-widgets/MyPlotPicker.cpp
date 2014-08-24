@@ -18,7 +18,7 @@ void MyPlotPicker::widgetMouseDoubleClickEvent(QMouseEvent *event)
 
 QwtText MyPlotPicker::trackerTextF(const QPointF &pos) const
 {
-    QwtText text(QString("<span style='font-size:8pt;' >%1 <b>%2</b><br />%3 <b>%4</b></span>")
+    QwtText text(QString("<span style='font-size:7pt;' >%1 <b>%2</b><br />%3 <b>%4</b></span>")
         .arg(pos.x())
         .arg(this->plot()->axisTitle(QwtPlot::xBottom).text().toHtmlEscaped())
         .arg(pos.y())

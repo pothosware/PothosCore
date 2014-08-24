@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "MyPlotStyler.hpp"
 #include "MyPlotPicker.hpp"
 #include "TimeDomainPlot.hpp"
 #include <QResizeEvent>
@@ -44,14 +45,16 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
     {
         //missing from qwt:
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
-        _mainPlot->setCanvasBackground(QBrush(QColor("white")));
+        _mainPlot->setCanvasBackground(MyPlotCanvasBg());
         new MyPlotPicker(_mainPlot->canvas());
+        _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
+        _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
     }
 
     //setup grid
     {
         _plotGrid->attach(_mainPlot);
-        _plotGrid->setPen(QColor("#999999"), 0.5, Qt::DashLine);
+        _plotGrid->setPen(MyPlotGridPen());
     }
 
 }
@@ -71,7 +74,7 @@ void TimeDomainPlot::setNumInputs(const size_t numInputs)
 
 void TimeDomainPlot::setTitle(const QString &title)
 {
-    _mainPlot->setTitle(title);
+    _mainPlot->setTitle(MyPlotTitle(title));
 }
 
 void TimeDomainPlot::setDisplayRate(const double displayRate)
@@ -109,7 +112,7 @@ void TimeDomainPlot::enableYAxis(const bool enb)
 
 void TimeDomainPlot::setYAxisTitle(const QString &title)
 {
-    _mainPlot->setAxisTitle(QwtPlot::yLeft, title);
+    _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle(title));
 }
 
 void TimeDomainPlot::updateXAxis(void)
@@ -131,7 +134,7 @@ void TimeDomainPlot::updateXAxis(void)
         _timeSpan *= 1e3;
         axisTitle = "ms";
     }
-    _mainPlot->setAxisTitle(QwtPlot::xBottom, axisTitle);
+    _mainPlot->setAxisTitle(QwtPlot::xBottom, MyPlotAxisTitle(axisTitle));
     _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
 }
 
