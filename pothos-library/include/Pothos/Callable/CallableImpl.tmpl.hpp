@@ -10,7 +10,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Callable/Callable.hpp>
-#include <Pothos/Callable/Exception.hpp>
+#include <Pothos/Callable/CallInterfaceImpl.hpp>
 #include <Pothos/Object/ObjectImpl.hpp>
 #include <functional> //std::function
 #include <type_traits> //std::type_info, std::is_void
@@ -176,41 +176,5 @@ Callable Callable::factoryShared(void)
     return Callable(&Detail::CallableFactorySharedWrapper<ClassType, $expand('A%d', $NARGS)>);
 }
 
-/***********************************************************************
- * Templated call gateways with $(NARGS) args
- **********************************************************************/
-template <typename ReturnType, $expand('typename A%d', $NARGS)>
-ReturnType Callable::call($expand('A%d &&a%d', $NARGS)) const
-{
-    Object r = this->callObject($expand('std::forward<A%d>(a%d)', $NARGS));
-    try
-    {
-        return r.convert<ReturnType>();
-    }
-    catch(const Exception &ex)
-    {
-        throw CallableReturnError("Pothos::Callable::call()", ex);
-    }
-}
-
-#cond $NARGS > 0
-template <$expand('typename A%d', $NARGS)>
-Object Callable::callObject($expand('A%d &&a%d', $NARGS)) const
-{
-    Object args[$(max(1, $NARGS))];
-    #for $i in range($NARGS):
-    args[$i] = Object::make(std::forward<A$i>(a$i));
-    #end for
-    return this->opaqueCall(args, $NARGS);
-}
-
-template <$expand('typename A%d', $NARGS)>
-void Callable::callVoid($expand('A%d &&a%d', $NARGS)) const
-{
-    this->callObject($expand('std::forward<A%d>(a%d)', $NARGS));
-}
-#end if
-
 #end for
-
 } //namespace Pothos

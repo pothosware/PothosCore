@@ -66,7 +66,7 @@ class SimpleSignalEmitter(Pothos.Block):
         self.registerSignal("activateCalled")
 
     def activate(self):
-        self.emitSignal("activateCalled", "hello")
+        self.activateCalled("hello")
 
 class SimpleSlotHandler(Pothos.Block):
     def __init__(self):

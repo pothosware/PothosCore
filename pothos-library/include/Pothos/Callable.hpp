@@ -11,4 +11,6 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Callable/Callable.hpp>
 #include <Pothos/Callable/CallableImpl.hpp>
+#include <Pothos/Callable/CallRegistry.hpp>
+#include <Pothos/Callable/CallRegistryImpl.hpp>
 #include <Pothos/Callable/Exception.hpp>

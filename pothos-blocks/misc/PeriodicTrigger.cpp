@@ -64,7 +64,7 @@ public:
 
         if (currentTime > _nextTrigger)
         {
-            this->emitSignal("triggered");
+            this->callVoid("triggered");
             this->incrementNext();
         }
         else

@@ -10,8 +10,6 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/Connectable.hpp>
-#include <Pothos/Framework/CallRegistry.hpp>
-#include <Pothos/Framework/SignalEmitter.hpp>
 #include <Pothos/Framework/WorkInfo.hpp>
 #include <Pothos/Framework/WorkStats.hpp>
 #include <Pothos/Framework/InputPort.hpp>
@@ -35,7 +33,7 @@ namespace Pothos {
  * Any resources produced at the Block's output ports will be
  * make available to the other Block's connected input ports.
  */
-class POTHOS_API Block : protected CallRegistry, protected SignalEmitter, public Connectable
+class POTHOS_API Block : public Connectable
 {
 public:
 
@@ -292,14 +290,6 @@ public:
     void registerSlot(const std::string &name);
 
     /*!
-     * Emit a signal given the args as an array of opaque objects.
-     * \param name the name of the signal to emit
-     * \param args the opaque array of signal args
-     * \throws BlockCallNotFound when no signal registered for the provided name
-     */
-    void emitSignalArgs(const std::string &name, const std::vector<Object> &args);
-
-    /*!
      * Notify the scheduler that the work() method will yeild the thread context.
      * Call this method when the work() function will not produce or consume,
      * so that the scheduler will call work() again without an external stimulus.
@@ -309,6 +299,15 @@ public:
      * and must therefore return from the work() call without producing output.
      */
     void yield(void);
+
+    /*!
+     * Call a method on a derived instance with opaque input and return types.
+     * \param name the name of the method as a string
+     * \param inputArgs an array of input arguments
+     * \param numArgs the size of the input array
+     * \return the return value as type Object
+     */
+    Object opaqueCallMethod(const std::string &name, const Object *inputArgs, const size_t numArgs) const;
 
 private:
     WorkInfo _workInfo;
@@ -325,7 +324,6 @@ private:
 public:
     std::shared_ptr<WorkerActor> _actor;
     friend class WorkerActor;
-    Object opaqueCall(const std::string &name, const Object *inputArgs, const size_t numArgs);
 };
 
 } //namespace Pothos

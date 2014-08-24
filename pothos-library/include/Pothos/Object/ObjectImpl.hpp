@@ -176,15 +176,40 @@ ValueType &ObjectContainer::extract(const Object &obj)
     Detail::ObjectContainer::throwExtract(obj, typeid(ValueType)); throw;
 }
 
-} //namespace Detail
+/***********************************************************************
+ * template specialized factory for object containers
+ **********************************************************************/
+template <typename ValueType>
+ObjectContainer *makeObjectContainer(ValueType &&value)
+{
+    return new ObjectContainerT<typename std::decay<ValueType>::type>(std::forward<ValueType>(value));
+}
 
+/*!
+ * Create an Object from a NullObject type.
+ * The implementation always returns null.
+ * We do not allocate for type NullObject.
+ */
+inline ObjectContainer *makeObjectContainer(NullObject &&)
+{
+    return nullptr;
+}
+
+/*!
+ * Create an Object from a string char array.
+ * This resulting object type will be std::string.
+ * This is a convenience function to use null-terminated
+ * char arrays without the explicit cast to std::string.
+ */
+POTHOS_API ObjectContainer *makeObjectContainer(const char *s);
+
+} //namespace Detail
 
 template <typename ValueType>
 Object Object::make(ValueType &&value)
 {
     Object o;
-    if (typeid(ValueType) == typeid(NullObject)) return o;
-    o._impl = new Detail::ObjectContainerT<typename std::decay<ValueType>::type>(std::forward<ValueType>(value));
+    o._impl = Detail::makeObjectContainer(std::forward<ValueType>(value));
     return o;
 }
 
@@ -192,8 +217,7 @@ template <typename ValueType>
 Object::Object(ValueType &&value):
     _impl(nullptr)
 {
-    if (typeid(ValueType) == typeid(NullObject)) return;
-    _impl = new Detail::ObjectContainerT<typename std::decay<ValueType>::type>(std::forward<ValueType>(value));
+    _impl = Detail::makeObjectContainer(std::forward<ValueType>(value));
 }
 
 template <typename ValueType>
