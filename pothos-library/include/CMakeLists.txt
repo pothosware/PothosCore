@@ -51,16 +51,17 @@ file(GLOB_RECURSE all_include_files
 list(APPEND all_include_files ${gen_tmpl_outputs})
 
 file(GLOB include_files
-    RELATIVE ${POTHOS_SOURCE_DIR}
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Pothos/*.hpp)
 
 foreach(include_file ${include_files})
+    message(STATUS "include_file: ${include_file}")
     get_filename_component(include_path ${include_file} PATH)
-    file(MAKE_DIRECTORY ${POTHOS_BINARY_DIR}/${include_path})
-    set(pch_source ${POTHOS_BINARY_DIR}/${include_file}.cpp)
-    file(WRITE ${pch_source} "#include <${POTHOS_SOURCE_DIR}/${include_file}>\n")
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${include_path})
+    set(pch_source ${CMAKE_CURRENT_BINARY_DIR}/${include_file}.cpp)
+    file(WRITE ${pch_source} "#include <${CMAKE_CURRENT_SOURCE_DIR}/${include_file}>\n")
     if(CMAKE_COMPILER_IS_GNUCXX)
-        set(pch_file ${POTHOS_BINARY_DIR}/${include_file}.gch)
+        set(pch_file ${CMAKE_CURRENT_BINARY_DIR}/${include_file}.gch)
         add_custom_command(
             DEPENDS ${all_include_files} OUTPUT ${pch_file}
             COMMAND ${CMAKE_CXX_COMPILER} -std=c++11
@@ -68,19 +69,19 @@ foreach(include_file ${include_files})
                 -x c++-header ${pch_source} -o ${pch_file}
         )
     elseif(MSVC)
-        set(pch_file ${POTHOS_BINARY_DIR}/${include_file}.pch)
+        set(pch_file ${CMAKE_CURRENT_BINARY_DIR}/${include_file}.pch)
         add_custom_command(
             DEPENDS ${all_include_files} OUTPUT ${pch_file}
             COMMAND ${CMAKE_CXX_COMPILER} /c /EHsc
                 /I ${CMAKE_CURRENT_SOURCE_DIR} /Yc ${pch_source}
-            WORKING_DIRECTORY ${POTHOS_BINARY_DIR}/${include_path}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${include_path}
         )
     endif()
     if(pch_file)
         list(APPEND pch_files ${pch_file})
         install(
             FILES ${pch_file}
-            DESTINATION ${include_path}
+            DESTINATION include/${include_path}
             COMPONENT pothos_devel
         )
     endif()
