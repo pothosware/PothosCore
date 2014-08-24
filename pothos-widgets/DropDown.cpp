@@ -98,7 +98,7 @@ public:
     void activate(void)
     {
         //emit current value when design becomes active
-        this->emitSignalArgs("valueChanged", Pothos::ObjectVector(1, this->value()));
+        this->callVoid("valueChanged", this->value());
     }
 
     Pothos::Object value(void) const
@@ -164,7 +164,7 @@ private slots:
 
     void handleIndexChanged(int)
     {
-        this->emitSignalArgs("valueChanged", Pothos::ObjectVector(1, this->value()));
+        this->callVoid("valueChanged", this->value());
     }
 
 private:

@@ -9,6 +9,7 @@
 
 #pragma once
 #include <Pothos/Framework/Topology.hpp>
+#include <Pothos/Framework/ConnectableImpl.hpp>
 #include <type_traits> //enable_if
 
 namespace Pothos {

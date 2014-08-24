@@ -39,8 +39,7 @@ public:
         auto input = this->input(0);
         if (input->hasMessage())
         {
-            auto msg = input->popMessage();
-            this->emitSignalArgs(_emitName, std::vector<Pothos::Object>(1, msg));
+            this->callVoid(_emitName, input->popMessage());
         }
     }
 

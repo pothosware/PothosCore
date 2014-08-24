@@ -182,7 +182,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerWildcardMethod(const Callabl
 {
     if (_impl->referenceToWrapper and method.getNumArgs() > 0 and method.type(0) != _impl->referenceToWrapper.type(0))
     {
-        throw ManagedClassTypeError("Pothos::ManagedClass::registerWildcardOpaqueMethod()", "class type mismatch");
+        throw ManagedClassTypeError("Pothos::ManagedClass::registerWildcardMethod()", "class type mismatch");
     }
     if (method.type(-1) != typeid(Object) or method.getNumArgs() != 4 or method.type(1) != typeid(std::string) or method.type(2) != typeid(const Object *) or method.type(3) != typeid(size_t))
     {

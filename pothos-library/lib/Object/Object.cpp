@@ -67,6 +67,11 @@ void Pothos::Detail::ObjectContainer::throwExtract(const Pothos::Object &obj, co
         obj.getTypeString(), Util::typeInfoToString(type)));
 }
 
+Pothos::Detail::ObjectContainer *Pothos::Detail::makeObjectContainer(const char *s)
+{
+    return makeObjectContainer(std::string(s));
+}
+
 /***********************************************************************
  * Object impl
  **********************************************************************/
@@ -74,11 +79,6 @@ Pothos::Object::Object(void):
     _impl(nullptr)
 {
     assert(not *this);
-}
-
-Pothos::Object Pothos::Object::make(const char *s)
-{
-    return Object(s);
 }
 
 Pothos::Object::Object(const Object &obj):
@@ -103,12 +103,6 @@ Pothos::Object::Object(const Object &&obj):
     _impl(nullptr)
 {
     *this = obj;
-}
-
-Pothos::Object::Object(const char *s):
-    _impl(nullptr)
-{
-    *this = Object(std::string(s));
 }
 
 Pothos::Object::~Object(void)

@@ -9,6 +9,7 @@
 
 #pragma once
 #include <Pothos/Framework/Block.hpp>
+#include <Pothos/Framework/ConnectableImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
 
 inline const Pothos::WorkInfo &Pothos::Block::workInfo(void) const

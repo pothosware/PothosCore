@@ -1,5 +1,5 @@
 //
-// Framework/CallRegistryImpl.hpp
+// Callable/CallRegistryImpl.hpp
 //
 // Template method implementations for CallRegistry.
 //
@@ -9,7 +9,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Framework/CallRegistry.hpp>
+#include <Pothos/Callable/CallRegistry.hpp>
 #include <Pothos/Callable/CallableImpl.hpp>
 #include <functional> //std::ref
 

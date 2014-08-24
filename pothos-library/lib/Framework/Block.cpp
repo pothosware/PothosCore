@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
+#include <Pothos/Object/Containers.hpp>
 
 /***********************************************************************
  * Reusable threadpool
@@ -130,16 +131,6 @@ void Pothos::Block::registerSlot(const std::string &name)
     _actor->allocateSlot(name);
 }
 
-void Pothos::Block::emitSignalArgs(const std::string &name, const std::vector<Object> &args)
-{
-    auto it = _actor->outputs.find(name);
-    if (it == _actor->outputs.end() or not it->second->isSignal())
-    {
-        throw Pothos::BlockCallNotFound("Pothos::Block::emitSignal("+name+")", "signal does not exist in registry");
-    }
-    it->second->postMessage(Object(args));
-}
-
 Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
 {
     auto it = _calls.find(name);
@@ -150,8 +141,18 @@ Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const P
     return it->second.opaqueCall(inputArgs, numArgs);
 }
 
-Pothos::Object Pothos::Block::opaqueCall(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
+Pothos::Object Pothos::Block::opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
 {
+    //call into a signal
+    auto out = _actor->outputs.find(name);
+    if (out != _actor->outputs.end() and out->second->isSignal())
+    {
+        const ObjectVector args(inputArgs, inputArgs+numArgs);
+        out->second->postMessage(Object(args));
+        return Object();
+    }
+
+    //otherwise its a regular method
     auto it = _calls.find(name);
     if (it == _calls.end())
     {
@@ -224,7 +225,6 @@ static Pothos::Block *getPointer(Pothos::Block &b)
 static auto managedBlock = Pothos::ManagedClass()
     .registerClass<Pothos::Block>()
     .registerBaseClass<Pothos::Block, Pothos::Connectable>()
-    .registerWildcardMethod(&Pothos::Block::opaqueCall)
     .registerMethod("getPointer", &getPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
@@ -250,7 +250,6 @@ static auto managedBlock = Pothos::ManagedClass()
 
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSignal))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSlot))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, emitSignalArgs))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputs))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, allInputs))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, input))
