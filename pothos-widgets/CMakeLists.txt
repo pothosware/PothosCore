@@ -40,6 +40,7 @@ endforeach(comp)
 set(CUSTOM_QWT_SOURCES #sources not part of QWT that we are building into this library
     MyPlotPicker.cpp
     MyPlotterUtils.cpp
+    MyDoubleSlider.cpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qwt/src)
@@ -58,25 +59,14 @@ list(APPEND Qt5_LIBRARIES PothosQwt)
 ########################################################################
 # Build widgets module
 ########################################################################
-set(SOURCES
-    QStringSupport.cpp
-    MyDoubleSlider.cpp
-    Slider.cpp
-    NumericEntry.cpp
-    TextDisplay.cpp
-    DropDown.cpp
-    RadioGroup.cpp
-    QwtSlider.cpp
-)
-
 POTHOS_MODULE_UTIL(
     TARGET GeneralWidgets
-    SOURCES ${SOURCES}
+    SOURCES QStringSupport.cpp
     LIBRARIES ${Qt5_LIBRARIES}
     DESTINATION widgets
-    ENABLE_DOCS
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(ControlWidgets)
 add_subdirectory(TimeDomainPlot)
 add_subdirectory(FreqDomainPlot)

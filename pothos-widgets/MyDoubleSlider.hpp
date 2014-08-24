@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <QSlider>
+#include <qwt_global.h>
 
-class MyDoubleSlider : public QSlider
+class QWT_EXPORT MyDoubleSlider : public QSlider
 {
     Q_OBJECT
 public:
