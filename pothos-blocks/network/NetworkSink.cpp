@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 #include <cassert>
-#include <cassert>
+#include <iostream>
 
 /***********************************************************************
  * |PothosDoc Network Sink
