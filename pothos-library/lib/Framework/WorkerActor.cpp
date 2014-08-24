@@ -40,7 +40,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         }
         assert(not port._impl->_bufferFromManager or port._buffer.getManagedBuffer() == port._impl->bufferManager->front());
         port._elements = port._buffer.length/port.dtype().size();
-        if (port._elements == 0) allOutputsReady = false;
+        if (port._elements == 0 and not port.isSignal()) allOutputsReady = false;
         if (not port._impl->tokenManager or port._impl->tokenManager->empty()) allOutputsReady = false;
         port._pendingElements = 0;
         if (port.index() != -1)
