@@ -3,14 +3,14 @@
 
 #include "MyPlotStyler.hpp"
 #include "MyPlotPicker.hpp"
-#include "TimeDomainPlot.hpp"
+#include "WaveMonitor.hpp"
 #include <QResizeEvent>
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
 
-TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
+WaveMonitor::WaveMonitor(const Pothos::DType &dtype):
     _mainPlot(new QwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
     _displayRate(1.0),
@@ -19,20 +19,20 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
     _numPoints(1024)
 {
     //setup block
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, widget));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setNumInputs));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setTitle));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setDisplayRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setSampleRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setNumPoints));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, numInputs));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, title));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, displayRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, sampleRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, numPoints));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, enableXAxis));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, enableYAxis));
-    this->registerCall(this, POTHOS_FCN_TUPLE(TimeDomainPlot, setYAxisTitle));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, widget));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumInputs));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setTitle));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setDisplayRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setSampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumPoints));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, numInputs));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, title));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, displayRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, sampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, numPoints));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, enableXAxis));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, enableYAxis));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setYAxisTitle));
     this->setupInput(0, dtype);
 
     //layout
@@ -59,12 +59,12 @@ TimeDomainPlot::TimeDomainPlot(const Pothos::DType &dtype):
 
 }
 
-TimeDomainPlot::~TimeDomainPlot(void)
+WaveMonitor::~WaveMonitor(void)
 {
     return;
 }
 
-void TimeDomainPlot::setNumInputs(const size_t numInputs)
+void WaveMonitor::setNumInputs(const size_t numInputs)
 {
     for (size_t i = this->inputs().size(); i < numInputs; i++)
     {
@@ -72,50 +72,50 @@ void TimeDomainPlot::setNumInputs(const size_t numInputs)
     }
 }
 
-void TimeDomainPlot::setTitle(const QString &title)
+void WaveMonitor::setTitle(const QString &title)
 {
     _mainPlot->setTitle(MyPlotTitle(title));
 }
 
-void TimeDomainPlot::setDisplayRate(const double displayRate)
+void WaveMonitor::setDisplayRate(const double displayRate)
 {
     _displayRate = displayRate;
 }
 
-void TimeDomainPlot::setSampleRate(const double sampleRate)
+void WaveMonitor::setSampleRate(const double sampleRate)
 {
     _sampleRate = sampleRate;
     this->updateXAxis();
 }
 
-void TimeDomainPlot::setNumPoints(const size_t numPoints)
+void WaveMonitor::setNumPoints(const size_t numPoints)
 {
     _numPoints = numPoints;
     for (auto inPort : this->inputs()) inPort->setReserve(_numPoints);
     this->updateXAxis();
 }
 
-QString TimeDomainPlot::title(void) const
+QString WaveMonitor::title(void) const
 {
     return _mainPlot->title().text();
 }
 
-void TimeDomainPlot::enableXAxis(const bool enb)
+void WaveMonitor::enableXAxis(const bool enb)
 {
     _mainPlot->enableAxis(QwtPlot::xBottom, enb);
 }
 
-void TimeDomainPlot::enableYAxis(const bool enb)
+void WaveMonitor::enableYAxis(const bool enb)
 {
     _mainPlot->enableAxis(QwtPlot::yLeft, enb);
 }
 
-void TimeDomainPlot::setYAxisTitle(const QString &title)
+void WaveMonitor::setYAxisTitle(const QString &title)
 {
     _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle(title));
 }
 
-void TimeDomainPlot::updateXAxis(void)
+void WaveMonitor::updateXAxis(void)
 {
     QString axisTitle("s");
     _timeSpan = _numPoints/_sampleRate;
@@ -138,7 +138,7 @@ void TimeDomainPlot::updateXAxis(void)
     _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
 }
 
-void TimeDomainPlot::installLegend(void)
+void WaveMonitor::installLegend(void)
 {
     auto legend = new QwtLegend(_mainPlot);
     legend->setDefaultItemMode(QwtLegendData::Checkable);
@@ -146,7 +146,7 @@ void TimeDomainPlot::installLegend(void)
     _mainPlot->insertLegend(legend);
 }
 
-void TimeDomainPlot::handleLegendChecked(const QVariant &itemInfo, bool on, int)
+void WaveMonitor::handleLegendChecked(const QVariant &itemInfo, bool on, int)
 {
     _mainPlot->infoToItem(itemInfo)->setVisible(not on);
 }
@@ -154,5 +154,5 @@ void TimeDomainPlot::handleLegendChecked(const QVariant &itemInfo, bool on, int)
 /***********************************************************************
  * registration
  **********************************************************************/
-static Pothos::BlockRegistry registerTimeDomainPlot(
-    "/widgets/time_domain_plot", &TimeDomainPlot::make);
+static Pothos::BlockRegistry registerWaveMonitor(
+    "/widgets/wave_monitor", &WaveMonitor::make);

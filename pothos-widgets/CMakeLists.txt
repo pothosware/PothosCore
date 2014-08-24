@@ -68,5 +68,6 @@ POTHOS_MODULE_UTIL(
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(ControlWidgets)
-add_subdirectory(TimeDomainPlot)
-add_subdirectory(FreqDomainPlot)
+add_subdirectory(WaveMonitor)
+add_subdirectory(Periodogram)
+add_subdirectory(Spectrogram)

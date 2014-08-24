@@ -15,12 +15,12 @@ class QwtPlotGrid;
 class QwtPlotCurve;
 
 /***********************************************************************
- * |PothosDoc Time Domain Plot
+ * |PothosDoc Wave Monitor
  *
- * The time domain plot displays a live two dimensional plot of input elements vs time.
+ * The wave monitor plot displays a live two dimensional plot of input elements vs time.
  *
  * |category /Widgets
- * |keywords time plot
+ * |keywords time plot wave scope
  *
  * |param dtype[Data Type] The data type of the input elements.
  * |option [Complex128] "complex128"
@@ -73,7 +73,7 @@ class QwtPlotCurve;
  * |default ""
  *
  * |mode graphWidget
- * |factory /widgets/time_domain_plot(dtype)
+ * |factory /widgets/wave_monitor(dtype)
  * |setter setNumInputs(numInputs)
  * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
@@ -83,19 +83,19 @@ class QwtPlotCurve;
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
  **********************************************************************/
-class TimeDomainPlot : public QWidget, public Pothos::Block
+class WaveMonitor : public QWidget, public Pothos::Block
 {
     Q_OBJECT
 public:
 
     static Block *make(const Pothos::DType &dtype)
     {
-        return new TimeDomainPlot(dtype);
+        return new WaveMonitor(dtype);
     }
 
-    TimeDomainPlot(const Pothos::DType &dtype);
+    WaveMonitor(const Pothos::DType &dtype);
 
-    ~TimeDomainPlot(void);
+    ~WaveMonitor(void);
 
     QWidget *widget(void)
     {

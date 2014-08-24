@@ -3,14 +3,14 @@
 
 #include "MyPlotStyler.hpp"
 #include "MyPlotPicker.hpp"
-#include "FreqDomainPlot.hpp"
+#include "Periodogram.hpp"
 #include <QResizeEvent>
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
 
-FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
+Periodogram::Periodogram(const Pothos::DType &dtype):
     _mainPlot(new QwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
     _displayRate(1.0),
@@ -19,20 +19,20 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
     _numBins(1024)
 {
     //setup block
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, widget));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, setNumInputs));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, setTitle));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, setDisplayRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, setSampleRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, setNumFFTBins));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, numInputs));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, title));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, displayRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, sampleRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, numFFTBins));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, enableXAxis));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, enableYAxis));
-    this->registerCall(this, POTHOS_FCN_TUPLE(FreqDomainPlot, setYAxisTitle));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, widget));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumInputs));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setTitle));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setDisplayRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setSampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumFFTBins));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, numInputs));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, title));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, displayRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, sampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, numFFTBins));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableXAxis));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableYAxis));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setYAxisTitle));
     this->registerSignal("frequencySelected");
     this->setupInput(0, dtype);
 
@@ -61,12 +61,12 @@ FreqDomainPlot::FreqDomainPlot(const Pothos::DType &dtype):
     }
 }
 
-FreqDomainPlot::~FreqDomainPlot(void)
+Periodogram::~Periodogram(void)
 {
     return;
 }
 
-void FreqDomainPlot::setNumInputs(const size_t numInputs)
+void Periodogram::setNumInputs(const size_t numInputs)
 {
     for (size_t i = this->inputs().size(); i < numInputs; i++)
     {
@@ -74,17 +74,17 @@ void FreqDomainPlot::setNumInputs(const size_t numInputs)
     }
 }
 
-void FreqDomainPlot::setTitle(const QString &title)
+void Periodogram::setTitle(const QString &title)
 {
     _mainPlot->setTitle(MyPlotTitle(title));
 }
 
-void FreqDomainPlot::setDisplayRate(const double displayRate)
+void Periodogram::setDisplayRate(const double displayRate)
 {
     _displayRate = displayRate;
 }
 
-void FreqDomainPlot::setSampleRate(const double sampleRate)
+void Periodogram::setSampleRate(const double sampleRate)
 {
     _sampleRate = sampleRate;
     QString axisTitle("Hz");
@@ -108,33 +108,33 @@ void FreqDomainPlot::setSampleRate(const double sampleRate)
     _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
 }
 
-void FreqDomainPlot::setNumFFTBins(const size_t numBins)
+void Periodogram::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
     for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
 }
 
-QString FreqDomainPlot::title(void) const
+QString Periodogram::title(void) const
 {
     return _mainPlot->title().text();
 }
 
-void FreqDomainPlot::enableXAxis(const bool enb)
+void Periodogram::enableXAxis(const bool enb)
 {
     _mainPlot->enableAxis(QwtPlot::xBottom, enb);
 }
 
-void FreqDomainPlot::enableYAxis(const bool enb)
+void Periodogram::enableYAxis(const bool enb)
 {
     _mainPlot->enableAxis(QwtPlot::yLeft, enb);
 }
 
-void FreqDomainPlot::setYAxisTitle(const QString &title)
+void Periodogram::setYAxisTitle(const QString &title)
 {
     _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle(title));
 }
 
-void FreqDomainPlot::installLegend(void)
+void Periodogram::installLegend(void)
 {
     auto legend = new QwtLegend(_mainPlot);
     legend->setDefaultItemMode(QwtLegendData::Checkable);
@@ -142,12 +142,12 @@ void FreqDomainPlot::installLegend(void)
     _mainPlot->insertLegend(legend);
 }
 
-void FreqDomainPlot::handleLegendChecked(const QVariant &itemInfo, bool on, int)
+void Periodogram::handleLegendChecked(const QVariant &itemInfo, bool on, int)
 {
     _mainPlot->infoToItem(itemInfo)->setVisible(not on);
 }
 
-void FreqDomainPlot::handlePickerSelected(const QPointF &p)
+void Periodogram::handlePickerSelected(const QPointF &p)
 {
     const double freq = p.x()*_sampleRate/_sampleRateWoAxisUnits;
     this->callVoid("frequencySelected", freq);
@@ -156,5 +156,5 @@ void FreqDomainPlot::handlePickerSelected(const QPointF &p)
 /***********************************************************************
  * registration
  **********************************************************************/
-static Pothos::BlockRegistry registerFreqDomainPlot(
-    "/widgets/freq_domain_plot", &FreqDomainPlot::make);
+static Pothos::BlockRegistry registerPeriodogram(
+    "/widgets/periodogram", &Periodogram::make);

@@ -16,12 +16,12 @@ class QwtPlotGrid;
 class QwtPlotCurve;
 
 /***********************************************************************
- * |PothosDoc Frequency Domain Plot
+ * |PothosDoc Periodogram
  *
- * The frequency domain plot displays a live two dimensional plot of power vs frequency.
+ * The periodogram plot displays a live two dimensional plot of power vs frequency.
  *
  * |category /Widgets
- * |keywords frequency plot
+ * |keywords frequency plot fft dft spectrum spectral
  *
  * |param dtype[Data Type] The data type of the input elements.
  * |option [Complex128] "complex128"
@@ -74,7 +74,7 @@ class QwtPlotCurve;
  * |default "dB"
  *
  * |mode graphWidget
- * |factory /widgets/freq_domain_plot(dtype)
+ * |factory /widgets/periodogram(dtype)
  * |setter setNumInputs(numInputs)
  * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
@@ -84,19 +84,19 @@ class QwtPlotCurve;
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
  **********************************************************************/
-class FreqDomainPlot : public QWidget, public Pothos::Block
+class Periodogram : public QWidget, public Pothos::Block
 {
     Q_OBJECT
 public:
 
     static Block *make(const Pothos::DType &dtype)
     {
-        return new FreqDomainPlot(dtype);
+        return new Periodogram(dtype);
     }
 
-    FreqDomainPlot(const Pothos::DType &dtype);
+    Periodogram(const Pothos::DType &dtype);
 
-    ~FreqDomainPlot(void);
+    ~Periodogram(void);
 
     QWidget *widget(void)
     {
