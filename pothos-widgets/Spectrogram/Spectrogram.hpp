@@ -5,6 +5,7 @@
 #include <Pothos/Framework.hpp>
 #include <QWidget>
 #include <memory>
+#include <chrono>
 #include <map>
 #include <vector>
 #include <functional>
@@ -42,6 +43,10 @@ class QwtMatrixRasterData;
  * |param title The title of the plot
  * |default "Spectrogram"
  *
+ * |param displayRate[Display Rate] How often the plotter updates.
+ * |default 2.0
+ * |units updates/sec
+ *
  * |param sampleRate[Sample Rate] The rate of the input elements.
  * |default 1e6
  * |units samples/sec
@@ -68,19 +73,16 @@ class QwtMatrixRasterData;
  * |default true
  * |preview disable
  *
- * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
- * |default ""
- *
  * |mode graphWidget
  * |factory /widgets/spectrogram(dtype)
  * |setter setTitle(title)
+ * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
  * |setter setSTFTOverlap(overlap)
  * |setter setTimeSpan(timeSpan)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
- * |setter setYAxisTitle(yAxisTitle)
  **********************************************************************/
 class Spectrogram : public QWidget, public Pothos::Block
 {
@@ -149,7 +151,6 @@ public:
 
     void enableXAxis(const bool enb);
     void enableYAxis(const bool enb);
-    void setYAxisTitle(const QString &title);
 
     void activate(void);
     void work(void);
@@ -178,7 +179,9 @@ private:
     size_t _numBins;
     size_t _overlap;
     double _timeSpan;
-    QwtColorMap *makeColorMap(void) const;
+    std::chrono::high_resolution_clock::time_point _timeLastUpdate;
+
     std::function<void(Pothos::InputPort *, CArray &)> _inputConverter;
     void updateMatrixDimensions(void);
+    QwtColorMap *makeColorMap(void) const;
 };

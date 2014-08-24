@@ -30,18 +30,19 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, widget));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTitle));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setNumFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setSTFTOverlap));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTimeSpan));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, title));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, numFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, stftOverlap));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, timeSpan));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableYAxis));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setYAxisTitle));
     this->registerSignal("frequencySelected");
     this->setupInput(0, dtype);
 
@@ -130,6 +131,7 @@ void Spectrogram::setNumFFTBins(const size_t numBins)
 void Spectrogram::setSTFTOverlap(const size_t overlap)
 {
     _overlap = overlap;
+    this->updateMatrixDimensions();
 }
 
 void Spectrogram::setTimeSpan(const double timeSpan)
@@ -170,11 +172,6 @@ void Spectrogram::enableXAxis(const bool enb)
 void Spectrogram::enableYAxis(const bool enb)
 {
     _mainPlot->enableAxis(QwtPlot::yLeft, enb);
-}
-
-void Spectrogram::setYAxisTitle(const QString &title)
-{
-    _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle(title));
 }
 
 void Spectrogram::handlePickerSelected(const QPointF &p)

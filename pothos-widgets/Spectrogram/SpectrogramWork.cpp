@@ -129,5 +129,15 @@ void Spectrogram::work(void)
     auto inPort = this->input(0);
     this->updateCurve(inPort);
     inPort->consume(this->numFFTBins()-this->stftOverlap());
-    QMetaObject::invokeMethod(_mainPlot, "replot", Qt::QueuedConnection);
+
+    //should we update the plotter with these values?
+    const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/_displayRate));
+    bool doUpdate = (std::chrono::high_resolution_clock::now() - _timeLastUpdate) > timeBetweenUpdates;
+
+    //perform the plotter update
+    if (doUpdate)
+    {
+        QMetaObject::invokeMethod(_mainPlot, "replot", Qt::QueuedConnection);
+        _timeLastUpdate = std::chrono::high_resolution_clock::now();
+    }
 }
