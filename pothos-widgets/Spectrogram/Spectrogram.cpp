@@ -4,6 +4,7 @@
 #include "MyPlotStyler.hpp"
 #include "MyPlotPicker.hpp"
 #include "Spectrogram.hpp"
+#include <QTimer>
 #include <QResizeEvent>
 #include <qwt_plot.h>
 #include <qwt_plot_layout.h>
@@ -14,6 +15,7 @@
 #include <qwt_color_map.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
+#include <mutex>
 #include <iostream>
 
 class MySpectrogramRasterData : public QwtRasterData
@@ -40,13 +42,20 @@ public:
 
     void appendBins(const std::valarray<double> &bins)
     {
+        std::unique_lock<std::mutex> lock(_rasterMutex);
         _data.push_front(bins);
         _data.pop_back();
     }
 
     void initRaster(const QRectF &, const QSize &raster)
     {
+        _rasterMutex.lock();
         this->setNumEntries(raster.height());
+    }
+
+    void discardRaster(void)
+    {
+        _rasterMutex.unlock();
     }
 
 private:
@@ -58,9 +67,11 @@ private:
     }
 
     QList<std::valarray<double>> _data;
+    std::mutex _rasterMutex;
 };
 
 Spectrogram::Spectrogram(const Pothos::DType &dtype):
+    _replotTimer(new QTimer(this)),
     _mainPlot(new QwtPlot(this)),
     _plotSpect(new QwtPlotSpectrogram()),
     _plotMatrix(new MySpectrogramRasterData()),
@@ -72,10 +83,12 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, widget));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTitle));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setNumFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTimeSpan));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, title));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, numFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, timeSpan));
@@ -118,6 +131,8 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
         _plotSpect->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
         _plotSpect->setRenderThreadCount(0); //enable multi-thread
     }
+
+    connect(_replotTimer, SIGNAL(timeout(void)), _mainPlot, SLOT(replot(void)));
 }
 
 Spectrogram::~Spectrogram(void)
@@ -128,6 +143,12 @@ Spectrogram::~Spectrogram(void)
 void Spectrogram::setTitle(const QString &title)
 {
     _mainPlot->setTitle(MyPlotTitle(title));
+}
+
+void Spectrogram::setDisplayRate(const double displayRate)
+{
+    _displayRate = displayRate;
+    _replotTimer->setInterval(int(1000/_displayRate));
 }
 
 void Spectrogram::setSampleRate(const double sampleRate)
@@ -209,7 +230,6 @@ void Spectrogram::handlePickerSelected(const QPointF &p)
 void Spectrogram::appendBins(const std::valarray<double> &bins)
 {
     _plotMatrix->appendBins(bins);
-    _mainPlot->replot();
 }
 
 QwtColorMap *Spectrogram::makeColorMap(void) const

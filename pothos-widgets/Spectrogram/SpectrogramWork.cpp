@@ -4,6 +4,7 @@
 #include "MyPlotterUtils.hpp"
 #include "Spectrogram.hpp"
 #include <qwt_plot.h>
+#include <QTimer>
 #include <complex>
 
 /***********************************************************************
@@ -63,6 +64,13 @@ void Spectrogram::activate(void)
     doForThisType(unsigned char)
     doForThisType(char)
     else throw Pothos::InvalidArgumentException("Spectrogram::setupPlotterCurves("+inPort->dtype().toString()+")", "dtype not supported");
+
+    _replotTimer->start();
+}
+
+void Spectrogram::deactivate(void)
+{
+    _replotTimer->stop();
 }
 
 /***********************************************************************
@@ -76,7 +84,7 @@ void Spectrogram::updateCurve(Pothos::InputPort *inPort)
 
     //power bins to points on the curve
     const auto powerBins = fftPowerSpectrum(fftBins);
-    QMetaObject::invokeMethod(this, "appendBins", Qt::QueuedConnection, Q_ARG(std::valarray<double>, powerBins));
+    this->appendBins(powerBins);
 }
 
 void Spectrogram::work(void)

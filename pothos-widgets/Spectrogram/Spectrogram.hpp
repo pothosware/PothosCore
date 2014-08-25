@@ -11,6 +11,7 @@
 #include <functional>
 #include "MyFFTUtils.hpp"
 
+class QTimer;
 class QwtPlot;
 class QwtColorMap;
 class QwtPlotSpectrogram;
@@ -43,6 +44,10 @@ class MySpectrogramRasterData;
  * |param title The title of the plot
  * |default "Spectrogram"
  *
+ * |param displayRate[Display Rate] How often the plotter updates.
+ * |default 10.0
+ * |units updates/sec
+ *
  * |param sampleRate[Sample Rate] The rate of the input elements.
  * |default 1e6
  * |units samples/sec
@@ -69,6 +74,7 @@ class MySpectrogramRasterData;
  * |mode graphWidget
  * |factory /widgets/spectrogram(dtype)
  * |setter setTitle(title)
+ * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
  * |setter setTimeSpan(timeSpan)
@@ -98,6 +104,12 @@ public:
     void setTitle(const QString &title);
 
     /*!
+     * update rate for the plotter
+     * how often to update the display
+     */
+    void setDisplayRate(const double displayRate);
+
+    /*!
      * sample rate for the plotter
      * controls the frequency scaling display
      */
@@ -107,6 +119,11 @@ public:
     void setTimeSpan(const double timeSpan);
 
     QString title(void) const;
+
+    double displayRate(void) const
+    {
+        return _displayRate;
+    }
 
     double sampleRate(void) const
     {
@@ -127,6 +144,7 @@ public:
     void enableYAxis(const bool enb);
 
     void activate(void);
+    void deactivate(void);
     void work(void);
     void updateCurve(Pothos::InputPort *inPort);
 
@@ -145,9 +163,11 @@ private slots:
     void appendBins(const std::valarray<double> &bins);
 
 private:
+    QTimer *_replotTimer;
     QwtPlot *_mainPlot;
     std::shared_ptr<QwtPlotSpectrogram> _plotSpect;
     MySpectrogramRasterData *_plotMatrix;
+    double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;
     size_t _numBins;
