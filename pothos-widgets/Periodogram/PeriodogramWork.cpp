@@ -130,13 +130,18 @@ void Periodogram::updateCurve(Pothos::InputPort *inPort)
     }
 
     //power bins to points on the curve
-    QVector<QPointF> points;
+    QMetaObject::invokeMethod(this, "handlePowerBins", Qt::QueuedConnection, Q_ARG(int, inPort->index()), Q_ARG(std::valarray<double>, powerBins));
+}
+
+void Periodogram::handlePowerBins(const int index, const std::valarray<double> &powerBins)
+{
+    QVector<QPointF> points(powerBins.size());
     for (size_t i = 0; i < powerBins.size(); i++)
     {
-        auto freq = (_sampleRateWoAxisUnits*i)/(fftBins.size()-1) - _sampleRateWoAxisUnits/2;
-        points.push_back(QPointF(freq, powerBins[i]));
+        auto freq = (_sampleRateWoAxisUnits*i)/(powerBins.size()-1) - _sampleRateWoAxisUnits/2;
+        points[i] = QPointF(freq, powerBins[i]);
     }
-    _curves.at(inPort->index())->setSamples(points);
+    _curves.at(index)->setSamples(points);
 }
 
 void Periodogram::work(void)
