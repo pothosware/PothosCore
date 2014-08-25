@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "EvalBlockCache.hpp"
 #include "PothosGuiUtils.hpp" //get object map
 #include "TopologyEngine/TopologyEngine.hpp"
 #include "GraphObjects/GraphBlock.hpp"
@@ -45,7 +46,12 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
 
     //generate a signature to detect if this commit has changes
     Poco::MD5Engine md5;
-    for (const auto &pair : _idToBlockEval) md5.update(pair.second.first);
+    for (const auto &pair : _idToBlockEval)
+    {
+        md5.update(pair.first.toStdString());
+        md5.update(pair.second->getProxyBlock().getEnvironment()->getNodeId());
+        md5.update(pair.second->getProxyBlock().hashCode());
+    }
     for (const auto &conn : connections) md5.update(conn.toString());
     const auto thisSignature = Poco::DigestEngine::digestToHex(md5.digest());
     if (thisSignature == _previousSignature) return;
