@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "network/SocketEndpoint.hpp"
+#include "SocketEndpoint.hpp"
 #include <Pothos/Framework.hpp>
 #include <cstring> //std::memset
 #include <sstream>

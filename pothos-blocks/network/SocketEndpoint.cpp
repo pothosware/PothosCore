@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "network/SocketEndpoint.hpp"
+#include "SocketEndpoint.hpp"
 #include <Pothos/Exception.hpp>
 #include <Poco/Foundation.h>
 #include <Poco/URI.h>
@@ -9,6 +9,8 @@
 #include <Poco/Net/StreamSocket.h>
 #include <Poco/Net/ServerSocket.h>
 #include <Poco/ByteOrder.h>
+#include <Poco/SingletonHolder.h>
+#include <mutex>
 #include <udt.h>
 #include <cassert>
 #include <iostream>
@@ -108,11 +110,16 @@ struct UDTSession
     }
 };
 
-static std::weak_ptr<UDTSession> UDTWeakSession;
+static std::mutex &getUdtSessionMutex(void)
+{
+    static Poco::SingletonHolder<std::mutex> sh;
+    return *sh.get();
+}
 
 static std::shared_ptr<UDTSession> getUDTSession(void)
 {
-    //TODO needs a lock
+    std::unique_lock<std::mutex> lock(getUdtSessionMutex());
+    static std::weak_ptr<UDTSession> UDTWeakSession;
     std::shared_ptr<UDTSession> sess = UDTWeakSession.lock();
     if (not sess)
     {
@@ -244,6 +251,7 @@ static const Poco::UInt32 PothosPacketHeaderWord = POTHOS_PACKET_WORD32("PTHS");
 #define PothosPacketFlagRst (1 << 2)
 #define PothosPacketFlagPsh (1 << 3)
 #define PothosPacketFlagAck (1 << 4)
+#define PothosPacketFlagFlo (1 << 5)
 
 struct PothosPacketHeader
 {
@@ -296,6 +304,10 @@ struct PothosPacketSocketEndpoint::Impl
     Poco::UInt16 lastType;
     Poco::UInt64 lastIndex;
     Poco::Net::SocketAddress actualAddr;
+    Poco::UInt64 totalBytesRecv;
+    Poco::UInt64 totalBytesSent;
+    Poco::UInt64 lastFlowMsgRecv;
+    Poco::UInt64 lastFlowMsgSent;
 
     PothosPacketSocketEndpointInterface *iface;
 
@@ -307,6 +319,11 @@ struct PothosPacketSocketEndpoint::Impl
     }
     void send(const Poco::UInt16 flags, const Poco::UInt16 type, const Poco::UInt64 &index, const void *buff, const size_t numBytes);
     void recv(Poco::UInt16 &flags, Poco::UInt16 &type, Poco::UInt64 &index, Pothos::BufferChunk &buffer, const Poco::Timespan &timeout);
+
+    Poco::UInt64 flowControlWindowBytes(void) const
+    {
+        return 256*1024;
+    }
 };
 
 /***********************************************************************
@@ -371,7 +388,8 @@ std::string PothosPacketSocketEndpoint::getActualPort(void) const
 
 bool PothosPacketSocketEndpoint::isReady(void)
 {
-    return _impl->state == EP_STATE_ESTABLISHED;
+    return (_impl->state == EP_STATE_ESTABLISHED) and
+        (_impl->lastFlowMsgRecv + _impl->flowControlWindowBytes() > _impl->totalBytesSent);
 }
 
 /***********************************************************************
@@ -385,6 +403,10 @@ void PothosPacketSocketEndpoint::openComms(void)
 
     //start with a new random sequence number
     _impl->lastSentPacketCount = Poco::UInt16(std::rand());
+    _impl->totalBytesRecv = 0;
+    _impl->totalBytesSent = 0;
+    _impl->lastFlowMsgRecv = 0;
+    _impl->lastFlowMsgSent = 0;
 
     //initiate connect operation
     if (_impl->state == EP_STATE_CLOSED)
@@ -615,6 +637,7 @@ void PothosPacketSocketEndpoint::Impl::recv(Poco::UInt16 &flags, Poco::UInt16 &t
         {
             throw Pothos::Exception("PothosPacketSocketEndpoint::recv(header)", std::to_string(ret));
         }
+        this->totalBytesRecv += ret;
 
         //extract header fields
         this->unpackHeader(header, size_t(ret), flags, type, index, this->bytesLeftInStream);
@@ -645,10 +668,24 @@ void PothosPacketSocketEndpoint::Impl::recv(Poco::UInt16 &flags, Poco::UInt16 &t
         {
             throw Pothos::Exception("PothosPacketSocketEndpoint::recv(payload)", std::to_string(ret));
         }
+        this->totalBytesRecv += ret;
         bytesRecvd += size_t(ret);
     }
 
     this->bytesLeftInStream -= buffer.length;
+
+    //deal with flow control (incoming)
+    if ((flags & PothosPacketFlagFlo) != 0)
+    {
+        this->lastFlowMsgRecv = index;
+    }
+
+    //deal with flow control (outgoing)
+    if (this->totalBytesRecv > this->lastFlowMsgSent + this->flowControlWindowBytes()/8)
+    {
+        this->send(PothosPacketFlagFlo, 0, this->totalBytesRecv, nullptr, 0);
+        this->lastFlowMsgSent = this->totalBytesRecv;
+    }
 }
 
 /***********************************************************************
@@ -677,6 +714,7 @@ void PothosPacketSocketEndpoint::Impl::send(const Poco::UInt16 flags, const Poco
     {
         throw Pothos::Exception("PothosPacketSocketEndpoint::send(header)", std::to_string(ret));
     }
+    this->totalBytesSent += ret;
 
     //send all of the available buffer
     size_t bytesLeft = numBytes;
@@ -687,6 +725,7 @@ void PothosPacketSocketEndpoint::Impl::send(const Poco::UInt16 flags, const Poco
         {
             throw Pothos::Exception("PothosPacketSocketEndpoint::send(payload)", std::to_string(ret));
         }
+        this->totalBytesSent += ret;
         bytesLeft -= size_t(ret);
     }
 }
