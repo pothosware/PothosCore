@@ -28,6 +28,8 @@ public:
 
     void eval(const std::string &id, const Poco::JSON::Object::Ptr &blockDesc);
 
+    void handleCall(const Poco::JSON::Object::Ptr &callObj);
+
     Pothos::Proxy getProxyBlock(void) const
     {
         return _proxyBlock;

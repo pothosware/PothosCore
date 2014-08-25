@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "EvalBlockCache.hpp"
 #include "PothosGuiUtils.hpp" //get object map
 #include "TopologyEngine/TopologyEngine.hpp"
 #include "GraphObjects/GraphBlock.hpp"
@@ -45,7 +46,12 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
 
     //generate a signature to detect if this commit has changes
     Poco::MD5Engine md5;
-    for (const auto &pair : _idToBlockEval) md5.update(pair.second.first);
+    for (const auto &pair : _idToBlockEval)
+    {
+        md5.update(pair.first.toStdString());
+        md5.update(pair.second->getProxyBlock().getEnvironment()->getNodeId());
+        md5.update(pair.second->getProxyBlock().hashCode());
+    }
     for (const auto &conn : connections) md5.update(conn.toString());
     const auto thisSignature = Poco::DigestEngine::digestToHex(md5.digest());
     if (thisSignature == _previousSignature) return;
@@ -54,6 +60,8 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
     _topology->disconnectAll();
     for (const auto &conn : connections)
     {
+        if (idToBlock.count(conn.srcId) == 0) continue;
+        if (idToBlock.count(conn.dstId) == 0) continue;
         _topology->connect(
             idToBlock.at(conn.srcId), conn.srcPort,
             idToBlock.at(conn.dstId), conn.dstPort);
@@ -78,6 +86,7 @@ Pothos::Proxy TopologyEngine::getEvalEnvironment(const QString &zone)
 
 Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QString &zone)
 {
+    if (zone == "gui") return Pothos::ProxyEnvironment::make("managed");
     auto dock = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]);
     assert(dock != nullptr);
     auto config = dock->zoneToConfig(zone);

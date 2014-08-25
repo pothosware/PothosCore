@@ -394,12 +394,12 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
 
             state = "DOC";
         }
-        else if (instruction == "setter" and (state == "DOC" or state == "PARAM"))
+        else if ((instruction == "setter" or instruction == "initializer") and (state == "DOC" or state == "PARAM"))
         {
             Poco::RegularExpression::MatchVec fields;
             Poco::RegularExpression("^\\s*(\\w+)\\s*\\((.*)\\)$").match(payload, 0, fields);
             if (fields.empty()) throw Pothos::SyntaxException(
-                "Expected |setter setFooBar(args, )",
+                "Expected |"+instruction+" setFooBar(args, )",
                 codeLine.toString());
 
             assert(fields.size() == 3);
@@ -408,6 +408,7 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
 
             //add to calls
             Poco::JSON::Object call;
+            call.set("type", instruction);
             call.set("name", callName);
             loadArgs(codeLine, call, argsStr);
             calls.add(call);

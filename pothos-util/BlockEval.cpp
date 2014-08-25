@@ -32,23 +32,28 @@ void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &block
     //make the calls
     if (blockDesc->isArray("calls")) for (auto call : *blockDesc->getArray("calls"))
     {
-        const auto callObj = call.extract<Poco::JSON::Object::Ptr>();
-        const auto callName = callObj->get("name").extract<std::string>();
-        std::vector<Pothos::Proxy> callArgs;
-        for (auto arg : *callObj->getArray("args"))
-        {
-            const auto propKey = arg.extract<std::string>();
-            const auto obj = _properties[propKey];
-            callArgs.push_back(env->convertObjectToProxy(obj));
-        }
-        try
-        {
-            _proxyBlock.getHandle()->call(callName, callArgs.data(), callArgs.size());
-        }
-        catch (const Pothos::Exception &ex)
-        {
-            throw Pothos::Exception("BlockEval call("+callName+")", ex);
-        }
+        this->handleCall(call.extract<Poco::JSON::Object::Ptr>());
+    }
+}
+
+void BlockEval::handleCall(const Poco::JSON::Object::Ptr &callObj)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    const auto callName = callObj->get("name").extract<std::string>();
+    std::vector<Pothos::Proxy> callArgs;
+    for (auto arg : *callObj->getArray("args"))
+    {
+        const auto propKey = arg.extract<std::string>();
+        const auto obj = _properties[propKey];
+        callArgs.push_back(env->convertObjectToProxy(obj));
+    }
+    try
+    {
+        _proxyBlock.getHandle()->call(callName, callArgs.data(), callArgs.size());
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        throw Pothos::Exception("BlockEval call("+callName+")", ex);
     }
 }
 
@@ -58,5 +63,6 @@ static auto managedBlockEval = Pothos::ManagedClass()
     .registerConstructor<BlockEval, EvalEnvironment &>()
     .registerMethod(POTHOS_FCN_TUPLE(BlockEval, evalProperty))
     .registerMethod(POTHOS_FCN_TUPLE(BlockEval, eval))
+    .registerMethod(POTHOS_FCN_TUPLE(BlockEval, handleCall))
     .registerMethod(POTHOS_FCN_TUPLE(BlockEval, getProxyBlock))
     .commit("Pothos/Util/BlockEval");

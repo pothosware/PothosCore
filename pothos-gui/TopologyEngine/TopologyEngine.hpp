@@ -28,6 +28,7 @@ namespace Pothos
 }
 
 class GraphBlock;
+class EvalBlockCache;
 
 class TopologyEngine : public QObject
 {
@@ -85,12 +86,8 @@ private:
     //! The topology object thats executing this design
     std::shared_ptr<Pothos::Topology> _topology;
 
-    //! a cache of block IDs to a pair(settings hash, block eval)
-    std::map<QString, std::pair<std::string, Pothos::Proxy>> _idToBlockEval;
-
-    void loadCachedStuffIntoBlock(GraphBlock *block);
-    std::map<QString, std::pair<Poco::JSON::Array::Ptr, Poco::JSON::Array::Ptr>> _idToPortDesc;
-    std::map<QString, std::map<QString, std::string>> _idToPropKeyToTypeStr;
+    //! a cache of block IDs to cache
+    std::map<QString, std::shared_ptr<EvalBlockCache>> _idToBlockEval;
 
     std::string _syslogListenPort;
     std::string _previousSignature;

@@ -103,7 +103,9 @@ void GraphBlock::update(void)
     auto blockProxy = engine->evalGraphBlock(this);
     if (this->isGraphWidget() and blockProxy)
     {
-        _impl->graphWidget = blockProxy.callProxy("getProxyBlock").call<QWidget *>("widget");
+        auto proxyBlock = blockProxy.callProxy("getProxyBlock");
+        if (proxyBlock) _impl->graphWidget = proxyBlock.call<QWidget *>("widget");
+        else _impl->graphWidget = nullptr;
     }
     QGraphicsObject::update();
 }
