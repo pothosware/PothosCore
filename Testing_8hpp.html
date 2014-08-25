@@ -102,13 +102,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;sstream&gt;</code><br/>
 <code>#include &lt;memory&gt;</code><br/>
 <code>#include &lt;string&gt;</code><br/>
-</div><div class="textblock"><div class="dynheader">
-Include dependency graph for Testing.hpp:</div>
-<div class="dyncontent">
-<div class="center"><img src="Testing_8hpp__incl.png" border="0" usemap="#include_2Pothos_2Testing_8hpp" alt=""/></div>
-<map name="include_2Pothos_2Testing_8hpp" id="include_2Pothos_2Testing_8hpp">
-<area shape="rect" id="node2" href="Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="1173,469,1303,496"/><area shape="rect" id="node4" href="Plugin_8hpp.html" title="Pothos/Plugin.hpp" alt="" coords="911,80,1039,107"/><area shape="rect" id="node19" href="Exception_8hpp.html" title="Pothos/Exception.hpp" alt="" coords="134,395,284,421"/><area shape="rect" id="node29" href="Callable_8hpp.html" title="Pothos/Callable.hpp" alt="" coords="1689,155,1828,181"/><area shape="rect" id="node5" href="Path_8hpp.html" title="Pothos/Plugin/Path.hpp" alt="" coords="602,320,760,347"/><area shape="rect" id="node8" href="Plugin_2Plugin_8hpp.html" title="Pothos/Plugin/Plugin.hpp" alt="" coords="1012,237,1180,264"/><area shape="rect" id="node9" href="Module_8hpp.html" title="Pothos/Plugin/Module.hpp" alt="" coords="887,320,1061,347"/><area shape="rect" id="node15" href="Registry_8hpp.html" title="Pothos/Plugin/Registry.hpp" alt="" coords="756,155,937,181"/><area shape="rect" id="node25" href="Loader_8hpp.html" title="Pothos/Plugin/Loader.hpp" alt="" coords="2063,237,2233,264"/><area shape="rect" id="node26" href="Static_8hpp.html" title="Pothos/Plugin/Static.hpp" alt="" coords="411,320,577,347"/><area shape="rect" id="node28" href="Plugin_2Exception_8hpp.html" title="Pothos/Plugin/Exception.hpp" alt="" coords="94,320,284,347"/><area shape="rect" id="node11" href="Object_2Object_8hpp.html" title="Pothos/Object/Object.hpp" alt="" coords="1714,395,1885,421"/><area shape="rect" id="node16" href="CallableImpl_8hpp.html" title="Pothos/Callable/Callable\lImpl.hpp" alt="" coords="1583,230,1747,271"/><area shape="rect" id="node17" href="Callable_2Callable_8hpp.html" title="Pothos/Callable/Callable.hpp" alt="" coords="1941,320,2131,347"/><area shape="rect" id="node18" href="Callable_2Exception_8hpp.html" title="Pothos/Callable/Exception.hpp" alt="" coords="1138,320,1339,347"/><area shape="rect" id="node21" href="ObjectImpl_8hpp.html" title="Pothos/Object/ObjectImpl.hpp" alt="" coords="1567,320,1764,347"/><area shape="rect" id="node27" href="Version_8hpp.html" title="Pothos/System/Version.hpp" alt="" coords="513,395,697,421"/></map>
-</div>
 </div>
 <p><a href="Testing_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -148,7 +141,10 @@ Macros</h2></td></tr>
 <tr class="memdesc:a23397eddb6cfb40857f4bbae57dc0a4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test that a statement throws a particular exception.  <a href="#a23397eddb6cfb40857f4bbae57dc0a4e">More...</a><br/></td></tr>
 <tr class="separator:a23397eddb6cfb40857f4bbae57dc0a4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Macros for creating self-test plugins. Self tests are installed into the registry and executed at runtime. The test macros are loosely based on the Boost unit test suite.</p>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2013-2014 Josh Blum SPDX-License-Identifier: BSL-1.0 </dd></dl>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a class="anchor" id="a7c01508acb0af432dd121f13f12fe2e9"></a>
 <div class="memitem">
 <div class="memproto">
@@ -175,7 +171,7 @@ Macros</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line">{ <a class="code" href="Testing_8hpp.html#ab4a0e57ec5ac9d8b20f67d998033e870">\</a></div>
 <div class="line"><a class="code" href="Testing_8hpp.html#ab4a0e57ec5ac9d8b20f67d998033e870">    __POTHOS_TEST_STATEMENT</a>(message, <span class="keywordflow">if</span> (statement) {} <span class="keywordflow">else</span> <span class="keywordflow">throw</span> std::string(<span class="stringliteral">&quot;statement \&quot;&quot;</span> #statement <span class="stringliteral">&quot;\&quot; evaluated false&quot;</span>);); \</div>
 <div class="line">}</div>
-<div class="ttc" id="Testing_8hpp_html_ab4a0e57ec5ac9d8b20f67d998033e870"><div class="ttname"><a href="Testing_8hpp.html#ab4a0e57ec5ac9d8b20f67d998033e870">__POTHOS_TEST_STATEMENT</a></div><div class="ttdeci">#define __POTHOS_TEST_STATEMENT(message, statement)</div><div class="ttdoc">Private macro to test a statement for exceptions. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:62</div></div>
+<div class="ttc" id="Testing_8hpp_html_ab4a0e57ec5ac9d8b20f67d998033e870"><div class="ttname"><a href="Testing_8hpp.html#ab4a0e57ec5ac9d8b20f67d998033e870">__POTHOS_TEST_STATEMENT</a></div><div class="ttdeci">#define __POTHOS_TEST_STATEMENT(message, statement)</div><div class="ttdoc">Private macro to test a statement for exceptions. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:63</div></div>
 </div><!-- fragment -->
 <p>Private macro to assert on a statement's truth. </p>
 
@@ -214,7 +210,7 @@ Macros</h2></td></tr>
 <div class="line">}</div>
 <div class="ttc" id="classPothos_1_1Exception_html_a7c22798fba5088ef20eef104969cc836"><div class="ttname"><a href="classPothos_1_1Exception.html#a7c22798fba5088ef20eef104969cc836">Pothos::Exception::displayText</a></div><div class="ttdeci">std::string displayText() const </div><div class="ttdoc">Returns the exception code if defined. </div></div>
 <div class="ttc" id="structPothos_1_1TestingBase_html_a19c4b5e6686f3a97a084cb290951e79b"><div class="ttname"><a href="structPothos_1_1TestingBase.html#a19c4b5e6686f3a97a084cb290951e79b">Pothos::TestingBase::current</a></div><div class="ttdeci">static TestingBase &amp; current(void)</div></div>
-<div class="ttc" id="classPothos_1_1Exception_html"><div class="ttname"><a href="classPothos_1_1Exception.html">Pothos::Exception</a></div><div class="ttdef"><b>Definition:</b> Exception.hpp:63</div></div>
+<div class="ttc" id="classPothos_1_1Exception_html"><div class="ttname"><a href="classPothos_1_1Exception.html">Pothos::Exception</a></div><div class="ttdef"><b>Definition:</b> Exception.hpp:65</div></div>
 <div class="ttc" id="structPothos_1_1TestingBase_html_adda3c6aa35b620213779576b5244819e"><div class="ttname"><a href="structPothos_1_1TestingBase.html#adda3c6aa35b620213779576b5244819e">Pothos::TestingBase::report</a></div><div class="ttdeci">void report(const std::string &amp;message, const std::string &amp;statement, const std::string &amp;error, const int line, const std::string &amp;file)</div></div>
 </div><!-- fragment -->
 <p>Private macro to test a statement for exceptions. </p>
@@ -261,13 +257,13 @@ Macros</h2></td></tr>
 <div class="line">    this-&gt;runTestsImpl_(); \</div>
 <div class="line">} \</div>
 <div class="line">void name::runTestsImpl_(<span class="keywordtype">void</span>)</div>
-<div class="ttc" id="Testing_8hpp_html_afaaf5906949f4c02f7324f06272e7743"><div class="ttname"><a href="Testing_8hpp.html#afaaf5906949f4c02f7324f06272e7743">POTHOS_TEST_CHECKPOINT</a></div><div class="ttdeci">#define POTHOS_TEST_CHECKPOINT()</div><div class="ttdoc">Checkpoint macro to track last successful line executed. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:58</div></div>
+<div class="ttc" id="Testing_8hpp_html_afaaf5906949f4c02f7324f06272e7743"><div class="ttname"><a href="Testing_8hpp.html#afaaf5906949f4c02f7324f06272e7743">POTHOS_TEST_CHECKPOINT</a></div><div class="ttdeci">#define POTHOS_TEST_CHECKPOINT()</div><div class="ttdoc">Checkpoint macro to track last successful line executed. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:59</div></div>
 <div class="ttc" id="classPothos_1_1PluginRegistry_html_aedf07192bfecfc00597256fbc679298d"><div class="ttname"><a href="classPothos_1_1PluginRegistry.html#aedf07192bfecfc00597256fbc679298d">Pothos::PluginRegistry::add</a></div><div class="ttdeci">static void add(const Plugin &amp;plugin)</div></div>
-<div class="ttc" id="Static_8hpp_html_aa3468129814b8adbc736ce92c207f6b2"><div class="ttname"><a href="Static_8hpp.html#aa3468129814b8adbc736ce92c207f6b2">pothos_static_block</a></div><div class="ttdeci">#define pothos_static_block(name)</div><div class="ttdef"><b>Definition:</b> Static.hpp:45</div></div>
-<div class="ttc" id="classPothos_1_1Object_html"><div class="ttname"><a href="classPothos_1_1Object.html">Pothos::Object</a></div><div class="ttdef"><b>Definition:</b> Object.hpp:54</div></div>
-<div class="ttc" id="structPothos_1_1TestingBase_html"><div class="ttname"><a href="structPothos_1_1TestingBase.html">Pothos::TestingBase</a></div><div class="ttdef"><b>Definition:</b> Testing.hpp:115</div></div>
-<div class="ttc" id="classPothos_1_1PluginPath_html"><div class="ttname"><a href="classPothos_1_1PluginPath.html">Pothos::PluginPath</a></div><div class="ttdef"><b>Definition:</b> Path.hpp:23</div></div>
-<div class="ttc" id="classPothos_1_1Plugin_html"><div class="ttname"><a href="classPothos_1_1Plugin.html">Pothos::Plugin</a></div><div class="ttdef"><b>Definition:</b> Plugin.hpp:22</div></div>
+<div class="ttc" id="Static_8hpp_html_aa3468129814b8adbc736ce92c207f6b2"><div class="ttname"><a href="Static_8hpp.html#aa3468129814b8adbc736ce92c207f6b2">pothos_static_block</a></div><div class="ttdeci">#define pothos_static_block(name)</div><div class="ttdef"><b>Definition:</b> Static.hpp:46</div></div>
+<div class="ttc" id="classPothos_1_1Object_html"><div class="ttname"><a href="classPothos_1_1Object.html">Pothos::Object</a></div><div class="ttdef"><b>Definition:</b> Object.hpp:55</div></div>
+<div class="ttc" id="structPothos_1_1TestingBase_html"><div class="ttname"><a href="structPothos_1_1TestingBase.html">Pothos::TestingBase</a></div><div class="ttdef"><b>Definition:</b> Testing.hpp:116</div></div>
+<div class="ttc" id="classPothos_1_1PluginPath_html"><div class="ttname"><a href="classPothos_1_1PluginPath.html">Pothos::PluginPath</a></div><div class="ttdef"><b>Definition:</b> Path.hpp:24</div></div>
+<div class="ttc" id="classPothos_1_1Plugin_html"><div class="ttname"><a href="classPothos_1_1Plugin.html">Pothos::Plugin</a></div><div class="ttdef"><b>Definition:</b> Plugin.hpp:23</div></div>
 <div class="ttc" id="structPothos_1_1TestingBase_html_a605d4725ba5a2358898fabb610504d20"><div class="ttname"><a href="structPothos_1_1TestingBase.html#a605d4725ba5a2358898fabb610504d20">Pothos::TestingBase::runTestsImpl</a></div><div class="ttdeci">virtual void runTestsImpl()=0</div></div>
 </div><!-- fragment --><p>Declare a unit test block of code inside a plugin.</p>
 <p>The unit test will be installed into /path/name in the PluginRegistry. Once installed, this unit test can be checked with the test utility.</p>
@@ -330,7 +326,7 @@ Macros</h2></td></tr>
 <div class="line"><a class="code" href="Testing_8hpp.html#a7c01508acb0af432dd121f13f12fe2e9">    __POTHOS_TEST_ASSERT</a>(<a class="code" href="structPothos_1_1TestingBase.html#a19c4b5e6686f3a97a084cb290951e79b">Pothos::TestingBase::current</a>().toString(lhs) + \</div>
 <div class="line">        <span class="stringliteral">&quot; == &quot;</span> + <a class="code" href="structPothos_1_1TestingBase.html#a19c4b5e6686f3a97a084cb290951e79b">Pothos::TestingBase::current</a>().toString(rhs), (lhs) == (rhs)); \</div>
 <div class="line">}</div>
-<div class="ttc" id="Testing_8hpp_html_a7c01508acb0af432dd121f13f12fe2e9"><div class="ttname"><a href="Testing_8hpp.html#a7c01508acb0af432dd121f13f12fe2e9">__POTHOS_TEST_ASSERT</a></div><div class="ttdeci">#define __POTHOS_TEST_ASSERT(message, statement)</div><div class="ttdoc">Private macro to assert on a statement&#39;s truth. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:73</div></div>
+<div class="ttc" id="Testing_8hpp_html_a7c01508acb0af432dd121f13f12fe2e9"><div class="ttname"><a href="Testing_8hpp.html#a7c01508acb0af432dd121f13f12fe2e9">__POTHOS_TEST_ASSERT</a></div><div class="ttdeci">#define __POTHOS_TEST_ASSERT(message, statement)</div><div class="ttdoc">Private macro to assert on a statement&#39;s truth. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:74</div></div>
 <div class="ttc" id="structPothos_1_1TestingBase_html_a19c4b5e6686f3a97a084cb290951e79b"><div class="ttname"><a href="structPothos_1_1TestingBase.html#a19c4b5e6686f3a97a084cb290951e79b">Pothos::TestingBase::current</a></div><div class="ttdeci">static TestingBase &amp; current(void)</div></div>
 </div><!-- fragment -->
 <p>Test if an equality operation is true. </p>
@@ -370,9 +366,9 @@ Macros</h2></td></tr>
 <div class="line">            <span class="stringliteral">&quot; == &quot;</span> + <a class="code" href="structPothos_1_1TestingBase.html#a19c4b5e6686f3a97a084cb290951e79b">Pothos::TestingBase::current</a>().toString((rhs)[i]), (lhs)[i] == (rhs)[i]); \</div>
 <div class="line">    } \</div>
 <div class="line">}</div>
-<div class="ttc" id="Testing_8hpp_html_a7c01508acb0af432dd121f13f12fe2e9"><div class="ttname"><a href="Testing_8hpp.html#a7c01508acb0af432dd121f13f12fe2e9">__POTHOS_TEST_ASSERT</a></div><div class="ttdeci">#define __POTHOS_TEST_ASSERT(message, statement)</div><div class="ttdoc">Private macro to assert on a statement&#39;s truth. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:73</div></div>
+<div class="ttc" id="Testing_8hpp_html_a7c01508acb0af432dd121f13f12fe2e9"><div class="ttname"><a href="Testing_8hpp.html#a7c01508acb0af432dd121f13f12fe2e9">__POTHOS_TEST_ASSERT</a></div><div class="ttdeci">#define __POTHOS_TEST_ASSERT(message, statement)</div><div class="ttdoc">Private macro to assert on a statement&#39;s truth. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:74</div></div>
 <div class="ttc" id="structPothos_1_1TestingBase_html_a19c4b5e6686f3a97a084cb290951e79b"><div class="ttname"><a href="structPothos_1_1TestingBase.html#a19c4b5e6686f3a97a084cb290951e79b">Pothos::TestingBase::current</a></div><div class="ttdeci">static TestingBase &amp; current(void)</div></div>
-<div class="ttc" id="Testing_8hpp_html_a8668f5ff5dbdaa2e1e050ae03770c233"><div class="ttname"><a href="Testing_8hpp.html#a8668f5ff5dbdaa2e1e050ae03770c233">POTHOS_TEST_EQUAL</a></div><div class="ttdeci">#define POTHOS_TEST_EQUAL(lhs, rhs)</div><div class="ttdoc">Test if an equality operation is true. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:85</div></div>
+<div class="ttc" id="Testing_8hpp_html_a8668f5ff5dbdaa2e1e050ae03770c233"><div class="ttname"><a href="Testing_8hpp.html#a8668f5ff5dbdaa2e1e050ae03770c233">POTHOS_TEST_EQUAL</a></div><div class="ttdeci">#define POTHOS_TEST_EQUAL(lhs, rhs)</div><div class="ttdoc">Test if an equality operation is true. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:86</div></div>
 </div><!-- fragment -->
 <p>Test two vectors for equality. </p>
 
@@ -408,7 +404,7 @@ Macros</h2></td></tr>
 <div class="line">        catch(<span class="keyword">const</span> expectedException &amp;){}); \</div>
 <div class="line">}</div>
 <div class="ttc" id="structPothos_1_1TestingBase_html_a19c4b5e6686f3a97a084cb290951e79b"><div class="ttname"><a href="structPothos_1_1TestingBase.html#a19c4b5e6686f3a97a084cb290951e79b">Pothos::TestingBase::current</a></div><div class="ttdeci">static TestingBase &amp; current(void)</div></div>
-<div class="ttc" id="Testing_8hpp_html_ab4a0e57ec5ac9d8b20f67d998033e870"><div class="ttname"><a href="Testing_8hpp.html#ab4a0e57ec5ac9d8b20f67d998033e870">__POTHOS_TEST_STATEMENT</a></div><div class="ttdeci">#define __POTHOS_TEST_STATEMENT(message, statement)</div><div class="ttdoc">Private macro to test a statement for exceptions. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:62</div></div>
+<div class="ttc" id="Testing_8hpp_html_ab4a0e57ec5ac9d8b20f67d998033e870"><div class="ttname"><a href="Testing_8hpp.html#ab4a0e57ec5ac9d8b20f67d998033e870">__POTHOS_TEST_STATEMENT</a></div><div class="ttdeci">#define __POTHOS_TEST_STATEMENT(message, statement)</div><div class="ttdoc">Private macro to test a statement for exceptions. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:63</div></div>
 <div class="ttc" id="structPothos_1_1TestingBase_html_adda3c6aa35b620213779576b5244819e"><div class="ttname"><a href="structPothos_1_1TestingBase.html#adda3c6aa35b620213779576b5244819e">Pothos::TestingBase::report</a></div><div class="ttdeci">void report(const std::string &amp;message, const std::string &amp;statement, const std::string &amp;error, const int line, const std::string &amp;file)</div></div>
 </div><!-- fragment -->
 <p>Test that a statement throws a particular exception. </p>
@@ -431,7 +427,7 @@ Macros</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line">{ <a class="code" href="Testing_8hpp.html#a7c01508acb0af432dd121f13f12fe2e9">\</a></div>
 <div class="line"><a class="code" href="Testing_8hpp.html#a7c01508acb0af432dd121f13f12fe2e9">    __POTHOS_TEST_ASSERT</a>(#statement, statement) \</div>
 <div class="line">}</div>
-<div class="ttc" id="Testing_8hpp_html_a7c01508acb0af432dd121f13f12fe2e9"><div class="ttname"><a href="Testing_8hpp.html#a7c01508acb0af432dd121f13f12fe2e9">__POTHOS_TEST_ASSERT</a></div><div class="ttdeci">#define __POTHOS_TEST_ASSERT(message, statement)</div><div class="ttdoc">Private macro to assert on a statement&#39;s truth. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:73</div></div>
+<div class="ttc" id="Testing_8hpp_html_a7c01508acb0af432dd121f13f12fe2e9"><div class="ttname"><a href="Testing_8hpp.html#a7c01508acb0af432dd121f13f12fe2e9">__POTHOS_TEST_ASSERT</a></div><div class="ttdeci">#define __POTHOS_TEST_ASSERT(message, statement)</div><div class="ttdoc">Private macro to assert on a statement&#39;s truth. </div><div class="ttdef"><b>Definition:</b> Testing.hpp:74</div></div>
 </div><!-- fragment -->
 <p>Test if statement is true. </p>
 
@@ -440,7 +436,7 @@ Macros</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 26 2014 13:37:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 25 2014 11:15:28 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -1,5 +1,6 @@
-<map id="include/Pothos/Framework/CallRegistry.hpp" name="include/Pothos/Framework/CallRegistry.hpp">
-<area shape="rect" id="node2" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="5,245,135,272"/>
-<area shape="rect" id="node4" href="$Callable_2Callable_8hpp.html" title="Pothos/Callable/Callable.hpp" alt="" coords="169,96,359,123"/>
-<area shape="rect" id="node5" href="$Object_2Object_8hpp.html" title="Pothos/Object/Object.hpp" alt="" coords="109,171,280,197"/>
+<map id="include/Pothos/Callable/CallRegistry.hpp" name="include/Pothos/Callable/CallRegistry.hpp">
+<area shape="rect" id="node2" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="5,320,135,347"/>
+<area shape="rect" id="node4" href="$Callable_2Callable_8hpp.html" title="Pothos/Callable/Callable.hpp" alt="" coords="235,96,425,123"/>
+<area shape="rect" id="node5" href="$CallInterface_8hpp.html" title="Pothos/Callable/CallInterface.hpp" alt="" coords="75,171,292,197"/>
+<area shape="rect" id="node6" href="$Object_2Object_8hpp.html" title="Pothos/Object/Object.hpp" alt="" coords="207,245,379,272"/>
 </map>

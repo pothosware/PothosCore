@@ -1,11 +1,4 @@
 <map id="include/Pothos/Object.hpp" name="include/Pothos/Object.hpp">
-<area shape="rect" id="node2" href="$SignalEmitter_8tmpl_8hpp.html" title="include/Pothos/Framework\l/SignalEmitter.tmpl.hpp" alt="" coords="5,81,181,122"/>
-<area shape="rect" id="node3" href="$SignalEmitter_8hpp.html" title="include/Pothos/Framework\l/SignalEmitter.hpp" alt="" coords="206,81,383,122"/>
-<area shape="rect" id="node9" href="$Object_2Containers_8hpp.html" title="include/Pothos/Object\l/Containers.hpp" alt="" coords="407,81,557,122"/>
-<area shape="rect" id="node10" href="$EvalInterface_8hpp.html" title="include/Pothos/Util\l/EvalInterface.hpp" alt="" coords="582,81,713,122"/>
-<area shape="rect" id="node4" href="$SignalEmitterImpl_8hpp.html" title="include/Pothos/Framework\l/SignalEmitterImpl.hpp" alt="" coords="15,262,192,303"/>
-<area shape="rect" id="node5" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="155,352,357,379"/>
-<area shape="rect" id="node6" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="269,171,445,213"/>
-<area shape="rect" id="node8" href="$SignalEmitterImpl_8tmpl_8hpp.html" title="include/Pothos/Framework\l/SignalEmitterImpl.tmpl.hpp" alt="" coords="470,171,652,213"/>
-<area shape="rect" id="node7" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="319,262,496,303"/>
+<area shape="rect" id="node2" href="$Object_2Containers_8hpp.html" title="include/Pothos/Object\l/Containers.hpp" alt="" coords="5,81,155,122"/>
+<area shape="rect" id="node3" href="$EvalInterface_8hpp.html" title="include/Pothos/Util\l/EvalInterface.hpp" alt="" coords="179,81,311,122"/>
 </map>

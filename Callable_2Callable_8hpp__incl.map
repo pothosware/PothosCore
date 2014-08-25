@@ -1,4 +1,5 @@
 <map id="include/Pothos/Callable/Callable.hpp" name="include/Pothos/Callable/Callable.hpp">
-<area shape="rect" id="node2" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="5,171,135,197"/>
-<area shape="rect" id="node4" href="$Object_2Object_8hpp.html" title="Pothos/Object/Object.hpp" alt="" coords="109,96,280,123"/>
+<area shape="rect" id="node2" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="5,245,135,272"/>
+<area shape="rect" id="node4" href="$CallInterface_8hpp.html" title="Pothos/Callable/CallInterface.hpp" alt="" coords="79,96,296,123"/>
+<area shape="rect" id="node5" href="$Object_2Object_8hpp.html" title="Pothos/Object/Object.hpp" alt="" coords="154,171,325,197"/>
 </map>

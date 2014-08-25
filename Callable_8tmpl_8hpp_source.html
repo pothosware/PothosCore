@@ -91,122 +91,95 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Callable.tmpl.hpp</div>  </div>
 </div><!--header-->
 <div class="contents">
-<a href="Callable_8tmpl_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// Callable/Callable.hpp</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment">// Callable provides an opaque proxy for function or method calls.</span></div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment">// Copyright (c) 2013-2014 Josh Blum</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment">// SPDX-License-Identifier: BSL-1.0</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#pragma once</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#include &lt;<a class="code" href="Config_8hpp.html">Pothos/Config.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Object_2Object_8hpp.html">Pothos/Object/Object.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
-<div class="line"><a name="l00016"></a><span class="lineno"><a class="line" href="namespacePothos.html">   16</a></span>&#160;<span class="keyword">namespace </span>Pothos {</div>
+<a href="Callable_8tmpl_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#include &lt;<a class="code" href="Config_8hpp.html">Pothos/Config.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="CallInterface_8hpp.html">Pothos/Callable/CallInterface.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Object_2Object_8hpp.html">Pothos/Object/Object.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">//messy forward declares</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">namespace </span>Detail {</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">struct </span>CallableContainer;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;} <span class="comment">//namespace Detail</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
-<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="classPothos_1_1Callable.html">   28</a></span>&#160;<span class="keyword">class </span><a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <a class="code" href="classPothos_1_1Callable.html">Callable</a></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;{</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <a class="code" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a> <span class="keyword">operator</span> bool(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <a class="code" href="classPothos_1_1Object.html">Object</a> opaqueCall(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> *inputArgs, <span class="keyword">const</span> <span class="keywordtype">size_t</span> numArgs) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keywordtype">size_t</span> getNumArgs(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">const</span> std::type_info &amp;type(<span class="keyword">const</span> <span class="keywordtype">int</span> argNo) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ValueType&gt;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;bind(ValueType &amp;&amp;val, <span class="keyword">const</span> <span class="keywordtype">size_t</span> argNo);</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;bind(<a class="code" href="classPothos_1_1Object.html">Object</a> &amp;&amp;val, <span class="keyword">const</span> <span class="keywordtype">size_t</span> argNo);</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;unbind(<span class="keyword">const</span> <span class="keywordtype">size_t</span> argNo);</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    std::string toString(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="preprocessor">    #for $NARGS in range($MAX_ARGS)</span></div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="preprocessor"></span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType, <span class="keyword">typename</span> ClassType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a>(ReturnType(ClassType::*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)));</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType, <span class="keyword">typename</span> ClassType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a>(ReturnType(ClassType::*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)) <span class="keyword">const</span>);</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a>(ReturnType(*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)));</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <span class="keyword">template</span> &lt;$expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS), <span class="keyword">typename</span> ReturnType, <span class="keyword">typename</span> ClassType&gt;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> make(ReturnType(ClassType::*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)));</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <span class="keyword">template</span> &lt;$expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS), <span class="keyword">typename</span> ReturnType, <span class="keyword">typename</span> ClassType&gt;</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> make(ReturnType(ClassType::*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)) <span class="keyword">const</span>);</div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;</div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;    <span class="keyword">template</span> &lt;$expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS), <span class="keyword">typename</span> ReturnType&gt;</div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> make(ReturnType(*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)));</div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ClassType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> factory(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ClassType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> factoryNew(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ClassType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> factoryShared(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;    ReturnType call($expand(<span class="stringliteral">&#39;A%d &amp;&amp;a%d&#39;</span>, $NARGS)) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    <span class="keyword">template</span> &lt;$expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    <a class="code" href="classPothos_1_1Object.html">Object</a> callObject($expand(<span class="stringliteral">&#39;A%d &amp;&amp;a%d&#39;</span>, $NARGS)) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;</div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;    <span class="keyword">template</span> &lt;$expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;    <span class="keywordtype">void</span> callVoid($expand(<span class="stringliteral">&#39;A%d &amp;&amp;a%d&#39;</span>, $NARGS)) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;<span class="preprocessor">    #end for</span></div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;    std::vector&lt;Object&gt; _boundArgs;</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;    std::shared_ptr&lt;Detail::CallableContainer&gt; _impl;</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;    <a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <span class="keyword">friend</span> <span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a05d2dce6549320129fc18aa10e72e30c">operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;rhs);</div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;};</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="keyword">namespace </span>Pothos {</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">//messy forward declares</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keyword">namespace </span>Detail {</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">struct </span>CallableContainer;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;} <span class="comment">//namespace Detail</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="classPothos_1_1Callable.html">   30</a></span>&#160;<span class="keyword">class </span><a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <a class="code" href="classPothos_1_1Callable.html">Callable</a> : <span class="keyword">public</span> <a class="code" href="classPothos_1_1CallInterface.html">CallInterface</a></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;{</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <a class="code" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a> <span class="keyword">operator</span> bool(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <a class="code" href="classPothos_1_1Object.html">Object</a> opaqueCall(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> *inputArgs, <span class="keyword">const</span> <span class="keywordtype">size_t</span> numArgs) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordtype">size_t</span> getNumArgs(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">const</span> std::type_info &amp;type(<span class="keyword">const</span> <span class="keywordtype">int</span> argNo) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ValueType&gt;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;bind(ValueType &amp;&amp;val, <span class="keyword">const</span> <span class="keywordtype">size_t</span> argNo);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;bind(<a class="code" href="classPothos_1_1Object.html">Object</a> &amp;&amp;val, <span class="keyword">const</span> <span class="keywordtype">size_t</span> argNo);</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;unbind(<span class="keyword">const</span> <span class="keywordtype">size_t</span> argNo);</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    std::string toString(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="preprocessor">    #for $NARGS in range($MAX_ARGS)</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="preprocessor"></span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType, <span class="keyword">typename</span> ClassType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a>(ReturnType(ClassType::*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)));</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType, <span class="keyword">typename</span> ClassType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a>(ReturnType(ClassType::*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)) <span class="keyword">const</span>);</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    <a class="code" href="classPothos_1_1Callable.html">Callable</a>(ReturnType(*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)));</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    <span class="keyword">template</span> &lt;$expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS), <span class="keyword">typename</span> ReturnType, <span class="keyword">typename</span> ClassType&gt;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> make(ReturnType(ClassType::*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)));</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    <span class="keyword">template</span> &lt;$expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS), <span class="keyword">typename</span> ReturnType, <span class="keyword">typename</span> ClassType&gt;</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> make(ReturnType(ClassType::*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)) <span class="keyword">const</span>);</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;    <span class="keyword">template</span> &lt;$expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS), <span class="keyword">typename</span> ReturnType&gt;</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> make(ReturnType(*fcn)($expand(<span class="stringliteral">&#39;A%d&#39;</span>, $NARGS)));</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ClassType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> factory(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ClassType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> factoryNew(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ClassType, $expand(&#39;<span class="keyword">typename</span> A%d&#39;, $NARGS)&gt;</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> factoryShared(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="preprocessor">    #end for</span></div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;<span class="preprocessor"></span><span class="keyword">private</span>:</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    std::vector&lt;Object&gt; _boundArgs;</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    std::shared_ptr&lt;Detail::CallableContainer&gt; _impl;</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    <a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <span class="keyword">friend</span> <span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a05d2dce6549320129fc18aa10e72e30c">operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;rhs);</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;};</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a05d2dce6549320129fc18aa10e72e30c">operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;rhs);</div>
 <div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;</div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a05d2dce6549320129fc18aa10e72e30c">operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;rhs);</div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;</div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;} <span class="comment">//namespace Pothos</span></div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;</div>
-<div class="line"><a name="l00202"></a><span class="lineno"><a class="line" href="classPothos_1_1Callable.html#a2640babaeee265eb4d7aba7a5075c080">  202</a></span>&#160;<span class="keyword">inline</span> <a class="code" href="classPothos_1_1Object.html">Pothos::Object</a> <a class="code" href="classPothos_1_1Callable.html#a2640babaeee265eb4d7aba7a5075c080">Pothos::Callable::callObject</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<span class="keyword"></span>{</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    <span class="keywordflow">return</span> this-&gt;<a class="code" href="classPothos_1_1Callable.html#a48d98a082ba97a27491060d6168e137c">opaqueCall</a>(<span class="keyword">nullptr</span>, 0);</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;}</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;</div>
-<div class="line"><a name="l00207"></a><span class="lineno"><a class="line" href="classPothos_1_1Callable.html#a145132e557125cf6efae258899ac18d0">  207</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classPothos_1_1Callable.html#a145132e557125cf6efae258899ac18d0">Pothos::Callable::callVoid</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;<span class="keyword"></span>{</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    this-&gt;callObject();</div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;}</div>
-<div class="ttc" id="classPothos_1_1Callable_html_a145132e557125cf6efae258899ac18d0"><div class="ttname"><a href="classPothos_1_1Callable.html#a145132e557125cf6efae258899ac18d0">Pothos::Callable::callVoid</a></div><div class="ttdeci">void callVoid() const </div><div class="ttdoc">Call a bound method/function with a void return and 0 args. </div><div class="ttdef"><b>Definition:</b> Callable.tmpl.hpp:207</div></div>
-<div class="ttc" id="Config_8hpp_html_a8d78f57e80202fac856d4526459c4bbb"><div class="ttname"><a href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a></div><div class="ttdeci">#define pothos_explicit</div><div class="ttdef"><b>Definition:</b> Config.hpp:84</div></div>
-<div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:40</div></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;} <span class="comment">//namespace Pothos</span></div>
+<div class="ttc" id="Config_8hpp_html_a8d78f57e80202fac856d4526459c4bbb"><div class="ttname"><a href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a></div><div class="ttdeci">#define pothos_explicit</div><div class="ttdef"><b>Definition:</b> Config.hpp:85</div></div>
+<div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
 <div class="ttc" id="namespacePothos_html_a05d2dce6549320129fc18aa10e72e30c"><div class="ttname"><a href="namespacePothos.html#a05d2dce6549320129fc18aa10e72e30c">Pothos::operator==</a></div><div class="ttdeci">POTHOS_API bool operator==(const Callable &amp;lhs, const Callable &amp;rhs)</div></div>
-<div class="ttc" id="classPothos_1_1Callable_html"><div class="ttname"><a href="classPothos_1_1Callable.html">Pothos::Callable</a></div><div class="ttdef"><b>Definition:</b> Callable.tmpl.hpp:28</div></div>
+<div class="ttc" id="CallInterface_8hpp_html"><div class="ttname"><a href="CallInterface_8hpp.html">CallInterface.hpp</a></div></div>
+<div class="ttc" id="classPothos_1_1Callable_html"><div class="ttname"><a href="classPothos_1_1Callable.html">Pothos::Callable</a></div><div class="ttdef"><b>Definition:</b> Callable.tmpl.hpp:30</div></div>
 <div class="ttc" id="Object_2Object_8hpp_html"><div class="ttname"><a href="Object_2Object_8hpp.html">Object.hpp</a></div></div>
-<div class="ttc" id="classPothos_1_1Callable_html_a2640babaeee265eb4d7aba7a5075c080"><div class="ttname"><a href="classPothos_1_1Callable.html#a2640babaeee265eb4d7aba7a5075c080">Pothos::Callable::callObject</a></div><div class="ttdeci">Object callObject() const </div><div class="ttdoc">Call a bound method/function with an Object return and 0 args. </div><div class="ttdef"><b>Definition:</b> Callable.tmpl.hpp:202</div></div>
-<div class="ttc" id="classPothos_1_1Object_html"><div class="ttname"><a href="classPothos_1_1Object.html">Pothos::Object</a></div><div class="ttdef"><b>Definition:</b> Object.hpp:54</div></div>
-<div class="ttc" id="classPothos_1_1Callable_html_a48d98a082ba97a27491060d6168e137c"><div class="ttname"><a href="classPothos_1_1Callable.html#a48d98a082ba97a27491060d6168e137c">Pothos::Callable::opaqueCall</a></div><div class="ttdeci">Object opaqueCall(const Object *inputArgs, const size_t numArgs) const </div></div>
+<div class="ttc" id="classPothos_1_1CallInterface_html"><div class="ttname"><a href="classPothos_1_1CallInterface.html">Pothos::CallInterface</a></div><div class="ttdef"><b>Definition:</b> CallInterface.tmpl.hpp:21</div></div>
+<div class="ttc" id="classPothos_1_1Object_html"><div class="ttname"><a href="classPothos_1_1Object.html">Pothos::Object</a></div><div class="ttdef"><b>Definition:</b> Object.hpp:55</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 26 2014 13:37:39 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 25 2014 11:15:27 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

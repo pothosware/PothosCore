@@ -1,6 +1,6 @@
 <map id="include/Pothos" name="include/Pothos">
 <area shape="rect" id="node3" href="dir_df488aec462abd9931ee7c0f6f74bcb0.html" title="Framework" alt="" coords="171,255,257,303"/>
-<area shape="rect" id="edge11-headlabel" href="dir_000001_000003.html" title="22" alt="" coords="216,229,230,244"/>
+<area shape="rect" id="edge11-headlabel" href="dir_000001_000003.html" title="19" alt="" coords="216,229,230,244"/>
 <area shape="rect" id="node4" href="dir_ed101cbee216953387b7914913d90ed4.html" title="Managed" alt="" coords="112,159,185,207"/>
 <area shape="rect" id="edge10-headlabel" href="dir_000001_000008.html" title="3" alt="" coords="179,141,187,156"/>
 <area shape="rect" id="node6" href="dir_508336a89e4bee8fd5c112f3139a140a.html" title="Plugin" alt="" coords="48,255,120,303"/>
@@ -8,10 +8,10 @@
 <area shape="rect" id="node7" href="dir_77dd4ed9fc26525f5b9c0892d486f3fa.html" title="Proxy" alt="" coords="309,255,381,303"/>
 <area shape="rect" id="edge12-headlabel" href="dir_000001_000009.html" title="7" alt="" coords="354,229,362,244"/>
 <area shape="rect" id="node8" href="dir_194ec0977854504161cb63c0e9ddd172.html" title="Remote" alt="" coords="248,159,320,207"/>
-<area shape="rect" id="edge13-headlabel" href="dir_000001_000005.html" title="3" alt="" coords="259,132,267,146"/>
+<area shape="rect" id="edge13-headlabel" href="dir_000001_000005.html" title="4" alt="" coords="259,132,267,146"/>
 <area shape="rect" id="node2" href="dir_1058f663977d8eae1d5e17de22b966a0.html" title="Callable" alt="" coords="160,351,232,399"/>
 <area shape="rect" id="node5" href="dir_430da32be4d8c617a93e4e9814a7afe1.html" title="Object" alt="" coords="221,447,293,495"/>
-<area shape="rect" id="edge9-headlabel" href="dir_000002_000007.html" title="4" alt="" coords="235,419,243,434"/>
+<area shape="rect" id="edge9-headlabel" href="dir_000002_000007.html" title="8" alt="" coords="235,419,243,434"/>
 <area shape="rect" id="edge5-headlabel" href="dir_000003_000002.html" title="5" alt="" coords="208,327,216,342"/>
 <area shape="rect" id="edge4-headlabel" href="dir_000003_000007.html" title="4" alt="" coords="260,420,268,435"/>
 <area shape="rect" id="node10" href="dir_dec55a335f06edf044357e4ee05f8567.html" title="Util" alt="" coords="283,351,355,399"/>

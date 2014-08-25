@@ -13,6 +13,7 @@ var searchData=
   ['pop_5ffront',['pop_front',['../classPothos_1_1Util_1_1RingDeque.html#a405c7c421316af1eca9693b2f04c3db9',1,'Pothos::Util::RingDeque']]],
   ['popbuffer',['popBuffer',['../classPothos_1_1OutputPort.html#ac8c69f13cb37e3099a3dd8b7bcc84a14',1,'Pothos::OutputPort']]],
   ['popmessage',['popMessage',['../classPothos_1_1InputPort.html#ac14280b5f140163af64c2af580ee3ad4',1,'Pothos::InputPort']]],
+  ['portinfo',['PortInfo',['../classPothos_1_1PortInfo.html#abc71b3d59bd3ed11ddab9d73b9495e20',1,'Pothos::PortInfo']]],
   ['postbuffer',['postBuffer',['../classPothos_1_1OutputPort.html#ace5ed3d4a5dfdc7196bf58f6fc167579',1,'Pothos::OutputPort']]],
   ['postlabel',['postLabel',['../classPothos_1_1OutputPort.html#a90611d871c0983bfb5fceae348e63e74',1,'Pothos::OutputPort']]],
   ['postmessage',['postMessage',['../classPothos_1_1OutputPort.html#a6ebf13cae0a56328b0bdfc9f1769d954',1,'Pothos::OutputPort']]],

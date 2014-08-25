@@ -9,6 +9,7 @@ var searchData=
   ['pluginregistry',['PluginRegistry',['../classPothos_1_1PluginRegistry.html',1,'Pothos']]],
   ['pluginregistryinfodump',['PluginRegistryInfoDump',['../structPothos_1_1PluginRegistryInfoDump.html',1,'Pothos']]],
   ['pooloverflowexception',['PoolOverflowException',['../classPothos_1_1PoolOverflowException.html',1,'Pothos']]],
+  ['portinfo',['PortInfo',['../classPothos_1_1PortInfo.html',1,'Pothos']]],
   ['propertynotsupportedexception',['PropertyNotSupportedException',['../classPothos_1_1PropertyNotSupportedException.html',1,'Pothos']]],
   ['protocolexception',['ProtocolException',['../classPothos_1_1ProtocolException.html',1,'Pothos']]],
   ['proxy',['Proxy',['../classPothos_1_1Proxy.html',1,'Pothos']]],

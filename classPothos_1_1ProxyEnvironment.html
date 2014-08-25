@@ -107,13 +107,6 @@ Inheritance diagram for Pothos::ProxyEnvironment:</div>
 <map name="Pothos_1_1ProxyEnvironment_inherit__map" id="Pothos_1_1ProxyEnvironment_inherit__map">
 <area shape="rect" id="node2" href="classPothos_1_1Util_1_1RefHolder.html" title="Pothos::Util::RefHolder" alt="" coords="5,13,163,40"/></map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
-<div class="dynheader">
-Collaboration diagram for Pothos::ProxyEnvironment:</div>
-<div class="dyncontent">
-<div class="center"><img src="classPothos_1_1ProxyEnvironment__coll__graph.png" border="0" usemap="#Pothos_1_1ProxyEnvironment_coll__map" alt="Collaboration graph"/></div>
-<map name="Pothos_1_1ProxyEnvironment_coll__map" id="Pothos_1_1ProxyEnvironment_coll__map">
-<area shape="rect" id="node2" href="classPothos_1_1Util_1_1RefHolder.html" title="Pothos::Util::RefHolder" alt="" coords="5,13,163,40"/></map>
-<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -128,6 +121,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a20949c93a435532168a80f595aba97e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5da94ef01ef708921fdf936fcf5e1e34"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#a5da94ef01ef708921fdf936fcf5e1e34">getNodeId</a> (void) const </td></tr>
 <tr class="separator:a5da94ef01ef708921fdf936fcf5e1e34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad65718d794f3d3953e5c0ce9135f1e3d"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#ad65718d794f3d3953e5c0ce9135f1e3d">getUniquePid</a> (void) const </td></tr>
+<tr class="separator:ad65718d794f3d3953e5c0ce9135f1e3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a289e30def3204325b4687bf4271929ae"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#a289e30def3204325b4687bf4271929ae">getPeeringAddress</a> (void)</td></tr>
+<tr class="separator:a289e30def3204325b4687bf4271929ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a69cbde730d78e79feade2258414791a9"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#a69cbde730d78e79feade2258414791a9">getName</a> (void) const =0</td></tr>
 <tr class="separator:a69cbde730d78e79feade2258414791a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4d4ac935ea877a91e8b632843a6791a"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classPothos_1_1Proxy.html">Proxy</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#aa4d4ac935ea877a91e8b632843a6791a">findProxy</a> (const std::string &amp;name)=0</td></tr>
@@ -158,6 +155,8 @@ Public Member Functions</h2></td></tr>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ab63154827e33db936927a5d8d75b1772"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classPothos_1_1ProxyEnvironment.html#a89988a1d095522e7dd597c5ac145e265">Sptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#ab63154827e33db936927a5d8d75b1772">make</a> (const std::string &amp;name, const <a class="el" href="namespacePothos.html#aab6f8e4397b12dd6bb40307b735bab94">ProxyEnvironmentArgs</a> &amp;args=<a class="el" href="namespacePothos.html#aab6f8e4397b12dd6bb40307b735bab94">ProxyEnvironmentArgs</a>())</td></tr>
 <tr class="separator:ab63154827e33db936927a5d8d75b1772"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3c93cdc281a23746009229be72b4835"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ProxyEnvironment.html#ab3c93cdc281a23746009229be72b4835">getLocalUniquePid</a> (void)</td></tr>
+<tr class="separator:ab3c93cdc281a23746009229be72b4835"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A <a class="el" href="classPothos_1_1ProxyEnvironment.html">ProxyEnvironment</a> is the interaction point for dealing with managed objects. Managed objects can take a variety of forms. For example:</p>
@@ -360,6 +359,31 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ab3c93cdc281a23746009229be72b4835"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string Pothos::ProxyEnvironment::getLocalUniquePid </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Static method to get the unique ID of the caller process. The ID is universally unique, based on the nodeId and pid. </p>
+
+</div>
+</div>
 <a class="anchor" id="a69cbde730d78e79feade2258414791a9"></a>
 <div class="memitem">
 <div class="memproto">
@@ -407,6 +431,56 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Get the unique ID of the node that this environment is running on. Remote environments will report the node id of the remote server. </p>
+
+</div>
+</div>
+<a class="anchor" id="a289e30def3204325b4687bf4271929ae"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::string Pothos::ProxyEnvironment::getPeeringAddress </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the peering address of the connection for this environment. Remote environment will report the peering address of the caller as seen by the remote server's socket acceptor. </p>
+
+</div>
+</div>
+<a class="anchor" id="ad65718d794f3d3953e5c0ce9135f1e3d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::string Pothos::ProxyEnvironment::getUniquePid </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the unique ID of the process that this environment is running on. Remote environments will report the process id of the remote server. </p>
 
 </div>
 </div>
@@ -540,7 +614,7 @@ template&lt;typename ValueType &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 26 2014 13:37:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 25 2014 11:15:28 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

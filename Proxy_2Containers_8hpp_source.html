@@ -91,38 +91,30 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Containers.hpp</div>  </div>
 </div><!--header-->
 <div class="contents">
-<a href="Proxy_2Containers_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// Proxy/Containers.hpp</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment">// Common typedefs for stl containers of type Proxy.</span></div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment">// Copyright (c) 2013-2014 Josh Blum</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment">// SPDX-License-Identifier: BSL-1.0</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#pragma once</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#include &lt;<a class="code" href="Proxy_8hpp.html">Pothos/Proxy.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;set&gt;</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;map&gt;</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">namespace </span>Pothos {</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;</div>
-<div class="line"><a name="l00018"></a><span class="lineno"><a class="line" href="namespacePothos.html#a8593219b9f4afd524cc3a10b9f003c73">   18</a></span>&#160;<span class="keyword">typedef</span> std::vector&lt;Proxy&gt; <a class="code" href="namespacePothos.html#a8593219b9f4afd524cc3a10b9f003c73">ProxyVector</a>;</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;</div>
-<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="namespacePothos.html#a00d1b5347fde46223bef23b24bf106e2">   20</a></span>&#160;<span class="keyword">typedef</span> std::set&lt;Proxy&gt; <a class="code" href="namespacePothos.html#a00d1b5347fde46223bef23b24bf106e2">ProxySet</a>;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;</div>
-<div class="line"><a name="l00022"></a><span class="lineno"><a class="line" href="namespacePothos.html#a28ef2f828d64c8bd54a9f5409db728bb">   22</a></span>&#160;<span class="keyword">typedef</span> std::map&lt;Proxy, Proxy&gt; <a class="code" href="namespacePothos.html#a28ef2f828d64c8bd54a9f5409db728bb">ProxyMap</a>;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;} <span class="comment">// namespace Pothos</span></div>
+<a href="Proxy_2Containers_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#include &lt;<a class="code" href="Proxy_8hpp.html">Pothos/Proxy.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;set&gt;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;map&gt;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">namespace </span>Pothos {</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;</div>
+<div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="namespacePothos.html#a8593219b9f4afd524cc3a10b9f003c73">   19</a></span>&#160;<span class="keyword">typedef</span> std::vector&lt;Proxy&gt; <a class="code" href="namespacePothos.html#a8593219b9f4afd524cc3a10b9f003c73">ProxyVector</a>;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;</div>
+<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="namespacePothos.html#a00d1b5347fde46223bef23b24bf106e2">   21</a></span>&#160;<span class="keyword">typedef</span> std::set&lt;Proxy&gt; <a class="code" href="namespacePothos.html#a00d1b5347fde46223bef23b24bf106e2">ProxySet</a>;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
+<div class="line"><a name="l00023"></a><span class="lineno"><a class="line" href="namespacePothos.html#a28ef2f828d64c8bd54a9f5409db728bb">   23</a></span>&#160;<span class="keyword">typedef</span> std::map&lt;Proxy, Proxy&gt; <a class="code" href="namespacePothos.html#a28ef2f828d64c8bd54a9f5409db728bb">ProxyMap</a>;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;} <span class="comment">// namespace Pothos</span></div>
 <div class="ttc" id="Proxy_8hpp_html"><div class="ttname"><a href="Proxy_8hpp.html">Proxy.hpp</a></div></div>
-<div class="ttc" id="namespacePothos_html_a00d1b5347fde46223bef23b24bf106e2"><div class="ttname"><a href="namespacePothos.html#a00d1b5347fde46223bef23b24bf106e2">Pothos::ProxySet</a></div><div class="ttdeci">std::set&lt; Proxy &gt; ProxySet</div><div class="ttdef"><b>Definition:</b> Containers.hpp:20</div></div>
-<div class="ttc" id="namespacePothos_html_a28ef2f828d64c8bd54a9f5409db728bb"><div class="ttname"><a href="namespacePothos.html#a28ef2f828d64c8bd54a9f5409db728bb">Pothos::ProxyMap</a></div><div class="ttdeci">std::map&lt; Proxy, Proxy &gt; ProxyMap</div><div class="ttdef"><b>Definition:</b> Containers.hpp:22</div></div>
-<div class="ttc" id="namespacePothos_html_a8593219b9f4afd524cc3a10b9f003c73"><div class="ttname"><a href="namespacePothos.html#a8593219b9f4afd524cc3a10b9f003c73">Pothos::ProxyVector</a></div><div class="ttdeci">std::vector&lt; Proxy &gt; ProxyVector</div><div class="ttdef"><b>Definition:</b> Containers.hpp:18</div></div>
+<div class="ttc" id="namespacePothos_html_a00d1b5347fde46223bef23b24bf106e2"><div class="ttname"><a href="namespacePothos.html#a00d1b5347fde46223bef23b24bf106e2">Pothos::ProxySet</a></div><div class="ttdeci">std::set&lt; Proxy &gt; ProxySet</div><div class="ttdef"><b>Definition:</b> Containers.hpp:21</div></div>
+<div class="ttc" id="namespacePothos_html_a28ef2f828d64c8bd54a9f5409db728bb"><div class="ttname"><a href="namespacePothos.html#a28ef2f828d64c8bd54a9f5409db728bb">Pothos::ProxyMap</a></div><div class="ttdeci">std::map&lt; Proxy, Proxy &gt; ProxyMap</div><div class="ttdef"><b>Definition:</b> Containers.hpp:23</div></div>
+<div class="ttc" id="namespacePothos_html_a8593219b9f4afd524cc3a10b9f003c73"><div class="ttname"><a href="namespacePothos.html#a8593219b9f4afd524cc3a10b9f003c73">Pothos::ProxyVector</a></div><div class="ttdeci">std::vector&lt; Proxy &gt; ProxyVector</div><div class="ttdef"><b>Definition:</b> Containers.hpp:19</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 26 2014 13:37:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 25 2014 11:15:28 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

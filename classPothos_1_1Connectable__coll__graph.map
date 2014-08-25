@@ -1,4 +1,6 @@
 <map id="Pothos::Connectable" name="Pothos::Connectable">
-<area shape="rect" id="node2" href="$classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="5,5,128,32"/>
-<area shape="rect" id="node3" href="$classPothos_1_1Util_1_1RefHolder.html" title="Pothos::Util::RefHolder" alt="" coords="153,5,311,32"/>
+<area shape="rect" id="node2" href="$classPothos_1_1CallRegistry.html" title="Pothos::CallRegistry" alt="" coords="14,5,157,32"/>
+<area shape="rect" id="node3" href="$classPothos_1_1CallInterface.html" title="Pothos::CallInterface" alt="" coords="13,56,158,83"/>
+<area shape="rect" id="node4" href="$classPothos_1_1Util_1_1UID.html" title="Pothos::Util::UID" alt="" coords="24,107,147,133"/>
+<area shape="rect" id="node5" href="$classPothos_1_1Util_1_1RefHolder.html" title="Pothos::Util::RefHolder" alt="" coords="6,157,165,184"/>
 </map>

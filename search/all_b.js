@@ -17,6 +17,7 @@ var searchData=
   ['load',['load',['../namespacePothos_1_1serialization.html#a785c7a5232e9debee698fe6ba6635084',1,'Pothos::serialization']]],
   ['loader_2ehpp',['Loader.hpp',['../Loader_8hpp.html',1,'']]],
   ['loadmodules',['loadModules',['../classPothos_1_1PluginLoader.html#a57893bfdb0b8914fafb4d471d94909bb',1,'Pothos::PluginLoader']]],
+  ['logger',['Logger',['../classPothos_1_1System_1_1Logger.html',1,'Pothos::System']]],
   ['logger_2ehpp',['Logger.hpp',['../Logger_8hpp.html',1,'']]],
   ['logicexception',['LogicException',['../classPothos_1_1LogicException.html#a9a11f7087f79f8347e7a20a1ed1f22fb',1,'Pothos::LogicException::LogicException(int code=0)'],['../classPothos_1_1LogicException.html#a9cc9153f5c6038fa0046dbf9ea5beec7',1,'Pothos::LogicException::LogicException(const std::string &amp;msg, int code=0)'],['../classPothos_1_1LogicException.html#a5c53032843e1638b73657b6766fd20aa',1,'Pothos::LogicException::LogicException(const std::string &amp;msg, const std::string &amp;arg, int code=0)'],['../classPothos_1_1LogicException.html#a451cc580472ef17b782477a1d4840593',1,'Pothos::LogicException::LogicException(const std::string &amp;msg, const Pothos::Exception &amp;exc, int code=0)'],['../classPothos_1_1LogicException.html#a09c4a375f1e87b4cb7f6401140ce9030',1,'Pothos::LogicException::LogicException(const LogicException &amp;exc)']]],
   ['logicexception',['LogicException',['../classPothos_1_1LogicException.html',1,'Pothos']]],

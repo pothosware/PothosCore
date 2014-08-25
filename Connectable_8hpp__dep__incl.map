@@ -1,7 +1,8 @@
 <map id="include/Pothos/Framework/Connectable.hpp" name="include/Pothos/Framework/Connectable.hpp">
-<area shape="rect" id="node2" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="55,97,232,138"/>
-<area shape="rect" id="node4" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="169,277,372,304"/>
-<area shape="rect" id="node5" href="$Topology_8hpp.html" title="include/Pothos/Framework\l/Topology.hpp" alt="" coords="309,97,485,138"/>
-<area shape="rect" id="node3" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="5,187,181,229"/>
-<area shape="rect" id="node6" href="$TopologyImpl_8hpp.html" title="include/Pothos/Framework\l/TopologyImpl.hpp" alt="" coords="359,187,536,229"/>
+<area shape="rect" id="node2" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="24,97,201,138"/>
+<area shape="rect" id="node4" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="137,277,340,304"/>
+<area shape="rect" id="node5" href="$ConnectableImpl_8hpp.html" title="include/Pothos/Framework\l/ConnectableImpl.hpp" alt="" coords="226,97,402,138"/>
+<area shape="rect" id="node7" href="$Topology_8hpp.html" title="include/Pothos/Framework\l/Topology.hpp" alt="" coords="427,97,604,138"/>
+<area shape="rect" id="node3" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="87,187,264,229"/>
+<area shape="rect" id="node6" href="$TopologyImpl_8hpp.html" title="include/Pothos/Framework\l/TopologyImpl.hpp" alt="" coords="340,187,517,229"/>
 </map>

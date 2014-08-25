@@ -1,7 +1,11 @@
 <map id="include/Pothos/Framework/DType.hpp" name="include/Pothos/Framework/DType.hpp">
-<area shape="rect" id="node2" href="$InputPort_8hpp.html" title="include/Pothos/Framework\l/InputPort.hpp" alt="" coords="5,97,181,138"/>
-<area shape="rect" id="node5" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="143,368,345,395"/>
-<area shape="rect" id="node6" href="$OutputPort_8hpp.html" title="include/Pothos/Framework\l/OutputPort.hpp" alt="" coords="206,97,383,138"/>
-<area shape="rect" id="node3" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="130,187,307,229"/>
-<area shape="rect" id="node4" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="155,278,332,319"/>
+<area shape="rect" id="node2" href="$Connectable_8hpp.html" title="include/Pothos/Framework\l/Connectable.hpp" alt="" coords="213,97,390,138"/>
+<area shape="rect" id="node5" href="$Framework_8hpp.html" title="include/Pothos/Framework.hpp" alt="" coords="225,368,427,395"/>
+<area shape="rect" id="node9" href="$InputPort_8hpp.html" title="include/Pothos/Framework\l/InputPort.hpp" alt="" coords="415,97,591,138"/>
+<area shape="rect" id="node10" href="$OutputPort_8hpp.html" title="include/Pothos/Framework\l/OutputPort.hpp" alt="" coords="616,97,793,138"/>
+<area shape="rect" id="node3" href="$Block_8hpp.html" title="include/Pothos/Framework\l/Block.hpp" alt="" coords="439,187,615,229"/>
+<area shape="rect" id="node6" href="$ConnectableImpl_8hpp.html" title="include/Pothos/Framework\l/ConnectableImpl.hpp" alt="" coords="237,187,414,229"/>
+<area shape="rect" id="node8" href="$Topology_8hpp.html" title="include/Pothos/Framework\l/Topology.hpp" alt="" coords="36,187,213,229"/>
+<area shape="rect" id="node4" href="$BlockImpl_8hpp.html" title="include/Pothos/Framework\l/BlockImpl.hpp" alt="" coords="364,278,541,319"/>
+<area shape="rect" id="node7" href="$TopologyImpl_8hpp.html" title="include/Pothos/Framework\l/TopologyImpl.hpp" alt="" coords="111,278,287,319"/>
 </map>
