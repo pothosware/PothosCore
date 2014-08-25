@@ -1,11 +1,12 @@
-//
-// Plugin/Static.hpp
-//
-// Static initialization implementation for load-time registration.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Plugin/Static.hpp
+///
+/// Static initialization implementation for load-time registration.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

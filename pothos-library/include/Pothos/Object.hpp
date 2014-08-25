@@ -1,11 +1,12 @@
-//
-// Object.hpp
-//
-// Top level include wrapper for Object classes.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Object.hpp
+///
+/// Top level include wrapper for Object classes.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

@@ -1,11 +1,12 @@
-//
-// Framework/Topology.hpp
-//
-// This file contains the interface for creating a topology of blocks.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/Topology.hpp
+///
+/// This file contains the interface for creating a topology of blocks.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

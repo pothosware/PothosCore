@@ -1,11 +1,12 @@
-//
-// Util/RingDeque.hpp
-//
-// A templated double ended queue implemented on top of a vector.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Util/RingDeque.hpp
+///
+/// A templated double ended queue implemented on top of a vector.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

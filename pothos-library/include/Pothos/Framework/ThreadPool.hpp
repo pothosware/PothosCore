@@ -1,11 +1,12 @@
-//
-// Framework/ThreadPool.hpp
-//
-// Support for configuring and managing threading in the framework.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/ThreadPool.hpp
+///
+/// Support for configuring and managing threading in the framework.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

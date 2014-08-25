@@ -1,11 +1,12 @@
-//
-// Util/Compiler.hpp
-//
-// Compiler utilities for creating API control of various compilers.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Util/Compiler.hpp
+///
+/// Compiler utilities for creating API control of various compilers.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

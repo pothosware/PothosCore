@@ -1,11 +1,12 @@
-//
-// Config.hpp
-//
-// Common macro definitions for library API export.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Config.hpp
+///
+/// Common macro definitions for library API export.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 // http://gcc.gnu.org/wiki/Visibility

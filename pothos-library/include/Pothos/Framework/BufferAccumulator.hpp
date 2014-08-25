@@ -1,11 +1,12 @@
-//
-// Framework/BufferAccumulator.hpp
-//
-// BufferAccumulator provides an input pool of buffers.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/BufferAccumulator.hpp
+///
+/// BufferAccumulator provides an input pool of buffers.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

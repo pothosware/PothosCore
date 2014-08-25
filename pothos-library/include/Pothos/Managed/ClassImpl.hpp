@@ -1,11 +1,12 @@
-//
-// Managed/ClassImpl.hpp
-//
-// Template implementation details for ManagedClass.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Managed/ClassImpl.hpp
+///
+/// Template implementation details for ManagedClass.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

@@ -1,11 +1,12 @@
-//
-// Object/Object.hpp
-//
-// Object is intended to facilitate API polymorphism similar to java.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Object/Object.hpp
+///
+/// Object is intended to facilitate API polymorphism similar to java.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 //We need to declare lots of copy constructors so the templated version is only called explicitly.

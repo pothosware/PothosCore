@@ -1,11 +1,12 @@
-//
-// Framework/Block.hpp
-//
-// This file contains the interface for creating custom Blocks.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/Block.hpp
+///
+/// This file contains the interface for creating custom Blocks.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

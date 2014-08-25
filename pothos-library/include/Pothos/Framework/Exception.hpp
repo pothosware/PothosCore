@@ -1,11 +1,12 @@
-//
-// Framework/Exception.hpp
-//
-// Exceptions thrown by the Framework methods.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/Exception.hpp
+///
+/// Exceptions thrown by the Framework methods.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

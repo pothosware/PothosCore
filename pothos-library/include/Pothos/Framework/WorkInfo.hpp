@@ -1,11 +1,12 @@
-//
-// Framework/WorkInfo.hpp
-//
-// WorkInfo provides information about a Worker's work() session.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/WorkInfo.hpp
+///
+/// WorkInfo provides information about a Worker's work() session.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

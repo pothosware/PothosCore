@@ -1,11 +1,12 @@
-//
-// System/Paths.hpp
-//
-// System paths for installing and locating system files.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file System/Paths.hpp
+///
+/// System paths for installing and locating system files.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

@@ -1,11 +1,12 @@
-//
-// Remote/Handler.hpp
-//
-// Proxy server instance handler.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Remote/Handler.hpp
+///
+/// Proxy server instance handler.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

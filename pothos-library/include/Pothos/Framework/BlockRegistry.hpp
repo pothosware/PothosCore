@@ -1,11 +1,12 @@
-//
-// Framework/BlockRegistry.hpp
-//
-// A BlockRegistry registers a block's factory function.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/BlockRegistry.hpp
+///
+/// A BlockRegistry registers a block's factory function.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

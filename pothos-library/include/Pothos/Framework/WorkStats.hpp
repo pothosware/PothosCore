@@ -1,11 +1,12 @@
-//
-// Framework/WorkStats.hpp
-//
-// This file contains the interface for work statistics.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/WorkStats.hpp
+///
+/// This file contains the interface for work statistics.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

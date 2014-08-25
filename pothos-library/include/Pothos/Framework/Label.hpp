@@ -1,11 +1,12 @@
-//
-// Framework/Label.hpp
-//
-// Label and associated classes for decorating a stream of elements.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/Label.hpp
+///
+/// Label and associated classes for decorating a stream of elements.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

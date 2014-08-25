@@ -1,11 +1,12 @@
-//
-// Callable/Exception.hpp
-//
-// Exceptions thrown by the Callable methods.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Callable/Exception.hpp
+///
+/// Exceptions thrown by the Callable methods.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

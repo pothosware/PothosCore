@@ -1,11 +1,12 @@
-//
-// Object/ObjectM.hpp
-//
-// ObjectM provides a mutable subclass of Object.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Object/ObjectM.hpp
+///
+/// ObjectM provides a mutable subclass of Object.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 //We need to declare lots of copy constructors so the templated version is only called explicitly.

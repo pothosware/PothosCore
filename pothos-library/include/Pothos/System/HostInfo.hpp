@@ -1,11 +1,12 @@
-//
-// System/Info.hpp
-//
-// Support for querying information about a host's configuration.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file System/Info.hpp
+///
+/// Support for querying information about a host's configuration.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

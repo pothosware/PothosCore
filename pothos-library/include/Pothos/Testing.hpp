@@ -1,13 +1,14 @@
-//
-// Testing.hpp
-//
-// Macros for creating self-test plugins.
-// Self tests are installed into the registry and executed at runtime.
-// The test macros are loosely based on the Boost unit test suite.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Testing.hpp
+///
+/// Macros for creating self-test plugins.
+/// Self tests are installed into the registry and executed at runtime.
+/// The test macros are loosely based on the Boost unit test suite.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

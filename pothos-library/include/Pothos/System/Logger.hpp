@@ -1,11 +1,12 @@
-//
-// System/Logger.hpp
-//
-// API calls for logger control.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file System/Logger.hpp
+///
+/// API calls for logger control.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

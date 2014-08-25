@@ -1,11 +1,12 @@
-//
-// Framework/BlockImpl.hpp
-//
-// This file contains inline definitions for Block members.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/BlockImpl.hpp
+///
+/// This file contains inline definitions for Block members.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Framework/Block.hpp>

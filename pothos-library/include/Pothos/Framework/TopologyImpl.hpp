@@ -1,11 +1,12 @@
-//
-// Framework/TopologyImpl.hpp
-//
-// Templated implementation details for the Topology class.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/TopologyImpl.hpp
+///
+/// Templated implementation details for the Topology class.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Framework/Topology.hpp>

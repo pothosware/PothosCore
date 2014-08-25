@@ -1,12 +1,13 @@
-//
-// Framework/BufferChunk.hpp
-//
-// A buffer chunk is a convenient interface to deal with
-// a managed or shared buffer and address/length offsets.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/BufferChunk.hpp
+///
+/// A buffer chunk is a convenient interface to deal with
+/// a managed or shared buffer and address/length offsets.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

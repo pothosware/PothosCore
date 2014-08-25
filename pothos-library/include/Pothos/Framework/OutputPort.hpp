@@ -1,11 +1,12 @@
-//
-// Framework/OutputPort.hpp
-//
-// This file provides an interface for a worker's output port.
-//
-// Copyright (c) 2014-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Framework/OutputPort.hpp
+///
+/// This file provides an interface for a worker's output port.
+///
+/// \copyright
+/// Copyright (c) 2014-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

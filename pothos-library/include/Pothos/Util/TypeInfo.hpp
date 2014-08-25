@@ -1,11 +1,12 @@
-//
-// Util/TypeInfo.hpp
-//
-// Utility functions dealing with std::type_info
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Util/TypeInfo.hpp
+///
+/// Utility functions dealing with std::type_info
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

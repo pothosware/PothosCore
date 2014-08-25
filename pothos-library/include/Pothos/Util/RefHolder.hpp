@@ -1,11 +1,12 @@
-//
-// Util/RefHolder.hpp
-//
-// Utility that allows derived objects to maintain references for garbage collection.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Util/RefHolder.hpp
+///
+/// Utility that allows derived objects to maintain references for garbage collection.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

@@ -1,15 +1,16 @@
-//
-// Object/Serialize.hpp
-//
-// Serialization support for types held by an Object.
-// This file provides the POTHOS_OBJECT_SERIALIZE macro
-// which exports types into the serialization system.
-// This file is not automatically included by Object.hpp;
-// users adding a type should explicitly include this file.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Object/Serialize.hpp
+///
+/// Serialization support for types held by an Object.
+/// This file provides the POTHOS_OBJECT_SERIALIZE macro
+/// which exports types into the serialization system.
+/// This file is not automatically included by Object.hpp;
+/// users adding a type should explicitly include this file.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 /*!

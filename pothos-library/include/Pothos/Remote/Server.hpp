@@ -1,11 +1,12 @@
-//
-// Remote/Server.hpp
-//
-// Remote access proxy server interface.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Remote/Server.hpp
+///
+/// Remote access proxy server interface.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

@@ -1,11 +1,12 @@
-//
-// Plugin/Plugin.hpp
-//
-// The plugin representation for the plugin registry.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Plugin/Plugin.hpp
+///
+/// The plugin representation for the plugin registry.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

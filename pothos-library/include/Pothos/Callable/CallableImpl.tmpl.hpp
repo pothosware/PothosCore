@@ -1,11 +1,12 @@
-//
-// Callable/CallableImpl.hpp
-//
-// Template implementation details for Callable.
-//
-// Copyright (c) 2013-2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Callable/CallableImpl.hpp
+///
+/// Template implementation details for Callable.
+///
+/// \copyright
+/// Copyright (c) 2013-2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>

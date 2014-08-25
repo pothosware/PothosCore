@@ -1,11 +1,12 @@
-//
-// Util/CompareTo.hpp
-//
-// Utility functions for comparing objects.
-//
-// Copyright (c) 2014 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
-//
+///
+/// \file Util/CompareTo.hpp
+///
+/// Utility functions for comparing objects.
+///
+/// \copyright
+/// Copyright (c) 2014 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Config.hpp>
