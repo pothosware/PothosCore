@@ -11,32 +11,24 @@
  * conversion support
  **********************************************************************/
 template <typename T>
-void plotCurvesFromElements(Pothos::InputPort *inPort, const size_t numElems, const double timeSpan,
-    std::shared_ptr<QwtPlotCurve> curve)
+void convertRealElements(Pothos::InputPort *inPort, std::valarray<double> &samps, std::valarray<double> &)
 {
     auto buff = inPort->buffer().as<const T *>();
-    QVector<QPointF> points;
-    for (size_t i = 0; i < numElems; i++)
+    for (size_t i = 0; i < samps.size(); i++)
     {
-        points.push_back(QPointF((i*timeSpan)/(numElems-1), buff[i]));
+        samps[i] = double(buff[i]);
     }
-
-    curve->setSamples(points);
 }
 
 template <typename T>
-void plotCurvesFromComplexElements(Pothos::InputPort *inPort, const size_t numElems, const double timeSpan,
-    std::shared_ptr<QwtPlotCurve> curveRe, std::shared_ptr<QwtPlotCurve> curveIm)
+void convertComplexElements(Pothos::InputPort *inPort, std::valarray<double> &sampsRe, std::valarray<double> &sampsIm)
 {
     auto buff = inPort->buffer().as<const std::complex<T> *>();
-    QVector<QPointF> pointsRe, pointsIm;
-    for (size_t i = 0; i < numElems; i++)
+    for (size_t i = 0; i < sampsRe.size(); i++)
     {
-        pointsRe.push_back(QPointF((i*timeSpan)/(numElems-1), buff[i].real()));
-        pointsIm.push_back(QPointF((i*timeSpan)/(numElems-1), buff[i].imag()));
+        sampsRe[i] = double(buff[i].real());
+        sampsIm[i] = double(buff[i].imag());
     }
-    curveRe->setSamples(pointsRe);
-    curveIm->setSamples(pointsIm);
 }
 
 /***********************************************************************
@@ -53,7 +45,7 @@ void WaveMonitor::setupPlotterCurves(void)
 {
     //clear old curves
     _curves.clear();
-    _curveUpdaters.clear();
+    _inputConverters.clear();
     for (auto inPort : this->inputs())
     {
         #define doForThisType(type) \
@@ -61,23 +53,20 @@ void WaveMonitor::setupPlotterCurves(void)
         { \
             _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Re%1").arg(inPort->index()))); \
             _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Im%1").arg(inPort->index()))); \
-            _curveUpdaters[inPort->index()] = std::bind( \
-                &plotCurvesFromComplexElements<type>, \
+            _inputConverters[inPort->index()] = std::bind( \
+                &convertComplexElements<type>, \
                 std::placeholders::_1, \
                 std::placeholders::_2, \
-                std::placeholders::_3, \
-                _curves[inPort->index()][0], \
-                _curves[inPort->index()][1]); \
+                std::placeholders::_3); \
         } \
         else if (inPort->dtype() == Pothos::DType(typeid(type))) \
         { \
             _curves[inPort->index()].emplace_back(new QwtPlotCurve(QString("Ch%1").arg(inPort->index()))); \
-            _curveUpdaters[inPort->index()] = std::bind( \
-                &plotCurvesFromElements<type>, \
+            _inputConverters[inPort->index()] = std::bind( \
+                &convertRealElements<type>, \
                 std::placeholders::_1, \
                 std::placeholders::_2, \
-                std::placeholders::_3, \
-                _curves[inPort->index()][0]); \
+                std::placeholders::_3); \
         }
         if (false){}
         doForThisType(double)
@@ -117,7 +106,28 @@ void WaveMonitor::setupPlotterCurves(void)
  **********************************************************************/
 void WaveMonitor::updateCurve(Pothos::InputPort *inPort)
 {
-    _curveUpdaters.at(inPort->index())(inPort, std::min(inPort->elements(), this->numPoints()), _timeSpan);
+    const bool hasIm = _curves.at(inPort->index()).size() > 1;
+
+    std::valarray<double> sampsRe(std::min(inPort->elements(), this->numPoints()));
+    std::valarray<double> sampsIm; if (hasIm) sampsIm.resize(sampsRe.size());
+
+    _inputConverters.at(inPort->index())(inPort, std::ref(sampsRe), std::ref(sampsIm));
+
+    QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
+        Q_ARG(int, inPort->index()), Q_ARG(int, 0), Q_ARG(std::valarray<double>, sampsRe));
+
+    if (hasIm) QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
+        Q_ARG(int, inPort->index()), Q_ARG(int, 1), Q_ARG(std::valarray<double>, sampsIm));
+}
+
+void WaveMonitor::handleSamples(const int index, const int curve, const std::valarray<double> &samps)
+{
+    QVector<QPointF> points(samps.size());
+    for (size_t i = 0; i < samps.size(); i++)
+    {
+        points[i] = QPointF((i*_timeSpan)/(samps.size()-1), samps[i]);
+    }
+    _curves.at(index).at(curve)->setSamples(points);
 }
 
 void WaveMonitor::work(void)

@@ -45,6 +45,7 @@ WaveMonitor::WaveMonitor(const Pothos::DType &dtype):
     {
         //missing from qwt:
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
+        qRegisterMetaType<std::valarray<double>>("std::valarray<double>");
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
         new MyPlotPicker(_mainPlot->canvas());
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
