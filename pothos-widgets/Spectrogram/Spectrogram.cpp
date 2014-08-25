@@ -44,24 +44,19 @@ public:
         _data.pop_back();
     }
 
+    void initRaster(const QRectF &, const QSize &raster)
+    {
+        this->setNumEntries(raster.height());
+    }
+
+private:
     void setNumEntries(const int num)
     {
-        if (_data.isEmpty()) _data.push_front(std::valarray<double>(1));
+        if (_data.isEmpty()) _data.push_front(std::valarray<double>(-1000, 1));
         while (_data.size() > num) _data.pop_back();
         while (_data.size() < num) _data.push_front(_data.front());
     }
 
-    void initRaster( const QRectF &area, const QSize &raster )
-    {
-        this->setNumEntries(raster.height());
-        /*
-        std::cout << "initRaster raster size " << raster.width() << " x " << raster.height() << std::endl;
-        std::cout << "initRaster raster area pos " << area.x() << " x " << area.y() << std::endl;
-        std::cout << "initRaster raster area size " << area.width() << " x " << area.height() << std::endl;
-        */
-    }
-
-private:
     QList<std::valarray<double>> _data;
 };
 
@@ -121,6 +116,7 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
         _plotSpect->setColorMap(this->makeColorMap());
         _mainPlot->axisWidget(QwtPlot::yRight)->setColorMap(_plotMatrix->interval(Qt::ZAxis), this->makeColorMap());
         _plotSpect->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
+        _plotSpect->setRenderThreadCount(0); //enable multi-thread
     }
 }
 
@@ -218,7 +214,11 @@ void Spectrogram::appendBins(const std::valarray<double> &bins)
 
 QwtColorMap *Spectrogram::makeColorMap(void) const
 {
-    return new QwtLinearColorMap();
+    auto cMap = new QwtLinearColorMap(Qt::darkCyan, Qt::red);
+    cMap->addColorStop(0.1, Qt::cyan);
+    cMap->addColorStop(0.6, Qt::green);
+    cMap->addColorStop(0.95, Qt::yellow);
+    return cMap;
 }
 
 /***********************************************************************
