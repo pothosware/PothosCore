@@ -75,7 +75,7 @@ class QwtPlotCurve;
  *
  * |mode graphWidget
  * |factory /widgets/wave_monitor(dtype)
- * |setter setNumInputs(numInputs)
+ * |initializer setNumInputs(numInputs)
  * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
