@@ -11,23 +11,23 @@
  * conversion support
  **********************************************************************/
 template <typename T>
-void convertRealElements(Pothos::InputPort *inPort, std::valarray<double> &samps, std::valarray<double> &)
+void convertRealElements(Pothos::InputPort *inPort, std::valarray<float> &samps, std::valarray<float> &)
 {
     auto buff = inPort->buffer().as<const T *>();
     for (size_t i = 0; i < samps.size(); i++)
     {
-        samps[i] = double(buff[i]);
+        samps[i] = float(buff[i]);
     }
 }
 
 template <typename T>
-void convertComplexElements(Pothos::InputPort *inPort, std::valarray<double> &sampsRe, std::valarray<double> &sampsIm)
+void convertComplexElements(Pothos::InputPort *inPort, std::valarray<float> &sampsRe, std::valarray<float> &sampsIm)
 {
     auto buff = inPort->buffer().as<const std::complex<T> *>();
     for (size_t i = 0; i < sampsRe.size(); i++)
     {
-        sampsRe[i] = double(buff[i].real());
-        sampsIm[i] = double(buff[i].imag());
+        sampsRe[i] = float(buff[i].real());
+        sampsIm[i] = float(buff[i].imag());
     }
 }
 
@@ -108,19 +108,19 @@ void WaveMonitor::updateCurve(Pothos::InputPort *inPort)
 {
     const bool hasIm = _curves.at(inPort->index()).size() > 1;
 
-    std::valarray<double> sampsRe(std::min(inPort->elements(), this->numPoints()));
-    std::valarray<double> sampsIm; if (hasIm) sampsIm.resize(sampsRe.size());
+    std::valarray<float> sampsRe(std::min(inPort->elements(), this->numPoints()));
+    std::valarray<float> sampsIm; if (hasIm) sampsIm.resize(sampsRe.size());
 
     _inputConverters.at(inPort->index())(inPort, std::ref(sampsRe), std::ref(sampsIm));
 
     QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
-        Q_ARG(int, inPort->index()), Q_ARG(int, 0), Q_ARG(std::valarray<double>, sampsRe));
+        Q_ARG(int, inPort->index()), Q_ARG(int, 0), Q_ARG(std::valarray<float>, sampsRe));
 
     if (hasIm) QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
-        Q_ARG(int, inPort->index()), Q_ARG(int, 1), Q_ARG(std::valarray<double>, sampsIm));
+        Q_ARG(int, inPort->index()), Q_ARG(int, 1), Q_ARG(std::valarray<float>, sampsIm));
 }
 
-void WaveMonitor::handleSamples(const int index, const int curve, const std::valarray<double> &samps)
+void WaveMonitor::handleSamples(const int index, const int curve, const std::valarray<float> &samps)
 {
     QVector<QPointF> points(samps.size());
     for (size_t i = 0; i < samps.size(); i++)

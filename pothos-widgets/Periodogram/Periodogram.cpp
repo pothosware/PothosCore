@@ -46,7 +46,7 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     {
         //missing from qwt:
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
-        qRegisterMetaType<std::valarray<double>>("std::valarray<double>");
+        qRegisterMetaType<std::valarray<float>>("std::valarray<float>");
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
         _mainPlot->setAxisScale(QwtPlot::yLeft, -100, 0);
         auto picker = new MyPlotPicker(_mainPlot->canvas());

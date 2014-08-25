@@ -160,13 +160,13 @@ public:
 
 private slots:
     void handlePickerSelected(const QPointF &);
-    void appendBins(const std::valarray<double> &bins);
+    void appendBins(const std::valarray<float> &bins);
 
 private:
     QTimer *_replotTimer;
     QwtPlot *_mainPlot;
     std::shared_ptr<QwtPlotSpectrogram> _plotSpect;
-    MySpectrogramRasterData *_plotMatrix;
+    MySpectrogramRasterData *_plotRaster;
     double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;

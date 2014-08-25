@@ -20,9 +20,9 @@ inline double hann(const size_t n, const size_t N)
 //FFT code can be foound at:
 //http://rosettacode.org/wiki/Fast_Fourier_transform
 ////////////////////////////////////////////////////////////////////////
-const double PI = 3.141592653589793238460;
+const float PI = 3.141592653589793238460;
 
-typedef std::complex<double> Complex;
+typedef std::complex<float> Complex;
 typedef std::valarray<Complex> CArray;
 
 // Cooley–Tukey FFT (in-place)
@@ -42,7 +42,7 @@ inline void fft(CArray& x)
     // combine
     for (size_t k = 0; k < N/2; ++k)
     {
-        Complex t = std::polar(1.0, -2 * PI * k / N) * odd[k];
+        Complex t = std::polar(1.0f, -2 * PI * k / N) * odd[k];
         x[k    ] = even[k] + t;
         x[k+N/2] = even[k] - t;
     }
@@ -67,10 +67,10 @@ inline void ifft(CArray& x)
 ////////////////////////////////////////////////////////////////////////
 //FFT Power spectrum
 ////////////////////////////////////////////////////////////////////////
-inline std::valarray<double> fftPowerSpectrum(CArray &fftBins)
+inline std::valarray<float> fftPowerSpectrum(CArray &fftBins)
 {
     //windowing
-    double windowPower(0.0);
+    float windowPower(0.0);
     for (size_t n = 0; n < fftBins.size(); n++)
     {
         double w_n = hann(n, fftBins.size());
@@ -83,7 +83,7 @@ inline std::valarray<double> fftPowerSpectrum(CArray &fftBins)
     fft(fftBins);
 
     //power calculation
-    std::valarray<double> powerBins(fftBins.size());
+    std::valarray<float> powerBins(fftBins.size());
     for (size_t i = 0; i < fftBins.size(); i++)
     {
         powerBins[i] = std::norm(fftBins[i]);

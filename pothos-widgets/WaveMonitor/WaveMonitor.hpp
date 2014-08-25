@@ -165,7 +165,7 @@ public:
 private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);
-    void handleSamples(const int index, const int curve, const std::valarray<double> &samps);
+    void handleSamples(const int index, const int curve, const std::valarray<float> &samps);
 
 private:
     QwtPlot *_mainPlot;
@@ -178,7 +178,7 @@ private:
 
     //set of curves per index
     std::map<size_t, std::vector<std::shared_ptr<QwtPlotCurve>>> _curves;
-    std::map<size_t, std::function<void(Pothos::InputPort *, std::valarray<double> &, std::valarray<double> &)>> _inputConverters;
+    std::map<size_t, std::function<void(Pothos::InputPort *, std::valarray<float> &, std::valarray<float> &)>> _inputConverters;
     void setupPlotterCurves(void);
 
     void updateXAxis(void);

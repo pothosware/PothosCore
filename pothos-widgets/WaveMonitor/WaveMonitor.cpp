@@ -45,7 +45,7 @@ WaveMonitor::WaveMonitor(const Pothos::DType &dtype):
     {
         //missing from qwt:
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
-        qRegisterMetaType<std::valarray<double>>("std::valarray<double>");
+        qRegisterMetaType<std::valarray<float>>("std::valarray<float>");
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
         new MyPlotPicker(_mainPlot->canvas());
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
@@ -118,22 +118,22 @@ void WaveMonitor::setYAxisTitle(const QString &title)
 
 void WaveMonitor::updateXAxis(void)
 {
-    QString axisTitle("s");
+    QString axisTitle("secs");
     _timeSpan = _numPoints/_sampleRate;
     if (_timeSpan <= 100e-9)
     {
         _timeSpan *= 1e9;
-        axisTitle = "ns";
+        axisTitle = "nsecs";
     }
     else if (_timeSpan <= 100e-6)
     {
         _timeSpan *= 1e6;
-        axisTitle = "us";
+        axisTitle = "usecs";
     }
     else if (_timeSpan <= 100e-3)
     {
         _timeSpan *= 1e3;
-        axisTitle = "ms";
+        axisTitle = "msecs";
     }
     _mainPlot->setAxisTitle(QwtPlot::xBottom, MyPlotAxisTitle(axisTitle));
     _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
