@@ -9,37 +9,80 @@
 #include <qwt_plot_layout.h>
 #include <qwt_plot_spectrogram.h>
 #include <qwt_plot_spectrocurve.h>
-#include <qwt_matrix_raster_data.h>
+#include <qwt_raster_data.h>
 #include <qwt_scale_widget.h>
 #include <qwt_color_map.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
 #include <iostream>
 
+class MySpectrogramRasterData : public QwtRasterData
+{
+public:
+    MySpectrogramRasterData(void)
+    {
+        return;
+    }
+
+    double normVal(const double val, const Qt::Axis axis) const
+    {
+        auto inter = this->interval(axis);
+        return (val - inter.minValue())/inter.width();
+    }
+
+    double value(double x, double y) const
+    {
+        size_t time = size_t(this->normVal(y, Qt::YAxis)*(_data.size()-1));
+        const auto &bins = _data[time];
+        size_t bin = size_t(this->normVal(x, Qt::XAxis)*(bins.size()-1));
+        return bins[bin];
+    }
+
+    void appendBins(const std::valarray<double> &bins)
+    {
+        _data.push_front(bins);
+        _data.pop_back();
+    }
+
+    void setNumEntries(const int num)
+    {
+        if (_data.isEmpty()) _data.push_front(std::valarray<double>(1));
+        while (_data.size() > num) _data.pop_back();
+        while (_data.size() < num) _data.push_front(_data.front());
+    }
+
+    void initRaster( const QRectF &area, const QSize &raster )
+    {
+        this->setNumEntries(raster.height());
+        /*
+        std::cout << "initRaster raster size " << raster.width() << " x " << raster.height() << std::endl;
+        std::cout << "initRaster raster area pos " << area.x() << " x " << area.y() << std::endl;
+        std::cout << "initRaster raster area size " << area.width() << " x " << area.height() << std::endl;
+        */
+    }
+
+private:
+    QList<std::valarray<double>> _data;
+};
+
 Spectrogram::Spectrogram(const Pothos::DType &dtype):
     _mainPlot(new QwtPlot(this)),
     _plotSpect(new QwtPlotSpectrogram()),
-    _plotMatrix(new QwtMatrixRasterData()),
-    _displayRate(1.0),
+    _plotMatrix(new MySpectrogramRasterData()),
     _sampleRate(1.0),
     _sampleRateWoAxisUnits(1.0),
     _numBins(1024),
-    _overlap(512),
     _timeSpan(10.0)
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, widget));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTitle));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setNumFFTBins));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setSTFTOverlap));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTimeSpan));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, title));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, numFFTBins));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, stftOverlap));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, timeSpan));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableYAxis));
@@ -56,6 +99,7 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     {
         //missing from qwt:
         qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
+        qRegisterMetaType<std::valarray<double>>("std::valarray<double>");
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
         _mainPlot->setAxisScale(QwtPlot::yRight, -100, 0);
         _plotMatrix->setInterval(Qt::ZAxis, QwtInterval(-100, 0));
@@ -78,7 +122,6 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
         _mainPlot->axisWidget(QwtPlot::yRight)->setColorMap(_plotMatrix->interval(Qt::ZAxis), this->makeColorMap());
         _plotSpect->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
     }
-    this->updateMatrixDimensions();
 }
 
 Spectrogram::~Spectrogram(void)
@@ -89,11 +132,6 @@ Spectrogram::~Spectrogram(void)
 void Spectrogram::setTitle(const QString &title)
 {
     _mainPlot->setTitle(MyPlotTitle(title));
-}
-
-void Spectrogram::setDisplayRate(const double displayRate)
-{
-    _displayRate = displayRate;
 }
 
 void Spectrogram::setSampleRate(const double sampleRate)
@@ -125,13 +163,6 @@ void Spectrogram::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
     for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
-    this->updateMatrixDimensions();
-}
-
-void Spectrogram::setSTFTOverlap(const size_t overlap)
-{
-    _overlap = overlap;
-    this->updateMatrixDimensions();
 }
 
 void Spectrogram::setTimeSpan(const double timeSpan)
@@ -156,7 +187,6 @@ void Spectrogram::setTimeSpan(const double timeSpan)
     _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle(axisTitle));
     _mainPlot->setAxisScale(QwtPlot::yLeft, 0, _timeSpan);
     _plotMatrix->setInterval(Qt::YAxis, QwtInterval(0, _timeSpan));
-    this->updateMatrixDimensions();
 }
 
 QString Spectrogram::title(void) const
@@ -180,11 +210,10 @@ void Spectrogram::handlePickerSelected(const QPointF &p)
     this->callVoid("frequencySelected", freq);
 }
 
-void Spectrogram::updateMatrixDimensions(void)
+void Spectrogram::appendBins(const std::valarray<double> &bins)
 {
-    QVector<double> data(this->numFFTBins()*1);
-    _plotMatrix->setValueMatrix(data, this->numFFTBins());
-    QMetaObject::invokeMethod(_mainPlot, "replot", Qt::QueuedConnection);
+    _plotMatrix->appendBins(bins);
+    _mainPlot->replot();
 }
 
 QwtColorMap *Spectrogram::makeColorMap(void) const

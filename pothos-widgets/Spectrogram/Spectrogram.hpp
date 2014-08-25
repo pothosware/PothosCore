@@ -14,7 +14,7 @@
 class QwtPlot;
 class QwtColorMap;
 class QwtPlotSpectrogram;
-class QwtMatrixRasterData;
+class MySpectrogramRasterData;
 
 /***********************************************************************
  * |PothosDoc Spectrogram
@@ -43,19 +43,12 @@ class QwtMatrixRasterData;
  * |param title The title of the plot
  * |default "Spectrogram"
  *
- * |param displayRate[Display Rate] How often the plotter updates.
- * |default 2.0
- * |units updates/sec
- *
  * |param sampleRate[Sample Rate] The rate of the input elements.
  * |default 1e6
  * |units samples/sec
  *
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
- *
- * |param overlap[STFT Overlap] The sample overlap per subsequent fourier transform.
- * |default 512
  *
  * |param timeSpan[Time Span] How many seconds of data to display in the plot.
  * |default 10.0
@@ -76,10 +69,8 @@ class QwtMatrixRasterData;
  * |mode graphWidget
  * |factory /widgets/spectrogram(dtype)
  * |setter setTitle(title)
- * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
- * |setter setSTFTOverlap(overlap)
  * |setter setTimeSpan(timeSpan)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
@@ -107,27 +98,15 @@ public:
     void setTitle(const QString &title);
 
     /*!
-     * update rate for the plotter
-     * how often to update the display
-     */
-    void setDisplayRate(const double displayRate);
-
-    /*!
      * sample rate for the plotter
      * controls the frequency scaling display
      */
     void setSampleRate(const double sampleRate);
 
     void setNumFFTBins(const size_t numBins);
-    void setSTFTOverlap(const size_t overlap);
     void setTimeSpan(const double timeSpan);
 
     QString title(void) const;
-
-    double displayRate(void) const
-    {
-        return _displayRate;
-    }
 
     double sampleRate(void) const
     {
@@ -137,11 +116,6 @@ public:
     size_t numFFTBins(void) const
     {
         return _numBins;
-    }
-
-    size_t stftOverlap(void) const
-    {
-        return _overlap;
     }
 
     double timeSpan(void) const
@@ -168,20 +142,18 @@ public:
 
 private slots:
     void handlePickerSelected(const QPointF &);
+    void appendBins(const std::valarray<double> &bins);
 
 private:
     QwtPlot *_mainPlot;
     std::shared_ptr<QwtPlotSpectrogram> _plotSpect;
-    QwtMatrixRasterData *_plotMatrix;
-    double _displayRate;
+    MySpectrogramRasterData *_plotMatrix;
     double _sampleRate;
     double _sampleRateWoAxisUnits;
     size_t _numBins;
-    size_t _overlap;
     double _timeSpan;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
     std::function<void(Pothos::InputPort *, CArray &)> _inputConverter;
-    void updateMatrixDimensions(void);
     QwtColorMap *makeColorMap(void) const;
 };

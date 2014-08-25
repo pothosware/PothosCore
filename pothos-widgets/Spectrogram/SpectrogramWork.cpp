@@ -4,7 +4,6 @@
 #include "MyPlotterUtils.hpp"
 #include "Spectrogram.hpp"
 #include <qwt_plot.h>
-#include <qwt_matrix_raster_data.h>
 #include <complex>
 
 /***********************************************************************
@@ -104,40 +103,22 @@ void Spectrogram::updateCurve(Pothos::InputPort *inPort)
         std::swap(powerBins[i], powerBins[i+powerBins.size()/2]);
     }
 
-    //QVector<double> data(this->numFFTBins()*1);
-    for (size_t i = 0; i < powerBins.size(); i++)
-    {
-        //data[i] = powerBins[i];
-        _plotMatrix->setValue(0, i, powerBins[i]);
-    }
-    //_plotMatrix->setValueMatrix(data, this->numFFTBins());
-
-    /*
-    //power bins to points on the curve
-    QVector<QPointF> points;
-    for (size_t i = 0; i < powerBins.size(); i++)
-    {
-        auto freq = (_sampleRateWoAxisUnits*i)/(fftBins.size()-1) - _sampleRateWoAxisUnits/2;
-        points.push_back(QPointF(freq, powerBins[i]));
-    }
-    _curves.at(inPort->index())->setSamples(points);
-    */
+    QMetaObject::invokeMethod(this, "appendBins", Qt::QueuedConnection, Q_ARG(std::valarray<double>, powerBins));
 }
 
 void Spectrogram::work(void)
 {
-    auto inPort = this->input(0);
-    this->updateCurve(inPort);
-    inPort->consume(this->numFFTBins()-this->stftOverlap());
+    auto updateRate = this->height()/_timeSpan;
 
     //should we update the plotter with these values?
-    const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/_displayRate));
+    const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/updateRate));
     bool doUpdate = (std::chrono::high_resolution_clock::now() - _timeLastUpdate) > timeBetweenUpdates;
 
+    //create a new entry in the raster data + consume
+    auto inPort = this->input(0);
+    if (doUpdate) this->updateCurve(inPort);
+    inPort->consume(inPort->elements());
+
     //perform the plotter update
-    if (doUpdate)
-    {
-        QMetaObject::invokeMethod(_mainPlot, "replot", Qt::QueuedConnection);
-        _timeLastUpdate = std::chrono::high_resolution_clock::now();
-    }
+    if (doUpdate) _timeLastUpdate = std::chrono::high_resolution_clock::now();
 }
