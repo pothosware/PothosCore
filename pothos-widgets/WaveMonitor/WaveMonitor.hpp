@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include <qwt_math.h> //_USE_MATH_DEFINES
 #include <Pothos/Framework.hpp>
 #include <QWidget>
 #include <memory>
