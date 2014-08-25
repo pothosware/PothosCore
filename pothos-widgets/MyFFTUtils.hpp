@@ -20,8 +20,6 @@ inline double hann(const size_t n, const size_t N)
 //FFT code can be foound at:
 //http://rosettacode.org/wiki/Fast_Fourier_transform
 ////////////////////////////////////////////////////////////////////////
-const float PI = 3.141592653589793238460;
-
 typedef std::complex<float> Complex;
 typedef std::valarray<Complex> CArray;
 
@@ -42,7 +40,7 @@ inline void fft(CArray& x)
     // combine
     for (size_t k = 0; k < N/2; ++k)
     {
-        Complex t = std::polar(1.0f, -2 * PI * k / N) * odd[k];
+        Complex t = std::polar(1.0f, -2 * float(M_PI) * k / N) * odd[k];
         x[k    ] = even[k] + t;
         x[k+N/2] = even[k] - t;
     }

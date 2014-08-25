@@ -1,9 +1,9 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "Periodogram.hpp"
 #include "MyPlotStyler.hpp"
 #include "MyPlotPicker.hpp"
-#include "Periodogram.hpp"
 #include <QResizeEvent>
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>

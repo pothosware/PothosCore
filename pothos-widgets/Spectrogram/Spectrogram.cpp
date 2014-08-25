@@ -1,10 +1,10 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "Spectrogram.hpp"
 #include "MyPlotStyler.hpp"
 #include "MyPlotPicker.hpp"
 #include "SpectrogramRaster.hpp"
-#include "Spectrogram.hpp"
 #include <QTimer>
 #include <QResizeEvent>
 #include <qwt_plot.h>
