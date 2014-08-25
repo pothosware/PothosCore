@@ -1,11 +1,12 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "network/SocketEndpoint.hpp"
+#include "SocketEndpoint.hpp"
 #include <Pothos/Framework.hpp>
 #include <thread>
 #include <sstream>
 #include <string>
+#include <chrono>
 #include <cassert>
 #include <iostream>
 
@@ -99,9 +100,11 @@ private:
 
 void NetworkSink::work(void)
 {
-    if (not _ep.isReady()) return this->yield();
-
-    const auto timeout = Poco::Timespan(this->workInfo().maxTimeoutNs/1000);
+    if (not _ep.isReady())
+    {
+        std::this_thread::sleep_for(std::chrono::nanoseconds(this->workInfo().maxTimeoutNs));
+        return this->yield();
+    }
 
     auto inputPort = this->input(0);
 
