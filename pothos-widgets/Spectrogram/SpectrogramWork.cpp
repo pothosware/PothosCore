@@ -74,35 +74,8 @@ void Spectrogram::updateCurve(Pothos::InputPort *inPort)
     CArray fftBins(std::min(inPort->elements(), this->numFFTBins()));
     _inputConverter(inPort, std::ref(fftBins));
 
-    //windowing
-    double windowPower(0.0);
-    for (size_t n = 0; n < fftBins.size(); n++)
-    {
-        double w_n = hann(n, fftBins.size());
-        windowPower += w_n*w_n;
-        fftBins[n] *= w_n;
-    }
-    windowPower /= fftBins.size();
-
-    //take fft
-    fft(fftBins);
-
-    //power calculation
-    std::valarray<double> powerBins(fftBins.size());
-    for (size_t i = 0; i < fftBins.size(); i++)
-    {
-        powerBins[i] = std::norm(fftBins[i]);
-        powerBins[i] = 10*std::log10(powerBins[i]);
-        powerBins[i] -= 20*std::log10(fftBins.size());
-        powerBins[i] -= 10*std::log10(windowPower);
-    }
-
-    //bin reorder
-    for (size_t i = 0; i < powerBins.size()/2; i++)
-    {
-        std::swap(powerBins[i], powerBins[i+powerBins.size()/2]);
-    }
-
+    //power bins to points on the curve
+    const auto powerBins = fftPowerSpectrum(fftBins);
     QMetaObject::invokeMethod(this, "appendBins", Qt::QueuedConnection, Q_ARG(std::valarray<double>, powerBins));
 }
 
