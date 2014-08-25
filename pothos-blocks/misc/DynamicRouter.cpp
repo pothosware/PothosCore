@@ -35,7 +35,7 @@
  *
  * |factory /blocks/dynamic_router()
  * |setter setDestinations(destinations)
- * |setter setNumPorts(numInputs, numOutputs)
+ * |initializer setNumPorts(numInputs, numOutputs)
  **********************************************************************/
 class DynamicRouter : public Pothos::Block
 {

@@ -47,8 +47,8 @@
  * |preview disable
  *
  * |factory /blocks/add(dtype)
- * |setter setNumInputs(numInputs)
- * |setter setPreload(preload)
+ * |initializer setNumInputs(numInputs)
+ * |initializer setPreload(preload)
  **********************************************************************/
 template <typename Type>
 class Add : public Pothos::Block
