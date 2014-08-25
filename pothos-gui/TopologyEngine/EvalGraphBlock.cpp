@@ -28,6 +28,7 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
 
     //grab the cache (or make one)
     auto &cache = _idToBlockEval[block->getId()];
+    if (block->getId().isEmpty()) cache.reset(); //blank id is for a temporary
     const bool newCache = not cache;
     if (not cache) cache.reset(new EvalBlockCache(block->getBlockDesc()));
 

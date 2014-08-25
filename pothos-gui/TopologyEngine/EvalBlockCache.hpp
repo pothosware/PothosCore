@@ -63,6 +63,7 @@ public:
     void setProxyBlock(const Pothos::Proxy &block)
     {
         _proxyBlock = block;
+        _previousValues.clear();
     }
 
 private:
