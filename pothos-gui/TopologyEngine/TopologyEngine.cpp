@@ -60,6 +60,8 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
     _topology->disconnectAll();
     for (const auto &conn : connections)
     {
+        if (idToBlock.count(conn.srcId) == 0) continue;
+        if (idToBlock.count(conn.dstId) == 0) continue;
         _topology->connect(
             idToBlock.at(conn.srcId), conn.srcPort,
             idToBlock.at(conn.dstId), conn.dstPort);
