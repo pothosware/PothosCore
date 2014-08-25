@@ -37,10 +37,16 @@ endforeach(comp)
 ########################################################################
 # Qwt setup
 ########################################################################
+set(CUSTOM_QWT_SOURCES #sources not part of QWT that we are building into this library
+    MyPlotPicker.cpp
+    MyPlotterUtils.cpp
+    MyDoubleSlider.cpp
+)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qwt/src)
 add_definitions(-DQWT_DLL)
 file(GLOB QWT_SOURCES "qwt/src/*.cpp")
-add_library(PothosQwt SHARED ${QWT_SOURCES})
+add_library(PothosQwt SHARED ${QWT_SOURCES} ${CUSTOM_QWT_SOURCES})
 set_target_properties(PothosQwt PROPERTIES DEFINE_SYMBOL "QWT_MAKEDLL")
 target_link_libraries(PothosQwt ${Qt5_LIBRARIES})
 install(TARGETS PothosQwt
@@ -53,23 +59,15 @@ list(APPEND Qt5_LIBRARIES PothosQwt)
 ########################################################################
 # Build widgets module
 ########################################################################
-set(SOURCES
-    QStringSupport.cpp
-    MyDoubleSlider.cpp
-    Slider.cpp
-    NumericEntry.cpp
-    TextDisplay.cpp
-    DropDown.cpp
-    RadioGroup.cpp
-    QwtSlider.cpp
-    TimeDomainPlot/TimeDomainPlot.hpp #scanned for block desc
-    TimeDomainPlot/TimeDomainPlot.cpp
-)
-
 POTHOS_MODULE_UTIL(
     TARGET GeneralWidgets
-    SOURCES ${SOURCES}
+    SOURCES QStringSupport.cpp
     LIBRARIES ${Qt5_LIBRARIES}
     DESTINATION widgets
-    ENABLE_DOCS
 )
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(ControlWidgets)
+add_subdirectory(WaveMonitor)
+add_subdirectory(Periodogram)
+add_subdirectory(Spectrogram)

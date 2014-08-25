@@ -24,8 +24,6 @@ public:
     void setGraphBlock(GraphBlock *block);
     GraphBlock *getGraphBlock(void) const;
 
-    bool isPointing(const QRectF &rect) const;
-
     QPainterPath shape(void) const;
 
     void render(QPainter &painter);
@@ -42,6 +40,7 @@ private slots:
 protected:
     bool sceneEventFilter(QGraphicsItem *watched, QEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
 private:
     struct Impl;
