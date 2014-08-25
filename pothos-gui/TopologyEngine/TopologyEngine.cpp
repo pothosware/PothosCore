@@ -84,6 +84,7 @@ Pothos::Proxy TopologyEngine::getEvalEnvironment(const QString &zone)
 
 Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QString &zone)
 {
+    if (zone == "gui") return Pothos::ProxyEnvironment::make("managed");
     auto dock = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]);
     assert(dock != nullptr);
     auto config = dock->zoneToConfig(zone);

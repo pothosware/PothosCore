@@ -263,6 +263,11 @@ const std::string &GraphBlock::getOutputPortTypeStr(const QString &key) const
 
 const QString &GraphBlock::getAffinityZone(void) const
 {
+    if (this->isGraphWidget())
+    {
+        static QString gui("gui");
+        return gui;
+    }
     return _impl->affinityZone;
 }
 
