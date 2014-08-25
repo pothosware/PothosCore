@@ -148,6 +148,7 @@ void GraphWidget::render(QPainter &)
     assert(_impl);
 
     //update display widget when not set
+    _impl->block->prerender();
     auto graphWidget = _impl->block->getGraphWidget();
     _impl->container->setWidget(graphWidget);
 }
