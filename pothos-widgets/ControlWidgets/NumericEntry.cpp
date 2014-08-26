@@ -46,11 +46,11 @@
  * |mode graphWidget
  * |factory /widgets/numeric_entry()
  * |setter setTitle(title)
- * |setter setValue(value)
  * |setter setMinimum(minimum)
  * |setter setMaximum(maximum)
  * |setter setSingleStep(step)
  * |setter setDecimals(precision)
+ * |setter setValue(value)
  * |setter setSliderVisible(sliderVisible)
  **********************************************************************/
 class NumericEntry : public QWidget, public Pothos::Block

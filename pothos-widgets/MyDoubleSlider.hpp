@@ -25,7 +25,7 @@ private slots:
     void handleIntValueChanged(const int);
 
 private:
-    void updateRange(void);
+    void updateRange(const double oldValue);
 
     double _minimum;
     double _maximum;

@@ -48,6 +48,7 @@
  * |setter setLowerBound(lowerBound)
  * |setter setUpperBound(upperBound)
  * |setter setStepSize(stepSize)
+ * |setter setValue(value)
  **********************************************************************/
 class QwtSliderBlock : public QwtSlider, public Pothos::Block
 {

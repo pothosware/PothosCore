@@ -32,10 +32,10 @@
  *
  * |mode graphWidget
  * |factory /widgets/slider(orientation)
- * |setter setValue(value)
  * |setter setMinimum(minimum)
  * |setter setMaximum(maximum)
  * |setter setSingleStep(step)
+ * |setter setValue(value)
  **********************************************************************/
 class Slider : public MyDoubleSlider, public Pothos::Block
 {

@@ -4,7 +4,10 @@
 #include "MyDoubleSlider.hpp"
 
 MyDoubleSlider::MyDoubleSlider(const Qt::Orientation orientation, QWidget *parent):
-    QSlider(orientation, parent)
+    QSlider(orientation, parent),
+    _minimum(0.0),
+    _maximum(100.0),
+    _stepSize(1.0)
 {
     connect(this, SIGNAL(valueChanged(int)), this, SLOT(handleIntValueChanged(int)));
 }
@@ -27,20 +30,23 @@ void MyDoubleSlider::setValue(const double val)
 
 void MyDoubleSlider::setMinimum(const double min)
 {
+    auto oldValue = this->value();
     _minimum = min;
-    this->updateRange();
+    this->updateRange(oldValue);
 }
 
 void MyDoubleSlider::setMaximum(const double max)
 {
+    auto oldValue = this->value();
     _maximum = max;
-    this->updateRange();
+    this->updateRange(oldValue);
 }
 
 void MyDoubleSlider::setSingleStep(const double val)
 {
+    auto oldValue = this->value();
     _stepSize = val;
-    this->updateRange();
+    this->updateRange(oldValue);
 }
 
 void MyDoubleSlider::handleIntValueChanged(const int)
@@ -48,9 +54,8 @@ void MyDoubleSlider::handleIntValueChanged(const int)
     emit this->valueChanged(this->value());
 }
 
-void MyDoubleSlider::updateRange(void)
+void MyDoubleSlider::updateRange(const double oldValue)
 {
-    auto oldValue = this->value();
     QSlider::setMinimum(_minimum/_stepSize);
     QSlider::setMaximum(_maximum/_stepSize);
     this->setValue(oldValue);
