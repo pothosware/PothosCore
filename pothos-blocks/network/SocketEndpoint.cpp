@@ -324,6 +324,8 @@ struct PothosPacketSocketEndpoint::Impl
     {
         return 256*1024;
     }
+
+    std::mutex sendMutex;
 };
 
 /***********************************************************************
@@ -698,6 +700,8 @@ void PothosPacketSocketEndpoint::send(const Poco::UInt16 type, const Poco::UInt6
 
 void PothosPacketSocketEndpoint::Impl::send(const Poco::UInt16 flags, const Poco::UInt16 type, const Poco::UInt64 &index, const void *buff, const size_t numBytes)
 {
+    std::unique_lock<std::mutex> lock(this->sendMutex);
+
     int ret;
     PothosPacketHeader header;
     header.headerWord = Poco::ByteOrder::toNetwork(PothosPacketHeaderWord);
