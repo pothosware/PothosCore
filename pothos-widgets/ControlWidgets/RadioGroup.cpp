@@ -72,6 +72,11 @@ public:
         this->callVoid("valueChanged", this->value());
     }
 
+    void setTitle(const QString &title)
+    {
+        QMetaObject::invokeMethod(this, "handleSetTitle", Qt::QueuedConnection, Q_ARG(QString, title));
+    }
+
     Pothos::Object value(void) const
     {
         for (auto pair : _radioToOption)
@@ -131,6 +136,11 @@ private slots:
     void handleRadioChanged(bool)
     {
         this->callVoid("valueChanged", this->value());
+    }
+
+    void handleSetTitle(const QString &title)
+    {
+        QGroupBox::setTitle(title);
     }
 
 private:

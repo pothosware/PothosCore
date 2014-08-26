@@ -65,12 +65,12 @@ void Spectrogram::activate(void)
     doForThisType(char)
     else throw Pothos::InvalidArgumentException("Spectrogram::setupPlotterCurves("+inPort->dtype().toString()+")", "dtype not supported");
 
-    _replotTimer->start();
+    QMetaObject::invokeMethod(_replotTimer, "start", Qt::QueuedConnection);
 }
 
 void Spectrogram::deactivate(void)
 {
-    _replotTimer->stop();
+    QMetaObject::invokeMethod(_replotTimer, "stop", Qt::QueuedConnection);
 }
 
 /***********************************************************************

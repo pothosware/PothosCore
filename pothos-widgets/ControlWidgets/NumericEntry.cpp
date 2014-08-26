@@ -148,7 +148,7 @@ public:
 
     void setSliderVisible(const bool visible)
     {
-        _slider->setVisible(visible);
+        QMetaObject::invokeMethod(_slider, "setVisible", Qt::QueuedConnection, Q_ARG(bool, visible));
     }
 
 private slots:
