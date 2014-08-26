@@ -29,6 +29,11 @@ public:
     static std::string startSyslogListener(void);
 
     /*!
+     * Stop the syslog listener service.
+     */
+    static void stopSyslogListener(void);
+
+    /*!
      * Start syslog forwarding to the given address.
      * \param addr the log destination in host:port format
      */

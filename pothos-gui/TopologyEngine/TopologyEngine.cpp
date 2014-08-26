@@ -20,7 +20,7 @@ TopologyEngine::TopologyEngine(QObject *parent):
     QObject(parent),
     _topology(new Pothos::Topology())
 {
-    _syslogListenPort = Pothos::System::Logger::startSyslogListener();
+    return;
 }
 
 void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
@@ -115,7 +115,8 @@ Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QStr
     auto env = client.makeEnvironment("managed");
     if (serverProcessNew) //enable log forwarding
     {
-        const auto serverAddr = env->getPeeringAddress() + ":" + _syslogListenPort;
+        const auto syslogListenPort = Pothos::System::Logger::startSyslogListener();
+        const auto serverAddr = env->getPeeringAddress() + ":" + syslogListenPort;
         env->findProxy("Pothos/System/Logger").callVoid("startSyslogForwarding", serverAddr);
         const auto logSource = (not zone.isEmpty())? zone.toStdString() : newHostUri.getHost();
         env->findProxy("Pothos/System/Logger").callVoid("forwardStdIoToLogging", logSource);

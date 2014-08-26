@@ -5,6 +5,7 @@
 #include "PothosGuiUtils.hpp"
 #include <Pothos/Init.hpp>
 #include <Pothos/Remote.hpp>
+#include <Pothos/System.hpp>
 #include <Poco/Logger.h>
 #include <QMessageBox>
 #include <QApplication>
@@ -12,8 +13,22 @@
 #include <cstdlib> //EXIT_FAILURE
 #include <memory>
 
+struct MyScopedSyslogListener
+{
+    MyScopedSyslogListener(void)
+    {
+        Pothos::System::Logger::startSyslogListener();
+    }
+    ~MyScopedSyslogListener(void)
+    {
+        Pothos::System::Logger::stopSyslogListener();
+    }
+};
+
 int main(int argc, char **argv)
 {
+    MyScopedSyslogListener syslogListener;
+
     //create the entry point to the GUI
     QApplication app(argc, argv);
     app.setOrganizationName("PothosWare");

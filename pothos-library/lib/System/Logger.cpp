@@ -92,26 +92,11 @@ private:
 /***********************************************************************
  * Public System Logger API implementation
  **********************************************************************/
-struct RemoteSyslogListenerCloser
-{
-    RemoteSyslogListenerCloser(Poco::Net::RemoteSyslogListener *listener):
-        listener(listener)
-    {
-        return;
-    }
-    ~RemoteSyslogListenerCloser(void)
-    {
-        if (listener) listener->close();
-        listener = nullptr;
-    }
-    Poco::AutoPtr<Poco::Net::RemoteSyslogListener> listener;
-};
+static Poco::AutoPtr<Poco::Net::RemoteSyslogListener> listener;
 
 std::string Pothos::System::Logger::startSyslogListener(void)
 {
     std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
-    static Poco::AutoPtr<Poco::Net::RemoteSyslogListener> listener;
-    static std::shared_ptr<RemoteSyslogListenerCloser> closer;
 
     if (not listener)
     {
@@ -125,11 +110,18 @@ std::string Pothos::System::Logger::startSyslogListener(void)
         listener = new Poco::Net::RemoteSyslogListener(port);
         listener->addChannel(Poco::Logger::get("").getChannel());
         listener->open();
-        closer.reset(new RemoteSyslogListenerCloser(listener));
     }
 
     //return the port number of the log service
     return listener->getProperty(Poco::Net::RemoteSyslogListener::PROP_PORT);
+}
+
+void Pothos::System::Logger::stopSyslogListener(void)
+{
+    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
+    if (not listener) return;
+    listener->close();
+    listener = nullptr;
 }
 
 void Pothos::System::Logger::startSyslogForwarding(const std::string &addr)

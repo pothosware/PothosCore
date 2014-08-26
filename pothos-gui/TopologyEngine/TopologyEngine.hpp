@@ -89,6 +89,5 @@ private:
     //! a cache of block IDs to cache
     std::map<QString, std::shared_ptr<EvalBlockCache>> _idToBlockEval;
 
-    std::string _syslogListenPort;
     std::string _previousSignature;
 };
