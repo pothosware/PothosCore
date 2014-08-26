@@ -119,47 +119,30 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
 /***********************************************************************
  * Topology implementation
  **********************************************************************/
+std::shared_ptr<Pothos::Topology> Pothos::Topology::make(void)
+{
+    return std::make_shared<Topology>();
+}
+
 Pothos::Topology::Topology(void):
     _impl(new Impl(this))
 {
     return;
 }
 
-static void topologyImplCleanup(Pothos::Topology *topology)
-{
-    if (topology->_impl and topology->_impl.unique())
-    {
-        topology->disconnectAll();
-        topology->commit();
-        assert(topology->_impl->activeFlatFlows.empty());
-        assert(topology->_impl->flowToNetgressCache.empty());
-    }
-}
-
 Pothos::Topology::~Topology(void)
 {
     try
     {
-        topologyImplCleanup(this);
+        this->disconnectAll();
+        this->commit();
+        assert(this->_impl->activeFlatFlows.empty());
+        assert(this->_impl->flowToNetgressCache.empty());
     }
     catch (const Pothos::Exception &ex)
     {
         poco_error_f1(Poco::Logger::get("Pothos.Topology"), "Topology destructor threw: %s", ex.displayText());
     }
-}
-
-Pothos::Topology::Topology(const Topology &t):
-    _impl(t._impl)
-{
-    _impl->self = this;
-}
-
-Pothos::Topology &Pothos::Topology::operator=(const Topology &t)
-{
-    topologyImplCleanup(this);
-    _impl = t._impl;
-    _impl->self = this;
-    return *this;
 }
 
 Port Pothos::Topology::Impl::makePort(const Pothos::Object &obj, const std::string &name) const
@@ -500,8 +483,9 @@ static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std::string &portName, const bool isSource);
 
 static auto managedTopology = Pothos::ManagedClass()
-    .registerConstructor<Pothos::Topology>()
+    .registerClass<Pothos::Topology>()
     .registerBaseClass<Pothos::Topology, Pothos::Connectable>()
+    .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::Topology, make))
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setThreadPool))

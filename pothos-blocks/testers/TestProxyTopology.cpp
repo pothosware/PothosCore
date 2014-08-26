@@ -25,7 +25,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_topology)
     //run the topology
     std::cout << "run the topology\n";
     {
-        auto topology = env->findProxy("Pothos/Topology").callProxy("new");
+        auto topology = env->findProxy("Pothos/Topology").callProxy("make");
         topology.callVoid("connect", feeder, "0", collector, "0");
         topology.callVoid("commit");
         POTHOS_TEST_TRUE(topology.call<bool>("waitInactive"));
