@@ -13,7 +13,7 @@
 #include "MyFFTUtils.hpp"
 
 class QTimer;
-class QwtPlot;
+class MyQwtPlot;
 class QwtColorMap;
 class QwtPlotSpectrogram;
 class MySpectrogramRasterData;
@@ -165,7 +165,7 @@ private slots:
 
 private:
     QTimer *_replotTimer;
-    QwtPlot *_mainPlot;
+    MyQwtPlot *_mainPlot;
     std::shared_ptr<QwtPlotSpectrogram> _plotSpect;
     MySpectrogramRasterData *_plotRaster;
     double _displayRate;

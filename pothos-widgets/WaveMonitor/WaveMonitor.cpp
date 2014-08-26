@@ -4,6 +4,7 @@
 #include "WaveMonitor.hpp"
 #include "MyPlotStyler.hpp"
 #include "MyPlotPicker.hpp"
+#include "MyPlotUtils.hpp"
 #include <QResizeEvent>
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
@@ -11,7 +12,7 @@
 #include <QHBoxLayout>
 
 WaveMonitor::WaveMonitor(const Pothos::DType &dtype):
-    _mainPlot(new QwtPlot(this)),
+    _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
     _displayRate(1.0),
     _sampleRate(1.0),
@@ -43,9 +44,6 @@ WaveMonitor::WaveMonitor(const Pothos::DType &dtype):
 
     //setup plotter
     {
-        //missing from qwt:
-        qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
-        qRegisterMetaType<std::valarray<float>>("std::valarray<float>");
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
         new MyPlotPicker(_mainPlot->canvas());
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
@@ -75,7 +73,7 @@ void WaveMonitor::setNumInputs(const size_t numInputs)
 
 void WaveMonitor::setTitle(const QString &title)
 {
-    _mainPlot->setTitle(MyPlotTitle(title));
+    QMetaObject::invokeMethod(_mainPlot, "setTitle", Qt::QueuedConnection, Q_ARG(QwtText, MyPlotTitle(title)));
 }
 
 void WaveMonitor::setDisplayRate(const double displayRate)
@@ -113,7 +111,7 @@ void WaveMonitor::enableYAxis(const bool enb)
 
 void WaveMonitor::setYAxisTitle(const QString &title)
 {
-    _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle(title));
+    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::yLeft), Q_ARG(QwtText, MyPlotAxisTitle(title)));
 }
 
 void WaveMonitor::updateXAxis(void)
@@ -135,7 +133,7 @@ void WaveMonitor::updateXAxis(void)
         _timeSpan *= 1e3;
         axisTitle = "msecs";
     }
-    _mainPlot->setAxisTitle(QwtPlot::xBottom, MyPlotAxisTitle(axisTitle));
+    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::xBottom), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
     _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
 }
 

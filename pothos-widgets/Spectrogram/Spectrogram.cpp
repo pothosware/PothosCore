@@ -4,6 +4,7 @@
 #include "Spectrogram.hpp"
 #include "MyPlotStyler.hpp"
 #include "MyPlotPicker.hpp"
+#include "MyPlotUtils.hpp"
 #include "SpectrogramRaster.hpp"
 #include <QTimer>
 #include <QResizeEvent>
@@ -19,7 +20,7 @@
 
 Spectrogram::Spectrogram(const Pothos::DType &dtype):
     _replotTimer(new QTimer(this)),
-    _mainPlot(new QwtPlot(this)),
+    _mainPlot(new MyQwtPlot(this)),
     _plotSpect(new QwtPlotSpectrogram()),
     _plotRaster(new MySpectrogramRasterData()),
     _sampleRate(1.0),
@@ -52,9 +53,6 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
 
     //setup plotter
     {
-        //missing from qwt:
-        qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
-        qRegisterMetaType<std::valarray<float>>("std::valarray<float>");
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
         _mainPlot->setAxisScale(QwtPlot::yRight, -100, 0);
         _plotRaster->setInterval(Qt::ZAxis, QwtInterval(-100, 0));
@@ -89,7 +87,7 @@ Spectrogram::~Spectrogram(void)
 
 void Spectrogram::setTitle(const QString &title)
 {
-    _mainPlot->setTitle(MyPlotTitle(title));
+    QMetaObject::invokeMethod(_mainPlot, "setTitle", Qt::QueuedConnection, Q_ARG(QwtText, MyPlotTitle(title)));
 }
 
 void Spectrogram::setDisplayRate(const double displayRate)
@@ -118,7 +116,7 @@ void Spectrogram::setSampleRate(const double sampleRate)
         _sampleRateWoAxisUnits /= 1e3;
         axisTitle = "kHz";
     }
-    _mainPlot->setAxisTitle(QwtPlot::xBottom, MyPlotAxisTitle(axisTitle));
+    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::xBottom), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
     _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
     _plotRaster->setInterval(Qt::XAxis, QwtInterval(-_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2));
 }
@@ -149,7 +147,7 @@ void Spectrogram::setTimeSpan(const double timeSpan)
         _timeSpan *= 1e3;
         axisTitle = "msecs";
     }
-    _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle(axisTitle));
+    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::yLeft), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
     _mainPlot->setAxisScale(QwtPlot::yLeft, 0, _timeSpan);
     _plotRaster->setInterval(Qt::YAxis, QwtInterval(0, _timeSpan));
 }

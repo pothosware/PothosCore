@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Periodogram.hpp"
-#include "MyPlotterUtils.hpp"
+#include "MyPlotUtils.hpp"
 #include <qwt_plot_curve.h>
 #include <qwt_plot.h>
 #include <complex>

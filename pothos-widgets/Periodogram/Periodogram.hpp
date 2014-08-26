@@ -12,7 +12,7 @@
 #include <functional>
 #include "MyFFTUtils.hpp"
 
-class QwtPlot;
+class MyQwtPlot;
 class QwtPlotGrid;
 class QwtPlotCurve;
 
@@ -170,7 +170,7 @@ private slots:
     void handlePowerBins(const int index, const std::valarray<float> &bins);
 
 private:
-    QwtPlot *_mainPlot;
+    MyQwtPlot *_mainPlot;
     QwtPlotGrid *_plotGrid;
     double _displayRate;
     double _sampleRate;

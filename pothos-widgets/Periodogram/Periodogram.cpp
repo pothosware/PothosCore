@@ -4,6 +4,7 @@
 #include "Periodogram.hpp"
 #include "MyPlotStyler.hpp"
 #include "MyPlotPicker.hpp"
+#include "MyPlotUtils.hpp"
 #include <QResizeEvent>
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
@@ -11,7 +12,7 @@
 #include <QHBoxLayout>
 
 Periodogram::Periodogram(const Pothos::DType &dtype):
-    _mainPlot(new QwtPlot(this)),
+    _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
     _displayRate(1.0),
     _sampleRate(1.0),
@@ -44,9 +45,6 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
 
     //setup plotter
     {
-        //missing from qwt:
-        qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>");
-        qRegisterMetaType<std::valarray<float>>("std::valarray<float>");
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
         _mainPlot->setAxisScale(QwtPlot::yLeft, -100, 0);
         auto picker = new MyPlotPicker(_mainPlot->canvas());
@@ -77,7 +75,7 @@ void Periodogram::setNumInputs(const size_t numInputs)
 
 void Periodogram::setTitle(const QString &title)
 {
-    _mainPlot->setTitle(MyPlotTitle(title));
+    QMetaObject::invokeMethod(_mainPlot, "setTitle", Qt::QueuedConnection, Q_ARG(QwtText, MyPlotTitle(title)));
 }
 
 void Periodogram::setDisplayRate(const double displayRate)
@@ -105,7 +103,7 @@ void Periodogram::setSampleRate(const double sampleRate)
         _sampleRateWoAxisUnits /= 1e3;
         axisTitle = "kHz";
     }
-    _mainPlot->setAxisTitle(QwtPlot::xBottom, MyPlotAxisTitle(axisTitle));
+    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::xBottom), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
     _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
 }
 
@@ -132,7 +130,7 @@ void Periodogram::enableYAxis(const bool enb)
 
 void Periodogram::setYAxisTitle(const QString &title)
 {
-    _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle(title));
+    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::yLeft), Q_ARG(QwtText, MyPlotAxisTitle(title)));
 }
 
 void Periodogram::installLegend(void)

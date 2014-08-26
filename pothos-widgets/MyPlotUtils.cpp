@@ -1,7 +1,11 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "MyPlotterUtils.hpp"
+#include "MyPlotUtils.hpp"
+#include <QList>
+#include <valarray>
+#include <qwt_legend_data.h>
+#include <qwt_text.h>
 
 QColor getDefaultCurveColor(const size_t whichCurve)
 {
@@ -28,4 +32,12 @@ QColor pastelize(const QColor &c)
     //Pastels have high value and low to intermediate saturation:
     //http://en.wikipedia.org/wiki/Pastel_%28color%29
     return QColor::fromHsv(c.hue(), int(c.saturationF()*128), int(c.valueF()*64)+191);
+}
+
+MyQwtPlot::MyQwtPlot(QWidget *parent):
+    QwtPlot(parent)
+{
+    qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>"); //missing from qwt
+    qRegisterMetaType<std::valarray<float>>("std::valarray<float>"); //used for plot data
+    qRegisterMetaType<QwtText>("QwtText"); //used in this class's public slots
 }

@@ -12,7 +12,7 @@
 #include <vector>
 #include <functional>
 
-class QwtPlot;
+class MyQwtPlot;
 class QwtPlotGrid;
 class QwtPlotCurve;
 
@@ -169,7 +169,7 @@ private slots:
     void handleSamples(const int index, const int curve, const std::valarray<float> &samps);
 
 private:
-    QwtPlot *_mainPlot;
+    MyQwtPlot *_mainPlot;
     QwtPlotGrid *_plotGrid;
     double _displayRate;
     double _sampleRate;

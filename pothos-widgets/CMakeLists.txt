@@ -39,7 +39,7 @@ endforeach(comp)
 ########################################################################
 set(CUSTOM_QWT_SOURCES #sources not part of QWT that we are building into this library
     MyPlotPicker.cpp
-    MyPlotterUtils.cpp
+    MyPlotUtils.cpp
     MyDoubleSlider.cpp
 )
 
