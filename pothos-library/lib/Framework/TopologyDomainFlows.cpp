@@ -98,12 +98,10 @@ std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<F
             //create the flows
             Flow srcFlow;
             srcFlow.src = flow.src;
-            srcFlow.dst.obj = copier;
-            srcFlow.dst.name = "0";
+            srcFlow.dst = makePort(copier, "0");
 
             Flow dstFlow;
-            dstFlow.src.obj = copier;
-            dstFlow.src.name = "0";
+            dstFlow.src = makePort(copier, "0");
             dstFlow.dst = flow.dst;
 
             //add the network flows to the overall list

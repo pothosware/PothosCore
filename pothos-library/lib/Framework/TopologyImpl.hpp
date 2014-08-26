@@ -28,6 +28,10 @@ struct Pothos::Topology::Impl
     std::map<std::string, PortInfo> inputPortInfo;
     std::map<std::string, PortInfo> outputPortInfo;
     std::map<std::string, Callable> calls;
+
+    //! special utility function to make a port with knowledge of this topology
+    Port makePort(const Pothos::Object &obj, const std::string &name) const;
+    Port makePort(const Pothos::Proxy &obj, const std::string &name) const;
 };
 
 
@@ -39,13 +43,13 @@ inline std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> 
     std::map<std::string, Pothos::Proxy> uniques;
     for (const auto &flow : flows)
     {
-        uniques[flow.src.obj.call<std::string>("uid")] = flow.src.obj;
-        uniques[flow.dst.obj.call<std::string>("uid")] = flow.dst.obj;
+        uniques[flow.src.uid] = flow.src.obj;
+        uniques[flow.dst.uid] = flow.dst.obj;
     }
     for (const auto &flow : excludes)
     {
-        uniques.erase(flow.src.obj.call<std::string>("uid"));
-        uniques.erase(flow.dst.obj.call<std::string>("uid"));
+        uniques.erase(flow.src.uid);
+        uniques.erase(flow.dst.uid);
     }
     std::vector<Pothos::Proxy> set;
     for (const auto &pair : uniques) set.push_back(pair.second);
@@ -59,16 +63,6 @@ inline Pothos::Proxy getProxy(const Pothos::Object &o)
 {
     if (o.type() == typeid(Pothos::Proxy)) return o.extract<Pothos::Proxy>();
     return Pothos::ProxyEnvironment::make("managed")->convertObjectToProxy(o);
-}
-
-/***********************************************************************
- * Avoid taking copies of self
- **********************************************************************/
-inline Pothos::Proxy getInternalObject(const Pothos::Object &o, const Pothos::Topology &t)
-{
-    auto proxy = getProxy(o);
-    if (proxy.call<std::string>("uid") == t.uid()) return Pothos::Proxy();
-    return proxy;
 }
 
 /***********************************************************************
