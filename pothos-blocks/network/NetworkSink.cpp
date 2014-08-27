@@ -71,8 +71,8 @@ public:
     void deactivate(void)
     {
         //stop the endpoint handler thread
-        running = false;
         assert(handlerThread.joinable());
+        running = false;
         handlerThread.join();
 
         _ep.closeComms();
