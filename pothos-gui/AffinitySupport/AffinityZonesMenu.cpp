@@ -24,6 +24,11 @@ void AffinityZonesMenu::handleZonesChanged(void)
     connect(clearAction, SIGNAL(triggered(void)), _clickMapper, SLOT(map(void)));
     _clickMapper->setMapping(clearAction, "");
 
+    //gui affinity setting
+    auto guiAction = this->addAction(tr("GUI affinity"));
+    connect(guiAction, SIGNAL(triggered(void)), _clickMapper, SLOT(map(void)));
+    _clickMapper->setMapping(guiAction, "gui");
+
     if (_dock) for (const auto &name : _dock->zones())
     {
         auto action = this->addAction(tr("Apply %1").arg(name));

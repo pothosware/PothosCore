@@ -21,6 +21,7 @@ void AffinityZonesComboBox::handleZonesChanged(void)
     //reload the options
     this->clear();
     this->addItem(tr("Select affinity zone..."), "");
+    this->addItem(tr("GUI"), "gui");
     this->setCurrentIndex(0);
     for (const auto &zone : _dock->zones())
     {
