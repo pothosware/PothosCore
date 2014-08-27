@@ -32,13 +32,12 @@ Pothos::Topology::Topology(void):
 
 Pothos::Topology::~Topology(void)
 {
-    std::cout << "~Topology\n";
     try
     {
         this->disconnectAll();
         this->commit();
         assert(this->_impl->activeFlatFlows.empty());
-        //assert(this->_impl->flowToNetgressCache.empty());
+        assert(this->_impl->flowToNetgressCache.empty());
     }
     catch (const Pothos::Exception &ex)
     {
@@ -287,12 +286,14 @@ static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 }
 
 std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std::string &portName, const bool isSource);
+void topologySubCommit(Pothos::Topology &topology);
 
 static auto managedTopology = Pothos::ManagedClass()
     .registerClass<Pothos::Topology>()
     .registerBaseClass<Pothos::Topology, Pothos::Connectable>()
     .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::Topology, make))
     .registerMethod("getFlows", &getFlowsFromTopology)
+    .registerMethod("subCommit", &topologySubCommit)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setThreadPool))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, getThreadPool))

@@ -109,72 +109,13 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
 }
 
 /***********************************************************************
- * Topology commit
+ * Sub Topology commit on flattened flows
  **********************************************************************/
-
-static void doCommit(const Pothos::Proxy &proxy)
+void topologySubCommit(Pothos::Topology &topology)
 {
-    proxy.callVoid("commit");
-}
-
-void Pothos::Topology::commit(void)
-{
-    //1) flatten the topology
-    auto flatFlows = _impl->squashFlows(_impl->flows);
-
-    //2) create network iogress blocks when needed
-    flatFlows = _impl->createNetworkFlows(flatFlows);
-//*
-    bool hasRemoteTopologies = not _impl->flowToNetgressCache.empty();
-
-    //create remote topologies for all environments
-    for (const auto &obj : getObjSetFromFlowList(flatFlows))
-    {
-        auto upid = obj.getEnvironment()->getUniquePid();
-        if (upid != Pothos::ProxyEnvironment::getLocalUniquePid()) hasRemoteTopologies = true;
-        if (_impl->remoteTopologies.count(upid) != 0) continue;
-        _impl->remoteTopologies[upid] = obj.getEnvironment()->findProxy("Pothos/Topology").callProxy("make");
-    }
-
-    if (hasRemoteTopologies)
-    {
-        //clear connections on old topologies
-        for (const auto &pair : _impl->remoteTopologies)
-        {
-            pair.second.callVoid("disconnectAll");
-        }
-
-        //load each topology with connections from flat flows
-        for (const auto &flow : flatFlows)
-        {
-            auto upid = flow.src.obj.getEnvironment()->getUniquePid();
-            assert(upid == flow.dst.obj.getEnvironment()->getUniquePid());
-            _impl->remoteTopologies[upid].callVoid("connect", flow.src.obj, flow.src.name, flow.dst.obj, flow.dst.name);
-        }
-
-        //call commit on all topologies
-        std::vector<std::future<void>> futures;
-        for (const auto &pair : _impl->remoteTopologies)
-        {
-            futures.push_back(std::async(std::launch::async, &doCommit, pair.second));
-        }
-        for (auto &future : futures) future.wait();
-/*
-        for (const auto &pair : _impl->remoteTopologies)
-        {
-            pair.second.callVoid("commit");
-        }
-        */
-
-        _impl->activeFlatFlows = flatFlows;
-        return;
-    }
-    //*/
-
-    //3) deal with domain crossing
-    flatFlows = _impl->rectifyDomainFlows(flatFlows);
-
+    auto &_impl = topology._impl;
     const auto &activeFlatFlows = _impl->activeFlatFlows;
+    const auto &flatFlows = _impl->flows;
 
     //new flows are in flat flows but not in current
     std::vector<Flow> newFlows;
@@ -188,13 +129,6 @@ void Pothos::Topology::commit(void)
     for (const auto &flow : _impl->activeFlatFlows)
     {
         if (std::find(flatFlows.begin(), flatFlows.end(), flow) == flatFlows.end()) oldFlows.push_back(flow);
-    }
-
-    //set thread pools for all blocks in this process
-    if (this->getThreadPool()) for (auto block : getObjSetFromFlowList(flatFlows))
-    {
-        if (block.getEnvironment()->getUniquePid() != Pothos::ProxyEnvironment::getLocalUniquePid()) continue; //is the block local?
-        block.call<Block *>("getPointer")->setThreadPool(this->getThreadPool());
     }
 
     //add new data acceptors
@@ -219,7 +153,6 @@ void Pothos::Topology::commit(void)
     //send activate to all new blocks not already in active flows
     for (auto block : getObjSetFromFlowList(newFlows, activeFlatFlows))
     {
-        std::cout << "sendActivateMessage " << block.call<std::string>("getName") << block.call<std::string>("uid") << std::endl;
         auto actor = block.callProxy("get:_actor");
         const auto msg = Poco::format("%s.sendActivateMessage()", block.call<std::string>("getName"));
         infoReceivers.push_back(std::make_pair(msg, actor.callProxy("sendActivateMessage")));
@@ -231,7 +164,6 @@ void Pothos::Topology::commit(void)
     //send deactivate to all old blocks not in current active flows
     for (auto block : getObjSetFromFlowList(oldFlows, _impl->activeFlatFlows))
     {
-        std::cout << "sendDeactivateMessage " << block.call<std::string>("getName") << block.call<std::string>("uid") << std::endl;
         auto actor = block.callProxy("get:_actor");
         const auto msg = Poco::format("%s.sendDeactivateMessage()", block.call<std::string>("getName"));
         infoReceivers.push_back(std::make_pair(msg, actor.callProxy("sendDeactivateMessage")));
@@ -245,17 +177,73 @@ void Pothos::Topology::commit(void)
         if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
     }
     if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
+}
 
-    //remove disconnections from the cache if present
-    for (auto flow : oldFlows)
+/***********************************************************************
+ * Topology commit
+ **********************************************************************/
+static void subCommitFutureTask(const Pothos::Proxy &proxy)
+{
+    proxy.callVoid("subCommit");
+}
+
+void Pothos::Topology::commit(void)
+{
+    //1) flatten the topology
+    auto squashedFlows = _impl->squashFlows(_impl->flows);
+
+    //2) create network iogress blocks when needed
+    auto flatFlows = _impl->createNetworkFlows(squashedFlows);
+
+    //3) deal with domain crossing
+    flatFlows = _impl->rectifyDomainFlows(flatFlows);
+
+    //create remote topologies for all environments
+    for (const auto &obj : getObjSetFromFlowList(flatFlows))
     {
-        for (auto it = _impl->flowToNetgressCache.begin(); it != _impl->flowToNetgressCache.end(); it++)
-        {
-            if (flow == it->second.first or flow == it->second.second)
-            {
-                _impl->flowToNetgressCache.erase(it);
-                break;
-            }
-        }
+        auto upid = obj.getEnvironment()->getUniquePid();
+        if (_impl->remoteTopologies.count(upid) != 0) continue;
+        _impl->remoteTopologies[upid] = obj.getEnvironment()->findProxy("Pothos/Topology").callProxy("make");
     }
+
+    //clear connections on old topologies
+    for (const auto &pair : _impl->remoteTopologies) pair.second.callVoid("disconnectAll");
+
+    //load each topology with connections from flat flows
+    for (const auto &flow : flatFlows)
+    {
+        auto upid = flow.src.obj.getEnvironment()->getUniquePid();
+        assert(upid == flow.dst.obj.getEnvironment()->getUniquePid());
+        _impl->remoteTopologies[upid].callVoid("connect", flow.src.obj, flow.src.name, flow.dst.obj, flow.dst.name);
+    }
+
+    //Call commit on all sub-topologies:
+    //Use futures so all sub-topologies commit at the same time,
+    //which is important for network source/sink pairs to connect.
+    std::vector<std::future<void>> futures;
+    for (const auto &pair : _impl->remoteTopologies)
+    {
+        futures.push_back(std::async(std::launch::async, &subCommitFutureTask, pair.second));
+    }
+    for (auto &future : futures) future.wait();
+
+    //set thread pools for all blocks in this process
+    if (this->getThreadPool()) for (auto block : getObjSetFromFlowList(flatFlows))
+    {
+        if (block.getEnvironment()->getUniquePid() != Pothos::ProxyEnvironment::getLocalUniquePid()) continue; //is the block local?
+        block.call<Block *>("getPointer")->setThreadPool(this->getThreadPool());
+    }
+
+    _impl->activeFlatFlows = flatFlows;
+
+    //Remove disconnections from the cache if present
+    //by only saving in the curretly in-use flows.
+    std::unordered_map<Flow, std::pair<Flow, Flow>> newNetgressCache;
+    for (const auto &flow : squashedFlows)
+    {
+        auto it = _impl->flowToNetgressCache.find(flow);
+        if (it == _impl->flowToNetgressCache.end()) continue;
+        newNetgressCache[it->first] = it->second;
+    }
+    _impl->flowToNetgressCache = newNetgressCache;
 }
