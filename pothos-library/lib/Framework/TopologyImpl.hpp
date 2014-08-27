@@ -29,6 +29,9 @@ struct Pothos::Topology::Impl
     std::map<std::string, PortInfo> outputPortInfo;
     std::map<std::string, Callable> calls;
 
+    //! remote topology per unique environment
+    std::map<std::string, Pothos::Proxy> remoteTopologies;
+
     //! special utility function to make a port with knowledge of this topology
     Port makePort(const Pothos::Object &obj, const std::string &name) const;
     Port makePort(const Pothos::Proxy &obj, const std::string &name) const;
