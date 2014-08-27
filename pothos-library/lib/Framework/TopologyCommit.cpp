@@ -225,7 +225,18 @@ void Pothos::Topology::commit(void)
     {
         futures.push_back(std::async(std::launch::async, &subCommitFutureTask, pair.second));
     }
-    for (auto &future : futures) future.wait();
+
+    //wait on futures and collect errors
+    std::string errors;
+    for (auto &future : futures)
+    {
+        try {future.get();}
+        catch (const Exception &ex)
+        {
+            errors.append(ex.displayText()+"\n");
+        }
+    }
+    if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
 
     //set thread pools for all blocks in this process
     if (this->getThreadPool()) for (auto block : getObjSetFromFlowList(flatFlows))
