@@ -10,7 +10,6 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <memory>
 #include <string>
 
 namespace Pothos {
@@ -30,7 +29,6 @@ public:
     const std::string &uid(void) const;
 
 private:
-    std::shared_ptr<void> _unique;
     std::string _uid;
 };
 
