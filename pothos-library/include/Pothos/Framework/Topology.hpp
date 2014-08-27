@@ -31,6 +31,12 @@ class POTHOS_API Topology : public Connectable
 {
 public:
 
+    /*!
+     * Create a new empty topology in a shared ptr.
+     * This is a convenience factory for Topology.
+     */
+    static std::shared_ptr<Topology> make(void);
+
     //! Create a new empty topology
     Topology(void);
 
@@ -39,12 +45,6 @@ public:
      * This call simply disconnects all data flows and commits the changes.
      */
     ~Topology(void);
-
-    //! Topology copy constructor
-    Topology(const Topology &);
-
-    //! Topology copy assignment
-    Topology &operator=(const Topology &);
 
     //! Set the thread pool used by all blocks in this topology.
     void setThreadPool(const ThreadPool &threadPool);
@@ -170,6 +170,9 @@ protected:
      */
     virtual Object opaqueCallHandler(const std::string &name, const Object *inputArgs, const size_t numArgs);
 
+private:
+    Topology(const Topology &){} // non construction-copyable
+    Topology &operator=(const Topology &){return *this;} // non copyable
 public:
     struct Impl;
     std::shared_ptr<Impl> _impl;

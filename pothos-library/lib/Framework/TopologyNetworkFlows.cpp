@@ -63,13 +63,11 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<F
             netSink.get().callVoid("setName", "NetTo: "+flow.dst.obj.call<std::string>("getName")+"["+flow.dst.name+"]");
             Flow srcFlow;
             srcFlow.src = flow.src;
-            srcFlow.dst.obj = netSink;
-            srcFlow.dst.name = "0";
+            srcFlow.dst = makePort(netSink, "0");
 
             netSource.get().callVoid("setName", "NetFrom: "+flow.src.obj.call<std::string>("getName")+"["+flow.src.name+"]");
             Flow dstFlow;
-            dstFlow.src.obj = netSource;
-            dstFlow.src.name = "0";
+            dstFlow.src = makePort(netSource, "0");
             dstFlow.dst = flow.dst;
 
             //add the network flows to the overall list

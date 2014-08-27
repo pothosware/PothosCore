@@ -17,130 +17,27 @@
 #include <iostream>
 
 /***********************************************************************
- * helpers to deal with buffer managers
- **********************************************************************/
-static void installBufferManagers(const std::vector<Flow> &flatFlows)
-{
-    //map of a source port to all destination ports
-    std::unordered_map<Port, std::vector<Port>> srcs;
-    for (const auto &flow : flatFlows)
-    {
-        for (const auto &subFlow : flatFlows)
-        {
-            if (subFlow.src == flow.src) srcs[flow.src].push_back(subFlow.dst);
-        }
-    }
-
-    //result list is used to ack all install messages
-    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
-
-    //for each source port -- install managers
-    for (const auto &pair : srcs)
-    {
-        auto src = pair.first;
-        auto dsts = pair.second;
-        auto dst = dsts.at(0);
-        Pothos::Proxy manager;
-
-        auto srcDomain = src.obj.callProxy("output", src.name).call<std::string>("domain");
-        auto dstDomain = dst.obj.callProxy("input", dst.name).call<std::string>("domain");
-
-        auto srcMode = src.obj.callProxy("get:_actor").call<std::string>("getOutputBufferMode", src.name, dstDomain);
-        auto dstMode = dst.obj.callProxy("get:_actor").call<std::string>("getInputBufferMode", dst.name, srcDomain);
-
-        //check if the source provides a manager and install it to the source
-        if (srcMode == "CUSTOM")
-        {
-            manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
-        }
-
-        //check if the destination provides a manager and install it to the source
-        else if (dstMode == "CUSTOM")
-        {
-            assert(dsts.size() == 1); //this must be true if the previous logic was good
-            manager = dst.obj.callProxy("get:_actor").callProxy("getBufferManager", dst.name, srcDomain, true);
-        }
-
-        //otherwise create a generic manager and install it to the source
-        else
-        {
-            assert(srcMode == "ABDICATE"); //this must be true if the previous logic was good
-            assert(dstMode == "ABDICATE");
-            manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
-        }
-
-        auto result = src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, manager);
-        const auto msg = Poco::format("%s.setOutputBufferManager(%s)", src.obj.call<std::string>("getName"), src.name);
-        infoReceivers.push_back(std::make_pair(msg, result));
-    }
-
-    //check all subscribe message results
-    std::string errors;
-    for (auto infoReceiver : infoReceivers)
-    {
-        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
-        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
-    }
-    if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
-}
-
-/***********************************************************************
- * Helpers to implement port subscription
- **********************************************************************/
-static void updateFlows(const std::vector<Flow> &flows, const std::string &action)
-{
-    const bool isInputAction = action.find("INPUT") != std::string::npos;
-
-    //result list is used to ack all subscribe messages
-    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
-
-    //add new data acceptors
-    for (const auto &flow : flows)
-    {
-        const auto &pri = isInputAction?flow.src:flow.dst;
-        const auto &sec = isInputAction?flow.dst:flow.src;
-
-        auto actor = pri.obj.callProxy("get:_actor");
-        auto result = actor.callProxy("sendPortSubscriberMessage", action, pri.name, sec.obj.callProxy("getPointer"), sec.name);
-        const auto msg = Poco::format("%s.sendPortSubscriberMessage(%s)", pri.obj.call<std::string>("getName"), action);
-        infoReceivers.push_back(std::make_pair(msg, result));
-    }
-
-    //check all subscribe message results
-    std::string errors;
-    for (auto infoReceiver : infoReceivers)
-    {
-        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
-        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
-    }
-    if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
-}
-
-/***********************************************************************
  * Topology implementation
  **********************************************************************/
+std::shared_ptr<Pothos::Topology> Pothos::Topology::make(void)
+{
+    return std::make_shared<Topology>();
+}
+
 Pothos::Topology::Topology(void):
     _impl(new Impl(this))
 {
     return;
 }
 
-static void topologyImplCleanup(Pothos::Topology *topology)
-{
-    if (topology->_impl and topology->_impl.unique())
-    {
-        topology->disconnectAll();
-        topology->commit();
-        assert(topology->_impl->activeFlatFlows.empty());
-        assert(topology->_impl->flowToNetgressCache.empty());
-    }
-}
-
 Pothos::Topology::~Topology(void)
 {
     try
     {
-        topologyImplCleanup(this);
+        this->disconnectAll();
+        this->commit();
+        assert(this->_impl->activeFlatFlows.empty());
+        assert(this->_impl->flowToNetgressCache.empty());
     }
     catch (const Pothos::Exception &ex)
     {
@@ -148,17 +45,19 @@ Pothos::Topology::~Topology(void)
     }
 }
 
-Pothos::Topology::Topology(const Topology &t):
-    _impl(t._impl)
+Port Pothos::Topology::Impl::makePort(const Pothos::Object &obj, const std::string &name) const
 {
-    return;
+    return this->makePort(getProxy(obj), name);
 }
 
-Pothos::Topology &Pothos::Topology::operator=(const Topology &t)
+Port Pothos::Topology::Impl::makePort(const Pothos::Proxy &obj, const std::string &name) const
 {
-    topologyImplCleanup(this);
-    _impl = t._impl;
-    return *this;
+    Port p;
+    p.name = name;
+    p.uid = obj.call<std::string>("uid");
+    //dont store copies of self
+    if (p.uid != self->uid()) p.obj = obj;
+    return p;
 }
 
 void Pothos::Topology::setThreadPool(const ThreadPool &threadPool)
@@ -199,101 +98,6 @@ std::vector<Pothos::PortInfo> Pothos::Topology::outputPortInfo(void)
     return infos;
 }
 
-void Pothos::Topology::commit(void)
-{
-    //1) flatten the topology
-    auto flatFlows = _impl->squashFlows(_impl->flows);
-
-    //2) create network iogress blocks when needed
-    flatFlows = _impl->createNetworkFlows(flatFlows);
-
-    //3) deal with domain crossing
-    flatFlows = _impl->rectifyDomainFlows(flatFlows);
-
-    const auto &activeFlatFlows = _impl->activeFlatFlows;
-
-    //new flows are in flat flows but not in current
-    std::vector<Flow> newFlows;
-    for (const auto &flow : flatFlows)
-    {
-        if (std::find(activeFlatFlows.begin(), activeFlatFlows.end(), flow) == activeFlatFlows.end()) newFlows.push_back(flow);
-    }
-
-    //old flows are in current and not in flat flows
-    std::vector<Flow> oldFlows;
-    for (const auto &flow : _impl->activeFlatFlows)
-    {
-        if (std::find(flatFlows.begin(), flatFlows.end(), flow) == flatFlows.end()) oldFlows.push_back(flow);
-    }
-
-    //set thread pools for all blocks in this process
-    if (this->getThreadPool()) for (auto block : getObjSetFromFlowList(flatFlows))
-    {
-        if (block.getEnvironment()->getUniquePid() != Pothos::ProxyEnvironment::getLocalUniquePid()) continue; //is the block local?
-        block.call<Block *>("getPointer")->setThreadPool(this->getThreadPool());
-    }
-
-    //add new data acceptors
-    updateFlows(newFlows, "SUBINPUT");
-
-    //add new data providers
-    updateFlows(newFlows, "SUBOUTPUT");
-
-    //remove old data providers
-    updateFlows(oldFlows, "UNSUBOUTPUT");
-
-    //remove old data acceptors
-    updateFlows(oldFlows, "UNSUBINPUT");
-
-    //install buffer managers on sources for all new flows
-    //Sometimes this will replace previous buffer managers.
-    installBufferManagers(newFlows);
-
-    //result list is used to ack all de/activate messages
-    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
-
-    //send activate to all new blocks not already in active flows
-    for (auto block : getObjSetFromFlowList(newFlows, activeFlatFlows))
-    {
-        auto actor = block.callProxy("get:_actor");
-        const auto msg = Poco::format("%s.sendActivateMessage()", block.call<std::string>("getName"));
-        infoReceivers.push_back(std::make_pair(msg, actor.callProxy("sendActivateMessage")));
-    }
-
-    //update current flows
-    _impl->activeFlatFlows = flatFlows;
-
-    //send deactivate to all old blocks not in current active flows
-    for (auto block : getObjSetFromFlowList(oldFlows, _impl->activeFlatFlows))
-    {
-        auto actor = block.callProxy("get:_actor");
-        const auto msg = Poco::format("%s.sendDeactivateMessage()", block.call<std::string>("getName"));
-        infoReceivers.push_back(std::make_pair(msg, actor.callProxy("sendDeactivateMessage")));
-    }
-
-    //check all de/activate message results
-    std::string errors;
-    for (auto infoReceiver : infoReceivers)
-    {
-        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
-        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
-    }
-    if (not errors.empty()) Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
-
-    //remove disconnections from the cache if present
-    for (auto flow : oldFlows)
-    {
-        for (auto it = _impl->flowToNetgressCache.begin(); it != _impl->flowToNetgressCache.end(); it++)
-        {
-            if (flow == it->second.first or flow == it->second.second)
-            {
-                _impl->flowToNetgressCache.erase(it);
-                break;
-            }
-        }
-    }
-}
-
 void Pothos::Topology::_connect(
     const Object &src, const std::string &srcName,
     const Object &dst, const std::string &dstName)
@@ -304,27 +108,22 @@ void Pothos::Topology::_connect(
         "destination port of type " + dst.toString());
 
     Flow flow;
-    flow.src.obj = getInternalObject(src, *this);
-    flow.dst.obj = getInternalObject(dst, *this);
-    flow.src.name = srcName;
-    flow.dst.name = dstName;
+    flow.src = _impl->makePort(src, srcName);
+    flow.dst = _impl->makePort(dst, dstName);
 
     //perform auto-allocation, on a block this may or may not allocate, on a topology this throws
     try{getConnectable(src).callProxy("get:_actor").call<std::string>("autoAllocateOutput", srcName);}catch(const Exception &){}
     try{getConnectable(dst).callProxy("get:_actor").call<std::string>("autoAllocateInput", dstName);}catch(const Exception &){}
 
-    const bool srcIsSelf = this->uid() == getConnectable(src).call<std::string>("uid");
-    const bool dstIsSelf = this->uid() == getConnectable(dst).call<std::string>("uid");
-
     //validate that the ports exists before connection
-    if (not srcIsSelf)
+    if (flow.src.obj)
     {
         auto outs = getConnectable(src).call<std::vector<std::string>>("outputPortNames");
         if (std::find(outs.begin(), outs.end(), srcName) == outs.end())
             throw Pothos::TopologyConnectError("Pothos::Topology::connect()", src.toString() + " has no output port named " + srcName);
     }
 
-    if (not dstIsSelf)
+    if (flow.dst.obj)
     {
         auto ins = getConnectable(dst).call<std::vector<std::string>>("inputPortNames");
         if (std::find(ins.begin(), ins.end(), dstName) == ins.end())
@@ -332,7 +131,7 @@ void Pothos::Topology::_connect(
     }
 
     //store port info for connections to the hierachy
-    if (srcIsSelf)
+    if (not flow.src.obj)
     {
         _impl->inputPortNames.push_back(srcName);
         for (const auto &info : getConnectable(dst).call<std::vector<PortInfo>>("inputPortInfo"))
@@ -344,7 +143,7 @@ void Pothos::Topology::_connect(
             }
         }
     }
-    if (dstIsSelf)
+    if (not flow.dst.obj)
     {
         _impl->outputPortNames.push_back(dstName);
         for (const auto &info : getConnectable(src).call<std::vector<PortInfo>>("outputPortInfo"))
@@ -374,10 +173,8 @@ void Pothos::Topology::_disconnect(
         "destination port of type " + dst.toString());
 
     Flow flow;
-    flow.src.obj = getInternalObject(src, *this);
-    flow.dst.obj = getInternalObject(dst, *this);
-    flow.src.name = srcName;
-    flow.dst.name = dstName;
+    flow.src = _impl->makePort(src, srcName);
+    flow.dst = _impl->makePort(dst, dstName);
 
     //validate that the ports exists before disconnection
     auto outs = getConnectable(src).call<std::vector<std::string>>("outputPortNames");
@@ -389,8 +186,8 @@ void Pothos::Topology::_disconnect(
         throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()", dst.toString() + " has no input port named " + dstName);
 
     //clear port info for disconnections from the hierachy
-    if (this->uid() == getConnectable(src).call<std::string>("uid")) _impl->outputPortNames.erase(std::find(_impl->outputPortNames.begin(), _impl->outputPortNames.end(), srcName));
-    if (this->uid() == getConnectable(dst).call<std::string>("uid")) _impl->inputPortNames.erase(std::find(_impl->inputPortNames.begin(), _impl->inputPortNames.end(), dstName));
+    if (not flow.src.obj) _impl->outputPortNames.erase(std::find(_impl->outputPortNames.begin(), _impl->outputPortNames.end(), srcName));
+    if (not flow.dst.obj) _impl->inputPortNames.erase(std::find(_impl->inputPortNames.begin(), _impl->inputPortNames.end(), dstName));
 
     const auto it = std::find(_impl->flows.begin(), _impl->flows.end(), flow);
     if (it == _impl->flows.end()) throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()",
@@ -489,11 +286,14 @@ static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 }
 
 std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std::string &portName, const bool isSource);
+void topologySubCommit(Pothos::Topology &topology);
 
 static auto managedTopology = Pothos::ManagedClass()
-    .registerConstructor<Pothos::Topology>()
+    .registerClass<Pothos::Topology>()
     .registerBaseClass<Pothos::Topology, Pothos::Connectable>()
+    .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::Topology, make))
     .registerMethod("getFlows", &getFlowsFromTopology)
+    .registerMethod("subCommit", &topologySubCommit)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setThreadPool))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, getThreadPool))
@@ -512,6 +312,7 @@ static auto managedPort = Pothos::ManagedClass()
     .registerClass<Port>()
     .registerField(POTHOS_FCN_TUPLE(Port, obj))
     .registerField(POTHOS_FCN_TUPLE(Port, name))
+    .registerField(POTHOS_FCN_TUPLE(Port, uid))
     .commit("Pothos/Topology/Port");
 
 static size_t portVectorSize(const std::vector<Port> &vec)

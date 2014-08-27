@@ -42,6 +42,7 @@ static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
             Port port;
             port.name = portProxy.call<std::string>("get:name");
             port.obj = portProxy.callProxy("get:obj");
+            port.uid = portProxy.call<std::string>("get:uid");
             ports.push_back(port);
         }
     }
