@@ -15,6 +15,9 @@ pothos_static_block(QStringRegisterConvertStrings)
 {
     Pothos::PluginRegistry::add("/object/convert/strings/qstring_to_string", Pothos::Callable(&QString::toStdString));
     Pothos::PluginRegistry::add("/object/convert/strings/string_to_qstring", Pothos::Callable(&QString::fromStdString));
+
+    Pothos::PluginRegistry::add("/object/convert/strings/qstring_to_wstring", Pothos::Callable(&QString::toStdWString));
+    Pothos::PluginRegistry::add("/object/convert/strings/wstring_to_qstring", Pothos::Callable(&QString::fromStdWString));
 }
 
 POTHOS_TEST_BLOCK("/widgets/tests", test_qstring_convert)
