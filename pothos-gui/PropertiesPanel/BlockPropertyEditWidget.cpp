@@ -8,8 +8,39 @@
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <Poco/Logger.h>
+#include <Poco/Exception.h>
 #include <limits>
 
+/***********************************************************************
+ * Custom widget for string entry -- no quotes
+ **********************************************************************/
+class StringEntry : public QLineEdit
+{
+    Q_OBJECT
+public:
+    StringEntry(QWidget *parent):
+        QLineEdit(parent){}
+
+    QString value(void) const
+    {
+        auto s = this->text();
+        return QString("\"%1\"").arg(s.replace("\"", "\\\"")); //escape
+    }
+
+    void setValue(const QString &s)
+    {
+        if (s.startsWith("\"") and s.endsWith("\""))
+        {
+            auto s0 = s.midRef(1, s.size()-2).toString();
+            this->setText(s0.replace("\\\"", "\"")); //unescape
+        }
+        else this->setText(s);
+    }
+};
+
+/***********************************************************************
+ * BlockPropertyEditWidget implementation
+ **********************************************************************/
 BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent):
     QStackedWidget(parent),
     _edit(nullptr)
@@ -57,6 +88,13 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
         connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
         _edit = spinBox;
     }
+    else if (widgetType == "StringEntry")
+    {
+        auto entry = new StringEntry(this);
+        connect(entry, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        connect(entry, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
+        _edit = entry;
+    }
     else
     {
         if (widgetType != "LineEdit")
@@ -88,40 +126,48 @@ void BlockPropertyEditWidget::setValue(const QString &value)
         }
         if (index < 0) comboBox->setEditText(value);
         else comboBox->setCurrentIndex(index);
+        return;
     }
 
     auto spinBox = dynamic_cast<QSpinBox *>(_edit);
-    if (spinBox != nullptr) spinBox->setValue(value.toInt());
+    if (spinBox != nullptr) return spinBox->setValue(value.toInt());
 
     auto dSpinBox = dynamic_cast<QDoubleSpinBox *>(_edit);
-    if (dSpinBox != nullptr) dSpinBox->setValue(value.toDouble());
+    if (dSpinBox != nullptr) return dSpinBox->setValue(value.toDouble());
+
+    auto strEntry = dynamic_cast<StringEntry *>(_edit);
+    if (strEntry != nullptr) return strEntry->setValue(value);
 
     auto lineEdit = dynamic_cast<QLineEdit *>(_edit);
-    if (lineEdit != nullptr) lineEdit->setText(value);
+    if (lineEdit != nullptr) return lineEdit->setText(value);
+
+    poco_bugcheck_msg("unknown widget");
 }
 
 QString BlockPropertyEditWidget::value(void) const
 {
-    QString newValue;
-
     auto comboBox = dynamic_cast<QComboBox *>(_edit);
     if (comboBox != nullptr)
     {
         const auto index = comboBox->currentIndex();
-        if (index < 0 or comboBox->currentText() != comboBox->itemText(index)) newValue = comboBox->currentText();
-        else newValue = comboBox->itemData(index).toString();
+        if (index < 0 or comboBox->currentText() != comboBox->itemText(index)) return comboBox->currentText();
+        else return comboBox->itemData(index).toString();
     }
 
     auto spinBox = dynamic_cast<QSpinBox *>(_edit);
-    if (spinBox != nullptr) newValue = QString("%1").arg(spinBox->value());
+    if (spinBox != nullptr) return QString("%1").arg(spinBox->value());
 
     auto dSpinBox = dynamic_cast<QDoubleSpinBox *>(_edit);
-    if (dSpinBox != nullptr) newValue = QString("%1").arg(dSpinBox->value());
+    if (dSpinBox != nullptr) return QString("%1").arg(dSpinBox->value());
+
+    auto strEntry = dynamic_cast<StringEntry *>(_edit);
+    if (strEntry != nullptr) return strEntry->value();
 
     auto lineEdit = dynamic_cast<QLineEdit *>(_edit);
-    if (lineEdit != nullptr) newValue = lineEdit->text();
+    if (lineEdit != nullptr) return lineEdit->text();
 
-    return newValue;
+    poco_bugcheck_msg("unknown widget");
+    return "";
 }
 
 void BlockPropertyEditWidget::setColors(const std::string &typeStr)
@@ -146,3 +192,4 @@ void BlockPropertyEditWidget::handleEditWidgetChanged(void)
     emit this->valueChanged();
 }
 
+#include "BlockPropertyEditWidget.moc"
