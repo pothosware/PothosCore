@@ -88,7 +88,11 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         auto dock = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]);
         assert(dock != nullptr);
         _affinityZoneBox = dock->makeComboBox(this);
-        if (_block->isGraphWidget()) _affinityZoneBox->hide();
+        if (_block->isGraphWidget())
+        {
+            _affinityZoneLabel->hide();
+            _affinityZoneBox->hide();
+        }
         else _formLayout->addRow(_affinityZoneLabel, _affinityZoneBox);
         connect(_affinityZoneBox, SIGNAL(activated(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
     }
