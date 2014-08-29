@@ -30,7 +30,11 @@ Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &fa
     }
 
     //check the factory
-    if (factory.type(-1) == typeid(Block*) or factory.type(-1) == typeid(Topology*))
+    if (
+        factory.type(-1) == typeid(Block*) or
+        factory.type(-1) == typeid(std::shared_ptr<Block>) or
+        factory.type(-1) == typeid(Topology*) or
+        factory.type(-1) == typeid(std::shared_ptr<Topology>))
     {
         //register
         PluginRegistry::add(fullPath, factory);
@@ -57,12 +61,28 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
         return Pothos::Object(std::shared_ptr<Pothos::Block>(element));
     }
 
+    if (factory.type(-1) == typeid(std::shared_ptr<Pothos::Block>))
+    {
+        auto element = factory.opaqueCall(args, numArgs).extract<std::shared_ptr<Pothos::Block>>();
+        if (element->getName().empty()) element->setName(path); //a better name
+        element->holdRef(Pothos::Object(plugin.getModule()));
+        return Pothos::Object(element);
+    }
+
     if (factory.type(-1) == typeid(Pothos::Topology*))
     {
         auto element = factory.opaqueCall(args, numArgs).extract<Pothos::Topology *>();
         if (element->getName().empty()) element->setName(path); //a better name
         element->holdRef(Pothos::Object(plugin.getModule()));
         return Pothos::Object(std::shared_ptr<Pothos::Topology>(element));
+    }
+
+    if (factory.type(-1) == typeid(std::shared_ptr<Pothos::Topology>))
+    {
+        auto element = factory.opaqueCall(args, numArgs).extract<std::shared_ptr<Pothos::Topology>>();
+        if (element->getName().empty()) element->setName(path); //a better name
+        element->holdRef(Pothos::Object(plugin.getModule()));
+        return Pothos::Object(element);
     }
 
     throw Pothos::IllegalStateException("Pothos::BlockRegistry::make("+path+")", factory.toString());
