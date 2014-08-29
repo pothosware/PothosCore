@@ -47,6 +47,7 @@ class QwtPlotCurve;
  *
  * |param title The title of the plot
  * |default "Amplitude vs Time"
+ * |widget StringEntry()
  *
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0
@@ -73,6 +74,7 @@ class QwtPlotCurve;
  *
  * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
  * |default ""
+ * |widget StringEntry()
  *
  * |mode graphWidget
  * |factory /widgets/wave_monitor(dtype)

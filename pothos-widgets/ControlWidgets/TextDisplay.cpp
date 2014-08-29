@@ -16,9 +16,11 @@
  *
  * |param title The name of the value displayed by this widget
  * |default "My Text Value"
+ * |widget StringEntry()
  *
  * |param formatStr [Formatter] The format string with a %1 to sub in the value.
  * |default "%1"
+ * |widget StringEntry()
  * |preview disable
  *
  * |mode graphWidget

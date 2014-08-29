@@ -19,6 +19,7 @@
  *
  * |param title The name of the value displayed by this widget
  * |default "My Radio Value"
+ * |widget StringEntry()
  *
  * |param value The initial selection for this radio group.
  * |default 42

@@ -44,6 +44,7 @@ class MySpectrogramRasterData;
  *
  * |param title The title of the plot
  * |default "Spectrogram"
+ * |widget StringEntry()
  *
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0

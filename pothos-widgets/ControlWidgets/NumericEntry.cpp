@@ -19,6 +19,7 @@
  *
  * |param title The name of the value displayed by this widget
  * |default "My Numeric Value"
+ * |widget StringEntry()
  *
  * |param value The initial value of this entry.
  * |default 0.0
