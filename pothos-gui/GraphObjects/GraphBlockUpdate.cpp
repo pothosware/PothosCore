@@ -7,6 +7,7 @@
 #include "TopologyEngine/TopologyEngine.hpp"
 #include <QWidget>
 #include <Pothos/Proxy.hpp>
+#include <Poco/Logger.h>
 
 /***********************************************************************
  * initialize the block's properties
@@ -18,14 +19,24 @@ void GraphBlock::initPropertiesFromDesc(void)
 
     //extract the name or title from the description
     const auto name = blockDesc->getValue<std::string>("name");
+    if (not blockDesc->has("name"))
+    {
+        poco_error(Poco::Logger::get("PothosGui.GraphBlock.init"), "Block missing 'name'");
+        return;
+    }
     this->setTitle(QString::fromStdString(name));
 
     //extract the params or properties from the description
     if (blockDesc->isArray("params")) for (const auto &paramObj : *blockDesc->getArray("params"))
     {
         const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
+        if (not param->has("key"))
+        {
+            poco_error_f1(Poco::Logger::get("PothosGui.GraphBlock.init"), "Block '%s' param missing 'key'", name);
+            return;
+        }
         const auto key = QString::fromStdString(param->getValue<std::string>("key"));
-        const auto name = QString::fromStdString(param->getValue<std::string>("name"));
+        const auto name = QString::fromStdString(param->optValue<std::string>("name", key.toStdString()));
         this->addProperty(key);
         this->setPropertyName(key, name);
 
@@ -36,8 +47,12 @@ void GraphBlock::initPropertiesFromDesc(void)
         }
         else if (param->isArray("options") and param->getArray("options")->size() > 0)
         {
-            this->setPropertyValue(key, QString::fromStdString(
-                param->getArray("options")->getObject(0)->getValue<std::string>("value")));
+            auto opt0 = param->getArray("options")->getObject(0);
+            if (not opt0->has("value"))
+            {
+                poco_warning_f2(Poco::Logger::get("PothosGui.GraphBlock.init"), "Block '%s' [param %s] missing 'value'", name, name.toStdString());
+            }
+            else this->setPropertyValue(key, QString::fromStdString(opt0->getValue<std::string>("value")));
         }
 
         if (param->has("preview"))

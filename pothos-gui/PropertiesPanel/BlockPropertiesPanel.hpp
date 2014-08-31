@@ -24,7 +24,7 @@ class BlockPropertiesPanel : public QWidget
 public:
     BlockPropertiesPanel(GraphBlock *block, QWidget *parent);
 
-    QString getParamDocString(const Poco::JSON::Object::Ptr &paramDesc);
+    QString getParamDocString(const QString &propKey);
 
 public slots:
     void handleCancel(void);

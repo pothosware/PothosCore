@@ -73,7 +73,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         //create labels
         _propIdToFormLabel[propKey] = new QLabel(this);
         _propIdToErrorLabel[propKey] = new QLabel(this);
-        editWidget->setToolTip(this->getParamDocString(_block->getParamDesc(propKey)));
+        editWidget->setToolTip(this->getParamDocString(propKey));
 
         //layout stuff
         auto editLayout = new QVBoxLayout();
@@ -139,7 +139,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
             output += QString("<h2>%1</h2>").arg(tr("Properties"));
             for (const auto &propKey : _block->getProperties())
             {
-                output += this->getParamDocString(_block->getParamDesc(propKey));
+                output += this->getParamDocString(propKey);
             }
         }
 
@@ -183,11 +183,12 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     _ignoreChanges = false;
 }
 
-QString BlockPropertiesPanel::getParamDocString(const Poco::JSON::Object::Ptr &paramDesc)
+QString BlockPropertiesPanel::getParamDocString(const QString &propKey)
 {
+    const auto paramDesc = _block->getParamDesc(propKey);
     assert(paramDesc);
     QString output;
-    output += QString("<h3>%1</h3>").arg(QString::fromStdString(paramDesc->getValue<std::string>("name")));
+    output += QString("<h3>%1</h3>").arg(_block->getPropertyName(propKey).toHtmlEscaped());
     if (paramDesc->isArray("desc")) for (const auto &lineObj : *paramDesc->getArray("desc"))
     {
         const auto line = lineObj.extract<std::string>();
