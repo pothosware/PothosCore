@@ -37,7 +37,15 @@ Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &fa
         factory.type(-1) == typeid(std::shared_ptr<Topology>))
     {
         //register
-        PluginRegistry::add(fullPath, factory);
+        try
+        {
+            PluginRegistry::add(fullPath, factory);
+        }
+        catch (const PluginRegistryError &ex)
+        {
+            poco_error(Poco::Logger::get("Pothos.BlockRegistry"), ex.displayText());
+            return;
+        }
     }
 
     //otherwise report the error
