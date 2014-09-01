@@ -29,12 +29,10 @@ signals:
 private slots:
 
     void handleNewTitleSubtext(const QString &s);
-
     void handleShowAbout(void);
-
     void handleShowAboutQt(void);
-
     void handleColorsDialogAction(void);
+    void handleFullScreenViewAction(const bool);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -81,6 +79,7 @@ private:
     QAction *_showColorsDialogAction;
     QAction *_incrementAction;
     QAction *_decrementAction;
+    QAction *_fullScreenViewAction;
     QMap<QString, QAction *> &_actionMap;
 
     void createMenus(void);
@@ -100,4 +99,7 @@ private:
     QDockWidget *_blockTreeDock;
     QDockWidget *_propertiesPanelDock;
     QDockWidget *_affinityZonesDock;
+
+    //restoring from full screen
+    std::map<QWidget *, bool> _widgetToOldVisibility;
 };

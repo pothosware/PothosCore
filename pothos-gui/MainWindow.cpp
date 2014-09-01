@@ -97,8 +97,9 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
 
 PothosGuiMainWindow::~PothosGuiMainWindow(void)
 {
-    getSettings().setValue("MainWindow/geometry", saveGeometry());
-    getSettings().setValue("MainWindow/state", saveState());
+    this->handleFullScreenViewAction(false); //undo if set -- so we dont save full mode below
+    getSettings().setValue("MainWindow/geometry", this->saveGeometry());
+    getSettings().setValue("MainWindow/state", this->saveState());
     getSettings().setValue("MainWindow/showPortNames", _showPortNamesAction->isChecked());
 }
 
@@ -127,6 +128,33 @@ void PothosGuiMainWindow::handleColorsDialogAction(void)
     auto dialog = new ColorsDialog(this);
     dialog->exec();
     delete dialog;
+}
+
+void PothosGuiMainWindow::handleFullScreenViewAction(const bool toggle)
+{
+    //gather a list of widgets to show/hide
+    if (_widgetToOldVisibility.empty())
+    {
+        for (auto child : this->children())
+        {
+            auto dockWidget = dynamic_cast<QDockWidget *>(child);
+            if (dockWidget != nullptr) _widgetToOldVisibility[dockWidget];
+        }
+        _widgetToOldVisibility[this->menuBar()];
+    }
+
+    //save state on all widgets and then hide
+    if (toggle) for (auto &pair : _widgetToOldVisibility)
+    {
+        pair.second = pair.first->isVisible();
+        pair.first->hide();
+    }
+
+    //restore state on all widgets
+    else for (const auto &pair : _widgetToOldVisibility)
+    {
+        pair.first->setVisible(pair.second);
+    }
 }
 
 void PothosGuiMainWindow::closeEvent(QCloseEvent *event)
@@ -292,6 +320,13 @@ void PothosGuiMainWindow::createActions(void)
     _decrementAction->setStatusTip(tr("Decrement action on selected graph objects"));
     _decrementAction->setShortcut(QKeySequence(Qt::Key_Minus));
     _actionMap["decrement"] = _decrementAction;
+
+    _fullScreenViewAction = new QAction(makeIconFromTheme("view-fullscreen"), tr("Full-screen view mode"), this);
+    _fullScreenViewAction->setCheckable(true);
+    _fullScreenViewAction->setStatusTip(tr("Maximize graph editor area, hide dock widgets"));
+    _fullScreenViewAction->setShortcut(QKeySequence(Qt::Key_F11));
+    _actionMap["fullScreenView"] = _fullScreenViewAction;
+    connect(_fullScreenViewAction, SIGNAL(toggled(bool)), this, SLOT(handleFullScreenViewAction(bool)));
 }
 
 void PothosGuiMainWindow::createMenus(void)
@@ -354,6 +389,7 @@ void PothosGuiMainWindow::createMenus(void)
     _viewMenu->addAction(_blockTreeDock->toggleViewAction());
     _viewMenu->addAction(_affinityZonesDock->toggleViewAction());
     _viewMenu->addAction(_mainToolBar->toggleViewAction());
+    _viewMenu->addAction(_fullScreenViewAction);
     _viewMenu->addSeparator();
     _viewMenu->addAction(_zoomInAction);
     _viewMenu->addAction(_zoomOutAction);
@@ -391,6 +427,7 @@ void PothosGuiMainWindow::createMainToolBar(void)
     _mainToolBar->addAction(_zoomInAction);
     _mainToolBar->addAction(_zoomOutAction);
     _mainToolBar->addAction(_zoomOriginalAction);
+    _mainToolBar->addAction(_fullScreenViewAction);
     _mainToolBar->addSeparator();
 
     _mainToolBar->addAction(_undoAction);
