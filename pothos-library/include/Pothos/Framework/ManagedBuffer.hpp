@@ -87,6 +87,9 @@ public:
     //! Get the associated buffer manager
     std::shared_ptr<BufferManager> getBufferManager(void) const;
 
+    //! sortable operator for ManagedBuffer
+    bool operator<(const ManagedBuffer &) const;
+
 private:
     struct Impl; Impl *_impl;
     POTHOS_API friend bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);

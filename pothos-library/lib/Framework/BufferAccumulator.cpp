@@ -6,6 +6,7 @@
 #include <Pothos/Util/RingDeque.hpp>
 #include <cstring> //memcpy
 #include <cassert>
+#include <set>
 
 /***********************************************************************
  * SharedBufferPool
@@ -234,4 +235,18 @@ void Pothos::BufferAccumulator::require(const size_t numBytes)
     //finally store the new buffer to the front
     _impl->inPoolBuffer = true;
     queue.push_front(newBuffer);
+}
+
+/***********************************************************************
+ * BufferAccumulator debug methods
+ **********************************************************************/
+size_t Pothos::BufferAccumulator::getUniqueManagedBufferCount(void) const
+{
+    std::set<Pothos::ManagedBuffer> managedBufferSet;
+    for (size_t i = 0; i < _queue.size(); i++)
+    {
+        if (not _queue[i]) continue;
+        managedBufferSet.insert(_queue[i].getManagedBuffer());
+    }
+    return managedBufferSet.size();
 }

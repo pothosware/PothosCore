@@ -74,6 +74,12 @@ public:
      */
     void require(const size_t numBytes);
 
+    /*!
+     * How many unique managed buffers are enqueued in this accumulator?
+     * \warning expensive: this method is for debug/stats purposes.
+     */
+    size_t getUniqueManagedBufferCount(void) const;
+
 private:
     Util::RingDeque<BufferChunk> _queue;
     size_t _bytesAvailable;
