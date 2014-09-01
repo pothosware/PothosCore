@@ -146,6 +146,12 @@ public:
      */
     void pushMessage(const Object &message);
 
+    /*!
+     * Clear all memory on this input port.
+     * Clear buffers, labels, and messages.
+     */
+    void clear(void);
+
 private:
     InputPortImpl *_impl;
     int _index;

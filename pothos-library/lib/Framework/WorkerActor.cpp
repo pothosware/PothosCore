@@ -30,7 +30,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         ) port._impl->_bufferFromManager = false;
         else if (not port._impl->bufferManager or port._impl->bufferManager->empty())
         {
-            port._buffer = BufferChunk();
+            port._buffer = BufferChunk::null();
             port._impl->_bufferFromManager = false;
         }
         else
@@ -38,7 +38,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
             port._buffer = port._impl->bufferManager->front();
             port._impl->_bufferFromManager = true;
         }
-        assert(not port._impl->_bufferFromManager or port._buffer.getManagedBuffer() == port._impl->bufferManager->front());
+        assert(not port._impl->_bufferFromManager or port._buffer == port._impl->bufferManager->front());
         port._elements = port._buffer.length/port.dtype().size();
         if (port._elements == 0 and not port.isSignal()) allOutputsReady = false;
         if (not port._impl->tokenManager or port._impl->tokenManager->empty()) allOutputsReady = false;
@@ -162,7 +162,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
             buffer.length = pendingBytes;
             if (port._impl->_bufferFromManager) port._impl->bufferManager->pop(buffer.length);
             port.postBuffer(buffer);
-            port._buffer = BufferChunk(); //clear reference
+            port._buffer = BufferChunk::null(); //clear reference
         }
 
         //send the outgoing labels with buffers

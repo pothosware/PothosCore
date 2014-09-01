@@ -5,7 +5,7 @@
 #include <typeinfo>
 
 namespace Pothos {
-POTHOS_IMPLEMENT_EXCEPTION(SharedBufferError, RuntimeException, "Framework Shared Error")
+POTHOS_IMPLEMENT_EXCEPTION(SharedBufferError, RuntimeException, "Framework Shared Buffer Error")
 POTHOS_IMPLEMENT_EXCEPTION(BufferManagerFactoryError, RuntimeException, "Framework Buffer Manager Factory Error")
 POTHOS_IMPLEMENT_EXCEPTION(BufferPushError, RuntimeException, "Framework Buffer Push Error")
 POTHOS_IMPLEMENT_EXCEPTION(PortAccessError, RangeException, "Framework Worker Port Access Error")

@@ -77,17 +77,13 @@ public:
         return _readyBuffs.empty();
     }
 
-    const Pothos::ManagedBuffer &front(void) const
-    {
-        assert(not _readyBuffs.empty());
-        return _readyBuffs.front();
-    }
-
     void pop(const size_t numBytes)
     {
         assert(not _readyBuffs.empty());
         auto buff = _readyBuffs.front();
         _readyBuffs.pop_front();
+        if (_readyBuffs.empty()) this->setFrontBuffer(Pothos::BufferChunk::null());
+        else this->setFrontBuffer(_readyBuffs.front());
 
         auto container = std::static_pointer_cast<OpenClBufferContainer>(buff.getBuffer().getContainer());
         assert(container);
@@ -121,6 +117,7 @@ public:
 
     void push(const Pothos::ManagedBuffer &buff)
     {
+        if (_readyBuffs.empty()) this->setFrontBuffer(buff);
         auto container = std::static_pointer_cast<OpenClBufferContainer>(buff.getBuffer().getContainer());
         assert(container);
         assert(not _readyBuffs.full());

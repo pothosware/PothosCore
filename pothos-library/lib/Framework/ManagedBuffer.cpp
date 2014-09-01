@@ -100,7 +100,7 @@ Pothos::BufferManager::Sptr Pothos::ManagedBuffer::getBufferManager(void) const
     return _impl->weakManager.lock();
 }
 
-bool Pothos::operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs)
+bool Pothos::ManagedBuffer::operator<(const ManagedBuffer &rhs) const
 {
-    return lhs._impl == rhs._impl;
+    return _impl < rhs._impl;
 }

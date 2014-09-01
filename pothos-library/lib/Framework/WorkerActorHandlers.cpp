@@ -12,7 +12,6 @@ void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, 
     assert(message.id != nullptr);
     auto &input = *message.id;
     auto &async = message.contents.async;
-    if (input._impl->asyncMessages.full()) input._impl->asyncMessages.set_capacity(input._impl->asyncMessages.capacity()*2);
     if (input._impl->isSlot and async.type() == typeid(ObjectVector))
     {
         POTHOS_EXCEPTION_TRY
@@ -24,9 +23,9 @@ void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, 
         {
             poco_error_f2(Poco::Logger::get("Pothos.Block.callSlot"), "%s: %s", block->getName(), ex.displayText());
         }
-        this->bump();
-        return;
+        return this->bump();
     }
+    if (input._impl->asyncMessages.full()) input._impl->asyncMessages.set_capacity(input._impl->asyncMessages.capacity()*2);
     input._impl->asyncMessages.push_back(message.contents);
     this->notify();
 }

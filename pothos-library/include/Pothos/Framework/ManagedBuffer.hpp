@@ -87,16 +87,28 @@ public:
     //! Get the associated buffer manager
     std::shared_ptr<BufferManager> getBufferManager(void) const;
 
+    //! sortable operator for ManagedBuffer
+    bool operator<(const ManagedBuffer &) const;
+
 private:
     struct Impl; Impl *_impl;
     POTHOS_API friend bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
 };
 
-POTHOS_API bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
+/*!
+ * Equality operator for ManagedBuffer.
+ * True when the containers are identical.
+ */
+bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
 
 } //namespace Pothos
 
 inline Pothos::ManagedBuffer::operator bool(void) const
 {
     return _impl != nullptr;
+}
+
+inline bool Pothos::operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs)
+{
+    return lhs._impl == rhs._impl;
 }

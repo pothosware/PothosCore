@@ -118,6 +118,12 @@ private:
     std::shared_ptr<void> _container;
 };
 
+/*!
+ * Equality operator for SharedBuffer.
+ * True when the containers are identical.
+ */
+bool operator==(const SharedBuffer &lhs, const SharedBuffer &rhs);
+
 } //namespace Pothos
 
 inline size_t Pothos::SharedBuffer::getAddress(void) const
@@ -158,4 +164,9 @@ inline Pothos::SharedBuffer::operator bool(void) const
 inline const std::shared_ptr<void> &Pothos::SharedBuffer::getContainer(void) const
 {
     return _container;
+}
+
+inline bool Pothos::operator==(const SharedBuffer &lhs, const SharedBuffer &rhs)
+{
+    return lhs.getContainer() == rhs.getContainer();
 }

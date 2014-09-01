@@ -96,14 +96,15 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_inline_buffer)
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //load feeder blocks
-    auto b0 = Pothos::BufferChunk(10*sizeof(int));
+    const auto numElems = 4000;
+    auto b0 = Pothos::BufferChunk(numElems*sizeof(int));
     auto p0 = b0.as<int *>();
-    for (size_t i = 0; i < 10; i++) p0[i] = i;
+    for (size_t i = 0; i < numElems; i++) p0[i] = i;
     feeder0.callProxy("feedBuffer", b0);
 
-    auto b1 = Pothos::BufferChunk(10*sizeof(int));
+    auto b1 = Pothos::BufferChunk(numElems*sizeof(int));
     auto p1 = b1.as<int *>();
-    for (size_t i = 0; i < 10; i++) p1[i] = i+10;
+    for (size_t i = 0; i < numElems; i++) p1[i] = i+numElems;
     //feeder1.callProxy("feedBuffer", b1);
 
     //run the topology
@@ -121,12 +122,12 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_inline_buffer)
 
     //check the collector
     auto buff = collector.call<Pothos::BufferChunk>("getBuffer");
-    POTHOS_TEST_EQUAL(buff.length, 10*sizeof(int));
+    POTHOS_TEST_EQUAL(buff.length, numElems*sizeof(int));
     auto pb = buff.as<const int *>();
-    //for (int i = 0; i < 10; i++) std::cout << i << " " << pb[i] << std::endl;
-    for (int i = 0; i < 10; i++) POTHOS_TEST_EQUAL(pb[i], i+i+10);
+    //for (int i = 0; i < numElems; i++) std::cout << i << " " << pb[i] << std::endl;
+    for (int i = 0; i < numElems; i++) POTHOS_TEST_EQUAL(pb[i], i+i+numElems);
 
     auto numInlines = adder.call<size_t>("getNumInlineBuffers");
     std::cout << "NumInlineBuffers " << numInlines << std::endl;
-    POTHOS_TEST_EQUAL(numInlines, 1);
+    POTHOS_TEST_TRUE(numInlines > 0);
 }
