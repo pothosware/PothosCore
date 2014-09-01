@@ -85,6 +85,9 @@ public:
     //! Set the deque capacity if too small
     void set_capacity(const size_t capacity);
 
+    //! Empty the contents of this queue
+    void clear(void);
+
 private:
     size_t _frontIndex;
     size_t _backIndex;
@@ -248,6 +251,15 @@ void RingDeque<T>::set_capacity(const size_t capacity)
     _container = _newContainer;
     _frontIndex = 0;
     _backIndex = (_numElements + capacity - 1) % capacity;
+}
+
+template <typename T>
+void RingDeque<T>::clear(void)
+{
+    while (not this->empty())
+    {
+        this->pop_front();
+    }
 }
 
 } //namespace Util
