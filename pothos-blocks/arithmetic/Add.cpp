@@ -59,6 +59,7 @@ public:
     {
         this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, setNumInputs));
         this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, setPreload));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, preload));
         this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, getNumInlineBuffers));
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
@@ -79,12 +80,23 @@ public:
     void setPreload(const std::vector<size_t> &preload)
     {
         this->setNumInputs(std::max<size_t>(2, preload.size()));
-        for (size_t i = 0; i < preload.size(); i++)
+        _preload = preload;
+    }
+
+    const std::vector<size_t> &preload(void) const
+    {
+        return _preload;
+    }
+
+    void activate(void)
+    {
+        for (size_t i = 0; i < _preload.size(); i++)
         {
-            auto bytes = preload[i]*this->input(i)->dtype().size();
+            auto bytes = _preload[i]*this->input(i)->dtype().size();
             if (bytes == 0) continue;
             Pothos::BufferChunk buffer(bytes);
             std::memset(buffer.as<void *>(), 0, buffer.length);
+            this->input(i)->clear();
             this->input(i)->pushBuffer(buffer);
         }
     }
@@ -128,6 +140,7 @@ public:
 
 private:
     size_t _numInlineBuffers;
+    std::vector<size_t> _preload;
 };
 
 /***********************************************************************

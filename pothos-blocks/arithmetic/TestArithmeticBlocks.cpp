@@ -96,7 +96,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_inline_buffer)
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //load feeder blocks
-    const size_t numElems = 4000;
+    const auto numElems = 4000;
     auto b0 = Pothos::BufferChunk(numElems*sizeof(int));
     auto p0 = b0.as<int *>();
     for (size_t i = 0; i < numElems; i++) p0[i] = i;
