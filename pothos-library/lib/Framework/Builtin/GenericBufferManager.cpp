@@ -51,8 +51,8 @@ public:
         }
 
         _readyBuffs.pop_front();
-        if (not _readyBuffs.empty()) this->setFrontBuffer(_readyBuffs.front());
-        else this->setFrontBuffer(Pothos::BufferChunk::null());
+        if (_readyBuffs.empty()) this->setFrontBuffer(Pothos::BufferChunk::null());
+        else this->setFrontBuffer(_readyBuffs.front());
     }
 
     void push(const Pothos::ManagedBuffer &buff)

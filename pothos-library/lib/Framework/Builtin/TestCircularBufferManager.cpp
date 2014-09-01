@@ -40,6 +40,6 @@ POTHOS_TEST_BLOCK("/framework/tests", test_circular_buffer_manager)
     for (size_t i = 0; i < 100; i++)
     {
         auto buff = manager->front();
-        manager->pop(buff.getBuffer().getLength());
+        manager->pop(buff.length);
     }
 }

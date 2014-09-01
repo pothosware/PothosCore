@@ -3,9 +3,12 @@
 
 #include <Pothos/Framework/SharedBuffer.hpp>
 #include <Pothos/Framework/Exception.hpp>
-#include <mutex>
 #include <Poco/SingletonHolder.h>
+#include <Poco/NamedMutex.h>
 
+/***********************************************************************
+ * shared buffer implementation
+ **********************************************************************/
 Pothos::SharedBuffer::SharedBuffer(void):
     _address(0), _length(0), _alias(0)
 {
@@ -23,16 +26,26 @@ Pothos::SharedBuffer::SharedBuffer(const size_t address, const size_t length, co
 {
     if (_alias != 0) _alias += _address - buffer.getAddress();
     const bool beginInRange = (_address >= buffer.getAddress()) and (_address < buffer.getAddress() + buffer.getLength());
-    const bool endInRange = (_address + _length <= buffer.getAddress() + buffer.getLength());
+    const bool endInRange = (_address + _length <= std::max(buffer.getAlias(), buffer.getAddress()) + buffer.getLength());
     if (not beginInRange or not endInRange)
     {
         throw SharedBufferError("Pothos::SharedBuffer()", "not a subset");
     }
 }
 
-static std::mutex &getCircMutex(void)
+/***********************************************************************
+ * circular buffer implementation
+ **********************************************************************/
+struct CircBuffNamedMutex : Poco::NamedMutex
 {
-    static Poco::SingletonHolder<std::mutex> sh;
+    CircBuffNamedMutex(void):
+        Poco::NamedMutex("pothos_circular_buffer_mutex")
+    {}
+};
+
+static Poco::NamedMutex &getCircMutex(void)
+{
+    static Poco::SingletonHolder<CircBuffNamedMutex> sh;
     return *sh.get();
 }
 
@@ -43,7 +56,7 @@ Pothos::SharedBuffer Pothos::SharedBuffer::makeCirc(const size_t numBytes, const
     const size_t numRetries = 7;
     for (size_t i = 0; i < numRetries; i++)
     {
-        std::lock_guard<std::mutex> lock(getCircMutex());
+        Poco::NamedMutex::ScopedLock lock(getCircMutex());
         try
         {
             SharedBuffer buff = SharedBuffer::makeCircUnprotected(numBytes, nodeAffinity);

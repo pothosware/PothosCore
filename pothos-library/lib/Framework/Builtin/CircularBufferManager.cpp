@@ -29,21 +29,18 @@ public:
         //init the state variables
         _frontAddress = _circBuff.getAddress();
         _bufferSize = args.bufferSize;
-        _slabIndex = 0;
         _indexToAck = 0;
 
         //size internal containers
         _readyBuffs.set_capacity(args.numBuffers);
         _pushedBuffers.resize(args.numBuffers);
 
-        //fill the ready queue with available buffers
+        //allocate buffer token objects
         for (size_t i = 0; i < args.numBuffers; i++)
         {
-            _readyBuffs.push_back(Pothos::ManagedBuffer());
+            Pothos::ManagedBuffer buffer;
+            buffer.reset(this->shared_from_this(), _circBuff, i/*slabIndex*/);
         }
-
-        //setup the front buffer for action
-        this->prepareFront();
     }
 
     bool empty(void) const
@@ -54,19 +51,27 @@ public:
     void pop(const size_t numBytes)
     {
         assert(not _readyBuffs.empty());
+
+        //re-use the buffer for small consumes
+        if (this->front().length >= numBytes*2)
+        {
+            auto buff = this->front();
+            buff.address += numBytes;
+            buff.length -= numBytes;
+            this->setFrontBuffer(buff);
+            return;
+        }
+
         _readyBuffs.pop_front();
-        this->setFrontBuffer(Pothos::BufferChunk::null());
 
         //increment front address and adjust for aliasing
         assert(_bufferSize >= numBytes);
         _frontAddress += numBytes;
         if (_frontAddress >= _circBuff.getAddress() + _circBuff.getLength()) _frontAddress -= _circBuff.getLength();
 
-        //increment for the next buffer index
-        if (++_slabIndex == _pushedBuffers.size()) _slabIndex = 0;
-
         //prepare the next buffer in the queue
-        this->prepareFront();
+        if (_readyBuffs.empty()) this->setFrontBuffer(Pothos::BufferChunk::null());
+        else this->setCircFrontBuffer(_readyBuffs.front());
     }
 
     void push(const Pothos::ManagedBuffer &buff)
@@ -78,6 +83,8 @@ public:
         //look for pushed buffers -- but in order
         while (_pushedBuffers[_indexToAck])
         {
+            if (_readyBuffs.empty()) this->setCircFrontBuffer(_pushedBuffers[_indexToAck]);
+
             //move the buffer into the queue
             assert(not _readyBuffs.full());
             _readyBuffs.push_back(_pushedBuffers[_indexToAck]);
@@ -86,25 +93,19 @@ public:
             //increment for the next pushed buffer
             if (++_indexToAck == _pushedBuffers.size()) _indexToAck = 0;
         }
-
-        this->prepareFront();
     }
 
 private:
 
-    void prepareFront(void)
+    void setCircFrontBuffer(Pothos::ManagedBuffer &buff)
     {
-        if (_readyBuffs.empty()) return;
-
-        //setup the front to point to available memory
-        Pothos::SharedBuffer buffer(_frontAddress, _bufferSize, _circBuff);
-        _readyBuffs.front().reset(this->shared_from_this(), buffer, _slabIndex);
-        this->setFrontBuffer(_readyBuffs.front());
+        Pothos::SharedBuffer sbuff(_frontAddress, _bufferSize, _circBuff);
+        buff.reset(this->shared_from_this(), sbuff, buff.getSlabIndex());
+        this->setFrontBuffer(buff);
     }
 
     size_t _frontAddress;
     size_t _bufferSize;
-    size_t _slabIndex;
     size_t _indexToAck;
     Pothos::SharedBuffer _circBuff;
     std::vector<Pothos::ManagedBuffer> _pushedBuffers;

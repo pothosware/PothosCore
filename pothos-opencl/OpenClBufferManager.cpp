@@ -82,8 +82,8 @@ public:
         assert(not _readyBuffs.empty());
         auto buff = _readyBuffs.front();
         _readyBuffs.pop_front();
-        if (not _readyBuffs.empty()) this->setFrontBuffer(_readyBuffs.front());
-        else this->setFrontBuffer(Pothos::BufferChunk::null());
+        if (_readyBuffs.empty()) this->setFrontBuffer(Pothos::BufferChunk::null());
+        else this->setFrontBuffer(_readyBuffs.front());
 
         auto container = std::static_pointer_cast<OpenClBufferContainer>(buff.getBuffer().getContainer());
         assert(container);

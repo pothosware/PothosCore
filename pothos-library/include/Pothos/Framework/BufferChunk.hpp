@@ -148,8 +148,8 @@ inline const Pothos::ManagedBuffer &Pothos::BufferChunk::getManagedBuffer(void) 
 inline size_t Pothos::BufferChunk::getAlias(void) const
 {
     if (_buffer.getAlias() == 0) return 0;
-    size_t offset = _buffer.getAlias() - _buffer.getAddress();
-    return address + offset;
+    if (address > _buffer.getAlias()) return address - _buffer.getLength();
+    else return address + _buffer.getLength();
 }
 
 inline size_t Pothos::BufferChunk::getEnd(void) const
