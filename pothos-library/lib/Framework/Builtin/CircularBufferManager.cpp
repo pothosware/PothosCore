@@ -15,7 +15,11 @@ class CircularBufferManager :
     public std::enable_shared_from_this<CircularBufferManager>
 {
 public:
-    CircularBufferManager(void)
+    CircularBufferManager(void):
+        _frontAddress(0),
+        _bufferSize(0),
+        _indexToAck(0),
+        _bytesToPop(0)
     {
         return;
     }
@@ -51,6 +55,7 @@ public:
     void pop(const size_t numBytes)
     {
         assert(not _readyBuffs.empty());
+        _bytesToPop += numBytes;
 
         //re-use the buffer for small consumes
         if (this->front().length >= numBytes*2)
@@ -65,8 +70,9 @@ public:
         _readyBuffs.pop_front();
 
         //increment front address and adjust for aliasing
-        assert(_bufferSize >= numBytes);
-        _frontAddress += numBytes;
+        assert(_bufferSize >= _bytesToPop);
+        _frontAddress += _bytesToPop;
+        _bytesToPop = 0;
         if (_frontAddress >= _circBuff.getAddress() + _circBuff.getLength()) _frontAddress -= _circBuff.getLength();
 
         //prepare the next buffer in the queue
@@ -107,6 +113,7 @@ private:
     size_t _frontAddress;
     size_t _bufferSize;
     size_t _indexToAck;
+    size_t _bytesToPop;
     Pothos::SharedBuffer _circBuff;
     std::vector<Pothos::ManagedBuffer> _pushedBuffers;
     Pothos::Util::RingDeque<Pothos::ManagedBuffer> _readyBuffs;
