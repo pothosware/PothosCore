@@ -104,8 +104,3 @@ bool Pothos::ManagedBuffer::operator<(const ManagedBuffer &rhs) const
 {
     return _impl < rhs._impl;
 }
-
-bool Pothos::operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs)
-{
-    return lhs._impl == rhs._impl;
-}

@@ -11,6 +11,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/ManagedBuffer.hpp>
+#include <Pothos/Framework/BufferChunk.hpp>
 #include <memory> //shared_ptr
 #include <string>
 #include <functional>
@@ -98,7 +99,7 @@ public:
      * The caller sets length to indicate bytes used.
      * \return the buffer at the queue head
      */
-    virtual const ManagedBuffer &front(void) const = 0;
+    const BufferChunk &front(void) const;
 
     /*!
      * Pop bytes from the front buffer.
@@ -136,11 +137,27 @@ public:
      */
     void setCallback(const std::function<void(const ManagedBuffer &)> &callback);
 
+protected:
+
+    //! Called by derived classes to set the buffer for front()
+    void setFrontBuffer(const BufferChunk &buff);
+
 private:
+    BufferChunk _frontBuffer;
     std::function<void(const ManagedBuffer &)> _callback;
 };
 
 } //namespace Pothos
+
+inline const Pothos::BufferChunk &Pothos::BufferManager::front(void) const
+{
+    return _frontBuffer;
+}
+
+inline void Pothos::BufferManager::setFrontBuffer(const BufferChunk &buff)
+{
+    _frontBuffer = buff;
+}
 
 inline void Pothos::BufferManager::pushExternal(const ManagedBuffer &buff)
 {

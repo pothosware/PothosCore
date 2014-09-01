@@ -120,9 +120,20 @@ private:
     ManagedBuffer _managedBuffer;
 };
 
+/*!
+ * Equality operator for BufferChunk objects.
+ * True when the address, length, and underlying buffer are the same.
+ */
+bool operator==(const BufferChunk &lhs, const BufferChunk &rhs);
+
 } //namespace Pothos
 
 #include <cassert>
+
+inline bool Pothos::operator==(const Pothos::BufferChunk &lhs, const Pothos::BufferChunk &rhs)
+{
+    return lhs.address == rhs.address and lhs.length == rhs.length and lhs.getBuffer() == rhs.getBuffer();
+}
 
 inline const Pothos::SharedBuffer &Pothos::BufferChunk::getBuffer(void) const
 {

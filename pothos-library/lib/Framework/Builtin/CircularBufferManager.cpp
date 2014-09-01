@@ -51,16 +51,11 @@ public:
         return _readyBuffs.empty();
     }
 
-    const Pothos::ManagedBuffer &front(void) const
-    {
-        assert(not _readyBuffs.empty());
-        return _readyBuffs.front();
-    }
-
     void pop(const size_t numBytes)
     {
         assert(not _readyBuffs.empty());
         _readyBuffs.pop_front();
+        this->setFrontBuffer(Pothos::BufferChunk::null());
 
         //increment front address and adjust for aliasing
         assert(_bufferSize >= numBytes);
@@ -104,6 +99,7 @@ private:
         //setup the front to point to available memory
         Pothos::SharedBuffer buffer(_frontAddress, _bufferSize, _circBuff);
         _readyBuffs.front().reset(this->shared_from_this(), buffer, _slabIndex);
+        this->setFrontBuffer(_readyBuffs.front());
     }
 
     size_t _frontAddress;

@@ -38,7 +38,7 @@ struct LabeledBuffersMessage
 
 struct TokenizedAsyncMessage
 {
-    Pothos::ManagedBuffer token;
+    Pothos::BufferChunk token;
     Pothos::Object async;
 };
 

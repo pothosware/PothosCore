@@ -36,25 +36,23 @@ public:
         return _readyBuffs.empty();
     }
 
-    const Pothos::ManagedBuffer &front(void) const
-    {
-        assert(not _readyBuffs.empty());
-        return _readyBuffs.front();
-    }
-
     void pop(const size_t /*numBytes*/)
     {
         assert(not _readyBuffs.empty());
-        return _readyBuffs.pop_front();
+        _readyBuffs.pop_front();
+        if (not _readyBuffs.empty()) this->setFrontBuffer(_readyBuffs.front());
+        else this->setFrontBuffer(Pothos::BufferChunk::null());
     }
 
     void push(const Pothos::ManagedBuffer &buff)
     {
+        if (_readyBuffs.empty()) this->setFrontBuffer(buff);
         assert(not _readyBuffs.full());
         _readyBuffs.push_back(buff);
     }
 
 private:
+
     Pothos::Util::RingDeque<Pothos::ManagedBuffer> _readyBuffs;
 };
 
