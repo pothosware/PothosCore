@@ -84,6 +84,14 @@ void Pothos::InputPort::pushMessage(const Object &message)
     _impl->actor->GetFramework().Send(makePortMessage(this, message), _impl->actor->GetAddress(), _impl->actor->GetAddress());
 }
 
+void Pothos::InputPort::clear(void)
+{
+    assert(_impl);
+    _impl->bufferAccumulator = BufferAccumulator();
+    _impl->inlineMessages.clear();
+    _impl->asyncMessages.clear();
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedInputPort = Pothos::ManagedClass()
@@ -106,4 +114,5 @@ static auto managedInputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, pushBuffer))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, pushLabel))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, pushMessage))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, clear))
     .commit("Pothos/InputPort");
