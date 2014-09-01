@@ -75,7 +75,7 @@ protected:
     {
         if (not _outbuf.empty() and _outbuf.back() == '\n')
         {
-            poco_information(_logger, _outbuf);
+            poco_information(_logger, _outbuf.substr(0, _outbuf.size()-1));
             _outbuf.clear();
         }
         return 0;
