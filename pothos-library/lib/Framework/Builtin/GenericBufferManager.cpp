@@ -36,9 +36,20 @@ public:
         return _readyBuffs.empty();
     }
 
-    void pop(const size_t /*numBytes*/)
+    void pop(const size_t numBytes)
     {
         assert(not _readyBuffs.empty());
+
+        //re-use the buffer for small consumes
+        if (this->front().length >= numBytes*2)
+        {
+            auto buff = this->front();
+            buff.address += numBytes;
+            buff.length -= numBytes;
+            this->setFrontBuffer(buff);
+            return;
+        }
+
         _readyBuffs.pop_front();
         if (not _readyBuffs.empty()) this->setFrontBuffer(_readyBuffs.front());
         else this->setFrontBuffer(Pothos::BufferChunk::null());
