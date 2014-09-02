@@ -133,7 +133,7 @@ void PothosGuiMainWindow::handleColorsDialogAction(void)
 void PothosGuiMainWindow::handleFullScreenViewAction(const bool toggle)
 {
     //gather a list of widgets to show/hide
-    if (_widgetToOldVisibility.empty())
+    if (toggle and _widgetToOldVisibility.empty())
     {
         for (auto child : this->children())
         {
