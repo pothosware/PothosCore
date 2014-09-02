@@ -90,6 +90,17 @@ public:
     //! sortable operator for ManagedBuffer
     bool operator<(const ManagedBuffer &) const;
 
+    /*!
+     * Is the reference to the managed buffer unique?
+     * \return true if this is the only copy of the managed buffer
+     */
+    bool unique(void) const;
+
+    /*!
+     * The number of copies of the managed buffer.
+     */
+    size_t useCount(void) const;
+
 private:
     struct Impl; Impl *_impl;
     POTHOS_API friend bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
@@ -106,6 +117,16 @@ bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
 inline Pothos::ManagedBuffer::operator bool(void) const
 {
     return _impl != nullptr;
+}
+
+inline bool Pothos::ManagedBuffer::operator<(const ManagedBuffer &rhs) const
+{
+    return _impl < rhs._impl;
+}
+
+inline bool Pothos::ManagedBuffer::unique(void) const
+{
+    return this->useCount() == 1;
 }
 
 inline bool Pothos::operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs)

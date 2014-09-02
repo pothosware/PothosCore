@@ -100,7 +100,8 @@ Pothos::BufferManager::Sptr Pothos::ManagedBuffer::getBufferManager(void) const
     return _impl->weakManager.lock();
 }
 
-bool Pothos::ManagedBuffer::operator<(const ManagedBuffer &rhs) const
+size_t Pothos::ManagedBuffer::useCount(void) const
 {
-    return _impl < rhs._impl;
+    if (*this) return _impl->counter;
+    return 0;
 }
