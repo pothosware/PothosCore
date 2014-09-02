@@ -43,6 +43,8 @@ private slots:
 
     void handleUpdateTimerExpired(void);
 
+    void handleDocTabChanged(int);
+
 signals:
     void stateChanged(const GraphState &);
 
@@ -76,6 +78,7 @@ private:
 
     QLabel *_blockErrorLabel;
     QTimer *_updateTimer;
+    QLabel *_jsonBlockDesc;
     QFormLayout *_formLayout;
     QPointer<GraphBlock> _block;
 };

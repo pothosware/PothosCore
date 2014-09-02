@@ -13,9 +13,11 @@
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QComboBox>
+#include <QTabWidget>
 #include <QLabel>
 #include <QPainter>
 #include <QTimer>
+#include <sstream>
 #include <cassert>
 
 static const long UPDATE_TIMER_MS = 500;
@@ -29,6 +31,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     _affinityZoneBox(nullptr),
     _blockErrorLabel(new QLabel(this)),
     _updateTimer(new QTimer(this)),
+    _jsonBlockDesc(nullptr),
     _formLayout(nullptr),
     _block(block)
 {
@@ -119,6 +122,9 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     */
 
     //block level description
+    auto docTabs = new QTabWidget(this);
+    connect(docTabs, SIGNAL(currentChanged(int)), this, SLOT(handleDocTabChanged(int)));
+    _formLayout->addRow(docTabs);
     if (blockDesc->isArray("docs"))
     {
         QString output;
@@ -167,10 +173,16 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
             output += "</ul>";
         }
 
-        auto text = new QLabel(output, this);
+        auto text = new QLabel(output, docTabs);
         text->setStyleSheet("QLabel{background:white;margin:1px;}");
         text->setWordWrap(true);
-        _formLayout->addRow(text);
+        docTabs->addTab(text, tr("Documentation"));
+    }
+
+    //block desc JSON (filled in by event handler)
+    {
+        _jsonBlockDesc = new QLabel(docTabs);
+        docTabs->addTab(_jsonBlockDesc, tr("JSON description"));
     }
 
     //update timer
@@ -277,6 +289,17 @@ void BlockPropertiesPanel::handleCommit(void)
     //an edit widget return press signal may have us here,
     //and not the commit button, so make sure panel is deleted
     this->deleteLater();
+}
+
+void BlockPropertiesPanel::handleDocTabChanged(int index)
+{
+    if (_jsonBlockDesc == nullptr) return;
+    _jsonBlockDesc->setText("");
+    if (index != 1) return;
+    std::stringstream ss; _block->getBlockDesc()->stringify(ss, 4);
+    _jsonBlockDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
+    _jsonBlockDesc->setWordWrap(true);
+    _jsonBlockDesc->setText(QString::fromStdString(ss.str()));
 }
 
 void BlockPropertiesPanel::updateAllForms(void)
