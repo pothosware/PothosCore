@@ -43,7 +43,7 @@ set(SOURCES
     network/TestNetworkBlocks.cpp
     network/TestNetworkTopology.cpp
 
-    arithmetic/Add.cpp
+    arithmetic/Arithmetic.cpp
     arithmetic/TestArithmeticBlocks.cpp
 
     file/BinaryFileSource.cpp

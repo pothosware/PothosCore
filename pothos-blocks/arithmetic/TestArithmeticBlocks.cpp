@@ -12,7 +12,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_arithmetic_add)
 
     auto feeder0 = registry.callProxy("/blocks/feeder_source", "int");
     auto feeder1 = registry.callProxy("/blocks/feeder_source", "int");
-    auto adder = registry.callProxy("/blocks/add", "int");
+    auto adder = registry.callProxy("/blocks/arithmetic", "int", "ADD");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //load feeder blocks
@@ -49,7 +49,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_arithmetic_feedback)
     auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
 
     auto feeder = registry.callProxy("/blocks/feeder_source", "int");
-    auto adder = registry.callProxy("/blocks/add", "int");
+    auto adder = registry.callProxy("/blocks/arithmetic", "int", "ADD");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //adder has a preload on input1 for feedback loop
@@ -92,7 +92,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_inline_buffer)
     auto feeder0 = registry.callProxy("/blocks/feeder_source", "int");
     auto feeder1 = registry.callProxy("/blocks/feeder_source", "int");
     auto copier = registry.callProxy("/blocks/copier");
-    auto adder = registry.callProxy("/blocks/add", "int");
+    auto adder = registry.callProxy("/blocks/arithmetic", "int", "ADD");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //load feeder blocks

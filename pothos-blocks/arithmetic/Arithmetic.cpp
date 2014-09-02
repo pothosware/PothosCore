@@ -9,14 +9,14 @@
 #include <cstring> //memset
 
 /***********************************************************************
- * |PothosDoc Add
+ * |PothosDoc Arithmetic
  *
- * Add elements across multiple input ports to produce a stream of outputs.
+ * Perform arithmetic operations on elements across multiple input ports to produce a stream of outputs.
  *
- * out[n] = in0[n] + in1[n] + ... + in_last[n]
+ * out[n] = in0[n] $op in1[n] $op ... $op in_last[n]
  *
  * |category /Arithmetic
- * |keywords math add arithmetic
+ * |keywords math arithmetic add subtract multiply divide
  *
  * |param dtype[Data Type] The datatype used in the arithmetic.
  * |option [Complex128] "complex128"
@@ -33,6 +33,13 @@
  * |option [Int8] "int8"
  * |preview disable
  *
+ * |param operation The mathematical operation to perform
+ * |default "ADD"
+ * |option [Add] "ADD"
+ * |option [Subtract] "SUB"
+ * |option [Multiply] "MUL"
+ * |option [Divide] "DIV"
+ *
  * |param numInputs[Num Inputs] The number of input ports.
  * |default 2
  * |widget SpinBox(minimum=2)
@@ -46,21 +53,22 @@
  * |option [Ignored] \[\]
  * |preview disable
  *
- * |factory /blocks/add(dtype)
+ * |factory /blocks/arithmetic(dtype, operation)
  * |initializer setNumInputs(numInputs)
  * |initializer setPreload(preload)
  **********************************************************************/
-template <typename Type>
-class Add : public Pothos::Block
+template <typename Type, void (*Operator)(const Type *, const Type *, Type *, const size_t)>
+class Arithmetic : public Pothos::Block
 {
 public:
-    Add(void):
+    Arithmetic(void):
         _numInlineBuffers(0)
     {
-        this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, setNumInputs));
-        this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, setPreload));
-        this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, preload));
-        this->registerCall(this, POTHOS_FCN_TUPLE(Add<Type>, getNumInlineBuffers));
+        typedef Arithmetic<Type, Operator> ClassType;
+        this->registerCall(this, POTHOS_FCN_TUPLE(ClassType, setNumInputs));
+        this->registerCall(this, POTHOS_FCN_TUPLE(ClassType, setPreload));
+        this->registerCall(this, POTHOS_FCN_TUPLE(ClassType, preload));
+        this->registerCall(this, POTHOS_FCN_TUPLE(ClassType, getNumInlineBuffers));
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
 
@@ -70,7 +78,7 @@ public:
 
     void setNumInputs(const size_t numInputs)
     {
-        if (numInputs < 2) throw Pothos::RangeException("Add::setNumInputs("+std::to_string(numInputs)+")", "require inputs >= 2");
+        if (numInputs < 2) throw Pothos::RangeException("Arithmetic::setNumInputs("+std::to_string(numInputs)+")", "require inputs >= 2");
         for (size_t i = this->inputs().size(); i < numInputs; i++)
         {
             this->setupInput(i, this->input(0)->dtype());
@@ -119,12 +127,9 @@ public:
         //loop through available ports
         for (size_t i = 1; i < inputs.size(); i++)
         {
-            auto *inX = Pothos::BufferChunk(inputs[i]->buffer()).as<const Type *>();
-            for (size_t n = 0; n < elems; n++) //loop through elements
-            {
-                out[n] = inX[n] + in0[n];
-            }
-            in0 = out; //adding to output array next loop
+            auto *inX = inputs[i]->buffer().as<const Type *>();
+            Operator(in0, inX, out, elems);
+            in0 = out; //operate on output array next loop
             inputs[i]->consume(elems); //consume on ith input port
         }
 
@@ -144,21 +149,55 @@ private:
 };
 
 /***********************************************************************
+ * templated arithmetic vector operators
+ **********************************************************************/
+template <typename Type>
+void addArray(const Type *in0, const Type *in1, Type *out, const size_t num)
+{
+    for (size_t i = 0; i < num; i++) out[i] = in0[i] + in1[i];
+}
+
+template <typename Type>
+void subArray(const Type *in0, const Type *in1, Type *out, const size_t num)
+{
+    for (size_t i = 0; i < num; i++) out[i] = in0[i] - in1[i];
+}
+
+template <typename Type>
+void mulArray(const Type *in0, const Type *in1, Type *out, const size_t num)
+{
+    for (size_t i = 0; i < num; i++) out[i] = in0[i] * in1[i];
+}
+
+template <typename Type>
+void divArray(const Type *in0, const Type *in1, Type *out, const size_t num)
+{
+    for (size_t i = 0; i < num; i++) out[i] = in0[i] / in1[i];
+}
+
+/***********************************************************************
  * registration
  **********************************************************************/
-static Pothos::Block *addFactory(const Pothos::DType &dtype)
+static Pothos::Block *arithmeticFactory(const Pothos::DType &dtype, const std::string &operation)
 {
+    #define ifTypeDeclareFactory__(type, opKey, opVal) \
+        if (dtype == Pothos::DType(typeid(type)) and operation == opKey) return new Arithmetic<type, opVal<type>>();
+    #define ifTypeDeclareFactory_(type) \
+        ifTypeDeclareFactory__(type, "ADD", addArray) \
+        ifTypeDeclareFactory__(type, "SUB", subArray) \
+        ifTypeDeclareFactory__(type, "MUL", mulArray) \
+        ifTypeDeclareFactory__(type, "DIV", divArray)
     #define ifTypeDeclareFactory(type) \
-        if (dtype == Pothos::DType(typeid(type))) return new Add<type>(); \
-        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new Add<std::complex<type>>();
+        ifTypeDeclareFactory_(type) \
+        ifTypeDeclareFactory_(std::complex<type>)
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
     ifTypeDeclareFactory(Poco::Int64);
     ifTypeDeclareFactory(Poco::Int32);
     ifTypeDeclareFactory(Poco::Int16);
     ifTypeDeclareFactory(Poco::Int8);
-    throw Pothos::InvalidArgumentException("addFactory("+dtype.toString()+")", "unsupported type");
+    throw Pothos::InvalidArgumentException("arithmeticFactory("+dtype.toString()+")", "unsupported type");
 }
 
-static Pothos::BlockRegistry registerAdd(
-    "/blocks/add", &addFactory);
+static Pothos::BlockRegistry registerArithmetic(
+    "/blocks/arithmetic", &arithmeticFactory);
