@@ -97,6 +97,9 @@ bool Pothos::Block::isActive(void) const
 
 void Pothos::Block::setupInput(const std::string &name, const DType &dtype, const std::string &domain)
 {
+    if (name.empty()) throw PortAccessError("Pothos::Block::setupInput()", "empty name");
+    if (_namedInputs.count(name) > 0) throw PortAccessError("Pothos::Block::setupInput("+name+")", "already registered");
+
     _actor->allocateInput(name, dtype, domain);
 }
 
@@ -107,6 +110,9 @@ void Pothos::Block::setupInput(const size_t index, const DType &dtype, const std
 
 void Pothos::Block::setupOutput(const std::string &name, const DType &dtype, const std::string &domain)
 {
+    if (name.empty()) throw PortAccessError("Pothos::Block::setupOutput()", "empty name");
+    if (_namedOutputs.count(name) > 0) throw PortAccessError("Pothos::Block::setupOutput("+name+")", "already registered");
+
     _actor->allocateOutput(name, dtype, domain);
 }
 
@@ -117,17 +123,29 @@ void Pothos::Block::setupOutput(const size_t index, const DType &dtype, const st
 
 void Pothos::Block::registerCallable(const std::string &name, const Callable &call)
 {
+    if (name.empty()) throw PortAccessError("Pothos::Block::registerCallable()", "empty name");
+    if (_calls.count(name) > 0) throw PortAccessError("Pothos::Block::registerCallable("+name+")", "already registered");
+
     _calls[name] = call;
-    if (call.getNumArgs() > 0) this->registerSlot(name);
+
+    //automatic registration of slots for calls that take arguments and are not "private"
+    const bool isPrivate = name.front() == '_';
+    if (call.getNumArgs() > 0 and not isPrivate) this->registerSlot(name);
 }
 
 void Pothos::Block::registerSignal(const std::string &name)
 {
+    if (name.empty()) throw PortAccessError("Pothos::Block::registerSignal()", "empty name");
+    if (_namedOutputs.count(name) > 0) throw PortAccessError("Pothos::Block::registerSignal("+name+")", "already registered");
+
     _actor->allocateSignal(name);
 }
 
 void Pothos::Block::registerSlot(const std::string &name)
 {
+    if (name.empty()) throw PortAccessError("Pothos::Block::registerSlot()", "empty name");
+    if (_namedInputs.count(name) > 0) throw PortAccessError("Pothos::Block::registerSlot("+name+")", "already registered");
+
     _actor->allocateSlot(name);
 }
 
