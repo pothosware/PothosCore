@@ -229,7 +229,8 @@ void BlockPropertiesPanel::handleEditWidgetChanged(void)
     //dump all values from edit widgets into the block's property values
     for (const auto &propKey : _block->getProperties())
     {
-        QString newValue = _propIdToEditWidget[propKey]->value();
+        auto newValue = _propIdToEditWidget[propKey]->value();
+        newValue.replace("\n", ""); //cannot handle multi-line values
         _block->setPropertyValue(propKey, newValue);
     }
 
