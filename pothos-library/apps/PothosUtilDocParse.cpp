@@ -138,8 +138,7 @@ static std::vector<CodeBlock> extractContiguousBlocks(std::istream &is)
     while (is.good() and not is.eof())
     {
         lineNo++; //starts at 1
-        char buff[4096]; is.getline(buff, 4096);
-        const std::string line(buff/*, size_t(is.gcount())*/);
+        std::string line; std::getline(is, line);
         if (line.empty()) continue;
 
         const std::string lineTrim = Poco::trimLeft(line);

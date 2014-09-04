@@ -72,8 +72,7 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr)
     Poco::PipeInputStream is(outPipe);
     while (is.good() and not is.eof())
     {
-        char buff[1024]; is.getline(buff, 1024);
-        const std::string line(buff, size_t(is.gcount()));
+        std::string line; std::getline(is, line);
         if (line.empty()) continue;
         const Poco::StringTokenizer tok(line, " ");
         if (tok.count() >= 2 and tok[0] == "Port:")
