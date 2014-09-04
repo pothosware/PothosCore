@@ -265,10 +265,15 @@ public:
  * \param rhs the right hand object of the comparison
  * \return true if the objects represent the same internal data
  */
-POTHOS_API bool operator==(const Object &lhs, const Object &rhs);
+inline bool operator==(const Object &lhs, const Object &rhs);
 
 } //namespace Pothos
 
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif //_MSC_VER
+
+inline bool Pothos::operator==(const Object &lhs, const Object &rhs)
+{
+    return lhs._impl == rhs._impl;
+}

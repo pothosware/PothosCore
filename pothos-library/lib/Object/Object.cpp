@@ -196,14 +196,6 @@ bool Pothos::Object::operator>(const Pothos::Object &obj) const
     }
 }
 
-/***********************************************************************
- * Object functions
- **********************************************************************/
-bool Pothos::operator==(const Object &lhs, const Object &rhs)
-{
-    return lhs._impl == rhs._impl;
-}
-
 #include <Pothos/Managed.hpp>
 
 static auto managedObject = Pothos::ManagedClass()
