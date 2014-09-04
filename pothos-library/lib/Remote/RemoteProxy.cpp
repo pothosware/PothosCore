@@ -1,7 +1,8 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Remote/RemoteProxy.hpp"
+#include "RemoteProxy.hpp"
+#include "RemoteProxyDatagram.hpp"
 #include <Pothos/Remote/Client.hpp>
 #include <Pothos/Plugin.hpp>
 #include <Poco/Logger.h>
@@ -26,9 +27,7 @@ Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs
         //send request object over output stream
         {
             std::lock_guard<std::mutex> lock(osMutex);
-            Pothos::Object request(reqArgs);
-            request.serialize(os);
-            os.flush();
+            sendDatagram(os, reqArgs);
         }
 
         //wait for reply object
@@ -46,9 +45,7 @@ Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs
             }
 
             //otherwise wait on input stream
-            Pothos::Object reply;
-            reply.deserialize(is);
-            const auto replyArgs = reply.extract<Pothos::ObjectKwargs>();
+            const auto replyArgs = recvDatagram(is);
             const auto replyTid = replyArgs.at("tid").convert<size_t>();
             if (replyTid == tid) return replyArgs;
             tidToReply[replyTid] = replyArgs;
@@ -56,6 +53,8 @@ Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs
     }
     catch (const Poco::IOException &ex)
     {
+        std::lock_guard<std::mutex> lock(isMutex);
+        tidToReply.erase(tid);
         connectionActive = false;
         throw Pothos::IOException("RemoteProxyEnvironment::transact()", ex.message());
     }

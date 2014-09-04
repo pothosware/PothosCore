@@ -1,7 +1,7 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Remote/RemoteProxy.hpp"
+#include "RemoteProxy.hpp"
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
 #include <iostream>
