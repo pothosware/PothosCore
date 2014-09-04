@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
+#include <future>
 
 /***********************************************************************
  * helpers to deal with recursive topology comprehension
@@ -57,8 +58,8 @@ static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
 
 std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &flows)
 {
-    std::vector<Flow> flatFlows;
-
+    //spawn future to resolve ports per flow
+    std::vector<std::shared_future<std::vector<Port>>> future_srcs, future_dsts;
     for (const auto &flow : flows)
     {
         //ignore external flows
@@ -66,13 +67,19 @@ std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &f
         if (not flow.dst.obj) continue;
 
         //gather a list of sources and destinations on either end of this flow
-        std::vector<Port> srcs = resolvePorts(flow.src, true);
-        std::vector<Port> dsts = resolvePorts(flow.dst, false);
+        future_srcs.push_back(std::async(std::launch::async, &resolvePorts, flow.src, true));
+        future_dsts.push_back(std::async(std::launch::async, &resolvePorts, flow.dst, false));
+    }
 
+    //create flat flows from futures
+    std::vector<Flow> flatFlows;
+    assert(future_srcs.size() == future_dsts.size());
+    for (size_t i = 0; i < future_srcs.size(); i++)
+    {
         //all combinations of srcs + dsts are flows
-        for (const auto &src : srcs)
+        for (const auto &src : future_srcs[i].get())
         {
-            for (const auto &dst : dsts)
+            for (const auto &dst : future_dsts[i].get())
             {
                 Flow flatFlow;
                 flatFlow.src = src;
