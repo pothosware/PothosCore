@@ -217,11 +217,31 @@ Pothos::ManagedClass &Pothos::ManagedClass::commit(const std::string &classPath)
         );
     }
 
-    static const PluginPath pluginPath("/managed");
     PluginRegistry::add(
-        pluginPath.join(classPath),
+        PluginPath("/managed").join(classPath),
         dynamic_cast<ManagedClass &>(*this));
     return *this;
+}
+
+void Pothos::ManagedClass::unload(const std::string &classPath)
+{
+    //extract the managed class from the plugin tree
+    auto plugin = PluginRegistry::get(PluginPath("/managed").join(classPath));
+    auto &managedCls = plugin.getObject().extract<ManagedClass>();
+
+    //unload conversion constructors
+    for (const auto &constructor : managedCls.getConstructors())
+    {
+        if (constructor.getNumArgs() != 1) continue;
+        Pothos::PluginRegistry::remove(
+            Poco::format("/object/convert/constructors/%s_to_%s",
+            typeToPluginPath(constructor.type(0)),
+            typeToPluginPath(constructor.type(-1)))
+        );
+    }
+
+    //then unload the managed class
+    Pothos::PluginRegistry::remove(PluginPath("/managed").join(classPath));
 }
 
 const Pothos::Callable &Pothos::ManagedClass::getReferenceToWrapper(void) const

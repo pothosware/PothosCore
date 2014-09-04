@@ -121,8 +121,8 @@ static void test_simple_runner(Pothos::ProxyEnvironment::Sptr env)
 
     //runtime registration does not associate the module
     //therefore to be safe, we unregister these classes now
-    Pothos::PluginRegistry::remove("/managed/SuperBar");
-    Pothos::PluginRegistry::remove("/managed/SuperFoo");
+    Pothos::ManagedClass::unload("SuperBar");
+    Pothos::ManagedClass::unload("SuperFoo");
 }
 
 POTHOS_TEST_BLOCK("/proxy/remote/tests", test_inception)
@@ -227,5 +227,5 @@ POTHOS_TEST_BLOCK("/proxy/remote/tests", test_multithread_safe)
 
     //runtime registration does not associate the module
     //therefore to be safe, we unregister these classes now
-    Pothos::PluginRegistry::remove("/managed/EchoTester");
+    Pothos::ManagedClass::unload("EchoTester");
 }

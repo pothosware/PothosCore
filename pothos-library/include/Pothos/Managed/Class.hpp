@@ -418,6 +418,15 @@ public:
     ManagedClass &commit(const std::string &classPath);
 
     /*!
+     * Unload a managed class from the plugin tree.
+     * This reverses the effect of ManagedClass::commit().
+     * This call is mainly used for testing purposes.
+     * \throws PluginPathError if the classPath is invalid
+     * \param classPath the namespaces and class name
+     */
+    static void unload(const std::string &classPath);
+
+    /*!
      * Get the type of the class represented.
      * This is the type created by the constructors,
      * and the type taken as the class by the bound methods.
