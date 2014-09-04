@@ -46,7 +46,7 @@ public:
 };
 
 //! Are these two labels equivalent? index and data must be equal
-bool operator==(const Label &rhs, const Label &lhs);
+inline bool operator==(const Label &rhs, const Label &lhs);
 
 /*!
  * LabelIteratorRange represents a sorted range of labels.

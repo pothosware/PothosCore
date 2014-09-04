@@ -124,7 +124,7 @@ private:
  * Equality operator for BufferChunk objects.
  * True when the address, length, and underlying buffer are the same.
  */
-bool operator==(const BufferChunk &lhs, const BufferChunk &rhs);
+inline bool operator==(const BufferChunk &lhs, const BufferChunk &rhs);
 
 } //namespace Pothos
 

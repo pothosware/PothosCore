@@ -110,7 +110,7 @@ private:
  * Equality operator for ManagedBuffer.
  * True when the containers are identical.
  */
-bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
+inline bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
 
 } //namespace Pothos
 

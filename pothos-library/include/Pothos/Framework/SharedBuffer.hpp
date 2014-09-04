@@ -122,7 +122,7 @@ private:
  * Equality operator for SharedBuffer.
  * True when the containers are identical.
  */
-bool operator==(const SharedBuffer &lhs, const SharedBuffer &rhs);
+inline bool operator==(const SharedBuffer &lhs, const SharedBuffer &rhs);
 
 } //namespace Pothos
 
