@@ -62,6 +62,10 @@ list(APPEND SOURCES ${UDT_SOURCES})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/network/udt4/src)
 
+if(MSVC)
+    add_definitions(/bigobj) #arithmetic too large in debug mode
+endif(MSVC)
+
 POTHOS_MODULE_UTIL(
     TARGET GeneralBlocks
     SOURCES ${SOURCES}
