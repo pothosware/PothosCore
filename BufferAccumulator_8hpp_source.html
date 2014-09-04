@@ -119,44 +119,46 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keywordtype">void</span> require(<span class="keyword">const</span> <span class="keywordtype">size_t</span> numBytes);</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <a class="code" href="classPothos_1_1Util_1_1RingDeque.html">Util::RingDeque&lt;BufferChunk&gt;</a> _queue;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">size_t</span> _bytesAvailable;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keyword">struct </span>Impl;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    std::shared_ptr&lt;Impl&gt; _impl;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;};</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;} <span class="comment">//namespace Pothos</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
-<div class="line"><a name="l00086"></a><span class="lineno"><a class="line" href="classPothos_1_1BufferAccumulator.html#a1ff326f3681b77c2e3413e26f4cb88d8">   86</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classPothos_1_1BufferAccumulator.html#a1ff326f3681b77c2e3413e26f4cb88d8">Pothos::BufferAccumulator::empty</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="keyword"></span>{</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keywordflow">return</span> _bytesAvailable == 0;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;}</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;</div>
-<div class="line"><a name="l00091"></a><span class="lineno"><a class="line" href="classPothos_1_1BufferAccumulator.html#a1f0534906c81370351be4f725cae12ea">   91</a></span>&#160;<span class="keyword">inline</span> <span class="keyword">const</span> <a class="code" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a> &amp;<a class="code" href="classPothos_1_1BufferAccumulator.html#a1f0534906c81370351be4f725cae12ea">Pothos::BufferAccumulator::front</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="keyword"></span>{</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    assert(not _queue.empty());</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordflow">return</span> _queue.front();</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keywordtype">size_t</span> getUniqueManagedBufferCount(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <a class="code" href="classPothos_1_1Util_1_1RingDeque.html">Util::RingDeque&lt;BufferChunk&gt;</a> _queue;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keywordtype">size_t</span> _bytesAvailable;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keyword">struct </span>Impl;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    std::shared_ptr&lt;Impl&gt; _impl;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;};</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;} <span class="comment">//namespace Pothos</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;</div>
+<div class="line"><a name="l00092"></a><span class="lineno"><a class="line" href="classPothos_1_1BufferAccumulator.html#a1ff326f3681b77c2e3413e26f4cb88d8">   92</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classPothos_1_1BufferAccumulator.html#a1ff326f3681b77c2e3413e26f4cb88d8">Pothos::BufferAccumulator::empty</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="keyword"></span>{</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordflow">return</span> _bytesAvailable == 0;</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;}</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div>
-<div class="line"><a name="l00097"></a><span class="lineno"><a class="line" href="classPothos_1_1BufferAccumulator.html#ac6de6bfc197b5ebcc78328f28dce7f1a">   97</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">size_t</span> <a class="code" href="classPothos_1_1BufferAccumulator.html#ac6de6bfc197b5ebcc78328f28dce7f1a">Pothos::BufferAccumulator::getTotalBytesAvailable</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno"><a class="line" href="classPothos_1_1BufferAccumulator.html#a1f0534906c81370351be4f725cae12ea">   97</a></span>&#160;<span class="keyword">inline</span> <span class="keyword">const</span> <a class="code" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a> &amp;<a class="code" href="classPothos_1_1BufferAccumulator.html#a1f0534906c81370351be4f725cae12ea">Pothos::BufferAccumulator::front</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="keyword"></span>{</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keywordflow">return</span> _bytesAvailable;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;}</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    assert(not _queue.empty());</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordflow">return</span> _queue.front();</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;}</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;</div>
+<div class="line"><a name="l00103"></a><span class="lineno"><a class="line" href="classPothos_1_1BufferAccumulator.html#ac6de6bfc197b5ebcc78328f28dce7f1a">  103</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">size_t</span> <a class="code" href="classPothos_1_1BufferAccumulator.html#ac6de6bfc197b5ebcc78328f28dce7f1a">Pothos::BufferAccumulator::getTotalBytesAvailable</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="keyword"></span>{</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordflow">return</span> _bytesAvailable;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;}</div>
 <div class="ttc" id="classPothos_1_1BufferAccumulator_html"><div class="ttname"><a href="classPothos_1_1BufferAccumulator.html">Pothos::BufferAccumulator</a></div><div class="ttdef"><b>Definition:</b> BufferAccumulator.hpp:31</div></div>
-<div class="ttc" id="classPothos_1_1BufferAccumulator_html_a1f0534906c81370351be4f725cae12ea"><div class="ttname"><a href="classPothos_1_1BufferAccumulator.html#a1f0534906c81370351be4f725cae12ea">Pothos::BufferAccumulator::front</a></div><div class="ttdeci">const BufferChunk &amp; front(void) const </div><div class="ttdef"><b>Definition:</b> BufferAccumulator.hpp:91</div></div>
+<div class="ttc" id="classPothos_1_1BufferAccumulator_html_a1f0534906c81370351be4f725cae12ea"><div class="ttname"><a href="classPothos_1_1BufferAccumulator.html#a1f0534906c81370351be4f725cae12ea">Pothos::BufferAccumulator::front</a></div><div class="ttdeci">const BufferChunk &amp; front(void) const </div><div class="ttdef"><b>Definition:</b> BufferAccumulator.hpp:97</div></div>
 <div class="ttc" id="BufferChunk_8hpp_html"><div class="ttname"><a href="BufferChunk_8hpp.html">BufferChunk.hpp</a></div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
 <div class="ttc" id="RingDeque_8hpp_html"><div class="ttname"><a href="RingDeque_8hpp.html">RingDeque.hpp</a></div></div>
 <div class="ttc" id="classPothos_1_1Util_1_1RingDeque_html"><div class="ttname"><a href="classPothos_1_1Util_1_1RingDeque.html">Pothos::Util::RingDeque</a></div><div class="ttdef"><b>Definition:</b> RingDeque.hpp:28</div></div>
-<div class="ttc" id="classPothos_1_1BufferAccumulator_html_a1ff326f3681b77c2e3413e26f4cb88d8"><div class="ttname"><a href="classPothos_1_1BufferAccumulator.html#a1ff326f3681b77c2e3413e26f4cb88d8">Pothos::BufferAccumulator::empty</a></div><div class="ttdeci">bool empty(void) const </div><div class="ttdef"><b>Definition:</b> BufferAccumulator.hpp:86</div></div>
+<div class="ttc" id="classPothos_1_1BufferAccumulator_html_a1ff326f3681b77c2e3413e26f4cb88d8"><div class="ttname"><a href="classPothos_1_1BufferAccumulator.html#a1ff326f3681b77c2e3413e26f4cb88d8">Pothos::BufferAccumulator::empty</a></div><div class="ttdeci">bool empty(void) const </div><div class="ttdef"><b>Definition:</b> BufferAccumulator.hpp:92</div></div>
 <div class="ttc" id="classPothos_1_1BufferChunk_html"><div class="ttname"><a href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></div><div class="ttdef"><b>Definition:</b> BufferChunk.hpp:25</div></div>
-<div class="ttc" id="classPothos_1_1BufferAccumulator_html_ac6de6bfc197b5ebcc78328f28dce7f1a"><div class="ttname"><a href="classPothos_1_1BufferAccumulator.html#ac6de6bfc197b5ebcc78328f28dce7f1a">Pothos::BufferAccumulator::getTotalBytesAvailable</a></div><div class="ttdeci">size_t getTotalBytesAvailable(void) const </div><div class="ttdoc">Get the total number of bytes held in this accumulator. </div><div class="ttdef"><b>Definition:</b> BufferAccumulator.hpp:97</div></div>
+<div class="ttc" id="classPothos_1_1BufferAccumulator_html_ac6de6bfc197b5ebcc78328f28dce7f1a"><div class="ttname"><a href="classPothos_1_1BufferAccumulator.html#ac6de6bfc197b5ebcc78328f28dce7f1a">Pothos::BufferAccumulator::getTotalBytesAvailable</a></div><div class="ttdeci">size_t getTotalBytesAvailable(void) const </div><div class="ttdoc">Get the total number of bytes held in this accumulator. </div><div class="ttdef"><b>Definition:</b> BufferAccumulator.hpp:103</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Aug 25 2014 11:15:27 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 3 2014 22:09:34 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

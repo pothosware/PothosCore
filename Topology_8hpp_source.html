@@ -107,13 +107,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;{</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">public</span>:</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <a class="code" href="classPothos_1_1Topology.html">Topology</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    ~<a class="code" href="classPothos_1_1Topology.html">Topology</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keyword">static</span> std::shared_ptr&lt;Topology&gt; make(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <a class="code" href="classPothos_1_1Topology.html">Topology</a>(<span class="keywordtype">void</span>);</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <a class="code" href="classPothos_1_1Topology.html">Topology</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Topology.html">Topology</a> &amp;);</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <a class="code" href="classPothos_1_1Topology.html">Topology</a> &amp;operator=(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Topology.html">Topology</a> &amp;);</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    ~<a class="code" href="classPothos_1_1Topology.html">Topology</a>(<span class="keywordtype">void</span>);</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keywordtype">void</span> setThreadPool(<span class="keyword">const</span> <a class="code" href="classPothos_1_1ThreadPool.html">ThreadPool</a> &amp;threadPool);</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
@@ -160,12 +158,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="keyword">protected</span>:</div>
 <div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPothos_1_1Object.html">Object</a> opaqueCallHandler(<span class="keyword">const</span> std::string &amp;name, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> *inputArgs, <span class="keyword">const</span> <span class="keywordtype">size_t</span> numArgs);</div>
 <div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00174"></a><span class="lineno"><a class="line" href="classPothos_1_1Topology.html#a4a3898301bfe965916d2e67b345e242b">  174</a></span>&#160;    <span class="keyword">struct </span>Impl;</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    std::shared_ptr&lt;Impl&gt; <a class="code" href="classPothos_1_1Topology.html#a4a3898301bfe965916d2e67b345e242b">_impl</a>;</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;};</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;} <span class="comment">//namespace Pothos</span></div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    <a class="code" href="classPothos_1_1Topology.html">Topology</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Topology.html">Topology</a> &amp;){} <span class="comment">// non construction-copyable</span></div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <a class="code" href="classPothos_1_1Topology.html">Topology</a> &amp;operator=(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Topology.html">Topology</a> &amp;){<span class="keywordflow">return</span> *<span class="keyword">this</span>;} <span class="comment">// non copyable</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00177"></a><span class="lineno"><a class="line" href="classPothos_1_1Topology.html#a4a3898301bfe965916d2e67b345e242b">  177</a></span>&#160;    <span class="keyword">struct </span>Impl;</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;    std::shared_ptr&lt;Impl&gt; <a class="code" href="classPothos_1_1Topology.html#a4a3898301bfe965916d2e67b345e242b">_impl</a>;</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;};</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;} <span class="comment">//namespace Pothos</span></div>
 <div class="ttc" id="classPothos_1_1Connectable_html"><div class="ttname"><a href="classPothos_1_1Connectable.html">Pothos::Connectable</a></div><div class="ttdef"><b>Definition:</b> Connectable.hpp:39</div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
@@ -175,12 +176,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classPothos_1_1ThreadPool_html"><div class="ttname"><a href="classPothos_1_1ThreadPool.html">Pothos::ThreadPool</a></div><div class="ttdef"><b>Definition:</b> ThreadPool.hpp:83</div></div>
 <div class="ttc" id="classPothos_1_1Object_html"><div class="ttname"><a href="classPothos_1_1Object.html">Pothos::Object</a></div><div class="ttdef"><b>Definition:</b> Object.hpp:55</div></div>
 <div class="ttc" id="classPothos_1_1Topology_html"><div class="ttname"><a href="classPothos_1_1Topology.html">Pothos::Topology</a></div><div class="ttdef"><b>Definition:</b> Topology.hpp:30</div></div>
-<div class="ttc" id="classPothos_1_1Topology_html_a4a3898301bfe965916d2e67b345e242b"><div class="ttname"><a href="classPothos_1_1Topology.html#a4a3898301bfe965916d2e67b345e242b">Pothos::Topology::_impl</a></div><div class="ttdeci">std::shared_ptr&lt; Impl &gt; _impl</div><div class="ttdef"><b>Definition:</b> Topology.hpp:174</div></div>
+<div class="ttc" id="classPothos_1_1Topology_html_a4a3898301bfe965916d2e67b345e242b"><div class="ttname"><a href="classPothos_1_1Topology.html#a4a3898301bfe965916d2e67b345e242b">Pothos::Topology::_impl</a></div><div class="ttdeci">std::shared_ptr&lt; Impl &gt; _impl</div><div class="ttdef"><b>Definition:</b> Topology.hpp:177</div></div>
 <div class="ttc" id="ThreadPool_8hpp_html"><div class="ttname"><a href="ThreadPool_8hpp.html">ThreadPool.hpp</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Aug 25 2014 11:15:27 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 3 2014 22:09:34 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

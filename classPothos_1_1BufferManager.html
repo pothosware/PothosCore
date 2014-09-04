@@ -93,6 +93,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="classPothos_1_1BufferManager-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Pothos::BufferManager Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
@@ -113,8 +114,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac2e74c3807afd59bf2cf3c47c04f8937"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1fcdcf548e6b693aaac1876bd09c10ca"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#a1fcdcf548e6b693aaac1876bd09c10ca">empty</a> (void) const =0</td></tr>
 <tr class="separator:a1fcdcf548e6b693aaac1876bd09c10ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b52470abe6763b1e4035f0077d8a6a4"><td class="memItemLeft" align="right" valign="top">virtual const <a class="el" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#a5b52470abe6763b1e4035f0077d8a6a4">front</a> (void) const =0</td></tr>
-<tr class="separator:a5b52470abe6763b1e4035f0077d8a6a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a623b760852f0fb6221cc48ca3e8d0753"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#a623b760852f0fb6221cc48ca3e8d0753">front</a> (void) const </td></tr>
+<tr class="separator:a623b760852f0fb6221cc48ca3e8d0753"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51c0af6ae18f8e7aa8e29f8e31f6b0eb"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#a51c0af6ae18f8e7aa8e29f8e31f6b0eb">pop</a> (const size_t numBytes)=0</td></tr>
 <tr class="separator:a51c0af6ae18f8e7aa8e29f8e31f6b0eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d8b78b6f41447108aed4e95a541fc23"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#a1d8b78b6f41447108aed4e95a541fc23">push</a> (const <a class="el" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;buff)=0</td></tr>
@@ -130,6 +131,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a94a2c63499df00de7201ebc97a5c7616"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a903923c99d4a0fde5b597c1f94a06d07"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classPothos_1_1BufferManager.html#a416a19df56db34331b3acd0b0367e44c">Sptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#a903923c99d4a0fde5b597c1f94a06d07">make</a> (const std::string &amp;name, const <a class="el" href="structPothos_1_1BufferManagerArgs.html">BufferManagerArgs</a> &amp;args)</td></tr>
 <tr class="separator:a903923c99d4a0fde5b597c1f94a06d07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:aff759dbccc3a6f49664f45c18d8a79ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferManager.html#aff759dbccc3a6f49664f45c18d8a79ac">setFrontBuffer</a> (const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;buff)</td></tr>
+<tr class="memdesc:aff759dbccc3a6f49664f45c18d8a79ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called by derived classes to set the buffer for <a class="el" href="classPothos_1_1BufferManager.html#a623b760852f0fb6221cc48ca3e8d0753">front()</a>  <a href="#aff759dbccc3a6f49664f45c18d8a79ac">More...</a><br/></td></tr>
+<tr class="separator:aff759dbccc3a6f49664f45c18d8a79ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A <a class="el" href="classPothos_1_1BufferManager.html">BufferManager</a> has a queue-like interface to manage buffers. Since buffers can represent special DMA memory, the buffer manager is responsible for DMA hooks. </p>
@@ -173,7 +180,7 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a5b52470abe6763b1e4035f0077d8a6a4"></a>
+<a class="anchor" id="a623b760852f0fb6221cc48ca3e8d0753"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -181,7 +188,7 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual const <a class="el" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a>&amp; Pothos::BufferManager::front </td>
+          <td class="memname">const <a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a> &amp; Pothos::BufferManager::front </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -190,11 +197,11 @@ Static Public Member Functions</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get a reference to the front buffer. <a class="el" href="classPothos_1_1BufferManager.html#a5b52470abe6763b1e4035f0077d8a6a4">front()</a>.address will be the start of a valid buffer, <a class="el" href="classPothos_1_1BufferManager.html#a5b52470abe6763b1e4035f0077d8a6a4">front()</a>.length will be the number of bytes available. The caller sets length to indicate bytes used. </p>
+<p>Get a reference to the front buffer. <a class="el" href="classPothos_1_1BufferManager.html#a623b760852f0fb6221cc48ca3e8d0753">front()</a>.address will be the start of a valid buffer, <a class="el" href="classPothos_1_1BufferManager.html#a623b760852f0fb6221cc48ca3e8d0753">front()</a>.length will be the number of bytes available. The caller sets length to indicate bytes used. </p>
 <dl class="section return"><dt>Returns</dt><dd>the buffer at the queue head </dd></dl>
 
 </div>
@@ -364,7 +371,7 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Push returns a buffer to the manager. The buffer may be available via a call to <a class="el" href="classPothos_1_1BufferManager.html#a5b52470abe6763b1e4035f0077d8a6a4">front()</a> depending upon the implementation of the manager. </p>
+<p>Push returns a buffer to the manager. The buffer may be available via a call to <a class="el" href="classPothos_1_1BufferManager.html#a623b760852f0fb6221cc48ca3e8d0753">front()</a> depending upon the implementation of the manager. </p>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">BufferPushError</td><td>if buffer does not belong to this manager. </td></tr>
@@ -422,13 +429,39 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="aff759dbccc3a6f49664f45c18d8a79ac"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Pothos::BufferManager::setFrontBuffer </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;&#160;</td>
+          <td class="paramname"><em>buff</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Called by derived classes to set the buffer for <a class="el" href="classPothos_1_1BufferManager.html#a623b760852f0fb6221cc48ca3e8d0753">front()</a> </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/Pothos/Framework/<a class="el" href="BufferManager_8hpp_source.html">BufferManager.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Aug 25 2014 11:15:28 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 3 2014 22:09:35 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

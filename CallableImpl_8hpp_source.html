@@ -116,7 +116,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;} <span class="comment">//namespace Detail</span></div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ValueType&gt;</div>
-<div class="line"><a name="l00035"></a><span class="lineno"><a class="line" href="classPothos_1_1Callable.html#ae447a3d2ac384d2e5730a861a88e63a2">   35</a></span>&#160;<a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;<a class="code" href="classPothos_1_1Callable.html#ae447a3d2ac384d2e5730a861a88e63a2">Callable::bind</a>(ValueType &amp;&amp;val, <span class="keyword">const</span> <span class="keywordtype">size_t</span> argNo)</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;Callable &amp;<a class="code" href="classPothos_1_1Callable.html#ae447a3d2ac384d2e5730a861a88e63a2">Callable::bind</a>(ValueType &amp;&amp;val, <span class="keyword">const</span> <span class="keywordtype">size_t</span> argNo)</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;{</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keywordflow">return</span> this-&gt;<a class="code" href="classPothos_1_1Callable.html#ae447a3d2ac384d2e5730a861a88e63a2">bind</a>(<a class="code" href="classPothos_1_1Object.html#a5aa78cc430204dc43fd89950f15a87a9">Object::make</a>(std::forward&lt;ValueType&gt;(val)), argNo);</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;}</div>
@@ -1064,19 +1064,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00991"></a><span class="lineno">  991</span>&#160;}</div>
 <div class="line"><a name="l00992"></a><span class="lineno">  992</span>&#160;</div>
 <div class="line"><a name="l00993"></a><span class="lineno">  993</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ClassType, <span class="keyword">typename</span> A0&gt;</div>
-<div class="line"><a name="l00994"></a><span class="lineno"><a class="line" href="classPothos_1_1Callable.html#afda7efe8626fb6e92606370c9779bd76">  994</a></span>&#160;<a class="code" href="classPothos_1_1Callable.html">Callable</a> <a class="code" href="classPothos_1_1Callable.html#afda7efe8626fb6e92606370c9779bd76">Callable::factory</a>(<span class="keywordtype">void</span>)</div>
+<div class="line"><a name="l00994"></a><span class="lineno">  994</span>&#160;<a class="code" href="classPothos_1_1Callable.html">Callable</a> <a class="code" href="classPothos_1_1Callable.html#afda7efe8626fb6e92606370c9779bd76">Callable::factory</a>(<span class="keywordtype">void</span>)</div>
 <div class="line"><a name="l00995"></a><span class="lineno">  995</span>&#160;{</div>
 <div class="line"><a name="l00996"></a><span class="lineno">  996</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="classPothos_1_1Callable.html#adef53a5075f658f2ad2b25a7cf7b611f">Callable</a>(&amp;Detail::CallableFactoryWrapper&lt;ClassType, A0&gt;);</div>
 <div class="line"><a name="l00997"></a><span class="lineno">  997</span>&#160;}</div>
 <div class="line"><a name="l00998"></a><span class="lineno">  998</span>&#160;</div>
 <div class="line"><a name="l00999"></a><span class="lineno">  999</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ClassType, <span class="keyword">typename</span> A0&gt;</div>
-<div class="line"><a name="l01000"></a><span class="lineno"><a class="line" href="classPothos_1_1Callable.html#aede5117f44398fd9e9d68edaaf45de99"> 1000</a></span>&#160;<a class="code" href="classPothos_1_1Callable.html">Callable</a> <a class="code" href="classPothos_1_1Callable.html#aede5117f44398fd9e9d68edaaf45de99">Callable::factoryNew</a>(<span class="keywordtype">void</span>)</div>
+<div class="line"><a name="l01000"></a><span class="lineno"> 1000</span>&#160;Callable <a class="code" href="classPothos_1_1Callable.html#aede5117f44398fd9e9d68edaaf45de99">Callable::factoryNew</a>(<span class="keywordtype">void</span>)</div>
 <div class="line"><a name="l01001"></a><span class="lineno"> 1001</span>&#160;{</div>
 <div class="line"><a name="l01002"></a><span class="lineno"> 1002</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="classPothos_1_1Callable.html#adef53a5075f658f2ad2b25a7cf7b611f">Callable</a>(&amp;Detail::CallableFactoryNewWrapper&lt;ClassType, A0&gt;);</div>
 <div class="line"><a name="l01003"></a><span class="lineno"> 1003</span>&#160;}</div>
 <div class="line"><a name="l01004"></a><span class="lineno"> 1004</span>&#160;</div>
 <div class="line"><a name="l01005"></a><span class="lineno"> 1005</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ClassType, <span class="keyword">typename</span> A0&gt;</div>
-<div class="line"><a name="l01006"></a><span class="lineno"><a class="line" href="classPothos_1_1Callable.html#abbddb0ed8291adbd7bb14df05936f966"> 1006</a></span>&#160;<a class="code" href="classPothos_1_1Callable.html">Callable</a> <a class="code" href="classPothos_1_1Callable.html#abbddb0ed8291adbd7bb14df05936f966">Callable::factoryShared</a>(<span class="keywordtype">void</span>)</div>
+<div class="line"><a name="l01006"></a><span class="lineno"> 1006</span>&#160;Callable <a class="code" href="classPothos_1_1Callable.html#abbddb0ed8291adbd7bb14df05936f966">Callable::factoryShared</a>(<span class="keywordtype">void</span>)</div>
 <div class="line"><a name="l01007"></a><span class="lineno"> 1007</span>&#160;{</div>
 <div class="line"><a name="l01008"></a><span class="lineno"> 1008</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="classPothos_1_1Callable.html#adef53a5075f658f2ad2b25a7cf7b611f">Callable</a>(&amp;Detail::CallableFactorySharedWrapper&lt;ClassType, A0&gt;);</div>
 <div class="line"><a name="l01009"></a><span class="lineno"> 1009</span>&#160;}</div>
@@ -1563,23 +1563,23 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l01490"></a><span class="lineno"> 1490</span>&#160;</div>
 <div class="line"><a name="l01491"></a><span class="lineno"> 1491</span>&#160;} <span class="comment">//namespace Pothos</span></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
-<div class="ttc" id="classPothos_1_1Callable_html_ae447a3d2ac384d2e5730a861a88e63a2"><div class="ttname"><a href="classPothos_1_1Callable.html#ae447a3d2ac384d2e5730a861a88e63a2">Pothos::Callable::bind</a></div><div class="ttdeci">Callable &amp; bind(ValueType &amp;&amp;val, const size_t argNo)</div><div class="ttdef"><b>Definition:</b> CallableImpl.hpp:35</div></div>
+<div class="ttc" id="classPothos_1_1Callable_html_ae447a3d2ac384d2e5730a861a88e63a2"><div class="ttname"><a href="classPothos_1_1Callable.html#ae447a3d2ac384d2e5730a861a88e63a2">Pothos::Callable::bind</a></div><div class="ttdeci">Callable &amp; bind(ValueType &amp;&amp;val, const size_t argNo)</div><div class="ttdef"><b>Definition:</b> CallableImpl.tmpl.hpp:35</div></div>
 <div class="ttc" id="classPothos_1_1Callable_html_a70e53686f84853c2cf671baf3b3c7f98"><div class="ttname"><a href="classPothos_1_1Callable.html#a70e53686f84853c2cf671baf3b3c7f98">Pothos::Callable::make</a></div><div class="ttdeci">static Callable make(ReturnType(ClassType::*fcn)($expand('A%d', $NARGS)))</div><div class="ttdef"><b>Definition:</b> CallableImpl.tmpl.hpp:145</div></div>
 <div class="ttc" id="classPothos_1_1Object_html_a5aa78cc430204dc43fd89950f15a87a9"><div class="ttname"><a href="classPothos_1_1Object.html#a5aa78cc430204dc43fd89950f15a87a9">Pothos::Object::make</a></div><div class="ttdeci">static Object make(ValueType &amp;&amp;value)</div><div class="ttdef"><b>Definition:</b> ObjectImpl.hpp:210</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
 <div class="ttc" id="Callable_2Callable_8hpp_html"><div class="ttname"><a href="Callable_2Callable_8hpp.html">Callable.hpp</a></div></div>
 <div class="ttc" id="classPothos_1_1Callable_html_adef53a5075f658f2ad2b25a7cf7b611f"><div class="ttname"><a href="classPothos_1_1Callable.html#adef53a5075f658f2ad2b25a7cf7b611f">Pothos::Callable::Callable</a></div><div class="ttdeci">Callable(void)</div></div>
 <div class="ttc" id="classPothos_1_1Callable_html"><div class="ttname"><a href="classPothos_1_1Callable.html">Pothos::Callable</a></div><div class="ttdef"><b>Definition:</b> Callable.tmpl.hpp:30</div></div>
-<div class="ttc" id="classPothos_1_1Callable_html_abbddb0ed8291adbd7bb14df05936f966"><div class="ttname"><a href="classPothos_1_1Callable.html#abbddb0ed8291adbd7bb14df05936f966">Pothos::Callable::factoryShared</a></div><div class="ttdeci">static Callable factoryShared(void)</div><div class="ttdef"><b>Definition:</b> CallableImpl.hpp:1006</div></div>
+<div class="ttc" id="classPothos_1_1Callable_html_abbddb0ed8291adbd7bb14df05936f966"><div class="ttname"><a href="classPothos_1_1Callable.html#abbddb0ed8291adbd7bb14df05936f966">Pothos::Callable::factoryShared</a></div><div class="ttdeci">static Callable factoryShared(void)</div><div class="ttdef"><b>Definition:</b> CallableImpl.tmpl.hpp:175</div></div>
 <div class="ttc" id="classPothos_1_1Object_html_a62c88e74a19cf0374e4f21462539c309"><div class="ttname"><a href="classPothos_1_1Object.html#a62c88e74a19cf0374e4f21462539c309">Pothos::Object::extract</a></div><div class="ttdeci">const ValueType &amp; extract(void) const </div><div class="ttdef"><b>Definition:</b> ObjectImpl.hpp:225</div></div>
-<div class="ttc" id="classPothos_1_1Callable_html_aede5117f44398fd9e9d68edaaf45de99"><div class="ttname"><a href="classPothos_1_1Callable.html#aede5117f44398fd9e9d68edaaf45de99">Pothos::Callable::factoryNew</a></div><div class="ttdeci">static Callable factoryNew(void)</div><div class="ttdef"><b>Definition:</b> CallableImpl.hpp:1000</div></div>
+<div class="ttc" id="classPothos_1_1Callable_html_aede5117f44398fd9e9d68edaaf45de99"><div class="ttname"><a href="classPothos_1_1Callable.html#aede5117f44398fd9e9d68edaaf45de99">Pothos::Callable::factoryNew</a></div><div class="ttdeci">static Callable factoryNew(void)</div><div class="ttdef"><b>Definition:</b> CallableImpl.tmpl.hpp:169</div></div>
 <div class="ttc" id="ObjectImpl_8hpp_html"><div class="ttname"><a href="ObjectImpl_8hpp.html">ObjectImpl.hpp</a></div></div>
-<div class="ttc" id="classPothos_1_1Callable_html_afda7efe8626fb6e92606370c9779bd76"><div class="ttname"><a href="classPothos_1_1Callable.html#afda7efe8626fb6e92606370c9779bd76">Pothos::Callable::factory</a></div><div class="ttdeci">static Callable factory(void)</div><div class="ttdef"><b>Definition:</b> CallableImpl.hpp:994</div></div>
+<div class="ttc" id="classPothos_1_1Callable_html_afda7efe8626fb6e92606370c9779bd76"><div class="ttname"><a href="classPothos_1_1Callable.html#afda7efe8626fb6e92606370c9779bd76">Pothos::Callable::factory</a></div><div class="ttdeci">static Callable factory(void)</div><div class="ttdef"><b>Definition:</b> CallableImpl.tmpl.hpp:163</div></div>
 <div class="ttc" id="CallInterfaceImpl_8hpp_html"><div class="ttname"><a href="CallInterfaceImpl_8hpp.html">CallInterfaceImpl.hpp</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Aug 25 2014 11:15:27 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 3 2014 22:09:34 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

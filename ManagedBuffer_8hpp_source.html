@@ -129,30 +129,53 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    std::shared_ptr&lt;BufferManager&gt; getBufferManager(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keyword">struct </span>Impl; Impl *_impl;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <span class="keyword">friend</span> <span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a05d2dce6549320129fc18aa10e72e30c">operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;rhs);</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;};</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a05d2dce6549320129fc18aa10e72e30c">operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;rhs);</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;} <span class="comment">//namespace Pothos</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keywordtype">bool</span> operator&lt;(<span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <span class="keywordtype">bool</span> unique(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
-<div class="line"><a name="l00099"></a><span class="lineno"><a class="line" href="classPothos_1_1ManagedBuffer.html#afd9ac24eda1c21ced5b59d658853ca02">   99</a></span>&#160;<span class="keyword">inline</span> Pothos::ManagedBuffer::operator bool(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="keyword"></span>{</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keywordflow">return</span> _impl != <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;}</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keywordtype">size_t</span> useCount(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keyword">struct </span>Impl; Impl *_impl;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <span class="keyword">friend</span> <span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;rhs);</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;};</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;rhs);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;} <span class="comment">//namespace Pothos</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;</div>
+<div class="line"><a name="l00117"></a><span class="lineno"><a class="line" href="classPothos_1_1ManagedBuffer.html#afd9ac24eda1c21ced5b59d658853ca02">  117</a></span>&#160;<span class="keyword">inline</span> Pothos::ManagedBuffer::operator bool(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="keyword"></span>{</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    <span class="keywordflow">return</span> _impl != <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;}</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;</div>
+<div class="line"><a name="l00122"></a><span class="lineno"><a class="line" href="classPothos_1_1ManagedBuffer.html#ad9f1bcdc41358086dda4f8b2d0fb509d">  122</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classPothos_1_1ManagedBuffer.html#ad9f1bcdc41358086dda4f8b2d0fb509d">Pothos::ManagedBuffer::operator&lt;</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;rhs)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="keyword"></span>{</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keywordflow">return</span> _impl &lt; rhs._impl;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;}</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;</div>
+<div class="line"><a name="l00127"></a><span class="lineno"><a class="line" href="classPothos_1_1ManagedBuffer.html#acfc62add51ea705309681684acf5cfcf">  127</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classPothos_1_1ManagedBuffer.html#acfc62add51ea705309681684acf5cfcf">Pothos::ManagedBuffer::unique</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="keyword"></span>{</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    <span class="keywordflow">return</span> this-&gt;useCount() == 1;</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;}</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;</div>
+<div class="line"><a name="l00132"></a><span class="lineno"><a class="line" href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">  132</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">Pothos::operator==</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;lhs, <span class="keyword">const</span> <a class="code" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;rhs)</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;{</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    <span class="keywordflow">return</span> lhs._impl == rhs._impl;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;}</div>
 <div class="ttc" id="SharedBuffer_8hpp_html"><div class="ttname"><a href="SharedBuffer_8hpp.html">SharedBuffer.hpp</a></div></div>
 <div class="ttc" id="Config_8hpp_html_a8d78f57e80202fac856d4526459c4bbb"><div class="ttname"><a href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a></div><div class="ttdeci">#define pothos_explicit</div><div class="ttdef"><b>Definition:</b> Config.hpp:85</div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
-<div class="ttc" id="namespacePothos_html_a05d2dce6549320129fc18aa10e72e30c"><div class="ttname"><a href="namespacePothos.html#a05d2dce6549320129fc18aa10e72e30c">Pothos::operator==</a></div><div class="ttdeci">POTHOS_API bool operator==(const Callable &amp;lhs, const Callable &amp;rhs)</div></div>
+<div class="ttc" id="classPothos_1_1ManagedBuffer_html_acfc62add51ea705309681684acf5cfcf"><div class="ttname"><a href="classPothos_1_1ManagedBuffer.html#acfc62add51ea705309681684acf5cfcf">Pothos::ManagedBuffer::unique</a></div><div class="ttdeci">bool unique(void) const </div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:127</div></div>
+<div class="ttc" id="namespacePothos_html_a5c411a7b9d73b5ca280d712592b6df5f"><div class="ttname"><a href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">Pothos::operator==</a></div><div class="ttdeci">bool operator==(const ManagedBuffer &amp;lhs, const ManagedBuffer &amp;rhs)</div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:132</div></div>
 <div class="ttc" id="classPothos_1_1ManagedBuffer_html"><div class="ttname"><a href="classPothos_1_1ManagedBuffer.html">Pothos::ManagedBuffer</a></div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:27</div></div>
 <div class="ttc" id="classPothos_1_1SharedBuffer_html"><div class="ttname"><a href="classPothos_1_1SharedBuffer.html">Pothos::SharedBuffer</a></div><div class="ttdef"><b>Definition:</b> SharedBuffer.hpp:21</div></div>
+<div class="ttc" id="classPothos_1_1ManagedBuffer_html_ad9f1bcdc41358086dda4f8b2d0fb509d"><div class="ttname"><a href="classPothos_1_1ManagedBuffer.html#ad9f1bcdc41358086dda4f8b2d0fb509d">Pothos::ManagedBuffer::operator&lt;</a></div><div class="ttdeci">bool operator&lt;(const ManagedBuffer &amp;) const </div><div class="ttdoc">sortable operator for ManagedBuffer </div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:122</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Aug 25 2014 11:15:27 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 3 2014 22:09:34 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

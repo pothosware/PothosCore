@@ -1,0 +1,10 @@
+<map id="include/Pothos/Framework/SignalEmitter.tmpl.hpp" name="include/Pothos/Framework/SignalEmitter.tmpl.hpp">
+<area shape="rect" id="node2" href="$Config_8hpp.html" title="Pothos/Config.hpp" alt="" coords="669,395,799,421"/>
+<area shape="rect" id="node4" href="$Object_8hpp.html" title="Pothos/Object.hpp" alt="" coords="553,96,683,123"/>
+<area shape="rect" id="node5" href="$Object_2Object_8hpp.html" title="Pothos/Object/Object.hpp" alt="" coords="342,320,513,347"/>
+<area shape="rect" id="node9" href="$ObjectImpl_8hpp.html" title="Pothos/Object/ObjectImpl.hpp" alt="" coords="165,245,363,272"/>
+<area shape="rect" id="node14" href="$ObjectM_8hpp.html" title="Pothos/Object/ObjectM.hpp" alt="" coords="438,245,620,272"/>
+<area shape="rect" id="node15" href="$ObjectMImpl_8hpp.html" title="Pothos/Object/ObjectMImpl.hpp" alt="" coords="515,171,723,197"/>
+<area shape="rect" id="node16" href="$Object_2Exception_8hpp.html" title="Pothos/Object/Exception.hpp" alt="" coords="797,245,989,272"/>
+<area shape="rect" id="node17" href="$Exception_8hpp.html" title="Pothos/Exception.hpp" alt="" coords="899,320,1049,347"/>
+</map>

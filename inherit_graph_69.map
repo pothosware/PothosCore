@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$classPothos_1_1ProxyEnvironment.html" title="Pothos::ProxyEnvironment" alt="" coords="221,5,400,32"/>
+<area shape="rect" id="node3" href="$classPothos_1_1Util_1_1RefHolder.html" title="Pothos::Util::RefHolder" alt="" coords="10,56,169,83"/>
+<area shape="rect" id="node4" href="$classPothos_1_1RemoteClient.html" title="Pothos::RemoteClient" alt="" coords="235,56,386,83"/>
+<area shape="rect" id="node5" href="$classPothos_1_1RemoteServer.html" title="Pothos::RemoteServer" alt="" coords="233,107,388,133"/>
+</map>
