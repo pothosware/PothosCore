@@ -5,6 +5,7 @@
 #include <Pothos/System/HostInfo.hpp>
 #include <Pothos/Remote.hpp>
 #include <Poco/Format.h>
+#include <future>
 
 /***********************************************************************
  * helpers to create network iogress flows
@@ -55,6 +56,9 @@ std::pair<Flow, Flow> Pothos::Topology::Impl::createNetworkFlow(const Flow &flow
 std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<Flow> &flatFlows)
 {
     std::vector<Flow> networkAwareFlows;
+
+    std::vector<std::pair<Flow, std::shared_future<std::pair<Flow, Flow>>>> flowToNetFlowsFuture;
+
     for (const auto &flow : flatFlows)
     {
         //same process, keep this flow as-is
@@ -64,14 +68,28 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<F
             continue;
         }
 
-        //add new network iogress flows to cache
+        //no cache entry? make a future to create new network blocks
         if (this->flowToNetgressCache.count(flow) == 0)
         {
-            flowToNetgressCache[flow] = this->createNetworkFlow(flow);
+            flowToNetFlowsFuture.push_back(
+                std::make_pair(flow, std::async(std::launch::async,
+                &Pothos::Topology::Impl::createNetworkFlow, this, flow)));
         }
 
         //lookup the network iogress flows in the cache
-        const auto &netFlows = this->flowToNetgressCache.at(flow);
+        else
+        {
+            const auto &netFlows = this->flowToNetgressCache.at(flow);
+            networkAwareFlows.push_back(netFlows.first);
+            networkAwareFlows.push_back(netFlows.second);
+        }
+    }
+
+    //wait on netflow futures to complete and add to the cache
+    for (const auto &pair : flowToNetFlowsFuture)
+    {
+        const auto netFlows = pair.second.get();
+        flowToNetgressCache[pair.first] = netFlows;
         networkAwareFlows.push_back(netFlows.first);
         networkAwareFlows.push_back(netFlows.second);
     }
