@@ -6,29 +6,54 @@
 #include <Pothos/Plugin.hpp>
 #include <Poco/Logger.h>
 #include <iostream>
+#include <sstream>
+#include <thread>
 
-Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs &reqArgs)
+Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs &reqArgs_)
 {
-    std::lock_guard<std::mutex> lock(mutex);
-
     if (not connectionActive)
     {
         throw Pothos::IOException("RemoteProxyEnvironment::transact()", "connection inactive");
     }
 
+    //add the thread ID to the args
+    const auto tid = std::hash<std::thread::id>()(std::this_thread::get_id());
+    auto reqArgs = reqArgs_;
+    reqArgs["tid"] = Pothos::Object(tid);
+
     try
     {
-        //request object
-        Pothos::Object request(reqArgs);
-        request.serialize(os);
-        os.flush();
+        //send request object over output stream
+        {
+            std::lock_guard<std::mutex> lock(osMutex);
+            Pothos::Object request(reqArgs);
+            request.serialize(os);
+            os.flush();
+        }
 
-        //reply object
-        Pothos::Object reply;
-        reply.deserialize(is);
-        return reply.extract<Pothos::ObjectKwargs>();
+        //wait for reply object
+        while (true)
+        {
+            std::lock_guard<std::mutex> lock(isMutex);
+
+            //is there a reply in the cache?
+            auto it = tidToReply.find(tid);
+            if (it != tidToReply.end())
+            {
+                auto reply = it->second;
+                tidToReply.erase(it);
+                return reply;
+            }
+
+            //otherwise wait on input stream
+            Pothos::Object reply;
+            reply.deserialize(is);
+            const auto replyArgs = reply.extract<Pothos::ObjectKwargs>();
+            const auto replyTid = replyArgs.at("tid").convert<size_t>();
+            if (replyTid == tid) return replyArgs;
+            tidToReply[replyTid] = replyArgs;
+        }
     }
-
     catch (const Poco::IOException &ex)
     {
         connectionActive = false;

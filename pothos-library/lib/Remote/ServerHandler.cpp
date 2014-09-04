@@ -7,9 +7,9 @@
 #include <Pothos/Remote/Handler.hpp>
 #include <Pothos/System/HostInfo.hpp>
 #include <Poco/SingletonHolder.h>
-#include <mutex>
 #include <Poco/Bugcheck.h>
 #include <iostream>
+#include <mutex>
 #include <map>
 
 /***********************************************************************
@@ -67,6 +67,7 @@ bool Pothos::RemoteHandler::runHandlerOnce(std::istream &is, std::ostream &os)
 
     //process the request and form the reply
     Pothos::ObjectKwargs replyArgs;
+    replyArgs["tid"] = reqArgs.at("tid");
     POTHOS_EXCEPTION_TRY
     {
         const auto &action = reqArgs.at("action").extract<std::string>();

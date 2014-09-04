@@ -71,8 +71,11 @@ public:
     std::istream &is;
     std::ostream &os;
     const std::string name;
-    std::mutex mutex;
     bool connectionActive;
+
+    std::mutex osMutex;
+    std::mutex isMutex;
+    std::map<size_t, Pothos::ObjectKwargs> tidToReply;
 };
 
 /***********************************************************************
