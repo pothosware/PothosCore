@@ -137,6 +137,9 @@ public:
      */
     void setCallback(const std::function<void(const ManagedBuffer &)> &callback);
 
+    //! Has this buffer manager been initialized?
+    bool isInitialized(void) const;
+
 protected:
     //! Default constructor
     BufferManager(void);
@@ -166,4 +169,9 @@ inline void Pothos::BufferManager::pushExternal(const ManagedBuffer &buff)
 {
     if (_callback) _callback(buff);
     else this->push(buff);
+}
+
+inline bool Pothos::BufferManager::isInitialized(void) const
+{
+    return _initialized;
 }

@@ -246,7 +246,7 @@ public:
     {
         auto m = isInput? block->getInputBufferManager(name, domain) : block->getOutputBufferManager(name, domain);
         if (not m) m = BufferManager::make("generic", BufferManagerArgs());
-        else if (m->empty()) m->init(BufferManagerArgs()); //TODO pass this in from somewhere
+        else if (not m->isInitialized()) m->init(BufferManagerArgs()); //TODO pass this in from somewhere
         return m;
     }
 
