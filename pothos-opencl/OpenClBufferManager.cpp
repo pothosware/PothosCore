@@ -62,6 +62,7 @@ public:
 
     void init(const Pothos::BufferManagerArgs &args)
     {
+        Pothos::BufferManager::init(args);
         _readyBuffs.set_capacity(args.numBuffers);
         for (size_t i = 0; i < args.numBuffers; i++)
         {

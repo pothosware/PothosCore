@@ -84,7 +84,7 @@ public:
     /*!
      * Init is called once at factory time to initialize the buffers.
      */
-    virtual void init(const BufferManagerArgs &args) = 0;
+    virtual void init(const BufferManagerArgs &args);
 
     /*!
      * Is the manager empty?
@@ -138,11 +138,14 @@ public:
     void setCallback(const std::function<void(const ManagedBuffer &)> &callback);
 
 protected:
+    //! Default constructor
+    BufferManager(void);
 
     //! Called by derived classes to set the buffer for front()
     void setFrontBuffer(const BufferChunk &buff);
 
 private:
+    bool _initialized;
     BufferChunk _frontBuffer;
     std::function<void(const ManagedBuffer &)> _callback;
 };

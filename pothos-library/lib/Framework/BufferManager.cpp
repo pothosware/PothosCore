@@ -5,11 +5,18 @@
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Callable.hpp>
 #include <Pothos/Plugin.hpp>
+#include <cassert>
 
 Pothos::BufferManagerArgs::BufferManagerArgs(void):
     numBuffers(4),
     bufferSize(8*1024),
     nodeAffinity(-1)
+{
+    return;
+}
+
+Pothos::BufferManager::BufferManager(void):
+    _initialized(false)
 {
     return;
 }
@@ -35,6 +42,12 @@ Pothos::BufferManager::Sptr Pothos::BufferManager::make(const std::string &name,
     auto manager = make(name);
     manager->init(args);
     return manager;
+}
+
+void Pothos::BufferManager::init(const BufferManagerArgs &)
+{
+    if(_initialized) throw BufferManagerFactoryError("Pothos::BufferManager::init()", "already initialized");
+    _initialized = true;
 }
 
 void Pothos::BufferManager::setCallback(const std::function<void(const ManagedBuffer &)> &callback)

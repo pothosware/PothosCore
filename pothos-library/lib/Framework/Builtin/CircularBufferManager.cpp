@@ -26,6 +26,8 @@ public:
 
     void init(const Pothos::BufferManagerArgs &args)
     {
+        Pothos::BufferManager::init(args);
+
         //create the circular buffer
         _circBuff = Pothos::SharedBuffer::makeCirc(
             args.bufferSize*args.numBuffers, args.nodeAffinity);
