@@ -22,6 +22,7 @@ struct Pothos::Topology::Impl
     std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
     std::vector<Flow> squashFlows(const std::vector<Flow> &);
     std::vector<Flow> createNetworkFlows(const std::vector<Flow> &);
+    std::pair<Flow, Flow> createNetworkFlow(const Flow &flow);
     std::vector<Flow> rectifyDomainFlows(const std::vector<Flow> &);
     std::vector<std::string> inputPortNames;
     std::vector<std::string> outputPortNames;
