@@ -70,7 +70,7 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(ClassType, preload));
         this->registerCall(this, POTHOS_FCN_TUPLE(ClassType, getNumInlineBuffers));
         this->setupInput(0, typeid(Type));
-        this->setupOutput(0, typeid(Type));
+        this->setupOutput(0, typeid(Type), this->uid()); //unique domain because of inline buffer forwarding
 
         //read before write optimization
         this->output(0)->setReadBeforeWrite(this->input(0));

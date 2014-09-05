@@ -47,16 +47,16 @@ public:
 
     DynamicRouter(void)
     {
-        this->setupInput(0);
-        this->setupOutput(0);
+        this->setupInput(0, "byte", this->uid()); //unique domain because of buffer forwarding
+        this->setupOutput(0, "byte", this->uid()); //unique domain because of buffer forwarding
         this->registerCall(this, POTHOS_FCN_TUPLE(DynamicRouter, setDestinations));
         this->registerCall(this, POTHOS_FCN_TUPLE(DynamicRouter, setNumPorts));
     }
 
     void setNumPorts(const size_t numInputs, const size_t numOutputs)
     {
-        for (size_t i = this->inputs().size(); i < numInputs; i++) this->setupInput(i);
-        for (size_t i = this->outputs().size(); i < numOutputs; i++) this->setupOutput(i);
+        for (size_t i = this->inputs().size(); i < numInputs; i++) this->setupInput(i, "byte", this->uid());
+        for (size_t i = this->outputs().size(); i < numOutputs; i++) this->setupOutput(i, "byte", this->uid());
     }
 
     void setDestinations(const std::vector<int> &destinations)
