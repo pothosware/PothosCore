@@ -1,15 +1,16 @@
 // Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "RemoteProxyDatagram.hpp"
 #include <Pothos/Object.hpp>
 #include <Pothos/Object/Containers.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote/Handler.hpp>
 #include <Pothos/System/HostInfo.hpp>
 #include <Poco/SingletonHolder.h>
-#include <mutex>
 #include <Poco/Bugcheck.h>
 #include <iostream>
+#include <mutex>
 #include <map>
 
 /***********************************************************************
@@ -61,12 +62,11 @@ bool Pothos::RemoteHandler::runHandlerOnce(std::istream &is, std::ostream &os)
     bool done = false;
 
     //deserialize the request
-    Pothos::Object request;
-    request.deserialize(is);
-    const auto &reqArgs = request.extract<Pothos::ObjectKwargs>();
+    const auto reqArgs = recvDatagram(is);
 
     //process the request and form the reply
     Pothos::ObjectKwargs replyArgs;
+    replyArgs["tid"] = reqArgs.at("tid");
     POTHOS_EXCEPTION_TRY
     {
         const auto &action = reqArgs.at("action").extract<std::string>();
@@ -174,9 +174,7 @@ bool Pothos::RemoteHandler::runHandlerOnce(std::istream &is, std::ostream &os)
     }
 
     //serialize the reply
-    Pothos::Object reply(replyArgs);
-    reply.serialize(os);
-    os.flush();
+    sendDatagram(os, replyArgs);
 
     return done;
 }

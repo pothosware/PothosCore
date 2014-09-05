@@ -153,6 +153,7 @@ list(APPEND POTHOS_SOURCES
     Remote/ServerHandler.cpp
     Remote/Client.cpp
     Remote/Exception.cpp
+    Remote/Builtin/TestRemote.cpp
 
     Managed/Class.cpp
     Managed/Registry.cpp
