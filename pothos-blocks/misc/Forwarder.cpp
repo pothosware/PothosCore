@@ -26,7 +26,7 @@ public:
     Forwarder(void)
     {
         this->setupInput(0);
-        this->setupOutput(0);
+        this->setupOutput(0, "byte", this->uid()); //unique domain because of buffer forwarding);
     }
 
     void work(void)

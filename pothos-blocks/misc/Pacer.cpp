@@ -42,7 +42,7 @@ public:
         _startCount(0)
     {
         this->setupInput(0, dtype);
-        this->setupOutput(0, dtype);
+        this->setupOutput(0, dtype, this->uid()); //unique domain because of buffer forwarding
         this->registerCall(this, POTHOS_FCN_TUPLE(Pacer, setRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(Pacer, getRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(Pacer, getActualRate));
