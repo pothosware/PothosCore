@@ -7,6 +7,17 @@
 #include <algorithm> //sort
 #include <cassert>
 
+static void bufferManagerPushExternal(
+    std::shared_ptr<Theron::Framework> framework,
+    const Theron::Address &addr,
+    const Pothos::ManagedBuffer &buff
+)
+{
+    BufferReturnMessage message;
+    message.buff = buff;
+    framework->Send(message, Theron::Address::Null(), addr);
+}
+
 void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, TokenizedAsyncMessage> &message, const Theron::Address)
 {
     assert(message.id != nullptr);
@@ -64,7 +75,11 @@ void Pothos::WorkerActor::handleBufferPortMessage(const PortMessage<InputPort *,
 
 void Pothos::WorkerActor::handleBufferManagerMessage(const PortMessage<std::string, BufferManagerMessage> &message, const Theron::Address from)
 {
-    outputs.at(message.id)->_impl->bufferManager = message.contents.manager;
+    auto mgr = message.contents.manager;
+    if (mgr) mgr->setCallback(std::bind(&bufferManagerPushExternal,
+        std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer()), this->GetAddress(), std::placeholders::_1));
+    outputs.at(message.id)->_impl->bufferManager = mgr;
+
     if (from != Theron::Address::Null()) this->Send(std::string(""), from);
     this->notify();
 }
@@ -153,17 +168,6 @@ void Pothos::WorkerActor::handleBumpWorkMessage(const BumpWorkMessage &, const T
     this->notify();
 }
 
-static void bufferManagerPushExternal(
-    std::shared_ptr<Theron::Framework> framework,
-    const Theron::Address &addr,
-    const Pothos::ManagedBuffer &buff
-)
-{
-    BufferReturnMessage message;
-    message.buff = buff;
-    framework->Send(message, Theron::Address::Null(), addr);
-}
-
 void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &, const Theron::Address from)
 {
     //setup the buffer return callback on the manager
@@ -171,17 +175,13 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
     {
         auto &port = *entry.second;
 
-        //setup buffer manager callback
-        auto &mgr = port._impl->bufferManager;
-        if (mgr) mgr->setCallback(std::bind(&bufferManagerPushExternal,
-            std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer()), this->GetAddress(), std::placeholders::_1));
-
         //setup token manager for async messages
         BufferManagerArgs tokenMgrArgs;
         tokenMgrArgs.numBuffers = 16;
         tokenMgrArgs.bufferSize = 0;
         auto &tokenMgr = port._impl->tokenManager;
-        if (not tokenMgr) tokenMgr = BufferManager::make("generic", tokenMgrArgs);
+        if (tokenMgr) continue;
+        tokenMgr = BufferManager::make("generic", tokenMgrArgs);
         tokenMgr->setCallback(std::bind(&bufferManagerPushExternal,
             std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer()), this->GetAddress(), std::placeholders::_1));
     }
