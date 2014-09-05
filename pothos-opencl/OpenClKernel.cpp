@@ -6,6 +6,7 @@
 #include <Poco/NumberParser.h>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 /***********************************************************************
  * |PothosDoc OpenCL Kernel
@@ -35,9 +36,13 @@
  *
  * |param kernelName[Kernel Name] The name of a kernel in the source.
  * |default ""
+ * |widget StringEntry()
  *
  * |param kernelSource[Kernel Source] Source code for an OpenCL kernel.
+ * The source can either be a string representing the cl source,
+ * or a path to a .cl file containing the cl source code.
  * |default ""
+ * |widget StringEntry()
  *
  * |param localSize[Local Size] The number of work units/resources to allocate.
  * This controls the parallelism of the kernel execution.
@@ -205,9 +210,18 @@ OpenClKernel::OpenClKernel(const std::string &deviceId, const std::vector<size_t
     this->registerCall(this, POTHOS_FCN_TUPLE(OpenClKernel, getProductionFactor));
 }
 
-void OpenClKernel::setSource(const std::string &kernelName, const std::string &kernelSource)
+void OpenClKernel::setSource(const std::string &kernelName, const std::string &kernelSource_)
 {
     cl_int err = 0;
+
+    //load kernel source from file if it ends in .cl
+    auto kernelSource = kernelSource_;
+    if (kernelSource.size() > 3 and kernelSource.substr(kernelSource.size()-3) == ".cl")
+    {
+        std::cout << "OpenClKernel block loading " << kernelSource << "..." << std::endl;
+        std::ifstream t(kernelSource);
+        kernelSource = std::string((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+    }
 
     /* Create program from source */
     if (kernelSource.empty()) throw Pothos::Exception("OpenClKernel::activate::createProgram()", "no source specified");
