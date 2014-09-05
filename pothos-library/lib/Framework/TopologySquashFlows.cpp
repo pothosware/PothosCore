@@ -56,6 +56,9 @@ static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
     return ports;
 }
 
+/***********************************************************************
+ * topology squash implementation
+ **********************************************************************/
 std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &flows)
 {
     //spawn future to resolve ports per flow

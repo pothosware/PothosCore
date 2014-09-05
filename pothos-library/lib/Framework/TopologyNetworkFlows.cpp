@@ -53,6 +53,9 @@ std::pair<Flow, Flow> Pothos::Topology::Impl::createNetworkFlow(const Flow &flow
     return std::make_pair(srcFlow, dstFlow);
 }
 
+/***********************************************************************
+ * network crossing implementation
+ **********************************************************************/
 std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<Flow> &flatFlows)
 {
     std::vector<Flow> networkAwareFlows;

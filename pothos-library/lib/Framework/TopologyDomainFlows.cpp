@@ -2,65 +2,44 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
-#include <tuple>
+#include <future>
 #include <map>
 
 /***********************************************************************
- * helper cache to reduce repeat-query overhead
+ * helpers to call into remote worker
  **********************************************************************/
-class TopologyQueryCache
+static std::string getBufferMode(const Port &port, const bool &isInput, const std::string &domain)
 {
-public:
-    std::string getBufferMode(const Port &port, const bool &isInput, const std::string &domain)
-    {
-        const auto key = std::make_tuple(port.uid, port.name, isInput, domain);
-        auto it = _modeCache.find(key);
-        if (it == _modeCache.end())
-        {
-            auto &actor = _actorCache[port.uid];
-            if (not actor) actor = port.obj.callProxy("get:_actor");
-            auto val = actor.call<std::string>(isInput?"getInputBufferMode":"getOutputBufferMode", port.name, domain);
-            _modeCache[key] = val;
-        }
-        return _modeCache.at(key);
-    }
+    auto actor = port.obj.callProxy("get:_actor");
+    return actor.call<std::string>(isInput?"getInputBufferMode":"getOutputBufferMode", port.name, domain);
+}
 
-    std::string getDomain(const Port &port, const bool &isInput)
-    {
-        const auto key = std::make_tuple(port.uid, port.name, isInput);
-        auto it = _domainCache.find(key);
-        if (it == _domainCache.end())
-        {
-            auto val = port.obj.callProxy(isInput?"input":"output", port.name).call<std::string>("domain");
-            _domainCache[key] = val;
-        }
-        return _domainCache.at(key);
-    }
-
-private:
-    std::map<std::string, Pothos::Proxy> _actorCache;
-    std::map<std::tuple<std::string, std::string, bool, std::string>, std::string> _modeCache;
-    std::map<std::tuple<std::string, std::string, bool>, std::string> _domainCache;
-};
+static std::string getDomain(const Port &port, const bool &isInput)
+{
+    return port.obj.callProxy(isInput?"input":"output", port.name).call<std::string>("domain");
+}
 
 /***********************************************************************
  * helpers to deal with domain interaction
  **********************************************************************/
+
+/*!
+ * Is this domain crossing possible between mainPort and all connected subPorts?
+ */
 static bool isDomainCrossingAcceptable(
     const Port &mainPort,
     const std::vector<Port> &subPorts,
-    const bool isInput,
-    TopologyQueryCache &cache
+    const bool isInput
 )
 {
-    auto mainDomain = cache.getDomain(mainPort, isInput);
+    auto mainDomain = getDomain(mainPort, isInput);
 
     bool allOthersAbdicate = true;
     std::set<std::string> subDomains;
     for (const auto &subPort : subPorts)
     {
-        subDomains.insert(cache.getDomain(subPort, not isInput));
-        const auto subMode = cache.getBufferMode(subPort, not isInput, mainDomain);
+        subDomains.insert(getDomain(subPort, not isInput));
+        const auto subMode = getBufferMode(subPort, not isInput, mainDomain);
         if (subMode != "ABDICATE") allOthersAbdicate = false;
     }
 
@@ -69,7 +48,7 @@ static bool isDomainCrossingAcceptable(
 
     assert(subDomains.size() == 1);
     const auto subDomain = *subDomains.begin();
-    const auto mainMode = cache.getBufferMode(mainPort, isInput, subDomain);
+    const auto mainMode = getBufferMode(mainPort, isInput, subDomain);
 
     //error always means we make a copy block
     if (mainMode == "ERROR") return false;
@@ -89,24 +68,43 @@ static bool isDomainCrossingAcceptable(
     return true;
 }
 
-static std::unordered_map<Port, Pothos::Proxy> domainInspection(
-    const std::unordered_map<Port, std::vector<Port>> &ports,
-    const bool isInput, TopologyQueryCache &cache
+/*!
+ * Get a copier block for a domain crossing between mainPort and all connected subPorts.
+ * If the copier block is not needed to handle this domain crossing, return a null Proxy.
+ */
+static Pothos::Proxy getCopierForDomainCrossing(
+    const Port &mainPort,
+    const std::vector<Port> &subPorts,
+    const bool isInput
 )
 {
-    std::unordered_map<Port, Pothos::Proxy> bads;
-    for (const auto &pair : ports)
-    {
-        if (isDomainCrossingAcceptable(pair.first, pair.second, isInput, cache)) continue;
-        auto registry = pair.first.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
-        auto copier = registry.callProxy("/blocks/copier");
-        copier.callVoid("setName", "DomainBridge");
-        bads[pair.first] = copier;
-    }
-
-    return bads;
+    if (isDomainCrossingAcceptable(mainPort, subPorts, isInput)) return Pothos::Proxy();
+    auto registry = mainPort.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
+    auto copier = registry.callProxy("/blocks/copier");
+    copier.callVoid("setName", "DomainBridge");
+    return copier;
 }
 
+/*!
+ * Get a future for each port to inspect it for domain crossing.
+ */
+static std::unordered_map<Port, std::shared_future<Pothos::Proxy>> domainInspection(
+    const std::unordered_map<Port, std::vector<Port>> &ports,
+    const bool isInput
+)
+{
+    std::unordered_map<Port, std::shared_future<Pothos::Proxy>> copiers;
+    for (const auto &pair : ports)
+    {
+        copiers[pair.first] = std::async(std::launch::async,
+            &getCopierForDomainCrossing, pair.first, pair.second, isInput);
+    }
+    return copiers;
+}
+
+/***********************************************************************
+ * domain crossing implementation -- insert copy blocks where needed
+ **********************************************************************/
 std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<Flow> &flatFlows)
 {
     //map any given src or dst to its upstream/downstream ports
@@ -121,18 +119,17 @@ std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<F
     }
 
     //get a list of ports with domain problems
-    TopologyQueryCache cache;
-    auto badSrcsToCopier = domainInspection(srcs, false, cache);
-    auto badDstsToCopier = domainInspection(dsts, true, cache);
+    auto badSrcsToCopier = domainInspection(srcs, false);
+    auto badDstsToCopier = domainInspection(dsts, true);
 
     std::vector<Flow> domainSafeFlows;
     for (const auto &flow : flatFlows)
     {
-        auto srcIt = badSrcsToCopier.find(flow.src);
-        auto dstIt = badDstsToCopier.find(flow.dst);
+        auto srcCopier = badSrcsToCopier.at(flow.src).get();
+        auto dstCopier = badDstsToCopier.at(flow.dst).get();
         Pothos::Proxy copier;
-        if (srcIt != badSrcsToCopier.end()) copier = srcIt->second;
-        if (dstIt != badDstsToCopier.end()) copier = dstIt->second;
+        if (srcCopier) copier = srcCopier;
+        if (dstCopier) copier = dstCopier;
         if (copier)
         {
             //create the flows
