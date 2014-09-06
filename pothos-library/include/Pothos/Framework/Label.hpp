@@ -43,6 +43,10 @@ public:
 
     //! support for sorting Labels by index
     bool operator<(const Label &other) const;
+
+    //! Serialization support
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
 };
 
 //! Are these two labels equivalent? index and data must be equal

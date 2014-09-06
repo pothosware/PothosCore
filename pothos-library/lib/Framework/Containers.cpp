@@ -23,9 +23,9 @@ namespace Pothos { namespace serialization {
 template<class Archive>
 void serialize(Archive & ar, Pothos::MessageGram &t, const unsigned int)
 {
-    //ar & t.payload;
+    ar & t.payload;
     ar & t.metadata;
-    //ar & t.labels;
+    ar & t.labels;
 }
 }}
 

@@ -115,6 +115,10 @@ public:
      */
     pothos_explicit operator bool(void) const;
 
+    //! Serialization support
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+
 private:
     SharedBuffer _buffer;
     ManagedBuffer _managedBuffer;
