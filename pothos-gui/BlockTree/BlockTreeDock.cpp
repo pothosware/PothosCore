@@ -50,6 +50,7 @@ void BlockTreeDock::activateFind(void)
     //on ctrl-f or edit:find, set focus on search window and select all text
     _searchBox->setFocus();
     _searchBox->selectAll();
+    _addButton->setEnabled(false);
 }
 
 void BlockTreeDock::handleAdd(void)

@@ -167,6 +167,7 @@ void BlockTreeWidget::populate(void)
             poco_error_f1(Poco::Logger::get("PothosGui.BlockTree"), "Failed JSON Doc parse %s", ex.displayText());
         }
     }
+    emit this->blockDescEvent(Poco::JSON::Object::Ptr(), false); //unselect
 }
 
 bool BlockTreeWidget::blockDescMatchesFilter(const Poco::JSON::Object::Ptr &blockDesc)
