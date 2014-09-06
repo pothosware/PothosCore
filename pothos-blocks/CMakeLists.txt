@@ -53,6 +53,10 @@ set(SOURCES
     serialize/Serializer.cpp
     serialize/Deserializer.cpp
     serialize/TestSerialize.cpp
+
+    packet/PacketToStream.cpp
+    packet/StreamToPacket.cpp
+    packet/TestPacketBlocks.cpp
 )
 
 #udt support
