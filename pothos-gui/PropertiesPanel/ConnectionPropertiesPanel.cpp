@@ -17,7 +17,6 @@ ConnectionPropertiesPanel::ConnectionPropertiesPanel(GraphConnection *conn, QWid
     _conn(conn),
     _isSlot(_conn->getInputEndpoint().getConnectableAttrs().direction == GRAPH_CONN_SLOT),
     _isSignal(_conn->getOutputEndpoint().getConnectableAttrs().direction == GRAPH_CONN_SIGNAL),
-    _connectButton(nullptr),
     _removeButton(nullptr),
     _inputListWidget(nullptr),
     _outputListWidget(nullptr),
@@ -50,13 +49,6 @@ ConnectionPropertiesPanel::ConnectionPropertiesPanel(GraphConnection *conn, QWid
         _inputListWidget = this->makePortListWidget(this, inputEp, _inputItemToKey);
         connect(_inputListWidget, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleItemSelectionChanged(void)));
         listWidgetLayout->addWidget(_inputListWidget);
-    }
-
-    //connect button
-    {
-        _connectButton = new QPushButton(makeIconFromTheme("list-add"), tr("Create connection"), this);
-        connect(_connectButton, SIGNAL(pressed(void)), this, SLOT(handleCreateConnection(void)));
-        layout->addWidget(_connectButton);
     }
 
     //existing connections
@@ -138,8 +130,11 @@ void ConnectionPropertiesPanel::handleItemSelectionChanged(void)
 {
     auto signalItemsSelected = _outputListWidget->selectedItems();
     auto slotItemsSelected = _inputListWidget->selectedItems();
-    _connectButton->setEnabled(not signalItemsSelected.isEmpty() and not slotItemsSelected.isEmpty());
     _removeButton->setEnabled(not _connectionsListWidget->selectedItems().isEmpty());
+    if (not signalItemsSelected.isEmpty() and not slotItemsSelected.isEmpty())
+    {
+        this->handleCreateConnection();
+    }
 }
 
 void ConnectionPropertiesPanel::handleCreateConnection(void)

@@ -39,7 +39,6 @@ private:
     QPointer<GraphConnection> _conn;
     const bool _isSlot;
     const bool _isSignal;
-    QPushButton *_connectButton;
     QPushButton *_removeButton;
     QTreeWidget *_inputListWidget;
     QTreeWidget *_outputListWidget;
