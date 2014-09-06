@@ -11,6 +11,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Object/Object.hpp>
+#include <string>
 
 namespace Pothos {
 
@@ -28,6 +29,14 @@ public:
     //! Create a label with specified data of ValueType and index
     template <typename ValueType>
     Label(ValueType &&data, const unsigned long long index);
+
+    /*!
+     * The identifier describes the label's type, meaning, or purpose.
+     * Identifiers only have meaning in the context of the blocks
+     * that are producing and consuming them. So any given pair of blocks
+     * need to agree on a particular set of identifiers and their meanings.
+     */
+    std::string id;
 
     /*!
      * The data can be anything that can be held by Object.
