@@ -1,8 +1,7 @@
 ///
-/// \file Framework/Containers.hpp
+/// \file Framework/Packet.hpp
 ///
-/// Definitions for commonly used container types found in
-/// asynchronous messages and inline labels.
+/// Definition for packet type found in asynchronous messages.
 ///
 /// \copyright
 /// Copyright (c) 2014-2014 Josh Blum
@@ -20,14 +19,14 @@
 namespace Pothos {
 
 /*!
- * The MessageGram type is a general-purpose structure for asynchronous messages.
- * A MessageGram contains a payload buffer with associated metadata and labels.
- * Ideally, the MessageGram structure is a suitable container for most situations.
+ * The Packet type is a general-purpose structure for asynchronous messages.
+ * A Packet contains a payload buffer with associated metadata and labels.
+ * Ideally, the Packet structure is a suitable container for most situations.
  */
-struct POTHOS_API MessageGram
+struct POTHOS_API Packet
 {
-    //! Default constructor for MessageGram
-    MessageGram(void);
+    //! Default constructor for Packet
+    Packet(void);
 
     /*!
      * The buffer payload for this message.

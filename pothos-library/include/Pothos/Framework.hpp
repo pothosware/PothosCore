@@ -10,7 +10,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Framework/Containers.hpp>
+#include <Pothos/Framework/Packet.hpp>
 #include <Pothos/Framework/WorkInfo.hpp>
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>

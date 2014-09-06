@@ -93,7 +93,7 @@ list(APPEND POTHOS_SOURCES
     Callable/Exception.cpp
     Callable/Tests.cpp
 
-    Framework/Containers.cpp
+    Framework/Packet.cpp
     Framework/DType.cpp
     Framework/Label.cpp
     Framework/InputPort.cpp
