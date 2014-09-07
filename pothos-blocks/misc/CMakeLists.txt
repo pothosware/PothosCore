@@ -1,0 +1,21 @@
+########################################################################
+# Utility blocks module
+########################################################################
+POTHOS_MODULE_UTIL(
+    TARGET UtilityBlocks
+    SOURCES
+        Delay.cpp
+        Pacer.cpp
+        PeriodicTrigger.cpp
+        TestPeriodicTrigger.cpp
+        Forwarder.cpp
+        TestForwarder.cpp
+        Copier.cpp
+        MessageToSignal.cpp
+        SlotToMessage.cpp
+        BlackHole.cpp
+        TestSignalsAndSlots.cpp
+        DynamicRouter.cpp
+    DESTINATION blocks
+    ENABLE_DOCS
+)
