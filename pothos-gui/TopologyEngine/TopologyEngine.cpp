@@ -75,13 +75,14 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
 
 Pothos::Proxy TopologyEngine::getEvalEnvironment(const QString &zone)
 {
-    if (_zoneToEvalEnvironment.count(zone) == 0)
+    auto env = this->getEnvironmentFromZone(zone);
+    auto envPid = env->getUniquePid();
+    if (_upidToEvalEnvironment.count(envPid) == 0)
     {
-        auto env = this->getEnvironmentFromZone(zone);
         auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
-        _zoneToEvalEnvironment[zone] = EvalEnvironment.callProxy("new");
+        _upidToEvalEnvironment[envPid] = EvalEnvironment.callProxy("new");
     }
-    return _zoneToEvalEnvironment.at(zone);
+    return _upidToEvalEnvironment.at(envPid);
 }
 
 Pothos::ProxyEnvironment::Sptr TopologyEngine::getEnvironmentFromZone(const QString &zone)

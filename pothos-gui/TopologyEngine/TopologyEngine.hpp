@@ -79,7 +79,7 @@ private:
 
     std::map<QString, Pothos::Proxy> _zoneToThreadPool;
 
-    std::map<QString, Pothos::Proxy> _zoneToEvalEnvironment;
+    std::map<std::string, Pothos::Proxy> _upidToEvalEnvironment;
 
     static std::vector<ConnectionInfo> getConnectionInfo(const GraphObjectList &graphObjects);
 
