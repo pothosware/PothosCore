@@ -168,8 +168,10 @@ void Pothos::PluginRegistry::add(const Plugin &plugin_)
         //throw if the root already has a plugin
         if (root->hasPlugin)
         {
-            throw Pothos::PluginRegistryError("Pothos::PluginRegistry::add()", Poco::format(
-                "plugin already registered at %s\n\tModule: %s", path.toString(), getActiveModuleLoading().getFilePath()));
+            const auto newModulePath = getActiveModuleLoading().getFilePath();
+            const auto currentModulePath = root->plugin.getModule().getFilePath();
+            throw Pothos::PluginRegistryError("Pothos::PluginRegistry::add("+path.toString()+")", Poco::format(
+                "plugin already registered\n\tLoading: %s, Conflicts: %s", newModulePath, currentModulePath));
         }
 
         //store the plugin and attach the module
@@ -198,8 +200,7 @@ Pothos::Plugin Pothos::PluginRegistry::get(const PluginPath &path)
     //throw if the root does not have a plugin
     if (not root->hasPlugin)
     {
-        throw Pothos::PluginRegistryError("Pothos::PluginRegistry::get()", Poco::format(
-            "plugin path %s not found", path.toString()));
+        throw Pothos::PluginRegistryError("Pothos::PluginRegistry::get("+path.toString()+")", "plugin path not found");
     }
 
     return root->plugin;
@@ -224,8 +225,7 @@ Pothos::Plugin Pothos::PluginRegistry::remove(const PluginPath &path)
         //throw if the root does not have a plugin
         if (not root->hasPlugin)
         {
-            throw Pothos::PluginRegistryError("Pothos::PluginRegistry::remove()", Poco::format(
-                "plugin path %s not found", path.toString()));
+            throw Pothos::PluginRegistryError("Pothos::PluginRegistry::remove("+path.toString()+")", "plugin path not found");
         }
 
         //clear plugin entry and return result
