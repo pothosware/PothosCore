@@ -116,6 +116,10 @@ public:
     //! Create a printable string representation
     std::string toString(void) const;
 
+    //! Serialization support
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+
 private:
     std::string _name;
     Shape _shape;

@@ -63,7 +63,6 @@ static auto managedConnectable = Pothos::ManagedClass()
     .commit("Pothos/Connectable");
 
 #include <Pothos/Object/Serialize.hpp>
-#include "Framework/DTypeSerialization.hpp"
 
 namespace Pothos { namespace serialization {
 template<class Archive>

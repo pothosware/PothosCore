@@ -83,5 +83,10 @@ void load(Archive & ar, Pothos::BufferChunk &t, const unsigned int)
 }
 }}
 
-POTHOS_SERIALIZATION_SPLIT_FREE(Pothos::BufferChunk)
+template<class Archive>
+void Pothos::BufferChunk::serialize(Archive & ar, const unsigned int version)
+{
+    Pothos::serialization::split_free(ar, *this, version);
+}
+
 POTHOS_OBJECT_SERIALIZE(Pothos::BufferChunk)

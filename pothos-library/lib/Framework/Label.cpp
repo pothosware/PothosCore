@@ -20,6 +20,7 @@ Pothos::LabelIteratorRange::LabelIteratorRange(void):
 static auto managedLabel = Pothos::ManagedClass()
     .registerConstructor<Pothos::Label>()
     .registerConstructor<Pothos::Label, const Pothos::Object &, const unsigned long long>()
+    .registerField(POTHOS_FCN_TUPLE(Pothos::Label, id))
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, data))
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, index))
     .commit("Pothos/Label");
@@ -61,14 +62,13 @@ pothos_static_block(pothosLabelIteratorRegisterCompare)
 
 #include <Pothos/Object/Serialize.hpp>
 
-namespace Pothos { namespace serialization {
-template <class Archive>
-void serialize(Archive &ar, Pothos::Label &t, const unsigned int)
+template<class Archive>
+void Pothos::Label::serialize(Archive & ar, const unsigned int)
 {
-    ar & t.data;
-    ar & t.index;
+    ar & this->id;
+    ar & this->data;
+    ar & this->index;
 }
-}}
 
 POTHOS_OBJECT_SERIALIZE(Pothos::Label)
 POTHOS_OBJECT_SERIALIZE(std::vector<Pothos::Label>)
