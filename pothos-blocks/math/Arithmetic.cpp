@@ -15,7 +15,7 @@
  *
  * out[n] = in0[n] $op in1[n] $op ... $op in_last[n]
  *
- * |category /Arithmetic
+ * |category /Math
  * |keywords math arithmetic add subtract multiply divide
  *
  * |param dtype[Data Type] The datatype used in the arithmetic.

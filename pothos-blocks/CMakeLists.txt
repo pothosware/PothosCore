@@ -14,9 +14,9 @@ include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
 ########################################################################
 # Build blocks modules
 ########################################################################
-add_subdirectory(arithmetic)
+add_subdirectory(math)
 add_subdirectory(file)
-add_subdirectory(misc)
+add_subdirectory(utility)
 add_subdirectory(network)
 add_subdirectory(packet)
 add_subdirectory(serialize)
