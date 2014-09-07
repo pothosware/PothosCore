@@ -17,6 +17,7 @@ static void test_packet_blocks_with_mtu(const size_t mtu)
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     auto s2p = registry.callProxy("/blocks/stream_to_packet");
+    s2p.callVoid("setMTU", mtu);
     auto p2s = registry.callProxy("/blocks/packet_to_stream");
 
     //create a test plan
