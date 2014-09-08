@@ -6,6 +6,9 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QPushButton>
+#include <QHBoxLayout>
+#include <QFileDialog>
 #include <QDoubleSpinBox>
 #include <Poco/Logger.h>
 #include <Poco/Exception.h>
@@ -36,6 +39,53 @@ public:
         }
         else this->setText(s);
     }
+};
+
+/***********************************************************************
+ * Custom widget for file path entry
+ **********************************************************************/
+class FileEntry : public QWidget
+{
+    Q_OBJECT
+public:
+    FileEntry(const QString &mode, QWidget *parent):
+        QWidget(parent),
+        _mode(mode),
+        _button(new QPushButton(QString::fromUtf8("\u2026"), this)), //&hellip;
+        _entry(new StringEntry(this))
+    {
+        auto layout = new QHBoxLayout(this);
+        layout->setMargin(0);
+        layout->addWidget(_entry, 1);
+        layout->addWidget(_button);
+        _button->setMinimumWidth(15);
+        connect(_button, SIGNAL(pressed(void)), this, SLOT(handlePressed(void)));
+    }
+
+    QString value(void) const
+    {
+        return _entry->value();
+    }
+
+    void setValue(const QString &value)
+    {
+        _entry->setValue(value);
+    }
+
+private slots:
+    void handlePressed(void)
+    {
+        QString filePath;
+        if (_mode == "open") filePath = QFileDialog::getOpenFileName(this);
+        if (_mode == "save") filePath = QFileDialog::getSaveFileName(this);
+        if (filePath.isEmpty()) return;
+        this->setValue(filePath);
+    }
+
+private:
+    const QString _mode;
+    QPushButton *_button;
+    StringEntry *_entry;
 };
 
 /***********************************************************************
@@ -95,6 +145,14 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
         connect(entry, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
         _edit = entry;
     }
+    else if (widgetType == "FileEntry")
+    {
+        const auto mode = widgetKwargs->optValue<std::string>("mode", "save");
+        auto entry = new FileEntry(QString::fromStdString(mode), this);
+        //connect(entry, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        //connect(entry, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
+        _edit = entry;
+    }
     else
     {
         if (widgetType != "LineEdit")
@@ -135,6 +193,9 @@ void BlockPropertyEditWidget::setValue(const QString &value)
     auto dSpinBox = dynamic_cast<QDoubleSpinBox *>(_edit);
     if (dSpinBox != nullptr) return dSpinBox->setValue(value.toDouble());
 
+    auto fileEntry = dynamic_cast<FileEntry *>(_edit);
+    if (fileEntry != nullptr) return fileEntry->setValue(value);
+
     auto strEntry = dynamic_cast<StringEntry *>(_edit);
     if (strEntry != nullptr) return strEntry->setValue(value);
 
@@ -159,6 +220,9 @@ QString BlockPropertyEditWidget::value(void) const
 
     auto dSpinBox = dynamic_cast<QDoubleSpinBox *>(_edit);
     if (dSpinBox != nullptr) return QString("%1").arg(dSpinBox->value());
+
+    auto fileEntry = dynamic_cast<FileEntry *>(_edit);
+    if (fileEntry != nullptr) return fileEntry->value();
 
     auto strEntry = dynamic_cast<StringEntry *>(_edit);
     if (strEntry != nullptr) return strEntry->value();

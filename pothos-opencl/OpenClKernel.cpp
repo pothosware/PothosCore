@@ -42,7 +42,7 @@
  * The source can either be a string representing the cl source,
  * or a path to a .cl file containing the cl source code.
  * |default ""
- * |widget StringEntry()
+ * |widget FileEntry(mode=open)
  *
  * |param localSize[Local Size] The number of work units/resources to allocate.
  * This controls the parallelism of the kernel execution.

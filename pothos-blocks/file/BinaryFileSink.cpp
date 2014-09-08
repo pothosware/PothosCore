@@ -38,6 +38,7 @@
  *
  * |param path[File Path] The path to the output file.
  * |default ""
+ * |widget FileEntry(mode=save)
  *
  * |factory /blocks/binary_file_sink()
  * |setter setFilePath(path)

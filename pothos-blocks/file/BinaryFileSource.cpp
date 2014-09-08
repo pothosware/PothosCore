@@ -31,6 +31,7 @@
  *
  * |param path[File Path] The path to the input file.
  * |default ""
+ * |widget FileEntry(mode=open)
  *
  * |factory /blocks/binary_file_source()
  * |setter setFilePath(path)
