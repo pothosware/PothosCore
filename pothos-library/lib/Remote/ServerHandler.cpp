@@ -31,12 +31,9 @@ static ServerObjectsMapType &getObjectsMap(void)
 
 static Pothos::Object getNewObjectId(const Pothos::Object &obj)
 {
+    std::lock_guard<std::mutex> lock(getObjectsMutex());
     static size_t id = 0;
-    {
-        std::lock_guard<std::mutex> lock(getObjectsMutex());
-        id++;
-        getObjectsMap()[id] = obj;
-    }
+    getObjectsMap()[++id] = obj;
     return Pothos::Object(id);
 }
 
