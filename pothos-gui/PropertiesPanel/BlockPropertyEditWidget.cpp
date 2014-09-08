@@ -22,7 +22,10 @@ class StringEntry : public QLineEdit
     Q_OBJECT
 public:
     StringEntry(QWidget *parent):
-        QLineEdit(parent){}
+        QLineEdit(parent)
+    {
+        connect(this, SIGNAL(textEdited(const QString &)), this, SLOT(handleTextEdited(const QString &)));
+    }
 
     QString value(void) const
     {
@@ -38,6 +41,15 @@ public:
             this->setText(s0.replace("\\\"", "\"")); //unescape
         }
         else this->setText(s);
+    }
+
+signals:
+    void textEdited(void);
+
+private slots:
+    void handleTextEdited(const QString &)
+    {
+        emit this->textEdited();
     }
 };
 
@@ -57,9 +69,11 @@ public:
         auto layout = new QHBoxLayout(this);
         layout->setMargin(0);
         layout->addWidget(_entry, 1);
-        layout->addWidget(_button);
-        _button->setMinimumWidth(15);
+        layout->addWidget(_button, 0, Qt::AlignRight);
+        _button->setMaximumWidth(20);
         connect(_button, SIGNAL(pressed(void)), this, SLOT(handlePressed(void)));
+        connect(_entry, SIGNAL(textEdited(void)), this, SIGNAL(textEdited(void)));
+        connect(_entry, SIGNAL(returnPressed(void)), this, SIGNAL(returnPressed(void)));
     }
 
     QString value(void) const
@@ -72,6 +86,10 @@ public:
         _entry->setValue(value);
     }
 
+signals:
+    void textEdited(void);
+    void returnPressed(void);
+
 private slots:
     void handlePressed(void)
     {
@@ -80,6 +98,7 @@ private slots:
         if (_mode == "save") filePath = QFileDialog::getSaveFileName(this);
         if (filePath.isEmpty()) return;
         this->setValue(filePath);
+        emit this->textEdited();
     }
 
 private:
@@ -141,7 +160,7 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
     else if (widgetType == "StringEntry")
     {
         auto entry = new StringEntry(this);
-        connect(entry, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        connect(entry, SIGNAL(textEdited(void)), this, SLOT(handleEditWidgetChanged(void)));
         connect(entry, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
         _edit = entry;
     }
@@ -149,8 +168,8 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
     {
         const auto mode = widgetKwargs->optValue<std::string>("mode", "save");
         auto entry = new FileEntry(QString::fromStdString(mode), this);
-        //connect(entry, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
-        //connect(entry, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
+        connect(entry, SIGNAL(textEdited(void)), this, SLOT(handleEditWidgetChanged(void)));
+        connect(entry, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
         _edit = entry;
     }
     else
