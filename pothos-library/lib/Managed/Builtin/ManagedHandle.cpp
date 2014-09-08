@@ -47,7 +47,7 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         }
         catch(const Pothos::ManagedClassLookupError &)
         {
-            //its ok, cls will be empty
+            if (callMethod) throw;
         }
     }
 
