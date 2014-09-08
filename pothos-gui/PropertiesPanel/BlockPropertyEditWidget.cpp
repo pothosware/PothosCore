@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include <Pothos/Util/TypeInfo.hpp>
 #include "PropertiesPanel/BlockPropertyEditWidget.hpp"
 #include "ColorUtils/ColorUtils.hpp"
 #include <QComboBox>
@@ -17,19 +18,27 @@
 /***********************************************************************
  * Custom widget for string entry -- no quotes
  **********************************************************************/
-class StringEntry : public QLineEdit
+class StringEntry : public QWidget
 {
     Q_OBJECT
 public:
     StringEntry(QWidget *parent):
-        QLineEdit(parent)
+        QWidget(parent),
+        _edit(new QLineEdit(this))
     {
-        connect(this, SIGNAL(textEdited(const QString &)), this, SLOT(handleTextEdited(const QString &)));
+        auto layout = new QHBoxLayout(this);
+        layout->setMargin(0);
+        layout->addWidget(_edit);
+        connect(_edit, SIGNAL(textEdited(const QString &)), this, SLOT(handleTextEdited(const QString &)));
+        connect(_edit, SIGNAL(returnPressed(void)), this, SIGNAL(returnPressed(void)));
+
+        _edit->setStyleSheet(QString("QLineEdit{background:%1;}")
+            .arg(typeStrToColor(Pothos::Util::typeInfoToString(typeid(QString))).name()));
     }
 
     QString value(void) const
     {
-        auto s = this->text();
+        auto s = _edit->text();
         return QString("\"%1\"").arg(s.replace("\"", "\\\"")); //escape
     }
 
@@ -38,19 +47,23 @@ public:
         if (s.startsWith("\"") and s.endsWith("\""))
         {
             auto s0 = s.midRef(1, s.size()-2).toString();
-            this->setText(s0.replace("\\\"", "\"")); //unescape
+            _edit->setText(s0.replace("\\\"", "\"")); //unescape
         }
-        else this->setText(s);
+        else _edit->setText(s);
     }
 
 signals:
     void textEdited(void);
+    void returnPressed(void);
 
 private slots:
     void handleTextEdited(const QString &)
     {
         emit this->textEdited();
     }
+
+private:
+    QLineEdit *_edit;
 };
 
 /***********************************************************************
