@@ -18,7 +18,8 @@
 
 TopologyEngine::TopologyEngine(QObject *parent):
     QObject(parent),
-    _topology(new Pothos::Topology())
+    _topology(new Pothos::Topology()),
+    _active(false)
 {
     return;
 }

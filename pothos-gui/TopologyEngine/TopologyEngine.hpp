@@ -73,6 +73,16 @@ public:
 
     void clear(void);
 
+    void setActive(const bool active)
+    {
+        _active = active;
+    }
+
+    bool active(void) const
+    {
+        return _active;
+    }
+
 private:
     //! A host URI to a map of process names to server handles
     std::map<std::string, std::map<std::string, Pothos::Proxy>> _uriToProcessToServerHandle;
@@ -90,4 +100,6 @@ private:
     std::map<QString, std::shared_ptr<EvalBlockCache>> _idToBlockEval;
 
     std::string _previousSignature;
+
+    bool _active;
 };

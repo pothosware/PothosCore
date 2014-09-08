@@ -142,6 +142,7 @@ void GraphEditor::updateEnabledActions(void)
     getActionMap()["redo"]->setEnabled(_stateManager->isSubsequentAvailable());
     getActionMap()["save"]->setEnabled(not _stateManager->isCurrentSaved());
     getActionMap()["reload"]->setEnabled(not this->getCurrentFilePath().isEmpty());
+    getActionMap()["activateTopology"]->setChecked(_topologyEngine->active());
 
     //can we paste something from the clipboard?
     auto mimeData = QApplication::clipboard()->mimeData();
@@ -769,6 +770,7 @@ void GraphEditor::handleStateChange(const GraphState &state)
 void GraphEditor::handleToggleActivateTopology(const bool enable)
 {
     if (not this->isVisible()) return;
+    _topologyEngine->setActive(enable);
     if (enable) this->updateExecutionEngine();
     else _topologyEngine->clear();
 }
@@ -824,7 +826,7 @@ void GraphEditor::handleBlockXcrement(const int adj)
 
 void GraphEditor::updateExecutionEngine(void)
 {
-    if (not getActionMap()["activateTopology"]->isChecked()) return;
+    if (not _topologyEngine->active()) return;
     try
     {
         _topologyEngine->commitUpdate(this->getGraphObjects());
