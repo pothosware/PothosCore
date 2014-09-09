@@ -4,6 +4,7 @@
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/Constants.hpp"
 #include "GraphEditor/GraphDraw.hpp"
+#include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
 #include <QPainter>
 #include <cassert>
@@ -135,6 +136,15 @@ void GraphObject::renderConnectablePoints(QPainter &painter)
         painter.setPen(QPen(QColor(GraphObjectConnLineColor)));
         QTransform trans; trans.rotate(attrs.rotation-this->rotation());
         painter.drawLine(attrs.point, attrs.point + trans.map(QPointF(GraphObjectConnLineLength, 0)));
+    }
+}
+
+void GraphObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsObject::mouseDoubleClickEvent(event);
+    if (event->button() == Qt::LeftButton)
+    {
+        emit this->draw()->modifyProperties(this);
     }
 }
 

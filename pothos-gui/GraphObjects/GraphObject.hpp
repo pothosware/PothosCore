@@ -62,6 +62,9 @@ public:
 signals:
     void IDChanged(const QString &);
 
+protected:
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+
 private:
     struct Impl;
     std::shared_ptr<Impl> _impl;

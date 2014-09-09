@@ -8,7 +8,6 @@
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include <Pothos/Exception.hpp>
-#include <QGraphicsSceneMouseEvent>
 #include <QGraphicsProxyWidget>
 #include <QPainter>
 #include <QPen>

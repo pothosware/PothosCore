@@ -39,16 +39,6 @@ void GraphDraw::wheelEvent(QWheelEvent *event)
     if (event->delta() < 0) getActionMap()["zoomOut"]->activate(QAction::Trigger);
 }
 
-void GraphDraw::mouseDoubleClickEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::LeftButton)
-    {
-        const auto objs = this->getObjectsAtPos(event->pos());
-        if (not objs.empty()) emit this->modifyProperties(objs.front());
-    }
-    QGraphicsView::mouseDoubleClickEvent(event);
-}
-
 void GraphDraw::mousePressEvent(QMouseEvent *event)
 {
     QGraphicsView::mousePressEvent(event);
