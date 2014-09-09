@@ -63,11 +63,13 @@ class QwtPlotCurve;
  * |param refLevel[Reference Level] The maximum displayable power level.
  * |default 0.0
  * |units dBxx
+ * |widget DoubleSpinBox(minimum=-150, maximum=150, step=10, decimals=1)
  *
  * |param dynRange[Dynamic Range] The ratio of largest to smallest displayable power level.
  * The vertical axis will display values from the ref level to ref level - dynamic range.
  * |default 100.0
  * |units dB
+ * |widget DoubleSpinBox(minimum=10, maximum=150, step=10, decimals=1)
  *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
