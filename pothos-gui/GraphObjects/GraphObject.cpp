@@ -139,6 +139,17 @@ void GraphObject::renderConnectablePoints(QPainter &painter)
     }
 }
 
+void GraphObject::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsObject::mousePressEvent(event);
+    if (event->button() == Qt::RightButton)
+    {
+        this->setSelected(true);
+        auto pos = this->draw()->mapFromScene(this->mapToScene(event->pos()));
+        emit this->draw()->customContextMenuRequested(pos);
+    }
+}
+
 void GraphObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsObject::mouseDoubleClickEvent(event);

@@ -53,21 +53,11 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
         if (not objs.empty()) objs.front()->setZValue(this->getMaxZValue()+1);
     }
 
-    //Right-click will add a selection if nothing was selected.
-    //This makes sure the right-click context menu sees a selection
-    //when a graph object, that is not selected, is right-clicked.
+    //Right-click context menu when nothing selected
     if (event->button() == Qt::RightButton)
     {
         const auto objs = this->getObjectsAtPos(event->pos());
-        size_t numSelected = 0;
-        for (auto obj : objs)
-        {
-            if (obj->isSelected()) numSelected++;
-        }
-        if (numSelected == 0 and not objs.empty())
-        {
-            objs.front()->setSelected(true);
-        }
+        if (objs.empty()) this->customContextMenuRequested(event->pos());
     }
 
     this->render();
