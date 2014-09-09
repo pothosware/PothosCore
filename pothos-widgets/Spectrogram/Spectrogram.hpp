@@ -15,6 +15,7 @@
 class QTimer;
 class MyQwtPlot;
 class QwtColorMap;
+class QwtPlotZoomer;
 class QwtPlotSpectrogram;
 class MySpectrogramRasterData;
 
@@ -185,13 +186,18 @@ public:
         return this->minimumSizeHint();
     }
 
+protected:
+    void mousePressEvent(QMouseEvent *event);
+
 private slots:
     void handlePickerSelected(const QPointF &);
     void appendBins(const std::valarray<float> &bins);
+    void handleUpdateAxis(void);
 
 private:
     QTimer *_replotTimer;
     MyQwtPlot *_mainPlot;
+    QwtPlotZoomer *_zoomer;
     std::shared_ptr<QwtPlotSpectrogram> _plotSpect;
     MySpectrogramRasterData *_plotRaster;
     double _displayRate;
@@ -205,5 +211,4 @@ private:
 
     std::function<void(Pothos::InputPort *, CArray &)> _inputConverter;
     QwtColorMap *makeColorMap(void) const;
-    void updatePowerAxis(void);
 };

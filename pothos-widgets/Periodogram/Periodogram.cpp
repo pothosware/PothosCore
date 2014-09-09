@@ -8,12 +8,15 @@
 #include <QResizeEvent>
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
+#include <qwt_plot_zoomer.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
+#include <QMouseEvent>
 
 Periodogram::Periodogram(const Pothos::DType &dtype):
     _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
+    _zoomer(new QwtPlotZoomer(_mainPlot->canvas())),
     _displayRate(1.0),
     _sampleRate(1.0),
     _sampleRateWoAxisUnits(1.0),
@@ -56,6 +59,13 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
         connect(picker, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
+    }
+
+    //setup zoomer
+    {
+        _zoomer->setTrackerMode(QwtPicker::AlwaysOff);
+        _zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
+        _zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
     }
 
     //setup grid
@@ -109,7 +119,7 @@ void Periodogram::setSampleRate(const double sampleRate)
         axisTitle = "kHz";
     }
     QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::xBottom), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
-    _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
 void Periodogram::setNumFFTBins(const size_t numBins)
@@ -121,18 +131,20 @@ void Periodogram::setNumFFTBins(const size_t numBins)
 void Periodogram::setReferenceLevel(const double refLevel)
 {
     _refLevel = refLevel;
-    this->updatePowerAxis();
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
 void Periodogram::setDynamicRange(const double dynRange)
 {
     _dynRange = dynRange;
-    this->updatePowerAxis();
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
-void Periodogram::updatePowerAxis(void)
+void Periodogram::handleUpdateAxis(void)
 {
+    _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
     _mainPlot->setAxisScale(QwtPlot::yLeft, _refLevel-_dynRange, _refLevel);
+    _zoomer->setZoomBase();
 }
 
 QString Periodogram::title(void) const
@@ -172,6 +184,12 @@ void Periodogram::handlePickerSelected(const QPointF &p)
 {
     const double freq = p.x()*_sampleRate/_sampleRateWoAxisUnits;
     this->callVoid("frequencySelected", freq);
+}
+
+void Periodogram::mousePressEvent(QMouseEvent *event)
+{
+    QWidget::mousePressEvent(event);
+    event->accept();
 }
 
 /***********************************************************************

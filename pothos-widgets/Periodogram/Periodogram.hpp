@@ -15,6 +15,7 @@
 class MyQwtPlot;
 class QwtPlotGrid;
 class QwtPlotCurve;
+class QwtPlotZoomer;
 
 /***********************************************************************
  * |PothosDoc Periodogram
@@ -190,15 +191,20 @@ public:
         return this->minimumSizeHint();
     }
 
+protected:
+    void mousePressEvent(QMouseEvent *event);
+
 private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);
     void handlePickerSelected(const QPointF &);
     void handlePowerBins(const int index, const std::valarray<float> &bins);
+    void handleUpdateAxis(void);
 
 private:
     MyQwtPlot *_mainPlot;
     QwtPlotGrid *_plotGrid;
+    QwtPlotZoomer *_zoomer;
     double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;
@@ -211,5 +217,4 @@ private:
     void setupPlotterCurves(void);
     std::map<size_t, std::shared_ptr<QwtPlotCurve>> _curves;
     std::map<size_t, std::function<void(Pothos::InputPort *, CArray &)>> _inputConverters;
-    void updatePowerAxis(void);
 };
