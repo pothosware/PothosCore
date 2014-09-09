@@ -53,7 +53,7 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     //clear old panel
     if (_propertiesPanel)
     {
-        if (_currentGraphObject) emit this->resetPanel();
+        if (_currentGraphObject) emit this->replacePanel();
         delete _propertiesPanel;
     }
 
@@ -71,7 +71,7 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
 
     //connect panel signals and slots into dock events
     connect(_propertiesPanel, SIGNAL(destroyed(QObject*)), this, SLOT(handlePanelDestroyed(QObject *)));
-    connect(this, SIGNAL(resetPanel(void)), _propertiesPanel, SLOT(handleCancel(void)));
+    connect(this, SIGNAL(replacePanel(void)), _propertiesPanel, SLOT(handleCommit(void)));
     connect(_commitButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCommit(void)));
     connect(_cancelButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCancel(void)));
 

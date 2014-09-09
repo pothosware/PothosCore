@@ -17,7 +17,7 @@ public:
     PropertiesPanelDock(QWidget *parent);
 
 signals:
-    void resetPanel(void);
+    void replacePanel(void);
 
 private slots:
 
