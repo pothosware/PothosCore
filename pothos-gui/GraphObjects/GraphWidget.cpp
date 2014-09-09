@@ -8,6 +8,7 @@
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include <Pothos/Exception.hpp>
+#include <QGraphicsSceneMouseEvent>
 #include <QGraphicsProxyWidget>
 #include <QPainter>
 #include <QPen>
@@ -18,28 +19,13 @@
 #include <cassert>
 
 /***********************************************************************
- * custom QGraphicsProxyWidget to accept the mouseDoubleClickEvent
- **********************************************************************/
-class MyGraphicsProxyWidget : public QGraphicsProxyWidget
-{
-public:
-    MyGraphicsProxyWidget(QGraphicsItem *parent):
-        QGraphicsProxyWidget(parent){}
-
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
-    {
-        QGraphicsProxyWidget::mouseDoubleClickEvent(event);
-    }
-};
-
-/***********************************************************************
  * GraphWidget private container
  **********************************************************************/
 struct GraphWidget::Impl
 {
     Impl(QGraphicsItem *parent):
         container(new GraphWidgetContainer()),
-        graphicsWidget(new MyGraphicsProxyWidget(parent))
+        graphicsWidget(new QGraphicsProxyWidget(parent))
     {
         graphicsWidget->setWidget(container);
     }
@@ -52,7 +38,7 @@ struct GraphWidget::Impl
     QPointer<GraphBlock> block;
 
     GraphWidgetContainer *container;
-    MyGraphicsProxyWidget *graphicsWidget;
+    QGraphicsProxyWidget *graphicsWidget;
 };
 
 /***********************************************************************
@@ -111,12 +97,6 @@ void GraphWidget::handleBlockIdChanged(const QString &id)
 QPainterPath GraphWidget::shape(void) const
 {
     return _impl->graphicsWidget->shape();
-}
-
-void GraphWidget::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
-{
-    _impl->graphicsWidget->mouseDoubleClickEvent(event);
-    QGraphicsObject::mouseDoubleClickEvent(event);
 }
 
 bool GraphWidget::sceneEventFilter(QGraphicsItem *watched, QEvent *event)

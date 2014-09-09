@@ -40,7 +40,6 @@ private slots:
 protected:
     bool sceneEventFilter(QGraphicsItem *watched, QEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
 private:
     struct Impl;
