@@ -15,6 +15,7 @@
 class MyQwtPlot;
 class QwtPlotGrid;
 class QwtPlotCurve;
+class QwtPlotZoomer;
 
 /***********************************************************************
  * |PothosDoc Periodogram
@@ -60,6 +61,17 @@ class QwtPlotCurve;
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
  *
+ * |param refLevel[Reference Level] The maximum displayable power level.
+ * |default 0.0
+ * |units dBxx
+ * |widget DoubleSpinBox(minimum=-150, maximum=150, step=10, decimals=1)
+ *
+ * |param dynRange[Dynamic Range] The ratio of largest to smallest displayable power level.
+ * The vertical axis will display values from the ref level to ref level - dynamic range.
+ * |default 100.0
+ * |units dB
+ * |widget DoubleSpinBox(minimum=10, maximum=150, step=10, decimals=1)
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
@@ -83,6 +95,8 @@ class QwtPlotCurve;
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
+ * |setter setReferenceLevel(refLevel)
+ * |setter setDynamicRange(dynRange)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
@@ -124,6 +138,8 @@ public:
     void setSampleRate(const double sampleRate);
 
     void setNumFFTBins(const size_t numBins);
+    void setReferenceLevel(const double refLevel);
+    void setDynamicRange(const double dynRange);
 
     QString title(void) const;
 
@@ -145,6 +161,16 @@ public:
     size_t numFFTBins(void) const
     {
         return _numBins;
+    }
+
+    double referenceLevel(void) const
+    {
+        return _refLevel;
+    }
+
+    double dynamicRange(void) const
+    {
+        return _dynRange;
     }
 
     void enableXAxis(const bool enb);
@@ -170,14 +196,18 @@ private slots:
     void handleLegendChecked(const QVariant &, bool, int);
     void handlePickerSelected(const QPointF &);
     void handlePowerBins(const int index, const std::valarray<float> &bins);
+    void handleUpdateAxis(void);
 
 private:
     MyQwtPlot *_mainPlot;
     QwtPlotGrid *_plotGrid;
+    QwtPlotZoomer *_zoomer;
     double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;
     size_t _numBins;
+    double _refLevel;
+    double _dynRange;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
     //set of curves per index

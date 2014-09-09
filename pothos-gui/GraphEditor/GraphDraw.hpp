@@ -6,6 +6,7 @@
 #include "GraphObjects/GraphObject.hpp"
 #include <QGraphicsView>
 #include <memory>
+#include <map>
 
 class GraphEditor;
 class QGraphicsItem;
@@ -67,11 +68,11 @@ public:
     GraphObjectList getObjectsAtPos(const QPoint &pos);
 
 protected:
+    void contextMenuEvent(QContextMenuEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent *event);
     void wheelEvent(QWheelEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
@@ -94,8 +95,8 @@ private:
     qreal _zoomScale;
     int _selectionState;
     QPointF _lastContextMenuPos;
-
     GraphConnectionEndpoint _lastClickSelectEp;
+    std::map<GraphObject *, QPointF> _preMovePositions;
 
     std::shared_ptr<QGraphicsPixmapItem> _graphConnectionPoints;
     std::shared_ptr<QGraphicsPixmapItem> _graphBoundingBoxes;

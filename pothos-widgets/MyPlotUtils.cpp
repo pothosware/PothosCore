@@ -5,7 +5,9 @@
 #include <QList>
 #include <valarray>
 #include <qwt_legend_data.h>
+#include <qwt_plot_canvas.h>
 #include <qwt_text.h>
+#include <QMouseEvent>
 
 QColor getDefaultCurveColor(const size_t whichCurve)
 {
@@ -34,10 +36,47 @@ QColor pastelize(const QColor &c)
     return QColor::fromHsv(c.hue(), int(c.saturationF()*128), int(c.valueF()*64)+191);
 }
 
+/***********************************************************************
+ * Custom QwtPlotCanvas that accepts the mousePressEvent
+ * (needed to make mouse-based events work within QGraphicsItem)
+ **********************************************************************/
+class MyQwtPlotCanvas : public QwtPlotCanvas
+{
+    Q_OBJECT
+public:
+    MyQwtPlotCanvas(QwtPlot *parent):
+        QwtPlotCanvas(parent)
+    {
+        return;
+    }
+protected:
+    void mousePressEvent(QMouseEvent *event)
+    {
+        QwtPlotCanvas::mousePressEvent(event);
+        event->accept();
+    }
+};
+
+/***********************************************************************
+ * Custom QwtPlot implementation
+ **********************************************************************/
 MyQwtPlot::MyQwtPlot(QWidget *parent):
     QwtPlot(parent)
 {
+    this->setCanvas(new MyQwtPlotCanvas(this));
     qRegisterMetaType<QList<QwtLegendData>>("QList<QwtLegendData>"); //missing from qwt
     qRegisterMetaType<std::valarray<float>>("std::valarray<float>"); //used for plot data
     qRegisterMetaType<QwtText>("QwtText"); //used in this class's public slots
 }
+
+void MyQwtPlot::setTitle(const QwtText &text)
+{
+    QwtPlot::setTitle(text);
+}
+
+void MyQwtPlot::setAxisTitle(const int id, const QwtText &text)
+{
+    QwtPlot::setAxisTitle(id, text);
+}
+
+#include "MyPlotUtils.moc"

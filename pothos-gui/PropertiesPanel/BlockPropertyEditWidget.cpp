@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/TypeInfo.hpp>
-#include "PropertiesPanel/BlockPropertyEditWidget.hpp"
+#include "BlockPropertyEditWidget.hpp"
 #include "ColorUtils/ColorUtils.hpp"
 #include <QComboBox>
 #include <QLineEdit>
@@ -158,6 +158,7 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
         spinBox->setMinimum(widgetKwargs->optValue<int>("minimum", std::numeric_limits<int>::min()));
         spinBox->setMaximum(widgetKwargs->optValue<int>("maximum", std::numeric_limits<int>::max()));
         connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
+        connect(spinBox, SIGNAL(valueChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
         _edit = spinBox;
     }
     else if (widgetType == "DoubleSpinBox")
@@ -168,6 +169,7 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
         spinBox->setSingleStep(widgetKwargs->optValue<double>("step", 0.01));
         spinBox->setDecimals(widgetKwargs->optValue<int>("decimals", 2));
         connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
+        connect(spinBox, SIGNAL(valueChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
         _edit = spinBox;
     }
     else if (widgetType == "StringEntry")

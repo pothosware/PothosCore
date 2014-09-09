@@ -50,7 +50,6 @@ GraphDraw::GraphDraw(QWidget *parent):
     this->clearSelectionState();
     this->setFocusPolicy(Qt::ClickFocus);
 
-    this->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
         this, SLOT(handleCustomContextMenuRequested(const QPoint &)));
     connect(this, SIGNAL(modifyProperties(GraphObject *)),

@@ -15,6 +15,7 @@
 class MyQwtPlot;
 class QwtPlotGrid;
 class QwtPlotCurve;
+class QwtPlotZoomer;
 
 /***********************************************************************
  * |PothosDoc Wave Monitor
@@ -169,10 +170,13 @@ private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);
     void handleSamples(const int index, const int curve, const std::valarray<float> &samps);
+    void handleUpdateAxis(void);
+    void handleZoomed(const QRectF &rect);
 
 private:
     MyQwtPlot *_mainPlot;
     QwtPlotGrid *_plotGrid;
+    QwtPlotZoomer *_zoomer;
     double _displayRate;
     double _sampleRate;
     double _timeSpan;

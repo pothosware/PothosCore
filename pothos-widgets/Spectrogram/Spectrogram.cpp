@@ -21,12 +21,15 @@
 Spectrogram::Spectrogram(const Pothos::DType &dtype):
     _replotTimer(new QTimer(this)),
     _mainPlot(new MyQwtPlot(this)),
+    _zoomer(new MyPlotPicker(_mainPlot->canvas())),
     _plotSpect(new QwtPlotSpectrogram()),
     _plotRaster(new MySpectrogramRasterData()),
     _sampleRate(1.0),
     _sampleRateWoAxisUnits(1.0),
     _numBins(1024),
-    _timeSpan(10.0)
+    _timeSpan(10.0),
+    _refLevel(0.0),
+    _dynRange(100.0)
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, widget));
@@ -35,11 +38,15 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setNumFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTimeSpan));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setReferenceLevel));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setDynamicRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, title));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, numFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, timeSpan));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, referenceLevel));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, dynamicRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableYAxis));
     this->registerSignal("frequencySelected");
@@ -54,10 +61,8 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     //setup plotter
     {
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
-        _mainPlot->setAxisScale(QwtPlot::yRight, -100, 0);
-        _plotRaster->setInterval(Qt::ZAxis, QwtInterval(-100, 0));
-        auto picker = new MyPlotPicker(_mainPlot->canvas());
-        connect(picker, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
+        dynamic_cast<MyPlotPicker *>(_zoomer)->registerRaster(_plotRaster);
+        connect(_zoomer, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yRight, MyPlotAxisFontSize());
@@ -72,7 +77,6 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
         _plotSpect->attach(_mainPlot);
         _plotSpect->setData(_plotRaster);
         _plotSpect->setColorMap(this->makeColorMap());
-        _mainPlot->axisWidget(QwtPlot::yRight)->setColorMap(_plotRaster->interval(Qt::ZAxis), this->makeColorMap());
         _plotSpect->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
         _plotSpect->setRenderThreadCount(0); //enable multi-thread
     }
@@ -117,8 +121,7 @@ void Spectrogram::setSampleRate(const double sampleRate)
         axisTitle = "kHz";
     }
     QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::xBottom), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
-    _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
-    _plotRaster->setInterval(Qt::XAxis, QwtInterval(-_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2));
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
 void Spectrogram::setNumFFTBins(const size_t numBins)
@@ -148,13 +151,41 @@ void Spectrogram::setTimeSpan(const double timeSpan)
         axisTitle = "msecs";
     }
     QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::yLeft), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
-    _mainPlot->setAxisScale(QwtPlot::yLeft, 0, _timeSpan);
-    _plotRaster->setInterval(Qt::YAxis, QwtInterval(0, _timeSpan));
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
 QString Spectrogram::title(void) const
 {
     return _mainPlot->title().text();
+}
+
+void Spectrogram::setReferenceLevel(const double refLevel)
+{
+    _refLevel = refLevel;
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
+}
+
+void Spectrogram::setDynamicRange(const double dynRange)
+{
+    _dynRange = dynRange;
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
+}
+
+void Spectrogram::handleUpdateAxis(void)
+{
+    _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
+
+    _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
+    _plotRaster->setInterval(Qt::XAxis, QwtInterval(-_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2));
+
+    _mainPlot->setAxisScale(QwtPlot::yLeft, 0, _timeSpan);
+    _plotRaster->setInterval(Qt::YAxis, QwtInterval(0, _timeSpan));
+
+    _mainPlot->setAxisScale(QwtPlot::yRight, _refLevel-_dynRange, _refLevel);
+    _plotRaster->setInterval(Qt::ZAxis, QwtInterval(_refLevel-_dynRange, _refLevel));
+    _mainPlot->axisWidget(QwtPlot::yRight)->setColorMap(_plotRaster->interval(Qt::ZAxis), this->makeColorMap());
+
+    _zoomer->setZoomBase(); //record current axis settings
 }
 
 void Spectrogram::enableXAxis(const bool enb)

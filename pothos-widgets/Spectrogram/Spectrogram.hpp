@@ -15,6 +15,7 @@
 class QTimer;
 class MyQwtPlot;
 class QwtColorMap;
+class QwtPlotZoomer;
 class QwtPlotSpectrogram;
 class MySpectrogramRasterData;
 
@@ -61,6 +62,17 @@ class MySpectrogramRasterData;
  * |default 10.0
  * |units seconds
  *
+ * |param refLevel[Reference Level] The maximum displayable power level.
+ * |default 0.0
+ * |units dBxx
+ * |widget DoubleSpinBox(minimum=-150, maximum=150, step=10, decimals=1)
+ *
+ * |param dynRange[Dynamic Range] The ratio of largest to smallest displayable power level.
+ * The vertical axis will display values from the ref level to ref level - dynamic range.
+ * |default 100.0
+ * |units dB
+ * |widget DoubleSpinBox(minimum=10, maximum=150, step=10, decimals=1)
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
@@ -80,6 +92,8 @@ class MySpectrogramRasterData;
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
  * |setter setTimeSpan(timeSpan)
+ * |setter setReferenceLevel(refLevel)
+ * |setter setDynamicRange(dynRange)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  **********************************************************************/
@@ -119,6 +133,8 @@ public:
 
     void setNumFFTBins(const size_t numBins);
     void setTimeSpan(const double timeSpan);
+    void setReferenceLevel(const double refLevel);
+    void setDynamicRange(const double dynRange);
 
     QString title(void) const;
 
@@ -142,6 +158,16 @@ public:
         return _timeSpan;
     }
 
+    double referenceLevel(void) const
+    {
+        return _refLevel;
+    }
+
+    double dynamicRange(void) const
+    {
+        return _dynRange;
+    }
+
     void enableXAxis(const bool enb);
     void enableYAxis(const bool enb);
 
@@ -163,10 +189,12 @@ public:
 private slots:
     void handlePickerSelected(const QPointF &);
     void appendBins(const std::valarray<float> &bins);
+    void handleUpdateAxis(void);
 
 private:
     QTimer *_replotTimer;
     MyQwtPlot *_mainPlot;
+    QwtPlotZoomer *_zoomer;
     std::shared_ptr<QwtPlotSpectrogram> _plotSpect;
     MySpectrogramRasterData *_plotRaster;
     double _displayRate;
@@ -174,6 +202,8 @@ private:
     double _sampleRateWoAxisUnits;
     size_t _numBins;
     double _timeSpan;
+    double _refLevel;
+    double _dynRange;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
     std::function<void(Pothos::InputPort *, CArray &)> _inputConverter;

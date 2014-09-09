@@ -18,28 +18,13 @@
 #include <cassert>
 
 /***********************************************************************
- * custom QGraphicsProxyWidget to accept the mouseDoubleClickEvent
- **********************************************************************/
-class MyGraphicsProxyWidget : public QGraphicsProxyWidget
-{
-public:
-    MyGraphicsProxyWidget(QGraphicsItem *parent):
-        QGraphicsProxyWidget(parent){}
-
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
-    {
-        QGraphicsProxyWidget::mouseDoubleClickEvent(event);
-    }
-};
-
-/***********************************************************************
  * GraphWidget private container
  **********************************************************************/
 struct GraphWidget::Impl
 {
     Impl(QGraphicsItem *parent):
         container(new GraphWidgetContainer()),
-        graphicsWidget(new MyGraphicsProxyWidget(parent))
+        graphicsWidget(new QGraphicsProxyWidget(parent))
     {
         graphicsWidget->setWidget(container);
     }
@@ -52,7 +37,7 @@ struct GraphWidget::Impl
     QPointer<GraphBlock> block;
 
     GraphWidgetContainer *container;
-    MyGraphicsProxyWidget *graphicsWidget;
+    QGraphicsProxyWidget *graphicsWidget;
 };
 
 /***********************************************************************
@@ -63,7 +48,6 @@ GraphWidget::GraphWidget(QObject *parent):
     _impl(new Impl(this))
 {
     this->setFlag(QGraphicsItem::ItemIsMovable);
-    _impl->graphicsWidget->installSceneEventFilter(this);
     connect(_impl->container, SIGNAL(resized(void)), this, SLOT(handleWidgetResized(void)));
 }
 
@@ -111,26 +95,6 @@ void GraphWidget::handleBlockIdChanged(const QString &id)
 QPainterPath GraphWidget::shape(void) const
 {
     return _impl->graphicsWidget->shape();
-}
-
-void GraphWidget::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
-{
-    _impl->graphicsWidget->mouseDoubleClickEvent(event);
-    QGraphicsObject::mouseDoubleClickEvent(event);
-}
-
-bool GraphWidget::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
-{
-    //clicking the internal widget causes the same behaviour as clicking no widgets -- unselect everything
-    //this also has the added bennefit of preventing a false move event if the internal widget has a drag
-    if (watched == _impl->graphicsWidget and event->type() == QEvent::GraphicsSceneMousePress and
-        _impl->container->widget() != nullptr and _impl->container->widget()->underMouse())
-    {
-        this->draw()->deselectAllObjs();
-        const auto maxZValue = this->draw()->getMaxZValue();
-        if (this->zValue() <= maxZValue) this->setZValue(maxZValue+1);
-    }
-    return GraphObject::sceneEventFilter(watched, event);
 }
 
 QVariant GraphWidget::itemChange(GraphicsItemChange change, const QVariant &value)

@@ -14,10 +14,13 @@
 Periodogram::Periodogram(const Pothos::DType &dtype):
     _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
+    _zoomer(new MyPlotPicker(_mainPlot->canvas())),
     _displayRate(1.0),
     _sampleRate(1.0),
     _sampleRateWoAxisUnits(1.0),
-    _numBins(1024)
+    _numBins(1024),
+    _refLevel(0.0),
+    _dynRange(100.0)
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, widget));
@@ -26,11 +29,15 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumFFTBins));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setReferenceLevel));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setDynamicRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, numInputs));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, title));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, numFFTBins));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, referenceLevel));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, dynamicRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableYAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setYAxisTitle));
@@ -46,9 +53,7 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     //setup plotter
     {
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
-        _mainPlot->setAxisScale(QwtPlot::yLeft, -100, 0);
-        auto picker = new MyPlotPicker(_mainPlot->canvas());
-        connect(picker, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
+        connect(_zoomer, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
     }
@@ -104,13 +109,33 @@ void Periodogram::setSampleRate(const double sampleRate)
         axisTitle = "kHz";
     }
     QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::xBottom), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
-    _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
 void Periodogram::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
     for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
+}
+
+void Periodogram::setReferenceLevel(const double refLevel)
+{
+    _refLevel = refLevel;
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
+}
+
+void Periodogram::setDynamicRange(const double dynRange)
+{
+    _dynRange = dynRange;
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
+}
+
+void Periodogram::handleUpdateAxis(void)
+{
+    _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
+    _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
+    _mainPlot->setAxisScale(QwtPlot::yLeft, _refLevel-_dynRange, _refLevel);
+    _zoomer->setZoomBase(); //record current axis settings
 }
 
 QString Periodogram::title(void) const

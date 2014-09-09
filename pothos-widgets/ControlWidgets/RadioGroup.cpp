@@ -6,6 +6,7 @@
 #include <QGroupBox>
 #include <QRadioButton>
 #include <QVBoxLayout>
+#include <QMouseEvent>
 #include <map>
 
 /***********************************************************************
@@ -103,6 +104,13 @@ public:
             if (not optPair.at(0).canConvert(typeid(QString))) throw Pothos::DataFormatException("RadioGroup::setOptions()", "entry[0] must be a string");
         }
         QMetaObject::invokeMethod(this, "__setOptions", Qt::QueuedConnection, Q_ARG(Pothos::ObjectVector, options));
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent *event)
+    {
+        QGroupBox::mousePressEvent(event);
+        event->ignore(); //allows for dragging from QGroupBox title
     }
 
 private slots:
