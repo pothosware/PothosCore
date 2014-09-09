@@ -191,9 +191,6 @@ public:
         return this->minimumSizeHint();
     }
 
-protected:
-    void mousePressEvent(QMouseEvent *event);
-
 private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);

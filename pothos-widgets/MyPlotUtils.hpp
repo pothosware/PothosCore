@@ -22,12 +22,6 @@ public:
     MyQwtPlot(QWidget *parent);
 
 public slots:
-    void setTitle(const QwtText &text)
-    {
-        QwtPlot::setTitle(text);
-    }
-    void setAxisTitle(const int id, const QwtText &text)
-    {
-        QwtPlot::setAxisTitle(id, text);
-    }
+    void setTitle(const QwtText &text);
+    void setAxisTitle(const int id, const QwtText &text);
 };

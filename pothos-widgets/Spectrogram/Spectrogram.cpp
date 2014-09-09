@@ -17,7 +17,6 @@
 #include <qwt_color_map.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
-#include <QMouseEvent>
 #include <iostream>
 
 Spectrogram::Spectrogram(const Pothos::DType &dtype):
@@ -223,12 +222,6 @@ QwtColorMap *Spectrogram::makeColorMap(void) const
     cMap->addColorStop(0.6, Qt::green);
     cMap->addColorStop(0.95, Qt::yellow);
     return cMap;
-}
-
-void Spectrogram::mousePressEvent(QMouseEvent *event)
-{
-    QWidget::mousePressEvent(event);
-    event->accept();
 }
 
 /***********************************************************************

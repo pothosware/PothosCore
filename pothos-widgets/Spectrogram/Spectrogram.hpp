@@ -186,9 +186,6 @@ public:
         return this->minimumSizeHint();
     }
 
-protected:
-    void mousePressEvent(QMouseEvent *event);
-
 private slots:
     void handlePickerSelected(const QPointF &);
     void appendBins(const std::valarray<float> &bins);

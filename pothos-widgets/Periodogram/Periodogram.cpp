@@ -11,7 +11,6 @@
 #include <qwt_plot_zoomer.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
-#include <QMouseEvent>
 
 Periodogram::Periodogram(const Pothos::DType &dtype):
     _mainPlot(new MyQwtPlot(this)),
@@ -184,12 +183,6 @@ void Periodogram::handlePickerSelected(const QPointF &p)
 {
     const double freq = p.x()*_sampleRate/_sampleRateWoAxisUnits;
     this->callVoid("frequencySelected", freq);
-}
-
-void Periodogram::mousePressEvent(QMouseEvent *event)
-{
-    QWidget::mousePressEvent(event);
-    event->accept();
 }
 
 /***********************************************************************
