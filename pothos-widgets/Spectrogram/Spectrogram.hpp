@@ -61,6 +61,15 @@ class MySpectrogramRasterData;
  * |default 10.0
  * |units seconds
  *
+ * |param refLevel[Reference Level] The maximum displayable power level.
+ * |default 0.0
+ * |units dBxx
+ *
+ * |param dynRange[Dynamic Range] The ratio of largest to smallest displayable power level.
+ * The vertical axis will display values from the ref level to ref level - dynamic range.
+ * |default 100.0
+ * |units dB
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
@@ -80,6 +89,8 @@ class MySpectrogramRasterData;
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
  * |setter setTimeSpan(timeSpan)
+ * |setter setReferenceLevel(refLevel)
+ * |setter setDynamicRange(dynRange)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  **********************************************************************/
@@ -119,6 +130,8 @@ public:
 
     void setNumFFTBins(const size_t numBins);
     void setTimeSpan(const double timeSpan);
+    void setReferenceLevel(const double refLevel);
+    void setDynamicRange(const double dynRange);
 
     QString title(void) const;
 
@@ -140,6 +153,16 @@ public:
     double timeSpan(void) const
     {
         return _timeSpan;
+    }
+
+    double referenceLevel(void) const
+    {
+        return _refLevel;
+    }
+
+    double dynamicRange(void) const
+    {
+        return _dynRange;
     }
 
     void enableXAxis(const bool enb);
@@ -174,8 +197,11 @@ private:
     double _sampleRateWoAxisUnits;
     size_t _numBins;
     double _timeSpan;
+    double _refLevel;
+    double _dynRange;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
     std::function<void(Pothos::InputPort *, CArray &)> _inputConverter;
     QwtColorMap *makeColorMap(void) const;
+    void updatePowerAxis(void);
 };

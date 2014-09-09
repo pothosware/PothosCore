@@ -60,6 +60,15 @@ class QwtPlotCurve;
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
  *
+ * |param refLevel[Reference Level] The maximum displayable power level.
+ * |default 0.0
+ * |units dBxx
+ *
+ * |param dynRange[Dynamic Range] The ratio of largest to smallest displayable power level.
+ * The vertical axis will display values from the ref level to ref level - dynamic range.
+ * |default 100.0
+ * |units dB
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
@@ -83,6 +92,8 @@ class QwtPlotCurve;
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
+ * |setter setReferenceLevel(refLevel)
+ * |setter setDynamicRange(dynRange)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
@@ -124,6 +135,8 @@ public:
     void setSampleRate(const double sampleRate);
 
     void setNumFFTBins(const size_t numBins);
+    void setReferenceLevel(const double refLevel);
+    void setDynamicRange(const double dynRange);
 
     QString title(void) const;
 
@@ -145,6 +158,16 @@ public:
     size_t numFFTBins(void) const
     {
         return _numBins;
+    }
+
+    double referenceLevel(void) const
+    {
+        return _refLevel;
+    }
+
+    double dynamicRange(void) const
+    {
+        return _dynRange;
     }
 
     void enableXAxis(const bool enb);
@@ -178,10 +201,13 @@ private:
     double _sampleRate;
     double _sampleRateWoAxisUnits;
     size_t _numBins;
+    double _refLevel;
+    double _dynRange;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
     //set of curves per index
     void setupPlotterCurves(void);
     std::map<size_t, std::shared_ptr<QwtPlotCurve>> _curves;
     std::map<size_t, std::function<void(Pothos::InputPort *, CArray &)>> _inputConverters;
+    void updatePowerAxis(void);
 };

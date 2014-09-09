@@ -26,7 +26,9 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     _sampleRate(1.0),
     _sampleRateWoAxisUnits(1.0),
     _numBins(1024),
-    _timeSpan(10.0)
+    _timeSpan(10.0),
+    _refLevel(0.0),
+    _dynRange(100.0)
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, widget));
@@ -35,11 +37,15 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setNumFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTimeSpan));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setReferenceLevel));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setDynamicRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, title));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, numFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, timeSpan));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, referenceLevel));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, dynamicRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableYAxis));
     this->registerSignal("frequencySelected");
@@ -54,8 +60,6 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     //setup plotter
     {
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
-        _mainPlot->setAxisScale(QwtPlot::yRight, -100, 0);
-        _plotRaster->setInterval(Qt::ZAxis, QwtInterval(-100, 0));
         auto picker = new MyPlotPicker(_mainPlot->canvas());
         connect(picker, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
@@ -72,7 +76,6 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
         _plotSpect->attach(_mainPlot);
         _plotSpect->setData(_plotRaster);
         _plotSpect->setColorMap(this->makeColorMap());
-        _mainPlot->axisWidget(QwtPlot::yRight)->setColorMap(_plotRaster->interval(Qt::ZAxis), this->makeColorMap());
         _plotSpect->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
         _plotSpect->setRenderThreadCount(0); //enable multi-thread
     }
@@ -155,6 +158,25 @@ void Spectrogram::setTimeSpan(const double timeSpan)
 QString Spectrogram::title(void) const
 {
     return _mainPlot->title().text();
+}
+
+void Spectrogram::setReferenceLevel(const double refLevel)
+{
+    _refLevel = refLevel;
+    this->updatePowerAxis();
+}
+
+void Spectrogram::setDynamicRange(const double dynRange)
+{
+    _dynRange = dynRange;
+    this->updatePowerAxis();
+}
+
+void Spectrogram::updatePowerAxis(void)
+{
+    _mainPlot->setAxisScale(QwtPlot::yRight, _refLevel-_dynRange, _refLevel);
+    _plotRaster->setInterval(Qt::ZAxis, QwtInterval(_refLevel-_dynRange, _refLevel));
+    _mainPlot->axisWidget(QwtPlot::yRight)->setColorMap(_plotRaster->interval(Qt::ZAxis), this->makeColorMap());
 }
 
 void Spectrogram::enableXAxis(const bool enb)
