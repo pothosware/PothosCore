@@ -29,6 +29,14 @@ void GraphDraw::clearSelectionState(void)
     _selectionState = SELECTION_STATE_NONE;
 }
 
+void GraphDraw::contextMenuEvent(QContextMenuEvent *event)
+{
+    QGraphicsView::contextMenuEvent(event);
+    //context menu when nothing selected
+    const auto objs = this->getObjectsAtPos(event->pos());
+    if (objs.empty()) this->customContextMenuRequested(event->pos());
+}
+
 void GraphDraw::wheelEvent(QWheelEvent *event)
 {
     const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
@@ -51,13 +59,6 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
         //make the clicked object topmost
         const auto objs = this->getObjectsAtPos(event->pos());
         if (not objs.empty()) objs.front()->setZValue(this->getMaxZValue()+1);
-    }
-
-    //Right-click context menu when nothing selected
-    if (event->button() == Qt::RightButton)
-    {
-        const auto objs = this->getObjectsAtPos(event->pos());
-        if (objs.empty()) this->customContextMenuRequested(event->pos());
     }
 
     this->render();

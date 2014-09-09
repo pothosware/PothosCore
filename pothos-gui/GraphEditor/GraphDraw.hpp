@@ -67,6 +67,7 @@ public:
     GraphObjectList getObjectsAtPos(const QPoint &pos);
 
 protected:
+    void contextMenuEvent(QContextMenuEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent *event);
