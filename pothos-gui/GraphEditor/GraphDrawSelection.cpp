@@ -22,7 +22,6 @@
 static const int SELECTION_STATE_NONE = 0;
 static const int SELECTION_STATE_PRESS = 1;
 static const int SELECTION_STATE_MOVE = 2;
-static const int SELECTION_STATE_BAND = 3; //RubberBandDrag
 
 void GraphDraw::clearSelectionState(void)
 {
@@ -50,15 +49,15 @@ void GraphDraw::wheelEvent(QWheelEvent *event)
 void GraphDraw::mousePressEvent(QMouseEvent *event)
 {
     QGraphicsView::mousePressEvent(event);
+    const auto objs = this->getObjectsAtPos(event->pos());
 
     //record the conditions of this press event, nothing is changed
-    if (event->button() == Qt::LeftButton)
+    if (not objs.empty() and event->button() == Qt::LeftButton)
     {
         _selectionState = SELECTION_STATE_PRESS;
 
         //make the clicked object topmost
-        const auto objs = this->getObjectsAtPos(event->pos());
-        if (not objs.empty()) objs.front()->setZValue(this->getMaxZValue()+1);
+        objs.front()->setZValue(this->getMaxZValue()+1);
     }
 
     this->render();
@@ -84,7 +83,14 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     //handle the first move event transition from a press event
     if (_selectionState == SELECTION_STATE_PRESS)
     {
-        _selectionState = (this->getObjectsAtPos(event->pos()).empty())? SELECTION_STATE_BAND : SELECTION_STATE_MOVE;
+        _selectionState = SELECTION_STATE_MOVE;
+
+        //record positions to determine movement on release
+        _preMovePositions.clear();
+        for (auto obj : getObjectsSelected(~GRAPH_CONNECTION))
+        {
+            _preMovePositions[obj] = obj->pos();
+        }
     }
 
     //cause full render when moving objects for clean animation
@@ -111,8 +117,12 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     //emit the move event up to the graph editor
     if (_selectionState == SELECTION_STATE_MOVE)
     {
-        auto selected = getObjectsSelected(~GRAPH_CONNECTION);
-        if (not selected.isEmpty()) this->getGraphEditor()->handleStateChange(
+        bool moved = false;
+        for (const auto &pair : _preMovePositions)
+        {
+            if (pair.first->pos() != pair.second) moved = true;
+        }
+        if (moved) this->getGraphEditor()->handleStateChange(
             GraphState("transform-move", tr("Move %1").arg(this->getSelectionDescription(~GRAPH_CONNECTION))));
     }
 

@@ -6,6 +6,7 @@
 #include "GraphObjects/GraphObject.hpp"
 #include <QGraphicsView>
 #include <memory>
+#include <map>
 
 class GraphEditor;
 class QGraphicsItem;
@@ -94,8 +95,8 @@ private:
     qreal _zoomScale;
     int _selectionState;
     QPointF _lastContextMenuPos;
-
     GraphConnectionEndpoint _lastClickSelectEp;
+    std::map<GraphObject *, QPointF> _preMovePositions;
 
     std::shared_ptr<QGraphicsPixmapItem> _graphConnectionPoints;
     std::shared_ptr<QGraphicsPixmapItem> _graphBoundingBoxes;
