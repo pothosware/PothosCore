@@ -10,10 +10,12 @@
 #include <qwt_plot_grid.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
+#include <iostream>
 
 WaveMonitor::WaveMonitor(const Pothos::DType &dtype):
     _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
+    _zoomer(new MyPlotPicker(_mainPlot->canvas())),
     _displayRate(1.0),
     _sampleRate(1.0),
     _timeSpan(1.0),
@@ -48,6 +50,7 @@ WaveMonitor::WaveMonitor(const Pothos::DType &dtype):
         new MyPlotPicker(_mainPlot->canvas());
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
+        connect(_zoomer, SIGNAL(zoomed(const QRectF &)), this, SLOT(handleZoomed(const QRectF &)));
     }
 
     //setup grid
@@ -134,7 +137,23 @@ void WaveMonitor::updateXAxis(void)
         axisTitle = "msecs";
     }
     QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::xBottom), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
+}
+
+void WaveMonitor::handleUpdateAxis(void)
+{
+    _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
     _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
+    _zoomer->setZoomBase(); //record current axis settings
+}
+
+void WaveMonitor::handleZoomed(const QRectF &rect)
+{
+    //when zoomed all the way out, return to autoscale
+    if (rect == _zoomer->zoomBase())
+    {
+        _mainPlot->setAxisAutoScale(QwtPlot::yLeft);
+    }
 }
 
 void WaveMonitor::installLegend(void)

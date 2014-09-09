@@ -8,14 +8,13 @@
 #include <QResizeEvent>
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
-#include <qwt_plot_zoomer.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
 
 Periodogram::Periodogram(const Pothos::DType &dtype):
     _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
-    _zoomer(new QwtPlotZoomer(_mainPlot->canvas())),
+    _zoomer(new MyPlotPicker(_mainPlot->canvas())),
     _displayRate(1.0),
     _sampleRate(1.0),
     _sampleRateWoAxisUnits(1.0),
@@ -54,17 +53,9 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     //setup plotter
     {
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
-        auto picker = new MyPlotPicker(_mainPlot->canvas());
-        connect(picker, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
+        connect(_zoomer, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
-    }
-
-    //setup zoomer
-    {
-        _zoomer->setTrackerMode(QwtPicker::AlwaysOff);
-        _zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
-        _zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
     }
 
     //setup grid

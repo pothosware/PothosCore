@@ -10,7 +10,6 @@
 #include <QResizeEvent>
 #include <qwt_plot.h>
 #include <qwt_plot_layout.h>
-#include <qwt_plot_zoomer.h>
 #include <qwt_plot_spectrogram.h>
 #include <qwt_plot_spectrocurve.h>
 #include <qwt_scale_widget.h>
@@ -22,7 +21,7 @@
 Spectrogram::Spectrogram(const Pothos::DType &dtype):
     _replotTimer(new QTimer(this)),
     _mainPlot(new MyQwtPlot(this)),
-    _zoomer(new QwtPlotZoomer(_mainPlot->canvas())),
+    _zoomer(new MyPlotPicker(_mainPlot->canvas())),
     _plotSpect(new QwtPlotSpectrogram()),
     _plotRaster(new MySpectrogramRasterData()),
     _sampleRate(1.0),
@@ -62,8 +61,8 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     //setup plotter
     {
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
-        auto picker = new MyPlotPicker(_mainPlot->canvas());
-        connect(picker, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
+        dynamic_cast<MyPlotPicker *>(_zoomer)->registerRaster(_plotRaster);
+        connect(_zoomer, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yRight, MyPlotAxisFontSize());
@@ -80,13 +79,6 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
         _plotSpect->setColorMap(this->makeColorMap());
         _plotSpect->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
         _plotSpect->setRenderThreadCount(0); //enable multi-thread
-    }
-
-    //setup zoomer
-    {
-        _zoomer->setTrackerMode(QwtPicker::AlwaysOff);
-        _zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
-        _zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
     }
 
     connect(_replotTimer, SIGNAL(timeout(void)), _mainPlot, SLOT(replot(void)));

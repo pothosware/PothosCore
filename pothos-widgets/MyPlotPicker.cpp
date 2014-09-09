@@ -3,13 +3,22 @@
 
 #include "MyPlotPicker.hpp"
 #include <qwt_plot.h>
+#include <qwt_raster_data.h>
 #include <QMouseEvent>
 
 MyPlotPicker::MyPlotPicker(QWidget *parent):
-    QwtPlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, QwtPlotPicker::CrossRubberBand, QwtPicker::AlwaysOn, parent)
+    QwtPlotZoomer(QwtPlot::xBottom, QwtPlot::yLeft, parent),
+    _raster(nullptr)
 {
-    return;
+    this->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
+    this->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
+    this->setTrackerMode(QwtPicker::AlwaysOn);
 };
+
+void MyPlotPicker::registerRaster(QwtRasterData *raster)
+{
+    _raster = raster;
+}
 
 void MyPlotPicker::widgetMouseDoubleClickEvent(QMouseEvent *event)
 {
@@ -18,11 +27,18 @@ void MyPlotPicker::widgetMouseDoubleClickEvent(QMouseEvent *event)
 
 QwtText MyPlotPicker::trackerTextF(const QPointF &pos) const
 {
-    QwtText text(QString("<span style='font-size:7pt;' >%1 <b>%2</b><br />%3 <b>%4</b></span>")
+    QString zvalue;
+    if (_raster != nullptr) zvalue = QString("<br />%1 <b>%2</b>")
+        .arg(_raster->value(pos.x(), pos.y()))
+        .arg(this->plot()->axisTitle(QwtPlot::yRight).text().toHtmlEscaped());
+
+    QwtText text(QString("<span style='font-size:7pt;' >%1 <b>%2</b><br />%3 <b>%4</b>%5</span>")
         .arg(pos.x())
-        .arg(this->plot()->axisTitle(QwtPlot::xBottom).text().toHtmlEscaped())
+        .arg(this->plot()->axisTitle(this->xAxis()).text().toHtmlEscaped())
         .arg(pos.y())
-        .arg(this->plot()->axisTitle(QwtPlot::yLeft).text().toHtmlEscaped()));
+        .arg(this->plot()->axisTitle(this->yAxis()).text().toHtmlEscaped())
+        .arg(zvalue));
+
     static const QColor paleYellow("#FFFFCC");
     text.setBackgroundBrush(QBrush(paleYellow));
     return text;
