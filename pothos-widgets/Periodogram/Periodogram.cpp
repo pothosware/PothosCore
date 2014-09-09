@@ -20,7 +20,8 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     _sampleRateWoAxisUnits(1.0),
     _numBins(1024),
     _refLevel(0.0),
-    _dynRange(100.0)
+    _dynRange(100.0),
+    _autoScale(false)
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, widget));
@@ -31,6 +32,7 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setReferenceLevel));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setDynamicRange));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setAutoScale));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, numInputs));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, title));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, displayRate));
@@ -38,6 +40,7 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, numFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, referenceLevel));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, dynamicRange));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, autoScale));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableYAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setYAxisTitle));
@@ -54,6 +57,7 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     {
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
         connect(_zoomer, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
+        connect(_zoomer, SIGNAL(zoomed(const QRectF &)), this, SLOT(handleZoomed(const QRectF &)));
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
     }
@@ -130,12 +134,28 @@ void Periodogram::setDynamicRange(const double dynRange)
     QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
+void Periodogram::setAutoScale(const bool autoScale)
+{
+    _autoScale = autoScale;
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
+}
+
 void Periodogram::handleUpdateAxis(void)
 {
     _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
     _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
     _mainPlot->setAxisScale(QwtPlot::yLeft, _refLevel-_dynRange, _refLevel);
     _zoomer->setZoomBase(); //record current axis settings
+    this->handleZoomed(_zoomer->zoomBase()); //reload
+}
+
+void Periodogram::handleZoomed(const QRectF &rect)
+{
+    //when zoomed all the way out, return to autoscale
+    if (rect == _zoomer->zoomBase() and _autoScale)
+    {
+        _mainPlot->setAxisAutoScale(QwtPlot::yLeft);
+    }
 }
 
 QString Periodogram::title(void) const

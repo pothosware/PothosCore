@@ -72,6 +72,11 @@ class QwtPlotZoomer;
  * |units dB
  * |widget DoubleSpinBox(minimum=10, maximum=150, step=10, decimals=1)
  *
+ * |param autoScale[Auto-Scale] Enable automatic scaling for the vertical axis.
+ * |default false
+ * |option [Auto scale] true
+ * |option [Use limits] false
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
@@ -97,6 +102,7 @@ class QwtPlotZoomer;
  * |setter setNumFFTBins(numBins)
  * |setter setReferenceLevel(refLevel)
  * |setter setDynamicRange(dynRange)
+ * |setter setAutoScale(autoScale)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
@@ -140,6 +146,7 @@ public:
     void setNumFFTBins(const size_t numBins);
     void setReferenceLevel(const double refLevel);
     void setDynamicRange(const double dynRange);
+    void setAutoScale(const bool autoScale);
 
     QString title(void) const;
 
@@ -173,6 +180,11 @@ public:
         return _dynRange;
     }
 
+    bool autoScale(void) const
+    {
+        return _autoScale;
+    }
+
     void enableXAxis(const bool enb);
     void enableYAxis(const bool enb);
     void setYAxisTitle(const QString &title);
@@ -197,6 +209,7 @@ private slots:
     void handlePickerSelected(const QPointF &);
     void handlePowerBins(const int index, const std::valarray<float> &bins);
     void handleUpdateAxis(void);
+    void handleZoomed(const QRectF &rect);
 
 private:
     MyQwtPlot *_mainPlot;
@@ -208,6 +221,7 @@ private:
     size_t _numBins;
     double _refLevel;
     double _dynRange;
+    bool _autoScale;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
     //set of curves per index
