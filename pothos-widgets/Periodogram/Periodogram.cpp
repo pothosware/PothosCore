@@ -141,9 +141,10 @@ void Periodogram::setDynamicRange(const double dynRange)
 
 void Periodogram::handleUpdateAxis(void)
 {
+    _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
     _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
     _mainPlot->setAxisScale(QwtPlot::yLeft, _refLevel-_dynRange, _refLevel);
-    _zoomer->setZoomBase();
+    _zoomer->setZoomBase(); //record current axis settings
 }
 
 QString Periodogram::title(void) const

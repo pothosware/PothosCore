@@ -181,6 +181,8 @@ void Spectrogram::setDynamicRange(const double dynRange)
 
 void Spectrogram::handleUpdateAxis(void)
 {
+    _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
+
     _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
     _plotRaster->setInterval(Qt::XAxis, QwtInterval(-_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2));
 
@@ -191,7 +193,7 @@ void Spectrogram::handleUpdateAxis(void)
     _plotRaster->setInterval(Qt::ZAxis, QwtInterval(_refLevel-_dynRange, _refLevel));
     _mainPlot->axisWidget(QwtPlot::yRight)->setColorMap(_plotRaster->interval(Qt::ZAxis), this->makeColorMap());
 
-    _zoomer->setZoomBase();
+    _zoomer->setZoomBase(); //record current axis settings
 }
 
 void Spectrogram::enableXAxis(const bool enb)
