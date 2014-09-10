@@ -59,24 +59,16 @@ WindowFunction::WindowFunction(const std::string &type):
     else throw std::runtime_error("WindowFunction("+type+")");
 }
 
-double WindowFunction::power(void)
+void WindowFunction::update(const size_t length)
 {
-    return _power;
-}
-
-const std::valarray<float> &WindowFunction::window(const size_t length)
-{
-    if (length != _window.size())
+    if (length == _window.size()) return;
+    _power = 0.0;
+    _window.resize(length);
+    for (size_t n = 0; n < length; n++)
     {
-        _power = 0.0;
-        _window.resize(length);
-        for (size_t n = 0; n < length; n++)
-        {
-            _window[n] = _calc(n, length);
-            _power += _window[n]*_window[n];
-        }
-        _power = std::sqrt(_power/length);
+        _window[n] = _calc(n, length);
+        _power += _window[n]*_window[n];
     }
-    return _window;
+    _power = std::sqrt(_power/length);
 }
 

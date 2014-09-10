@@ -9,6 +9,7 @@
 #include <valarray>
 #include <string>
 #include <functional>
+#include <cassert>
 
 ////////////////////////////////////////////////////////////////////////
 //Window function support:
@@ -26,12 +27,23 @@ public:
     /*!
      * Get the power of the window function
      */
-    double power(void);
+    double power(void) const
+    {
+        return _power;
+    }
 
     /*!
      * Get the window values (only update if length changed).
      */
-    const std::valarray<float> &window(const size_t length);
+    const std::valarray<float> &window(void) const
+    {
+        return _window;
+    }
+
+    /*!
+     * Call update to set a new window size.
+     */
+    void update(const size_t length);
 
 private:
     std::function<double(const size_t, const size_t)> _calc;
@@ -91,7 +103,8 @@ inline void ifft(CArray& x)
 inline std::valarray<float> fftPowerSpectrum(CArray &fftBins, WindowFunction &windowFunction)
 {
     //windowing
-    const auto &window = windowFunction.window(fftBins.size());
+    const auto &window = windowFunction.window();
+    assert(window.size() == fftBins.size());
     for (size_t n = 0; n < fftBins.size(); n++) fftBins[n] *= window[n];
 
     //take fft
