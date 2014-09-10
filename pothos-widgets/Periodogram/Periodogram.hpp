@@ -61,7 +61,7 @@ class QwtPlotZoomer;
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
  *
- * |param window[Window Function] The spectral analysis window function.
+ * |param window[Window Type] The spectral analysis window function type.
  * |default "hann"
  * |option [Rectangular] "rectangular"
  * |option [Hann] "hann"
@@ -74,17 +74,20 @@ class QwtPlotZoomer;
  * |default 0.0
  * |units dBxx
  * |widget DoubleSpinBox(minimum=-150, maximum=150, step=10, decimals=1)
+ * |preview disable
  *
  * |param dynRange[Dynamic Range] The ratio of largest to smallest displayable power level.
  * The vertical axis will display values from the ref level to ref level - dynamic range.
  * |default 100.0
  * |units dB
  * |widget DoubleSpinBox(minimum=10, maximum=150, step=10, decimals=1)
+ * |preview disable
  *
  * |param autoScale[Auto-Scale] Enable automatic scaling for the vertical axis.
  * |default false
  * |option [Auto scale] true
  * |option [Use limits] false
+ * |preview disable
  *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
@@ -101,6 +104,7 @@ class QwtPlotZoomer;
  * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
  * |default "dB"
  * |widget StringEntry()
+ * |preview disable
  *
  * |mode graphWidget
  * |factory /widgets/periodogram(dtype)
@@ -109,7 +113,7 @@ class QwtPlotZoomer;
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
- * |setter setWindowFunction(window)
+ * |setter setWindowType(window)
  * |setter setReferenceLevel(refLevel)
  * |setter setDynamicRange(dynRange)
  * |setter setAutoScale(autoScale)
@@ -154,7 +158,7 @@ public:
     void setSampleRate(const double sampleRate);
 
     void setNumFFTBins(const size_t numBins);
-    void setWindowFunction(const std::string &windowType);
+    void setWindowType(const std::string &windowType);
     void setReferenceLevel(const double refLevel);
     void setDynamicRange(const double dynRange);
     void setAutoScale(const bool autoScale);

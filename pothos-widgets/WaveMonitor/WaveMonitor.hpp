@@ -76,6 +76,7 @@ class QwtPlotZoomer;
  * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
  * |default ""
  * |widget StringEntry()
+ * |preview disable
  *
  * |mode graphWidget
  * |factory /widgets/wave_monitor(dtype)
