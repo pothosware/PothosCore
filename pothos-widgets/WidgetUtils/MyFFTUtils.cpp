@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MyFFTUtils.hpp"
+#include <QString>
 #include <cmath>
 #include <stdexcept>
 
@@ -47,23 +48,30 @@ WindowFunction::WindowFunction(void):
     return;
 }
 
-WindowFunction::WindowFunction(const std::string &type):
-    _power(1.0f)
+void WindowFunction::setType(const std::string &name_)
 {
-    if (type == "rectangular") _calc = &rectangular;
-    else if (type == "hann") _calc = &hann;
-    else if (type == "hamming") _calc = &hamming;
-    else if (type == "blackman") _calc = &blackman;
-    else if (type == "bartlett") _calc = &bartlett;
-    else if (type == "flattop") _calc = &flattop;
-    else throw std::runtime_error("WindowFunction("+type+")");
+    const auto name = QString::fromStdString(name_).toLower();
+    if (name == "rectangular") _calc = &rectangular;
+    else if (name == "hann") _calc = &hann;
+    else if (name == "hamming") _calc = &hamming;
+    else if (name == "blackman") _calc = &blackman;
+    else if (name == "bartlett") _calc = &bartlett;
+    else if (name == "flattop") _calc = &flattop;
+    else throw std::runtime_error("WindowFunction::setType("+name_+")");
+    this->reload();
 }
 
-void WindowFunction::update(const size_t length)
+void WindowFunction::setSize(const size_t length)
 {
     if (length == _window.size()) return;
-    _power = 0.0;
     _window.resize(length);
+    this->reload();
+}
+
+void WindowFunction::reload(void)
+{
+    _power = 0.0;
+    const auto length = _window.size();
     for (size_t n = 0; n < length; n++)
     {
         _window[n] = _calc(n, length);
@@ -71,4 +79,3 @@ void WindowFunction::update(const size_t length)
     }
     _power = std::sqrt(_power/length);
 }
-

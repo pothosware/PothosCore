@@ -121,13 +121,12 @@ void Periodogram::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
     for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
-    _window.update(numBins);
+    _window.setSize(numBins);
 }
 
 void Periodogram::setWindowFunction(const std::string &windowType)
 {
-    _window = WindowFunction(windowType);
-    _window.update(_numBins);
+    _window.setType(windowType);
 }
 
 void Periodogram::setReferenceLevel(const double refLevel)

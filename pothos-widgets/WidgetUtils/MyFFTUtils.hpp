@@ -20,8 +20,8 @@ public:
 
     WindowFunction(void);
 
-    //! Make a new window function class given the type
-    WindowFunction(const std::string &type);
+    //! Set the window function type (use common window function names)
+    void setType(const std::string &name);
 
     /*!
      * Get the power of the window function
@@ -40,14 +40,15 @@ public:
     }
 
     /*!
-     * Call update to set a new window size.
+     * Set to a new window size.
      */
-    void update(const size_t length);
+    void setSize(const size_t length);
 
 private:
     std::function<double(const size_t, const size_t)> _calc;
     double _power;
     std::valarray<float> _window;
+    void reload(void);
 };
 
 ////////////////////////////////////////////////////////////////////////
