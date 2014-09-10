@@ -136,7 +136,7 @@ void Spectrogram::setNumFFTBins(const size_t numBins)
 void Spectrogram::setWindowFunction(const std::string &windowType)
 {
     _window = WindowFunction(windowType);
-    this->setNumFFTBins(this->numFFTBins());
+    _window.update(_numBins);
 }
 
 void Spectrogram::setTimeSpan(const double timeSpan)
