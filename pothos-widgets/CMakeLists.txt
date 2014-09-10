@@ -41,6 +41,7 @@ set(CUSTOM_QWT_SOURCES #sources not part of QWT that we are building into this l
     MyPlotPicker.cpp
     MyPlotUtils.cpp
     MyDoubleSlider.cpp
+    MyFFTUtils.cpp
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qwt/src)

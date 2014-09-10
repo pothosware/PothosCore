@@ -61,6 +61,15 @@ class QwtPlotZoomer;
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
  *
+ * |param window[Window Function] The spectral analysis window function.
+ * |default "hann"
+ * |option [Rectangular] "rectangular"
+ * |option [Hann] "hann"
+ * |option [Hamming] "hamming"
+ * |option [Blackman] "blackman"
+ * |option [Bartlett] "bartlett"
+ * |option [Flat-top] "flattop"
+ *
  * |param refLevel[Reference Level] The maximum displayable power level.
  * |default 0.0
  * |units dBxx
@@ -100,6 +109,7 @@ class QwtPlotZoomer;
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
+ * |setter setWindowFunction(window)
  * |setter setReferenceLevel(refLevel)
  * |setter setDynamicRange(dynRange)
  * |setter setAutoScale(autoScale)
@@ -144,6 +154,7 @@ public:
     void setSampleRate(const double sampleRate);
 
     void setNumFFTBins(const size_t numBins);
+    void setWindowFunction(const std::string &windowType);
     void setReferenceLevel(const double refLevel);
     void setDynamicRange(const double dynRange);
     void setAutoScale(const bool autoScale);
@@ -215,6 +226,7 @@ private:
     MyQwtPlot *_mainPlot;
     QwtPlotGrid *_plotGrid;
     QwtPlotZoomer *_zoomer;
+    WindowFunction _window;
     double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;

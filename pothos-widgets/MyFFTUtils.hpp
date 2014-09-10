@@ -2,22 +2,45 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include <qwt_global.h>
 #include <Pothos/Config.hpp>
 #include <cmath>
 #include <complex>
 #include <valarray>
+#include <string>
+#include <functional>
 
 ////////////////////////////////////////////////////////////////////////
-//Window functions https://en.wikipedia.org/wiki/Window_function
-//TODO more to come
+//Window function support:
+//https://en.wikipedia.org/wiki/Window_function
 ////////////////////////////////////////////////////////////////////////
-inline double hann(const size_t n, const size_t N)
+class QWT_EXPORT WindowFunction
 {
-    return 0.5*(1- std::cos((2.0*M_PI*n)/N-1));
-}
+public:
+
+    WindowFunction(void);
+
+    //! Make a new window function class given the type
+    WindowFunction(const std::string &type);
+
+    /*!
+     * Get the power of the window function
+     */
+    double power(void);
+
+    /*!
+     * Get the window values (only update if length changed).
+     */
+    const std::valarray<float> &window(const size_t length);
+
+private:
+    std::function<double(const size_t, const size_t)> _calc;
+    double _power;
+    std::valarray<float> _window;
+};
 
 ////////////////////////////////////////////////////////////////////////
-//FFT code can be foound at:
+//FFT code can be found at:
 //http://rosettacode.org/wiki/Fast_Fourier_transform
 ////////////////////////////////////////////////////////////////////////
 typedef std::complex<float> Complex;
@@ -65,17 +88,11 @@ inline void ifft(CArray& x)
 ////////////////////////////////////////////////////////////////////////
 //FFT Power spectrum
 ////////////////////////////////////////////////////////////////////////
-inline std::valarray<float> fftPowerSpectrum(CArray &fftBins)
+inline std::valarray<float> fftPowerSpectrum(CArray &fftBins, WindowFunction &windowFunction)
 {
     //windowing
-    float windowPower(0.0);
-    for (size_t n = 0; n < fftBins.size(); n++)
-    {
-        double w_n = hann(n, fftBins.size());
-        windowPower += w_n*w_n;
-        fftBins[n] *= w_n;
-    }
-    windowPower /= fftBins.size();
+    const auto &window = windowFunction.window(fftBins.size());
+    for (size_t n = 0; n < fftBins.size(); n++) fftBins[n] *= window[n];
 
     //take fft
     fft(fftBins);
@@ -87,7 +104,7 @@ inline std::valarray<float> fftPowerSpectrum(CArray &fftBins)
         powerBins[i] = std::norm(fftBins[i]);
         powerBins[i] = 10*std::log10(powerBins[i]);
         powerBins[i] -= 20*std::log10(fftBins.size());
-        powerBins[i] -= 10*std::log10(windowPower);
+        powerBins[i] -= 20*std::log10(windowFunction.power());
     }
 
     //bin reorder

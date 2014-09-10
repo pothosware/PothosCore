@@ -101,7 +101,7 @@ void Periodogram::updateCurve(Pothos::InputPort *inPort)
     _inputConverters.at(inPort->index())(inPort, std::ref(fftBins));
 
     //power bins to points on the curve
-    const auto powerBins = fftPowerSpectrum(fftBins);
+    const auto powerBins = fftPowerSpectrum(fftBins, _window);
     QMetaObject::invokeMethod(this, "handlePowerBins", Qt::QueuedConnection, Q_ARG(int, inPort->index()), Q_ARG(std::valarray<float>, powerBins));
 }
 

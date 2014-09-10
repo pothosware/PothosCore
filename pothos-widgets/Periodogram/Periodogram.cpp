@@ -30,6 +30,7 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumFFTBins));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setWindowFunction));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setReferenceLevel));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setDynamicRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setAutoScale));
@@ -120,6 +121,11 @@ void Periodogram::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
     for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
+}
+
+void Periodogram::setWindowFunction(const std::string &windowType)
+{
+    _window = WindowFunction(windowType);
 }
 
 void Periodogram::setReferenceLevel(const double refLevel)

@@ -58,6 +58,15 @@ class MySpectrogramRasterData;
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
  *
+ * |param window[Window Function] The spectral analysis window function.
+ * |default "hann"
+ * |option [Rectangular] "rectangular"
+ * |option [Hann] "hann"
+ * |option [Hamming] "hamming"
+ * |option [Blackman] "blackman"
+ * |option [Bartlett] "bartlett"
+ * |option [Flat-top] "flattop"
+ *
  * |param timeSpan[Time Span] How many seconds of data to display in the plot.
  * |default 10.0
  * |units seconds
@@ -91,6 +100,7 @@ class MySpectrogramRasterData;
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumFFTBins(numBins)
+ * |setter setWindowFunction(window)
  * |setter setTimeSpan(timeSpan)
  * |setter setReferenceLevel(refLevel)
  * |setter setDynamicRange(dynRange)
@@ -132,6 +142,7 @@ public:
     void setSampleRate(const double sampleRate);
 
     void setNumFFTBins(const size_t numBins);
+    void setWindowFunction(const std::string &windowType);
     void setTimeSpan(const double timeSpan);
     void setReferenceLevel(const double refLevel);
     void setDynamicRange(const double dynRange);
@@ -197,6 +208,7 @@ private:
     QwtPlotZoomer *_zoomer;
     std::shared_ptr<QwtPlotSpectrogram> _plotSpect;
     MySpectrogramRasterData *_plotRaster;
+    WindowFunction _window;
     double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;

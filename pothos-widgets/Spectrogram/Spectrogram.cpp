@@ -37,6 +37,7 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setNumFFTBins));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setWindowFunction));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTimeSpan));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setReferenceLevel));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setDynamicRange));
@@ -129,6 +130,11 @@ void Spectrogram::setNumFFTBins(const size_t numBins)
     _numBins = numBins;
     for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
     _plotRaster->setNumColumns(numBins);
+}
+
+void Spectrogram::setWindowFunction(const std::string &windowType)
+{
+    _window = WindowFunction(windowType);
 }
 
 void Spectrogram::setTimeSpan(const double timeSpan)
