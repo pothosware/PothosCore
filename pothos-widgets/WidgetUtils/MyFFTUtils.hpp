@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-#include <qwt_global.h>
-#include <Pothos/Config.hpp>
+#include "WidgetUtils.hpp"
 #include <cmath>
 #include <complex>
 #include <valarray>
@@ -15,7 +14,7 @@
 //Window function support:
 //https://en.wikipedia.org/wiki/Window_function
 ////////////////////////////////////////////////////////////////////////
-class QWT_EXPORT WindowFunction
+class POTHOS_WIDGET_UTILS_EXPORT WindowFunction
 {
 public:
 

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include "WidgetUtils.hpp"
 #include <qwt_plot_zoomer.h>
 
 class QwtRasterData;
@@ -9,7 +10,7 @@ class QwtRasterData;
 /*!
  * Plot picker with custom marker style
  */
-class QWT_EXPORT MyPlotPicker : public QwtPlotZoomer
+class POTHOS_WIDGET_UTILS_EXPORT MyPlotPicker : public QwtPlotZoomer
 {
     Q_OBJECT
 public:
