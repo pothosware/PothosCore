@@ -61,4 +61,16 @@ POTHOS_MODULE_UTIL(
     DESTINATION proxy/environment
 )
 
+########################################################################
+# Install cmake helper modules
+########################################################################
+install(
+    DIRECTORY cmake/Modules
+    DESTINATION share/Pothos/cmake
+)
+
+########################################################################
+# Enter the subdirectory configuration
+########################################################################
 add_subdirectory(Pothos)
+add_subdirectory(example)
