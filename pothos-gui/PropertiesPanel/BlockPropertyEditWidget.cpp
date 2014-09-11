@@ -250,10 +250,10 @@ QString BlockPropertyEditWidget::value(void) const
     }
 
     auto spinBox = dynamic_cast<QSpinBox *>(_edit);
-    if (spinBox != nullptr) return QString("%1").arg(spinBox->value());
+    if (spinBox != nullptr) return spinBox->text();
 
     auto dSpinBox = dynamic_cast<QDoubleSpinBox *>(_edit);
-    if (dSpinBox != nullptr) return QString("%1").arg(dSpinBox->value());
+    if (dSpinBox != nullptr) return dSpinBox->text();
 
     auto fileEntry = dynamic_cast<FileEntry *>(_edit);
     if (fileEntry != nullptr) return fileEntry->value();
