@@ -28,7 +28,10 @@ void MyPlotPicker::widgetMouseDoubleClickEvent(QMouseEvent *event)
 QwtText MyPlotPicker::trackerTextF(const QPointF &pos) const
 {
     QString zvalue;
-    if (_raster != nullptr) zvalue = QString("<br />%1 <b>%2</b>")
+    if (_raster != nullptr and
+        this->plot()->axisInterval(this->xAxis()).contains(pos.x()) and
+        this->plot()->axisInterval(this->yAxis()).contains(pos.y())
+    ) zvalue = QString("<br />%1 <b>%2</b>")
         .arg(_raster->value(pos.x(), pos.y()))
         .arg(this->plot()->axisTitle(QwtPlot::yRight).text().toHtmlEscaped());
 
