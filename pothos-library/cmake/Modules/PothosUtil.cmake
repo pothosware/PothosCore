@@ -6,7 +6,7 @@ set(INCLUDED_POTHOS_UTIL_CMAKE TRUE)
 ########################################################################
 # Project settings
 ########################################################################
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_INSTALL_PREFIX}/share/Pothos/cmake/Modules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 find_package(Pothos)
 
 #recommended compiler flags (must be included at global scope)
