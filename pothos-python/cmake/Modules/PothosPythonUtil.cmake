@@ -3,13 +3,17 @@ if(DEFINED INCLUDED_POTHOS_PYTHON_UTIL_CMAKE)
 endif()
 set(INCLUDED_POTHOS_PYTHON_UTIL_CMAKE TRUE)
 
+# include support for POTHOS_MODULE_UTIL()
+if (NOT POTHOS_MODULE_PATH)
+    set(POTHOS_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+endif()
 include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
 
 # where to install python modules
 set(POTHOS_PYTHON_DIR lib${LIB_SUFFIX}/Pothos/python)
 
-# the directory which contains the CMake module
-set(POTHOS_PYTHON_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}")
+# the directory which contains this CMake module
+set(POTHOS_PYTHON_UTIL_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 ########################################################################
 ## POTHOS_PYTHON_UTIL - build and install python modules for Pothos
@@ -22,7 +26,7 @@ set(POTHOS_PYTHON_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}")
 ##
 ## FACTORIES - a list of block paths to python module paths
 ## Each entry in the factories list is a colon separated tuple of
-## /block/registry/path:MyPython.Module.ClassName
+## /block/registry/path:MyPythonModule.ClassName
 ##
 ## DESTINATION - relative destination path
 ## This is the destination for the python sources and the module.
@@ -41,7 +45,7 @@ function(POTHOS_PYTHON_UTIL)
 
     #generate block registries
     set(factories_cpp_file ${CMAKE_CURRENT_BINARY_DIR}/${POTHOS_PYTHON_UTIL_TARGET}Factories.cpp)
-    file(WRITE ${factories_cpp_file} "#include \"${POTHOS_PYTHON_LIST_DIR}/PothosPythonUtil.hpp\"\n")
+    file(WRITE ${factories_cpp_file} "#include \"${POTHOS_PYTHON_UTIL_CMAKE_DIR}/PothosPythonUtil.hpp\"\n")
     foreach(factory ${POTHOS_PYTHON_UTIL_FACTORIES})
 
         #parse the factory markup string

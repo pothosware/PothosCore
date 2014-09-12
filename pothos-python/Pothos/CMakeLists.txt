@@ -31,8 +31,7 @@ if (WIN32)
 endif()
 
 #install the module and __init__.py importer script
-set(PYDIR lib${LIB_SUFFIX}/Pothos/python)
-install(TARGETS PothosModule DESTINATION ${PYDIR}/Pothos)
+install(TARGETS PothosModule DESTINATION ${POTHOS_PYTHON_DIR}/Pothos)
 install(FILES
     __init__.py
     Block.py
@@ -40,7 +39,7 @@ install(FILES
     Label.py
     InputPort.py
     OutputPort.py
-    DESTINATION ${PYDIR}/Pothos)
+    DESTINATION ${POTHOS_PYTHON_DIR}/Pothos)
 install(FILES
     TestPothos.py
-    DESTINATION ${PYDIR})
+    DESTINATION ${POTHOS_PYTHON_DIR})

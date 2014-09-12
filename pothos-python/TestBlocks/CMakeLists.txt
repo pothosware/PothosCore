@@ -1,5 +1,15 @@
+########################################################################
+# Project setup
+########################################################################
+cmake_minimum_required(VERSION 2.8.9)
+project(PothosPythonTestBlocks)
+enable_language(CXX)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules/PothosPythonUtil.cmake)
+if (NOT POTHOS_PYTHON_MODULE_PATH)
+    set(POTHOS_PYTHON_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/share/Pothos/cmake/Modules")
+endif()
+
+include(${POTHOS_PYTHON_MODULE_PATH}/PothosPythonUtil.cmake)
 
 ########################################################################
 ## Build and install tester blocks for python bindings
@@ -11,9 +21,9 @@ POTHOS_PYTHON_UTIL(
         Forwarder.py
         SimpleSigSlots.py
     FACTORIES
-        "/python/forwarder:PythonTestBlocks.Forwarder"
-        "/python/simple_signal_emitter:PythonTestBlocks.SimpleSignalEmitter"
-        "/python/simple_slot_acceptor:PythonTestBlocks.SimpleSlotAcceptor"
-    DESTINATION PythonTestBlocks
+        "/python/forwarder:TestBlocks.Forwarder"
+        "/python/simple_signal_emitter:TestBlocks.SimpleSignalEmitter"
+        "/python/simple_slot_acceptor:TestBlocks.SimpleSlotAcceptor"
+    DESTINATION TestBlocks
     ENABLE_DOCS
 )

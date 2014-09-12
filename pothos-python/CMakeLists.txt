@@ -10,6 +10,8 @@ if (NOT POTHOS_MODULE_PATH)
 endif()
 
 include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
+set(POTHOS_PYTHON_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+include(${POTHOS_PYTHON_MODULE_PATH}/PothosPythonUtil.cmake)
 
 ########################################################################
 ## Find python
