@@ -3,6 +3,21 @@
 
 import numpy
 
+def dtype_to_numpy(dtype):
+    name = dtype.name()
+    shape = dtype.shape()
+
+    #support numpy float-complex types
+    if name == 'complex_float32': name = "complex64"
+    elif name == 'complex_float64': name = "complex128"
+
+    #no integer complex types, make tuple
+    elif name.startswith('complex_'):
+        name = name.split('_', 1)[1]
+        shape = [2] + list(shape)
+
+    return numpy.dtype((name, tuple(shape)))
+
 def pointer_to_ndarray(addr, nitems, dtype=numpy.dtype(numpy.uint8), readonly=False):
     class array_like:
         __array_interface__ = {
