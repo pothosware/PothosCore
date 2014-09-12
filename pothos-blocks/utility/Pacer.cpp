@@ -21,6 +21,7 @@
  * |param dtype[Data Type] The datatype this block consumes.
  * |preview disable
  * |default "float32"
+ * |widget StringEntry()
  *
  * |param rate[Data Rate] The rate of elements or messages through the block.
  * |default 1e3

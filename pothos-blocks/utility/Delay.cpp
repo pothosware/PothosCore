@@ -17,6 +17,7 @@
  * |param dtype[Data Type] The datatype this block consumes.
  * |preview disable
  * |default "float32"
+ * |widget StringEntry()
  *
  * |param delay The delay in number of stream elements.
  * |default 0
