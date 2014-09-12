@@ -22,7 +22,8 @@ POTHOS_TEST_BLOCK("/proxy/python/tests", test_python_module)
 
 POTHOS_TEST_BLOCK("/proxy/python/tests", test_python_block)
 {
-    auto reg = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto reg = env->findProxy("Pothos/BlockRegistry");
     auto feeder = reg.callProxy("/blocks/feeder_source", "int");
     auto collector = reg.callProxy("/blocks/collector_sink", "int");
     auto forwarder = reg.callProxy("/python/forwarder", Pothos::DType("int"));
@@ -50,19 +51,20 @@ POTHOS_TEST_BLOCK("/proxy/python/tests", test_python_block)
 
 POTHOS_TEST_BLOCK("/proxy/python/tests", test_signals_and_slots)
 {
-    auto env = Pothos::ProxyEnvironment::make("python");
-    auto emitter = env->findProxy("TestBlocks").callProxy("SimpleSignalEmitter");
-    auto handler = env->findProxy("TestBlocks").callProxy("SimpleSlotHandler");
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto reg = env->findProxy("Pothos/BlockRegistry");
+    auto emitter = reg.callProxy("/python/simple_signal_emitter");
+    auto acceptor = reg.callProxy("/python/simple_slot_acceptor");
 
     //run the topology
     {
         Pothos::Topology topology;
-        topology.connect(emitter, "activateCalled", handler, "activateHandler");
+        topology.connect(emitter, "activateCalled", acceptor, "activateHandler");
         std::cout << "topology commit\n";
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());
     }
 
-    auto lastWord = handler.call<std::string>("getLastWord");
+    auto lastWord = acceptor.call<std::string>("getLastWord");
     POTHOS_TEST_EQUAL(lastWord, "hello");
 }

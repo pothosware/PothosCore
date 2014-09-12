@@ -43,5 +43,4 @@ install(FILES
     DESTINATION ${PYDIR}/Pothos)
 install(FILES
     TestPothos.py
-    TestBlocks.py
     DESTINATION ${PYDIR})

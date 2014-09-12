@@ -15,6 +15,7 @@ This block is mainly used for testing purposes.
 
 |param dtype[Data Type] The input and output data type.
 |default "float32"
+|widget StringEntry()
 
 |factory /python/forwarder(dtype)
 */"""
@@ -32,33 +33,26 @@ class Forwarder(Pothos.Block):
 
     def work(self):
 
-        if self.workInfo().minElements:
-            print('minElements %s'%self.workInfo().minElements)
-            print('minInElements %s'%self.workInfo().minInElements)
-            print('minOutElements %s'%self.workInfo().minOutElements)
-
         #forward message
         if self.input(0).hasMessage():
             m = self.input(0).popMessage()
-            print('msg %s'%m)
+            #print('msg %s'%m)
             self.output(0).postMessage(m)
 
-        #forward labels
-        while True:
-            loop = False
-            for l in self.input(0).labels():
-                print(l.index)
-                print(l.data)
-                self.output(0).postLabel(l)
-                self.input(0).removeLabel(l)
-                loop = True
-                break
-            if not loop: break
+        #for testing purposes:
+        #forward and remove the first label,
+        #use propagateLabels for the rest
+        for l in self.input(0).labels():
+            #print(l.index)
+            #print(l.data)
+            self.output(0).postLabel(l)
+            self.input(0).removeLabel(l)
+            break
 
         #forward buffer
         if self.input(0).elements():
-            print(self.input(0).dtype())
-            print(self.input(0).buffer())
+            #print(self.input(0).dtype())
+            #print(self.input(0).buffer())
 
             out0 = self.output(0).buffer()
             in0 = self.input(0).buffer()
@@ -68,9 +62,9 @@ class Forwarder(Pothos.Block):
             self.output(0).produce(n)
 
     def propagateLabels(self, input):
-        print('propagateLabels')
+        #print('propagateLabels')
         print(self.input(0).totalElements())
         for l in input.labels():
-            print(l.index)
-            print(l.data)
-            #self.output(0).postLabel(l)
+            #print(l.index)
+            #print(l.data)
+            self.output(0).postLabel(l)

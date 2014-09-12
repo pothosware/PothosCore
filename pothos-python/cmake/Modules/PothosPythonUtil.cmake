@@ -5,8 +5,10 @@ set(INCLUDED_POTHOS_PYTHON_UTIL_CMAKE TRUE)
 
 include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
 
+# where to install python modules
 set(POTHOS_PYTHON_DIR lib${LIB_SUFFIX}/Pothos/python)
 
+# the directory which contains the CMake module
 set(POTHOS_PYTHON_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 ########################################################################
@@ -39,7 +41,6 @@ function(POTHOS_PYTHON_UTIL)
 
     #generate block registries
     set(factories_cpp_file ${CMAKE_CURRENT_BINARY_DIR}/${POTHOS_PYTHON_UTIL_TARGET}Factories.cpp)
-    list(APPEND POTHOS_PYTHON_UTIL_SOURCES ${factories_cpp_file})
     file(WRITE ${factories_cpp_file} "#include \"${POTHOS_PYTHON_LIST_DIR}/PothosPythonUtil.hpp\"\n")
     foreach(factory ${POTHOS_PYTHON_UTIL_FACTORIES})
 
@@ -68,6 +69,7 @@ function(POTHOS_PYTHON_UTIL)
     endif()
 
     #build the module
+    list(APPEND POTHOS_PYTHON_UTIL_SOURCES ${factories_cpp_file})
     if (POTHOS_PYTHON_UTIL_ENABLE_DOCS)
         set(POTHOS_PYTHON_UTIL_ENABLE_DOCS "ENABLE_DOCS")
     else()
