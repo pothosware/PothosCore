@@ -22,12 +22,10 @@ POTHOS_TEST_BLOCK("/proxy/python/tests", test_python_module)
 
 POTHOS_TEST_BLOCK("/proxy/python/tests", test_python_block)
 {
-    auto env = Pothos::ProxyEnvironment::make("python");
-    auto forwarder = env->findProxy("TestBlocks").callProxy("Forwarder", Pothos::DType("int"));
-
     auto reg = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
     auto feeder = reg.callProxy("/blocks/feeder_source", "int");
     auto collector = reg.callProxy("/blocks/collector_sink", "int");
+    auto forwarder = reg.callProxy("/python/forwarder", Pothos::DType("int"));
 
     //create a test plan
     Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
