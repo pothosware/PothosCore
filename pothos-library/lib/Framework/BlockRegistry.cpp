@@ -7,6 +7,7 @@
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Plugin.hpp>
 #include <Poco/Logger.h>
+#include <iostream>
 
 //! Helper function to check the signature of an "opaque" call
 static bool isOpaqueFactory(const Pothos::Callable &factory)
@@ -78,7 +79,7 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     const auto factory = plugin.getObject().extract<Pothos::Callable>();
 
     //handle opaque factory case
-    if (isOpaqueFactory(factory)) return factory.opaqueCall(args, numArgs);
+    if (isOpaqueFactory(factory)) return factory.call<Pothos::Object>(args, numArgs);
 
     //check that the number of args match
     if (numArgs != factory.getNumArgs()) throw Pothos::InvalidArgumentException(
