@@ -10,7 +10,7 @@
  * input port 0 to the output port 0 without copying.
  * This block is mainly used for testing purposes.
  *
- * |category /Misc
+ * |category /Utility
  * |keywords forwarder
  *
  * |factory /blocks/forwarder()

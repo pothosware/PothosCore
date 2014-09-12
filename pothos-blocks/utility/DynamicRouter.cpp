@@ -11,7 +11,7 @@
  * Any input stream can be routed to any output stream.
  * The routing configuration can be changed at runtime.
  *
- * |category /Misc
+ * |category /Utility
  * |keywords router
  *
  * |param numInputs[Num Inputs] The number of input ports.

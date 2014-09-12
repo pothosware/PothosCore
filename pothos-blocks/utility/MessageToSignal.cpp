@@ -11,7 +11,7 @@
  * and emits a signal of the name specified in the configuration.
  * The signal prototype has one argument which is the message contents.
  *
- * |category /Misc
+ * |category /Utility
  * |keywords message signal
  *
  * |param name[Signal Name] The name of the signal to emit.

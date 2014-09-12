@@ -10,7 +10,7 @@
  * The forwarder block copies all data from input port 0 to the output port 0.
  * This block is used to bridge connections between incompatible domains.
  *
- * |category /Misc
+ * |category /Utility
  * |keywords copier
  *
  * |factory /blocks/copier()

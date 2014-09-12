@@ -10,7 +10,7 @@
  * The slot to message block handles a slot of the specified name,
  * and posts the first argument of the slot to a message port port.
  *
- * |category /Misc
+ * |category /Utility
  * |keywords message slot
  *
  * |param name[Signal Name] The name of the slot to accept signals on.

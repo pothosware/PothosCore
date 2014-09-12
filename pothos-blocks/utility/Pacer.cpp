@@ -15,7 +15,7 @@
  * This rate limitation is an approximation at best.
  * This block is mainly used for simulation purposes.
  *
- * |category /Misc
+ * |category /Utility
  * |keywords pacer time
  *
  * |param dtype[Data Type] The datatype this block consumes.

@@ -11,7 +11,7 @@
  * The implementation passively forwards inputs to outputs,
  * without incuring any memory copying overhead.
  *
- * |category /Misc
+ * |category /Utility
  * |keywords delay time
  *
  * |param dtype[Data Type] The datatype this block consumes.
