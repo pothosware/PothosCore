@@ -156,7 +156,7 @@ static std::vector<CodeBlock> extractContiguousBlocks(std::istream &is)
         else if (inMultiLineComment and closeMulti != std::string::npos)
         {
             inMultiLineComment = false;
-            currentCodeBlock.push_back(CodeLine(line.substr(0, closeMulti+2), lineNo));
+            currentCodeBlock.push_back(CodeLine(line.substr(0, closeMulti), lineNo));
             is.seekg(is.tellg() + std::streamoff(closeMulti+2-int(line.size())));
         }
         else if (inMultiLineComment)
