@@ -10,6 +10,8 @@ if (NOT POTHOS_MODULE_PATH)
 endif()
 
 include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
+set(POTHOS_PYTHON_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+include(${POTHOS_PYTHON_MODULE_PATH}/PothosPythonUtil.cmake)
 
 ########################################################################
 ## Find python
@@ -61,4 +63,16 @@ POTHOS_MODULE_UTIL(
     DESTINATION proxy/environment
 )
 
+########################################################################
+# Install cmake helper modules
+########################################################################
+install(
+    DIRECTORY cmake/Modules
+    DESTINATION share/Pothos/cmake
+)
+
+########################################################################
+# Enter the subdirectory configuration
+########################################################################
 add_subdirectory(Pothos)
+add_subdirectory(TestBlocks)

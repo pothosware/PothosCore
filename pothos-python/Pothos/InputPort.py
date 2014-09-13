@@ -4,6 +4,7 @@
 from . PothosModule import *
 from . Label import Label, LabelIteratorRange
 from . Buffer import pointer_to_ndarray
+from . Buffer import dtype_to_numpy
 import numpy
 
 class InputPort(object):
@@ -17,8 +18,7 @@ class InputPort(object):
         return LabelIteratorRange(self._port.labels())
 
     def dtype(self):
-        dtype = self._port.dtype()
-        return numpy.dtype((dtype.name(), tuple(dtype.shape())))
+        return dtype_to_numpy(self._port.dtype())
 
     def buffer(self):
         addr = self._port.buffer().address

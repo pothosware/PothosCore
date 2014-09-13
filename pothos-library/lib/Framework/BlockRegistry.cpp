@@ -7,7 +7,20 @@
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Plugin.hpp>
 #include <Poco/Logger.h>
+#include <iostream>
 
+//! Helper function to check the signature of an "opaque" call
+static bool isOpaqueFactory(const Pothos::Callable &factory)
+{
+    return factory.getNumArgs() == 2 and
+        factory.type(-1) == typeid(Pothos::Object) and
+        factory.type(0) == typeid(const Pothos::Object *) and
+        factory.type(1) == typeid(const size_t);
+}
+
+/***********************************************************************
+ * Instance of BlockRegistry peforms check and plugin registration
+ **********************************************************************/
 Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &factory)
 {
     //check the path
@@ -34,7 +47,8 @@ Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &fa
         factory.type(-1) == typeid(Block*) or
         factory.type(-1) == typeid(std::shared_ptr<Block>) or
         factory.type(-1) == typeid(Topology*) or
-        factory.type(-1) == typeid(std::shared_ptr<Topology>))
+        factory.type(-1) == typeid(std::shared_ptr<Topology>) or
+        isOpaqueFactory(factory))
     {
         //register
         try
@@ -55,12 +69,25 @@ Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &fa
     }
 }
 
+/***********************************************************************
+ * BlockRegistry factory - retrieve factory and instantiate with args
+ **********************************************************************/
 static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::Object *args, const size_t numArgs)
 {
     const auto pluginPath = Pothos::PluginPath("/blocks").join(path.substr(1));
     const auto plugin = Pothos::PluginRegistry::get(pluginPath);
     const auto factory = plugin.getObject().extract<Pothos::Callable>();
 
+    //handle opaque factory case
+    if (isOpaqueFactory(factory)) return factory.call<Pothos::Object>(args, numArgs);
+
+    //check that the number of args match
+    if (numArgs != factory.getNumArgs()) throw Pothos::InvalidArgumentException(
+        "Pothos::BlockRegistry("+path+")", Poco::format(
+        "factory expected %d args, but got %d args",
+        int(factory.getNumArgs()), int(numArgs)));
+
+    //handle factories that return Block pointer types
     if (factory.type(-1) == typeid(Pothos::Block*))
     {
         auto element = factory.opaqueCall(args, numArgs).extract<Pothos::Block *>();
@@ -69,6 +96,7 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
         return Pothos::Object(std::shared_ptr<Pothos::Block>(element));
     }
 
+    //handle factories that return Block shared pointer types
     if (factory.type(-1) == typeid(std::shared_ptr<Pothos::Block>))
     {
         auto element = factory.opaqueCall(args, numArgs).extract<std::shared_ptr<Pothos::Block>>();
@@ -77,6 +105,7 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
         return Pothos::Object(element);
     }
 
+    //handle factories that return Topology pointer types
     if (factory.type(-1) == typeid(Pothos::Topology*))
     {
         auto element = factory.opaqueCall(args, numArgs).extract<Pothos::Topology *>();
@@ -85,6 +114,7 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
         return Pothos::Object(std::shared_ptr<Pothos::Topology>(element));
     }
 
+    //handle factories that return Topology shared pointer types
     if (factory.type(-1) == typeid(std::shared_ptr<Pothos::Topology>))
     {
         auto element = factory.opaqueCall(args, numArgs).extract<std::shared_ptr<Pothos::Topology>>();

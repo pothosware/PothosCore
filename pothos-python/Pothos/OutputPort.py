@@ -3,6 +3,7 @@
 
 from . PothosModule import *
 from . Buffer import pointer_to_ndarray
+from . Buffer import dtype_to_numpy
 from . Label import Label
 import numpy
 
@@ -14,8 +15,7 @@ class OutputPort(object):
         return lambda *args: self._port.call(name, *args)
 
     def dtype(self):
-        dtype = self._port.dtype()
-        return numpy.dtype((dtype.name(), tuple(dtype.shape())))
+        return dtype_to_numpy(self._port.dtype())
 
     def buffer(self):
         addr = self._port.buffer().address

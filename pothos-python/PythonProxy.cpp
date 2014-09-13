@@ -153,6 +153,8 @@ Pothos::ProxyEnvironment::Sptr makePythonProxyEnvironment(const Pothos::ProxyEnv
     auto sysPath = sys.callProxy("get:path");
     sysPath.callProxy("append", pythonPath.toString());
 
+    env->findProxy("Pothos"); //registers important converters
+
     return env;
 }
 
