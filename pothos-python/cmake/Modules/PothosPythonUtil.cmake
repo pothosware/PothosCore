@@ -56,12 +56,12 @@ function(POTHOS_PYTHON_UTIL)
 
         #extract registration variables
         set(block_path ${CMAKE_MATCH_1})
-        set(python_path ${CMAKE_MATCH_2})
-        string(REPLACE "." "" factory_name "${python_path}")
+        set(class_name ${CMAKE_MATCH_2})
+        string(REPLACE "/" "." package_name "${POTHOS_PYTHON_UTIL_DESTINATION}")
 
         #generate a registration
-        file(APPEND ${factories_cpp_file} "static Pothos::BlockRegistry register${factory_name}(\"${block_path}\",\n")
-        file(APPEND ${factories_cpp_file} "\tPothos::Callable(&pothosPythonBlockFactory).bind(\"${python_path}\", 0));\n")
+        file(APPEND ${factories_cpp_file} "static Pothos::BlockRegistry register${class_name}(\"${block_path}\",\n")
+        file(APPEND ${factories_cpp_file} "\tPothos::Callable(&pothosPythonBlockFactory).bind(\"${package_name}\", 0).bind(\"${class_name}\", 1));\n")
     endforeach(factory)
 
     #install python sources

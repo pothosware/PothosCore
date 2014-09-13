@@ -21,9 +21,9 @@ POTHOS_PYTHON_UTIL(
         Forwarder.py
         SimpleSigSlots.py
     FACTORIES
-        "/python/forwarder:TestBlocks.Forwarder"
-        "/python/simple_signal_emitter:TestBlocks.SimpleSignalEmitter"
-        "/python/simple_slot_acceptor:TestBlocks.SimpleSlotAcceptor"
+        "/python/forwarder:Forwarder"
+        "/python/simple_signal_emitter:SimpleSignalEmitter"
+        "/python/simple_slot_acceptor:SimpleSlotAcceptor"
     DESTINATION TestBlocks
     ENABLE_DOCS
 )

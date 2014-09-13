@@ -4,7 +4,7 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 
-inline Pothos::Object pothosPythonBlockFactory(const std::string &pythonModulePath, const Pothos::Object *args, const size_t numArgs)
+inline Pothos::Object pothosPythonBlockFactory(const std::string &packageName, const std::string &className, const Pothos::Object *args, const size_t numArgs)
 {
     //create python environment
     auto env = Pothos::ProxyEnvironment::make("python");
@@ -17,12 +17,9 @@ inline Pothos::Object pothosPythonBlockFactory(const std::string &pythonModulePa
     }
 
     //locate the module
-    auto lastDot = pythonModulePath.find_last_of(".");
-    auto modPath = pythonModulePath.substr(0, lastDot);
-    auto factoryName = pythonModulePath.substr(lastDot+1);
-    auto mod = env->findProxy(modPath);
+    auto mod = env->findProxy(packageName);
 
     //call into the factory
-    auto block = mod.getHandle()->call(factoryName, proxyArgs.data(), proxyArgs.size());
+    auto block = mod.getHandle()->call(className, proxyArgs.data(), proxyArgs.size());
     return Pothos::Object(block);
 }
