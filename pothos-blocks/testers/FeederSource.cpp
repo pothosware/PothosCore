@@ -112,6 +112,11 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
 {
     Poco::JSON::Object::Ptr expectedResult(new Poco::JSON::Object());
 
+    //results to feed into the block
+    std::vector<Pothos::BufferChunk> buffers;
+    std::vector<Pothos::Label> labels;
+    std::vector<Pothos::Object> messages;
+
     std::random_device rd;
     std::mt19937 gen(rd());
 
@@ -157,7 +162,7 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
                 else if (elemDType.size() == 4) buff.as<int *>()[i] = int(value);
                 else throw Pothos::AssertionViolationException("FeederSource::feedTestPlan()", "cant handle this dtype: " + elemDType.toString());
             }
-            this->feedBuffer(buff);
+            buffers.push_back(buff);
         }
     }
 
@@ -193,10 +198,10 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
         for (auto index : labelIndexes)
         {
             Pothos::Label lbl;
-            lbl.index = index;
+            lbl.index = index + this->output(0)->totalElements();
             auto data = random_string(dataSizeDist(gen));
             lbl.data = Pothos::Object(data);
-            this->feedLabel(lbl);
+            labels.push_back(lbl);
 
             //record expected values
             Poco::JSON::Object::Ptr expectedLabel(new Poco::JSON::Object());
@@ -224,10 +229,15 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
         for (size_t msgno = 0; msgno < numMessages; msgno++)
         {
             auto data = random_string(dataSizeDist(gen));
-            this->feedMessage(Pothos::Object(data));
+            messages.push_back(Pothos::Object(data));
             expectedMessages->add(data);
         }
     }
+
+    //feed the generated data
+    for (const auto &lbl : labels) this->feedLabel(lbl);
+    for (const auto &buff : buffers) this->feedBuffer(buff);
+    for (const auto &msg : messages) this->feedMessage(msg);
 
     return expectedResult;
 }

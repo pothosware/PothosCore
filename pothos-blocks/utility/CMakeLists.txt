@@ -8,9 +8,9 @@ POTHOS_MODULE_UTIL(
         Pacer.cpp
         PeriodicTrigger.cpp
         TestPeriodicTrigger.cpp
-        Forwarder.cpp
-        TestForwarder.cpp
         Copier.cpp
+        Gateway.cpp
+        TestGateway.cpp
         MessageToSignal.cpp
         SlotToMessage.cpp
         BlackHole.cpp

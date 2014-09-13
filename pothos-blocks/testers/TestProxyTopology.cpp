@@ -42,7 +42,8 @@ static Pothos::Topology* makeForwardingTopology(void)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
-    auto forwarder = registry.callProxy("/blocks/forwarder");
+    auto forwarder = registry.callProxy("/blocks/gateway");
+    forwarder.callVoid("setMode", "FORWARD");
     auto t = new Pothos::Topology();
     t->connect(t, "t_in", forwarder, "0");
     t->connect(forwarder, "0", t, "t_out");
