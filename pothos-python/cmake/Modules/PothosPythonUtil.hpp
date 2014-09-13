@@ -8,7 +8,6 @@ inline Pothos::Object pothosPythonBlockFactory(const std::string &pythonModulePa
 {
     //create python environment
     auto env = Pothos::ProxyEnvironment::make("python");
-    env->findProxy("Pothos"); //required Pothos module import -- registers important converters
 
     //convert arguments into proxy environment
     std::vector<Pothos::Proxy> proxyArgs(numArgs);
