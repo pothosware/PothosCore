@@ -114,7 +114,7 @@ inline std::valarray<float> fftPowerSpectrum(CArray &fftBins, WindowFunction &wi
     std::valarray<float> powerBins(fftBins.size());
     for (size_t i = 0; i < fftBins.size(); i++)
     {
-        powerBins[i] = std::norm(fftBins[i]);
+        powerBins[i] = std::max(std::norm(fftBins[i]), 1e-20f);
         powerBins[i] = 10*std::log10(powerBins[i]);
         powerBins[i] -= 20*std::log10(fftBins.size());
         powerBins[i] -= 20*std::log10(windowFunction.power());
