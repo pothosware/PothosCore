@@ -50,8 +50,8 @@ Pothos::Proxy TopologyEngine::evalGraphBlock(GraphBlock *block)
         cache->loadCurrentValue(propKey, block->getPropertyValue(propKey));
     }
 
-    //deal with non-critical changes
-    if (not newCache and not cache->hasCriticalChange())
+    //deal with non-critical changes -- must have a valid block to apply settings to
+    if (not newCache and not cache->hasCriticalChange() and cache->getProxyBlock().callProxy("getProxyBlock"))
     {
         bool setterError = not cache->updateChangedProperties(block);
         if (not setterError) for (const auto &setter : cache->settersChangedList())
