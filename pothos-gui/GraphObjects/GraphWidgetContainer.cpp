@@ -55,7 +55,8 @@ GraphWidgetContainer::GraphWidgetContainer(QWidget *parent):
     QFrame(parent),
     _layout(new QVBoxLayout(this)),
     _grip(new MySizeGrip(this)),
-    _widget(nullptr)
+    _widget(nullptr),
+    _selected(false)
 {
     this->setLayout(_layout);
     _layout->setContentsMargins(QMargins(3, 3, 3, 3));
@@ -88,7 +89,7 @@ void GraphWidgetContainer::setWidget(QWidget *widget)
     //stash new widget and add to layout
     _widget = widget;
     if (_widget) _layout->insertWidget(0, _widget);
-    this->setShowGrip(false);
+    this->updateShowGrip();
 }
 
 void GraphWidgetContainer::setGripLabel(const QString &name)
@@ -101,6 +102,9 @@ void GraphWidgetContainer::setGripLabel(const QString &name)
 
 void GraphWidgetContainer::setSelected(const bool selected)
 {
+    _selected = selected;
+    this->updateShowGrip();
+
     this->setStyleSheet(QString("GraphWidgetContainer {"
         "border-width: %1px;"
         "border-style: solid;"
@@ -115,18 +119,20 @@ void GraphWidgetContainer::setSelected(const bool selected)
 
 void GraphWidgetContainer::enterEvent(QEvent *event)
 {
-    this->setShowGrip(true);
+    this->updateShowGrip();
     QWidget::enterEvent(event);
 }
 
 void GraphWidgetContainer::leaveEvent(QEvent *event)
 {
-    this->setShowGrip(false);
+    this->updateShowGrip();
     QWidget::leaveEvent(event);
 }
 
-void GraphWidgetContainer::setShowGrip(const bool visible)
+void GraphWidgetContainer::updateShowGrip(void)
 {
+    const bool visible = this->underMouse() or _selected;
+
     if (not _widget) return;
     _widget->show(); //needs visibility to calculate size
 

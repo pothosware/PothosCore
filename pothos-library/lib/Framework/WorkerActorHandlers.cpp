@@ -188,8 +188,8 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
 
     POTHOS_EXCEPTION_TRY
     {
-        this->block->activate();
         this->activeState = true;
+        this->block->activate();
         this->Send(std::string(""), from);
     }
     POTHOS_EXCEPTION_CATCH(const Exception &ex)
