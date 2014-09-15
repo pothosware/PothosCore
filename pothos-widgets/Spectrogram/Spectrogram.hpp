@@ -66,6 +66,7 @@ class MySpectrogramRasterData;
  * |option [Blackman] "blackman"
  * |option [Bartlett] "bartlett"
  * |option [Flat-top] "flattop"
+ * |widget ComboBox(editable=true)
  *
  * |param timeSpan[Time Span] How many seconds of data to display in the plot.
  * |default 10.0

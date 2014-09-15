@@ -69,6 +69,7 @@ class QwtPlotZoomer;
  * |option [Blackman] "blackman"
  * |option [Bartlett] "bartlett"
  * |option [Flat-top] "flattop"
+ * |widget ComboBox(editable=true)
  *
  * |param refLevel[Reference Level] The maximum displayable power level.
  * |default 0.0
