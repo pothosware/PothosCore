@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <Pothos/Proxy.hpp>
 #include <fir_filter/filt.h>
 #include <complex>
 #include <iostream>
@@ -26,6 +27,16 @@
  * |option [Complex Band Pass] "COMPLEX_BAND_PASS"
  * |option [Complex Band Stop] "COMPLEX_BAND_STOP"
  *
+ * |param window[Window Type] The spectral analysis window function type.
+ * |default "hann"
+ * |option [Rectangular] "rectangular"
+ * |option [Hann] "hann"
+ * |option [Hamming] "hamming"
+ * |option [Blackman] "blackman"
+ * |option [Bartlett] "bartlett"
+ * |option [Flat-top] "flattop"
+ * |widget ComboBox(editable=true)
+ *
  * |param sampRate[Sample Rate] The rate of samples per second.
  * The transition frequencies must be within the Nyqist frequency of the sampling rate.
  * |default 1e6
@@ -47,6 +58,7 @@
  *
  * |factory /blocks/fir_designer()
  * |setter setFilterType(type)
+ * |setter setWindowType(window)
  * |setter setSampleRate(sampRate)
  * |setter setFrequencyLower(freqLower)
  * |setter setFrequencyUpper(freqUpper)
@@ -62,13 +74,18 @@ public:
 
     FIRDesigner(void):
         _filterType("LOW_PASS"),
+        _windowType("hann"),
         _sampRate(1.0),
         _freqLower(0.1),
         _freqUpper(0.2),
         _numTaps(50)
     {
+        auto env = Pothos::ProxyEnvironment::make("managed");
+        _window = env->findProxy("Pothos/Util/WindowFunction").callProxy("new");
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setFilterType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, filterType));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setWindowType));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, windowType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setSampleRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, sampleRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setFrequencyLower));
@@ -90,6 +107,17 @@ public:
     std::string filterType(void) const
     {
         return _filterType;
+    }
+
+    void setWindowType(const std::string &type)
+    {
+        _windowType = type;
+        this->recalculate();
+    }
+
+    std::string windowType(void) const
+    {
+        return _windowType;
     }
 
     void setSampleRate(const double rate)
@@ -148,10 +176,12 @@ private:
     void recalculate(void);
 
     std::string _filterType;
+    std::string _windowType;
     double _sampRate;
     double _freqLower;
     double _freqUpper;
     size_t _numTaps;
+    Pothos::Proxy _window;
 };
 
 void FIRDesigner::recalculate(void)
@@ -176,7 +206,11 @@ void FIRDesigner::recalculate(void)
     std::vector<double> taps(_numTaps);
     filt->get_taps(taps.data());
 
-    //TODO apply window
+    //apply window
+    _window.callVoid("setType", _windowType);
+    _window.callVoid("setSize", _numTaps);
+    auto w = _window.call<std::vector<double>>("window");
+    for (size_t n = 0; n < w.size(); n++) taps[n] *= w[n];
 
     //handle complex taps -- shift to center freq
     if (_filterType.find("COMPLEX") != std::string::npos)
