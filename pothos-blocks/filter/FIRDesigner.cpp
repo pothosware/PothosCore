@@ -166,11 +166,11 @@ void FIRDesigner::recalculate(void)
     else if (_filterType == "BAND_STOP") filt.reset(new Filter(BSF, _numTaps, _sampRate, _freqLower, _freqUpper));
     else if (_filterType == "COMPLEX_BAND_PASS") filt.reset(new Filter(LPF, _numTaps, _sampRate, (_freqUpper-_freqLower)/2));
     else if (_filterType == "COMPLEX_BAND_STOP") filt.reset(new Filter(HPF, _numTaps, _sampRate, (_freqUpper-_freqLower)/2));
-    else throw Pothos::InvalidArgumentException("FIRDesigner::recalculate("+_filterType+")", "unknown filter type");
+    else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
 
     //check for error
     const auto error_flag = filt->get_error_flag();
-    if (error_flag != 0) throw Pothos::Exception("FIRDesigner::recalculate()", "error: "+std::to_string(error_flag));
+    if (error_flag != 0) throw Pothos::Exception("FIRDesigner()", "bad input: error="+std::to_string(error_flag));
 
     //copy the taps into buffer
     std::vector<double> taps(_numTaps);
