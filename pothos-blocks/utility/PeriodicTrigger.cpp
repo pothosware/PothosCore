@@ -17,8 +17,12 @@
  * |param rate[Trigger Rate] The rate of triggers per second
  * |default 1.0
  *
+ * |param args Arguments to pass into the triggered signal.
+ * |default []
+ *
  * |factory /blocks/periodic_trigger()
  * |setter setRate(rate)
+ * |setter setArgs(args)
  **********************************************************************/
 class PeriodicTrigger : public Pothos::Block
 {
@@ -34,6 +38,8 @@ public:
         this->registerSignal("triggered");
         this->registerCall(this, POTHOS_FCN_TUPLE(PeriodicTrigger, setRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(PeriodicTrigger, getRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PeriodicTrigger, setArgs));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PeriodicTrigger, getArgs));
     }
 
     void setRate(const double rate)
@@ -44,6 +50,16 @@ public:
     double getRate(void) const
     {
         return _rate;
+    }
+
+    void setArgs(const Pothos::ObjectVector &args)
+    {
+        _args = args;
+    }
+
+    Pothos::ObjectVector getArgs(void) const
+    {
+        return _args;
     }
 
     void activate(void)
@@ -64,7 +80,7 @@ public:
 
         if (currentTime > _nextTrigger)
         {
-            this->callVoid("triggered");
+            this->opaqueCallMethod("triggered", _args.data(), _args.size());
             this->incrementNext();
         }
         else
@@ -79,6 +95,7 @@ public:
 
 private:
     double _rate;
+    Pothos::ObjectVector _args;
     std::chrono::high_resolution_clock::time_point _nextTrigger;
 };
 
