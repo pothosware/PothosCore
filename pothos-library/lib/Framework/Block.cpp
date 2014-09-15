@@ -3,6 +3,7 @@
 
 #include "Framework/WorkerActor.hpp"
 #include <Pothos/Object/Containers.hpp>
+#include <Poco/String.h>
 
 /***********************************************************************
  * Reusable threadpool
@@ -149,8 +150,39 @@ void Pothos::Block::registerSlot(const std::string &name)
     _actor->allocateSlot(name);
 }
 
+void Pothos::Block::registerProbe(
+    const std::string &name,
+    const std::string &signalName_,
+    const std::string &slotName_
+)
+{
+    if (name.empty()) throw PortAccessError("Pothos::Block::registerProbe()", "empty name");
+    auto signalName = signalName_;
+    if (signalName.empty()) signalName = name + "Triggered";
+    auto slotName = slotName_;
+    if (slotName.empty()) slotName = "probe" + Poco::toUpper(name.substr(0, 1)) + name.substr(1);
+
+    //create registration
+    this->registerSlot(slotName);
+    this->registerSignal(signalName);
+    _probes[slotName] = std::make_pair(name, signalName);
+}
+
 Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
 {
+    //check if this name is a probe slot
+    auto probesIt = _probes.find(name);
+    if (probesIt != _probes.end())
+    {
+        const auto &callName = probesIt->second.first;
+        const auto &signalName = probesIt->second.second;
+        auto result = this->opaqueCallHandler(callName, inputArgs, numArgs);
+        if (result) this->callVoid(signalName, result);
+        else this->callVoid(signalName);
+        return Pothos::Object();
+    }
+
+    //check if the name is a registered call
     auto it = _calls.find(name);
     if (it == _calls.end())
     {
@@ -268,6 +300,9 @@ static auto managedBlock = Pothos::ManagedClass()
 
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSignal))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSlot))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerProbe))
+    .registerMethod("registerProbe", Pothos::Callable(&Pothos::Block::registerProbe).bind("", 3))
+    .registerMethod("registerProbe", Pothos::Callable(&Pothos::Block::registerProbe).bind("", 3).bind("", 2))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputs))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, allInputs))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, input))
