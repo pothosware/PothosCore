@@ -45,7 +45,7 @@ signals:
 protected:
     void enterEvent(QEvent *event);
     void leaveEvent(QEvent *event);
-    void setShowGrip(const bool visible);
+    void updateShowGrip(void);
     void paintEvent(QPaintEvent *event);
 
 private:
@@ -53,4 +53,5 @@ private:
     QVBoxLayout *_layout;
     QWidget *_grip;
     QPointer<QWidget> _widget;
+    bool _selected;
 };
