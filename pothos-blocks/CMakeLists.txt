@@ -16,6 +16,7 @@ include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
 ########################################################################
 add_subdirectory(math)
 add_subdirectory(file)
+add_subdirectory(filter)
 add_subdirectory(utility)
 add_subdirectory(network)
 add_subdirectory(packet)
