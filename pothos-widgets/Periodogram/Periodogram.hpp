@@ -4,6 +4,7 @@
 #pragma once
 #include <qwt_math.h> //_USE_MATH_DEFINES
 #include <Pothos/Framework.hpp>
+#include <Pothos/Proxy.hpp>
 #include <QWidget>
 #include <memory>
 #include <chrono>
@@ -231,7 +232,7 @@ private:
     MyQwtPlot *_mainPlot;
     QwtPlotGrid *_plotGrid;
     QwtPlotZoomer *_zoomer;
-    WindowFunction _window;
+    Pothos::Proxy _window;
     double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;

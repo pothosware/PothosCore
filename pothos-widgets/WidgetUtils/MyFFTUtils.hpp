@@ -7,49 +7,7 @@
 #include <complex>
 #include <valarray>
 #include <string>
-#include <functional>
 #include <cassert>
-
-////////////////////////////////////////////////////////////////////////
-//Window function support:
-//https://en.wikipedia.org/wiki/Window_function
-////////////////////////////////////////////////////////////////////////
-class POTHOS_WIDGET_UTILS_EXPORT WindowFunction
-{
-public:
-
-    WindowFunction(void);
-
-    //! Set the window function type (use common window function names)
-    void setType(const std::string &name);
-
-    /*!
-     * Get the power of the window function
-     */
-    double power(void) const
-    {
-        return _power;
-    }
-
-    /*!
-     * Get the window values (only update if length changed).
-     */
-    const std::valarray<float> &window(void) const
-    {
-        return _window;
-    }
-
-    /*!
-     * Set to a new window size.
-     */
-    void setSize(const size_t length);
-
-private:
-    std::function<double(const size_t, const size_t)> _calc;
-    double _power;
-    std::valarray<float> _window;
-    void reload(void);
-};
 
 ////////////////////////////////////////////////////////////////////////
 //FFT code can be found at:
@@ -100,10 +58,9 @@ inline void ifft(CArray& x)
 ////////////////////////////////////////////////////////////////////////
 //FFT Power spectrum
 ////////////////////////////////////////////////////////////////////////
-inline std::valarray<float> fftPowerSpectrum(CArray &fftBins, WindowFunction &windowFunction)
+inline std::valarray<float> fftPowerSpectrum(CArray &fftBins, const std::vector<double> &window, const double windowPower)
 {
     //windowing
-    const auto &window = windowFunction.window();
     assert(window.size() == fftBins.size());
     for (size_t n = 0; n < fftBins.size(); n++) fftBins[n] *= window[n];
 
@@ -117,7 +74,7 @@ inline std::valarray<float> fftPowerSpectrum(CArray &fftBins, WindowFunction &wi
         powerBins[i] = std::max(std::norm(fftBins[i]), 1e-20f);
         powerBins[i] = 10*std::log10(powerBins[i]);
         powerBins[i] -= 20*std::log10(fftBins.size());
-        powerBins[i] -= 20*std::log10(windowFunction.power());
+        powerBins[i] -= 20*std::log10(windowPower);
     }
 
     //bin reorder

@@ -55,10 +55,9 @@ list(APPEND Qt5_LIBRARIES PothosQwt)
 ########################################################################
 file(GLOB WIDGET_UTILS_SOURCES "WidgetUtils/*.cpp")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/WidgetUtils)
-include_directories(${POTHOS_INCLUDE_DIRS})
 add_library(PothosWidgetUtils SHARED ${WIDGET_UTILS_SOURCES})
 set_target_properties(PothosWidgetUtils PROPERTIES DEFINE_SYMBOL "POTHOS_WIDGET_UTILS_MAKEDLL")
-target_link_libraries(PothosWidgetUtils ${Qt5_LIBRARIES} ${POTHOS_LIBRARIES})
+target_link_libraries(PothosWidgetUtils ${Qt5_LIBRARIES})
 install(TARGETS PothosWidgetUtils
     LIBRARY DESTINATION lib${LIB_SUFFIX} # .so file
     ARCHIVE DESTINATION lib${LIB_SUFFIX} # .lib file

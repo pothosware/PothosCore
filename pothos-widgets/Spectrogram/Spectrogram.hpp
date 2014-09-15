@@ -4,6 +4,7 @@
 #pragma once
 #include <qwt_math.h> //_USE_MATH_DEFINES
 #include <Pothos/Framework.hpp>
+#include <Pothos/Proxy.hpp>
 #include <QWidget>
 #include <memory>
 #include <chrono>
@@ -211,7 +212,7 @@ private:
     QwtPlotZoomer *_zoomer;
     std::shared_ptr<QwtPlotSpectrogram> _plotSpect;
     MySpectrogramRasterData *_plotRaster;
-    WindowFunction _window;
+    Pothos::Proxy _window;
     double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;
