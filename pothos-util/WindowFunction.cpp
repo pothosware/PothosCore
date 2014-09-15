@@ -1,13 +1,59 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "MyFFTUtils.hpp"
+#include <Pothos/Config.hpp>
+#include <Pothos/Exception.hpp>
 #include <Poco/String.h>
 #include <Poco/RegularExpression.h>
-#include <Pothos/Exception.hpp>
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Array.h>
 #include <cmath>
+#include <complex>
+#include <vector>
+#include <string>
+#include <functional>
+#include <cassert>
+
+////////////////////////////////////////////////////////////////////////
+//Window function support:
+//https://en.wikipedia.org/wiki/Window_function
+////////////////////////////////////////////////////////////////////////
+class WindowFunction
+{
+public:
+
+    WindowFunction(void);
+
+    //! Set the window function type (use common window function names)
+    void setType(const std::string &name);
+
+    /*!
+     * Get the power of the window function
+     */
+    double power(void) const
+    {
+        return _power;
+    }
+
+    /*!
+     * Get the window values (only update if length changed).
+     */
+    const std::vector<double> &window(void) const
+    {
+        return _window;
+    }
+
+    /*!
+     * Set to a new window size.
+     */
+    void setSize(const size_t length);
+
+private:
+    std::function<double(const size_t, const size_t)> _calc;
+    double _power;
+    std::vector<double> _window;
+    void reload(void);
+};
 
 static double rectangular(const size_t, const size_t)
 {
@@ -136,3 +182,13 @@ void WindowFunction::reload(void)
     }
     _power = std::sqrt(_power/length);
 }
+
+#include <Pothos/Managed.hpp>
+
+static auto managedWindowFunction = Pothos::ManagedClass()
+    .registerConstructor<WindowFunction>()
+    .registerMethod(POTHOS_FCN_TUPLE(WindowFunction, setType))
+    .registerMethod(POTHOS_FCN_TUPLE(WindowFunction, setSize))
+    .registerMethod(POTHOS_FCN_TUPLE(WindowFunction, power))
+    .registerMethod(POTHOS_FCN_TUPLE(WindowFunction, window))
+    .commit("Pothos/Util/WindowFunction");
