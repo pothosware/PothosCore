@@ -120,12 +120,11 @@
 
 #define MAX_NUM_FILTER_TAPS 1000
 
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <inttypes.h>
+#include <cstdio>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <cstdint>
 
 enum filterType {LPF, HPF, BPF, BSF};
 
@@ -155,8 +154,8 @@ class Filter{
 		double do_sample(double data_sample);
 		int get_error_flag(){return m_error_flag;};
 		void get_taps( double *taps );
-		int write_taps_to_file( char* filename );
-		int write_freqres_to_file( char* filename );
+		//int write_taps_to_file( char* filename );
+		//int write_freqres_to_file( char* filename );
 };
 
 #endif

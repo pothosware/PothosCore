@@ -37,6 +37,7 @@
  * SUCH DAMAGE.
  */
 
+#include <Pothos/Config.hpp>
 #include <fir_filter/filt.h>
 #define ECODE(x) {m_error_flag = x; return;}
 
@@ -184,7 +185,7 @@ Filter::get_taps( double *taps )
 
   return;		
 }
-
+/*
 int 
 Filter::write_taps_to_file( char *filename )
 {
@@ -252,6 +253,7 @@ Filter::write_freqres_to_file( char *filename )
 	fclose(fd);
 	return 0;
 }
+*/
 
 void 
 Filter::init()
