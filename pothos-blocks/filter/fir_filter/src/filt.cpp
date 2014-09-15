@@ -41,7 +41,9 @@
 #define ECODE(x) {m_error_flag = x; return;}
 
 // Handles LPF and HPF case
-Filter::Filter(filterType filt_t, int num_taps, double Fs, double Fx)
+Filter::Filter(filterType filt_t, int num_taps, double Fs, double Fx):
+	m_taps(NULL),
+	m_sr(NULL)
 {
 	m_error_flag = 0;
 	m_filt_t = filt_t;
@@ -70,7 +72,9 @@ Filter::Filter(filterType filt_t, int num_taps, double Fs, double Fx)
 
 // Handles BPF case
 Filter::Filter(filterType filt_t, int num_taps, double Fs, double Fl,
-               double Fu)
+               double Fu):
+	m_taps(NULL),
+	m_sr(NULL)
 {
 	m_error_flag = 0;
 	m_filt_t = filt_t;
