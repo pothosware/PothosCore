@@ -27,7 +27,8 @@
  * |option [Complex Band Pass] "COMPLEX_BAND_PASS"
  * |option [Complex Band Stop] "COMPLEX_BAND_STOP"
  *
- * |param window[Window Type] The spectral analysis window function type.
+ * |param window[Window Type] The window function controls passband ripple.
+ * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
  * |default "hann"
  * |option [Rectangular] "rectangular"
  * |option [Hann] "hann"
