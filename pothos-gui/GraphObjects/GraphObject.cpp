@@ -139,15 +139,14 @@ void GraphObject::renderConnectablePoints(QPainter &painter)
     }
 }
 
-void GraphObject::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void GraphObject::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
-    QGraphicsObject::mousePressEvent(event);
-    if (event->button() == Qt::RightButton)
-    {
-        this->setSelected(true);
-        auto pos = this->draw()->mapFromScene(this->mapToScene(event->pos()));
-        emit this->draw()->customContextMenuRequested(pos);
-    }
+    QGraphicsObject::contextMenuEvent(event);
+    this->draw()->deselectAllObjs();
+    this->setSelected(true);
+    auto pos = this->draw()->mapFromScene(this->mapToScene(event->pos()));
+    emit this->draw()->customContextMenuRequested(pos);
+    event->accept();
 }
 
 void GraphObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)

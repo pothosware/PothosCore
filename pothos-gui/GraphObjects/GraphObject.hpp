@@ -63,7 +63,7 @@ signals:
     void IDChanged(const QString &);
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
 private:
