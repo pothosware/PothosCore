@@ -23,6 +23,9 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     _dynRange(100.0),
     _autoScale(false)
 {
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    _window = env->findProxy("Pothos/Util/WindowFunction").callProxy("new");
+
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, widget));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumInputs));
@@ -121,12 +124,12 @@ void Periodogram::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
     for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
-    _window.setSize(numBins);
+    _window.callVoid("setSize", numBins);
 }
 
 void Periodogram::setWindowType(const std::string &windowType)
 {
-    _window.setType(windowType);
+    _window.callVoid("setType", windowType);
 }
 
 void Periodogram::setReferenceLevel(const double refLevel)

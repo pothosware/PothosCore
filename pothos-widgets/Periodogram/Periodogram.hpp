@@ -4,6 +4,7 @@
 #pragma once
 #include <qwt_math.h> //_USE_MATH_DEFINES
 #include <Pothos/Framework.hpp>
+#include <Pothos/Proxy.hpp>
 #include <QWidget>
 #include <memory>
 #include <chrono>
@@ -61,7 +62,8 @@ class QwtPlotZoomer;
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
  *
- * |param window[Window Type] The spectral analysis window function type.
+ * |param window[Window Type] The window function controls spectral leakage.
+ * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
  * |default "hann"
  * |option [Rectangular] "rectangular"
  * |option [Hann] "hann"
@@ -69,6 +71,7 @@ class QwtPlotZoomer;
  * |option [Blackman] "blackman"
  * |option [Bartlett] "bartlett"
  * |option [Flat-top] "flattop"
+ * |widget ComboBox(editable=true)
  *
  * |param refLevel[Reference Level] The maximum displayable power level.
  * |default 0.0
@@ -230,7 +233,7 @@ private:
     MyQwtPlot *_mainPlot;
     QwtPlotGrid *_plotGrid;
     QwtPlotZoomer *_zoomer;
-    WindowFunction _window;
+    Pothos::Proxy _window;
     double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;

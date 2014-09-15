@@ -4,6 +4,7 @@
 #pragma once
 #include <qwt_math.h> //_USE_MATH_DEFINES
 #include <Pothos/Framework.hpp>
+#include <Pothos/Proxy.hpp>
 #include <QWidget>
 #include <memory>
 #include <chrono>
@@ -58,7 +59,8 @@ class MySpectrogramRasterData;
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
  *
- * |param window[Window Type] The spectral analysis window function type.
+ * |param window[Window Type] The window function controls spectral leakage.
+ * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
  * |default "hann"
  * |option [Rectangular] "rectangular"
  * |option [Hann] "hann"
@@ -66,6 +68,7 @@ class MySpectrogramRasterData;
  * |option [Blackman] "blackman"
  * |option [Bartlett] "bartlett"
  * |option [Flat-top] "flattop"
+ * |widget ComboBox(editable=true)
  *
  * |param timeSpan[Time Span] How many seconds of data to display in the plot.
  * |default 10.0
@@ -210,7 +213,7 @@ private:
     QwtPlotZoomer *_zoomer;
     std::shared_ptr<QwtPlotSpectrogram> _plotSpect;
     MySpectrogramRasterData *_plotRaster;
-    WindowFunction _window;
+    Pothos::Proxy _window;
     double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;

@@ -31,6 +31,9 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     _refLevel(0.0),
     _dynRange(100.0)
 {
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    _window = env->findProxy("Pothos/Util/WindowFunction").callProxy("new");
+
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, widget));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTitle));
@@ -130,12 +133,12 @@ void Spectrogram::setNumFFTBins(const size_t numBins)
     _numBins = numBins;
     for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
     _plotRaster->setNumColumns(numBins);
-    _window.setSize(numBins);
+    _window.callVoid("setSize", numBins);
 }
 
 void Spectrogram::setWindowType(const std::string &windowType)
 {
-    _window.setType(windowType);
+    _window.callVoid("setType", windowType);
 }
 
 void Spectrogram::setTimeSpan(const double timeSpan)

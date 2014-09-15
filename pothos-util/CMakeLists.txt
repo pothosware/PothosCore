@@ -36,6 +36,7 @@ set(SOURCES
     DocUtils.cpp
     TestDocUtils.cpp
     TestEvalExpression.cpp
+    WindowFunction.cpp
 )
 
 POTHOS_MODULE_UTIL(

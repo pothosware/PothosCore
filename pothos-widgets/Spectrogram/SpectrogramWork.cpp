@@ -83,7 +83,7 @@ void Spectrogram::updateCurve(Pothos::InputPort *inPort)
     _inputConverter(inPort, std::ref(fftBins));
 
     //power bins to points on the curve
-    const auto powerBins = fftPowerSpectrum(fftBins, _window);
+    const auto powerBins = fftPowerSpectrum(fftBins, _window.call<std::vector<double>>("window"), _window.call<double>("power"));
     this->appendBins(powerBins);
 }
 
