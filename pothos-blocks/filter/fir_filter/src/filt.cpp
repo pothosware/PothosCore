@@ -95,6 +95,7 @@ Filter::Filter(filterType filt_t, int num_taps, double Fs, double Fl,
 	init();
 
 	if( m_filt_t == BPF ) designBPF();
+	else if( m_filt_t == BSF ) designBSF();
 	else ECODE(-16);
 
 	return;
@@ -146,6 +147,22 @@ Filter::designBPF()
 		mm = n - (m_num_taps - 1.0) / 2.0;
 		if( mm == 0.0 ) m_taps[n] = (m_phi - m_lambda) / M_PI;
 		else m_taps[n] = (   sin( mm * m_phi ) -
+		                     sin( mm * m_lambda )   ) / (mm * M_PI);
+	}
+
+	return;
+}
+
+void 
+Filter::designBSF()
+{
+	int n;
+	double mm;
+
+	for(n = 0; n < m_num_taps; n++){
+		mm = n - (m_num_taps - 1.0) / 2.0;
+		if( mm == 0.0 ) m_taps[n] = 1.0 - (m_phi - m_lambda) / M_PI;
+		else m_taps[n] = -(   sin( mm * m_phi ) -
 		                     sin( mm * m_lambda )   ) / (mm * M_PI);
 	}
 

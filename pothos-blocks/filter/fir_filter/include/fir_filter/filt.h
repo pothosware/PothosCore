@@ -127,7 +127,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-enum filterType {LPF, HPF, BPF};
+enum filterType {LPF, HPF, BPF, BSF};
 
 class Filter{
 	private:
@@ -145,6 +145,7 @@ class Filter{
 		// Only needed for the bandpass filter case
 		double m_Fu, m_phi;
 		void designBPF();
+		void designBSF();
 
 	public:
 		Filter(filterType filt_t, int num_taps, double Fs, double Fx);

@@ -3,13 +3,15 @@
 
 #include <Pothos/Framework.hpp>
 #include <fir_filter/filt.h>
+#include <complex>
+#include <iostream>
 
 /***********************************************************************
  * |PothosDoc FIR Designer
  *
  * Designer for FIR filter taps.
  * This block emits a "tapsChanged" signal upon activations,
- * and when one of the parameters are modified.
+ * and when one of the parameters is modified.
  * The "tapsChanged" signal contains an array of FIR taps,
  * and can be connected to a FIR filter's set taps method.
  *
@@ -20,22 +22,27 @@
  * |option [Low Pass] "LOW_PASS"
  * |option [High Pass] "HIGH_PASS"
  * |option [Band Pass] "BAND_PASS"
+ * |option [Band Stop] "BAND_STOP"
  * |option [Complex Band Pass] "COMPLEX_BAND_PASS"
+ * |option [Complex Band Stop] "COMPLEX_BAND_STOP"
  *
- * |param sampRate[Sample Rate]
+ * |param sampRate[Sample Rate] The rate of samples per second.
+ * The transition frequencies must be within the Nyqist frequency of the sampling rate.
  * |default 1e6
  * |units Sps
  *
- * |param freqLower[Lower Freq]
+ * |param freqLower[Lower Freq] The lower transition frequency.
+ * For low and high pass filters, this is the only transition frequency.
  * |default 1000
  * |units Hz
  *
- * |param freqUpper[Upper Freq]
+ * |param freqUpper[Upper Freq] The upper transition frequency.
+ * This parameter is only used for band pass and band reject filters.
  * |default 2000
  * |units Hz
  *
- * |param numTaps[Num Taps]
- * |default 50
+ * |param numTaps[Num Taps] The number of filter taps -- or computational complexity of the filter.
+ * |default 51
  * |widget SpinBox(minimum=1)
  *
  * |factory /blocks/fir_designer()
@@ -149,30 +156,48 @@ private:
 
 void FIRDesigner::recalculate(void)
 {
+    if (not this->isActive()) return;
+
+    //generate the filter
     std::shared_ptr<Filter> filt;
     if (_filterType == "LOW_PASS") filt.reset(new Filter(LPF, _numTaps, _sampRate, _freqLower));
     else if (_filterType == "HIGH_PASS") filt.reset(new Filter(HPF, _numTaps, _sampRate, _freqLower));
     else if (_filterType == "BAND_PASS") filt.reset(new Filter(BPF, _numTaps, _sampRate, _freqLower, _freqUpper));
-    else if (_filterType == "COMPLEX_BAND_PASS")
-    {
-        //TODO
-    }
-    else
-    {
-        throw Pothos::InvalidArgumentException("FIRDesigner::recalculate("+_filterType+")", "unknown filter type");
-    }
+    else if (_filterType == "BAND_STOP") filt.reset(new Filter(BSF, _numTaps, _sampRate, _freqLower, _freqUpper));
+    else if (_filterType == "COMPLEX_BAND_PASS") filt.reset(new Filter(LPF, _numTaps, _sampRate, (_freqUpper-_freqLower)/2));
+    else if (_filterType == "COMPLEX_BAND_STOP") filt.reset(new Filter(HPF, _numTaps, _sampRate, (_freqUpper-_freqLower)/2));
+    else throw Pothos::InvalidArgumentException("FIRDesigner::recalculate("+_filterType+")", "unknown filter type");
 
+    //check for error
+    const auto error_flag = filt->get_error_flag();
+    if (error_flag != 0) throw Pothos::Exception("FIRDesigner::recalculate()", "error: "+std::to_string(error_flag));
 
+    //copy the taps into buffer
     std::vector<double> taps(_numTaps);
     filt->get_taps(taps.data());
 
-    //TODO handle convert to complex taps + shift
+    //TODO apply window
 
-    //TODO apply window and calculate total gain
+    //handle complex taps -- shift to center freq
+    if (_filterType.find("COMPLEX") != std::string::npos)
+    {
+        std::vector<std::complex<double>> complexTaps(_numTaps);
+        const auto center = (_freqLower+_freqUpper)/2;
+        const auto lambda = M_PI * center / (_sampRate/2);
 
-    //TODO remove gain
+        for (size_t n = 0; n < _numTaps; n++)
+        {
+            complexTaps[n] = std::polar(taps[n], n*lambda);
+        }
 
-    if (this->isActive()) this->callVoid("tapsChanged", taps);
+        this->callVoid("tapsChanged", complexTaps);
+    }
+
+    //otherwise emit real taps
+    else
+    {
+        this->callVoid("tapsChanged", taps);
+    }
 }
 
 static Pothos::BlockRegistry registerFIRDesigner(
