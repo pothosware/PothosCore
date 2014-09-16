@@ -298,19 +298,25 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         const auto &epOut = conn->getOutputEndpoint();
         const auto &epIn = conn->getInputEndpoint();
 
-        auto breaker = findInputBreaker(this, epOut);
-        if (breaker != nullptr) continue;
+        auto sigSlotPairs = conn->getSigSlotPairs();
+        if (sigSlotPairs.empty()) sigSlotPairs.resize(1); //add empty
+        for (const auto &sigSlotPair : sigSlotPairs)
+        {
+            auto breaker = findInputBreaker(this, epOut);
+            if (breaker != nullptr) continue;
 
-        breaker = new GraphBreaker(epOut.getObj()->draw());
-        breaker->setInput(true);
-        const auto name = QString("%1[%2]").arg(epOut.getObj()->getId(), epOut.getKey().id);
-        breaker->setId(this->newId(name));
-        breaker->setNodeName(breaker->getId()); //the first of its name
-        breaker->setRotation(epIn.getObj()->rotation());
-        breaker->setPos(epIn.getObj()->pos());
+            breaker = new GraphBreaker(epOut.getObj()->draw());
+            breaker->setInput(true);
+            const auto name = QString("%1[%2]").arg(epOut.getObj()->getId(), epOut.getKey().id);
+            breaker->setId(this->newId(name));
+            breaker->setNodeName(breaker->getId()); //the first of its name
+            breaker->setRotation(epIn.getObj()->rotation());
+            breaker->setPos(epIn.getObj()->pos());
 
-        auto outConn = this->makeConnection(epOut, GraphConnectionEndpoint(breaker, breaker->getConnectableKeys().at(0)));
-        if (outConn->scene() != breaker->scene()) breaker->scene()->addItem(outConn); //use desired parent
+            auto outConn = this->makeConnection(epOut, GraphConnectionEndpoint(breaker, breaker->getConnectableKeys().at(0)));
+            if (not sigSlotPair.first.isEmpty()) outConn->addSigSlotPair(std::make_pair(sigSlotPair.first, breaker->getConnectableKeys().at(0).id));
+            if (outConn->scene() != breaker->scene()) breaker->scene()->addItem(outConn); //use desired parent
+        }
     }
 
     //create breakers for input endpoints that have to cross
@@ -319,34 +325,40 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         const auto &epOut = conn->getOutputEndpoint();
         const auto &epIn = conn->getInputEndpoint();
 
-        //find the existing breaker or make a new one
-        const auto name = findInputBreaker(this, epOut)->getNodeName();
-        GraphBreaker *breaker = nullptr;
-        for (auto obj : this->getGraphObjects(GRAPH_BREAKER))
+        auto sigSlotPairs = conn->getSigSlotPairs();
+        if (sigSlotPairs.empty()) sigSlotPairs.resize(1); //add empty
+        for (const auto &sigSlotPair : sigSlotPairs)
         {
-            if (obj->draw() != epIn.getObj()->draw()) continue;
-            auto outBreaker = dynamic_cast<GraphBreaker *>(obj);
-            assert(outBreaker != nullptr);
-            if (outBreaker->isInput()) continue;
-            if (outBreaker->getNodeName() != name) continue;
-            breaker = outBreaker;
-            break;
-        }
+            //find the existing breaker or make a new one
+            const auto name = findInputBreaker(this, epOut)->getNodeName();
+            GraphBreaker *breaker = nullptr;
+            for (auto obj : this->getGraphObjects(GRAPH_BREAKER))
+            {
+                if (obj->draw() != epIn.getObj()->draw()) continue;
+                auto outBreaker = dynamic_cast<GraphBreaker *>(obj);
+                assert(outBreaker != nullptr);
+                if (outBreaker->isInput()) continue;
+                if (outBreaker->getNodeName() != name) continue;
+                breaker = outBreaker;
+                break;
+            }
 
-        //make a new output breaker
-        if (breaker == nullptr)
-        {
-            breaker = new GraphBreaker(epIn.getObj()->draw());
-            breaker->setInput(false);
-            breaker->setId(this->newId(name));
-            breaker->setNodeName(name);
-            breaker->setRotation(epOut.getObj()->rotation());
-            breaker->setPos(epOut.getObj()->pos());
-        }
+            //make a new output breaker
+            if (breaker == nullptr)
+            {
+                breaker = new GraphBreaker(epIn.getObj()->draw());
+                breaker->setInput(false);
+                breaker->setId(this->newId(name));
+                breaker->setNodeName(name);
+                breaker->setRotation(epOut.getObj()->rotation());
+                breaker->setPos(epOut.getObj()->pos());
+            }
 
-        //connect to this breaker
-        auto inConn = this->makeConnection(epIn, GraphConnectionEndpoint(breaker, breaker->getConnectableKeys().at(0)));
-        if (inConn->scene() != breaker->scene()) breaker->scene()->addItem(inConn); //use desired parent
+            //connect to this breaker
+            auto inConn = this->makeConnection(epIn, GraphConnectionEndpoint(breaker, breaker->getConnectableKeys().at(0)));
+            if (not sigSlotPair.second.isEmpty()) inConn->addSigSlotPair(std::make_pair(breaker->getConnectableKeys().at(0).id, sigSlotPair.second));
+            if (inConn->scene() != breaker->scene()) breaker->scene()->addItem(inConn); //use desired parent
+        }
 
         delete conn;
     }
