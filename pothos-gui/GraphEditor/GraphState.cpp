@@ -47,10 +47,10 @@ void GraphStateManager::change(void)
         auto item = new QListWidgetItem(this);
         item->setIcon(makeIconFromTheme(state.iconName));
         this->addItem(item);
-        auto desc = state.description;
-        if (size_t(i) == this->getCurrentIndex()) desc = QString("<b>%1</b>").arg(desc.toHtmlEscaped());
-        if (size_t(i) == this->getSavedIndex()) desc = QString("<i>%1</i>").arg(desc.toHtmlEscaped());
-        this->setItemWidget(item, new QLabel(desc));
+        auto desc = state.description.toHtmlEscaped();
+        if (size_t(i) == this->getCurrentIndex()) desc = QString("<b>%1</b>").arg(desc);
+        if (size_t(i) == this->getSavedIndex()) desc = QString("<i>%1</i>").arg(desc);
+        this->setItemWidget(item, new QLabel(QString("<span>%1</span>").arg(desc)));
         _itemToIndex[item] = i;
     }
 }
