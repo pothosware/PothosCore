@@ -7,10 +7,10 @@
 #include <iostream>
 
 /***********************************************************************
- * |PothosDoc Value Probe
+ * |PothosDoc Stream Probe
  *
- * The value probe block records the last seen value from a stream of elements.
- * The value probe has a slot called "probeValue" will will cause
+ * The stream probe block records the last seen value from a stream of elements.
+ * The stream probe has a slot called "probeValue" will will cause
  * a signal named "valueTriggered" to emit the most recent value.
  *
  * This block is intented to be fed by an upstream block that produces
@@ -33,16 +33,16 @@
  * |option [Int8] "int8"
  * |preview disable
  *
- * |factory /blocks/value_probe(dtype)
+ * |factory /blocks/stream_probe(dtype)
  **********************************************************************/
 template <typename Type>
-class ValueProbe : public Pothos::Block
+class StreamProbe : public Pothos::Block
 {
 public:
-    ValueProbe(void)
+    StreamProbe(void)
     {
         this->setupInput(0, typeid(Type));
-        this->registerCall(this, POTHOS_FCN_TUPLE(ValueProbe, value));
+        this->registerCall(this, POTHOS_FCN_TUPLE(StreamProbe, value));
         this->registerProbe("value");
         this->input(0)->setReserve(1);
     }
@@ -71,8 +71,8 @@ private:
 static Pothos::Block *valueProbeFactory(const Pothos::DType &dtype)
 {
     #define ifTypeDeclareFactory(type) \
-        if (dtype == Pothos::DType(typeid(type))) return new ValueProbe<type>(); \
-        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new ValueProbe<std::complex<type>>();
+        if (dtype == Pothos::DType(typeid(type))) return new StreamProbe<type>(); \
+        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new StreamProbe<std::complex<type>>();
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
     ifTypeDeclareFactory(Poco::Int64);
@@ -82,5 +82,5 @@ static Pothos::Block *valueProbeFactory(const Pothos::DType &dtype)
     throw Pothos::InvalidArgumentException("valueProbeFactory("+dtype.toString()+")", "unsupported type");
 }
 
-static Pothos::BlockRegistry registerValueProbe(
-    "/blocks/value_probe", &valueProbeFactory);
+static Pothos::BlockRegistry registerStreamProbe(
+    "/blocks/stream_probe", &valueProbeFactory);
