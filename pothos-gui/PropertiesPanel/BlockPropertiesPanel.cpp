@@ -3,8 +3,8 @@
 
 #include "PothosGuiUtils.hpp" //get object map
 #include "AffinitySupport/AffinityZonesDock.hpp"
-#include "PropertiesPanel/BlockPropertiesPanel.hpp"
-#include "PropertiesPanel/BlockPropertyEditWidget.hpp"
+#include "BlockPropertiesPanel.hpp"
+#include "BlockPropertyEditWidget.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include <QVBoxLayout>
@@ -355,11 +355,11 @@ void BlockPropertiesPanel::updatePropForms(const QString &propKey)
     auto formLabel = _propIdToFormLabel[propKey];
 
     //create label string
-    bool propChanged = (_propIdToOriginal[propKey] == _block->getPropertyValue(propKey));
+    bool propChanged = (_propIdToOriginal[propKey] != _block->getPropertyValue(propKey));
     auto label = QString("<span style='color:%1;'><b>%2%3</b></span>")
         .arg(_block->getPropertyErrorMsg(propKey).isEmpty()?"black":"red")
         .arg(_block->getPropertyName(propKey))
-        .arg(propChanged?"":"*");
+        .arg(propChanged?"*":"");
     if (paramDesc->has("units")) label += QString("<br /><i>%1</i>")
         .arg(QString::fromStdString(paramDesc->getValue<std::string>("units")));
     formLabel->setText(label);

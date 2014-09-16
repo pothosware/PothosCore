@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //make icon from theme
-#include "PropertiesPanel/ConnectionPropertiesPanel.hpp"
+#include "ConnectionPropertiesPanel.hpp"
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include <QHBoxLayout>

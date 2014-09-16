@@ -4,6 +4,7 @@
 #include "PothosGuiUtils.hpp" //make icon theme
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
 #include "PropertiesPanel/BlockPropertiesPanel.hpp"
+#include "PropertiesPanel/BreakerPropertiesPanel.hpp"
 #include "PropertiesPanel/ConnectionPropertiesPanel.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
@@ -65,7 +66,7 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
 
     if (widget != nullptr) block = widget->getGraphBlock();
     if (block != nullptr) _propertiesPanel = new BlockPropertiesPanel(block, this);
-    else if (breaker != nullptr) return; //TODO
+    else if (breaker != nullptr) _propertiesPanel = new BreakerPropertiesPanel(breaker, this);
     else if (connection != nullptr and connection->isSignalOrSlot()) _propertiesPanel = new ConnectionPropertiesPanel(connection, this);
     else return;
 
