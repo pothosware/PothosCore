@@ -139,9 +139,13 @@ void GraphObject::renderConnectablePoints(QPainter &painter)
     }
 }
 
-void GraphObject::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+//A display widget may accept the mouse event, and we wouldnt want to allow a context.
+//To support this design expectation, dont use contextMenuEvent, use mousePressEvent.
+
+void GraphObject::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    QGraphicsObject::contextMenuEvent(event);
+    QGraphicsObject::mousePressEvent(event);
+    if (event->button() != Qt::RightButton) return;
     this->draw()->deselectAllObjs();
     this->setSelected(true);
     auto pos = this->draw()->mapFromScene(this->mapToScene(event->pos()));
