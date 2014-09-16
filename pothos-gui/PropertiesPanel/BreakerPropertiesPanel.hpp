@@ -34,6 +34,11 @@ private:
 
     QPointer<GraphBreaker> _breaker;
     QFormLayout *_formLayout;
+
+    QLineEdit *_idEdit;
+    QLabel *_idLabel;
+    QString _originalId;
+
     QLineEdit *_nodeNameEdit;
     QLabel *_nodeNameLabel;
     QString _originalNodeName;
