@@ -3,6 +3,7 @@
 
 #include <Pothos/Framework.hpp>
 #include <QLabel>
+#include <complex>
 
 /***********************************************************************
  * |PothosDoc Text Display
@@ -46,6 +47,7 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setFormatStr));
         this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setStringValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setFloatValue));
+        this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setComplexValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setIntValue));
     }
 
@@ -76,6 +78,12 @@ public:
     void setFloatValue(const double value)
     {
         _valueStr = _formatStr.arg(value);
+        this->update();
+    }
+
+    void setComplexValue(const std::complex<double> value)
+    {
+        _valueStr = QString("%1+%2j").arg(_formatStr.arg(value.real())).arg(_formatStr.arg(value.imag()));
         this->update();
     }
 
