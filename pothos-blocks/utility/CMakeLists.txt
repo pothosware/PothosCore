@@ -16,6 +16,7 @@ POTHOS_MODULE_UTIL(
         BlackHole.cpp
         TestSignalsAndSlots.cpp
         DynamicRouter.cpp
+        ValueProbe.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )

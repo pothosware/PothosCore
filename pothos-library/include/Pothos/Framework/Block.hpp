@@ -291,6 +291,25 @@ public:
     void registerSlot(const std::string &name);
 
     /*!
+     * Register a probe given the name of a registered call.
+     * A probe creates a special slot that will probe the registered call,
+     * and creates a triggered signal that will emit the return value of that call.
+     *
+     *  - Arguments passed into the probe slot will be forwarded into the registered call.
+     *  - The return value of the registered call will be passed into the first argument of the triggered signal.
+     *  - If the return value of the registered call is void, then the triggered signal will have no arguments.
+     *  - When not specified, the slot's name will be probe[Name], and the signal's name will be [name]Triggered.
+     *
+     * \param name the name of a registered call
+     * \param signalName the name of the triggered signal or empty for automatic
+     * \param slotName the name of the probe slot or empty for automatic
+     */
+    void registerProbe(
+        const std::string &name,
+        const std::string &signalName="",
+        const std::string &slotName="");
+
+    /*!
      * Notify the scheduler that the work() method will yeild the thread context.
      * Call this method when the work() function will not produce or consume,
      * so that the scheduler will call work() again without an external stimulus.
@@ -319,6 +338,7 @@ private:
     std::map<std::string, InputPort*> _namedInputs;
     std::map<std::string, OutputPort*> _namedOutputs;
     std::map<std::string, Callable> _calls;
+    std::map<std::string, std::pair<std::string, std::string>> _probes;
     ThreadPool _threadPool;
     Block(const Block &){} // non construction-copyable
     Block &operator=(const Block &){return *this;} // non copyable
