@@ -3,9 +3,11 @@
 
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
+#include "GraphObjects/GraphBlock.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/Constants.hpp"
 #include <Pothos/Exception.hpp>
+#include <Poco/Logger.h>
 #include <QPainter>
 #include <QPolygonF>
 #include <QStaticText>
@@ -13,6 +15,18 @@
 #include <algorithm> //std::find
 #include <cassert>
 #include <QtMath> //qCos, radians
+
+static std::string directionToStr(const GraphConnectableDirection direction)
+{
+    switch (direction)
+    {
+    case GRAPH_CONN_INPUT: return "input";
+    case GRAPH_CONN_OUTPUT: return "output";
+    case GRAPH_CONN_SLOT: return "slot";
+    case GRAPH_CONN_SIGNAL: return "signal";
+    }
+    return "";
+}
 
 struct GraphConnection::Impl
 {
@@ -89,11 +103,35 @@ void GraphConnection::setSigSlotPairs(const std::vector<SigSlotPair> &pairs)
     _impl->changed = true;
 }
 
+static void doSigSlotWarning(const QString &name, const GraphConnectionEndpoint &ep)
+{
+    poco_warning_f3(Poco::Logger::get("PothosGui.GraphConnection.addSigSlotPair"),
+        "cant find %s '%s' in %s", directionToStr(ep.getConnectableAttrs().direction), name.toStdString(), ep.getObj()->getId().toStdString());
+}
+
 void GraphConnection::addSigSlotPair(const SigSlotPair &sigSlot)
 {
-    //TODO validate that keys exist...
+    //check that the output endpoint is possible
+    auto epOut = this->getOutputEndpoint();
+    auto blockOut = dynamic_cast<GraphBlock *>(epOut.getObj().data());
+    if (blockOut != nullptr and epOut.getConnectableAttrs().direction == GRAPH_CONN_SIGNAL)
+    {
+        const auto &keys = blockOut->getSignalPorts();
+        if (std::find(keys.begin(), keys.end(), sigSlot.first) == keys.end()) return doSigSlotWarning(sigSlot.first, epOut);
+    }
+    else if (sigSlot.first != epOut.getKey().id) return doSigSlotWarning(sigSlot.first, epOut);
 
+    //check that the input endpoint is possible
+    auto epIn = this->getInputEndpoint();
+    auto blockIn = dynamic_cast<GraphBlock *>(epIn.getObj().data());
+    if (blockIn != nullptr and epIn.getConnectableAttrs().direction == GRAPH_CONN_SLOT)
+    {
+        const auto &keys = blockIn->getSlotPorts();
+        if (std::find(keys.begin(), keys.end(), sigSlot.second) == keys.end()) return doSigSlotWarning(sigSlot.second, epIn);
+    }
+    else if (sigSlot.second != epIn.getKey().id) return doSigSlotWarning(sigSlot.second, epIn);
 
+    //optional remove, then add to the end of the list
     this->removeSigSlotPair(sigSlot);
     _impl->sigSlotsEndpointPairs.push_back(sigSlot);
     _impl->changed = true;
@@ -348,18 +386,6 @@ void GraphConnection::render(QPainter &painter)
 /***********************************************************************
  * serialize - connection to JSON
  **********************************************************************/
-static std::string directionToStr(const GraphConnectableDirection direction)
-{
-    switch (direction)
-    {
-    case GRAPH_CONN_INPUT: return "input";
-    case GRAPH_CONN_OUTPUT: return "output";
-    case GRAPH_CONN_SLOT: return "slot";
-    case GRAPH_CONN_SIGNAL: return "signal";
-    }
-    return "";
-}
-
 static void endpointSerialize(Poco::JSON::Object::Ptr obj, const GraphConnectionEndpoint &ep)
 {
     const auto key = directionToStr(ep.getConnectableAttrs().direction);
