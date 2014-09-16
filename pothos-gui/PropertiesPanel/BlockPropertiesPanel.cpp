@@ -255,6 +255,7 @@ void BlockPropertiesPanel::handleCancel(void)
     {
         _block->setPropertyValue(propKey, _propIdToOriginal[propKey]);
     }
+    _block->update(); //update after change reversion
 
     //an edit widget return press signal may have us here,
     //and not the commit button, so make sure panel is deleted
