@@ -125,13 +125,12 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     auto docTabs = new QTabWidget(this);
     connect(docTabs, SIGNAL(currentChanged(int)), this, SLOT(handleDocTabChanged(int)));
     _formLayout->addRow(docTabs);
-    if (blockDesc->isArray("docs"))
     {
         QString output;
         output += QString("<h1>%1</h1>").arg(QString::fromStdString(blockDesc->get("name").convert<std::string>()));
         output += QString("<p>%1</p>").arg(QString::fromStdString(block->getBlockDescPath()));
         output += "<p>";
-        for (const auto &lineObj : *blockDesc->getArray("docs"))
+        if (blockDesc->isArray("docs")) for (const auto &lineObj : *blockDesc->getArray("docs"))
         {
             const auto line = lineObj.extract<std::string>();
             if (line.empty()) output += "<p /><p>";
