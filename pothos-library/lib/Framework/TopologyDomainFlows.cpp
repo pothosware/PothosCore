@@ -3,6 +3,8 @@
 
 #include "Framework/TopologyImpl.hpp"
 #include <future>
+#include <iostream>
+#include <algorithm>
 #include <map>
 
 /***********************************************************************
@@ -142,8 +144,8 @@ std::vector<Flow> Pothos::Topology::Impl::rectifyDomainFlows(const std::vector<F
             dstFlow.dst = flow.dst;
 
             //add the network flows to the overall list
-            domainSafeFlows.push_back(srcFlow);
-            domainSafeFlows.push_back(dstFlow);
+            if (std::find(domainSafeFlows.begin(), domainSafeFlows.end(), srcFlow) == domainSafeFlows.end()) domainSafeFlows.push_back(srcFlow);
+            if (std::find(domainSafeFlows.begin(), domainSafeFlows.end(), dstFlow) == domainSafeFlows.end()) domainSafeFlows.push_back(dstFlow);
         }
         else
         {
