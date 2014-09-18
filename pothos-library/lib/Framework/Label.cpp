@@ -70,5 +70,8 @@ void Pothos::Label::serialize(Archive & ar, const unsigned int)
     ar & this->index;
 }
 
+template void Pothos::Label::serialize<Pothos::archive::polymorphic_iarchive>(Pothos::archive::polymorphic_iarchive &, const unsigned int);
+template void Pothos::Label::serialize<Pothos::archive::polymorphic_oarchive>(Pothos::archive::polymorphic_oarchive &, const unsigned int);
+
 POTHOS_OBJECT_SERIALIZE(Pothos::Label)
 POTHOS_OBJECT_SERIALIZE(std::vector<Pothos::Label>)

@@ -279,4 +279,7 @@ void Pothos::DType::serialize(Archive & ar, const unsigned int version)
     Pothos::serialization::split_free(ar, *this, version);
 }
 
+template void Pothos::DType::serialize<Pothos::archive::polymorphic_iarchive>(Pothos::archive::polymorphic_iarchive &, const unsigned int);
+template void Pothos::DType::serialize<Pothos::archive::polymorphic_oarchive>(Pothos::archive::polymorphic_oarchive &, const unsigned int);
+
 POTHOS_OBJECT_SERIALIZE(Pothos::DType)
