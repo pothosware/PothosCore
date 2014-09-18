@@ -146,7 +146,8 @@ void GraphObject::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsObject::mousePressEvent(event);
     if (event->button() != Qt::RightButton) return;
-    this->draw()->deselectAllObjs();
+    //select the current object so the edit menu will be aware of it
+    //leave all other objects selected so the menu applies to all selected
     this->setSelected(true);
     auto pos = this->draw()->mapFromScene(this->mapToScene(event->pos()));
     emit this->draw()->customContextMenuRequested(pos);
