@@ -70,7 +70,7 @@ namespace std
 
         value_type operator()(argument_type const& s) const
         {
-            return std::hash<Port>()(s.dst) ^
+            return std::hash<Port>()(s.src) ^
             (std::hash<Port>()(s.dst) << 1);
         }
     };
