@@ -158,7 +158,9 @@ void Pothos::Topology::_connect(
 
     const auto it = std::find(_impl->flows.begin(), _impl->flows.end(), flow);
     if (it != _impl->flows.end()) throw Pothos::TopologyConnectError("Pothos::Topology::connect()",
-        "this flow already exists in the topology");
+        Poco::format("this flow already exists in the topology(%s[%s]->%s[%s])",
+            flow.src.obj.call<std::string>("getName"), srcName,
+            flow.dst.obj.call<std::string>("getName"), dstName));
 
     _impl->flows.push_back(flow);
 }
@@ -191,7 +193,9 @@ void Pothos::Topology::_disconnect(
 
     const auto it = std::find(_impl->flows.begin(), _impl->flows.end(), flow);
     if (it == _impl->flows.end()) throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()",
-        "this flow does not exist in the topology");
+        Poco::format("this flow does not exist in the topology(%s[%s]->%s[%s])",
+            flow.src.obj.call<std::string>("getName"), srcName,
+            flow.dst.obj.call<std::string>("getName"), dstName));
 
     _impl->flows.erase(it);
 }
