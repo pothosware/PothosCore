@@ -18,6 +18,8 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     _displayRate(1.0),
     _sampleRate(1.0),
     _sampleRateWoAxisUnits(1.0),
+    _centerFreq(0.0),
+    _centerFreqWoAxisUnits(0.0),
     _numBins(1024),
     _refLevel(0.0),
     _dynRange(100.0),
@@ -32,6 +34,7 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setTitle));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setSampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setCenterFrequency));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setWindowType));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setReferenceLevel));
@@ -41,6 +44,7 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, title));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, sampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, centerFrequency));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, numFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, referenceLevel));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, dynamicRange));
@@ -99,24 +103,12 @@ void Periodogram::setDisplayRate(const double displayRate)
 void Periodogram::setSampleRate(const double sampleRate)
 {
     _sampleRate = sampleRate;
-    QString axisTitle("Hz");
-    _sampleRateWoAxisUnits = sampleRate;
-    if (sampleRate >= 2e9)
-    {
-        _sampleRateWoAxisUnits /= 1e9;
-        axisTitle = "GHz";
-    }
-    else if (sampleRate >= 2e6)
-    {
-        _sampleRateWoAxisUnits /= 1e6;
-        axisTitle = "MHz";
-    }
-    else if (sampleRate >= 2e3)
-    {
-        _sampleRateWoAxisUnits /= 1e3;
-        axisTitle = "kHz";
-    }
-    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::xBottom), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
+}
+
+void Periodogram::setCenterFrequency(const double freq)
+{
+    _centerFreq = freq;
     QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
@@ -152,8 +144,30 @@ void Periodogram::setAutoScale(const bool autoScale)
 
 void Periodogram::handleUpdateAxis(void)
 {
+
+    QString axisTitle("Hz");
+    double factor = std::max(_sampleRate, _centerFreq);
+    if (factor >= 2e9)
+    {
+        factor = 1e9;
+        axisTitle = "GHz";
+    }
+    else if (factor >= 2e6)
+    {
+        factor = 1e6;
+        axisTitle = "MHz";
+    }
+    else if (factor >= 2e3)
+    {
+        factor = 1e3;
+        axisTitle = "kHz";
+    }
+    _mainPlot->setAxisTitle(QwtPlot::xBottom, axisTitle);
+
     _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
-    _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
+    _sampleRateWoAxisUnits = _sampleRate/factor;
+    _centerFreqWoAxisUnits = _centerFreq/factor;
+    _mainPlot->setAxisScale(QwtPlot::xBottom, _centerFreqWoAxisUnits-_sampleRateWoAxisUnits/2, _centerFreqWoAxisUnits+_sampleRateWoAxisUnits/2);
     _mainPlot->setAxisScale(QwtPlot::yLeft, _refLevel-_dynRange, _refLevel);
     _zoomer->setZoomBase(); //record current axis settings
     this->handleZoomed(_zoomer->zoomBase()); //reload

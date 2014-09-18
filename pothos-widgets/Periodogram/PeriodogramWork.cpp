@@ -111,7 +111,7 @@ void Periodogram::handlePowerBins(const int index, const std::valarray<float> &p
     for (size_t i = 0; i < powerBins.size(); i++)
     {
         auto freq = (_sampleRateWoAxisUnits*i)/(powerBins.size()-1) - _sampleRateWoAxisUnits/2;
-        points[i] = QPointF(freq, powerBins[i]);
+        points[i] = QPointF(freq+_centerFreqWoAxisUnits, powerBins[i]);
     }
     _curves.at(index)->setSamples(points);
 }
