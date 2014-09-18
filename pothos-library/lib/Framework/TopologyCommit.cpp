@@ -49,7 +49,15 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         //check if the destination provides a manager and install it to the source
         else if (dstMode == "CUSTOM")
         {
-            assert(dsts.size() == 1); //this must be true if the previous logic was good
+            for (const auto &otherDst : dsts)
+            {
+                if (otherDst == dst) continue;
+                if (otherDst.obj.callProxy("get:_actor").call<std::string>("getInputBufferMode", dst.name, srcDomain) != "ABDICATE")
+                {
+                    throw Pothos::Exception("Pothos::Topology::installBufferManagers",
+                        "rectifyDomainFlows() logic does not /yet/ handle multiple destinations w/ custom buffer managers");
+                }
+            }
             manager = dst.obj.callProxy("get:_actor").callProxy("getBufferManager", dst.name, srcDomain, true);
         }
 
