@@ -4,6 +4,7 @@
 #include <Pothos/Testing.hpp>
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
+#include <Poco/JSON/Object.h>
 #include <iostream>
 
 static const char *KERNEL_SOURCE =
@@ -25,6 +26,14 @@ static const char *KERNEL_SOURCE =
 "{\n"
 "    const uint i = get_global_id(0);\n"
 "    out[i] = in0[i] + in1[i];\n"
+"}"
+"__kernel void copy_int(\n"
+"    __global const int* in,\n"
+"    __global int* out\n"
+")\n"
+"{\n"
+"    const uint i = get_global_id(0);\n"
+"    out[i] = in[i];\n"
 "}"
 ;
 
@@ -133,4 +142,50 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel_back_to_back)
     auto pb = buff.as<const float *>();
     //for (int i = 0; i < 10; i++) std::cout << i << " " << pb[i] << std::endl;
     for (int i = 0; i < 10; i++) POTHOS_TEST_EQUAL(pb[i], float(i+i+10+i+20));
+}
+
+POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel_middle_man)
+{
+    auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
+    auto collector = registry.callProxy("/blocks/collector_sink", "int");
+    auto collectorMiddle = registry.callProxy("/blocks/collector_sink", "int");
+    auto feeder = registry.callProxy("/blocks/feeder_source", "int");
+
+    auto openClKernel0 = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<size_t>(1, 4), std::vector<size_t>(1, 4));
+    openClKernel0.callVoid("setSource", "copy_int", KERNEL_SOURCE);
+    openClKernel0.callVoid("setLocalSize", 1);
+    openClKernel0.callVoid("setGlobalFactor", 1.0);
+    openClKernel0.callVoid("setProductionFactor", 1.0);
+
+    auto openClKernel1 = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<size_t>(1, 4), std::vector<size_t>(1, 4));
+    openClKernel1.callVoid("setSource", "copy_int", KERNEL_SOURCE);
+    openClKernel1.callVoid("setLocalSize", 1);
+    openClKernel1.callVoid("setGlobalFactor", 1.0);
+    openClKernel1.callVoid("setProductionFactor", 1.0);
+
+    //create test plan
+    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+    testPlan->set("enableBuffers", true);
+    //large and numerous payloads
+    testPlan->set("minTrials", 100);
+    testPlan->set("maxTrials", 200);
+    testPlan->set("minSize", 1024);
+    testPlan->set("maxSize", 1024);
+    auto expected = feeder.callProxy("feedTestPlan", testPlan);
+
+    //create tester topology
+    std::cout << "Make topology" << std::endl;
+    {
+        Pothos::Topology topology;
+        topology.connect(feeder, 0, openClKernel0, 0);
+        topology.connect(openClKernel0, 0, openClKernel1, 0);
+        topology.connect(openClKernel0, 0, collectorMiddle, 0);
+        topology.connect(openClKernel1, 0, collector, 0);
+        topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+    }
+
+    std::cout << "verifyTestPlan" << std::endl;
+    collector.callVoid("verifyTestPlan", expected);
+    collectorMiddle.callVoid("verifyTestPlan", expected);
 }
