@@ -784,7 +784,15 @@ void GraphEditor::handleToggleActivateTopology(const bool enable)
     if (not this->isVisible()) return;
     _topologyEngine->setActive(enable);
     if (enable) this->updateExecutionEngine();
-    else _topologyEngine->clear();
+    else
+    try
+    {
+        _topologyEngine->clear();
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        poco_error(Poco::Logger::get("PothosGui.GraphEditor.clearTopology"), ex.displayText());
+    }
 }
 
 void GraphEditor::handleShowPortNames(void)
@@ -845,7 +853,7 @@ void GraphEditor::updateExecutionEngine(void)
     }
     catch (const Pothos::Exception &ex)
     {
-        poco_error_f1(Poco::Logger::get("PothosGui.GraphEditor.handleStateChange"), "Execution engine error: %s", ex.displayText());
+        poco_error(Poco::Logger::get("PothosGui.GraphEditor.commitTopology"), ex.displayText());
     }
 }
 
