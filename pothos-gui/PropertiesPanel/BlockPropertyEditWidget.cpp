@@ -141,7 +141,7 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
     {
         auto comboBox = new QComboBox(this);
         comboBox->setEditable(widgetKwargs->optValue<bool>("editable", false));
-        for (const auto &optionObj : *paramDesc->getArray("options"))
+        if (paramDesc->isArray("options")) for (const auto &optionObj : *paramDesc->getArray("options"))
         {
             const auto option = optionObj.extract<Poco::JSON::Object::Ptr>();
             comboBox->addItem(
