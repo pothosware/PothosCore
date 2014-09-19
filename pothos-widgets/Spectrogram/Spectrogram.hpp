@@ -58,6 +58,11 @@ class MySpectrogramRasterData;
  *
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
+ * |option 512
+ * |option 1024
+ * |option 2048
+ * |option 4096
+ * |widget ComboBox(editable=true)
  *
  * |param window[Window Type] The window function controls spectral leakage.
  * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
