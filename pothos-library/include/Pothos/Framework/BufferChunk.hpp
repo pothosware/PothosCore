@@ -119,6 +119,16 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 
+    /*!
+     * Append another buffer onto the back of this buffer.
+     * This call allocates a new memory slab the size of both buffers
+     * and copies the contents from each one into the new memory slab.
+     * The length and address members will be updated accordingly.
+     * When empty, append simply copies a reference to the other buffer.
+     * \param other the other buffer to append to the end
+     */
+    void append(const BufferChunk &other);
+
 private:
     SharedBuffer _buffer;
     ManagedBuffer _managedBuffer;

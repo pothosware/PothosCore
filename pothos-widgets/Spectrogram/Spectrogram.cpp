@@ -26,6 +26,8 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     _plotRaster(new MySpectrogramRasterData()),
     _sampleRate(1.0),
     _sampleRateWoAxisUnits(1.0),
+    _centerFreq(0.0),
+    _centerFreqWoAxisUnits(0.0),
     _numBins(1024),
     _timeSpan(10.0),
     _refLevel(0.0),
@@ -39,6 +41,7 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTitle));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setSampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setCenterFrequency));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setNumFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setWindowType));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setTimeSpan));
@@ -47,6 +50,7 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, title));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, sampleRate));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, centerFrequency));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, numFFTBins));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, timeSpan));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, referenceLevel));
@@ -107,24 +111,12 @@ void Spectrogram::setDisplayRate(const double displayRate)
 void Spectrogram::setSampleRate(const double sampleRate)
 {
     _sampleRate = sampleRate;
-    QString axisTitle("Hz");
-    _sampleRateWoAxisUnits = sampleRate;
-    if (sampleRate >= 2e9)
-    {
-        _sampleRateWoAxisUnits /= 1e9;
-        axisTitle = "GHz";
-    }
-    else if (sampleRate >= 2e6)
-    {
-        _sampleRateWoAxisUnits /= 1e6;
-        axisTitle = "MHz";
-    }
-    else if (sampleRate >= 2e3)
-    {
-        _sampleRateWoAxisUnits /= 1e3;
-        axisTitle = "kHz";
-    }
-    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::xBottom), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
+}
+
+void Spectrogram::setCenterFrequency(const double freq)
+{
+    _centerFreq = freq;
     QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
@@ -144,23 +136,6 @@ void Spectrogram::setWindowType(const std::string &windowType)
 void Spectrogram::setTimeSpan(const double timeSpan)
 {
     _timeSpan = timeSpan;
-    QString axisTitle("secs");
-    if (_timeSpan <= 100e-9)
-    {
-        _timeSpan *= 1e9;
-        axisTitle = "nsecs";
-    }
-    else if (_timeSpan <= 100e-6)
-    {
-        _timeSpan *= 1e6;
-        axisTitle = "usecs";
-    }
-    else if (_timeSpan <= 100e-3)
-    {
-        _timeSpan *= 1e3;
-        axisTitle = "msecs";
-    }
-    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::yLeft), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
     QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
@@ -183,16 +158,55 @@ void Spectrogram::setDynamicRange(const double dynRange)
 
 void Spectrogram::handleUpdateAxis(void)
 {
+    QString timeAxisTitle("secs");
+    if (_timeSpan <= 100e-9)
+    {
+        _timeSpan *= 1e9;
+        timeAxisTitle = "nsecs";
+    }
+    else if (_timeSpan <= 100e-6)
+    {
+        _timeSpan *= 1e6;
+        timeAxisTitle = "usecs";
+    }
+    else if (_timeSpan <= 100e-3)
+    {
+        _timeSpan *= 1e3;
+        timeAxisTitle = "msecs";
+    }
+    _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle(timeAxisTitle));
+
+    QString freqAxisTitle("Hz");
+    double factor = std::max(_sampleRate, _centerFreq);
+    if (factor >= 2e9)
+    {
+        factor = 1e9;
+        freqAxisTitle = "GHz";
+    }
+    else if (factor >= 2e6)
+    {
+        factor = 1e6;
+        freqAxisTitle = "MHz";
+    }
+    else if (factor >= 2e3)
+    {
+        factor = 1e3;
+        freqAxisTitle = "kHz";
+    }
+    _mainPlot->setAxisTitle(QwtPlot::xBottom, MyPlotAxisTitle(freqAxisTitle));
+
     _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
 
-    _mainPlot->setAxisScale(QwtPlot::xBottom, -_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2);
-    _plotRaster->setInterval(Qt::XAxis, QwtInterval(-_sampleRateWoAxisUnits/2, +_sampleRateWoAxisUnits/2));
+    _sampleRateWoAxisUnits = _sampleRate/factor;
+    _centerFreqWoAxisUnits = _centerFreq/factor;
+    _mainPlot->setAxisScale(QwtPlot::xBottom, _centerFreqWoAxisUnits-_sampleRateWoAxisUnits/2, _centerFreqWoAxisUnits+_sampleRateWoAxisUnits/2);
+    _plotRaster->setInterval(Qt::XAxis, _mainPlot->axisInterval(QwtPlot::xBottom));
 
     _mainPlot->setAxisScale(QwtPlot::yLeft, 0, _timeSpan);
-    _plotRaster->setInterval(Qt::YAxis, QwtInterval(0, _timeSpan));
+    _plotRaster->setInterval(Qt::YAxis, _mainPlot->axisInterval(QwtPlot::yLeft));
 
     _mainPlot->setAxisScale(QwtPlot::yRight, _refLevel-_dynRange, _refLevel);
-    _plotRaster->setInterval(Qt::ZAxis, QwtInterval(_refLevel-_dynRange, _refLevel));
+    _plotRaster->setInterval(Qt::ZAxis, _mainPlot->axisInterval(QwtPlot::yRight));
     _mainPlot->axisWidget(QwtPlot::yRight)->setColorMap(_plotRaster->interval(Qt::ZAxis), this->makeColorMap());
 
     _zoomer->setZoomBase(); //record current axis settings

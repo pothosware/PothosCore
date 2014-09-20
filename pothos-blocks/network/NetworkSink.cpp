@@ -121,7 +121,7 @@ void NetworkSink::work(void)
     {
         const auto &label = *inputPort->labels().begin();
         std::ostringstream oss;
-        label.data.serialize(oss);
+        Pothos::Object(label).serialize(oss);
         auto index = label.index + inputPort->totalElements();
         _ep.send(PothosPacketTypeLabel, index, oss.str().data(), oss.str().length());
         inputPort->removeLabel(label);

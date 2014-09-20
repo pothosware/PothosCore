@@ -87,14 +87,14 @@ void WaveMonitor::setDisplayRate(const double displayRate)
 void WaveMonitor::setSampleRate(const double sampleRate)
 {
     _sampleRate = sampleRate;
-    this->updateXAxis();
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
 void WaveMonitor::setNumPoints(const size_t numPoints)
 {
     _numPoints = numPoints;
     for (auto inPort : this->inputs()) inPort->setReserve(_numPoints);
-    this->updateXAxis();
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
 QString WaveMonitor::title(void) const
@@ -117,31 +117,27 @@ void WaveMonitor::setYAxisTitle(const QString &title)
     QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::yLeft), Q_ARG(QwtText, MyPlotAxisTitle(title)));
 }
 
-void WaveMonitor::updateXAxis(void)
+void WaveMonitor::handleUpdateAxis(void)
 {
-    QString axisTitle("secs");
+    QString timeAxisTitle("secs");
     _timeSpan = _numPoints/_sampleRate;
     if (_timeSpan <= 100e-9)
     {
         _timeSpan *= 1e9;
-        axisTitle = "nsecs";
+        timeAxisTitle = "nsecs";
     }
     else if (_timeSpan <= 100e-6)
     {
         _timeSpan *= 1e6;
-        axisTitle = "usecs";
+        timeAxisTitle = "usecs";
     }
     else if (_timeSpan <= 100e-3)
     {
         _timeSpan *= 1e3;
-        axisTitle = "msecs";
+        timeAxisTitle = "msecs";
     }
-    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::xBottom), Q_ARG(QwtText, MyPlotAxisTitle(axisTitle)));
-    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
-}
+    _mainPlot->setAxisTitle(QwtPlot::xBottom, timeAxisTitle);
 
-void WaveMonitor::handleUpdateAxis(void)
-{
     _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
     _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
     _zoomer->setZoomBase(); //record current axis settings

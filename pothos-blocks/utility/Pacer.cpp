@@ -18,10 +18,21 @@
  * |category /Utility
  * |keywords pacer time
  *
- * |param dtype[Data Type] The datatype this block consumes.
+ * |param dtype[Data Type] The datatype of the element stream.
  * |preview disable
- * |default "float32"
- * |widget StringEntry()
+ * |option [Complex128] "complex128"
+ * |option [Float64] "float64"
+ * |option [Complex64] "complex64"
+ * |option [Float32] "float32"
+ * |option [Complex Int64] "complex_int64"
+ * |option [Int64] "int64"
+ * |option [Complex Int32] "complex_int32"
+ * |option [Int32] "int32"
+ * |option [Complex Int16] "complex_int16"
+ * |option [Int16] "int16"
+ * |option [Complex Int8] "complex_int8"
+ * |option [Int8] "int8"
+ * |widget ComboBox(editable=true)
  *
  * |param rate[Data Rate] The rate of elements or messages through the block.
  * |default 1e3

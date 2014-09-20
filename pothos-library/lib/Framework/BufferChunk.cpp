@@ -3,6 +3,7 @@
 
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Poco/SingletonHolder.h>
+#include <cstring> //memcpy
 
 const Pothos::BufferChunk &Pothos::BufferChunk::null(void)
 {
@@ -42,6 +43,24 @@ Pothos::BufferChunk::BufferChunk(const ManagedBuffer &buffer):
     return;
 }
 
+void Pothos::BufferChunk::append(const BufferChunk &other)
+{
+    //this is a null buffer, just copy a reference to other
+    if (not *this)
+    {
+        *this = other;
+        return;
+    }
+    //otherwise allocate and copy two buffers together
+    else
+    {
+        Pothos::BufferChunk accumulator(this->length + other.length);
+        std::memcpy((void *)accumulator.address, (const void *)this->address, this->length);
+        std::memcpy((char *)accumulator.address+this->length, (const void *)other.address, other.length);
+        *this = accumulator;
+    }
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedBufferChunk = Pothos::ManagedClass()
@@ -49,6 +68,7 @@ static auto managedBufferChunk = Pothos::ManagedClass()
     .registerConstructor<Pothos::BufferChunk, const size_t>()
     .registerField(POTHOS_FCN_TUPLE(Pothos::BufferChunk, address))
     .registerField(POTHOS_FCN_TUPLE(Pothos::BufferChunk, length))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::BufferChunk, append))
     .commit("Pothos/BufferChunk");
 
 #include <Pothos/Object/Serialize.hpp>

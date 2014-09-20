@@ -132,18 +132,7 @@ void Deserializer::work(void)
 
     //TODO use an iovec approach to avoid accumulating
 
-    //was there a buffer previously? then accumulate it
-    if (_accumulator)
-    {
-        Pothos::BufferChunk new_buff(_accumulator.length + buff.length);
-        std::memcpy(new_buff.as<void *>(), _accumulator.as<const void *>(), _accumulator.length);
-        std::memcpy((void *)(new_buff.address+_accumulator.length), buff.as<const void *>(), buff.length);
-        _accumulator = new_buff;
-    }
-    else
-    {
-        _accumulator = buff;
-    }
+    _accumulator.append(buff);
 
     //character by character recovery search for packet header
     while (_accumulator.length >= MIN_PKT_BYTES)
@@ -207,9 +196,8 @@ void Deserializer::handlePacket(const Pothos::BufferChunk &packetBuff)
         //handle labels
         if (has_tsf)
         {
-            Pothos::Label lbl;
+            auto lbl = obj.extract<Pothos::Label>();
             lbl.index = tsf - _nextExpectedIndex;
-            lbl.data = obj;
             outputPort->postLabel(lbl);
         }
 

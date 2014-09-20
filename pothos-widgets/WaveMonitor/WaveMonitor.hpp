@@ -190,7 +190,5 @@ private:
     std::map<size_t, std::function<void(Pothos::InputPort *, std::valarray<float> &, std::valarray<float> &)>> _inputConverters;
     void setupPlotterCurves(void);
 
-    void updateXAxis(void);
-
     std::vector<std::shared_ptr<QwtPlotMarker>> _markers;
 };
