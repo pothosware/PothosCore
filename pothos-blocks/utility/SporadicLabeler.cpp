@@ -62,6 +62,8 @@ public:
     void setIdList(const std::vector<std::string> &ids)
     {
         _ids = ids;
+        if (_ids.empty()) return;
+        _randomId = std::uniform_int_distribution<size_t>(0, _ids.size()-1);
     }
 
     std::vector<std::string> getIdList(void) const
@@ -86,13 +88,23 @@ public:
             outputPort->postBuffer(buffer);
             inputPort->consume(inputPort->elements());
 
-            //TODO insert random labels
+            for (size_t i = 0; i < inputPort->elements(); i++)
+            {
+                if (std::generate_canonical<double, 10>(_gen) <= _probability)
+                {
+                    Pothos::Label label;
+                    label.index = i;
+                    if (not _ids.empty()) label.id = _ids.at(_randomId(_gen));
+                    outputPort->postLabel(label);
+                }
+            }
         }
     }
 
 private:
     std::random_device _rd;
     std::mt19937 _gen;
+    std::uniform_int_distribution<size_t> _randomId;
 
     double _probability;
     std::vector<std::string> _ids;
