@@ -4,8 +4,10 @@
 #include "WaveMonitor.hpp"
 #include "MyPlotUtils.hpp"
 #include <qwt_plot_curve.h>
+#include <qwt_plot_marker.h>
 #include <qwt_plot.h>
 #include <complex>
+#include <iostream>
 
 /***********************************************************************
  * conversion support
@@ -118,6 +120,17 @@ void WaveMonitor::updateCurve(Pothos::InputPort *inPort)
 
     if (hasIm) QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
         Q_ARG(int, inPort->index()), Q_ARG(int, 1), Q_ARG(std::valarray<float>, sampsIm));
+
+    //create markers from labels
+    for (const auto &label : inPort->labels())
+    {
+        auto marker = new QwtPlotMarker(QString::fromStdString(label.id));
+        marker->setXValue((label.index*_timeSpan)/(sampsRe.size()-1));
+        marker->setYValue(sampsRe[label.index]);
+        std::cout << "created marker " << label.id << " " << marker->xValue() << " " << marker->yValue() << std::endl;
+        marker->attach(_mainPlot);
+        _markers.emplace_back(marker);
+    }
 }
 
 void WaveMonitor::handleSamples(const int index, const int curve, const std::valarray<float> &samps)
@@ -135,6 +148,9 @@ void WaveMonitor::work(void)
     //should we update the plotter with these values?
     const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/_displayRate));
     bool doUpdate = (std::chrono::high_resolution_clock::now() - _timeLastUpdate) > timeBetweenUpdates;
+
+    //clear old markers for the new data
+    if (doUpdate) _markers.clear();
 
     //reload the curves with new data -- also consume all input
     const size_t nsamps = this->workInfo().minElements;

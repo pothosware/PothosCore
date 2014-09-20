@@ -16,6 +16,7 @@ class MyQwtPlot;
 class QwtPlotGrid;
 class QwtPlotCurve;
 class QwtPlotZoomer;
+class QwtPlotMarker;
 
 /***********************************************************************
  * |PothosDoc Wave Monitor
@@ -190,4 +191,6 @@ private:
     void setupPlotterCurves(void);
 
     void updateXAxis(void);
+
+    std::vector<std::shared_ptr<QwtPlotMarker>> _markers;
 };
