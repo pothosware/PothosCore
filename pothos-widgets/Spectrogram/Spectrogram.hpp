@@ -56,6 +56,11 @@ class MySpectrogramRasterData;
  * |default 1e6
  * |units samples/sec
  *
+ * |param centerFreq[Center Freq] The center frequency of the plot.
+ * This value controls the labeling of the horizontal access.
+ * |default 0.0
+ * |units Hz
+ *
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
  * |option 512
@@ -109,6 +114,7 @@ class MySpectrogramRasterData;
  * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
+ * |setter setCenterFrequency(centerFreq)
  * |setter setNumFFTBins(numBins)
  * |setter setWindowType(window)
  * |setter setTimeSpan(timeSpan)
@@ -151,6 +157,11 @@ public:
      */
     void setSampleRate(const double sampleRate);
 
+    /*!
+     * center frequency of the plot
+     */
+    void setCenterFrequency(const double freq);
+
     void setNumFFTBins(const size_t numBins);
     void setWindowType(const std::string &windowType);
     void setTimeSpan(const double timeSpan);
@@ -167,6 +178,11 @@ public:
     double sampleRate(void) const
     {
         return _sampleRate;
+    }
+
+    double centerFrequency(void) const
+    {
+        return _centerFreq;
     }
 
     size_t numFFTBins(void) const
@@ -222,6 +238,8 @@ private:
     double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;
+    double _centerFreq;
+    double _centerFreqWoAxisUnits;
     size_t _numBins;
     double _timeSpan;
     double _refLevel;
