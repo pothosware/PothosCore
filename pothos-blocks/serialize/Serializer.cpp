@@ -123,7 +123,7 @@ void Serializer::work(void)
             auto lbl = *inputPort->labels().begin();
             inputPort->removeLabel(lbl);
             const size_t hdr_words32 = 6; // a priori
-            auto buff = objectToOffsetBuffer(hdr_words32, lbl.data);
+            auto buff = objectToOffsetBuffer(hdr_words32, Pothos::Object(lbl));
             auto index = lbl.index + inputPort->totalElements();
             packBuffer(_seqs[i]++, i, true, index, true, buff);
             outputPort->postBuffer(buff);

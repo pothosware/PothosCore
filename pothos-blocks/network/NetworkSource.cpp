@@ -103,9 +103,10 @@ void NetworkSource::work(void)
     else if (type == PothosPacketTypeLabel)
     {
         std::istringstream iss(std::string(buffer.as<char *>(), buffer.length));
-        Pothos::Label label;
+        Pothos::Object data;
+        data.deserialize(iss);
+        auto label = data.extract<Pothos::Label>();
         label.index = index - _nextExpectedIndex;
-        label.data.deserialize(iss);
         outputPort->postLabel(label);
     }
     else this->yield();

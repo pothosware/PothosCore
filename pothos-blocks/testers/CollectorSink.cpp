@@ -123,13 +123,16 @@ void CollectorSink::verifyTestPlan(const Poco::JSON::Object::Ptr &expected) cons
             auto expectedLabel = expectedLabels->getObject(i);
             auto value = expectedLabel->getValue<std::string>("data");
             auto index = expectedLabel->getValue<Poco::UInt64>("index");
+            auto id = expectedLabel->getValue<std::string>("id");
             if (lbl.data.type() != typeid(std::string)) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
                 "cant handle this label type: " + lbl.data.getTypeString());
             auto actual = lbl.data.extract<std::string>();
             if (lbl.index != index) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
                 Poco::format("Value check for label index %d: expected %d -> actual %d", int(i), int(index), int(lbl.index)));
+            if (lbl.id != id) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
+                Poco::format("Value check for label id %d: expected '%s' -> actual '%s'", int(i), id, lbl.id));
             if (actual != value) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-                Poco::format("Value check for label data %d: expected %s -> actual %s", int(i), value, actual));
+                Poco::format("Value check for label data %d: expected '%s' -> actual '%s'", int(i), value, actual));
         }
 
         if (_labels.size() != expectedLabels->size()) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",

@@ -201,12 +201,14 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
             lbl.index = index + this->output(0)->totalElements();
             auto data = random_string(dataSizeDist(gen));
             lbl.data = Pothos::Object(data);
+            lbl.id = "id"+std::to_string(lbl.index);
             labels.push_back(lbl);
 
             //record expected values
             Poco::JSON::Object::Ptr expectedLabel(new Poco::JSON::Object());
             expectedLabel->set("index", Poco::UInt64(index));
             expectedLabel->set("data", data);
+            expectedLabel->set("id", lbl.id);
             expectedLabels->add(expectedLabel);
         }
     }
