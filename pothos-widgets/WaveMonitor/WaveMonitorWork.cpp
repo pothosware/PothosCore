@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "WaveMonitor.hpp"
+#include "MyPlotStyler.hpp"
 #include "MyPlotUtils.hpp"
 #include <qwt_plot_curve.h>
+#include <qwt_plot_marker.h>
 #include <qwt_plot.h>
 #include <complex>
+#include <iostream>
 
 /***********************************************************************
  * conversion support
@@ -113,14 +116,20 @@ void WaveMonitor::updateCurve(Pothos::InputPort *inPort)
 
     _inputConverters.at(inPort->index())(inPort, std::ref(sampsRe), std::ref(sampsIm));
 
+    auto labels = std::vector<Pothos::Label>(inPort->labels().begin(), inPort->labels().end());
+
     QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
-        Q_ARG(int, inPort->index()), Q_ARG(int, 0), Q_ARG(std::valarray<float>, sampsRe));
+        Q_ARG(int, inPort->index()), Q_ARG(int, 0),
+        Q_ARG(std::valarray<float>, sampsRe),
+        Q_ARG(std::vector<Pothos::Label>, labels));
 
     if (hasIm) QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
-        Q_ARG(int, inPort->index()), Q_ARG(int, 1), Q_ARG(std::valarray<float>, sampsIm));
+        Q_ARG(int, inPort->index()), Q_ARG(int, 1),
+        Q_ARG(std::valarray<float>, sampsIm),
+        Q_ARG(std::vector<Pothos::Label>, std::vector<Pothos::Label>()));
 }
 
-void WaveMonitor::handleSamples(const int index, const int curve, const std::valarray<float> &samps)
+void WaveMonitor::handleSamples(const int index, const int curve, const std::valarray<float> &samps, const std::vector<Pothos::Label> &labels)
 {
     QVector<QPointF> points(samps.size());
     for (size_t i = 0; i < samps.size(); i++)
@@ -128,6 +137,18 @@ void WaveMonitor::handleSamples(const int index, const int curve, const std::val
         points[i] = QPointF((i*_timeSpan)/(samps.size()-1), samps[i]);
     }
     _curves.at(index).at(curve)->setSamples(points);
+
+    //create markers from labels
+    for (const auto &label : labels)
+    {
+        auto marker = new QwtPlotMarker();
+        marker->setLabel(MyMarkerLabel(QString::fromStdString(label.id)));
+        marker->setLabelAlignment(Qt::AlignHCenter);
+        marker->setXValue((label.index*_timeSpan)/(samps.size()-1));
+        marker->setYValue(samps[label.index]);
+        marker->attach(_mainPlot);
+        _markers.emplace_back(marker);
+    }
 }
 
 void WaveMonitor::work(void)
@@ -135,6 +156,9 @@ void WaveMonitor::work(void)
     //should we update the plotter with these values?
     const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/_displayRate));
     bool doUpdate = (std::chrono::high_resolution_clock::now() - _timeLastUpdate) > timeBetweenUpdates;
+
+    //clear old markers for the new data
+    if (doUpdate) _markers.clear();
 
     //reload the curves with new data -- also consume all input
     const size_t nsamps = this->workInfo().minElements;

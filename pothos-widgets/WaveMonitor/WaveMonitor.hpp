@@ -16,6 +16,7 @@ class MyQwtPlot;
 class QwtPlotGrid;
 class QwtPlotCurve;
 class QwtPlotZoomer;
+class QwtPlotMarker;
 
 /***********************************************************************
  * |PothosDoc Wave Monitor
@@ -170,7 +171,7 @@ public:
 private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);
-    void handleSamples(const int index, const int curve, const std::valarray<float> &samps);
+    void handleSamples(const int index, const int curve, const std::valarray<float> &samps, const std::vector<Pothos::Label> &labels);
     void handleUpdateAxis(void);
     void handleZoomed(const QRectF &rect);
 
@@ -188,4 +189,6 @@ private:
     std::map<size_t, std::vector<std::shared_ptr<QwtPlotCurve>>> _curves;
     std::map<size_t, std::function<void(Pothos::InputPort *, std::valarray<float> &, std::valarray<float> &)>> _inputConverters;
     void setupPlotterCurves(void);
+
+    std::vector<std::shared_ptr<QwtPlotMarker>> _markers;
 };

@@ -49,3 +49,16 @@ static inline QwtText MyPlotTitle(const QString &title)
     text.setFont(f);
     return text;
 }
+
+static inline QwtText MyMarkerLabel(const QString &label)
+{
+    QwtText text(label);
+    QFont f;
+    f.setPointSize(7);
+    f.setWeight(QFont::DemiBold);
+    f.setStretch(QFont::SemiExpanded);
+    text.setFont(f);
+    static const QColor lightGray("#D0D0D0");
+    text.setBackgroundBrush(QBrush(lightGray));
+    return text;
+}

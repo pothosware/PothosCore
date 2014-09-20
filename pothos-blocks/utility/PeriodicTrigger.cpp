@@ -12,7 +12,6 @@
  * The periodic trigger block emits a signal named "triggered" at the specified interval.
  *
  * |category /Utility
- * |keywords periodic trigger
  *
  * |param rate[Trigger Rate] The rate of triggers per second
  * |default 1.0
