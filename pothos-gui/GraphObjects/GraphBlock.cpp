@@ -23,6 +23,16 @@ GraphBlock::GraphBlock(QObject *parent):
     this->setFlag(QGraphicsItem::ItemIsMovable);
 }
 
+bool GraphBlock::isEnabled(void) const
+{
+    return _impl->enabled;
+}
+
+void GraphBlock::setEnabled(const bool enb)
+{
+    _impl->enabled = enb;
+}
+
 void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
 {
     _impl->blockDesc = blockDesc;
@@ -618,6 +628,7 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     auto obj = GraphObject::serialize();
     obj->set("what", std::string("Block"));
     obj->set("path", this->getBlockDescPath());
+    obj->set("enabled", this->isEnabled());
     obj->set("affinityZone", this->getAffinityZone().toStdString());
 
     Poco::JSON::Array jPropsObj;
@@ -644,6 +655,8 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     auto blockDesc = getBlockDescFromPath(path);
     if (not blockDesc) throw Pothos::Exception("GraphBlock::deserialize()", "cant find block factory with path: '"+path+"'");
     this->setBlockDesc(blockDesc);
+
+    if (obj->has("enabled")) this->setEnabled(obj->getValue<bool>("enabled"));
 
     if (obj->has("affinityZone")) this->setAffinityZone(
         QString::fromStdString(obj->getValue<std::string>("affinityZone")));
