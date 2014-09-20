@@ -171,7 +171,7 @@ public:
 private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);
-    void handleSamples(const int index, const int curve, const std::valarray<float> &samps);
+    void handleSamples(const int index, const int curve, const std::valarray<float> &samps, const std::vector<Pothos::Label> &labels);
     void handleUpdateAxis(void);
     void handleZoomed(const QRectF &rect);
 

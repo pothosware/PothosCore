@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "WaveMonitor.hpp"
+#include "MyPlotStyler.hpp"
 #include "MyPlotUtils.hpp"
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>
@@ -115,25 +116,20 @@ void WaveMonitor::updateCurve(Pothos::InputPort *inPort)
 
     _inputConverters.at(inPort->index())(inPort, std::ref(sampsRe), std::ref(sampsIm));
 
+    auto labels = std::vector<Pothos::Label>(inPort->labels().begin(), inPort->labels().end());
+
     QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
-        Q_ARG(int, inPort->index()), Q_ARG(int, 0), Q_ARG(std::valarray<float>, sampsRe));
+        Q_ARG(int, inPort->index()), Q_ARG(int, 0),
+        Q_ARG(std::valarray<float>, sampsRe),
+        Q_ARG(std::vector<Pothos::Label>, labels));
 
     if (hasIm) QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
-        Q_ARG(int, inPort->index()), Q_ARG(int, 1), Q_ARG(std::valarray<float>, sampsIm));
-
-    //create markers from labels
-    for (const auto &label : inPort->labels())
-    {
-        auto marker = new QwtPlotMarker(QString::fromStdString(label.id));
-        marker->setXValue((label.index*_timeSpan)/(sampsRe.size()-1));
-        marker->setYValue(sampsRe[label.index]);
-        std::cout << "created marker " << label.id << " " << marker->xValue() << " " << marker->yValue() << std::endl;
-        marker->attach(_mainPlot);
-        _markers.emplace_back(marker);
-    }
+        Q_ARG(int, inPort->index()), Q_ARG(int, 1),
+        Q_ARG(std::valarray<float>, sampsIm),
+        Q_ARG(std::vector<Pothos::Label>, std::vector<Pothos::Label>()));
 }
 
-void WaveMonitor::handleSamples(const int index, const int curve, const std::valarray<float> &samps)
+void WaveMonitor::handleSamples(const int index, const int curve, const std::valarray<float> &samps, const std::vector<Pothos::Label> &labels)
 {
     QVector<QPointF> points(samps.size());
     for (size_t i = 0; i < samps.size(); i++)
@@ -141,6 +137,18 @@ void WaveMonitor::handleSamples(const int index, const int curve, const std::val
         points[i] = QPointF((i*_timeSpan)/(samps.size()-1), samps[i]);
     }
     _curves.at(index).at(curve)->setSamples(points);
+
+    //create markers from labels
+    for (const auto &label : labels)
+    {
+        auto marker = new QwtPlotMarker();
+        marker->setLabel(MyMarkerLabel(QString::fromStdString(label.id)));
+        marker->setLabelAlignment(Qt::AlignHCenter);
+        marker->setXValue((label.index*_timeSpan)/(samps.size()-1));
+        marker->setYValue(samps[label.index]);
+        marker->attach(_mainPlot);
+        _markers.emplace_back(marker);
+    }
 }
 
 void WaveMonitor::work(void)

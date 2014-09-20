@@ -59,6 +59,7 @@ WaveMonitor::WaveMonitor(const Pothos::DType &dtype):
         _plotGrid->setPen(MyPlotGridPen());
     }
 
+    qRegisterMetaType<std::vector<Pothos::Label>>("std::vector<Pothos::Label>");
 }
 
 WaveMonitor::~WaveMonitor(void)
