@@ -144,7 +144,6 @@ void Periodogram::setAutoScale(const bool autoScale)
 
 void Periodogram::handleUpdateAxis(void)
 {
-
     QString axisTitle("Hz");
     double factor = std::max(_sampleRate, _centerFreq);
     if (factor >= 2e9)
