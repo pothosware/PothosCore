@@ -14,7 +14,7 @@
  * |category /Utility
  * |keywords delay time
  *
- * |param dtype[Data Type] The datatype this block consumes.
+ * |param dtype[Data Type] The data type of the element stream.
  * |preview disable
  * |default "float32"
  * |widget StringEntry()

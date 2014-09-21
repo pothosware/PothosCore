@@ -18,7 +18,7 @@
  *
  * |category /Utility
  *
- * |param dtype[Data Type] The datatype consumed by the value probe.
+ * |param dtype[Data Type] The data type consumed by the stream probe.
  * |option [Complex128] "complex128"
  * |option [Float64] "float64"
  * |option [Complex64] "complex64"

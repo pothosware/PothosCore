@@ -18,7 +18,7 @@
  * |category /Math
  * |keywords math arithmetic add subtract multiply divide
  *
- * |param dtype[Data Type] The datatype used in the arithmetic.
+ * |param dtype[Data Type] The data type used in the arithmetic.
  * |option [Complex128] "complex128"
  * |option [Float64] "float64"
  * |option [Complex64] "complex64"

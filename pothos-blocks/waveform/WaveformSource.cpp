@@ -20,7 +20,7 @@ static const size_t waveTableSize = 4096;
  * |category /Waveforms
  * |keywords cosine sine ramp square waveform source
  *
- * |param dtype[Data Type] The datatype produced by the waveform source.
+ * |param dtype[Data Type] The data type produced by the waveform source.
  * |option [Complex128] "complex128"
  * |option [Float64] "float64"
  * |option [Complex64] "complex64"

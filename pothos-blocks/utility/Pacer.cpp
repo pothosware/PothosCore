@@ -18,7 +18,7 @@
  * |category /Utility
  * |keywords pacer time
  *
- * |param dtype[Data Type] The datatype of the element stream.
+ * |param dtype[Data Type] The data type of the element stream.
  * |preview disable
  * |option [Complex128] "complex128"
  * |option [Float64] "float64"

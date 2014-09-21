@@ -21,7 +21,7 @@ static const size_t waveTableSize = 4096;
  * |category /Waveforms
  * |keywords noise random source pseudorandom gaussian
  *
- * |param dtype[Data Type] The datatype produced by the noise source.
+ * |param dtype[Data Type] The data type produced by the noise source.
  * |option [Complex128] "complex128"
  * |option [Float64] "float64"
  * |option [Complex64] "complex64"
