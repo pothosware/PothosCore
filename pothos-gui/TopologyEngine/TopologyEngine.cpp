@@ -32,6 +32,7 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
         if (block == nullptr) continue;
+        if (not block->isEnabled()) continue;
         auto blockEval = this->evalGraphBlock(block);
         if (not blockEval) continue;
         auto proxyBlock = blockEval.callProxy("getProxyBlock");
@@ -47,11 +48,13 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
 
     //generate a signature to detect if this commit has changes
     Poco::MD5Engine md5;
-    for (const auto &pair : _idToBlockEval)
+    for (const auto &pair : idToBlock)
     {
-        md5.update(pair.first.toStdString());
-        md5.update(pair.second->getProxyBlock().getEnvironment()->getNodeId());
-        md5.update(pair.second->getProxyBlock().hashCode());
+        const auto &id = pair.first;
+        const auto &proxyBlock = _idToBlockEval.at(QString::fromStdString(id))->getProxyBlock();
+        md5.update(id);
+        md5.update(proxyBlock.getEnvironment()->getNodeId());
+        md5.update(proxyBlock.hashCode());
     }
     for (const auto &conn : connections) md5.update(conn.toString());
     const auto thisSignature = Poco::DigestEngine::digestToHex(md5.digest());

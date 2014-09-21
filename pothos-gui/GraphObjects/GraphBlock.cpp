@@ -23,6 +23,18 @@ GraphBlock::GraphBlock(QObject *parent):
     this->setFlag(QGraphicsItem::ItemIsMovable);
 }
 
+bool GraphBlock::isEnabled(void) const
+{
+    return _impl->enabled;
+}
+
+void GraphBlock::setEnabled(const bool enb)
+{
+    if (_impl->enabled == enb) return;
+    _impl->enabled = enb;
+    _impl->changed = true;
+}
+
 void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
 {
     _impl->blockDesc = blockDesc;
@@ -450,7 +462,7 @@ void GraphBlock::render(QPainter &painter)
 
         //update colors
         auto zoneColor = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"])->zoneToColor(this->getAffinityZone());
-        _impl->mainBlockColor = zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor);
+        _impl->mainBlockColor = this->isEnabled()?(zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor)):GraphBlockDisabledColor;
         _impl->inputPortColors.resize(_inputPorts.size(), GraphObjectDefaultFillColor);
         _impl->outputPortColors.resize(_outputPorts.size(), GraphObjectDefaultFillColor);
         for (int i = 0; i < _inputPorts.size(); i++) _impl->inputPortColors[i] = typeStrToColor(this->getInputPortTypeStr(_inputPorts.at(i)));
@@ -618,6 +630,7 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     auto obj = GraphObject::serialize();
     obj->set("what", std::string("Block"));
     obj->set("path", this->getBlockDescPath());
+    obj->set("enabled", this->isEnabled());
     obj->set("affinityZone", this->getAffinityZone().toStdString());
 
     Poco::JSON::Array jPropsObj;
@@ -644,6 +657,8 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     auto blockDesc = getBlockDescFromPath(path);
     if (not blockDesc) throw Pothos::Exception("GraphBlock::deserialize()", "cant find block factory with path: '"+path+"'");
     this->setBlockDesc(blockDesc);
+
+    if (obj->has("enabled")) this->setEnabled(obj->getValue<bool>("enabled"));
 
     if (obj->has("affinityZone")) this->setAffinityZone(
         QString::fromStdString(obj->getValue<std::string>("affinityZone")));

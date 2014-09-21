@@ -71,6 +71,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["zoomOriginal"], SIGNAL(triggered(void)), this, SLOT(handleZoomOriginal(void)));
     connect(getActionMap()["undo"], SIGNAL(triggered(void)), this, SLOT(handleUndo(void)));
     connect(getActionMap()["redo"], SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
+    connect(getActionMap()["enable"], SIGNAL(triggered(void)), this, SLOT(handleEnable(void)));
+    connect(getActionMap()["disable"], SIGNAL(triggered(void)), this, SLOT(handleDisable(void)));
     connect(getMenuMap()["setAffinityZone"], SIGNAL(zoneClicked(const QString &)), this, SLOT(handleAffinityZoneClicked(const QString &)));
     connect(getObjectMap()["affinityZonesDock"], SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
     connect(getActionMap()["showGraphFlattenedView"], SIGNAL(triggered(void)), this, SLOT(handleShowFlattenedDialog(void)));
@@ -717,6 +719,35 @@ void GraphEditor::handleRedo(void)
     if (not this->isVisible()) return;
     assert(_stateManager->isSubsequentAvailable());
     this->handleResetState(_stateManager->getCurrentIndex()+1);
+}
+
+void GraphEditor::handleEnable(void)
+{
+    return this->handleSetEnabled(true);
+}
+
+void GraphEditor::handleDisable(void)
+{
+    return this->handleSetEnabled(false);
+}
+
+void GraphEditor::handleSetEnabled(const bool enb)
+{
+    if (not this->isVisible()) return;
+    auto draw = this->getCurrentGraphDraw();
+
+    auto objs = draw->getObjectsSelected(GRAPH_BLOCK);
+    if (objs.isEmpty()) return;
+
+    for (auto obj : objs)
+    {
+        auto block = dynamic_cast<GraphBlock *>(obj);
+        assert(block != nullptr);
+        block->setEnabled(enb);
+    }
+
+    if (enb) handleStateChange(GraphState("document-import", tr("Enable %1").arg(draw->getSelectionDescription(GRAPH_BLOCK))));
+    else handleStateChange(GraphState("document-export", tr("Disable %1").arg(draw->getSelectionDescription(GRAPH_BLOCK))));
 }
 
 void GraphEditor::handleResetState(int stateNo)

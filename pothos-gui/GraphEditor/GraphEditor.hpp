@@ -108,6 +108,9 @@ private slots:
     void handleZoomOriginal(void);
     void handleUndo(void);
     void handleRedo(void);
+    void handleEnable(void);
+    void handleSetEnabled(const bool enb);
+    void handleDisable(void);
     void handleResetState(int);
     void handleAffinityZoneClicked(const QString &zone);
     void handleAffinityZoneChanged(const QString &zone);
