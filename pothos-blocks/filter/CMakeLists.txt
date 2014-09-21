@@ -6,6 +6,7 @@ POTHOS_MODULE_UTIL(
     TARGET FilterBlocks
     SOURCES
         FIRDesigner.cpp
+        FIRFilter.cpp
         fir_filter/src/filt.cpp
     DESTINATION blocks
     ENABLE_DOCS
