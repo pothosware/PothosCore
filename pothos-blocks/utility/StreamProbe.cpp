@@ -39,7 +39,8 @@ template <typename Type>
 class StreamProbe : public Pothos::Block
 {
 public:
-    StreamProbe(void)
+    StreamProbe(void):
+        _value(0)
     {
         this->setupInput(0, typeid(Type));
         this->registerCall(this, POTHOS_FCN_TUPLE(StreamProbe, value));
