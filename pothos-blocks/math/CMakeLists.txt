@@ -10,6 +10,7 @@ POTHOS_MODULE_UTIL(
     SOURCES
         Arithmetic.cpp
         TestArithmeticBlocks.cpp
+        RMSProbe.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
