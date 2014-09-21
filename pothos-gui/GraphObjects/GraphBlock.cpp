@@ -30,7 +30,9 @@ bool GraphBlock::isEnabled(void) const
 
 void GraphBlock::setEnabled(const bool enb)
 {
+    if (_impl->enabled == enb) return;
     _impl->enabled = enb;
+    _impl->changed = true;
 }
 
 void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
@@ -460,7 +462,7 @@ void GraphBlock::render(QPainter &painter)
 
         //update colors
         auto zoneColor = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"])->zoneToColor(this->getAffinityZone());
-        _impl->mainBlockColor = zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor);
+        _impl->mainBlockColor = this->isEnabled()?(zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor)):GraphBlockDisabledColor;
         _impl->inputPortColors.resize(_inputPorts.size(), GraphObjectDefaultFillColor);
         _impl->outputPortColors.resize(_outputPorts.size(), GraphObjectDefaultFillColor);
         for (int i = 0; i < _inputPorts.size(); i++) _impl->inputPortColors[i] = typeStrToColor(this->getInputPortTypeStr(_inputPorts.at(i)));

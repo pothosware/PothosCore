@@ -32,6 +32,7 @@ void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
         if (block == nullptr) continue;
+        if (not block->isEnabled()) continue;
         auto blockEval = this->evalGraphBlock(block);
         if (not blockEval) continue;
         auto proxyBlock = blockEval.callProxy("getProxyBlock");
