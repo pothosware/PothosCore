@@ -36,30 +36,45 @@
  * |option [Real] "REAL"
  * |option [Complex] "COMPLEX"
  *
+ * |param decim[Decimation] The downsampling factor.
+ * |default 1
+ *
+ * |param interp[Interpolation] The upsampling factor.
+ * |default 1
+ *
  * |param taps The FIR filter taps used in convolution.
  * Manually enter or paste in FIR filter taps or leave this entry blank
  * and use the FIR Designer taps signal to configure the filter taps at runtime.
- * |default []
+ * |default [1.0]
  *
  * |factory /blocks/fir_filter(dtype, tapsType)
  * |setter setTaps(taps)
+ * |setter setDecimation(decim)
+ * |setter setInterpolation(interp)
  **********************************************************************/
 template <typename InType, typename OutType, typename TapsType>
 class FIRFilter : public Pothos::Block
 {
 public:
-    FIRFilter(void)
+    FIRFilter(void):
+        _decim(1),
+        _interp(1)
     {
         this->setupInput(0, typeid(InType));
         this->setupOutput(0, typeid(OutType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, setTaps));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getTaps));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, setDecimation));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getDecimation));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, setInterpolation));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getInterpolation));
     }
 
     void setTaps(const std::vector<TapsType> &taps)
     {
-        this->input(0)->setReserve(taps.size());
+        if (taps.empty()) throw Pothos::InvalidArgumentException("FIRFilter::setTaps()", "taps cannot be empty");
         _taps = taps;
+        this->updateInternals();
     }
 
     std::vector<TapsType> getTaps(void) const
@@ -67,7 +82,31 @@ public:
         return _taps;
     }
 
-    //! always use a circular buffer to avoid discontinuity
+    void setDecimation(const size_t decim)
+    {
+        if (decim == 0) throw Pothos::InvalidArgumentException("FIRFilter::setDecimation()", "decimation cannot be 0");
+        _decim = decim;
+        this->updateInternals();
+    }
+
+    size_t getDecimation(void) const
+    {
+        return _decim;
+    }
+
+    void setInterpolation(const size_t interp)
+    {
+        if (interp == 0) throw Pothos::InvalidArgumentException("FIRFilter::setInterpolation()", "interpolation cannot be 0");
+        _interp = interp;
+        this->updateInternals();
+    }
+
+    size_t getInterpolation(void) const
+    {
+        return _interp;
+    }
+
+    //! always use a circular buffer to avoid discontinuity over sliding window
     Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &)
     {
         return Pothos::BufferManager::make("circular");
@@ -78,33 +117,68 @@ public:
         auto inPort = this->input(0);
         auto outPort = this->output(0);
 
-        //grab pointers
-        auto x = inPort->buffer().template as<const InType *>();
-        auto y = outPort->buffer().template as<OutType *>();
-
         //how many elements?
-        const auto M = _taps.size() - 1;
-        const auto N = std::min(inPort->elements()-M, outPort->elements());
+        const auto M = _decim;
+        const auto L = _interp;
+        const auto K = _taps.size()/L + ((_taps.size()%L) == 0)?0:1;
+        const auto N = std::min((inPort->elements()-(K-1))/M, outPort->elements()/L);
+
+        //grab pointers
+        auto x = inPort->buffer().template as<const InType *>() + (K-1);
+        auto y = outPort->buffer().template as<OutType *>();
 
         //convolution of taps across input
         for (size_t n = 0; n < N; n++)
         {
-            OutType y_n = 0;
-            for (size_t i = 0; i <= M; i++)
+            //interpolation loop
+            for (size_t j = 0; j < L; j++)
             {
-                y_n += _taps[i] * x[M+n-i];
+                //convolution loop
+                OutType y_n = 0;
+                for (size_t k = 0; k < _interpTaps[j].size(); k++)
+                {
+                    y_n += _interpTaps[j][k] * x[n*M-k];
+                }
+                y[j+n*L] = y_n;
             }
-            y[n] = y_n;
         }
 
         //produce/consume N elements
         //M elements are left in the input buffer for filter history
         inPort->consume(N);
-        outPort->produce(N);
+        outPort->produce((N*L)/M);
     }
 
 private:
+
+    void updateInternals(void)
+    {
+        //https://en.wikipedia.org/wiki/Upsampling
+
+        //K is the largest value of k for which h[j+kL] is non-zero
+        const auto M = _decim;
+        const auto L = _interp;
+        const auto K = _taps.size()/L + ((_taps.size()%L) == 0)?0:1;
+        this->input(0)->setReserve(K+M-1);
+
+        //Precalculate the taps array for each interpolation index,
+        //because the zeros contribute nothing to its dot product calculations.
+        _interpTaps.resize(L);
+        for (size_t j = 0; j < L; j++)
+        {
+            _interpTaps[j].clear();
+            for (size_t k = 0; k < K; k++)
+            {
+                const auto i = j+k*L;
+                if (i >= _taps.size()) continue;
+                _interpTaps[j].push_back(_taps[i]);
+            }
+        }
+    }
+
     std::vector<TapsType> _taps;
+    std::vector<std::vector<TapsType>> _interpTaps;
+    size_t _decim, _interp;
 };
 
 /***********************************************************************
