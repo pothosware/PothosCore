@@ -6,6 +6,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
+#include <memory>
 #include <string>
 #include <vector>
 #include <map>
@@ -13,7 +14,7 @@
 class BlockEval
 {
 public:
-    BlockEval(EvalEnvironment &env):
+    BlockEval(const std::shared_ptr<EvalEnvironment> &env):
         _evalEnv(env)
     {
         return;
@@ -21,7 +22,7 @@ public:
 
     Pothos::Object evalProperty(const std::string &key, const std::string &expr)
     {
-        auto val = _evalEnv.eval(expr);
+        auto val = _evalEnv->eval(expr);
         _properties[key] = val;
         return val;
     }
@@ -38,5 +39,5 @@ public:
 private:
     std::map<std::string, Pothos::Object> _properties;
     Pothos::Proxy _proxyBlock;
-    EvalEnvironment &_evalEnv;
+    std::shared_ptr<EvalEnvironment> _evalEnv;
 };

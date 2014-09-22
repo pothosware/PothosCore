@@ -60,7 +60,7 @@ void BlockEval::handleCall(const Poco::JSON::Object::Ptr &callObj)
 #include <Pothos/Managed.hpp>
 
 static auto managedBlockEval = Pothos::ManagedClass()
-    .registerConstructor<BlockEval, EvalEnvironment &>()
+    .registerConstructor<BlockEval, const std::shared_ptr<EvalEnvironment> &>()
     .registerMethod(POTHOS_FCN_TUPLE(BlockEval, evalProperty))
     .registerMethod(POTHOS_FCN_TUPLE(BlockEval, eval))
     .registerMethod(POTHOS_FCN_TUPLE(BlockEval, handleCall))

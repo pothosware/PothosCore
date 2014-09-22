@@ -84,7 +84,7 @@ Pothos::Proxy TopologyEngine::getEvalEnvironment(const QString &zone)
     if (_upidToEvalEnvironment.count(envPid) == 0)
     {
         auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
-        _upidToEvalEnvironment[envPid] = EvalEnvironment.callProxy("new");
+        _upidToEvalEnvironment[envPid] = EvalEnvironment.callProxy("make");
     }
     return _upidToEvalEnvironment.at(envPid);
 }

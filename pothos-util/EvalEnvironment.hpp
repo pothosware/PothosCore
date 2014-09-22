@@ -15,6 +15,11 @@
 class EvalEnvironment
 {
 public:
+    static std::shared_ptr<EvalEnvironment> make(void)
+    {
+        return std::shared_ptr<EvalEnvironment>(new EvalEnvironment());
+    }
+
     EvalEnvironment(void);
 
     /*!

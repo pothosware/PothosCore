@@ -38,6 +38,7 @@ struct EvalEnvironment::Impl
     Poco::ClassLoader<Pothos::Util::EvalInterface> loader;
     std::vector<std::string> tmpModuleFiles;
     std::map<std::string, Pothos::Object> evalCache;
+    std::map<std::string, std::string> errorCache;
     Poco::RWLock mutex;
 };
 
@@ -56,9 +57,25 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr_)
         Poco::RWLock::ScopedReadLock l(_impl->mutex);
         auto it = _impl->evalCache.find(expr);
         if (it != _impl->evalCache.end()) return it->second;
+
+        //errors cache
+        auto errorIt = _impl->errorCache.find(expr);
+        if (errorIt != _impl->errorCache.end()) throw Pothos::Exception("EvalEnvironment::eval("+expr+")", errorIt->second);
     }
 
-    auto result = this->evalNoCache(expr);
+    //try to perform the evaluation
+    Pothos::Object result;
+    try
+    {
+        result = this->evalNoCache(expr);
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        //cache the error
+        Poco::RWLock::ScopedWriteLock l(_impl->mutex);
+        _impl->errorCache[expr] = ex.displayText();
+        throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.displayText());
+    }
 
     //cache result and return
     {
@@ -194,5 +211,6 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
 
 static auto managedEvalEnvironment = Pothos::ManagedClass()
     .registerConstructor<EvalEnvironment>()
+    .registerStaticMethod(POTHOS_FCN_TUPLE(EvalEnvironment, make))
     .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, eval))
     .commit("Pothos/Util/EvalEnvironment");
