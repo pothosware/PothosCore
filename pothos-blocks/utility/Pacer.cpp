@@ -9,7 +9,7 @@
 /***********************************************************************
  * |PothosDoc Pacer
  *
- * The forwarder block passivly forwards all data from
+ * The pacer block passivly forwards all data from
  * input port 0 to the output port 0 without copying.
  * The data rate will be limited to the rate setting.
  * This rate limitation is an approximation at best.

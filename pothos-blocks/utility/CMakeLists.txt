@@ -18,6 +18,7 @@ POTHOS_MODULE_UTIL(
         DynamicRouter.cpp
         StreamProbe.cpp
         SporadicLabeler.cpp
+        FiniteRelease.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
