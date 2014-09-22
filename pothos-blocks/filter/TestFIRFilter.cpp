@@ -11,8 +11,7 @@ static double filterToneGetRMS(
     const double sampRate,
     const double waveFreq,
     const size_t decim,
-    const size_t interp,
-    const std::string &filterType
+    const size_t interp
 )
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
@@ -30,8 +29,8 @@ static double filterToneGetRMS(
     filter.callVoid("setInterpolation", interp);
 
     auto designer = registry.callProxy("/blocks/fir_designer");
-    designer.callVoid("setSampleRate", sampRate);
-    designer.callVoid("setFilterType", filterType);
+    designer.callVoid("setSampleRate", (sampRate*interp)/decim);
+    designer.callVoid("setFilterType", "COMPLEX_BAND_PASS");
     designer.callVoid("setFrequencyLower", waveFreq-0.1*sampRate);
     designer.callVoid("setFrequencyUpper", waveFreq+0.1*sampRate);
     designer.callVoid("setNumTaps", 100);
@@ -39,10 +38,17 @@ static double filterToneGetRMS(
     auto probe = registry.callProxy("/blocks/stream_probe", "complex128");
     probe.callVoid("setMode", "RMS");
 
-    //run the topology
+    //propagate the taps
     {
         Pothos::Topology topology;
         topology.connect(designer, "tapsChanged", filter, "setTaps");
+        topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+    }
+
+    //run the topology
+    {
+        Pothos::Topology topology;
         topology.connect(waveSource, 0, finiteRelease, 0);
         topology.connect(finiteRelease, 0, filter, 0);
         topology.connect(filter, 0, probe, 0);
@@ -56,14 +62,16 @@ static double filterToneGetRMS(
 POTHOS_TEST_BLOCK("/blocks/tests", test_fir_filter)
 {
 
-    for (double freq = -0.27; freq < 0.27; freq+= 0.03)
+    for (size_t decim = 1; decim <= 3; decim++)
     {
-        if (fabs(freq) < 0.001) continue; //cant rms measure freq 0
-        std::cout << "freq " << freq << std::flush;
-        auto rmsPass = filterToneGetRMS(1.0, freq, 1, 1, "COMPLEX_BAND_PASS");
-        auto rmsStop = filterToneGetRMS(1.0, freq, 1, 1, "COMPLEX_BAND_STOP");
-        std::cout << " rmsPass = " << rmsPass << " rmsStop = " << rmsStop << std::endl;
-        POTHOS_TEST_TRUE(rmsPass > 0.9);
-        POTHOS_TEST_TRUE(rmsStop < 0.001);
+        for (size_t interp = 1; interp <= 3; interp++)
+        {
+            const double rate = 1e6;
+            const double freq = 30e3;
+            std::cout << "freq " << freq << " decim " << decim << " interp " << interp << std::flush;
+            auto rms = filterToneGetRMS(rate, freq, decim, interp);
+            std::cout << " RMS = " << rms << std::endl;
+            POTHOS_TEST_TRUE(rms > 0.1);
+        }
     }
 }
