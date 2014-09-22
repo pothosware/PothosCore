@@ -10,7 +10,28 @@
 #include <Poco/Path.h>
 #include <Poco/AutoPtr.h>
 #include <Poco/Util/PropertyFileConfiguration.h>
+#include <Poco/SingletonHolder.h>
+#include <Poco/NamedMutex.h>
 
+/***********************************************************************
+ * named mutex for cache protection
+ **********************************************************************/
+struct LoaderCacheNamedMutex : Poco::NamedMutex
+{
+    LoaderCacheNamedMutex(void):
+        Poco::NamedMutex("pothos_loader_cache_mutex")
+    {}
+};
+
+static Poco::NamedMutex &getLoaderCacheMutex(void)
+{
+    static Poco::SingletonHolder<LoaderCacheNamedMutex> sh;
+    return *sh.get();
+}
+
+/***********************************************************************
+ * calls to interface with file cache
+ **********************************************************************/
 //! The path used to cache the safe loads
 static std::string getModuleLoaderCachePath(void)
 {
@@ -28,6 +49,7 @@ static std::string getLastModifiedTimeStr(const std::string &path)
 //! Was a previous safe-load of this module successful?
 static bool previousLoadWasSuccessful(const std::string &modulePath)
 {
+    Poco::NamedMutex::ScopedLock lock(getLoaderCacheMutex());
     Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> cache(new Poco::Util::PropertyFileConfiguration());
     try {cache->load(getModuleLoaderCachePath());} catch(...){}
 
@@ -46,6 +68,7 @@ static bool previousLoadWasSuccessful(const std::string &modulePath)
 //! Mark that the safe load of this module was successful
 static void markCurrentLoadSuccessful(const std::string &modulePath)
 {
+    Poco::NamedMutex::ScopedLock lock(getLoaderCacheMutex());
     Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> cache(new Poco::Util::PropertyFileConfiguration());
     try {cache->load(getModuleLoaderCachePath());} catch(...){}
 
@@ -56,6 +79,9 @@ static void markCurrentLoadSuccessful(const std::string &modulePath)
     try {cache->save(getModuleLoaderCachePath());} catch(...){}
 }
 
+/***********************************************************************
+ * module safe load implementation
+ **********************************************************************/
 Pothos::PluginModule Pothos::PluginModule::safeLoad(const std::string &path)
 {
     if (previousLoadWasSuccessful(path)) return PluginModule(path);
