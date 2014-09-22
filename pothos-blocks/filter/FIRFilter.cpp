@@ -4,6 +4,7 @@
 #include <Pothos/Framework.hpp>
 #include <Poco/Types.h>
 #include <complex>
+#include <cassert>
 #include <iostream>
 
 /***********************************************************************
@@ -38,9 +39,11 @@
  *
  * |param decim[Decimation] The downsampling factor.
  * |default 1
+ * |widget SpinBox(minimum=1)
  *
  * |param interp[Interpolation] The upsampling factor.
  * |default 1
+ * |widget SpinBox(minimum=1)
  *
  * |param taps The FIR filter taps used in convolution.
  * Manually enter or paste in FIR filter taps or leave this entry blank
@@ -69,6 +72,7 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getDecimation));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, setInterpolation));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getInterpolation));
+        this->setTaps(std::vector<TapsType>(1, TapsType(1))); //initial update
     }
 
     void setTaps(const std::vector<TapsType> &taps)
@@ -152,10 +156,14 @@ private:
     void updateInternals(void)
     {
         //https://en.wikipedia.org/wiki/Upsampling
+        assert(M > 0);
+        assert(L > 0);
+        assert(not _taps.empty());
 
         //K is the largest value of k for which h[j+kL] is non-zero
         K = _taps.size()/L + (((_taps.size()%L) == 0)?0:1);
         this->input(0)->setReserve(K+M-1);
+        assert(K > 0);
 
         //Precalculate the taps array for each interpolation index,
         //because the zeros contribute nothing to its dot product calculations.
