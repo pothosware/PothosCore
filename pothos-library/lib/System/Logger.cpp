@@ -11,6 +11,7 @@
 #include <Poco/SimpleFileChannel.h>
 #include <Poco/FormattingChannel.h>
 #include <Poco/PatternFormatter.h>
+#include <Poco/SplitterChannel.h>
 #include <Poco/Net/RemoteSyslogChannel.h>
 #include <Poco/Net/RemoteSyslogListener.h>
 #include <Poco/Net/DatagramSocket.h>
@@ -168,7 +169,9 @@ static void __setupDefaultLogging(void)
     Poco::AutoPtr<Poco::Formatter> formatter(new Poco::PatternFormatter());
     formatter->setProperty("pattern", "%Y-%m-%d %H:%M:%S %s: %t");
     Poco::AutoPtr<Poco::Channel> formattingChannel(new Poco::FormattingChannel(formatter, channel));
-    Poco::Logger::get("").setChannel(formattingChannel);
+    Poco::AutoPtr<Poco::SplitterChannel> splitterChannel(new Poco::SplitterChannel());
+    splitterChannel->addChannel(formattingChannel);
+    Poco::Logger::get("").setChannel(splitterChannel);
 }
 
 void Pothos::System::Logger::setupDefaultLogging(void)

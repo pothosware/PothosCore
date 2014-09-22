@@ -33,8 +33,5 @@ signals:
     void receivedLogMessage(const Poco::Message &);
 
 private:
-    Poco::Logger &_logger;
-    const int _oldLevel;
-    Poco::AutoPtr<Poco::Channel> _oldChannel;
     Poco::AutoPtr<Poco::SplitterChannel> _splitter;
 };
