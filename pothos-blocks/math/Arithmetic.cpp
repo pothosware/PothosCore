@@ -196,7 +196,7 @@ static Pothos::Block *arithmeticFactory(const Pothos::DType &dtype, const std::s
     ifTypeDeclareFactory(Poco::Int32);
     ifTypeDeclareFactory(Poco::Int16);
     ifTypeDeclareFactory(Poco::Int8);
-    throw Pothos::InvalidArgumentException("arithmeticFactory("+dtype.toString()+")", "unsupported type");
+    throw Pothos::InvalidArgumentException("arithmeticFactory("+dtype.toString()+", "+operation+")", "unsupported args");
 }
 
 static Pothos::BlockRegistry registerArithmetic(
