@@ -32,14 +32,12 @@ void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
     QString color;
     switch (msg.getPriority())
     {
-    case Poco::Message::PRIO_TRACE: color = "black"; break;
-    case Poco::Message::PRIO_DEBUG: color = "black"; break;
     case Poco::Message::PRIO_INFORMATION: color = "black"; break;
     case Poco::Message::PRIO_NOTICE: color = "green"; break;
     case Poco::Message::PRIO_WARNING: color = "orange"; break;
     case Poco::Message::PRIO_ERROR: color = "red"; break;
-    case Poco::Message::PRIO_CRITICAL: color = "black"; break;
-    case Poco::Message::PRIO_FATAL: color = "black"; break;
+    case Poco::Message::PRIO_CRITICAL: color = "red"; break;
+    case Poco::Message::PRIO_FATAL: color = "red"; break;
     default: color = "black";
     }
 

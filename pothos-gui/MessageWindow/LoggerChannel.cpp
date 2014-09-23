@@ -10,7 +10,7 @@ LoggerChannel::LoggerChannel(QObject *parent):
     _oldLevel(_logger.getLevel()),
     _splitter(dynamic_cast<Poco::SplitterChannel *>(_logger.getChannel()))
 {
-    _logger.setLevel("trace"); //lowest level -> shows everything
+    _logger.setLevel(Poco::Message::PRIO_TRACE); //lowest level -> shows everything
     if (_splitter) _splitter->addChannel(this);
     else poco_error(Poco::Logger::get("PothosGui.LoggerChannel"), "expected SplitterChannel");
 }
