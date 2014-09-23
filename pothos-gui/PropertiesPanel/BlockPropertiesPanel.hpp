@@ -80,5 +80,6 @@ private:
     QTimer *_updateTimer;
     QLabel *_jsonBlockDesc;
     QFormLayout *_formLayout;
+    std::map<std::string, QFormLayout *> _paramLayouts;
     QPointer<GraphBlock> _block;
 };
