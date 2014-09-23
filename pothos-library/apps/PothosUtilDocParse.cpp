@@ -335,6 +335,13 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
             currentParam->set("widgetType", widgetType);
             loadArgs(codeLine, *currentParam, argsStr, "widgetArgs", "widgetKwargs");
         }
+        else if (instruction == "tab" and state == "PARAM")
+        {
+            if (currentParam->has("tab")) throw Pothos::SyntaxException(
+                "Multiple occurrence of |tab for param",
+                codeLine.toString());
+            currentParam->set("tab", payload);
+        }
         else if (instruction == "preview" and state == "PARAM")
         {
             if (currentParam->has("preview")) throw Pothos::SyntaxException(
