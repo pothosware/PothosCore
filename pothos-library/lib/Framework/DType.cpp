@@ -54,8 +54,8 @@ public:
             this->loadType<Type>(Code, Name); \
             this->loadType<std::complex<Type>>(Complex ## Code, "complex_" Name)
         #define loadIntegerType(Type, Code, Name) \
-            loadNumericType(signed Type, Code, Name); \
             loadNumericType(signed Type, Code, "s" Name); \
+            loadNumericType(signed Type, Code, Name); \
             loadNumericType(unsigned Type, U ## Code, "u" Name)
         loadNumericType(char, Int8, "int8");
         loadIntegerType(char, Int8, "int8");

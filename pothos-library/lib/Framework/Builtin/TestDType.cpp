@@ -47,6 +47,15 @@ POTHOS_TEST_BLOCK("/framework/tests", test_dtype_sizes)
 
 POTHOS_TEST_BLOCK("/framework/tests", test_dtype_name)
 {
+    POTHOS_TEST_EQUAL(Pothos::DType().name(), "none");
+    POTHOS_TEST_EQUAL(Pothos::DType("").name(), "none");
+    POTHOS_TEST_EQUAL(Pothos::DType("custom").name(), "custom");
+    POTHOS_TEST_EQUAL(Pothos::DType(typeid(int)).name(), "int32");
+    POTHOS_TEST_EQUAL(Pothos::DType(typeid(signed int)).name(), "int32");
+    POTHOS_TEST_EQUAL(Pothos::DType(typeid(unsigned int)).name(), "uint32");
+    POTHOS_TEST_EQUAL(Pothos::DType(typeid(std::complex<short>)).name(), "complex_int16");
+    POTHOS_TEST_EQUAL(Pothos::DType(typeid(std::complex<double>)).name(), "complex_float64");
+
     POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType("").name()) == Pothos::DType(""));
     POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType("custom").name()) == Pothos::DType("custom"));
     POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType(typeid(int)).name()) == Pothos::DType(typeid(int)));
