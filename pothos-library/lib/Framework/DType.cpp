@@ -4,140 +4,122 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
-#include <Poco/Types.h>
-#include <Poco/HashMap.h>
 #include <Poco/SingletonHolder.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/RegularExpression.h>
 #include <complex>
+#include <map>
 
 /***********************************************************************
- * Lookup table for name alias mapping
+ * officially supported element types
  **********************************************************************/
-struct DTypeAliasLookup : Poco::HashMap<std::string, std::string>
+enum ElementTypes
 {
-    DTypeAliasLookup(void)
-    {
-        (*this)["byte"] = "int8";
-        (*this)["octet"] = "int8";
+    CustomType,
+    Int8,
+    UInt8,
+    Int16,
+    UInt16,
+    Int32,
+    UInt32,
+    Int64,
+    UInt64,
+    ComplexInt8,
+    ComplexUInt8,
+    ComplexInt16,
+    ComplexUInt16,
+    ComplexInt32,
+    ComplexUInt32,
+    ComplexInt64,
+    ComplexUInt64,
+    Float32,
+    Float64,
+    ComplexFloat32,
+    ComplexFloat64,
+    MaximumType
+};
 
-        loadPrimitiveIntegers("char", "8");
-        loadPrimitiveIntegers("short", "16");
-        loadPrimitiveIntegers("int", "32");
+/***********************************************************************
+ * map typeids to an element type
+ **********************************************************************/
+class ElementTypeSuperMap
+{
+public:
+    ElementTypeSuperMap(void)
+    {
+        #define loadNumericType(Type, Code, Name) \
+            this->loadType<Type>(Code, Name); \
+            this->loadType<std::complex<Type>>(Complex ## Code, "complex_" Name)
+        #define loadIntegerType(Type, Code, Name) \
+            loadNumericType(signed Type, Code, Name); \
+            loadNumericType(unsigned Type, U ## Code, "u" Name)
+        loadNumericType(char, Int8, "int8");
+        loadIntegerType(char, Int8, "int8");
+        loadIntegerType(short, Int16, "int16");
+        loadIntegerType(int, Int32, "int32");
         #ifndef POCO_LONG_IS_64_BIT
-        loadPrimitiveIntegers("long", "32");
+        loadIntegerType(long, Int32, "int32");
         #else
-        loadPrimitiveIntegers("long", "64");
+        loadIntegerType(long, Int64, "int64");
         #endif
-        loadPrimitiveIntegers("long long", "64");
-        loadPrimitiveIntegers("longlong", "64"); //with and without spaces
+        loadIntegerType(long long, Int64, "int64");
+        loadNumericType(float, Float32, "float32");
+        loadNumericType(double, Float64, "float64");
 
-        (*this)["float"] = "float32";
-        (*this)["double"] = "float64";
-
-        (*this)["complex64"] = "complex_float32";
-        (*this)["complex128"] = "complex_float64";
-
-        #define makeTypeIdEntry(type) \
-            (*this)[Pothos::Util::typeInfoToString(typeid(type))] = (*this)[#type]; \
-            (*this)[Pothos::Util::typeInfoToString(typeid(std::complex<type>))] = "complex_" + (*this)[#type];
-        makeTypeIdEntry(char);
-        makeTypeIdEntry(signed char);
-        makeTypeIdEntry(unsigned char);
-        makeTypeIdEntry(signed short);
-        makeTypeIdEntry(unsigned short);
-        makeTypeIdEntry(signed int);
-        makeTypeIdEntry(unsigned int);
-        makeTypeIdEntry(signed long);
-        makeTypeIdEntry(unsigned long);
-        makeTypeIdEntry(signed long long);
-        makeTypeIdEntry(unsigned long long);
-        makeTypeIdEntry(float);
-        makeTypeIdEntry(double);
+        _elemTypeToElemSize[CustomType] = 0;
+        _elemTypeToElemName[CustomType] = "custom";
     }
 
-    void loadPrimitiveIntegers(const std::string &prim, const std::string &size)
+    size_t lookupElemType(const std::type_info &type)
     {
-        (*this)["int"+size] = "int"+size;
-        (*this)["sint"+size] = "int"+size;
-        (*this)["uint"+size] = "uint"+size;
-        (*this)["int"+size+"_t"] = "int"+size;
-        (*this)["sint"+size+"_t"] = "int"+size;
-        (*this)["uint"+size+"_t"] = "uint"+size;
-        (*this)[prim] = "int"+size;
-        (*this)["u"+prim] = "uint"+size;
-        (*this)["s"+prim] = "int"+size;
-        (*this)["unsigned "+prim] = "uint"+size;
-        (*this)["signed "+prim] = "int"+size;
+        try
+        {
+            return _typeHashToElemType.at(type.hash_code());
+        }
+        catch (const std::exception &ex)
+        {
+            throw Pothos::DTypeUnknownError("Pothos::DType("+Pothos::Util::typeInfoToString(type)+")", "unsupported element type");
+        }
     }
 
-    std::string lookup(const std::string &name) const
+    size_t lookupElemSize(const size_t type)
     {
-        const auto it = this->find(name);
-        if (it == this->end()) return name;
-        return it->second;
+        return _elemTypeToElemSize.at(type);
     }
+
+    const std::string &lookupElemName(const size_t type)
+    {
+        return _elemTypeToElemName.at(type);
+    }
+
+private:
+    template <typename Type>
+    void loadType(const size_t elemType, const std::string &name)
+    {
+        _typeHashToElemType[typeid(Type).hash_code()] = elemType;
+        _elemTypeToElemSize[elemType] = sizeof(Type);
+        _elemTypeToElemName[elemType] = name;
+    }
+
+    std::map<size_t, size_t> _typeHashToElemType;
+    std::map<size_t, size_t> _elemTypeToElemSize;
+    std::map<size_t, std::string> _elemTypeToElemName;
 };
 
-static DTypeAliasLookup &getDTypeAliasLookup(void)
+static ElementTypeSuperMap &getElementTypeSuperMap(void)
 {
-    static Poco::SingletonHolder<DTypeAliasLookup> sh;
-    return *sh.get();
-}
-
-/***********************************************************************
- * Lookup table for name to size mapping
- **********************************************************************/
-struct DTypeSizeLookup : Poco::HashMap<std::string, size_t>
-{
-    DTypeSizeLookup(void)
-    {
-        (*this)["bool"] = sizeof(bool);
-        (*this)["int8"] = sizeof(Poco::Int8);
-        (*this)["uint8"] = sizeof(Poco::UInt8);
-        (*this)["int16"] = sizeof(Poco::Int16);
-        (*this)["uint16"] = sizeof(Poco::UInt16);
-        (*this)["int32"] = sizeof(Poco::Int32);
-        (*this)["uint32"] = sizeof(Poco::UInt32);
-        (*this)["int64"] = sizeof(Poco::Int64);
-        (*this)["uint64"] = sizeof(Poco::UInt64);
-
-        (*this)["complex_int8"] = sizeof(std::complex<Poco::Int8>);
-        (*this)["complex_uint8"] = sizeof(std::complex<Poco::UInt8>);
-        (*this)["complex_int16"] = sizeof(std::complex<Poco::Int16>);
-        (*this)["complex_uint16"] = sizeof(std::complex<Poco::UInt16>);
-        (*this)["complex_int32"] = sizeof(std::complex<Poco::Int32>);
-        (*this)["complex_uint32"] = sizeof(std::complex<Poco::UInt32>);
-        (*this)["complex_int64"] = sizeof(std::complex<Poco::Int64>);
-        (*this)["complex_uint64"] = sizeof(std::complex<Poco::UInt64>);
-
-        (*this)["float32"] = sizeof(float);
-        (*this)["float64"] = sizeof(double);
-        (*this)["complex_float32"] = sizeof(std::complex<float>);
-        (*this)["complex_float64"] = sizeof(std::complex<double>);
-    }
-
-    size_t lookup(const std::string &name) const
-    {
-        const auto it = this->find(name);
-        if (it == this->end()) throw Pothos::DTypeUnknownError(
-            "Pothos::DType("+name+")", "unknown name");
-        return it->second;
-    }
-};
-
-static DTypeSizeLookup &getDTypeSizeLookup(void)
-{
-    static Poco::SingletonHolder<DTypeSizeLookup> sh;
+    static Poco::SingletonHolder<ElementTypeSuperMap> sh;
     return *sh.get();
 }
 
 /***********************************************************************
  * Parse a name with markup
  **********************************************************************/
-static void parseMarkupName(const std::string &markup, std::string &name, Pothos::DType::Shape &shape)
+static void parseMarkupName(const std::string &markup, size_t &elemType, size_t &dimension)
 {
-    shape.clear();
+    /*
+    elemType = 0;
+    dimension = 1;
     size_t count = 0;
     for (const auto &tok : Poco::StringTokenizer(
         markup, ",", Poco::StringTokenizer::TOK_TRIM | Poco::StringTokenizer::TOK_IGNORE_EMPTY))
@@ -152,84 +134,58 @@ static void parseMarkupName(const std::string &markup, std::string &name, Pothos
             {
                 throw Pothos::DTypeUnknownError("Pothos::DType("+markup+")", "bad markup format");
             }
-            shape.push_back(size_t(std::stoull(tok)));
+            dimension *= size_t(std::stoull(tok));
         }
     }
+    * 
+    */
 }
 
 /***********************************************************************
  * DType implementation
  **********************************************************************/
-Pothos::DType::DType(void):
-    _elemSize(0), _size(0)
+Pothos::DType::DType(const char *name):
+    _elemType(0), _elemSize(0), _dimension(0)
+{
+    parseMarkupName(name, _elemType, _dimension);
+    _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
+}
+
+Pothos::DType::DType(const std::string &name):
+    _elemType(0), _elemSize(0), _dimension(0)
+{
+    parseMarkupName(name, _elemType, _dimension);
+    _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
+}
+
+Pothos::DType::DType(const std::string &name, const size_t dimension):
+    _elemType(0), _elemSize(0), _dimension(dimension)
+{
+    parseMarkupName(name, _elemType, _dimension);
+    _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
+}
+
+Pothos::DType::DType(const std::type_info &type, const size_t dimension):
+    _elemType(getElementTypeSuperMap().lookupElemType(type)),
+    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType)),
+    _dimension(dimension)
 {
     return;
 }
 
-Pothos::DType::DType(const char *name):
-    _elemSize(0), _size(0)
+const std::string &Pothos::DType::name(void) const
 {
-    parseMarkupName(name, _name, _shape); //also sets alias
-    _elemSize = getDTypeSizeLookup().lookup(_name); //uses alias for lookup
-    _size = _elemSize;
-}
-
-Pothos::DType::DType(const std::string &name):
-    _elemSize(0), _size(0)
-{
-    parseMarkupName(name, _name, _shape); //also sets alias
-    _elemSize = getDTypeSizeLookup().lookup(_name); //uses alias for lookup
-    _size = _elemSize;
-}
-
-Pothos::DType::DType(const std::string &name, const Shape &shape):
-    _name(getDTypeAliasLookup().lookup(name)),
-    _shape(shape),
-    _elemSize(getDTypeSizeLookup().lookup(_name)), //uses alias for lookup
-    _size(_elemSize)
-{
-    for (size_t i = 0; i < shape.size(); i++) _size *= shape[i];
-}
-
-Pothos::DType::DType(const std::string &name, const size_t elemSize, const Shape &shape):
-    _name(name),
-    _shape(shape),
-    _elemSize(elemSize),
-    _size(_elemSize)
-{
-    for (size_t i = 0; i < shape.size(); i++) _size *= shape[i];
-}
-
-Pothos::DType::DType(const std::type_info &type, const Shape &shape):
-    _name(getDTypeAliasLookup().lookup(Pothos::Util::typeInfoToString(type))),
-    _shape(shape),
-    _elemSize(getDTypeSizeLookup().lookup(_name)), //uses alias for lookup
-    _size(_elemSize)
-{
-    for (size_t i = 0; i < shape.size(); i++) _size *= shape[i];
+   return getElementTypeSuperMap().lookupElemName(_elemType);
 }
 
 std::string Pothos::DType::toString(void) const
 {
     std::string out = this->name();
-    if (not this->shape().empty())
+    if (this->dimension() != 1)
     {
-        out += " [";
-        for (size_t i = 0; i < this->shape().size(); i++)
-        {
-            out += std::to_string(this->shape()[i]);
-            if (i+1 != this->shape().size()) out += " x ";
-        }
-        out += "]";
+        out += " [" + std::to_string(this->dimension()) + "]";
     }
     return out;
-}
-
-bool Pothos::operator==(const DType &lhs, const DType &rhs)
-{
-    return (lhs.name() == rhs.name())
-        and (lhs.shape() == rhs.shape())
-        and (lhs.elemSize() == rhs.elemSize());
 }
 
 #include <Pothos/Managed.hpp>
@@ -237,12 +193,10 @@ bool Pothos::operator==(const DType &lhs, const DType &rhs)
 static auto managedDtype = Pothos::ManagedClass()
     .registerConstructor<Pothos::DType>()
     .registerConstructor<Pothos::DType, const std::string &>()
-    .registerConstructor<Pothos::DType, const std::string &, const Pothos::DType::Shape &>()
-    .registerConstructor<Pothos::DType, const std::string &, const size_t, const Pothos::DType::Shape &>()
-    //.registerConstructor<Pothos::DType, const std::type_info &, const Pothos::DType::Shape &>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, name))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, shape))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, elemType))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, elemSize))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, dimension))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, size))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, toString))
     .registerStaticMethod<const Pothos::DType &, const Pothos::DType &>("equals", &Pothos::operator==)
@@ -250,33 +204,12 @@ static auto managedDtype = Pothos::ManagedClass()
 
 #include <Pothos/Object/Serialize.hpp>
 
-namespace Pothos { namespace serialization {
 template<class Archive>
-void save(Archive & ar, const Pothos::DType &t, const unsigned int)
+void Pothos::DType::serialize(Archive & ar, const unsigned int)
 {
-    ar << t.name();
-    ar << t.shape();
-    size_t elemSize = t.elemSize();
-    ar << elemSize;
-}
-
-template<class Archive>
-void load(Archive & ar, Pothos::DType &t, const unsigned int)
-{
-    std::string name;
-    Pothos::DType::Shape shape;
-    size_t elemSize;
-    ar >> name;
-    ar >> shape;
-    ar >> elemSize;
-    t = Pothos::DType(name, elemSize, shape);
-}
-}}
-
-template<class Archive>
-void Pothos::DType::serialize(Archive & ar, const unsigned int version)
-{
-    Pothos::serialization::split_free(ar, *this, version);
+    ar & this->_elemType;
+    ar & this->_elemSize;
+    ar & this->_dimension;
 }
 
 template void Pothos::DType::serialize<Pothos::archive::polymorphic_iarchive>(Pothos::archive::polymorphic_iarchive &, const unsigned int);

@@ -11,7 +11,6 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <typeinfo>
-#include <vector>
 #include <string>
 
 namespace Pothos {
@@ -43,72 +42,56 @@ class POTHOS_API DType
 {
 public:
 
-    //! Typedef for the dimensionality represenation
-    typedef std::vector<size_t> Shape;
-
     //! Create an empty DType with blank name, empty shape, and size 0
     DType(void);
 
     /*!
-     * Create a DType from only a name.
-     * The size will be inferred for the most common names.
+     * Create a DType from only a markup name (char * overload).
      * \throw DTypeUnknownError when the name is not known
      * \param name the name identfier of a known DType
      */
     DType(const char *name);
 
     /*!
-     * Create a DType from only a name.
-     * The size will be inferred for the most common names.
+     * Create a DType from only a markup name.
+     * The markup name is a type alias (like float32),
+     * with optional comma separated dimensionality.
      * \throw DTypeUnknownError when the name is not known
      * \param name the name identfier of a known DType
      */
     DType(const std::string &name);
 
     /*!
-     * Create a DType from a name and shape.
-     * The size will be inferred for the most common names,
-     * times the dimensionality of the shape.
+     * Create a DType from a type alias and dimensionality.
      * \throw DTypeUnknownError when the name is not known
      * \param name the name identfier of a known DType
-     * \param shape the shape dimensions of this DType
+     * \param dimension the number of elements per type
      */
-    DType(const std::string &name, const Shape &shape);
+    DType(const std::string &name, const size_t dimension);
 
     /*!
-     * Create a DType from unknown name identifier, specifying the size.
-     * The size should be the size in bytes of a single element.
-     * The resulting size of this DType will be the elemSize * shape.
-     * \param name the name identfier of a known DType
-     * \param elemSize the size of a single element in bytes
-     * \param shape the shape dimensions of this DType
-     */
-    DType(const std::string &name, const size_t elemSize, const Shape &shape = Shape());
-
-    /*!
-     * Create a DType from a type_info identifier.
-     * The size and name of the type are inferred from the type info.
-     * The resulting size of this DType will be the elemSize * shape.
+     * Create a DType from a type_info identifier and optional dimensionality.
+     * The size and type enum are inferred from the type info.
      * \throw DTypeUnknownError when the type is not known
      * \param type a recognized type info object
-     * \param shape the shape dimensions of this DType
+     * \param dimension the number of elements per type
      */
-    DType(const std::type_info &type, const Shape &shape = Shape());
+    DType(const std::type_info &type, const size_t dimension = 1);
 
     /*!
-     * Get a name that describes this DType.
-     * If the name specified at construction was a recognized alias
-     * for the same type under a different name, then the well-known
-     * alias name will be used. This is typically a fixed-width
-     * version of the name like int32, uint16, complex64, etc...
+     * Get a name that describes an element.
+     * Example: int32, uint16, complex_float32, etc...
      */
     const std::string &name(void) const;
-
-    //! Get the shape of this DType
-    const Shape &shape(void) const;
+    
+    //! Get the element type descriptor
+    size_t elemType(void) const;
 
     //! Get the size of a single element in bytes
     size_t elemSize(void) const;
+
+    //! Get the dimensionality of this type
+    size_t dimension(void) const;
 
     //! Get the size of this DType in bytes
     size_t size(void) const;
@@ -121,10 +104,9 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 
 private:
-    std::string _name;
-    Shape _shape;
+    size_t _elemType;
     size_t _elemSize;
-    size_t _size;
+    size_t _dimension;
 };
 
 //! Equality operator for DType (all attributes must match for equality)
@@ -132,14 +114,24 @@ POTHOS_API bool operator==(const DType &lhs, const DType &rhs);
 
 } //namespace Pothos
 
-inline const std::string &Pothos::DType::name(void) const
+inline bool Pothos::operator==(const DType &lhs, const DType &rhs)
 {
-    return _name;
+    return lhs.elemType() == rhs.elemType() and
+        lhs.elemSize() == rhs.elemSize() and
+        lhs.dimension() == rhs.dimension();
 }
 
-inline const Pothos::DType::Shape &Pothos::DType::shape(void) const
+inline Pothos::DType::DType(void):
+    _elemType(0),
+    _elemSize(0),
+    _dimension(1)
 {
-    return _shape;
+    return;
+}
+
+inline size_t Pothos::DType::elemType(void) const
+{
+    return _elemType;
 }
 
 inline size_t Pothos::DType::elemSize(void) const
@@ -147,7 +139,12 @@ inline size_t Pothos::DType::elemSize(void) const
     return _elemSize;
 }
 
+inline size_t Pothos::DType::dimension(void) const
+{
+    return _dimension;
+}
+
 inline size_t Pothos::DType::size(void) const
 {
-    return _size;
+    return _elemSize*_dimension;
 }
