@@ -7,6 +7,8 @@
 #include <Poco/SingletonHolder.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/RegularExpression.h>
+#include <Poco/HashMap.h>
+#include <Poco/String.h>
 #include <complex>
 #include <map>
 
@@ -15,6 +17,7 @@
  **********************************************************************/
 enum ElementTypes
 {
+    NoneType,
     CustomType,
     Int8,
     UInt8,
@@ -40,7 +43,7 @@ enum ElementTypes
 };
 
 /***********************************************************************
- * map typeids to an element type
+ * lookup map for various element type properties
  **********************************************************************/
 class ElementTypeSuperMap
 {
@@ -52,6 +55,7 @@ public:
             this->loadType<std::complex<Type>>(Complex ## Code, "complex_" Name)
         #define loadIntegerType(Type, Code, Name) \
             loadNumericType(signed Type, Code, Name); \
+            loadNumericType(signed Type, Code, "s" Name); \
             loadNumericType(unsigned Type, U ## Code, "u" Name)
         loadNumericType(char, Int8, "int8");
         loadIntegerType(char, Int8, "int8");
@@ -66,11 +70,49 @@ public:
         loadNumericType(float, Float32, "float32");
         loadNumericType(double, Float64, "float64");
 
-        _elemTypeToElemSize[CustomType] = 0;
+        //special non-generated cases
+        _aliasToElementType[""] = NoneType;
+        _aliasToElementType["none"] = NoneType;
+        _elemTypeToElemSize[NoneType] = 0;
+        _elemTypeToElemName[NoneType] = "none";
+        _aliasToElementType["custom"] = CustomType;
+        _elemTypeToElemSize[CustomType] = 1;
         _elemTypeToElemName[CustomType] = "custom";
+        _aliasToElementType["custom"] = CustomType;
+        _aliasToElementType["byte"] = Int8;
+        _aliasToElementType["octet"] = Int8;
+        _aliasToElementType["float"] = Float32;
+        _aliasToElementType["double"] = Float64;
+        _aliasToElementType["complex64"] = ComplexFloat32;
+        _aliasToElementType["complex128"] = ComplexFloat64;
+        #define declareNativeAlias(Code, Name) \
+            _aliasToElementType[Name] = Code; \
+            _aliasToElementType["s" Name] = Code; \
+            _aliasToElementType["u" Name] = U ## Code
+        declareNativeAlias(Int8, "char");
+        declareNativeAlias(Int16, "short");
+        declareNativeAlias(Int32, "int");
+        #ifndef POCO_LONG_IS_64_BIT
+        declareNativeAlias(Int32, "long");
+        #else
+        declareNativeAlias(Int64, "long");
+        #endif
+        declareNativeAlias(Int64, "long long");
+        declareNativeAlias(Int64, "longlong");
+        declareNativeAlias(Int64, "llong");
     }
 
-    size_t lookupElemType(const std::type_info &type)
+    size_t lookupAlias(const std::string &alias) const
+    {
+        auto it = _aliasToElementType.find(Poco::toLower(alias));
+        if (it == _aliasToElementType.end())
+        {
+            throw Pothos::DTypeUnknownError("Pothos::DType("+alias+")", "unknown type alias");
+        }
+        return it->second;
+    }
+
+    size_t lookupElemType(const std::type_info &type) const
     {
         try
         {
@@ -82,12 +124,12 @@ public:
         }
     }
 
-    size_t lookupElemSize(const size_t type)
+    size_t lookupElemSize(const size_t type) const
     {
         return _elemTypeToElemSize.at(type);
     }
 
-    const std::string &lookupElemName(const size_t type)
+    const std::string &lookupElemName(const size_t type) const
     {
         return _elemTypeToElemName.at(type);
     }
@@ -96,11 +138,15 @@ private:
     template <typename Type>
     void loadType(const size_t elemType, const std::string &name)
     {
+        _aliasToElementType[name] = elemType;
+        _aliasToElementType[typeid(Type).name()] = elemType;
+        _aliasToElementType[Pothos::Util::typeInfoToString(typeid(Type))] = elemType;
         _typeHashToElemType[typeid(Type).hash_code()] = elemType;
         _elemTypeToElemSize[elemType] = sizeof(Type);
         _elemTypeToElemName[elemType] = name;
     }
 
+    Poco::HashMap<std::string, size_t> _aliasToElementType;
     std::map<size_t, size_t> _typeHashToElemType;
     std::map<size_t, size_t> _elemTypeToElemSize;
     std::map<size_t, std::string> _elemTypeToElemName;
@@ -115,53 +161,39 @@ static ElementTypeSuperMap &getElementTypeSuperMap(void)
 /***********************************************************************
  * Parse a name with markup
  **********************************************************************/
-static void parseMarkupName(const std::string &markup, size_t &elemType, size_t &dimension)
+static size_t parseMarkupName(const std::string &markup, size_t &dimension)
 {
-    /*
-    elemType = 0;
-    dimension = 1;
-    size_t count = 0;
-    for (const auto &tok : Poco::StringTokenizer(
-        markup, ",", Poco::StringTokenizer::TOK_TRIM | Poco::StringTokenizer::TOK_IGNORE_EMPTY))
-    {
-        if (count++ == 0)
-        {
-            name = getDTypeAliasLookup().lookup(tok);
-        }
-        else
-        {
-            if (not Poco::RegularExpression("^\\d+$").match(tok, 0))
-            {
-                throw Pothos::DTypeUnknownError("Pothos::DType("+markup+")", "bad markup format");
-            }
-            dimension *= size_t(std::stoull(tok));
-        }
-    }
-    * 
-    */
+    const auto commaPos = markup.find(",");
+    if (commaPos == std::string::npos) return getElementTypeSuperMap().lookupAlias(markup);
+
+    const auto alias = Poco::trim(markup.substr(0, commaPos));
+    const auto dimStr = Poco::trim(markup.substr(commaPos+1));
+
+    dimension = size_t(std::stoull(dimStr));
+    return getElementTypeSuperMap().lookupAlias(alias);
 }
 
 /***********************************************************************
  * DType implementation
  **********************************************************************/
-Pothos::DType::DType(const char *name):
-    _elemType(0), _elemSize(0), _dimension(0)
+Pothos::DType::DType(const char *markup):
+    _elemType(0), _elemSize(0), _dimension(1)
 {
-    parseMarkupName(name, _elemType, _dimension);
+    _elemType = parseMarkupName(markup, _dimension);
     _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
 }
 
-Pothos::DType::DType(const std::string &name):
-    _elemType(0), _elemSize(0), _dimension(0)
+Pothos::DType::DType(const std::string &markup):
+    _elemType(0), _elemSize(0), _dimension(1)
 {
-    parseMarkupName(name, _elemType, _dimension);
+    _elemType = parseMarkupName(markup, _dimension);
     _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
 }
 
-Pothos::DType::DType(const std::string &name, const size_t dimension):
+Pothos::DType::DType(const std::string &alias, const size_t dimension):
     _elemType(0), _elemSize(0), _dimension(dimension)
 {
-    parseMarkupName(name, _elemType, _dimension);
+    _elemType = getElementTypeSuperMap().lookupAlias(alias);
     _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
 }
 
@@ -193,6 +225,7 @@ std::string Pothos::DType::toString(void) const
 static auto managedDtype = Pothos::ManagedClass()
     .registerConstructor<Pothos::DType>()
     .registerConstructor<Pothos::DType, const std::string &>()
+    .registerConstructor<Pothos::DType, const std::string &, const size_t>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, name))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, elemType))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, elemSize))

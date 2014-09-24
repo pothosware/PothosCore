@@ -5,57 +5,65 @@
 #include <Pothos/Object.hpp>
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Exception.hpp>
+#include <complex>
 #include <iostream>
-/*
-POTHOS_TEST_BLOCK("/framework/tests", test_dtype)
+
+POTHOS_TEST_BLOCK("/framework/tests", test_dtype_throws)
 {
-    Pothos::DType nullType;
-    POTHOS_TEST_EQUAL(nullType.name(), std::string());
-    POTHOS_TEST_EQUAL(nullType.shape().size(), 0);
-    POTHOS_TEST_EQUAL(nullType.size(), 0);
-    POTHOS_TEST_TRUE(nullType == Pothos::DType());
-
-    Pothos::DType intType("int");
-    std::cout << intType.toString() << std::endl;
-    POTHOS_TEST_EQUAL(intType.size(), sizeof(int));
-
-    Pothos::DType anotherIntType("signed int");
-    std::cout << anotherIntType.toString() << std::endl;
-    POTHOS_TEST_TRUE(anotherIntType == intType);
-
-    Pothos::DType anotherOtherIntType(typeid(int));
-    std::cout << anotherOtherIntType.toString() << std::endl;
-    POTHOS_TEST_TRUE(anotherOtherIntType == intType);
-
-    Pothos::Object justAnotherStringInt("int");
-    POTHOS_TEST_TRUE(justAnotherStringInt.convert<Pothos::DType>() == intType);
-
-    Pothos::DType::Shape vectorShape;
-    vectorShape.push_back(10);
-    Pothos::DType vectorType("float", vectorShape);
-    std::cout << vectorType.toString() << std::endl;
-    POTHOS_TEST_EQUAL(vectorType.size(), sizeof(float)*vectorShape[0]);
-
-    Pothos::DType::Shape matrixShape;
-    matrixShape.push_back(12);
-    matrixShape.push_back(13);
-    Pothos::DType matrixType("double", matrixShape);
-    std::cout << matrixType.toString() << std::endl;
-    POTHOS_TEST_EQUAL(matrixType.size(), sizeof(double)*matrixShape[0]*matrixShape[1]);
-
-    Pothos::DType matrixTypeAgain("double, 12, 13");
-    std::cout << matrixTypeAgain.toString() << std::endl;
-    POTHOS_TEST_TRUE(matrixTypeAgain == matrixType);
-    POTHOS_TEST_THROWS(Pothos::DType("double, foo"), Pothos::DTypeUnknownError);
-    POTHOS_TEST_THROWS(Pothos::DType("double, 2 3"), Pothos::DTypeUnknownError);
-    POTHOS_TEST_THROWS(Pothos::DType("double, -10"), Pothos::DTypeUnknownError);
-
-    POTHOS_TEST_THROWS(Pothos::DType("madeUpUnknownType"), Pothos::DTypeUnknownError);
-    Pothos::DType madeUpUnknownType("madeUpUnknownType", 64); //OK when element size specified
-    POTHOS_TEST_EQUAL(madeUpUnknownType.size(), 64);
-    POTHOS_TEST_EQUAL(madeUpUnknownType.shape().size(), 0);
-    POTHOS_TEST_EQUAL(madeUpUnknownType.name(), "madeUpUnknownType");
+    POTHOS_TEST_THROWS(Pothos::DType("FooBar"), Pothos::DTypeUnknownError);
+    POTHOS_TEST_THROWS(Pothos::DType("int 20"), Pothos::DTypeUnknownError);
+    POTHOS_TEST_THROWS(Pothos::DType(typeid(std::string)), Pothos::DTypeUnknownError);
 }
 
-*/
+POTHOS_TEST_BLOCK("/framework/tests", test_dtype_equality)
+{
+    POTHOS_TEST_TRUE(Pothos::DType() == Pothos::DType());
+
+    POTHOS_TEST_TRUE(Pothos::DType("int") == Pothos::DType(typeid(int)));
+    POTHOS_TEST_TRUE(not (Pothos::DType("int") == Pothos::DType(typeid(unsigned int))));
+    POTHOS_TEST_TRUE(Pothos::DType("uint") == Pothos::DType(typeid(unsigned int)));
+    POTHOS_TEST_TRUE(Pothos::DType("float64") == Pothos::DType(typeid(double)));
+    POTHOS_TEST_TRUE(Pothos::DType("complex128") == Pothos::DType(typeid(std::complex<double>)));
+}
+
+POTHOS_TEST_BLOCK("/framework/tests", test_dtype_sizes)
+{
+    POTHOS_TEST_EQUAL(Pothos::DType().size(), 0);
+    POTHOS_TEST_EQUAL(Pothos::DType("").size(), 0);
+    POTHOS_TEST_EQUAL(Pothos::DType("none").size(), 0);
+    POTHOS_TEST_EQUAL(Pothos::DType("custom").size(), 1);
+
+    POTHOS_TEST_EQUAL(Pothos::DType("byte").size(), sizeof(char));
+    POTHOS_TEST_EQUAL(Pothos::DType("char").size(), sizeof(char));
+    POTHOS_TEST_EQUAL(Pothos::DType("short").size(), sizeof(short));
+    POTHOS_TEST_EQUAL(Pothos::DType("int").size(), sizeof(int));
+    POTHOS_TEST_EQUAL(Pothos::DType("long").size(), sizeof(long));
+    POTHOS_TEST_EQUAL(Pothos::DType("long long").size(), sizeof(long long));
+    POTHOS_TEST_EQUAL(Pothos::DType("float").size(), sizeof(float));
+    POTHOS_TEST_EQUAL(Pothos::DType("double").size(), sizeof(double));
+    POTHOS_TEST_EQUAL(Pothos::DType("complex_float64").size(), sizeof(std::complex<double>));
+    POTHOS_TEST_EQUAL(Pothos::DType("complex128").size(), sizeof(std::complex<double>));
+}
+
+POTHOS_TEST_BLOCK("/framework/tests", test_dtype_name)
+{
+    POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType("").name()) == Pothos::DType(""));
+    POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType("custom").name()) == Pothos::DType("custom"));
+    POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType(typeid(int)).name()) == Pothos::DType(typeid(int)));
+    POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType(typeid(signed int)).name()) == Pothos::DType(typeid(signed int)));
+    POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType(typeid(unsigned int)).name()) == Pothos::DType(typeid(unsigned int)));
+    POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType(typeid(std::complex<short>)).name()) == Pothos::DType(typeid(std::complex<short>)));
+    POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType(typeid(std::complex<float>)).name()) == Pothos::DType(typeid(std::complex<float>)));
+}
+
+
+POTHOS_TEST_BLOCK("/framework/tests", test_dtype_dimensions)
+{
+    POTHOS_TEST_TRUE(Pothos::DType("int, 42") == Pothos::DType(typeid(int), 42));
+    POTHOS_TEST_EQUAL(Pothos::DType("int, 42").size(), sizeof(int)*42);
+    POTHOS_TEST_EQUAL(Pothos::DType("custom", 21).size(), 21);
+    POTHOS_TEST_EQUAL(Pothos::DType("custom, 21").size(), 21);
+    POTHOS_TEST_EQUAL(Pothos::DType("none, 21").size(), 0);
+    POTHOS_TEST_EQUAL(Pothos::DType(", 21").size(), 0);
+}
 

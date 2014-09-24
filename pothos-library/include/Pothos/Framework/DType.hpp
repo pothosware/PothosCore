@@ -17,26 +17,23 @@ namespace Pothos {
 
 /*!
  * DType provides meta-information about a data type.
- * A DType consists of a name that identifies the type,
- * a shape that describes the dimensionality of the type.
+ * A DType consists of a primitive element type and dimensionality.
+ * The dimensionality is a simple number that allows a DType
+ * to represent an integer number of primitive element per object.
  *
- * DType will recognize the names for the most common types like:
+ * DType will recognize the alias names for the most common types like:
  * primitive integers, fixed width types, floating point types, complex...
- * If the name is not regonized, the user must specify the size in bytes.
  *
  * Recognized name strings:
  *  - un/signed char/int/short/long/long long
  *  - u/int8, u/int16, u/int32, u/int64
  *  - float, double, float32, float64
+ *  - complex_[known_type]
  *  - complex64, complex128
  *
- * The shape attribute describes the shape or dimensionality of the type.
- * An empty shape means that the DType represents a single element.
- * To represent a vector of size N elements, shape should be [N].
- * To represent a matrix of size NxM elements, shape should be [N, M].
- *
- * The size of a DType represents the size of an element times its shape.
- * Size in bytes = element size * shape[0] * shape[1]... and so on.
+ * Special name strings:
+ *  - "" or "none" for an unspecified size-zero data type
+ *  - "custom" for an unspecified dimensionality-size data type
  */
 class POTHOS_API DType
 {
@@ -46,28 +43,28 @@ public:
     DType(void);
 
     /*!
-     * Create a DType from only a markup name (char * overload).
+     * Create a DType from only a markup string (char * overload).
      * \throw DTypeUnknownError when the name is not known
-     * \param name the name identfier of a known DType
+     * \param markup the name identfier of a known DType
      */
-    DType(const char *name);
+    DType(const char *markup);
 
     /*!
-     * Create a DType from only a markup name.
+     * Create a DType from only a markup string.
      * The markup name is a type alias (like float32),
      * with optional comma separated dimensionality.
      * \throw DTypeUnknownError when the name is not known
-     * \param name the name identfier of a known DType
+     * \param markup the name identfier of a known DType
      */
-    DType(const std::string &name);
+    DType(const std::string &markup);
 
     /*!
      * Create a DType from a type alias and dimensionality.
      * \throw DTypeUnknownError when the name is not known
-     * \param name the name identfier of a known DType
+     * \param alias a string identfier for a known data type
      * \param dimension the number of elements per type
      */
-    DType(const std::string &name, const size_t dimension);
+    DType(const std::string &alias, const size_t dimension);
 
     /*!
      * Create a DType from a type_info identifier and optional dimensionality.
