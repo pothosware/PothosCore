@@ -81,8 +81,7 @@ public:
 
         const auto &buffer = inputPort->buffer();
         //input port type unspecified, inspect buffer for actual element count
-        const auto buffElems = buffer.length/buffer.dtype.size();
-        const size_t elems = std::min(_elementsLeft, buffElems);
+        const size_t elems = std::min(_elementsLeft, buffer.elements());
         if (elems != 0)
         {
             outputPort->postBuffer(buffer);

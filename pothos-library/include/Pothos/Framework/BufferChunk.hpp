@@ -73,6 +73,12 @@ public:
     DType dtype;
 
     /*!
+     * How many elements are held in this buffer chunk?
+     * \return the length in bytes divided by the dtype size.
+     */
+    size_t elements(void) const;
+
+    /*!
      * The underlying reference counted shared buffer.
      */
     const SharedBuffer &getBuffer(void) const;
@@ -160,6 +166,11 @@ inline Pothos::BufferChunk::BufferChunk(void):
     length(0)
 {
     return;
+}
+
+inline size_t Pothos::BufferChunk::elements(void) const
+{
+    return this->length/this->dtype.size();
 }
 
 inline const Pothos::SharedBuffer &Pothos::BufferChunk::getBuffer(void) const

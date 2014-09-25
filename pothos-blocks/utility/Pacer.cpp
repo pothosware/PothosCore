@@ -101,7 +101,7 @@ public:
         {
             outputPort->postBuffer(buffer);
             inputPort->consume(inputPort->elements());
-            _currentCount += buffer.length/buffer.dtype.size();
+            _currentCount += buffer.elements();
         }
     }
 

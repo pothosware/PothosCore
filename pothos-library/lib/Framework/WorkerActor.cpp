@@ -40,7 +40,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         }
         port._buffer.dtype = port.dtype(); //always copy from port's dtype setting
         assert(not port._impl->_bufferFromManager or port._buffer == port._impl->bufferManager->front());
-        port._elements = port._buffer.length/port._buffer.dtype.size();
+        port._elements = port._buffer.elements();
         if (port._elements == 0 and not port.isSignal()) allOutputsReady = false;
         if (not port._impl->tokenManager or port._impl->tokenManager->empty()) allOutputsReady = false;
         port._pendingElements = 0;
@@ -193,7 +193,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
             while (not port._impl->postedBuffers.empty())
             {
                 auto &buffer = port._impl->postedBuffers.front();
-                elemsDequeued += buffer.length/buffer.dtype.size();
+                elemsDequeued += buffer.elements();
                 bytesDequeued += buffer.length;
                 message.buffers.push_back(buffer);
                 port._impl->postedBuffers.pop_front();
@@ -205,7 +205,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
         while (not port._impl->postedBuffers.empty())
         {
             auto &buffer = port._impl->postedBuffers.front();
-            elemsDequeued += buffer.length/buffer.dtype.size();
+            elemsDequeued += buffer.elements();
             bytesDequeued += buffer.length;
             this->sendOutputPortMessage(port._impl->subscribers, buffer);
             port._impl->postedBuffers.pop_front();
