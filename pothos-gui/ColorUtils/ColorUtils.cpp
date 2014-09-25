@@ -88,6 +88,10 @@ static ColorMap &getColorMap(void)
  */
 ColorMap::ColorMap(void)
 {
+    //special types
+    (*this)[Pothos::DType().name()] = Qt::gray;
+    (*this)[Pothos::DType("custom").name()] = Qt::gray;
+
     //integer types
     registerIntType<char>(Qt::magenta);
     registerIntType<short>(Qt::yellow);
