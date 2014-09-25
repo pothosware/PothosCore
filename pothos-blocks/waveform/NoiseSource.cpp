@@ -22,18 +22,8 @@ static const size_t waveTableSize = 4096;
  * |keywords noise random source pseudorandom gaussian
  *
  * |param dtype[Data Type] The data type produced by the noise source.
- * |option [Complex128] "complex128"
- * |option [Float64] "float64"
- * |option [Complex64] "complex64"
- * |option [Float32] "float32"
- * |option [Complex Int64] "complex_int64"
- * |option [Int64] "int64"
- * |option [Complex Int32] "complex_int32"
- * |option [Int32] "int32"
- * |option [Complex Int16] "complex_int16"
- * |option [Int16] "int16"
- * |option [Complex Int8] "complex_int8"
- * |option [Int8] "int8"
+ * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
+ * |default "complex_float64"
  * |preview disable
  *
  * |param wave[Wave Type] The type of the pseudorandom noise produced.
