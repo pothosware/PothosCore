@@ -43,12 +43,11 @@ void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, 
 
 void Pothos::WorkerActor::handleInputBuffer(InputPort &input, const BufferChunk &buffer)
 {
-    const bool ok =
-        (input.dtype() == buffer.dtype) or //same type
-        not buffer.dtype or //unspecified
-        not input.dtype() or //unspecified
-        ((input.dtype().custom() or buffer.dtype.custom()) and (input.dtype().size() == buffer.dtype.size())); //custom with size match
-    if (ok) input._impl->bufferAccumulator.push(buffer);
+    if (not buffer.dtype or not input.dtype() or //unspecified
+        (input.dtype().size() == buffer.dtype.size())) //size match
+    {
+        input._impl->bufferAccumulator.push(buffer);
+    }
     else
     {
         poco_error_f4(Poco::Logger::get("Pothos.Block.inputBuffer"), "%s[%s] dropped '%s', expected '%s'",

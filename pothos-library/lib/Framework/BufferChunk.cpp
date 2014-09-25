@@ -63,6 +63,7 @@ static auto managedBufferChunk = Pothos::ManagedClass()
     .registerField(POTHOS_FCN_TUPLE(Pothos::BufferChunk, address))
     .registerField(POTHOS_FCN_TUPLE(Pothos::BufferChunk, length))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::BufferChunk, append))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::BufferChunk, elements))
     .commit("Pothos/BufferChunk");
 
 #include <Pothos/Object/Serialize.hpp>

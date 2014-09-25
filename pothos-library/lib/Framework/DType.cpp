@@ -169,7 +169,14 @@ static size_t parseMarkupName(const std::string &markup, size_t &dimension)
     const auto alias = Poco::trim(markup.substr(0, commaPos));
     const auto dimStr = Poco::trim(markup.substr(commaPos+1));
 
-    dimension = size_t(std::stoull(dimStr));
+    try
+    {
+        dimension = size_t(std::stoull(dimStr));
+    }
+    catch (const std::exception &ex)
+    {
+        throw Pothos::DTypeUnknownError("Pothos::DType("+markup+")", "cant parse markup: " + std::string(ex.what()));
+    }
     return getElementTypeSuperMap().lookupAlias(alias);
 }
 
