@@ -18,32 +18,28 @@
  * |category /Utility
  * |keywords pacer time
  *
- * |param dtype[Data Type] The data type of the element stream.
- * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
- * |default "complex_float64"
- * |preview disable
- *
  * |param rate[Data Rate] The rate of elements or messages through the block.
  * |default 1e3
  *
- * |factory /blocks/pacer(dtype)
+ * |factory /blocks/pacer()
  * |setter setRate(rate)
  **********************************************************************/
 class Pacer : public Pothos::Block
 {
 public:
-    static Block *make(const Pothos::DType &dtype)
+    static Block *make(void)
     {
-        return new Pacer(dtype);
+        return new Pacer();
     }
 
-    Pacer(const Pothos::DType &dtype):
+    Pacer(void):
         _rate(1.0),
         _actualRate(1.0),
+        _currentCount(0),
         _startCount(0)
     {
-        this->setupInput(0, dtype);
-        this->setupOutput(0, dtype, this->uid()); //unique domain because of buffer forwarding
+        this->setupInput(0);
+        this->setupOutput(0, "", this->uid()); //unique domain because of buffer forwarding
         this->registerCall(this, POTHOS_FCN_TUPLE(Pacer, setRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(Pacer, getRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(Pacer, getActualRate));
@@ -52,9 +48,8 @@ public:
     void setRate(const double rate)
     {
         _rate = rate;
-        auto in0 = this->input(0);
         _startTime = std::chrono::high_resolution_clock::now();
-        _startCount = in0->totalElements() + in0->totalMessages();
+        _startCount = _currentCount;
     }
 
     double getRate(void) const
@@ -80,11 +75,11 @@ public:
 
         //calculate time passed since activate
         auto currentTime = std::chrono::high_resolution_clock::now();
-        auto currentCount = inputPort->totalElements() + inputPort->totalMessages();
-        const auto expectedTime = std::chrono::nanoseconds((long long)((currentCount - _startCount)*1e9/_rate));
+        auto countDelta = _currentCount - _startCount;
+        const auto expectedTime = std::chrono::nanoseconds((long long)(countDelta*1e9/_rate));
         const auto actualTime = (currentTime - _startTime);
         const auto actualTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(actualTime);
-        _actualRate = double(currentCount - _startCount)/actualTimeNs.count()/1e9;
+        _actualRate = double(countDelta)/actualTimeNs.count()/1e9;
 
         //sleep to approximate the requested rate (sleep takes ms)
         if (actualTime < expectedTime)
@@ -98,6 +93,7 @@ public:
         {
             auto m = inputPort->popMessage();
             outputPort->postMessage(m);
+            _currentCount++;
         }
 
         const auto &buffer = inputPort->buffer();
@@ -105,6 +101,7 @@ public:
         {
             outputPort->postBuffer(buffer);
             inputPort->consume(inputPort->elements());
+            _currentCount += buffer.length/buffer.dtype.size();
         }
     }
 
@@ -112,6 +109,7 @@ private:
     double _rate;
     double _actualRate;
     std::chrono::high_resolution_clock::time_point _startTime;
+    unsigned long long _currentCount;
     unsigned long long _startCount;
 };
 
