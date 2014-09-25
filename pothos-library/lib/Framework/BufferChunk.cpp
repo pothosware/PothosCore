@@ -11,13 +11,6 @@ const Pothos::BufferChunk &Pothos::BufferChunk::null(void)
     return *sh.get();
 }
 
-Pothos::BufferChunk::BufferChunk(void):
-    address(0),
-    length(0)
-{
-    return;
-}
-
 Pothos::BufferChunk::BufferChunk(const size_t numBytes):
     address(0),
     length(numBytes),
@@ -55,6 +48,7 @@ void Pothos::BufferChunk::append(const BufferChunk &other)
     else
     {
         Pothos::BufferChunk accumulator(this->length + other.length);
+        accumulator.dtype = this->dtype;
         std::memcpy((void *)accumulator.address, (const void *)this->address, this->length);
         std::memcpy((char *)accumulator.address+this->length, (const void *)other.address, other.length);
         *this = accumulator;
@@ -86,6 +80,7 @@ void save(Archive & ar, const Pothos::BufferChunk &t, const unsigned int)
     ar << length;
     Pothos::serialization::binary_object bo(t.as<void *>(), t.length);
     ar << bo;
+    ar << t.dtype;
 }
 
 template <class Archive>
@@ -100,6 +95,7 @@ void load(Archive & ar, Pothos::BufferChunk &t, const unsigned int)
     t = Pothos::BufferChunk(size_t(length));
     Pothos::serialization::binary_object bo(t.as<void *>(), t.length);
     ar >> bo;
+    ar >> t.dtype;
 }
 }}
 

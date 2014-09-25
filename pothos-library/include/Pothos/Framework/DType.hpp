@@ -32,7 +32,7 @@ namespace Pothos {
  *  - complex64, complex128
  *
  * Special name strings:
- *  - "" or "none" for an unspecified size-zero data type
+ *  - empty string for an unspecified size-zero data type
  *  - "custom" for an unspecified dimensionality-size data type
  */
 class POTHOS_API DType
@@ -96,6 +96,17 @@ public:
     //! Create a printable string representation
     std::string toString(void) const;
 
+    /*!
+     * Does this dtype specify a non-empty type?
+     * \return false for default constructor/empty string
+     */
+    pothos_explicit operator bool(void) const;
+
+    /*!
+     * Does this dtype represent a custom type?
+     */
+    bool custom(void) const;
+
     //! Serialization support
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
@@ -120,7 +131,7 @@ inline bool Pothos::operator==(const DType &lhs, const DType &rhs)
 
 inline Pothos::DType::DType(void):
     _elemType(0),
-    _elemSize(0),
+    _elemSize(1),
     _dimension(1)
 {
     return;
@@ -144,4 +155,14 @@ inline size_t Pothos::DType::dimension(void) const
 inline size_t Pothos::DType::size(void) const
 {
     return _elemSize*_dimension;
+}
+
+inline Pothos::DType::operator bool(void) const
+{
+    return _elemType != 0;
+}
+
+inline bool Pothos::DType::custom(void) const
+{
+    return _elemType == 1;
 }

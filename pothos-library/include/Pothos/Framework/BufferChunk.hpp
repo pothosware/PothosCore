@@ -11,6 +11,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/SharedBuffer.hpp>
 #include <Pothos/Framework/ManagedBuffer.hpp>
 
@@ -65,6 +66,11 @@ public:
      * The number of valid bytes in the buffer.
      */
     size_t length;
+
+    /*!
+     * The data type of the contents of this buffer.
+     */
+    DType dtype;
 
     /*!
      * The underlying reference counted shared buffer.
@@ -147,6 +153,13 @@ inline bool operator==(const BufferChunk &lhs, const BufferChunk &rhs);
 inline bool Pothos::operator==(const Pothos::BufferChunk &lhs, const Pothos::BufferChunk &rhs)
 {
     return lhs.address == rhs.address and lhs.length == rhs.length and lhs.getBuffer() == rhs.getBuffer();
+}
+
+inline Pothos::BufferChunk::BufferChunk(void):
+    address(0),
+    length(0)
+{
+    return;
 }
 
 inline const Pothos::SharedBuffer &Pothos::BufferChunk::getBuffer(void) const

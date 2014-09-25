@@ -38,8 +38,9 @@ bool Pothos::WorkerActor::preWorkTasks(void)
             port._buffer = port._impl->bufferManager->front();
             port._impl->_bufferFromManager = true;
         }
+        port._buffer.dtype = port.dtype(); //always copy from port's dtype setting
         assert(not port._impl->_bufferFromManager or port._buffer == port._impl->bufferManager->front());
-        port._elements = port._buffer.length/port.dtype().size();
+        port._elements = port._buffer.length/port._buffer.dtype.size();
         if (port._elements == 0 and not port.isSignal()) allOutputsReady = false;
         if (not port._impl->tokenManager or port._impl->tokenManager->empty()) allOutputsReady = false;
         port._pendingElements = 0;
@@ -160,10 +161,11 @@ void Pothos::WorkerActor::postWorkTasks(void)
     {
         auto &port = *entry.second;
         msgsProduced += port._totalMessages;
+        size_t elemsDequeued = 0;
         size_t bytesDequeued = 0;
 
         //set the buffer length, send it, pop from manager, clear reference
-        const size_t pendingBytes = port._pendingElements*port.dtype().size();
+        const size_t pendingBytes = port._pendingElements*port.buffer().dtype.size();
         if (pendingBytes != 0)
         {
             auto &buffer = port._buffer;
@@ -191,6 +193,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
             while (not port._impl->postedBuffers.empty())
             {
                 auto &buffer = port._impl->postedBuffers.front();
+                elemsDequeued += buffer.length/buffer.dtype.size();
                 bytesDequeued += buffer.length;
                 message.buffers.push_back(buffer);
                 port._impl->postedBuffers.pop_front();
@@ -202,13 +205,14 @@ void Pothos::WorkerActor::postWorkTasks(void)
         while (not port._impl->postedBuffers.empty())
         {
             auto &buffer = port._impl->postedBuffers.front();
+            elemsDequeued += buffer.length/buffer.dtype.size();
             bytesDequeued += buffer.length;
             this->sendOutputPortMessage(port._impl->subscribers, buffer);
             port._impl->postedBuffers.pop_front();
         }
 
         //add produced bytes into total
-        port._totalElements += bytesDequeued/port.dtype().size();
+        port._totalElements += elemsDequeued;
         bytesProduced += bytesDequeued;
     }
 

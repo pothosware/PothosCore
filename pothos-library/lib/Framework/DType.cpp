@@ -17,7 +17,7 @@
  **********************************************************************/
 enum ElementTypes
 {
-    NoneType,
+    EmptyType,
     CustomType,
     Int8,
     UInt8,
@@ -71,10 +71,10 @@ public:
         loadNumericType(double, Float64, "float64");
 
         //special non-generated cases
-        _aliasToElementType[""] = NoneType;
-        _aliasToElementType["none"] = NoneType;
-        _elemTypeToElemSize[NoneType] = 0;
-        _elemTypeToElemName[NoneType] = "none";
+        _aliasToElementType[""] = EmptyType;
+        _aliasToElementType["unspecified"] = EmptyType;
+        _elemTypeToElemSize[EmptyType] = 1;
+        _elemTypeToElemName[EmptyType] = "unspecified";
         _aliasToElementType["custom"] = CustomType;
         _elemTypeToElemSize[CustomType] = 1;
         _elemTypeToElemName[CustomType] = "custom";

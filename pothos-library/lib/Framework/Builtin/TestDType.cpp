@@ -8,6 +8,19 @@
 #include <complex>
 #include <iostream>
 
+POTHOS_TEST_BLOCK("/framework/tests", test_dtype_special)
+{
+    POTHOS_TEST_TRUE(not Pothos::DType());
+    POTHOS_TEST_TRUE(not Pothos::DType(""));
+    POTHOS_TEST_TRUE(Pothos::DType("custom"));
+    POTHOS_TEST_TRUE(Pothos::DType("int"));
+
+    POTHOS_TEST_TRUE(not Pothos::DType().custom());
+    POTHOS_TEST_TRUE(not Pothos::DType("").custom());
+    POTHOS_TEST_TRUE(not Pothos::DType("int").custom());
+    POTHOS_TEST_TRUE(Pothos::DType("custom").custom());
+}
+
 POTHOS_TEST_BLOCK("/framework/tests", test_dtype_throws)
 {
     POTHOS_TEST_THROWS(Pothos::DType("FooBar"), Pothos::DTypeUnknownError);
@@ -28,9 +41,9 @@ POTHOS_TEST_BLOCK("/framework/tests", test_dtype_equality)
 
 POTHOS_TEST_BLOCK("/framework/tests", test_dtype_sizes)
 {
-    POTHOS_TEST_EQUAL(Pothos::DType().size(), 0);
-    POTHOS_TEST_EQUAL(Pothos::DType("").size(), 0);
-    POTHOS_TEST_EQUAL(Pothos::DType("none").size(), 0);
+    POTHOS_TEST_EQUAL(Pothos::DType().size(), 1);
+    POTHOS_TEST_EQUAL(Pothos::DType("").size(), 1);
+    POTHOS_TEST_EQUAL(Pothos::DType("unspecified").size(), 1);
     POTHOS_TEST_EQUAL(Pothos::DType("custom").size(), 1);
 
     POTHOS_TEST_EQUAL(Pothos::DType("byte").size(), sizeof(char));
@@ -47,8 +60,8 @@ POTHOS_TEST_BLOCK("/framework/tests", test_dtype_sizes)
 
 POTHOS_TEST_BLOCK("/framework/tests", test_dtype_name)
 {
-    POTHOS_TEST_EQUAL(Pothos::DType().name(), "none");
-    POTHOS_TEST_EQUAL(Pothos::DType("").name(), "none");
+    POTHOS_TEST_EQUAL(Pothos::DType().name(), "unspecified");
+    POTHOS_TEST_EQUAL(Pothos::DType("").name(), "unspecified");
     POTHOS_TEST_EQUAL(Pothos::DType("custom").name(), "custom");
     POTHOS_TEST_EQUAL(Pothos::DType(typeid(int)).name(), "int32");
     POTHOS_TEST_EQUAL(Pothos::DType(typeid(signed int)).name(), "int32");
@@ -72,7 +85,7 @@ POTHOS_TEST_BLOCK("/framework/tests", test_dtype_dimensions)
     POTHOS_TEST_EQUAL(Pothos::DType("int, 42").size(), sizeof(int)*42);
     POTHOS_TEST_EQUAL(Pothos::DType("custom", 21).size(), 21);
     POTHOS_TEST_EQUAL(Pothos::DType("custom, 21").size(), 21);
-    POTHOS_TEST_EQUAL(Pothos::DType("none, 21").size(), 0);
-    POTHOS_TEST_EQUAL(Pothos::DType(", 21").size(), 0);
+    POTHOS_TEST_EQUAL(Pothos::DType("unspecified, 21").size(), 21);
+    POTHOS_TEST_EQUAL(Pothos::DType(", 21").size(), 21);
 }
 

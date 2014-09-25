@@ -232,7 +232,7 @@ public:
      * \param dtype the data type for elements
      * \param domain the expected memory domain
      */
-    void setupInput(const std::string &name, const DType &dtype = "byte", const std::string &domain = "");
+    void setupInput(const std::string &name, const DType &dtype = "", const std::string &domain = "");
 
     /*!
      * Configure an input port with the given data type.
@@ -241,7 +241,7 @@ public:
      * \param dtype the data type for elements
      * \param domain the expected memory domain
      */
-    void setupInput(const size_t index, const DType &dtype = "byte", const std::string &domain = "");
+    void setupInput(const size_t index, const DType &dtype = "", const std::string &domain = "");
 
     /*!
      * Configure an output port with the given data type.
@@ -253,7 +253,7 @@ public:
      * \param dtype the data type for elements
      * \param domain the expected memory domain
      */
-    void setupOutput(const std::string &name, const DType &dtype = "byte", const std::string &domain = "");
+    void setupOutput(const std::string &name, const DType &dtype = "", const std::string &domain = "");
 
     /*!
      * Configure an output port with the given data type.
@@ -262,7 +262,7 @@ public:
      * \param dtype the data type for elements
      * \param domain the expected memory domain
      */
-    void setupOutput(const size_t index, const DType &dtype = "byte", const std::string &domain = "");
+    void setupOutput(const size_t index, const DType &dtype = "", const std::string &domain = "");
 
     /*!
      * Export a function call on this block to set/get parameters.
