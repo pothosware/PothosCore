@@ -220,9 +220,9 @@ const std::string &Pothos::DType::name(void) const
 std::string Pothos::DType::toString(void) const
 {
     std::string out = this->name();
-    if (this->dimension() != 1)
+    if (this->dimension() != 1 or this->custom())
     {
-        out += " [" + std::to_string(this->dimension()) + "]";
+        out += "[" + std::to_string(this->dimension()) + "]";
     }
     return out;
 }
