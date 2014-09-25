@@ -54,7 +54,7 @@ public:
     BinaryFileSink(void):
         _fd(-1)
     {
-        this->setupInput(0, "byte");
+        this->setupInput(0);
         this->registerCall(this, POTHOS_FCN_TUPLE(BinaryFileSink, setFilePath));
     }
 

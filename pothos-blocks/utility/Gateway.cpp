@@ -36,7 +36,7 @@ public:
         _dropMode(false)
     {
         this->setupInput(0);
-        this->setupOutput(0, "byte", this->uid()); //unique domain because of buffer forwarding);
+        this->setupOutput(0, "", this->uid()); //unique domain because of buffer forwarding);
         this->registerCall(this, POTHOS_FCN_TUPLE(Gateway, setMode));
         this->registerCall(this, POTHOS_FCN_TUPLE(Gateway, getMode));
         this->setMode("FORWARD");
