@@ -19,18 +19,8 @@
  * |keywords fir filter taps highpass lowpass bandpass
  *
  * |param dtype The data type of the input and output element stream.
- * |option [Complex128] "complex128"
- * |option [Float64] "float64"
- * |option [Complex64] "complex64"
- * |option [Float32] "float32"
- * |option [Complex Int64] "complex_int64"
- * |option [Int64] "int64"
- * |option [Complex Int32] "complex_int32"
- * |option [Int32] "int32"
- * |option [Complex Int16] "complex_int16"
- * |option [Int16] "int16"
- * |option [Complex Int8] "complex_int8"
- * |option [Int8] "int8"
+ * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
+ * |default "complex_float64"
  * |preview disable
  *
  * |param tapsType[Taps Type] The type of the filter taps (real or complex).
