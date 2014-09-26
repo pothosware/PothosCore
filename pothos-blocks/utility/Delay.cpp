@@ -16,8 +16,8 @@
  *
  * |param dtype[Data Type] The data type of the element stream.
  * |preview disable
- * |default "float32"
- * |widget StringEntry()
+ * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
+ * |default "complex_float64"
  *
  * |param delay The delay in number of stream elements.
  * |default 0
