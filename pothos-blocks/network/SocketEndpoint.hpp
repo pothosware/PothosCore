@@ -12,6 +12,7 @@
 static const Poco::UInt16 PothosPacketTypeMessage = Poco::UInt16('M');
 static const Poco::UInt16 PothosPacketTypeLabel = Poco::UInt16('L');
 static const Poco::UInt16 PothosPacketTypeBuffer = Poco::UInt16('B');
+static const Poco::UInt16 PothosPacketTypeDType = Poco::UInt16('D');
 
 class PothosPacketSocketEndpoint
 {

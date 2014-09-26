@@ -72,6 +72,7 @@ public:
 private:
     PothosPacketSocketEndpoint _ep;
     unsigned long long _nextExpectedIndex;
+    Pothos::DType _lastDtype;
 };
 
 void NetworkSource::work(void)
@@ -90,6 +91,7 @@ void NetworkSource::work(void)
     if (type == PothosPacketTypeBuffer)
     {
         _nextExpectedIndex = index + buffer.length;
+        buffer.dtype = _lastDtype;
         outputPort->popBuffer(buffer.length);
         outputPort->postBuffer(buffer);
     }
@@ -108,6 +110,13 @@ void NetworkSource::work(void)
         auto label = data.extract<Pothos::Label>();
         label.index = index - _nextExpectedIndex;
         outputPort->postLabel(label);
+    }
+    else if (type == PothosPacketTypeDType)
+    {
+        std::istringstream iss(std::string(buffer.as<char *>(), buffer.length));
+        Pothos::Object data;
+        data.deserialize(iss);
+        _lastDtype = data.extract<Pothos::DType>();
     }
     else this->yield();
 }

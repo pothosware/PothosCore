@@ -75,13 +75,13 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
     POTHOS_TEST_EQUAL(inputInfo.size(), 1);
     POTHOS_TEST_EQUAL(inputInfo[0].name, "t_in");
     POTHOS_TEST_TRUE(not inputInfo[0].isSigSlot);
-    POTHOS_TEST_TRUE(inputInfo[0].dtype == Pothos::DType("byte"));
+    POTHOS_TEST_TRUE(inputInfo[0].dtype == Pothos::DType());
 
     auto outputInfo = forwarder.call<std::vector<Pothos::PortInfo>>("outputPortInfo");
     POTHOS_TEST_EQUAL(outputInfo.size(), 1);
     POTHOS_TEST_EQUAL(outputInfo[0].name, "t_out");
     POTHOS_TEST_TRUE(not outputInfo[0].isSigSlot);
-    POTHOS_TEST_TRUE(outputInfo[0].dtype == Pothos::DType("byte"));
+    POTHOS_TEST_TRUE(outputInfo[0].dtype == Pothos::DType());
 
     //create a test plan
     Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());

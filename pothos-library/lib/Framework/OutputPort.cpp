@@ -59,6 +59,10 @@ void Pothos::OutputPort::postBuffer(const BufferChunk &buffer)
     auto &queue = _impl->postedBuffers;
     if (queue.full()) queue.set_capacity(queue.size()*2);
     queue.push_back(buffer);
+
+    //unspecified buffer dtype? copy it from the port
+    if (not buffer.dtype) queue.back().dtype = this->dtype();
+
     _impl->actor->workBump = true;
 }
 

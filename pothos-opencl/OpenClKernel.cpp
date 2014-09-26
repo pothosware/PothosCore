@@ -26,13 +26,13 @@
  * The device index represents a device ID found in clGetDeviceIDs().
  * |default "0:0"
  *
- * |param inputSizes[Input Sizes] An array of input port sizes.
+ * |param inputTypes[Input Types] An array of input port sizes.
  * |unit bytes
- * |default [4]
+ * |default ["float32"]
  *
- * |param outputSizes[Output Sizes] An array of output port sizes.
+ * |param outputTypes[Output Types] An array of output port sizes.
  * |unit bytes
- * |default [4, 4]
+ * |default ["float32", "float32"]
  *
  * |param kernelName[Kernel Name] The name of a kernel in the source.
  * |default ""
@@ -57,7 +57,7 @@
  * For each call to work, elements produced = number of input elements * production factor.
  * |default 1.0
  *
- * |factory /blocks/opencl_kernel(deviceId, inputSizes, outputSizes)
+ * |factory /blocks/opencl_kernel(deviceId, inputTypes, outputTypes)
  * |setter setSource(kernelName, kernelSource)
  * |setter setLocalSize(localSize)
  * |setter setGlobalFactor(globalFactor)
@@ -66,12 +66,12 @@
 class OpenClKernel : public Pothos::Block
 {
 public:
-    static Pothos::Block *make(const std::string &deviceId, const std::vector<size_t> &inputSizes, const std::vector<size_t> &outputSizes)
+    static Pothos::Block *make(const std::string &deviceId, const std::vector<std::string> &inputTypes, const std::vector<std::string> &outputTypes)
     {
-        return new OpenClKernel(deviceId, inputSizes, outputSizes);
+        return new OpenClKernel(deviceId, inputTypes, outputTypes);
     }
 
-    OpenClKernel(const std::string &deviceId, const std::vector<size_t> &inputSizes, const std::vector<size_t> &outputSizes);
+    OpenClKernel(const std::string &deviceId, const std::vector<std::string> &inputTypes, const std::vector<std::string> &outputTypes);
 
     ~OpenClKernel(void)
     {
@@ -161,7 +161,7 @@ private:
     double _productionFactor;
 };
 
-OpenClKernel::OpenClKernel(const std::string &deviceId, const std::vector<size_t> &inputSizes, const std::vector<size_t> &outputSizes):
+OpenClKernel::OpenClKernel(const std::string &deviceId, const std::vector<std::string> &inputTypes, const std::vector<std::string> &outputTypes):
     _localSize(1),
     _globalFactor(1.0),
     _productionFactor(1.0)
@@ -192,13 +192,13 @@ OpenClKernel::OpenClKernel(const std::string &deviceId, const std::vector<size_t
 
     /* Create ports */
     _myDomain = "OpenCl_"+std::to_string(size_t(_device));
-    for (size_t i = 0; i < inputSizes.size(); i++)
+    for (size_t i = 0; i < inputTypes.size(); i++)
     {
-        this->setupInput(i, Pothos::DType("custom", inputSizes[i]), _myDomain);
+        this->setupInput(i, Pothos::DType(inputTypes[i]), _myDomain);
     }
-    for (size_t i = 0; i < outputSizes.size(); i++)
+    for (size_t i = 0; i < outputTypes.size(); i++)
     {
-        this->setupOutput(i, Pothos::DType("custom", outputSizes[i]), _myDomain);
+        this->setupOutput(i, Pothos::DType(outputTypes[i]), _myDomain);
     }
 
     this->registerCall(this, POTHOS_FCN_TUPLE(OpenClKernel, setSource));

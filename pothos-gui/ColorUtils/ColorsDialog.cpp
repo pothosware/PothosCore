@@ -4,6 +4,7 @@
 #include "ColorUtils/ColorsDialog.hpp"
 #include "ColorUtils/ColorUtils.hpp"
 #include <QTreeWidget>
+#include <QVBoxLayout>
 #include <string>
 #include <algorithm>
 
@@ -12,7 +13,9 @@ ColorsDialog::ColorsDialog(QWidget *parent):
 {
     this->setWindowTitle(tr("Type color mapping"));
 
+    auto layout = new QVBoxLayout(this);
     auto tree = new QTreeWidget(this);
+    layout->addWidget(tree);
     tree->setAutoScroll(true);
     tree->setColumnCount(1);
     tree->setHeaderLabels(QStringList(tr("Color to type")));
@@ -32,6 +35,7 @@ ColorsDialog::ColorsDialog(QWidget *parent):
     }
     tree->resizeColumnToContents(0);
 
+    this->setMinimumSize(375, 500);
     this->show();
     this->adjustSize();
 }

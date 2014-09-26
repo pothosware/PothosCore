@@ -21,7 +21,7 @@ static double filterToneGetRMS(
     waveSource.callVoid("setWaveform", "SINE");
     waveSource.callVoid("setFrequency", waveFreq/sampRate);
 
-    auto finiteRelease = registry.callProxy("/blocks/finite_release", "complex128");
+    auto finiteRelease = registry.callProxy("/blocks/finite_release");
     finiteRelease.callVoid("setTotalElements", 4096);
 
     auto filter = registry.callProxy("/blocks/fir_filter", "complex128", "COMPLEX");

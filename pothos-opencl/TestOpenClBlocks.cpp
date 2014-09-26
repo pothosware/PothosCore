@@ -45,7 +45,7 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel)
     auto feeder0 = registry.callProxy("/blocks/feeder_source", "float32");
     auto feeder1 = registry.callProxy("/blocks/feeder_source", "float32");
 
-    auto openClKernel = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<size_t>(2, 4), std::vector<size_t>(1, 4));
+    auto openClKernel = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<std::string>(2, "float"), std::vector<std::string>(1, "float"));
     openClKernel.callVoid("setSource", "add_2x_float32", KERNEL_SOURCE);
     openClKernel.callVoid("setLocalSize", 1);
     openClKernel.callVoid("setGlobalFactor", 1.0);
@@ -92,13 +92,13 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel_back_to_back)
     auto feeder1 = registry.callProxy("/blocks/feeder_source", "float32");
     auto feeder2 = registry.callProxy("/blocks/feeder_source", "float32");
 
-    auto openClKernel0 = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<size_t>(2, 4), std::vector<size_t>(1, 4));
+    auto openClKernel0 = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<std::string>(2, "float"), std::vector<std::string>(1, "float"));
     openClKernel0.callVoid("setSource", "add_2x_float32", KERNEL_SOURCE);
     openClKernel0.callVoid("setLocalSize", 1);
     openClKernel0.callVoid("setGlobalFactor", 1.0);
     openClKernel0.callVoid("setProductionFactor", 1.0);
 
-    auto openClKernel1 = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<size_t>(2, 4), std::vector<size_t>(1, 4));
+    auto openClKernel1 = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<std::string>(2, "float"), std::vector<std::string>(1, "float"));
     openClKernel1.callVoid("setSource", "add_2x_float32", KERNEL_SOURCE);
     openClKernel1.callVoid("setLocalSize", 1);
     openClKernel1.callVoid("setGlobalFactor", 1.0);
@@ -151,13 +151,13 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel_middle_man)
     auto collectorMiddle = registry.callProxy("/blocks/collector_sink", "int");
     auto feeder = registry.callProxy("/blocks/feeder_source", "int");
 
-    auto openClKernel0 = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<size_t>(1, 4), std::vector<size_t>(1, 4));
+    auto openClKernel0 = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<std::string>(1, "float"), std::vector<std::string>(1, "float"));
     openClKernel0.callVoid("setSource", "copy_int", KERNEL_SOURCE);
     openClKernel0.callVoid("setLocalSize", 1);
     openClKernel0.callVoid("setGlobalFactor", 1.0);
     openClKernel0.callVoid("setProductionFactor", 1.0);
 
-    auto openClKernel1 = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<size_t>(1, 4), std::vector<size_t>(1, 4));
+    auto openClKernel1 = registry.callProxy("/blocks/opencl_kernel", "0:0", std::vector<std::string>(1, "float"), std::vector<std::string>(1, "float"));
     openClKernel1.callVoid("setSource", "copy_int", KERNEL_SOURCE);
     openClKernel1.callVoid("setLocalSize", 1);
     openClKernel1.callVoid("setGlobalFactor", 1.0);

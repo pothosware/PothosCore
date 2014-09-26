@@ -109,6 +109,7 @@ public:
     void handleRequestPortInfoMessage(const RequestPortInfoMessage &message, const Theron::Address from);
     void handleRequestWorkerStatsMessage(const RequestWorkerStatsMessage &message, const Theron::Address from);
     void handleOpaqueCallMessage(const OpaqueCallMessage &message, const Theron::Address from);
+    void handleInputBuffer(InputPort &input, const BufferChunk &buffer);
 
     ///////////////////// send port messages ///////////////////////
     template <typename PortSubscribersType, typename MessageType>

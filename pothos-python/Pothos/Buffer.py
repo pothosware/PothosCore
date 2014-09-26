@@ -5,7 +5,7 @@ import numpy
 
 def dtype_to_numpy(dtype):
     name = dtype.name()
-    shape = dtype.shape()
+    shape = [dtype.dimension()]
 
     #support numpy float-complex types
     if name == 'complex_float32': name = "complex64"
