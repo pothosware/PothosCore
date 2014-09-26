@@ -66,14 +66,9 @@ bool Pothos::InputPort::isSlot(void) const
     return _impl->isSlot;
 }
 
-void Pothos::InputPort::pushBuffer(const BufferChunk &buffer_)
+void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
 {
     assert(_impl);
-    auto buffer = buffer_;
-
-    //unspecified buffer dtype? copy it from the port
-    if (not buffer.dtype) buffer.dtype = this->dtype();
-
     _impl->actor->GetFramework().Send(makePortMessage(this, buffer), _impl->actor->GetAddress(), _impl->actor->GetAddress());
 }
 

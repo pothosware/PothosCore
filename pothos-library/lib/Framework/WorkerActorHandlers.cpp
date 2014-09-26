@@ -41,11 +41,14 @@ void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, 
     this->notify();
 }
 
-void Pothos::WorkerActor::handleInputBuffer(InputPort &input, const BufferChunk &buffer)
+void Pothos::WorkerActor::handleInputBuffer(InputPort &input, const BufferChunk &buffer_)
 {
+    auto buffer = buffer_;
     if (not buffer.dtype or not input.dtype() or //unspecified
         (input.dtype().size() == buffer.dtype.size())) //size match
     {
+        //unspecified buffer dtype? copy it from the port
+        if (not buffer.dtype) buffer.dtype = input.dtype();
         input._impl->bufferAccumulator.push(buffer);
     }
     else

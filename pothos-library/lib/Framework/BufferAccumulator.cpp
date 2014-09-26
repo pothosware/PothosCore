@@ -203,6 +203,7 @@ void Pothos::BufferAccumulator::require(const size_t numBytes)
 
     //get a buffer that can hold the required bytes
     auto newBuffer = _impl->pool.get(numBytes);
+    newBuffer.dtype = queue.front().dtype;
     size_t newBuffBytes = newBuffer.length;
     newBuffer.length = 0;
 
