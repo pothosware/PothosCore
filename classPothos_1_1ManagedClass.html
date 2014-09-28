@@ -381,8 +381,12 @@ Public Member Functions</h2></td></tr>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a1eef697096ac0602e9d455abbc54abc4"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classPothos_1_1ManagedClass.html">ManagedClass</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ManagedClass.html#a1eef697096ac0602e9d455abbc54abc4">lookup</a> (const std::type_info &amp;<a class="el" href="classPothos_1_1ManagedClass.html#a354140b40a4f536e07fa013f721fb230">type</a>)</td></tr>
 <tr class="separator:a1eef697096ac0602e9d455abbc54abc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a490abe2a83f7fc69fa775470d3cd5f16"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ManagedClass.html#a490abe2a83f7fc69fa775470d3cd5f16">unload</a> (const std::string &amp;classPath)</td></tr>
+<tr class="separator:a490abe2a83f7fc69fa775470d3cd5f16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1eef697096ac0602e9d455abbc54abc4"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classPothos_1_1ManagedClass.html">ManagedClass</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ManagedClass.html#a1eef697096ac0602e9d455abbc54abc4">lookup</a> (const std::type_info &amp;<a class="el" href="classPothos_1_1ManagedClass.html#a354140b40a4f536e07fa013f721fb230">type</a>)</td></tr>
 <tr class="separator:a1eef697096ac0602e9d455abbc54abc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a490abe2a83f7fc69fa775470d3cd5f16"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1ManagedClass.html#a490abe2a83f7fc69fa775470d3cd5f16">unload</a> (const std::string &amp;classPath)</td></tr>
+<tr class="separator:a490abe2a83f7fc69fa775470d3cd5f16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classPothos_1_1ManagedClass.html">ManagedClass</a> represents registered constructors and methods of a class. A <a class="el" href="classPothos_1_1ManagedClass.html">ManagedClass</a> makes calls available to users via the <a class="el" href="classPothos_1_1Callable.html">Callable</a> interface. </p>
@@ -1100,25 +1104,6 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a9e7050bf68af1d981609a97f1db92037"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename ClassType , typename BaseClassType &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classPothos_1_1ManagedClass.html">ManagedClass</a> &amp; Pothos::ManagedClass::registerBaseClass </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Register a public base class of this managed class. This adopts the inherited methods of the base class. </p>
-
-</div>
-</div>
 <a class="anchor" id="a430ee4b1bc857e749ac006bf5dcf6124"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1138,14 +1123,14 @@ template&lt;typename ClassType , typename BaseClassType &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="aaf62d4fe7fac5ee6baad3648d1ad2470"></a>
+<a class="anchor" id="a9e7050bf68af1d981609a97f1db92037"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename ClassType &gt; </div>
+template&lt;typename ClassType , typename BaseClassType &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classPothos_1_1ManagedClass.html">ManagedClass</a>&amp; Pothos::ManagedClass::registerClass </td>
+          <td class="memname"><a class="el" href="classPothos_1_1ManagedClass.html">ManagedClass</a> &amp; Pothos::ManagedClass::registerBaseClass </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1153,7 +1138,7 @@ template&lt;typename ClassType &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Register information and conversions about the ClassType. This routine is automatically called during constructor and method registration calls. </p>
+<p>Register a public base class of this managed class. This adopts the inherited methods of the base class. </p>
 
 </div>
 </div>
@@ -1165,6 +1150,25 @@ template&lt;typename ClassType &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classPothos_1_1ManagedClass.html">ManagedClass</a> &amp; Pothos::ManagedClass::registerClass </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Register information and conversions about the ClassType. This routine is automatically called during constructor and method registration calls. </p>
+
+</div>
+</div>
+<a class="anchor" id="aaf62d4fe7fac5ee6baad3648d1ad2470"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ClassType &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classPothos_1_1ManagedClass.html">ManagedClass</a>&amp; Pothos::ManagedClass::registerClass </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -3362,6 +3366,80 @@ template&lt;typename A0 , typename A1 , typename A2 , typename A3 , typename A4 
 
 </div>
 </div>
+<a class="anchor" id="a490abe2a83f7fc69fa775470d3cd5f16"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void Pothos::ManagedClass::unload </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>classPath</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Unload a managed class from the plugin tree. This reverses the effect of <a class="el" href="classPothos_1_1ManagedClass.html#a3eb22e968e84636ac32b7c2ef45e8220">ManagedClass::commit()</a>. This call is mainly used for testing purposes. </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">PluginPathError</td><td>if the classPath is invalid </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">classPath</td><td>the namespaces and class name </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a490abe2a83f7fc69fa775470d3cd5f16"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void Pothos::ManagedClass::unload </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>classPath</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Unload a managed class from the plugin tree. This reverses the effect of <a class="el" href="classPothos_1_1ManagedClass.html#a3eb22e968e84636ac32b7c2ef45e8220">ManagedClass::commit()</a>. This call is mainly used for testing purposes. </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">PluginPathError</td><td>if the classPath is invalid </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">classPath</td><td>the namespaces and class name </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/Pothos/Managed/<a class="el" href="Class_8tmpl_8hpp_source.html">Class.tmpl.hpp</a></li>
 <li>include/Pothos/Managed/<a class="el" href="Class_8hpp_source.html">Class.hpp</a></li>
@@ -3371,7 +3449,7 @@ template&lt;typename A0 , typename A1 , typename A2 , typename A3 , typename A4 
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 3 2014 22:09:35 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 25 2014 23:38:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

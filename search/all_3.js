@@ -57,5 +57,6 @@ var searchData=
   ['cpus',['cpus',['../classPothos_1_1System_1_1NumaInfo.html#a9b8af3af40276003145ea0707ec74dc5',1,'Pothos::System::NumaInfo']]],
   ['createfileexception',['CreateFileException',['../classPothos_1_1CreateFileException.html#a47d334c131d8147dc24dbc95e0972303',1,'Pothos::CreateFileException::CreateFileException(int code=0)'],['../classPothos_1_1CreateFileException.html#a267d8a86d1ac84a52c2638fbcd05c522',1,'Pothos::CreateFileException::CreateFileException(const std::string &amp;msg, int code=0)'],['../classPothos_1_1CreateFileException.html#a976cfbd0fbc39b7791933c9e4efaa454',1,'Pothos::CreateFileException::CreateFileException(const std::string &amp;msg, const std::string &amp;arg, int code=0)'],['../classPothos_1_1CreateFileException.html#a4fc24477cdbbe94fc3f2b4f943482d62',1,'Pothos::CreateFileException::CreateFileException(const std::string &amp;msg, const Pothos::Exception &amp;exc, int code=0)'],['../classPothos_1_1CreateFileException.html#a890fa33489909813f766b509572eae91',1,'Pothos::CreateFileException::CreateFileException(const CreateFileException &amp;exc)']]],
   ['createfileexception',['CreateFileException',['../classPothos_1_1CreateFileException.html',1,'Pothos']]],
-  ['current',['current',['../structPothos_1_1TestingBase.html#a19c4b5e6686f3a97a084cb290951e79b',1,'Pothos::TestingBase']]]
+  ['current',['current',['../structPothos_1_1TestingBase.html#a19c4b5e6686f3a97a084cb290951e79b',1,'Pothos::TestingBase']]],
+  ['custom',['custom',['../classPothos_1_1DType.html#ac60eb59526419f0a9c3b702181732ccb',1,'Pothos::DType']]]
 ];

@@ -112,9 +112,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4b1f1300a91dd9046fe9f790a5db6d3d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#a4b1f1300a91dd9046fe9f790a5db6d3d">operator&lt;</a> (const <a class="el" href="classPothos_1_1Label.html">Label</a> &amp;other) const </td></tr>
 <tr class="memdesc:a4b1f1300a91dd9046fe9f790a5db6d3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">support for sorting Labels by index  <a href="#a4b1f1300a91dd9046fe9f790a5db6d3d">More...</a><br/></td></tr>
 <tr class="separator:a4b1f1300a91dd9046fe9f790a5db6d3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfdc4ecdb211feac42c3771d56a91c13"><td class="memTemplParams" colspan="2">template&lt;class Archive &gt; </td></tr>
+<tr class="memitem:abfdc4ecdb211feac42c3771d56a91c13"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#abfdc4ecdb211feac42c3771d56a91c13">serialize</a> (Archive &amp;ar, const unsigned int version)</td></tr>
+<tr class="memdesc:abfdc4ecdb211feac42c3771d56a91c13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization support.  <a href="#abfdc4ecdb211feac42c3771d56a91c13">More...</a><br/></td></tr>
+<tr class="separator:abfdc4ecdb211feac42c3771d56a91c13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
+<tr class="memitem:a08e9516f2c3f3b3f43dfa1a934d828fa"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#a08e9516f2c3f3b3f43dfa1a934d828fa">id</a></td></tr>
+<tr class="separator:a08e9516f2c3f3b3f43dfa1a934d828fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a145e14814fb67096e036e8f8531b1eac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1Object.html">Object</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#a145e14814fb67096e036e8f8531b1eac">data</a></td></tr>
 <tr class="separator:a145e14814fb67096e036e8f8531b1eac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2ad3c1695d0b636a92a936cf4710a1f"><td class="memItemLeft" align="right" valign="top">unsigned long long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#ac2ad3c1695d0b636a92a936cf4710a1f">index</a></td></tr>
@@ -198,6 +204,36 @@ template&lt;typename ValueType &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="abfdc4ecdb211feac42c3771d56a91c13"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Archive &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Pothos::Label::serialize </td>
+          <td>(</td>
+          <td class="paramtype">Archive &amp;&#160;</td>
+          <td class="paramname"><em>ar</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Serialization support. </p>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a class="anchor" id="a145e14814fb67096e036e8f8531b1eac"></a>
 <div class="memitem">
@@ -209,6 +245,19 @@ template&lt;typename ValueType &gt; </div>
       </table>
 </div><div class="memdoc">
 <p>The data can be anything that can be held by <a class="el" href="classPothos_1_1Object.html">Object</a>. </p>
+
+</div>
+</div>
+<a class="anchor" id="a08e9516f2c3f3b3f43dfa1a934d828fa"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string Pothos::Label::id</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>The identifier describes the label's type, meaning, or purpose. Identifiers only have meaning in the context of the blocks that are producing and consuming them. So any given pair of blocks need to agree on a particular set of identifiers and their meanings. </p>
 
 </div>
 </div>
@@ -231,7 +280,7 @@ template&lt;typename ValueType &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 3 2014 22:09:35 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 25 2014 23:38:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -5,7 +5,7 @@ var searchData=
   ['label_2ehpp',['Label.hpp',['../Label_8hpp.html',1,'']]],
   ['labeliteratorrange',['LabelIteratorRange',['../classPothos_1_1LabelIteratorRange.html',1,'Pothos']]],
   ['labeliteratorrange',['LabelIteratorRange',['../classPothos_1_1LabelIteratorRange.html#a3e6c07a545466db5ca3955e6c20f7e77',1,'Pothos::LabelIteratorRange::LabelIteratorRange(void)'],['../classPothos_1_1LabelIteratorRange.html#ac012841d1d53d1ae05da937f216d102d',1,'Pothos::LabelIteratorRange::LabelIteratorRange(const IterType &amp;begin, const IterType &amp;end)'],['../classPothos_1_1LabelIteratorRange.html#a2c84728f2415220151a00892e7c0af0f',1,'Pothos::LabelIteratorRange::LabelIteratorRange(const RangeType &amp;range)']]],
-  ['labels',['labels',['../classPothos_1_1InputPort.html#ad0ef0465cf7d82c7e46b030dee1ff92f',1,'Pothos::InputPort']]],
+  ['labels',['labels',['../structPothos_1_1Packet.html#ab889227bcaece4e2b3fb9f8ab01aa953',1,'Pothos::Packet::labels()'],['../classPothos_1_1InputPort.html#ad0ef0465cf7d82c7e46b030dee1ff92f',1,'Pothos::InputPort::labels()']]],
   ['length',['length',['../classPothos_1_1BufferChunk.html#ae5b3b035756f1872f737bb3f12e372d3',1,'Pothos::BufferChunk']]],
   ['libraries',['libraries',['../classPothos_1_1Util_1_1CompilerArgs.html#a9086d6900ef2bfccdadcdea2c8ae3652',1,'Pothos::Util::CompilerArgs']]],
   ['libraryalreadyloadedexception',['LibraryAlreadyLoadedException',['../classPothos_1_1LibraryAlreadyLoadedException.html',1,'Pothos']]],

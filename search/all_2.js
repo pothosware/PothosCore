@@ -19,6 +19,7 @@ var searchData=
   ['bufferchunk',['BufferChunk',['../classPothos_1_1BufferChunk.html#accf7432eba1a6d360d35d5a8eecacfc2',1,'Pothos::BufferChunk::BufferChunk(void)'],['../classPothos_1_1BufferChunk.html#a30424717cb6328f090eb46db6e8d2e3e',1,'Pothos::BufferChunk::BufferChunk(const size_t numBytes)'],['../classPothos_1_1BufferChunk.html#a9d4774591853fe58ff93e0aa41b02149',1,'Pothos::BufferChunk::BufferChunk(const SharedBuffer &amp;buffer)'],['../classPothos_1_1BufferChunk.html#a55777700eb480caeffcb5ae523d4bcac',1,'Pothos::BufferChunk::BufferChunk(const ManagedBuffer &amp;buffer)']]],
   ['bufferchunk',['BufferChunk',['../classPothos_1_1BufferChunk.html',1,'Pothos']]],
   ['bufferchunk_2ehpp',['BufferChunk.hpp',['../BufferChunk_8hpp.html',1,'']]],
+  ['buffermanager',['BufferManager',['../classPothos_1_1BufferManager.html#a5a8d8366ca1abf1f3c731168a67a417f',1,'Pothos::BufferManager']]],
   ['buffermanager',['BufferManager',['../classPothos_1_1BufferManager.html',1,'Pothos']]],
   ['buffermanager_2ehpp',['BufferManager.hpp',['../BufferManager_8hpp.html',1,'']]],
   ['buffermanagerargs',['BufferManagerArgs',['../structPothos_1_1BufferManagerArgs.html',1,'Pothos']]],

@@ -165,13 +165,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;</div>
 <div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    <span class="keywordtype">bool</span> isActive(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    <span class="keywordtype">void</span> setupInput(<span class="keyword">const</span> std::string &amp;name, <span class="keyword">const</span> <a class="code" href="classPothos_1_1DType.html">DType</a> &amp;dtype = <span class="stringliteral">&quot;byte&quot;</span>, <span class="keyword">const</span> std::string &amp;domain = <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    <span class="keywordtype">void</span> setupInput(<span class="keyword">const</span> std::string &amp;name, <span class="keyword">const</span> <a class="code" href="classPothos_1_1DType.html">DType</a> &amp;dtype = <span class="stringliteral">&quot;&quot;</span>, <span class="keyword">const</span> std::string &amp;domain = <span class="stringliteral">&quot;&quot;</span>);</div>
 <div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    <span class="keywordtype">void</span> setupInput(<span class="keyword">const</span> <span class="keywordtype">size_t</span> index, <span class="keyword">const</span> <a class="code" href="classPothos_1_1DType.html">DType</a> &amp;dtype = <span class="stringliteral">&quot;byte&quot;</span>, <span class="keyword">const</span> std::string &amp;domain = <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    <span class="keywordtype">void</span> setupInput(<span class="keyword">const</span> <span class="keywordtype">size_t</span> index, <span class="keyword">const</span> <a class="code" href="classPothos_1_1DType.html">DType</a> &amp;dtype = <span class="stringliteral">&quot;&quot;</span>, <span class="keyword">const</span> std::string &amp;domain = <span class="stringliteral">&quot;&quot;</span>);</div>
 <div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;</div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    <span class="keywordtype">void</span> setupOutput(<span class="keyword">const</span> std::string &amp;name, <span class="keyword">const</span> <a class="code" href="classPothos_1_1DType.html">DType</a> &amp;dtype = <span class="stringliteral">&quot;byte&quot;</span>, <span class="keyword">const</span> std::string &amp;domain = <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    <span class="keywordtype">void</span> setupOutput(<span class="keyword">const</span> std::string &amp;name, <span class="keyword">const</span> <a class="code" href="classPothos_1_1DType.html">DType</a> &amp;dtype = <span class="stringliteral">&quot;&quot;</span>, <span class="keyword">const</span> std::string &amp;domain = <span class="stringliteral">&quot;&quot;</span>);</div>
 <div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    <span class="keywordtype">void</span> setupOutput(<span class="keyword">const</span> <span class="keywordtype">size_t</span> index, <span class="keyword">const</span> <a class="code" href="classPothos_1_1DType.html">DType</a> &amp;dtype = <span class="stringliteral">&quot;byte&quot;</span>, <span class="keyword">const</span> std::string &amp;domain = <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    <span class="keywordtype">void</span> setupOutput(<span class="keyword">const</span> <span class="keywordtype">size_t</span> index, <span class="keyword">const</span> <a class="code" href="classPothos_1_1DType.html">DType</a> &amp;dtype = <span class="stringliteral">&quot;&quot;</span>, <span class="keyword">const</span> std::string &amp;domain = <span class="stringliteral">&quot;&quot;</span>);</div>
 <div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;</div>
 <div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;    <span class="keywordtype">void</span> registerCallable(<span class="keyword">const</span> std::string &amp;name, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;call);</div>
 <div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;</div>
@@ -179,35 +179,41 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;</div>
 <div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;    <span class="keywordtype">void</span> registerSlot(<span class="keyword">const</span> std::string &amp;name);</div>
 <div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;</div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;    <span class="keywordtype">void</span> yield(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;    <a class="code" href="classPothos_1_1Object.html">Object</a> opaqueCallMethod(<span class="keyword">const</span> std::string &amp;name, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> *inputArgs, <span class="keyword">const</span> <span class="keywordtype">size_t</span> numArgs) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;</div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    <a class="code" href="structPothos_1_1WorkInfo.html">WorkInfo</a> _workInfo;</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    std::vector&lt;std::string&gt; _inputPortNames;</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;    std::vector&lt;std::string&gt; _outputPortNames;</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;    std::vector&lt;InputPort*&gt; _indexedInputs;</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;    std::vector&lt;OutputPort*&gt; _indexedOutputs;</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;    std::map&lt;std::string, InputPort*&gt; _namedInputs;</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;    std::map&lt;std::string, OutputPort*&gt; _namedOutputs;</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    std::map&lt;std::string, Callable&gt; _calls;</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;    <a class="code" href="classPothos_1_1ThreadPool.html">ThreadPool</a> _threadPool;</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;    <a class="code" href="classPothos_1_1Block.html">Block</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Block.html">Block</a> &amp;){} <span class="comment">// non construction-copyable</span></div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;    <a class="code" href="classPothos_1_1Block.html">Block</a> &amp;operator=(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Block.html">Block</a> &amp;){<span class="keywordflow">return</span> *<span class="keyword">this</span>;} <span class="comment">// non copyable</span></div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00326"></a><span class="lineno"><a class="line" href="classPothos_1_1Block.html#a8abd60f630447ccde7b54827b90130b7">  326</a></span>&#160;    std::shared_ptr&lt;WorkerActor&gt; <a class="code" href="classPothos_1_1Block.html#a8abd60f630447ccde7b54827b90130b7">_actor</a>;</div>
-<div class="line"><a name="l00327"></a><span class="lineno"><a class="line" href="classPothos_1_1Block.html#afdc68dcc8e20a7312562013e71feaf64">  327</a></span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span>WorkerActor;</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;};</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;} <span class="comment">//namespace Pothos</span></div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    <span class="keywordtype">void</span> registerProbe(</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;        <span class="keyword">const</span> std::string &amp;name,</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;        <span class="keyword">const</span> std::string &amp;signalName=<span class="stringliteral">&quot;&quot;</span>,</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;        <span class="keyword">const</span> std::string &amp;slotName=<span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    <span class="keywordtype">void</span> yield(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;    <a class="code" href="classPothos_1_1Object.html">Object</a> opaqueCallMethod(<span class="keyword">const</span> std::string &amp;name, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> *inputArgs, <span class="keyword">const</span> <span class="keywordtype">size_t</span> numArgs) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;    <a class="code" href="structPothos_1_1WorkInfo.html">WorkInfo</a> _workInfo;</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;    std::vector&lt;std::string&gt; _inputPortNames;</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;    std::vector&lt;std::string&gt; _outputPortNames;</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;    std::vector&lt;InputPort*&gt; _indexedInputs;</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;    std::vector&lt;OutputPort*&gt; _indexedOutputs;</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;    std::map&lt;std::string, InputPort*&gt; _namedInputs;</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    std::map&lt;std::string, OutputPort*&gt; _namedOutputs;</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;    std::map&lt;std::string, Callable&gt; _calls;</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    std::map&lt;std::string, std::pair&lt;std::string, std::string&gt;&gt; _probes;</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;    <a class="code" href="classPothos_1_1ThreadPool.html">ThreadPool</a> _threadPool;</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;    <a class="code" href="classPothos_1_1Block.html">Block</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Block.html">Block</a> &amp;){} <span class="comment">// non construction-copyable</span></div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;    <a class="code" href="classPothos_1_1Block.html">Block</a> &amp;operator=(<span class="keyword">const</span> <a class="code" href="classPothos_1_1Block.html">Block</a> &amp;){<span class="keywordflow">return</span> *<span class="keyword">this</span>;} <span class="comment">// non copyable</span></div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00346"></a><span class="lineno"><a class="line" href="classPothos_1_1Block.html#a8abd60f630447ccde7b54827b90130b7">  346</a></span>&#160;    std::shared_ptr&lt;WorkerActor&gt; <a class="code" href="classPothos_1_1Block.html#a8abd60f630447ccde7b54827b90130b7">_actor</a>;</div>
+<div class="line"><a name="l00347"></a><span class="lineno"><a class="line" href="classPothos_1_1Block.html#afdc68dcc8e20a7312562013e71feaf64">  347</a></span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span>WorkerActor;</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;};</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;} <span class="comment">//namespace Pothos</span></div>
 <div class="ttc" id="structPothos_1_1WorkInfo_html"><div class="ttname"><a href="structPothos_1_1WorkInfo.html">Pothos::WorkInfo</a></div><div class="ttdef"><b>Definition:</b> WorkInfo.hpp:23</div></div>
 <div class="ttc" id="classPothos_1_1Connectable_html"><div class="ttname"><a href="classPothos_1_1Connectable.html">Pothos::Connectable</a></div><div class="ttdef"><b>Definition:</b> Connectable.hpp:39</div></div>
 <div class="ttc" id="WorkStats_8hpp_html"><div class="ttname"><a href="WorkStats_8hpp.html">WorkStats.hpp</a></div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
 <div class="ttc" id="classPothos_1_1OutputPort_html"><div class="ttname"><a href="classPothos_1_1OutputPort.html">Pothos::OutputPort</a></div><div class="ttdef"><b>Definition:</b> OutputPort.hpp:28</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
-<div class="ttc" id="classPothos_1_1Block_html_a8abd60f630447ccde7b54827b90130b7"><div class="ttname"><a href="classPothos_1_1Block.html#a8abd60f630447ccde7b54827b90130b7">Pothos::Block::_actor</a></div><div class="ttdeci">std::shared_ptr&lt; WorkerActor &gt; _actor</div><div class="ttdef"><b>Definition:</b> Block.hpp:326</div></div>
+<div class="ttc" id="classPothos_1_1Block_html_a8abd60f630447ccde7b54827b90130b7"><div class="ttname"><a href="classPothos_1_1Block.html#a8abd60f630447ccde7b54827b90130b7">Pothos::Block::_actor</a></div><div class="ttdeci">std::shared_ptr&lt; WorkerActor &gt; _actor</div><div class="ttdef"><b>Definition:</b> Block.hpp:346</div></div>
 <div class="ttc" id="Connectable_8hpp_html"><div class="ttname"><a href="Connectable_8hpp.html">Connectable.hpp</a></div></div>
 <div class="ttc" id="classPothos_1_1Callable_html"><div class="ttname"><a href="classPothos_1_1Callable.html">Pothos::Callable</a></div><div class="ttdef"><b>Definition:</b> Callable.tmpl.hpp:30</div></div>
 <div class="ttc" id="classPothos_1_1ThreadPool_html"><div class="ttname"><a href="classPothos_1_1ThreadPool.html">Pothos::ThreadPool</a></div><div class="ttdef"><b>Definition:</b> ThreadPool.hpp:83</div></div>
@@ -218,12 +224,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="InputPort_8hpp_html"><div class="ttname"><a href="InputPort_8hpp.html">InputPort.hpp</a></div></div>
 <div class="ttc" id="WorkInfo_8hpp_html"><div class="ttname"><a href="WorkInfo_8hpp.html">WorkInfo.hpp</a></div></div>
 <div class="ttc" id="structPothos_1_1WorkStats_html"><div class="ttname"><a href="structPothos_1_1WorkStats.html">Pothos::WorkStats</a></div><div class="ttdef"><b>Definition:</b> WorkStats.hpp:33</div></div>
-<div class="ttc" id="classPothos_1_1DType_html"><div class="ttname"><a href="classPothos_1_1DType.html">Pothos::DType</a></div><div class="ttdef"><b>Definition:</b> DType.hpp:42</div></div>
+<div class="ttc" id="classPothos_1_1DType_html"><div class="ttname"><a href="classPothos_1_1DType.html">Pothos::DType</a></div><div class="ttdef"><b>Definition:</b> DType.hpp:38</div></div>
 <div class="ttc" id="ThreadPool_8hpp_html"><div class="ttname"><a href="ThreadPool_8hpp.html">ThreadPool.hpp</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 3 2014 22:09:34 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 25 2014 23:38:40 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

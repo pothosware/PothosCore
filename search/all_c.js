@@ -13,6 +13,7 @@ var searchData=
   ['mathcompat_2ehpp',['MathCompat.hpp',['../MathCompat_8hpp.html',1,'']]],
   ['maxtimeoutns',['maxTimeoutNs',['../structPothos_1_1WorkInfo.html#a0f3597fbc7fd3795de8d1a1b545e3428',1,'Pothos::WorkInfo']]],
   ['message',['message',['../classPothos_1_1Exception.html#a653c0893d03dfacef605ebfa5859d4ff',1,'Pothos::Exception::message() const '],['../classPothos_1_1Exception.html#acfdc5eba28d5fff2068335c917f49557',1,'Pothos::Exception::message(const std::string &amp;msg)']]],
+  ['metadata',['metadata',['../structPothos_1_1Packet.html#a1f7f57bc56d822ce9e0008ed8adf3010',1,'Pothos::Packet']]],
   ['minallelements',['minAllElements',['../structPothos_1_1WorkInfo.html#ae89da73d184f6032df044b4609de0a38',1,'Pothos::WorkInfo']]],
   ['minallinelements',['minAllInElements',['../structPothos_1_1WorkInfo.html#a0762339c4b1a30f3dbbc6825dea705d8',1,'Pothos::WorkInfo']]],
   ['minalloutelements',['minAllOutElements',['../structPothos_1_1WorkInfo.html#a493c80592e1186104d3402e4838a38cd',1,'Pothos::WorkInfo']]],
