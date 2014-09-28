@@ -8,17 +8,34 @@
 #include <complex>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/framework/tests", test_dtype_special)
+POTHOS_TEST_BLOCK("/framework/tests", test_dtype_attrs)
 {
     POTHOS_TEST_TRUE(not Pothos::DType());
     POTHOS_TEST_TRUE(not Pothos::DType(""));
     POTHOS_TEST_TRUE(Pothos::DType("custom"));
     POTHOS_TEST_TRUE(Pothos::DType("int"));
 
-    POTHOS_TEST_TRUE(not Pothos::DType().custom());
-    POTHOS_TEST_TRUE(not Pothos::DType("").custom());
-    POTHOS_TEST_TRUE(not Pothos::DType("int").custom());
-    POTHOS_TEST_TRUE(Pothos::DType("custom").custom());
+    POTHOS_TEST_TRUE(not Pothos::DType().isCustom());
+    POTHOS_TEST_TRUE(not Pothos::DType("").isCustom());
+    POTHOS_TEST_TRUE(Pothos::DType("custom").isCustom());
+
+    POTHOS_TEST_TRUE(not Pothos::DType("int").isCustom());
+    POTHOS_TEST_TRUE(Pothos::DType("int").isInteger());
+    POTHOS_TEST_TRUE(Pothos::DType("int").isSigned());
+    POTHOS_TEST_TRUE(not Pothos::DType("int").isFloat());
+    POTHOS_TEST_TRUE(not Pothos::DType("int").isComplex());
+
+    POTHOS_TEST_TRUE(not Pothos::DType("float").isCustom());
+    POTHOS_TEST_TRUE(not Pothos::DType("float").isInteger());
+    POTHOS_TEST_TRUE(not Pothos::DType("float").isSigned());
+    POTHOS_TEST_TRUE(Pothos::DType("float").isFloat());
+    POTHOS_TEST_TRUE(not Pothos::DType("float").isComplex());
+
+    POTHOS_TEST_TRUE(not Pothos::DType("complex_uint8").isCustom());
+    POTHOS_TEST_TRUE(Pothos::DType("complex_uint8").isInteger());
+    POTHOS_TEST_TRUE(not Pothos::DType("complex_uint8").isSigned());
+    POTHOS_TEST_TRUE(not Pothos::DType("complex_uint8").isFloat());
+    POTHOS_TEST_TRUE(Pothos::DType("complex_uint8").isComplex());
 }
 
 POTHOS_TEST_BLOCK("/framework/tests", test_dtype_throws)

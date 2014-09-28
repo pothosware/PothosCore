@@ -104,8 +104,33 @@ public:
 
     /*!
      * Does this dtype represent a custom type?
+     * \return true when the type was constructed with "custom"
      */
-    bool custom(void) const;
+    bool isCustom(void) const;
+
+    /*!
+     * Does this dtype represent a floating point data type?
+     * \return true for floats, doubles, and complex floats, doubles
+     */
+    bool isFloat(void) const;
+
+    /*!
+     * Does this dtype represent an integer data type?
+     * \return true for fixed width integer types and complex integer types
+     */
+    bool isInteger(void) const;
+
+    /*!
+     * Does this dtype represent a signed data type?
+     * \return true for signed integer, complex signed integer types.
+     */
+    bool isSigned(void) const;
+
+    /*!
+     * Does this dtype represent a complex data type?
+     * \return true when the type is std::complex<primitive type>
+     */
+    bool isComplex(void) const;
 
     //! Serialization support
     template<class Archive>
@@ -160,9 +185,4 @@ inline size_t Pothos::DType::size(void) const
 inline Pothos::DType::operator bool(void) const
 {
     return _elemType != 0;
-}
-
-inline bool Pothos::DType::custom(void) const
-{
-    return _elemType == 1;
 }

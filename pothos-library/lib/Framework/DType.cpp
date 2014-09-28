@@ -15,31 +15,39 @@
 /***********************************************************************
  * officially supported element types
  **********************************************************************/
+static const int Custom = (1 << 0);
+static const int Signed = (1 << 1);
+static const int Integer = (1 << 2);
+static const int Float = (1 << 3);
+static const int Complex = (1 << 4);
+static const int Bytes1 = (0 << 5);
+static const int Bytes2 = (1 << 5);
+static const int Bytes4 = (2 << 5);
+static const int Bytes8 = (3 << 5);
 enum ElementTypes
 {
-    EmptyType,
-    CustomType,
-    Int8,
-    UInt8,
-    Int16,
-    UInt16,
-    Int32,
-    UInt32,
-    Int64,
-    UInt64,
-    ComplexInt8,
-    ComplexUInt8,
-    ComplexInt16,
-    ComplexUInt16,
-    ComplexInt32,
-    ComplexUInt32,
-    ComplexInt64,
-    ComplexUInt64,
-    Float32,
-    Float64,
-    ComplexFloat32,
-    ComplexFloat64,
-    MaximumType
+    EmptyType = 0,
+    CustomType = Custom,
+    Int8 = Signed | Integer | Bytes1,
+    UInt8 = Integer | Bytes1,
+    Int16 = Signed | Integer | Bytes2,
+    UInt16 = Integer | Bytes2,
+    Int32 = Signed | Integer | Bytes4,
+    UInt32 = Integer | Bytes4,
+    Int64 = Signed | Integer | Bytes8,
+    UInt64 = Integer | Bytes8,
+    ComplexInt8 = Complex | Signed | Integer | Bytes1,
+    ComplexUInt8 = Complex | Integer | Bytes1,
+    ComplexInt16 = Complex | Signed | Integer | Bytes2,
+    ComplexUInt16 = Complex | Integer | Bytes2,
+    ComplexInt32 = Complex | Signed | Integer | Bytes4,
+    ComplexUInt32 = Complex | Integer | Bytes4,
+    ComplexInt64 = Complex | Signed | Integer | Bytes8,
+    ComplexUInt64 = Complex | Integer | Bytes8,
+    Float32 = Float | Bytes4,
+    Float64 = Float | Bytes8,
+    ComplexFloat32 = Complex | Float | Bytes4,
+    ComplexFloat64 = Complex | Float | Bytes8,
 };
 
 /***********************************************************************
@@ -220,11 +228,36 @@ const std::string &Pothos::DType::name(void) const
 std::string Pothos::DType::toString(void) const
 {
     std::string out = this->name();
-    if (this->dimension() != 1 or this->custom())
+    if (this->dimension() != 1 or this->isCustom())
     {
         out += "[" + std::to_string(this->dimension()) + "]";
     }
     return out;
+}
+
+bool Pothos::DType::isCustom(void) const
+{
+    return (_elemType & Custom) != 0;
+}
+
+bool Pothos::DType::isFloat(void) const
+{
+    return (_elemType & Float) != 0;
+}
+
+bool Pothos::DType::isInteger(void) const
+{
+    return (_elemType & Integer) != 0;
+}
+
+bool Pothos::DType::isSigned(void) const
+{
+    return (_elemType & Signed) != 0;
+}
+
+bool Pothos::DType::isComplex(void) const
+{
+    return (_elemType & Complex) != 0;
 }
 
 #include <Pothos/Managed.hpp>
@@ -239,6 +272,11 @@ static auto managedDtype = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, dimension))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, size))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, toString))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, isCustom))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, isFloat))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, isInteger))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, isSigned))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, isComplex))
     .registerStaticMethod<const Pothos::DType &, const Pothos::DType &>("equals", &Pothos::operator==)
     .commit("Pothos/DType");
 
