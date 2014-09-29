@@ -19,6 +19,16 @@ Pothos::BufferChunk::BufferChunk(const size_t numBytes):
     address = _buffer.getAddress();
 }
 
+
+Pothos::BufferChunk::BufferChunk(const DType &dtype, const size_t numElems):
+    address(0),
+    length(dtype.size()*numElems),
+    dtype(dtype),
+    _buffer(Pothos::SharedBuffer::make(length))
+{
+    address = _buffer.getAddress();
+}
+
 Pothos::BufferChunk::BufferChunk(const SharedBuffer &buffer):
     address(buffer.getAddress()),
     length(buffer.getLength()),

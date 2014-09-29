@@ -46,6 +46,16 @@ public:
     BufferChunk(const size_t numBytes);
 
     /*!
+     * Create a BufferChunk given data type and number of elements.
+     * This is a convenience method to create a BufferChunk from a type.
+     * using memory from the standard memory allocator (new/delete).
+     * Memory will automatically deallocate via reference counting.
+     * \param dtype the data type of the result buffer
+     * \param numElems the size in number of elements
+     */
+    BufferChunk(const DType &dtype, const size_t numElems);
+
+    /*!
      * Create a BufferChunk from a SharedBuffer.
      * The fields will be initialized to that of the shared buffer.
      */
