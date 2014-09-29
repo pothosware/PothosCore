@@ -141,6 +141,24 @@ public:
      */
     void append(const BufferChunk &other);
 
+    /*!
+     * Convert a buffer chunk to the specified data type.
+     * \throws BufferConvertError when the conversion is not possible
+     * \param dtype the data type of the result buffer
+     * \param numElems the number of elements to convert
+     * \return a new buffer chunk with converted elements
+     */
+    BufferChunk convert(const DType &dtype, const size_t numElems);
+
+    /*!
+     * Convert a buffer chunk of complex elements to two real buffers.
+     * \throws BufferConvertError when the conversion is not possible
+     * \param dtype the data type of the result buffer
+     * \param numElems the number of elements to convert
+     * \return a real + complex pair of buffer chunks
+     */
+    std::pair<BufferChunk, BufferChunk> convertComplex(const DType &dtype, const size_t numElems);
+
 private:
     SharedBuffer _buffer;
     ManagedBuffer _managedBuffer;

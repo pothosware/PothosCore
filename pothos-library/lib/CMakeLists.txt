@@ -115,6 +115,7 @@ list(APPEND POTHOS_SOURCES
     Framework/SharedBuffer.cpp
     Framework/ManagedBuffer.cpp
     Framework/BufferChunk.cpp
+    Framework/BufferConvert.cpp
     Framework/BufferManager.cpp
     Framework/BufferAccumulator.cpp
     Framework/BlockRegistry.cpp
