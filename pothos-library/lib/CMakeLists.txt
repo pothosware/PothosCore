@@ -123,6 +123,7 @@ list(APPEND POTHOS_SOURCES
 
     Framework/Builtin/CircularBufferManager.cpp
     Framework/Builtin/TestBufferChunkSerialization.cpp
+    Framework/Builtin/TestBufferConvert.cpp
     Framework/Builtin/TestDType.cpp
     Framework/Builtin/TestSharedBuffer.cpp
     Framework/Builtin/GenericBufferManager.cpp

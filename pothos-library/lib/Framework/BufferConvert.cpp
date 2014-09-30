@@ -21,6 +21,14 @@ void rawConvert(const void *in, void *out, const size_t num)
 }
 
 template <typename InType, typename OutType>
+void rawConvertRealToComplex(const void *in, void *out, const size_t num)
+{
+    auto inElems = reinterpret_cast<const InType *>(in);
+    auto outElems = reinterpret_cast<std::complex<OutType> *>(out);
+    for (size_t i = 0; i < num; i++) outElems[i] = std::complex<OutType>(OutType(inElems[i]));
+}
+
+template <typename InType, typename OutType>
 void rawConvertComplex(const void *in, void *out, const size_t num)
 {
     auto inElems = reinterpret_cast<const std::complex<InType> *>(in);
@@ -93,14 +101,19 @@ private:
     template <typename InType, typename OutType>
     void registerConverter(void)
     {
-        const auto h1 = dtypeIOToHash(Pothos::DType(typeid(InType)), Pothos::DType(typeid(OutType)));
-        convertMap[h1] = std::bind(&rawConvert<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        int h = 0;
 
-        const auto h2 = dtypeIOToHash(Pothos::DType(typeid(std::complex<InType>)), Pothos::DType(typeid(std::complex<OutType>)));
-        convertMap[h2] = std::bind(&rawConvertComplex<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        h = dtypeIOToHash(Pothos::DType(typeid(InType)), Pothos::DType(typeid(OutType)));
+        convertMap[h] = std::bind(&rawConvert<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
-        const auto h3 = dtypeIOToHash(Pothos::DType(typeid(std::complex<InType>)), Pothos::DType(typeid(OutType)));
-        convertComplexMap[h3] = std::bind(&rawConvertComponents<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+        h = dtypeIOToHash(Pothos::DType(typeid(InType)), Pothos::DType(typeid(std::complex<OutType>)));
+        convertMap[h] = std::bind(&rawConvertRealToComplex<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+
+        h = dtypeIOToHash(Pothos::DType(typeid(std::complex<InType>)), Pothos::DType(typeid(std::complex<OutType>)));
+        convertMap[h] = std::bind(&rawConvertComplex<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+
+        h = dtypeIOToHash(Pothos::DType(typeid(std::complex<InType>)), Pothos::DType(typeid(OutType)));
+        convertComplexMap[h] = std::bind(&rawConvertComponents<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     }
 };
 
@@ -118,11 +131,10 @@ Pothos::BufferChunk Pothos::BufferChunk::convert(const DType &outDType, const si
     const auto primElems = (numElems*this->dtype.size())/this->dtype.elemSize();
     const auto outElems = primElems*outDType.size()/outDType.elemSize();
 
-    //same dtype or integers of same type, different signedness
+    //same dtype or integers of same type (ignore signedness)
     if (outDType.elemType() == this->dtype.elemType() or (
-        outDType.size() == this->dtype.size() and
+        outDType.elemSize() == this->dtype.elemSize() and
         outDType.isInteger() == this->dtype.isInteger() and
-        outDType.isSigned() != this->dtype.isSigned() and
         outDType.isComplex() == this->dtype.isComplex())
     )
     {
