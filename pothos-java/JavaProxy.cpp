@@ -6,7 +6,7 @@
 #include <Pothos/Plugin.hpp>
 #include <iostream>
 #include <Poco/SingletonHolder.h>
-#include <Poco/Types.h>
+#include <cstdint>
 #include <mutex>
 
 /***********************************************************************
@@ -120,7 +120,7 @@ void JavaProxyEnvironment::serialize(const Pothos::Proxy &proxy, std::ostream &o
         auto b = this->findProxy("java.io.ByteArrayOutputStream").callProxy("new");
         auto o = this->findProxy("java.io.ObjectOutputStream").callProxy("new", b);
         o.callVoid("writeObject", proxy);
-        const auto bytes = b.call<std::vector<Poco::Int8>>("toByteArray");
+        const auto bytes = b.call<std::vector<int8_t>>("toByteArray");
         os.write((const char *)bytes.data(), bytes.size());
     }
     catch (const Pothos::Exception &ex)

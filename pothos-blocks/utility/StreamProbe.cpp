@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <Poco/Types.h>
+#include <cstdint>
 #include <complex>
 #include <iostream>
 
@@ -132,10 +132,10 @@ static Pothos::Block *valueProbeFactory(const Pothos::DType &dtype)
         if (dtype == Pothos::DType(typeid(std::complex<type>))) return new StreamProbe<std::complex<type>>();
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
-    ifTypeDeclareFactory(Poco::Int64);
-    ifTypeDeclareFactory(Poco::Int32);
-    ifTypeDeclareFactory(Poco::Int16);
-    ifTypeDeclareFactory(Poco::Int8);
+    ifTypeDeclareFactory(int64_t);
+    ifTypeDeclareFactory(int32_t);
+    ifTypeDeclareFactory(int16_t);
+    ifTypeDeclareFactory(int8_t);
     throw Pothos::InvalidArgumentException("valueProbeFactory("+dtype.toString()+")", "unsupported type");
 }
 
