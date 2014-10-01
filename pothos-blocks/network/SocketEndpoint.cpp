@@ -24,7 +24,7 @@ struct PothosPacketSocketEndpointInterface
 
     virtual std::string getPort(void) const = 0;
 
-    virtual bool isRecvReady(const Poco::Timespan &timeout) = 0;
+    virtual bool isRecvReady(const std::chrono::high_resolution_clock::duration &timeout) = 0;
 
     virtual int send(const void *buff, const size_t length) = 0;
 
@@ -66,11 +66,13 @@ struct PothosPacketSocketEndpointInterfaceTcp : PothosPacketSocketEndpointInterf
         return std::to_string(clientSock.address().port());
     }
 
-    bool isRecvReady(const Poco::Timespan &timeout)
+    bool isRecvReady(const std::chrono::high_resolution_clock::duration &timeout)
     {
         if (not connected)
         {
-            if (not this->serverSock.poll(timeout, Poco::Net::Socket::SELECT_READ)) return false;
+            const auto micros = std::chrono::duration_cast<std::chrono::microseconds>(timeout).count();
+            const auto tspan = Poco::Timespan(Poco::Timespan::TimeDiff(micros));
+            if (not this->serverSock.poll(tspan, Poco::Net::Socket::SELECT_READ)) return false;
             this->clientSock = this->serverSock.acceptConnection();
             this->clientSock.setNoDelay(true);
             connected = true;
@@ -182,11 +184,12 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
         return std::to_string(Poco::Net::SocketAddress(&addr, addrlen).port());
     }
 
-    bool isRecvReady(const Poco::Timespan &timeout)
+    bool isRecvReady(const std::chrono::high_resolution_clock::duration &timeout)
     {
+        const auto micros = std::chrono::duration_cast<std::chrono::microseconds>(timeout).count();
         struct timeval tv;
-        tv.tv_sec = timeout.seconds();
-        tv.tv_usec = timeout.microseconds();
+        tv.tv_sec = micros / 1000000;
+        tv.tv_usec = micros % 1000000;
 
         if (not connected)
         {
@@ -239,12 +242,12 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
  * Protocol header format
  **********************************************************************/
 #define POTHOS_PACKET_WORD32(str) \
-    (Poco::UInt32(str[0]) << 24) | \
-    (Poco::UInt32(str[1]) << 16) | \
-    (Poco::UInt32(str[2]) << 8) | \
-    (Poco::UInt32(str[3]) << 0)
+    (uint32_t(str[0]) << 24) | \
+    (uint32_t(str[1]) << 16) | \
+    (uint32_t(str[2]) << 8) | \
+    (uint32_t(str[3]) << 0)
 
-static const Poco::UInt32 PothosPacketHeaderWord = POTHOS_PACKET_WORD32("PTHS");
+static const uint32_t PothosPacketHeaderWord = POTHOS_PACKET_WORD32("PTHS");
 
 #define PothosPacketFlagFin (1 << 0)
 #define PothosPacketFlagSyn (1 << 1)
@@ -255,12 +258,12 @@ static const Poco::UInt32 PothosPacketHeaderWord = POTHOS_PACKET_WORD32("PTHS");
 
 struct PothosPacketHeader
 {
-    Poco::UInt32 headerWord;
-    Poco::UInt16 flags;
-    Poco::UInt16 type;
-    Poco::UInt16 payloadBytes;
-    Poco::UInt16 packetCount;
-    Poco::UInt32 indexWord[2];
+    uint32_t headerWord;
+    uint16_t flags;
+    uint16_t type;
+    uint16_t payloadBytes;
+    uint16_t packetCount;
+    uint32_t indexWord[2];
 };
 
 /***********************************************************************
@@ -298,29 +301,29 @@ struct PothosPacketSocketEndpoint::Impl
 
     //state
     EndpointState state;
-    Poco::UInt16 lastSentPacketCount;
-    Poco::UInt16 nextRecvPacketCount;
+    uint16_t lastSentPacketCount;
+    uint16_t nextRecvPacketCount;
     size_t bytesLeftInStream;
-    Poco::UInt16 lastType;
-    Poco::UInt64 lastIndex;
+    uint16_t lastType;
+    uint64_t lastIndex;
     Poco::Net::SocketAddress actualAddr;
-    Poco::UInt64 totalBytesRecv;
-    Poco::UInt64 totalBytesSent;
-    Poco::UInt64 lastFlowMsgRecv;
-    Poco::UInt64 lastFlowMsgSent;
+    uint64_t totalBytesRecv;
+    uint64_t totalBytesSent;
+    uint64_t lastFlowMsgRecv;
+    uint64_t lastFlowMsgSent;
 
     PothosPacketSocketEndpointInterface *iface;
 
-    void unpackHeader(const PothosPacketHeader &header, const size_t recvBytes, Poco::UInt16 &flags, Poco::UInt16 &type, Poco::UInt64 &index, size_t &payloadBytes);
-    void handleState(const Poco::UInt16 &flags);
-    void send(const Poco::UInt16 flags)
+    void unpackHeader(const PothosPacketHeader &header, const size_t recvBytes, uint16_t &flags, uint16_t &type, uint64_t &index, size_t &payloadBytes);
+    void handleState(const uint16_t &flags);
+    void send(const uint16_t flags)
     {
         return this->send(flags, 0, 0, nullptr, 0);
     }
-    void send(const Poco::UInt16 flags, const Poco::UInt16 type, const Poco::UInt64 &index, const void *buff, const size_t numBytes);
-    void recv(Poco::UInt16 &flags, Poco::UInt16 &type, Poco::UInt64 &index, Pothos::BufferChunk &buffer, const Poco::Timespan &timeout);
+    void send(const uint16_t flags, const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes);
+    void recv(uint16_t &flags, uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const std::chrono::high_resolution_clock::duration &timeout);
 
-    Poco::UInt64 flowControlWindowBytes(void) const
+    uint64_t flowControlWindowBytes(void) const
     {
         return 256*1024;
     }
@@ -400,11 +403,11 @@ bool PothosPacketSocketEndpoint::isReady(void)
 void PothosPacketSocketEndpoint::openComms(void)
 {
     Pothos::BufferChunk buffer;
-    Poco::UInt16 type;
-    Poco::UInt64 index;
+    uint16_t type;
+    uint64_t index;
 
     //start with a new random sequence number
-    _impl->lastSentPacketCount = Poco::UInt16(std::rand());
+    _impl->lastSentPacketCount = uint16_t(std::rand());
     _impl->totalBytesRecv = 0;
     _impl->totalBytesSent = 0;
     _impl->lastFlowMsgRecv = 0;
@@ -442,8 +445,8 @@ void PothosPacketSocketEndpoint::closeComms(void)
     if (_impl->state == EP_STATE_CLOSED) return;
 
     Pothos::BufferChunk buffer;
-    Poco::UInt16 type;
-    Poco::UInt64 index;
+    uint16_t type;
+    uint64_t index;
 
     //initiate a close operation
     switch (_impl->state)
@@ -479,7 +482,7 @@ void PothosPacketSocketEndpoint::closeComms(void)
 /***********************************************************************
  * handle connection state
  **********************************************************************/
-void PothosPacketSocketEndpoint::Impl::handleState(const Poco::UInt16 &flags)
+void PothosPacketSocketEndpoint::Impl::handleState(const uint16_t &flags)
 {
     switch (this->state)
     {
@@ -570,7 +573,7 @@ void PothosPacketSocketEndpoint::Impl::handleState(const Poco::UInt16 &flags)
 /***********************************************************************
  * handler/parser for received buffers
  **********************************************************************/
-void PothosPacketSocketEndpoint::Impl::unpackHeader(const PothosPacketHeader &header, const size_t recvBytes, Poco::UInt16 &flags, Poco::UInt16 &type, Poco::UInt64 &index, size_t &payloadBytes)
+void PothosPacketSocketEndpoint::Impl::unpackHeader(const PothosPacketHeader &header, const size_t recvBytes, uint16_t &flags, uint16_t &type, uint64_t &index, size_t &payloadBytes)
 {
     if (recvBytes < sizeof(header))
     {
@@ -584,11 +587,11 @@ void PothosPacketSocketEndpoint::Impl::unpackHeader(const PothosPacketHeader &he
 
     //extract header fields
     flags = Poco::ByteOrder::fromNetwork(header.flags);
-    const Poco::UInt16 recvPacketCount = Poco::ByteOrder::fromNetwork(header.packetCount);
+    const uint16_t recvPacketCount = Poco::ByteOrder::fromNetwork(header.packetCount);
     payloadBytes = Poco::ByteOrder::fromNetwork(header.payloadBytes);
     type = Poco::ByteOrder::fromNetwork(header.type);
-    index = Poco::UInt64(Poco::ByteOrder::fromNetwork(header.indexWord[1]));
-    index |= (Poco::UInt64(Poco::ByteOrder::fromNetwork(header.indexWord[0])) << 32);
+    index = uint64_t(Poco::ByteOrder::fromNetwork(header.indexWord[1]));
+    index |= (uint64_t(Poco::ByteOrder::fromNetwork(header.indexWord[0])) << 32);
 
     //when the sender is telling us to use a new sequence number
     if ((flags & PothosPacketFlagSyn) != 0) this->nextRecvPacketCount = recvPacketCount;
@@ -613,13 +616,13 @@ void PothosPacketSocketEndpoint::Impl::unpackHeader(const PothosPacketHeader &he
 /***********************************************************************
  * perform a recv operation on the connected socket
  **********************************************************************/
-void PothosPacketSocketEndpoint::recv(Poco::UInt16 &type, Poco::UInt64 &index, Pothos::BufferChunk &buffer, const Poco::Timespan &timeout)
+void PothosPacketSocketEndpoint::recv(uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const std::chrono::high_resolution_clock::duration &timeout)
 {
-    Poco::UInt16 flags = 0;
+    uint16_t flags = 0;
     return _impl->recv(flags, type, index, buffer, timeout);
 }
 
-void PothosPacketSocketEndpoint::Impl::recv(Poco::UInt16 &flags, Poco::UInt16 &type, Poco::UInt64 &index, Pothos::BufferChunk &buffer, const Poco::Timespan &timeout)
+void PothosPacketSocketEndpoint::Impl::recv(uint16_t &flags, uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const std::chrono::high_resolution_clock::duration &timeout)
 {
     flags = 0;
     type = 0;
@@ -693,12 +696,12 @@ void PothosPacketSocketEndpoint::Impl::recv(Poco::UInt16 &flags, Poco::UInt16 &t
 /***********************************************************************
  * perform a send operation on the connected socket
  **********************************************************************/
-void PothosPacketSocketEndpoint::send(const Poco::UInt16 type, const Poco::UInt64 &index, const void *buff, const size_t numBytes)
+void PothosPacketSocketEndpoint::send(const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes)
 {
     _impl->send(PothosPacketFlagPsh, type, index, buff, numBytes);
 }
 
-void PothosPacketSocketEndpoint::Impl::send(const Poco::UInt16 flags, const Poco::UInt16 type, const Poco::UInt64 &index, const void *buff, const size_t numBytes)
+void PothosPacketSocketEndpoint::Impl::send(const uint16_t flags, const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes)
 {
     std::unique_lock<std::mutex> lock(this->sendMutex);
 
@@ -706,11 +709,11 @@ void PothosPacketSocketEndpoint::Impl::send(const Poco::UInt16 flags, const Poco
     PothosPacketHeader header;
     header.headerWord = Poco::ByteOrder::toNetwork(PothosPacketHeaderWord);
     header.flags = Poco::ByteOrder::toNetwork(flags);
-    header.payloadBytes = Poco::ByteOrder::toNetwork(Poco::UInt16(numBytes));
-    header.packetCount = Poco::ByteOrder::toNetwork(Poco::UInt16(this->lastSentPacketCount++));
+    header.payloadBytes = Poco::ByteOrder::toNetwork(uint16_t(numBytes));
+    header.packetCount = Poco::ByteOrder::toNetwork(uint16_t(this->lastSentPacketCount++));
     header.type = Poco::ByteOrder::toNetwork(type);
-    header.indexWord[0] = Poco::ByteOrder::toNetwork(Poco::UInt32(index >> 32));
-    header.indexWord[1] = Poco::ByteOrder::toNetwork(Poco::UInt32(index >> 0));
+    header.indexWord[0] = Poco::ByteOrder::toNetwork(uint32_t(index >> 32));
+    header.indexWord[1] = Poco::ByteOrder::toNetwork(uint32_t(index >> 0));
 
     //send the header
     ret = this->iface->send(&header, sizeof(header));

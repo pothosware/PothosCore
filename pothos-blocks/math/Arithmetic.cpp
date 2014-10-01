@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <Poco/Types.h>
+#include <cstdint>
 #include <iostream>
 #include <complex>
 #include <vector>
@@ -182,10 +182,10 @@ static Pothos::Block *arithmeticFactory(const Pothos::DType &dtype, const std::s
         ifTypeDeclareFactory_(std::complex<type>)
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
-    ifTypeDeclareFactory(Poco::Int64);
-    ifTypeDeclareFactory(Poco::Int32);
-    ifTypeDeclareFactory(Poco::Int16);
-    ifTypeDeclareFactory(Poco::Int8);
+    ifTypeDeclareFactory(int64_t);
+    ifTypeDeclareFactory(int32_t);
+    ifTypeDeclareFactory(int16_t);
+    ifTypeDeclareFactory(int8_t);
     throw Pothos::InvalidArgumentException("arithmeticFactory("+dtype.toString()+", "+operation+")", "unsupported args");
 }
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <Poco/Types.h>
+#include <cstdint>
 #include <complex>
 #include <cassert>
 #include <iostream>
@@ -188,10 +188,10 @@ static Pothos::Block *FIRFilterFactory(const Pothos::DType &dtype, const std::st
         ifTypeDeclareFactory__(std::complex<type>, "COMPLEX", std::complex<type>)
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
-    ifTypeDeclareFactory(Poco::Int64);
-    ifTypeDeclareFactory(Poco::Int32);
-    ifTypeDeclareFactory(Poco::Int16);
-    ifTypeDeclareFactory(Poco::Int8);
+    ifTypeDeclareFactory(int64_t);
+    ifTypeDeclareFactory(int32_t);
+    ifTypeDeclareFactory(int16_t);
+    ifTypeDeclareFactory(int8_t);
     throw Pothos::InvalidArgumentException("FIRFilterFactory("+dtype.toString()+")", "unsupported types");
 }
 static Pothos::BlockRegistry registerFIRFilter(
