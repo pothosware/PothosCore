@@ -24,7 +24,7 @@ struct PothosPacketSocketEndpointInterface
 
     virtual std::string getPort(void) const = 0;
 
-    virtual bool isRecvReady(const Poco::Timespan &timeout) = 0;
+    virtual bool isRecvReady(const std::chrono::high_resolution_clock::duration &timeout) = 0;
 
     virtual int send(const void *buff, const size_t length) = 0;
 
@@ -66,11 +66,13 @@ struct PothosPacketSocketEndpointInterfaceTcp : PothosPacketSocketEndpointInterf
         return std::to_string(clientSock.address().port());
     }
 
-    bool isRecvReady(const Poco::Timespan &timeout)
+    bool isRecvReady(const std::chrono::high_resolution_clock::duration &timeout)
     {
         if (not connected)
         {
-            if (not this->serverSock.poll(timeout, Poco::Net::Socket::SELECT_READ)) return false;
+            const auto micros = std::chrono::duration_cast<std::chrono::microseconds>(timeout).count();
+            const auto tspan = Poco::Timespan(Poco::Timespan::TimeDiff(micros));
+            if (not this->serverSock.poll(tspan, Poco::Net::Socket::SELECT_READ)) return false;
             this->clientSock = this->serverSock.acceptConnection();
             this->clientSock.setNoDelay(true);
             connected = true;
@@ -182,11 +184,12 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
         return std::to_string(Poco::Net::SocketAddress(&addr, addrlen).port());
     }
 
-    bool isRecvReady(const Poco::Timespan &timeout)
+    bool isRecvReady(const std::chrono::high_resolution_clock::duration &timeout)
     {
+        const auto micros = std::chrono::duration_cast<std::chrono::microseconds>(timeout).count();
         struct timeval tv;
-        tv.tv_sec = timeout.seconds();
-        tv.tv_usec = timeout.microseconds();
+        tv.tv_sec = micros / 1000000;
+        tv.tv_usec = micros % 1000000;
 
         if (not connected)
         {
@@ -318,7 +321,7 @@ struct PothosPacketSocketEndpoint::Impl
         return this->send(flags, 0, 0, nullptr, 0);
     }
     void send(const uint16_t flags, const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes);
-    void recv(uint16_t &flags, uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const Poco::Timespan &timeout);
+    void recv(uint16_t &flags, uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const std::chrono::high_resolution_clock::duration &timeout);
 
     uint64_t flowControlWindowBytes(void) const
     {
@@ -613,13 +616,13 @@ void PothosPacketSocketEndpoint::Impl::unpackHeader(const PothosPacketHeader &he
 /***********************************************************************
  * perform a recv operation on the connected socket
  **********************************************************************/
-void PothosPacketSocketEndpoint::recv(uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const Poco::Timespan &timeout)
+void PothosPacketSocketEndpoint::recv(uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const std::chrono::high_resolution_clock::duration &timeout)
 {
     uint16_t flags = 0;
     return _impl->recv(flags, type, index, buffer, timeout);
 }
 
-void PothosPacketSocketEndpoint::Impl::recv(uint16_t &flags, uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const Poco::Timespan &timeout)
+void PothosPacketSocketEndpoint::Impl::recv(uint16_t &flags, uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const std::chrono::high_resolution_clock::duration &timeout)
 {
     flags = 0;
     type = 0;

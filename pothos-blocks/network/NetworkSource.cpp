@@ -77,7 +77,7 @@ private:
 
 void NetworkSource::work(void)
 {
-    const auto timeout = Poco::Timespan(this->workInfo().maxTimeoutNs/1000);
+    const auto timeout = std::chrono::nanoseconds(this->workInfo().maxTimeoutNs);
 
     auto outputPort = this->output(0);
 

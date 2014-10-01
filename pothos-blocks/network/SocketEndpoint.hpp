@@ -6,7 +6,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
-#include <Poco/Timespan.h>
+#include <chrono>
 #include <cstdint>
 
 static const uint16_t PothosPacketTypeMessage = uint16_t('M');
@@ -57,12 +57,12 @@ public:
     /*!
      * Receive data from the remote endpoint.
      */
-    void recv(uint16_t &type, Poco::UInt64 &index, Pothos::BufferChunk &buffer, const Poco::Timespan &timeout = Poco::Timespan(Poco::Timespan::TimeDiff(1e6*0.05)));
+    void recv(uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const std::chrono::high_resolution_clock::duration &timeout = std::chrono::milliseconds(500));
 
     /*!
      * Send data to the remote endpoint.
      */
-    void send(const uint16_t type, const Poco::UInt64 &index, const void *buff, const size_t numBytes);
+    void send(const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes);
 
 private:
     struct Impl; Impl *_impl;
