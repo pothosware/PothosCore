@@ -77,7 +77,8 @@ private:
 
 void NetworkSource::work(void)
 {
-    const auto timeout = std::chrono::nanoseconds(this->workInfo().maxTimeoutNs);
+    const auto timeoutNanos = std::chrono::nanoseconds(this->workInfo().maxTimeoutNs);
+    const auto timeout = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(timeoutNanos);
 
     auto outputPort = this->output(0);
 
