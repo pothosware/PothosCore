@@ -10,7 +10,6 @@
 #include <valarray>
 #include <map>
 #include <vector>
-#include <functional>
 
 class MyQwtPlot;
 class QwtPlotGrid;
@@ -25,11 +24,6 @@ class QwtPlotMarker;
  *
  * |category /Widgets
  * |keywords time plot wave scope
- *
- * |param dtype[Data Type] The data type of the input elements.
- * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
- * |default "complex_float64"
- * |preview disable
  *
  * |param numInputs[Num Inputs] The number of input ports.
  * |default 1
@@ -69,7 +63,7 @@ class QwtPlotMarker;
  * |preview disable
  *
  * |mode graphWidget
- * |factory /widgets/wave_monitor(dtype)
+ * |factory /widgets/wave_monitor()
  * |initializer setNumInputs(numInputs)
  * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
@@ -84,12 +78,12 @@ class WaveMonitor : public QWidget, public Pothos::Block
     Q_OBJECT
 public:
 
-    static Block *make(const Pothos::DType &dtype)
+    static Block *make(void)
     {
-        return new WaveMonitor(dtype);
+        return new WaveMonitor();
     }
 
-    WaveMonitor(const Pothos::DType &dtype);
+    WaveMonitor(void);
 
     ~WaveMonitor(void);
 
@@ -145,7 +139,7 @@ public:
 
     void activate(void);
     void work(void);
-    void updateCurve(Pothos::InputPort *inPort);
+    bool updateCurve(Pothos::InputPort *inPort);
 
     //allow for standard resize controls with the default size policy
     QSize minimumSizeHint(void) const
@@ -172,12 +166,11 @@ private:
     double _sampleRate;
     double _timeSpan;
     size_t _numPoints;
-    std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
-    //set of curves per index
-    std::map<size_t, std::vector<std::shared_ptr<QwtPlotCurve>>> _curves;
-    std::map<size_t, std::function<void(Pothos::InputPort *, std::valarray<float> &, std::valarray<float> &)>> _inputConverters;
-    void setupPlotterCurves(void);
-
-    std::vector<std::shared_ptr<QwtPlotMarker>> _markers;
+    //per-port data structs
+    std::map<size_t, std::chrono::high_resolution_clock::time_point> _lastUpdateTimes;
+    std::map<size_t, std::vector<Pothos::BufferChunk>> _rasterBuffs;
+    std::map<size_t, std::map<size_t, std::shared_ptr<QwtPlotCurve>>> _curves;
+    std::map<size_t, std::vector<std::shared_ptr<QwtPlotMarker>>> _markers;
+    size_t _nextColorIndex;
 };

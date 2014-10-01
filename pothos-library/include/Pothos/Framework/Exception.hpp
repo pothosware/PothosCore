@@ -59,4 +59,10 @@ POTHOS_DECLARE_EXCEPTION(POTHOS_API, PortDomainError, RuntimeException)
  */
 POTHOS_DECLARE_EXCEPTION(POTHOS_API, ThreadPoolError, RuntimeException)
 
+/*!
+ * A BufferConvertError is thrown when a conversion is not possible.
+ */
+POTHOS_DECLARE_EXCEPTION(POTHOS_API, BufferConvertError, RuntimeException)
+
+
 } //namespace Pothos

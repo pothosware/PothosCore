@@ -115,6 +115,7 @@ list(APPEND POTHOS_SOURCES
     Framework/SharedBuffer.cpp
     Framework/ManagedBuffer.cpp
     Framework/BufferChunk.cpp
+    Framework/BufferConvert.cpp
     Framework/BufferManager.cpp
     Framework/BufferAccumulator.cpp
     Framework/BlockRegistry.cpp
@@ -122,6 +123,7 @@ list(APPEND POTHOS_SOURCES
 
     Framework/Builtin/CircularBufferManager.cpp
     Framework/Builtin/TestBufferChunkSerialization.cpp
+    Framework/Builtin/TestBufferConvert.cpp
     Framework/Builtin/TestDType.cpp
     Framework/Builtin/TestSharedBuffer.cpp
     Framework/Builtin/GenericBufferManager.cpp

@@ -18,7 +18,7 @@
 #include <QHBoxLayout>
 #include <iostream>
 
-Spectrogram::Spectrogram(const Pothos::DType &dtype):
+Spectrogram::Spectrogram(void):
     _replotTimer(new QTimer(this)),
     _mainPlot(new MyQwtPlot(this)),
     _zoomer(new MyPlotPicker(_mainPlot->canvas())),
@@ -58,7 +58,7 @@ Spectrogram::Spectrogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableYAxis));
     this->registerSignal("frequencySelected");
-    this->setupInput(0, dtype);
+    this->setupInput(0);
 
     //layout
     auto layout = new QHBoxLayout(this);
@@ -123,7 +123,6 @@ void Spectrogram::setCenterFrequency(const double freq)
 void Spectrogram::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
-    for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
     _plotRaster->setNumColumns(numBins);
     _window.callVoid("setSize", numBins);
 }

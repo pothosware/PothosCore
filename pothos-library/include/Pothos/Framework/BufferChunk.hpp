@@ -46,6 +46,16 @@ public:
     BufferChunk(const size_t numBytes);
 
     /*!
+     * Create a BufferChunk given data type and number of elements.
+     * This is a convenience method to create a BufferChunk from a type.
+     * using memory from the standard memory allocator (new/delete).
+     * Memory will automatically deallocate via reference counting.
+     * \param dtype the data type of the result buffer
+     * \param numElems the size in number of elements
+     */
+    BufferChunk(const DType &dtype, const size_t numElems);
+
+    /*!
      * Create a BufferChunk from a SharedBuffer.
      * The fields will be initialized to that of the shared buffer.
      */
@@ -140,6 +150,24 @@ public:
      * \param other the other buffer to append to the end
      */
     void append(const BufferChunk &other);
+
+    /*!
+     * Convert a buffer chunk to the specified data type.
+     * \throws BufferConvertError when the conversion is not possible
+     * \param dtype the data type of the result buffer
+     * \param numElems the number of elements to convert
+     * \return a new buffer chunk with converted elements
+     */
+    BufferChunk convert(const DType &dtype, const size_t numElems) const;
+
+    /*!
+     * Convert a buffer chunk of complex elements to two real buffers.
+     * \throws BufferConvertError when the conversion is not possible
+     * \param dtype the data type of the result buffer
+     * \param numElems the number of elements to convert
+     * \return a real + complex pair of buffer chunks
+     */
+    std::pair<BufferChunk, BufferChunk> convertComplex(const DType &dtype, const size_t numElems) const;
 
 private:
     SharedBuffer _buffer;
