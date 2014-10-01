@@ -34,6 +34,9 @@ static bool spawnSelfTestOneProcess(const std::string &path)
         Pothos::System::getPothosUtilExecutablePath(),
         args, nullptr, &outPipe, &errPipe, env));
 
+    outPipe.close();
+    errPipe.close();
+
     const bool ok = (ph.wait() == success);
     std::cout << ((ok)? "success!" : "FAIL!") << std::endl;
     return ok;
