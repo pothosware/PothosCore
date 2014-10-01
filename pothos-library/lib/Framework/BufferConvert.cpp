@@ -126,7 +126,7 @@ static BufferConvertImpl &getBufferConvertImpl(void)
 /***********************************************************************
  * conversion implementation
  **********************************************************************/
-Pothos::BufferChunk Pothos::BufferChunk::convert(const DType &outDType, const size_t numElems)
+Pothos::BufferChunk Pothos::BufferChunk::convert(const DType &outDType, const size_t numElems) const
 {
     const auto primElems = (numElems*this->dtype.size())/this->dtype.elemSize();
     const auto outElems = primElems*outDType.size()/outDType.elemSize();
@@ -153,7 +153,7 @@ Pothos::BufferChunk Pothos::BufferChunk::convert(const DType &outDType, const si
     return out;
 }
 
-std::pair<Pothos::BufferChunk, Pothos::BufferChunk> Pothos::BufferChunk::convertComplex(const DType &outDType, const size_t numElems)
+std::pair<Pothos::BufferChunk, Pothos::BufferChunk> Pothos::BufferChunk::convertComplex(const DType &outDType, const size_t numElems) const
 {
     const auto primElems = (numElems*this->dtype.size())/this->dtype.elemSize();
     const auto outElems = primElems*outDType.size()/outDType.elemSize();

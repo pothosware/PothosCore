@@ -158,7 +158,7 @@ public:
      * \param numElems the number of elements to convert
      * \return a new buffer chunk with converted elements
      */
-    BufferChunk convert(const DType &dtype, const size_t numElems);
+    BufferChunk convert(const DType &dtype, const size_t numElems) const;
 
     /*!
      * Convert a buffer chunk of complex elements to two real buffers.
@@ -167,7 +167,7 @@ public:
      * \param numElems the number of elements to convert
      * \return a real + complex pair of buffer chunks
      */
-    std::pair<BufferChunk, BufferChunk> convertComplex(const DType &dtype, const size_t numElems);
+    std::pair<BufferChunk, BufferChunk> convertComplex(const DType &dtype, const size_t numElems) const;
 
 private:
     SharedBuffer _buffer;
