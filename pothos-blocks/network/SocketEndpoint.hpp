@@ -7,12 +7,12 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Poco/Timespan.h>
-#include <Poco/Types.h>
+#include <cstdint>
 
-static const Poco::UInt16 PothosPacketTypeMessage = Poco::UInt16('M');
-static const Poco::UInt16 PothosPacketTypeLabel = Poco::UInt16('L');
-static const Poco::UInt16 PothosPacketTypeBuffer = Poco::UInt16('B');
-static const Poco::UInt16 PothosPacketTypeDType = Poco::UInt16('D');
+static const uint16_t PothosPacketTypeMessage = uint16_t('M');
+static const uint16_t PothosPacketTypeLabel = uint16_t('L');
+static const uint16_t PothosPacketTypeBuffer = uint16_t('B');
+static const uint16_t PothosPacketTypeDType = uint16_t('D');
 
 class PothosPacketSocketEndpoint
 {
@@ -57,12 +57,12 @@ public:
     /*!
      * Receive data from the remote endpoint.
      */
-    void recv(Poco::UInt16 &type, Poco::UInt64 &index, Pothos::BufferChunk &buffer, const Poco::Timespan &timeout = Poco::Timespan(Poco::Timespan::TimeDiff(1e6*0.05)));
+    void recv(uint16_t &type, Poco::UInt64 &index, Pothos::BufferChunk &buffer, const Poco::Timespan &timeout = Poco::Timespan(Poco::Timespan::TimeDiff(1e6*0.05)));
 
     /*!
      * Send data to the remote endpoint.
      */
-    void send(const Poco::UInt16 type, const Poco::UInt64 &index, const void *buff, const size_t numBytes);
+    void send(const uint16_t type, const Poco::UInt64 &index, const void *buff, const size_t numBytes);
 
 private:
     struct Impl; Impl *_impl;

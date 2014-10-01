@@ -82,8 +82,8 @@ void NetworkSource::work(void)
     auto outputPort = this->output(0);
 
     //recv the header, use output buffer when possible for zero-copy
-    Poco::UInt16 type;
-    Poco::UInt64 index;
+    uint16_t type;
+    uint64_t index;
     auto buffer = outputPort->buffer();
     _ep.recv(type, index, buffer, timeout);
 

@@ -83,8 +83,8 @@ public:
     {
         while (running)
         {
-            Poco::UInt16 type;
-            Poco::UInt64 index;
+            uint16_t type;
+            uint64_t index;
             Pothos::BufferChunk buffer;
             _ep.recv(type, index, buffer);
         }
