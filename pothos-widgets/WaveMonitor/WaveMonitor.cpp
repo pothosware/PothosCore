@@ -12,14 +12,15 @@
 #include <QHBoxLayout>
 #include <iostream>
 
-WaveMonitor::WaveMonitor(const Pothos::DType &dtype):
+WaveMonitor::WaveMonitor(void):
     _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
     _zoomer(new MyPlotPicker(_mainPlot->canvas())),
     _displayRate(1.0),
     _sampleRate(1.0),
     _timeSpan(1.0),
-    _numPoints(1024)
+    _numPoints(1024),
+    _nextColorIndex(0)
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, widget));
@@ -36,7 +37,7 @@ WaveMonitor::WaveMonitor(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, enableYAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setYAxisTitle));
-    this->setupInput(0, dtype);
+    this->setupInput(0);
 
     //layout
     auto layout = new QHBoxLayout(this);
@@ -94,7 +95,6 @@ void WaveMonitor::setSampleRate(const double sampleRate)
 void WaveMonitor::setNumPoints(const size_t numPoints)
 {
     _numPoints = numPoints;
-    for (auto inPort : this->inputs()) inPort->setReserve(_numPoints);
     QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
 }
 
