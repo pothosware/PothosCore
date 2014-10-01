@@ -137,7 +137,7 @@ void NetworkSink::work(void)
     {
         std::ostringstream oss;
         Pothos::Object(buffer.dtype).serialize(oss);
-        _ep.send(PothosPacketTypeDType, inputPort->totalMessages(), oss.str().data(), oss.str().length());
+        _ep.send(PothosPacketTypeDType, 0, oss.str().data(), oss.str().length());
         _lastDtype = buffer.dtype;
     }
 

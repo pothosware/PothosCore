@@ -118,7 +118,8 @@ void NetworkSource::work(void)
         data.deserialize(iss);
         _lastDtype = data.extract<Pothos::DType>();
     }
-    else this->yield();
+
+    return this->yield(); //always yield to service recv() again
 }
 
 static Pothos::BlockRegistry registerNetworkSource(
