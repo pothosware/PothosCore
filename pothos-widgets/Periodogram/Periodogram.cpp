@@ -11,7 +11,7 @@
 #include <qwt_legend.h>
 #include <QHBoxLayout>
 
-Periodogram::Periodogram(const Pothos::DType &dtype):
+Periodogram::Periodogram(void):
     _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
     _zoomer(new MyPlotPicker(_mainPlot->canvas())),
@@ -53,7 +53,7 @@ Periodogram::Periodogram(const Pothos::DType &dtype):
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableYAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setYAxisTitle));
     this->registerSignal("frequencySelected");
-    this->setupInput(0, dtype);
+    this->setupInput(0);
 
     //layout
     auto layout = new QHBoxLayout(this);
@@ -84,10 +84,7 @@ Periodogram::~Periodogram(void)
 
 void Periodogram::setNumInputs(const size_t numInputs)
 {
-    for (size_t i = this->inputs().size(); i < numInputs; i++)
-    {
-        this->setupInput(i, this->input(0)->dtype());
-    }
+    for (size_t i = this->inputs().size(); i < numInputs; i++) this->setupInput(i);
 }
 
 void Periodogram::setTitle(const QString &title)
@@ -115,7 +112,6 @@ void Periodogram::setCenterFrequency(const double freq)
 void Periodogram::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
-    for (auto inPort : this->inputs()) inPort->setReserve(_numBins);
     _window.callVoid("setSize", numBins);
 }
 

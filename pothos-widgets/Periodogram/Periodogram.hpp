@@ -10,7 +10,6 @@
 #include <chrono>
 #include <map>
 #include <vector>
-#include <functional>
 #include "MyFFTUtils.hpp"
 
 class MyQwtPlot;
@@ -25,11 +24,6 @@ class QwtPlotZoomer;
  *
  * |category /Widgets
  * |keywords frequency plot fft dft spectrum spectral
- *
- * |param dtype[Data Type] The data type of the input elements.
- * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
- * |default "complex_float64"
- * |preview disable
  *
  * |param numInputs[Num Inputs] The number of input ports.
  * |default 1
@@ -109,7 +103,7 @@ class QwtPlotZoomer;
  * |preview disable
  *
  * |mode graphWidget
- * |factory /widgets/periodogram(dtype)
+ * |factory /widgets/periodogram()
  * |initializer setNumInputs(numInputs)
  * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
@@ -129,12 +123,12 @@ class Periodogram : public QWidget, public Pothos::Block
     Q_OBJECT
 public:
 
-    static Block *make(const Pothos::DType &dtype)
+    static Block *make(void)
     {
-        return new Periodogram(dtype);
+        return new Periodogram();
     }
 
-    Periodogram(const Pothos::DType &dtype);
+    Periodogram(void);
 
     ~Periodogram(void);
 
@@ -219,7 +213,7 @@ public:
 
     void activate(void);
     void work(void);
-    void updateCurve(Pothos::InputPort *inPort);
+    bool updateCurve(Pothos::InputPort *inPort);
 
     //allow for standard resize controls with the default size policy
     QSize minimumSizeHint(void) const
@@ -253,10 +247,10 @@ private:
     double _refLevel;
     double _dynRange;
     bool _autoScale;
-    std::chrono::high_resolution_clock::time_point _timeLastUpdate;
 
     //set of curves per index
     void setupPlotterCurves(void);
+    std::map<size_t, std::chrono::high_resolution_clock::time_point> _lastUpdateTimes;
+    std::map<size_t, Pothos::BufferChunk> _rasterBuffs;
     std::map<size_t, std::shared_ptr<QwtPlotCurve>> _curves;
-    std::map<size_t, std::function<void(Pothos::InputPort *, CArray &)>> _inputConverters;
 };
