@@ -72,13 +72,13 @@ static void packBuffer(const size_t seq, const size_t sid, const bool has_tsf, c
     buff.address -= hdr_words32*4;
     buff.length = pkt_words32*4;
 
-    auto p = buff.as<Poco::UInt32 *>();
+    auto p = buff.as<uint32_t *>();
     p[0] = Poco::ByteOrder::toNetwork(mVRL);
-    p[1] = Poco::ByteOrder::toNetwork(Poco::UInt32(((seq << 20) & 0xfff) | (pkt_bytes & 0xfffff)));
-    p[2] = Poco::ByteOrder::toNetwork(Poco::UInt32(VITA_SID | (is_ext? VITA_EXT : 0) | (has_tsf? VITA_TSF : 0) | ((seq << 16) & 0xf) | (vita_words32 & 0xffff)));
-    p[3] = Poco::ByteOrder::toNetwork(Poco::UInt32(sid));
-    if (has_tsf) p[4] = Poco::ByteOrder::toNetwork(Poco::UInt32(tsf >> 32));
-    if (has_tsf) p[5] = Poco::ByteOrder::toNetwork(Poco::UInt32(tsf >> 0));
+    p[1] = Poco::ByteOrder::toNetwork(uint32_t(((seq << 20) & 0xfff) | (pkt_bytes & 0xfffff)));
+    p[2] = Poco::ByteOrder::toNetwork(uint32_t(VITA_SID | (is_ext? VITA_EXT : 0) | (has_tsf? VITA_TSF : 0) | ((seq << 16) & 0xf) | (vita_words32 & 0xffff)));
+    p[3] = Poco::ByteOrder::toNetwork(uint32_t(sid));
+    if (has_tsf) p[4] = Poco::ByteOrder::toNetwork(uint32_t(tsf >> 32));
+    if (has_tsf) p[5] = Poco::ByteOrder::toNetwork(uint32_t(tsf >> 0));
     p[pkt_words32-1] = Poco::ByteOrder::toNetwork(VEND);
 }
 

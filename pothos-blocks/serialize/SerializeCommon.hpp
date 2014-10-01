@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-#include <Poco/Types.h>
+#include <cstdint>
 #include <cstddef>
 
 static inline size_t padUp32(const size_t len)
@@ -10,18 +10,18 @@ static inline size_t padUp32(const size_t len)
     return (len+3) & ~3;
 }
 
-static const Poco::UInt32 mVRL = 0
-    | (Poco::UInt32('m') << 24)
-    | (Poco::UInt32('V') << 16)
-    | (Poco::UInt32('R') << 8)
-    | (Poco::UInt32('L') << 0)
+static const uint32_t mVRL = 0
+    | (uint32_t('m') << 24)
+    | (uint32_t('V') << 16)
+    | (uint32_t('R') << 8)
+    | (uint32_t('L') << 0)
 ;
 
-static const Poco::UInt32 VEND = 0
-    | (Poco::UInt32('V') << 24)
-    | (Poco::UInt32('E') << 16)
-    | (Poco::UInt32('N') << 8)
-    | (Poco::UInt32('D') << 0)
+static const uint32_t VEND = 0
+    | (uint32_t('V') << 24)
+    | (uint32_t('E') << 16)
+    | (uint32_t('N') << 8)
+    | (uint32_t('D') << 0)
 ;
 
 static const int VITA_SID = (1 << 28);
