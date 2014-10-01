@@ -10,7 +10,6 @@
 #include <chrono>
 #include <map>
 #include <vector>
-#include <functional>
 #include "MyFFTUtils.hpp"
 
 class QTimer;
@@ -27,11 +26,6 @@ class MySpectrogramRasterData;
  *
  * |category /Widgets
  * |keywords frequency plot fft dft spectrum spectral
- *
- * |param dtype[Data Type] The data type of the input elements.
- * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
- * |default "complex_float64"
- * |preview disable
  *
  * |param title The title of the plot
  * |default "Spectrogram"
@@ -99,7 +93,7 @@ class MySpectrogramRasterData;
  * |preview disable
  *
  * |mode graphWidget
- * |factory /widgets/spectrogram(dtype)
+ * |factory /widgets/spectrogram()
  * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
@@ -117,12 +111,12 @@ class Spectrogram : public QWidget, public Pothos::Block
     Q_OBJECT
 public:
 
-    static Block *make(const Pothos::DType &dtype)
+    static Block *make(void)
     {
-        return new Spectrogram(dtype);
+        return new Spectrogram();
     }
 
-    Spectrogram(const Pothos::DType &dtype);
+    Spectrogram(void);
 
     ~Spectrogram(void);
 
@@ -200,7 +194,7 @@ public:
     void activate(void);
     void deactivate(void);
     void work(void);
-    void updateCurve(Pothos::InputPort *inPort);
+    bool updateCurve(Pothos::InputPort *inPort);
 
     //allow for standard resize controls with the default size policy
     QSize minimumSizeHint(void) const
@@ -234,7 +228,6 @@ private:
     double _refLevel;
     double _dynRange;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
-
-    std::function<void(Pothos::InputPort *, CArray &)> _inputConverter;
+    Pothos::BufferChunk _rasterBuff;
     QwtColorMap *makeColorMap(void) const;
 };

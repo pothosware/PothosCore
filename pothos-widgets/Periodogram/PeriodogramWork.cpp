@@ -12,28 +12,8 @@
  **********************************************************************/
 void Periodogram::activate(void)
 {
-    this->setupPlotterCurves();
-}
-
-void Periodogram::setupPlotterCurves(void)
-{
-    //clear old curves
-    _curves.clear();
-
-    //continued setup for the curves
-    size_t whichCurve = 0;
-    for (const auto &pair : _curves)
-    {
-        auto &curve = pair.second;
-        {
-            curve->attach(_mainPlot);
-            curve->setPen(pastelize(getDefaultCurveColor(whichCurve)));
-            whichCurve++;
-        }
-    }
-
     //install legend for multiple channels
-    if (whichCurve > 1) QMetaObject::invokeMethod(this, "installLegend", Qt::QueuedConnection);
+    if (this->inputs().size() > 1) QMetaObject::invokeMethod(this, "installLegend", Qt::QueuedConnection);
 }
 
 /***********************************************************************
@@ -67,6 +47,14 @@ void Periodogram::handlePowerBins(const int index, const std::valarray<float> &p
     {
         auto freq = (_sampleRateWoAxisUnits*i)/(powerBins.size()-1) - _sampleRateWoAxisUnits/2;
         points[i] = QPointF(freq+_centerFreqWoAxisUnits, powerBins[i]);
+    }
+
+    auto &curve = _curves[index];
+    if (not curve)
+    {
+        curve.reset(new QwtPlotCurve(QString("Ch%1").arg(index)));
+        curve->attach(_mainPlot);
+        curve->setPen(pastelize(getDefaultCurveColor(index)));
     }
     _curves.at(index)->setSamples(points);
 }

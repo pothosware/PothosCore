@@ -248,8 +248,7 @@ private:
     double _dynRange;
     bool _autoScale;
 
-    //set of curves per index
-    void setupPlotterCurves(void);
+    //per-port data structs
     std::map<size_t, std::chrono::high_resolution_clock::time_point> _lastUpdateTimes;
     std::map<size_t, Pothos::BufferChunk> _rasterBuffs;
     std::map<size_t, std::shared_ptr<QwtPlotCurve>> _curves;
