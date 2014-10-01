@@ -15,6 +15,7 @@
 #include <functional> //std::reference_wrapper
 #include <cstdlib> //size_t
 #include <utility> //std::forward
+#include <atomic>
 #include <iosfwd>
 
 namespace Pothos {
@@ -73,8 +74,7 @@ struct POTHOS_API ObjectContainer
     virtual const std::type_info &type(void) const = 0;
     virtual const std::type_info &rawType(void) const = 0;
 
-    void *counter; //opaque pointer to atomic counter
-    char counterMem[64]; //large enough for counter (inplace new)
+    std::atomic<int> counter;
 
     static void throwExtract(const Object &obj, const std::type_info &type);
 

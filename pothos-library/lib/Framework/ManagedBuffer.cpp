@@ -3,7 +3,7 @@
 
 #include <Pothos/Framework/ManagedBuffer.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
-#include <Poco/AtomicCounter.h>
+#include <atomic>
 #include <cassert>
 
 struct Pothos::ManagedBuffer::Impl
@@ -14,7 +14,7 @@ struct Pothos::ManagedBuffer::Impl
     {
         return;
     }
-    Poco::AtomicCounter counter;
+    std::atomic<int> counter;
     std::weak_ptr<BufferManager> weakManager;
     SharedBuffer buffer;
     size_t slabIndex;
@@ -29,7 +29,7 @@ Pothos::ManagedBuffer::ManagedBuffer(void):
 void Pothos::ManagedBuffer::reset(void)
 {
     //decrement the counter, and handle the last ref case
-    if (_impl != nullptr and (--_impl->counter) == 0)
+    if (_impl != nullptr and _impl->counter.fetch_sub(1) == 1)
     {
         //there is a manager to push to, otherwise delete
         std::shared_ptr<BufferManager> manager = _impl->weakManager.lock();
@@ -70,7 +70,7 @@ Pothos::ManagedBuffer &Pothos::ManagedBuffer::operator=(const ManagedBuffer &obj
 {
     this->reset();
     this->_impl = obj._impl;
-    if (_impl != nullptr) _impl->counter++;
+    if (_impl != nullptr) _impl->counter.fetch_add(1);
     return *this;
 }
 

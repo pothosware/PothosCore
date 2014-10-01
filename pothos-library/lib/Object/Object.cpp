@@ -4,7 +4,6 @@
 #include <Pothos/Object/ObjectImpl.hpp>
 #include <Pothos/Object/Exception.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
-#include <Poco/AtomicCounter.h>
 #include <Poco/Format.h>
 #include <cassert>
 
@@ -32,12 +31,10 @@ Pothos::NullObject::~NullObject(void)
 /***********************************************************************
  * Object container
  **********************************************************************/
-Pothos::Detail::ObjectContainer::ObjectContainer(void)
+Pothos::Detail::ObjectContainer::ObjectContainer(void):
+    counter(1)
 {
-    static_assert(
-        sizeof(Pothos::Detail::ObjectContainer::counterMem) >= sizeof(Poco::AtomicCounter),
-        "Pothos::Detail::ObjectContainer() counter memory too small!");
-    this->counter = new (this->counterMem) Poco::AtomicCounter(1);
+   return;
 }
 
 Pothos::Detail::ObjectContainer::~ObjectContainer(void)
@@ -48,15 +45,13 @@ Pothos::Detail::ObjectContainer::~ObjectContainer(void)
 static void incr(Pothos::Detail::ObjectContainer *o)
 {
     if (o == nullptr) return;
-    Poco::AtomicCounter &counter = *reinterpret_cast<Poco::AtomicCounter *>(o->counter);
-    ++counter;
+    o->counter.fetch_add(1);
 }
 
 static bool decr(Pothos::Detail::ObjectContainer *o)
 {
     if (o == nullptr) return false;
-    Poco::AtomicCounter &counter = *reinterpret_cast<Poco::AtomicCounter *>(o->counter);
-    return (--counter) == 0;
+    return o->counter.fetch_sub(1) == 1;
 }
 
 void Pothos::Detail::ObjectContainer::throwExtract(const Pothos::Object &obj, const std::type_info &type)
@@ -133,8 +128,7 @@ Pothos::Object &Pothos::Object::operator=(Object &&rhs)
 
 bool Pothos::Object::unique(void) const
 {
-    Poco::AtomicCounter &counter = *reinterpret_cast<Poco::AtomicCounter *>(_impl->counter);
-    return counter.value() == 1;
+    return _impl->counter == 1;
 }
 
 const std::type_info &Pothos::Object::type(void) const
