@@ -77,13 +77,14 @@ private:
 
 void NetworkSource::work(void)
 {
-    const auto timeout = Poco::Timespan(this->workInfo().maxTimeoutNs/1000);
+    const auto timeoutNanos = std::chrono::nanoseconds(this->workInfo().maxTimeoutNs);
+    const auto timeout = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(timeoutNanos);
 
     auto outputPort = this->output(0);
 
     //recv the header, use output buffer when possible for zero-copy
-    Poco::UInt16 type;
-    Poco::UInt64 index;
+    uint16_t type;
+    uint64_t index;
     auto buffer = outputPort->buffer();
     _ep.recv(type, index, buffer, timeout);
 
@@ -118,7 +119,8 @@ void NetworkSource::work(void)
         data.deserialize(iss);
         _lastDtype = data.extract<Pothos::DType>();
     }
-    else this->yield();
+
+    return this->yield(); //always yield to service recv() again
 }
 
 static Pothos::BlockRegistry registerNetworkSource(

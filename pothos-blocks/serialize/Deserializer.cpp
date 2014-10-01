@@ -60,7 +60,7 @@ static Pothos::BlockRegistry registerDeserializer(
  */
 static bool inspectPacket(const Pothos::BufferChunk &packet, bool &isFragment, size_t &pkt_bytes)
 {
-    auto vrlp_pkt = packet.as<const Poco::UInt32 *>();
+    auto vrlp_pkt = packet.as<const uint32_t *>();
     auto p = packet.as<const char *>();
     if ((p[0] == 'm') and (p[1] == 'V') and (p[2] == 'R') and (p[3] == 'L'))
     {
@@ -80,7 +80,7 @@ static bool inspectPacket(const Pothos::BufferChunk &packet, bool &isFragment, s
 static void unpackBuffer(const Pothos::BufferChunk &packet, size_t &seq, size_t &sid, bool &has_tsf, unsigned long long &tsf, bool &is_ext, Pothos::BufferChunk &payloadBuff)
 {
     #define unpackCheck(cond) if (not (cond)) throw Pothos::AssertionViolationException("Deserializer::unpackBuffer()", "failed assertion: " #cond)
-    auto p = packet.as<const Poco::UInt32 *>();
+    auto p = packet.as<const uint32_t *>();
 
     //validate vrlp
     assert(Poco::ByteOrder::fromNetwork(p[0]) == mVRL);
@@ -115,7 +115,7 @@ static void unpackBuffer(const Pothos::BufferChunk &packet, size_t &seq, size_t 
     sid = Poco::ByteOrder::fromNetwork(p[3]);
 
     //only valid when has_tsf
-    tsf = (Poco::UInt64(Poco::ByteOrder::fromNetwork(p[4])) << 32) | Poco::ByteOrder::fromNetwork(p[5]);
+    tsf = (uint64_t(Poco::ByteOrder::fromNetwork(p[4])) << 32) | Poco::ByteOrder::fromNetwork(p[5]);
 
     //set out buff
     const size_t hdr_words32 = has_tsf? 6 : 4;

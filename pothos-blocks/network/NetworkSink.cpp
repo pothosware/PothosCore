@@ -83,8 +83,8 @@ public:
     {
         while (running)
         {
-            Poco::UInt16 type;
-            Poco::UInt64 index;
+            uint16_t type;
+            uint64_t index;
             Pothos::BufferChunk buffer;
             _ep.recv(type, index, buffer);
         }
@@ -137,7 +137,7 @@ void NetworkSink::work(void)
     {
         std::ostringstream oss;
         Pothos::Object(buffer.dtype).serialize(oss);
-        _ep.send(PothosPacketTypeDType, inputPort->totalMessages(), oss.str().data(), oss.str().length());
+        _ep.send(PothosPacketTypeDType, 0, oss.str().data(), oss.str().length());
         _lastDtype = buffer.dtype;
     }
 

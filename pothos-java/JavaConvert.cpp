@@ -3,8 +3,8 @@
 
 #include <Pothos/Plugin.hpp>
 #include "JavaProxy.hpp"
-#include <Poco/Types.h>
 #include <Poco/Bugcheck.h>
+#include <cstdint>
 #include <cassert>
 
 /***********************************************************************
@@ -100,21 +100,21 @@ pothos_static_block(pothosRegisterJavaPrimitiveConversions)
     Pothos::PluginRegistry::addCall("/proxy/converters/java/uchar_to_jbyte",
         &convertNumToJPrimitive<'B', unsigned char>);
     Pothos::PluginRegistry::add("/proxy/converters/java/jbyte_to_int8",
-        Pothos::ProxyConvertPair("B", &convertJPrimitiveToNum<'B', Poco::Int8>));
+        Pothos::ProxyConvertPair("B", &convertJPrimitiveToNum<'B', int8_t>));
 
     Pothos::PluginRegistry::addCall("/proxy/converters/java/sshort_to_jshort",
         &convertNumToJPrimitive<'S', signed short>);
     Pothos::PluginRegistry::addCall("/proxy/converters/java/ushort_to_jshort",
         &convertNumToJPrimitive<'S', unsigned short>);
     Pothos::PluginRegistry::add("/proxy/converters/java/jshort_to_int16",
-        Pothos::ProxyConvertPair("S", &convertJPrimitiveToNum<'S', Poco::Int16>));
+        Pothos::ProxyConvertPair("S", &convertJPrimitiveToNum<'S', int16_t>));
 
     Pothos::PluginRegistry::addCall("/proxy/converters/java/sint_to_jint",
         &convertNumToJPrimitive<'I', signed int>);
     Pothos::PluginRegistry::addCall("/proxy/converters/java/uint_to_jint",
         &convertNumToJPrimitive<'I', unsigned int>);
     Pothos::PluginRegistry::add("/proxy/converters/java/jint_to_int32",
-        Pothos::ProxyConvertPair("I", &convertJPrimitiveToNum<'I', Poco::Int32>));
+        Pothos::ProxyConvertPair("I", &convertJPrimitiveToNum<'I', int32_t>));
 
     #ifndef POCO_LONG_IS_64_BIT
     Pothos::PluginRegistry::addCall("/proxy/converters/java/slong_to_jint",
@@ -133,7 +133,7 @@ pothos_static_block(pothosRegisterJavaPrimitiveConversions)
     Pothos::PluginRegistry::addCall("/proxy/converters/java/ullong_to_jlong",
         &convertNumToJPrimitive<'J', unsigned long long>);
     Pothos::PluginRegistry::add("/proxy/converters/java/jlong_to_int64",
-        Pothos::ProxyConvertPair("J", &convertJPrimitiveToNum<'J', Poco::Int64>));
+        Pothos::ProxyConvertPair("J", &convertJPrimitiveToNum<'J', int64_t>));
 
     Pothos::PluginRegistry::addCall("/proxy/converters/java/float_to_jfloat",
         &convertNumToJPrimitive<'F', float>);
@@ -243,21 +243,21 @@ pothos_static_block(pothosRegisterJavaArrayConversions)
     Pothos::PluginRegistry::addCall("/proxy/converters/java/vecuchar_to_jbytearray",
         &convertNumericVectorToJArray<'B', unsigned char>);
     Pothos::PluginRegistry::add("/proxy/converters/java/jbytearray_to_vecint8",
-        Pothos::ProxyConvertPair("[B", &convertJArrayToNumericVector<'B', Poco::Int8>));
+        Pothos::ProxyConvertPair("[B", &convertJArrayToNumericVector<'B', int8_t>));
 
     Pothos::PluginRegistry::addCall("/proxy/converters/java/vecsshort_to_jshortarray",
         &convertNumericVectorToJArray<'S', signed short>);
     Pothos::PluginRegistry::addCall("/proxy/converters/java/vecushort_to_jshortarray",
         &convertNumericVectorToJArray<'S', unsigned short>);
     Pothos::PluginRegistry::add("/proxy/converters/java/jshortarray_to_vecint16",
-        Pothos::ProxyConvertPair("[S", &convertJArrayToNumericVector<'S', Poco::Int16>));
+        Pothos::ProxyConvertPair("[S", &convertJArrayToNumericVector<'S', int16_t>));
 
     Pothos::PluginRegistry::addCall("/proxy/converters/java/vecsint_to_jintarray",
         &convertNumericVectorToJArray<'I', signed int>);
     Pothos::PluginRegistry::addCall("/proxy/converters/java/vecuint_to_jintarray",
         &convertNumericVectorToJArray<'I', unsigned int>);
     Pothos::PluginRegistry::add("/proxy/converters/java/jintarray_to_vecint32",
-        Pothos::ProxyConvertPair("[I", &convertJArrayToNumericVector<'I', Poco::Int32>));
+        Pothos::ProxyConvertPair("[I", &convertJArrayToNumericVector<'I', int32_t>));
 
     #ifndef POCO_LONG_IS_64_BIT
     Pothos::PluginRegistry::addCall("/proxy/converters/java/vecslong_to_jintarray",
@@ -276,7 +276,7 @@ pothos_static_block(pothosRegisterJavaArrayConversions)
     Pothos::PluginRegistry::addCall("/proxy/converters/java/vecullong_to_jlongarray",
         &convertNumericVectorToJArray<'J', unsigned long long>);
     Pothos::PluginRegistry::add("/proxy/converters/java/jlongarray_to_vecint64",
-        Pothos::ProxyConvertPair("[J", &convertJArrayToNumericVector<'J', Poco::Int64>));
+        Pothos::ProxyConvertPair("[J", &convertJArrayToNumericVector<'J', int64_t>));
 
     Pothos::PluginRegistry::addCall("/proxy/converters/java/vecfloat_to_jfloatarray",
         &convertNumericVectorToJArray<'F', float>);
