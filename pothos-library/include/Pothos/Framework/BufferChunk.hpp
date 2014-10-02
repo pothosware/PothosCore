@@ -153,21 +153,23 @@ public:
 
     /*!
      * Convert a buffer chunk to the specified data type.
+     * When the number of elements are 0, the entire buffer is converted.
      * \throws BufferConvertError when the conversion is not possible
      * \param dtype the data type of the result buffer
      * \param numElems the number of elements to convert
      * \return a new buffer chunk with converted elements
      */
-    BufferChunk convert(const DType &dtype, const size_t numElems) const;
+    BufferChunk convert(const DType &dtype, const size_t numElems = 0) const;
 
     /*!
      * Convert a buffer chunk of complex elements to two real buffers.
+     * When the number of elements are 0, the entire buffer is converted.
      * \throws BufferConvertError when the conversion is not possible
      * \param dtype the data type of the result buffer
      * \param numElems the number of elements to convert
      * \return a real + complex pair of buffer chunks
      */
-    std::pair<BufferChunk, BufferChunk> convertComplex(const DType &dtype, const size_t numElems) const;
+    std::pair<BufferChunk, BufferChunk> convertComplex(const DType &dtype, const size_t numElems = 0) const;
 
 private:
     SharedBuffer _buffer;
