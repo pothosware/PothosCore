@@ -6,6 +6,8 @@ POTHOS_MODULE_UTIL(
     SOURCES
         Delay.cpp
         Pacer.cpp
+        Converter.cpp
+        TestConverter.cpp
         PeriodicTrigger.cpp
         TestPeriodicTrigger.cpp
         Copier.cpp
