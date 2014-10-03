@@ -104,20 +104,6 @@ void Pothos::WorkerActor::postWorkTasks(void)
         bytesConsumed += bytes;
         msgsConsumed += port._totalMessages;
 
-        //pop the consumed bytes from the accumulator
-        if (bytes != 0)
-        {
-            if (bytes > port._impl->bufferAccumulator.getTotalBytesAvailable())
-            {
-                poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %d bytes, %d available",
-                    block->getName(), port.name(), int(bytes), int(port._impl->bufferAccumulator.getTotalBytesAvailable()));
-            }
-            else port._impl->bufferAccumulator.pop(bytes);
-        }
-
-        //move consumed elements into total
-        port._totalElements += port._pendingElements;
-
         //propagate labels and delete old
         size_t numLabels = 0;
         auto &allLabels = port._impl->inlineMessages;
@@ -142,6 +128,20 @@ void Pothos::WorkerActor::postWorkTasks(void)
 
             allLabels.erase(allLabels.begin(), allLabels.begin()+numLabels);
         }
+
+        //pop the consumed bytes from the accumulator
+        if (bytes != 0)
+        {
+            if (bytes > port._impl->bufferAccumulator.getTotalBytesAvailable())
+            {
+                poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %d bytes, %d available",
+                    block->getName(), port.name(), int(bytes), int(port._impl->bufferAccumulator.getTotalBytesAvailable()));
+            }
+            else port._impl->bufferAccumulator.pop(bytes);
+        }
+
+        //move consumed elements into total
+        port._totalElements += port._pendingElements;
     }
 
     //update consumption stats, bytes are incremental, messages cumulative
