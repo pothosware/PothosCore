@@ -39,14 +39,22 @@ public:
             outputPort->postMessage(m);
         }
 
-        auto elems = this->workInfo().minElements;
-        if (elems == 0) return;
-        std::memcpy(
-            outputPort->buffer().as<void *>(),
-            inputPort->buffer().as<const void *>(),
-            elems*1);
-        inputPort->consume(elems);
-        outputPort->produce(elems);
+        //get input buffer
+        auto inBuff = inputPort->buffer();
+        if (inBuff.length == 0) return;
+
+        //setup output buffer
+        auto outBuff = outputPort->buffer();
+        outBuff.dtype = inBuff.dtype;
+        outBuff.length = std::min(inBuff.elements(), outBuff.elements())*outBuff.dtype.size();
+
+        //copy input to output
+        std::memcpy(outBuff.as<void *>(), inBuff.as<const void *>(), outBuff.length);
+
+        //produce/consume
+        inputPort->consume(outBuff.length);
+        outputPort->popBuffer(outBuff.length);
+        outputPort->postBuffer(outBuff);
     }
 };
 
