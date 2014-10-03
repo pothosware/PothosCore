@@ -5,6 +5,7 @@ POTHOS_MODULE_UTIL(
     TARGET UtilityBlocks
     SOURCES
         Delay.cpp
+        TestDelay.cpp
         Pacer.cpp
         Converter.cpp
         TestConverter.cpp
