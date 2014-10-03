@@ -49,13 +49,7 @@ public:
 
         //accumulate the buffer into a bigger buffer
         const auto &buffer = inputPort->buffer();
-        if (buffer.length != 0)
-        {
-            Pothos::BufferChunk biggerBuffer = Pothos::SharedBuffer::make(buffer.length + _buffer.length);
-            std::memcpy((void *)biggerBuffer.address, (const void *)_buffer.address, _buffer.length);
-            std::memcpy((void *)(biggerBuffer.address+_buffer.length), (const void *)buffer.address, buffer.length);
-            _buffer = biggerBuffer;
-        }
+        if (buffer.length != 0) _buffer.append(buffer);
 
         //consume buffer
         inputPort->consume(inputPort->elements());
