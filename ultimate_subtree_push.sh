@@ -12,6 +12,7 @@ pothos-util
 pothos-java
 pothos-blocks
 pothos-serialization
+pothos-sdr
 "
 
 for PREFIX in $COMPONENTS; do
