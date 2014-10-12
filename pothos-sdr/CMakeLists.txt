@@ -14,9 +14,9 @@ include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
 ########################################################################
 ## Find SoapySDR
 ########################################################################
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
-find_package(SoapySDR)
-if (SOAPY_SDR_FOUND)
+find_package(SoapySDR NO_MODULE)
+
+if (SoapySDR_FOUND)
     message(STATUS "SOAPY_SDR_INCLUDE_DIRS: ${SOAPY_SDR_INCLUDE_DIRS}")
     message(STATUS "SOAPY_SDR_LIBRARIES: ${SOAPY_SDR_LIBRARIES}")
 else()
@@ -27,11 +27,11 @@ endif()
 ########################################################################
 ## Build and install module
 ########################################################################
-include_directories(${SOAPY_SDR_INCLUDE_DIRS})
+include_directories(${SoapySDR_INCLUDE_DIRS})
 POTHOS_MODULE_UTIL(
     TARGET SDRSupport
     SOURCES SDRSource.cpp SDRSink.cpp
-    LIBRARIES ${SOAPY_SDR_LIBRARIES}
+    LIBRARIES ${SoapySDR_LIBRARIES}
     DESTINATION blocks/sdr
     ENABLE_DOCS
 )
