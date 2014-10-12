@@ -337,7 +337,7 @@ private:
     std::vector<OutputPort*> _indexedOutputs;
     std::map<std::string, InputPort*> _namedInputs;
     std::map<std::string, OutputPort*> _namedOutputs;
-    std::map<std::string, Callable> _calls;
+    std::multimap<std::string, Callable> _calls;
     std::map<std::string, std::pair<std::string, std::string>> _probes;
     ThreadPool _threadPool;
     Block(const Block &){} // non construction-copyable

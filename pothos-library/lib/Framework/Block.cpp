@@ -124,14 +124,11 @@ void Pothos::Block::setupOutput(const size_t index, const DType &dtype, const st
 
 void Pothos::Block::registerCallable(const std::string &name, const Callable &call)
 {
-    if (name.empty()) throw PortAccessError("Pothos::Block::registerCallable()", "empty name");
-    if (_calls.count(name) > 0) throw PortAccessError("Pothos::Block::registerCallable("+name+")", "already registered");
-
-    _calls[name] = call;
+    _calls.insert(std::make_pair(name, call));
 
     //automatic registration of slots for calls that take arguments and are not "private"
     const bool isPrivate = name.front() == '_';
-    if (call.getNumArgs() > 0 and not isPrivate) this->registerSlot(name);
+    if (call.getNumArgs() > 0 and not isPrivate and _namedInputs.count(name) == 0) this->registerSlot(name);
 }
 
 void Pothos::Block::registerSignal(const std::string &name)
@@ -183,12 +180,30 @@ Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const P
     }
 
     //check if the name is a registered call
-    auto it = _calls.find(name);
-    if (it == _calls.end())
+    const size_t numMatches = _calls.count(name);
+
+    //no matches throw error
+    if (numMatches == 0) throw Pothos::BlockCallNotFound("Pothos::Block::call("+name+")", "method does not exist in registry");
+
+    //only one match, try the call and let it error out
+    if (numMatches == 1) return _calls.find(name)->second.opaqueCall(inputArgs, numArgs);
+
+    //otherwise try a match
+    const auto ret = _calls.equal_range(name);
+    for (auto it = ret.first; it != ret.second; ++it)
     {
-        throw Pothos::BlockCallNotFound("Pothos::Block::call("+name+")", "method does not exist in registry");
+        const auto &call = it->second;
+        if (call.getNumArgs() != numArgs) continue;
+        for (size_t i = 0; i < numArgs; i++)
+        {
+            if (not inputArgs[i].canConvert(call.type(i))) goto next;
+        }
+        return call.opaqueCall(inputArgs, numArgs);
+        next: continue;
     }
-    return it->second.opaqueCall(inputArgs, numArgs);
+
+    //could not find a match, error out
+    throw Pothos::BlockCallNotFound("Pothos::Block::call("+name+")", "method match failed");
 }
 
 Pothos::Object Pothos::Block::opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
