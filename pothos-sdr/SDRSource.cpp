@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <Pothos/Object/Containers.hpp>
 #include <SoapySDR/Device.hpp>
 #include <Poco/Logger.h>
 #include <iostream>
@@ -48,12 +49,12 @@
  * |param frequency0[Frequency] The center frequency of channel 0.
  * |units Hz
  * |default 1e9
- * |tab Frontend0
+ * |tab Channel 0
  *
  * |param tuneArgs0[Tune Args] Advanced key/value tuning parameters.
  * |default {}
  * |preview valid
- * |tab Frontend0
+ * |tab Channel 0
  *
  * |param gainMode0[Gain Mode] Gain selection mode for channel 0.
  * The possible options are automatic mode or manual mode.
@@ -62,7 +63,7 @@
  * |option [Automatic] true
  * |option [Manual] false
  * |preview valid
- * |tab Frontend0
+ * |tab Channel 0
  *
  * |param gain0[Gain Value] The overall amplification of channel 0.
  * The user may also provide a dictionary of name to gain values
@@ -71,11 +72,11 @@
  * |units dB
  * |default 0.0
  * |preview valid
- * |tab Frontend0
+ * |tab Channel 0
  *
  * |param antenna0[Antenna] The selected antenna for channel 0.
  * |default ""
- * |tab Frontend0
+ * |tab Channel 0
  * |preview valid
  * |widget StringEntry()
  *
@@ -83,7 +84,7 @@
  * |units Hz
  * |default 0.0
  * |preview valid
- * |tab Frontend0
+ * |tab Channel 0
  *
  * |param clockRate[Clock rate] The master reference clock rate.
  * |default 0.0
@@ -107,6 +108,11 @@
  * |initializer setupDevice(deviceArgs)
  * |initializer setupStream(streamArgs)
  * |setter setSampleRate(sampleRate)
+ * |setter setFrequency0(frequency0, tuneArgs0)
+ * |setter setGainMode0(gainMode0)
+ * |setter setGain0(gain0)
+ * |setter setAntenna0(antenna0)
+ * |setter setBandwidth0(bandwidth0)
  * |setter setClockRate(clockRate)
  * |setter setClockSource(clockSource)
  * |setter setTimeSource(timeSource)
@@ -131,18 +137,53 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, setupStream));
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, setSampleRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, getSampleRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, getSampleRates));
+        this->registerProbe("getSampleRate");
+        this->registerProbe("getSampleRates");
 
         //frontend
-        //this->registerCallable("setFrequency", Pothos::Callable(&SDRSource::setFrequency).bind(std::ref(*this), 0));
-        //this->registerCallable("setFrequency", Pothos::Callable(&SDRSource::setFrequency).bind(std::ref(*this), 0).bind(std::map<std::string, std::string>(), 3));
+        for (size_t i = 0; i < 4; i++)
+        {
+            //freq with tune args
+            this->registerCallable("setFrequency"+std::to_string(i), Pothos::Callable(&SDRSource::setFrequency).bind(std::ref(*this), 0).bind(i, 1));
+            //freq without tune args
+            this->registerCallable("setFrequency"+std::to_string(i), Pothos::Callable(&SDRSource::setFrequency).bind(std::ref(*this), 0).bind(i, 1).bind(std::map<std::string, std::string>(), 3));
+            this->registerCallable("getFrequency"+std::to_string(i), Pothos::Callable(&SDRSource::getFrequency).bind(std::ref(*this), 0).bind(i, 1));
+            //gain by name
+            this->registerCallable("setGain"+std::to_string(i), Pothos::Callable::make<const size_t, const std::string &>(&SDRSource::setGain).bind(std::ref(*this), 0).bind(i, 1));
+            this->registerCallable("getGain"+std::to_string(i), Pothos::Callable::make<const size_t, const std::string &>(&SDRSource::getGain).bind(std::ref(*this), 0).bind(i, 1));
+            //gain overall
+            this->registerCallable("setGain"+std::to_string(i), Pothos::Callable::make<const size_t, const double>(&SDRSource::setGain).bind(std::ref(*this), 0).bind(i, 1));
+            this->registerCallable("getGain"+std::to_string(i), Pothos::Callable::make<const size_t, double>(&SDRSource::getGain).bind(std::ref(*this), 0).bind(i, 1));
+            //gain set dict
+            this->registerCallable("setGain"+std::to_string(i), Pothos::Callable::make<const size_t, const Pothos::ObjectMap &>(&SDRSource::setGain).bind(std::ref(*this), 0).bind(i, 1));
+            this->registerCallable("getGainNames"+std::to_string(i), Pothos::Callable(&SDRSource::getGainNames).bind(std::ref(*this), 0).bind(i, 1));
+            this->registerCallable("setGainMode"+std::to_string(i), Pothos::Callable(&SDRSource::setGainMode).bind(std::ref(*this), 0).bind(i, 1));
+            this->registerCallable("setAntenna"+std::to_string(i), Pothos::Callable(&SDRSource::setAntenna).bind(std::ref(*this), 0).bind(i, 1));
+            this->registerCallable("getAntenna"+std::to_string(i), Pothos::Callable(&SDRSource::getAntenna).bind(std::ref(*this), 0).bind(i, 1));
+            this->registerCallable("getAntennas"+std::to_string(i), Pothos::Callable(&SDRSource::getAntennas).bind(std::ref(*this), 0).bind(i, 1));
+            this->registerCallable("setBandwidth"+std::to_string(i), Pothos::Callable(&SDRSource::setBandwidth).bind(std::ref(*this), 0).bind(i, 1));
+            this->registerCallable("getBandwidth"+std::to_string(i), Pothos::Callable(&SDRSource::getBandwidth).bind(std::ref(*this), 0).bind(i, 1));
+            this->registerCallable("getBandwidths"+std::to_string(i), Pothos::Callable(&SDRSource::getBandwidths).bind(std::ref(*this), 0).bind(i, 1));
+            //TODO more probes here
+        }
 
         //clocking
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, setClockRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, getClockRate));
+        this->registerProbe("getClockRate");
+
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, setClockSource));
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, getClockSource));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, getClockSources));
+        this->registerProbe("getClockSource");
+        this->registerProbe("getClockSources");
+
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, setTimeSource));
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, getTimeSource));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, getTimeSources));
+        this->registerProbe("getTimeSource");
+        this->registerProbe("getTimeSources");
     }
 
     ~SDRSource(void)
@@ -215,22 +256,115 @@ public:
         return _device->getSampleRate(SOAPY_SDR_RX, _channels.front());
     }
 
+    std::vector<double> getSampleRates(void) const
+    {
+        return _device->listSampleRates(SOAPY_SDR_RX, _channels.front());
+    }
+
     /*******************************************************************
      * Frontend config
      ******************************************************************/
     void setFrequency(const size_t chan, const double freq, const std::map<std::string, std::string> &args)
     {
+        if (chan >= _channels.size()) return;
         return _device->setFrequency(SOAPY_SDR_RX, _channels.at(chan), freq, args);
+    }
+
+    double getFrequency(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return 0.0;
+        return _device->getFrequency(SOAPY_SDR_RX, _channels.at(chan));
+    }
+
+    void setGainMode(const size_t chan, const bool automatic)
+    {
+        if (chan >= _channels.size()) return;
+        return _device->setGainMode(SOAPY_SDR_RX, _channels.at(chan), automatic);
+    }
+
+    double getGainMode(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return false;
+        return _device->getGainMode(SOAPY_SDR_RX, _channels.at(chan));
     }
 
     void setGain(const size_t chan, const std::string &name, const double gain)
     {
+        if (chan >= _channels.size()) return;
         return _device->setGain(SOAPY_SDR_RX, _channels.at(chan), name, gain);
+    }
+
+    double getGain(const size_t chan, const std::string &name) const
+    {
+        if (chan >= _channels.size()) return 0.0;
+        return _device->getGain(SOAPY_SDR_RX, _channels.at(chan), name);
+    }
+
+    void setGain(const size_t chan, const double gain)
+    {
+        if (chan >= _channels.size()) return;
+        return _device->setGain(SOAPY_SDR_RX, _channels.at(chan), gain);
+    }
+
+    double getGain(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return 0.0;
+        return _device->getGain(SOAPY_SDR_RX, _channels.at(chan));
+    }
+
+    void setGain(const size_t chan, const Pothos::ObjectMap &args)
+    {
+        if (chan >= _channels.size()) return;
+        for (const auto &pair : args)
+        {
+            const auto name = pair.first.convert<std::string>();
+            const auto gain = pair.second.convert<double>();
+            _device->setGain(SOAPY_SDR_RX, _channels.at(chan), name, gain);
+        }
+    }
+
+    std::vector<std::string> getGainNames(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return std::vector<std::string>();
+        return _device->listGains(SOAPY_SDR_RX, _channels.at(chan));
     }
 
     void setAntenna(const size_t chan, const std::string &name)
     {
+        if (chan >= _channels.size()) return;
+        if (name.empty()) return;
         return _device->setAntenna(SOAPY_SDR_RX, _channels.at(chan), name);
+    }
+
+    std::string getAntenna(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return "";
+        return _device->getAntenna(SOAPY_SDR_RX, _channels.at(chan));
+    }
+
+    std::vector<std::string> getAntennas(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return std::vector<std::string>();
+        return _device->listAntennas(SOAPY_SDR_RX, _channels.at(chan));
+    }
+
+    void setBandwidth(const size_t chan, const double bandwidth)
+    {
+        if (chan >= _channels.size()) return;
+        if (bandwidth == 0) return;
+        return _device->setBandwidth(SOAPY_SDR_RX, _channels.at(chan), bandwidth);
+    }
+
+    double getBandwidth(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return 0.0;
+        return _device->getBandwidth(SOAPY_SDR_RX, _channels.at(chan));
+    }
+
+    std::vector<double> getBandwidths(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return std::vector<double>();
+        return _device->listBandwidths(SOAPY_SDR_RX, _channels.at(chan));
     }
 
     /*******************************************************************
@@ -258,6 +392,11 @@ public:
         return _device->getClockSource();
     }
 
+    std::vector<std::string> getClockSources(void) const
+    {
+        return _device->listClockSources();
+    }
+
     void setTimeSource(const std::string &source)
     {
         if (source.empty()) return;
@@ -267,6 +406,11 @@ public:
     std::string getTimeSource(void) const
     {
         return _device->getTimeSource();
+    }
+
+    std::vector<std::string> getTimeSources(void) const
+    {
+        return _device->listTimeSources();
     }
 
     /*******************************************************************
@@ -282,7 +426,11 @@ public:
         //TODO check result
         _device->activateStream(_stream);
 
-        //TODO emit configuration...
+        //emit configuration TODO
+        for (const size_t chan : _channels)
+        {
+            
+        }
     }
 
     void deactivate(void)
