@@ -45,6 +45,41 @@
  * |default 1e6
  * |tab Streaming
  *
+ * |param frequency0[Frequency] The center frequency of channel 0.
+ * |units Hz
+ * |default 1e9
+ * |tab Frontend0
+ *
+ * |param tuneArgs0[Tune Args] Advanced key/value tuning parameters.
+ * |default {}
+ * |tab Frontend0
+ *
+ * |param gainMode0[Gain Mode] Gain selection mode for channel 0.
+ * The possible options are automatic mode or manual mode.
+ * In manual mode the user-provided gain value will be used.
+ * |default false
+ * |option [Automatic] true
+ * |option [Manual] false
+ * |tab Frontend0
+ *
+ * |param gain0[Gain Value] The overall amplification of channel 0.
+ * The user may also provide a dictionary of name to gain values
+ * where each name represents an amplification element in the chain.
+ * Example: {"BB" : 10.0, "RF" : "5.5"}
+ * |units dB
+ * |default 0.0
+ * |tab Frontend0
+ *
+ * |param antenna0[Antenna] The selected antenna for channel 0.
+ * |default ""
+ * |tab Frontend0
+ * |widget StringEntry()
+ *
+ * |param bandwidth0[Bandwidth] The filter bandwidth for channel 0.
+ * |units Hz
+ * |default 0.0
+ * |tab Frontend0
+ *
  * |param clockRate[Clock rate] The master reference clock rate.
  * |default 0.0
  * |units Hz
@@ -85,10 +120,18 @@ public:
         _stream(nullptr)
     {
         for (size_t i = 0; i < channels.size(); i++) this->setupOutput(i, dtype);
+
+        //streaming
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, setupDevice));
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, setupStream));
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, setSampleRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, getSampleRate));
+
+        //frontend
+        //this->registerCallable("setFrequency", Pothos::Callable(&SDRSource::setFrequency).bind(std::ref(*this), 0));
+        //this->registerCallable("setFrequency", Pothos::Callable(&SDRSource::setFrequency).bind(std::ref(*this), 0).bind(std::map<std::string, std::string>(), 3));
+
+        //clocking
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, setClockRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, getClockRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(SDRSource, setClockSource));
@@ -103,6 +146,9 @@ public:
         if (_device != nullptr) SoapySDR::Device::unmake(_device);
     }
 
+    /*******************************************************************
+     * Device object creation
+     ******************************************************************/
     static SoapySDR::Device *makeDevice(const std::map<std::string, std::string> &deviceArgs)
     {
         return SoapySDR::Device::make(deviceArgs);
@@ -113,6 +159,27 @@ public:
         _deviceFuture = std::async(std::launch::async, &SDRSource::makeDevice, deviceArgs);
     }
 
+    /*******************************************************************
+     * Delayed method dispatch
+     ******************************************************************/
+    Pothos::Object opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
+    {
+        //try to setup the device future first
+        if (name == "setupDevice") return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
+
+        //when ready forward the call to the handler
+        if (this->isReady()) return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
+
+        //cache attempted settings when not ready
+        const bool isSetter = (name.size() > 3 and name.substr(0, 3) == "set");
+        if (isSetter) _cachedArgs[name] = std::vector<Pothos::Object>(inputArgs, inputArgs+numArgs);
+        else throw Pothos::Exception("SDRSource::"+name+"()", "device not ready");
+        return Pothos::Object();
+    }
+
+    /*******************************************************************
+     * Stream config
+     ******************************************************************/
     void setupStream(const std::map<std::string, std::string> &streamArgs)
     {
         //create format string from the dtype
@@ -130,21 +197,6 @@ public:
         _stream = _device->setupStream(SOAPY_SDR_RX, format, _channels, streamArgs);
     }
 
-    Pothos::Object opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
-    {
-        //try to setup the device future first
-        if (name == "setupDevice") return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
-
-        //when ready forward the call to the handler
-        if (this->isReady()) return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
-
-        //cache attempted settings when not ready
-        const bool isSetter = (name.size() > 3 and name.substr(0, 3) == "set");
-        if (isSetter) _cachedArgs[name] = std::vector<Pothos::Object>(inputArgs, inputArgs+numArgs);
-        else throw Pothos::Exception("SDRSource::"+name+"()", "device not ready");
-        return Pothos::Object();
-    }
-
     void setSampleRate(const double rate)
     {
         for (const size_t chan : _channels)
@@ -158,6 +210,27 @@ public:
         return _device->getSampleRate(SOAPY_SDR_RX, _channels.front());
     }
 
+    /*******************************************************************
+     * Frontend config
+     ******************************************************************/
+    void setFrequency(const size_t chan, const double freq, const std::map<std::string, std::string> &args)
+    {
+        return _device->setFrequency(SOAPY_SDR_RX, _channels.at(chan), freq, args);
+    }
+
+    void setGain(const size_t chan, const std::string &name, const double gain)
+    {
+        return _device->setGain(SOAPY_SDR_RX, _channels.at(chan), name, gain);
+    }
+
+    void setAntenna(const size_t chan, const std::string &name)
+    {
+        return _device->setAntenna(SOAPY_SDR_RX, _channels.at(chan), name);
+    }
+
+    /*******************************************************************
+     * Clocking config
+     ******************************************************************/
     void setClockRate(const double rate)
     {
         if (rate == 0.0) return;
@@ -191,6 +264,9 @@ public:
         return _device->getTimeSource();
     }
 
+    /*******************************************************************
+     * Streaming implementation
+     ******************************************************************/
     void activate(void)
     {
         if (not this->isReady())
@@ -198,11 +274,15 @@ public:
             throw Pothos::Exception("SDRSource::activate()", "device not ready");
         }
         //TODO other arguments
+        //TODO check result
         _device->activateStream(_stream);
+
+        //TODO emit configuration...
     }
 
     void deactivate(void)
     {
+        //TODO check result
         _device->deactivateStream(_stream);
     }
 
