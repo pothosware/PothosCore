@@ -37,7 +37,7 @@
  * |param streamArgs[Stream Args] Additional stream arguments.
  * A map of key/value string pairs with implementation-specific meaning.
  * |default {}
- * |preview disable
+ * |preview valid
  * |tab Streaming
  *
  * |param sampleRate[Sample Rate] The rate of sample stream on each channel.
@@ -52,6 +52,7 @@
  *
  * |param tuneArgs0[Tune Args] Advanced key/value tuning parameters.
  * |default {}
+ * |preview valid
  * |tab Frontend0
  *
  * |param gainMode0[Gain Mode] Gain selection mode for channel 0.
@@ -60,6 +61,7 @@
  * |default false
  * |option [Automatic] true
  * |option [Manual] false
+ * |preview valid
  * |tab Frontend0
  *
  * |param gain0[Gain Value] The overall amplification of channel 0.
@@ -68,33 +70,36 @@
  * Example: {"BB" : 10.0, "RF" : "5.5"}
  * |units dB
  * |default 0.0
+ * |preview valid
  * |tab Frontend0
  *
  * |param antenna0[Antenna] The selected antenna for channel 0.
  * |default ""
  * |tab Frontend0
+ * |preview valid
  * |widget StringEntry()
  *
  * |param bandwidth0[Bandwidth] The filter bandwidth for channel 0.
  * |units Hz
  * |default 0.0
+ * |preview valid
  * |tab Frontend0
  *
  * |param clockRate[Clock rate] The master reference clock rate.
  * |default 0.0
  * |units Hz
- * |preview disable
+ * |preview valid
  * |tab Clocking
  *
  * |param clockSource[Clock Source] The source of the reference clock.
  * |default ""
- * |preview disable
+ * |preview valid
  * |tab Clocking
  * |widget StringEntry()
  *
  * |param timeSource[Time Source] The source of the hardware time.
  * |default ""
- * |preview disable
+ * |preview valid
  * |tab Clocking
  * |widget StringEntry()
  *
