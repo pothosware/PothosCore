@@ -177,14 +177,36 @@ void GraphBlock::setPropertyName(const QString &key, const QString &name)
     _impl->changed = true;
 }
 
+/*!
+ * determine if a value is valid (boolean true)
+ * empty data types are considered to be false.
+ */
+static bool isValid(const QString &value)
+{
+    if (value.isEmpty()) return false;
+    if (value == "\"\"") return false;
+    if (value == "''") return false;
+    if (value == "0") return false;
+    if (value == "0.0") return false;
+    if (value == "{}") return false;
+    if (value == "[]") return false;
+    if (value == "()") return false;
+    if (value == "false") return false;
+    return true;
+}
+
 bool GraphBlock::getPropertyPreview(const QString &key) const
 {
     auto it = _impl->propertiesPreview.find(key);
-    if (it != _impl->propertiesPreview.end()) return it->second;
-    return true; //default is ON
+    if (it == _impl->propertiesPreview.end()) return true; //default is ON
+    if (it->second == "enable") return true;
+    if (it->second == "disable") return false;
+    if (it->second == "valid") return isValid(this->getPropertyValue(key));
+    if (it->second == "invalid") return not isValid(this->getPropertyValue(key));
+    return true;
 }
 
-void GraphBlock::setPropertyPreview(const QString &key, const bool value)
+void GraphBlock::setPropertyPreviewMode(const QString &key, const QString &value)
 {
     _impl->propertiesPreview[key] = value;
 }

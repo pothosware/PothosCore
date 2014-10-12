@@ -36,7 +36,7 @@ struct GraphBlock::Impl
     std::vector<QStaticText> propertiesText;
     std::map<QString, QString> propertiesValues;
     std::map<QString, QString> propertiesNames;
-    std::map<QString, bool> propertiesPreview;
+    std::map<QString, QString> propertiesPreview;
     std::map<QString, QString> propertiesErrorMsg;
     std::map<QString, std::string> propertiesTypeStr;
 

@@ -57,8 +57,8 @@ void GraphBlock::initPropertiesFromDesc(void)
 
         if (param->has("preview"))
         {
-            const auto prev = param->getValue<std::string>("preview");
-            this->setPropertyPreview(key, prev == "enabled");
+            const auto prevMode = param->getValue<std::string>("preview");
+            this->setPropertyPreviewMode(key, QString::fromStdString(prevMode));
         }
     }
 }
