@@ -71,7 +71,7 @@ public:
     const std::string &getPropertyTypeStr(const QString &key) const;
 
     bool getPropertyPreview(const QString &key) const;
-    void setPropertyPreview(const QString &key, const bool value);
+    void setPropertyPreviewMode(const QString &key, const QString &value);
 
     void addInputPort(const QString &portKey);
     const QStringList &getInputPorts(void) const;
