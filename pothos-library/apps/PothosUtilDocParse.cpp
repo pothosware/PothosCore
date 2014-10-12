@@ -347,8 +347,8 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
             if (currentParam->has("preview")) throw Pothos::SyntaxException(
                 "Multiple occurrence of preview for param",
                 codeLine.toString());
-            if (payload != "disable" and payload != "enable") throw Pothos::SyntaxException(
-                "Only supports enable/disable as value for preview option of param",
+            if (payload != "disable" and payload != "enable" and payload != "valid" and payload != "invalid") throw Pothos::SyntaxException(
+                "Only supports enable/disable/valid/invalid as value for preview option of param",
                 codeLine.toString());
             currentParam->set("preview", payload);
         }
