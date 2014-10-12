@@ -217,8 +217,11 @@ QString BlockPropertiesPanel::getParamDocString(const QString &propKey)
 {
     const auto paramDesc = _block->getParamDesc(propKey);
     assert(paramDesc);
+    QString unitsStr;
+    if (paramDesc->has("units")) unitsStr = QString(" (%1)")
+        .arg(QString::fromStdString(paramDesc->getValue<std::string>("units")).toHtmlEscaped());
     QString output;
-    output += QString("<h3>%1</h3>").arg(_block->getPropertyName(propKey).toHtmlEscaped());
+    output += QString("<h3>%1%2</h3>").arg(_block->getPropertyName(propKey).toHtmlEscaped()).arg(unitsStr);
     if (paramDesc->isArray("desc")) for (const auto &lineObj : *paramDesc->getArray("desc"))
     {
         const auto line = lineObj.extract<std::string>();
