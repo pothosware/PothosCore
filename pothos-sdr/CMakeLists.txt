@@ -17,10 +17,10 @@ include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
 find_package(SoapySDR NO_MODULE)
 
 if (SoapySDR_FOUND)
-    message(STATUS "SOAPY_SDR_INCLUDE_DIRS: ${SOAPY_SDR_INCLUDE_DIRS}")
-    message(STATUS "SOAPY_SDR_LIBRARIES: ${SOAPY_SDR_LIBRARIES}")
+    message(STATUS "SoapySDR_INCLUDE_DIRS: ${SoapySDR_INCLUDE_DIRS}")
+    message(STATUS "SoapySDR_LIBRARIES: ${SoapySDR_LIBRARIES}")
 else()
-    message(WARNING "Pothos SDR blocks require SoapySDR to continue")
+    message(WARNING "Pothos SDR blocks require SoapySDR, skipping...")
     return()
 endif()
 

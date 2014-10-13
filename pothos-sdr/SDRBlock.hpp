@@ -4,7 +4,6 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Object/Containers.hpp>
 #include <SoapySDR/Device.hpp>
-#include <SoapySDR/Version.hpp>
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
 #include <iostream>
@@ -319,11 +318,21 @@ public:
         return _device->listTimeSources();
     }
 
+    void setHardwareTime(const long long timeNs)
+    {
+        return _device->setHardwareTime(timeNs);
+    }
+
+    long long getHardwareTime(void) const
+    {
+        return _device->getHardwareTime();
+    }
+
     /*******************************************************************
      * Streaming implementation
      ******************************************************************/
-    virtual void activate(void) = 0;
-    virtual void deactivate(void) = 0;
+    virtual void activate(void);
+    virtual void deactivate(void);
     virtual void work(void) = 0;
 
 protected:
@@ -348,6 +357,8 @@ protected:
 
         return true;
     }
+
+    void emitActivationSignals(void);
 
     const int _direction;
     const std::vector<size_t> _channels;

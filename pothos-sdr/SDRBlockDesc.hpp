@@ -48,7 +48,7 @@
  * |default ""
  * |preview valid
  * |widget StringEntry()
- * |tab Streaming
+ * |tab Channels
  *
  * |param frequency[Frequency] The center frequency of the chain.
  * Provide a single value for all channels or a list of values for each channel.
