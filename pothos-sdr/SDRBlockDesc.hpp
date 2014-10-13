@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: BSL-1.0
 
 /***********************************************************************
- * |PothosDoc @TITLE@
+ * |PothosDoc SDR @TITLE@
  *
- * The SDR source block configures the receiver end of an SDR
- * and forwards baseband samples into 1 or more output streams.
+ * The SDR @TITLE@ block configures the @XCVR@ end of an SDR
+ * and interfaces baseband samples to 1 or more data ports.
  *
  * |category @CATEGORY@
  * |category /SDR
@@ -16,7 +16,8 @@
  * |preview disable
  * |tab Streaming
  *
- * |param dtype[Data Type] The data type produced by the SDR source.
+ * |param dtype[Data Type] The data type used by the stream ports.
+ * The type is homogenous across all streaming channels.
  * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
  * |default "complex_float32"
  * |preview disable
@@ -30,6 +31,9 @@
  *
  * |param streamArgs[Stream Args] Additional stream arguments.
  * A map of key/value string pairs with implementation-specific meaning.
+ * <ul>
+ * <li>Example to set the wire format: {"WIRE" : "sc16"}</li>
+ * </ul>
  * |default {}
  * |preview valid
  * |tab Streaming
@@ -54,6 +58,9 @@
  * |tab Channels
  *
  * |param tuneArgs[Tune Args] Advanced key/value tuning parameters.
+ * <ul>
+ * <li>Example to set an LO offset: {"OFFSET" : "1e6"}</li>
+ * </ul>
  * |default {}
  * |preview valid
  * |tab Channels

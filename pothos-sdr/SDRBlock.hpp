@@ -13,7 +13,7 @@
 class SDRBlock : public Pothos::Block
 {
 public:
-    SDRBlock(const int direction, const Pothos::DType &dtype, const std::vector<size_t> &channels);
+    SDRBlock(const int direction, const std::vector<size_t> &channels);
     virtual ~SDRBlock(void);
 
     /*******************************************************************
@@ -154,11 +154,6 @@ public:
         for (size_t i = 0; i < _channels.size(); i++) this->setGain(i, gain);
     }
 
-    void setGain(const std::vector<double> &gains)
-    {
-        for (size_t i = 0; i < gains.size(); i++) this->setGain(i, gains[i]);
-    }
-
     void setGain(const Pothos::ObjectMap &gain)
     {
         for (size_t i = 0; i < _channels.size(); i++) this->setGain(i, gain);
@@ -166,7 +161,11 @@ public:
 
     void setGain(const Pothos::ObjectVector &gains)
     {
-        for (size_t i = 0; i < gains.size(); i++) this->callVoid("setGain", i, gains[i]);
+        for (size_t i = 0; i < gains.size(); i++)
+        {
+            if (gains[i].canConvert(typeid(Pothos::ObjectMap))) this->setGain(i, gains[i].convert<Pothos::ObjectMap>());
+            else this->setGain(i, gains[i].convert<double>());
+        }
     }
 
     void setGain(const size_t chan, const std::string &name, const double gain)

@@ -30,9 +30,19 @@ endif()
 set(TITLE "Source")
 set(CATEGORY "/Sources")
 set(PATH "/sdr/source")
+set(XCVR "receiver")
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/SDRBlockDesc.hpp
     ${CMAKE_CURRENT_BINARY_DIR}/SDRSourceDesc.hpp
+@ONLY)
+
+set(TITLE "Sink")
+set(CATEGORY "/Sinks")
+set(PATH "/sdr/sink")
+set(XCVR "transmitter")
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/SDRBlockDesc.hpp
+    ${CMAKE_CURRENT_BINARY_DIR}/SDRSinkDesc.hpp
 @ONLY)
 
 ########################################################################
@@ -49,4 +59,5 @@ POTHOS_MODULE_UTIL(
     DESTINATION sdr
     DOC_SOURCES
         ${CMAKE_CURRENT_BINARY_DIR}/SDRSourceDesc.hpp
+        ${CMAKE_CURRENT_BINARY_DIR}/SDRSinkDesc.hpp
 )

@@ -3,7 +3,7 @@
 
 #include "SDRBlock.hpp"
 
-SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::vector<size_t> &channels):
+SDRBlock::SDRBlock(const int direction, const std::vector<size_t> &channels):
     _direction(direction),
     _channels(channels),
     _device(nullptr),
@@ -30,7 +30,6 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerCallable("setGainMode", Pothos::Callable::make<const bool>(&SDRBlock::setGainMode).bind(std::ref(*this), 0));
     this->registerCallable("setGainMode", Pothos::Callable::make<const std::vector<bool> &>(&SDRBlock::setGainMode).bind(std::ref(*this), 0));
     this->registerCallable("setGain", Pothos::Callable::make<const double>(&SDRBlock::setGain).bind(std::ref(*this), 0));
-    this->registerCallable("setGain", Pothos::Callable::make<const std::vector<double> &>(&SDRBlock::setGain).bind(std::ref(*this), 0));
     this->registerCallable("setGain", Pothos::Callable::make<const Pothos::ObjectMap &>(&SDRBlock::setGain).bind(std::ref(*this), 0));
     this->registerCallable("setGain", Pothos::Callable::make<const Pothos::ObjectVector &>(&SDRBlock::setGain).bind(std::ref(*this), 0));
     this->registerCallable("setAntenna", Pothos::Callable::make<const std::string &>(&SDRBlock::setAntenna).bind(std::ref(*this), 0));
