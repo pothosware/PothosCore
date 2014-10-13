@@ -23,16 +23,43 @@ public:
     void work(void)
     {
         int flags = 0;
-        const long long timeNs = 0;
-        const size_t numElems = this->workInfo().minInElements;
+        long long timeNs = 0;
+        size_t numElems = this->workInfo().minInElements;
         if (numElems == 0) return;
+
+        //parse labels (from input 0)
+        for (const auto &label : this->input(0)->labels())
+        {
+            //found a time label
+            if (label.id == "txTime")
+            {
+                if (label.index == 0) //time for this packet
+                {
+                    flags |= SOAPY_SDR_HAS_TIME;
+                    timeNs = label.data.convert<long long>();
+                }
+                else //time on the next packet
+                {
+                    numElems = label.index-1;
+                    break;
+                }
+            }
+            //found an end label
+            if (label.id == "txEnd")
+            {
+                flags |= SOAPY_SDR_END_BURST;
+                numElems = label.index-1;
+                break;
+            }
+        }
+
+        //write the stream data
         const long timeoutUs = this->workInfo().maxTimeoutNs/1000;
         const auto &buffs = this->workInfo().inputPointers;
         const int ret = _device->writeStream(_stream, buffs.data(), numElems, flags, timeNs, timeoutUs);
 
-        //TODO labels
-
-        if (ret > 0) for (auto input : this->inputs()) input->consume(ret);
+        //handle result
+        if (ret > 0) for (auto input : this->inputs()) input->consume(size_t(ret));
         else if (ret == SOAPY_SDR_TIMEOUT) return this->yield();
         else throw Pothos::Exception("SDRSink::work()", "writeStream "+std::to_string(ret));
     }
