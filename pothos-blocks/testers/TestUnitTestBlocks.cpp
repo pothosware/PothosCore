@@ -30,8 +30,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_unit_test_blocks)
     feeder.callProxy("feedBuffer", b1);
 
     //feed labels within buffer length
-    feeder.callProxy("feedLabel", Pothos::Label("lbl0", 3));
-    feeder.callProxy("feedLabel", Pothos::Label("lbl1", 5));
+    feeder.callProxy("feedLabel", Pothos::Label("id0", "lbl0", 3));
+    feeder.callProxy("feedLabel", Pothos::Label("id1", "lbl1", 5));
 
     //run the topology
     {
@@ -64,6 +64,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_unit_test_blocks)
 
     //check labels
     POTHOS_TEST_EQUAL(lbls.size(), 2);
+    POTHOS_TEST_EQUAL(lbls[0].id, "id0");
+    POTHOS_TEST_EQUAL(lbls[1].id, "id1");
     POTHOS_TEST_EQUAL(lbls[0].index, 3);
     POTHOS_TEST_EQUAL(lbls[1].index, 5);
     POTHOS_TEST_TRUE(lbls[0].data.type() == typeid(std::string));
