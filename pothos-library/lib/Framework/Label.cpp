@@ -19,7 +19,7 @@ Pothos::LabelIteratorRange::LabelIteratorRange(void):
 
 static auto managedLabel = Pothos::ManagedClass()
     .registerConstructor<Pothos::Label>()
-    .registerConstructor<Pothos::Label, const Pothos::Object &, const unsigned long long>()
+    .registerConstructor<Pothos::Label, const std::string &, const Pothos::Object &, const unsigned long long>()
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, id))
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, data))
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, index))

@@ -4,7 +4,8 @@
 from . PothosModule import *
 
 class Label(object):
-    def __init__(self, data, index):
+    def __init__(self, id, data, index):
+        self.id = id
         self.data = data
         self.index = index
 

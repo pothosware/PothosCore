@@ -28,7 +28,7 @@ public:
 
     //! Create a label with specified data of ValueType and index
     template <typename ValueType>
-    Label(ValueType &&data, const unsigned long long index);
+    Label(const std::string &id, ValueType &&data, const unsigned long long index);
 
     /*!
      * The identifier describes the label's type, meaning, or purpose.
@@ -97,8 +97,10 @@ private:
 } //namespace Pothos
 
 template <typename ValueType>
-Pothos::Label::Label(ValueType &&data, const unsigned long long index):
-    data(Object(std::forward<ValueType>(data))), index(index)
+Pothos::Label::Label(const std::string &id, ValueType &&data, const unsigned long long index):
+    id(id),
+    data(Object(std::forward<ValueType>(data))),
+    index(index)
 {
     return;
 }
