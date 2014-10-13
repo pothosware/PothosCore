@@ -25,13 +25,28 @@ else()
 endif()
 
 ########################################################################
+## Generate block descriptions
+########################################################################
+set(TITLE "Source")
+set(CATEGORY "/Sources")
+set(PATH "/sdr/source")
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/SDRBlockDesc.hpp
+    ${CMAKE_CURRENT_BINARY_DIR}/SDRSourceDesc.hpp
+@ONLY)
+
+########################################################################
 ## Build and install module
 ########################################################################
 include_directories(${SoapySDR_INCLUDE_DIRS})
 POTHOS_MODULE_UTIL(
     TARGET SDRSupport
-    SOURCES SDRSource.cpp SDRSink.cpp
+    SOURCES
+        SDRBlock.cpp
+        SDRSource.cpp
+        SDRSink.cpp
     LIBRARIES ${SoapySDR_LIBRARIES}
-    DESTINATION blocks/sdr
-    ENABLE_DOCS
+    DESTINATION sdr
+    DOC_SOURCES
+        ${CMAKE_CURRENT_BINARY_DIR}/SDRSourceDesc.hpp
 )
