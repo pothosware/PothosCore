@@ -25,15 +25,16 @@ public:
         int flags = 0;
         const long long timeNs = 0;
         const size_t numElems = this->workInfo().minInElements;
+        if (numElems == 0) return;
         const long timeoutUs = this->workInfo().maxTimeoutNs/1000;
         const auto &buffs = this->workInfo().inputPointers;
         const int ret = _device->writeStream(_stream, buffs.data(), numElems, flags, timeNs, timeoutUs);
 
         //TODO labels
 
-        if (ret > 0) for (auto output : this->outputs()) output->produce(numElems);
+        if (ret > 0) for (auto input : this->inputs()) input->consume(ret);
         else if (ret == SOAPY_SDR_TIMEOUT) return this->yield();
-        else poco_error_f1(Poco::Logger::get("SDRSink"), "writeStream %d", ret);
+        else throw Pothos::Exception("SDRSink::work()", "writeStream "+std::to_string(ret));
     }
 };
 

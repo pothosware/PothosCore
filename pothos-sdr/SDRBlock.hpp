@@ -68,9 +68,10 @@ public:
 
     void setSampleRate(const double rate)
     {
-        for (const size_t chan : _channels)
+        for (size_t i = 0; i < _channels.size(); i++)
         {
-            _device->setSampleRate(_direction, chan, rate);
+            _device->setSampleRate(_direction, _channels.at(i), rate);
+            _pendingLabels[i]["rxRate"] = Pothos::Object(_device->getSampleRate(_direction, _channels.at(i)));
         }
     }
 
@@ -111,6 +112,7 @@ public:
     {
         if (chan >= _channels.size()) return;
         if (freq == 0.0) return;
+        _pendingLabels[chan]["rxFreq"] = Pothos::Object(_device->getFrequency(_direction, _channels.at(chan)));
         return _device->setFrequency(_direction, _channels.at(chan), freq, args);
     }
 
@@ -367,4 +369,6 @@ protected:
 
     std::map<std::string, std::vector<Pothos::Object>> _cachedArgs;
     std::shared_future<SoapySDR::Device *> _deviceFuture;
+
+    std::vector<std::map<std::string, Pothos::Object>> _pendingLabels;
 };

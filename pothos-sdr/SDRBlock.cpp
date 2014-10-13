@@ -8,7 +8,8 @@ SDRBlock::SDRBlock(const int direction, const std::vector<size_t> &channels):
     _direction(direction),
     _channels(channels),
     _device(nullptr),
-    _stream(nullptr)
+    _stream(nullptr),
+    _pendingLabels(channels.size())
 {
     if (SoapySDR::getABIVersion() != SOAPY_SDR_ABI_VERSION) throw Pothos::Exception("SDRBlock::make()",
         Poco::format("Failed ABI check. Pothos SDR %s. Soapy SDR %s. Rebuild the module.",
