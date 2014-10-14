@@ -89,6 +89,7 @@ SDRBlock::SDRBlock(const int direction, const std::vector<size_t> &channels):
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getTimeSources));
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setHardwareTime));
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getHardwareTime));
+    this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setCommandTime));
 
     //probes
     this->registerProbe("getSampleRate");

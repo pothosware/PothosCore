@@ -24,6 +24,7 @@
  * <li>setClockSource(source)</li>
  * <li>setTimeSource(source)</li>
  * <li>setHardwareTime(timeNs)</li>
+ * <li>setCommandTime(timeNs)</li>
  * </ul>
  *
  * All calls which a channel parameter also have the following call variants.

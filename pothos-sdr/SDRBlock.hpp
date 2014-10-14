@@ -330,6 +330,11 @@ public:
         return _device->getHardwareTime();
     }
 
+    void setCommandTime(const long long timeNs)
+    {
+        return _device->setCommandTime(timeNs);
+    }
+
     /*******************************************************************
      * Streaming implementation
      ******************************************************************/
