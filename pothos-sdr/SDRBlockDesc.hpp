@@ -7,6 +7,34 @@
  * The SDR @TITLE@ block configures the @XCVR@ end of an SDR
  * and interfaces baseband samples to 1 or more data ports.
  *
+ * The SDR @TITLE@ block has a number of setter methods that double as slots
+ * which can be used to make configuration calls from an external block:
+ * <ul>
+ * <li>setSampleRate(rate)</li>
+ * <li>setFrontendMap(mapping)</li>
+ * <li>setFrequency(chan, freq)</li>
+ * <li>setFrequency(chan, freq, tuneArgs)</li>
+ * <li>setGainMode(chan, automatic)</li>
+ * <li>setGain(chan, gain)</li>
+ * <li>setGain(chan, name, gain)</li>
+ * <li>setGain(chan, gainDict)</li>
+ * <li>setAntenna(chan, antenna)</li>
+ * <li>setBandwidth(chan, bw)</li>
+ * <li>setClockRate(rate)</li>
+ * <li>setClockSource(source)</li>
+ * <li>setTimeSource(source)</li>
+ * <li>setHardwareTime(timeNs)</li>
+ * </ul>
+ *
+ * All calls which a channel parameter also have the following call variants.
+ * Consider setFoo(3, val):
+ * <ul>
+ * <li>setFoo(3, val) sets val on channel 3</li>
+ * <li>setFoo3(val) also sets on for channel 3</li>
+ * <li>setFoo(val) sets val on all channels</li>
+ * <li>setFoo(valArray) sets valArray[i] on channel[i]</li>
+ * </ul>
+ *
  * |category @CATEGORY@
  * |category /SDR
  *
