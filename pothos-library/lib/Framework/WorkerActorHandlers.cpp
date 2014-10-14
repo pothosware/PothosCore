@@ -208,6 +208,7 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
     }
     POTHOS_EXCEPTION_CATCH(const Exception &ex)
     {
+        this->activeState = false;
         this->Send(ex.displayText(), from);
     }
     this->bump();
@@ -215,6 +216,13 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
 
 void Pothos::WorkerActor::handleDeactivateWorkMessage(const DeactivateWorkMessage &, const Theron::Address from)
 {
+    //not activated? just return
+    if (not this->activeState)
+    {
+        this->Send(std::string(""), from);
+        return;
+    }
+
     POTHOS_EXCEPTION_TRY
     {
         this->activeState = false;
