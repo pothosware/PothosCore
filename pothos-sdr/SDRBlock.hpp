@@ -23,40 +23,12 @@ public:
     /*******************************************************************
      * Delayed method dispatch
      ******************************************************************/
-    Pothos::Object opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
-    {
-        //try to setup the device future first
-        if (name == "setupDevice") return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
-
-        //when ready forward the call to the handler
-        if (this->isReady()) return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
-
-        //cache attempted settings when not ready
-        const bool isSetter = (name.size() > 3 and name.substr(0, 3) == "set");
-        if (isSetter) _cachedArgs[name] = std::vector<Pothos::Object>(inputArgs, inputArgs+numArgs);
-        else throw Pothos::Exception("SDRBlock::"+name+"()", "device not ready");
-        return Pothos::Object();
-    }
+    Pothos::Object opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs);
 
     /*******************************************************************
      * Stream config
      ******************************************************************/
-    void setupStream(const std::map<std::string, std::string> &streamArgs)
-    {
-        //create format string from the dtype
-        std::string format;
-        if (_dtype.isComplex()) format += "C";
-        if (_dtype.isFloat()) format += "F";
-        else if (_dtype.isInteger() and _dtype.isSigned()) format += "S";
-        else if (_dtype.isInteger() and not _dtype.isSigned()) format += "U";
-        size_t bits = _dtype.elemSize()*8;
-        if (_dtype.isComplex()) bits /= 2;
-        format += std::to_string(bits);
-
-        //create the stream
-        _stream = _device->setupStream(_direction, format, _channels, streamArgs);
-        assert(_stream != nullptr);
-    }
+    void setupStream(const std::map<std::string, std::string> &streamArgs);
 
     void setSampleRate(const double rate)
     {

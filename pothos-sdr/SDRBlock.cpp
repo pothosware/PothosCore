@@ -123,6 +123,38 @@ void SDRBlock::setupDevice(const std::map<std::string, std::string> &deviceArgs)
     _deviceFuture = std::async(std::launch::async, &makeDevice, deviceArgs);
 }
 
+Pothos::Object SDRBlock::opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
+{
+    //try to setup the device future first
+    if (name == "setupDevice") return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
+
+    //when ready forward the call to the handler
+    if (this->isReady()) return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
+
+    //cache attempted settings when not ready
+    const bool isSetter = (name.size() > 3 and name.substr(0, 3) == "set");
+    if (isSetter) _cachedArgs[name] = std::vector<Pothos::Object>(inputArgs, inputArgs+numArgs);
+    else throw Pothos::Exception("SDRBlock::"+name+"()", "device not ready");
+    return Pothos::Object();
+}
+
+void SDRBlock::setupStream(const std::map<std::string, std::string> &streamArgs)
+{
+    //create format string from the dtype
+    std::string format;
+    if (_dtype.isComplex()) format += "C";
+    if (_dtype.isFloat()) format += "F";
+    else if (_dtype.isInteger() and _dtype.isSigned()) format += "S";
+    else if (_dtype.isInteger() and not _dtype.isSigned()) format += "U";
+    size_t bits = _dtype.elemSize()*8;
+    if (_dtype.isComplex()) bits /= 2;
+    format += std::to_string(bits);
+
+    //create the stream
+    _stream = _device->setupStream(_direction, format, _channels, streamArgs);
+    assert(_stream != nullptr);
+}
+
 bool SDRBlock::isReady(void)
 {
     if (_device != nullptr) return true;
@@ -160,14 +192,14 @@ void SDRBlock::emitActivationSignals(void)
     for (size_t i = 0; i < _channels.size(); i++)
     {
         const auto chanStr = std::to_string(i);
-        this->callVoid("getFrequency"+chanStr, this->getFrequency(i));
-        this->callVoid("getGain"+chanStr, this->getGain(i));
-        this->callVoid("getGainNames"+chanStr, this->getGainNames(i));
-        this->callVoid("getGainMode"+chanStr, this->getGainMode(i));
-        this->callVoid("getAntenna"+chanStr, this->getAntenna(i));
-        this->callVoid("getAntennas"+chanStr, this->getAntennas(i));
-        this->callVoid("getBandwidth"+chanStr, this->getBandwidth(i));
-        this->callVoid("getBandwidths"+chanStr, this->getBandwidths(i));
+        this->callVoid("getFrequency"+chanStr+"Triggered", this->getFrequency(i));
+        this->callVoid("getGain"+chanStr+"Triggered", this->getGain(i));
+        this->callVoid("getGainNames"+chanStr+"Triggered", this->getGainNames(i));
+        this->callVoid("getGainMode"+chanStr+"Triggered", this->getGainMode(i));
+        this->callVoid("getAntenna"+chanStr+"Triggered", this->getAntenna(i));
+        this->callVoid("getAntennas"+chanStr+"Triggered", this->getAntennas(i));
+        this->callVoid("getBandwidth"+chanStr+"Triggered", this->getBandwidth(i));
+        this->callVoid("getBandwidths"+chanStr+"Triggered", this->getBandwidths(i));
     }
 }
 
