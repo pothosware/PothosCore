@@ -885,6 +885,7 @@ void GraphEditor::updateExecutionEngine(void)
     catch (const Pothos::Exception &ex)
     {
         poco_error(Poco::Logger::get("PothosGui.GraphEditor.commitTopology"), ex.displayText());
+        getActionMap()["activateTopology"]->setChecked(false);
     }
 }
 
