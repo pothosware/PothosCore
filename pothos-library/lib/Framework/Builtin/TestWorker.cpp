@@ -93,3 +93,35 @@ POTHOS_TEST_BLOCK("/framework/tests", test_workers)
     delete w0;
     //delete w1;
 }
+
+struct ActivateThrower : Pothos::Block
+{
+    ActivateThrower(void)
+    {
+        this->setupInput(0, "float32");
+        this->input(0)->setReserve(1);
+    }
+
+    void activate(void)
+    {
+        std::cerr << "activate is going to throw!" << std::endl;
+        throw Pothos::Exception("ActivateThrower!");
+    }
+
+    void work(void)
+    {
+        std::cerr << "this work should never be called" << std::endl;
+    }
+};
+
+POTHOS_TEST_BLOCK("/framework/tests", test_activate_throw)
+{
+    auto w0 = std::shared_ptr<MyWorker0>(new MyWorker0());
+    auto w1 = std::shared_ptr<ActivateThrower>(new ActivateThrower());
+
+    {
+        Pothos::Topology t;
+        t.connect(w0, 0, w1, 0);
+        POTHOS_TEST_THROWS(t.commit(), Pothos::Exception);
+    }
+}
