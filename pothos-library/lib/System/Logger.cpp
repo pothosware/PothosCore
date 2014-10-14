@@ -18,6 +18,7 @@
 #include <Poco/SingletonHolder.h>
 #include <Poco/AutoPtr.h>
 #include <iostream>
+#include <chrono>
 #include <memory>
 #include <mutex>
 
@@ -39,7 +40,9 @@ public:
     InterceptStream(std::ostream& stream, const std::string &source):
       _logger(Poco::Logger::get(source)),
       _orgstream(stream),
-      _newstream(nullptr)
+      _newstream(nullptr),
+      _lastPut(std::chrono::high_resolution_clock::now()),
+      _flush(false)
     {
         //Swap the the old buffer in ostream with this buffer.
         _orgbuf=_orgstream.rdbuf(this);
@@ -55,6 +58,10 @@ public:
 protected:
     virtual std::streamsize xsputn(const char *msg, std::streamsize count)
     {
+        //has old data? force flush on sync regardless of newline
+        if ((std::chrono::high_resolution_clock::now() - _lastPut) > std::chrono::nanoseconds(long(0.5*1e9))) _flush = true;
+        _lastPut = std::chrono::high_resolution_clock::now();
+
         //Output to new stream with old buffer (to e.g. screen [std::cout])
         //_newstream->write(msg, count);
         //Output to logger
@@ -74,10 +81,12 @@ protected:
 
     int sync(void)
     {
-        if (not _outbuf.empty() and _outbuf.back() == '\n')
+        if (not _outbuf.empty() and (_outbuf.back() == '\n' or _flush))
         {
-            poco_information(_logger, _outbuf.substr(0, _outbuf.size()-1));
+            if (_outbuf.back() == '\n') _outbuf = _outbuf.substr(0, _outbuf.size()-1);
+            if (not _outbuf.empty()) {poco_information(_logger, _outbuf);}
             _outbuf.clear();
+            _flush = false;
         }
         return 0;
     }
@@ -88,6 +97,8 @@ private:
     std::streambuf*    _orgbuf;
     std::ostream&      _orgstream;
     std::unique_ptr<std::ostream>  _newstream;
+    std::chrono::high_resolution_clock::time_point _lastPut;
+    bool _flush;
 };
 
 /***********************************************************************
