@@ -34,9 +34,9 @@ std::pair<Flow, Flow> Pothos::Topology::Impl::createNetworkFlow(const Flow &flow
     //create the bind and connect source and sink blocks
     auto bindIp = Pothos::RemoteClient::lookupIpFromNodeId(bindEnv->getNodeId());
     assert(not bindIp.empty());
-    netBind = bindEnv->findProxy("Pothos/BlockRegistry").callProxy(netBindPath, "udt://"+bindIp, "BIND");
+    netBind = bindEnv->findProxy("Pothos/BlockRegistry").callProxy(netBindPath, "tcp://"+bindIp, "BIND");
     auto connectPort = netBind.call<std::string>("getActualPort");
-    auto connectUri = Poco::format("udt://%s:%s", bindIp, connectPort);
+    auto connectUri = Poco::format("tcp://%s:%s", bindIp, connectPort);
     netConn = connEnv->findProxy("Pothos/BlockRegistry").callProxy(netConnPath, connectUri, "CONNECT");
 
     //create the flows
