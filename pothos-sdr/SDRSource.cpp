@@ -12,7 +12,7 @@ public:
     }
 
     SDRSource(const Pothos::DType &dtype, const std::vector<size_t> &channels):
-        SDRBlock(SOAPY_SDR_RX, channels),
+        SDRBlock(SOAPY_SDR_RX, dtype, channels),
         _postTime(false)
     {
         for (size_t i = 0; i < channels.size(); i++) this->setupOutput(i, dtype);

@@ -12,21 +12,13 @@
 class SDRBlock : public Pothos::Block
 {
 public:
-    SDRBlock(const int direction, const std::vector<size_t> &channels);
+    SDRBlock(const int direction, const Pothos::DType &dtype, const std::vector<size_t> &channels);
     virtual ~SDRBlock(void);
 
     /*******************************************************************
      * Device object creation
      ******************************************************************/
-    static SoapySDR::Device *makeDevice(const std::map<std::string, std::string> &deviceArgs)
-    {
-        return SoapySDR::Device::make(deviceArgs);
-    }
-
-    void setupDevice(const std::map<std::string, std::string> &deviceArgs)
-    {
-        _deviceFuture = std::async(std::launch::async, &SDRBlock::makeDevice, deviceArgs);
-    }
+    void setupDevice(const std::map<std::string, std::string> &deviceArgs);
 
     /*******************************************************************
      * Delayed method dispatch
@@ -53,17 +45,17 @@ public:
     {
         //create format string from the dtype
         std::string format;
-        const auto dtype = this->output(0)->dtype();
-        if (dtype.isComplex()) format += "C";
-        if (dtype.isFloat()) format += "F";
-        else if (dtype.isInteger() and dtype.isSigned()) format += "S";
-        else if (dtype.isInteger() and not dtype.isSigned()) format += "U";
-        size_t bits = dtype.elemSize()*8;
-        if (dtype.isComplex()) bits /= 2;
+        if (_dtype.isComplex()) format += "C";
+        if (_dtype.isFloat()) format += "F";
+        else if (_dtype.isInteger() and _dtype.isSigned()) format += "S";
+        else if (_dtype.isInteger() and not _dtype.isSigned()) format += "U";
+        size_t bits = _dtype.elemSize()*8;
+        if (_dtype.isComplex()) bits /= 2;
         format += std::to_string(bits);
 
         //create the stream
         _stream = _device->setupStream(_direction, format, _channels, streamArgs);
+        assert(_stream != nullptr);
     }
 
     void setSampleRate(const double rate)
@@ -87,6 +79,7 @@ public:
 
     void setFrontendMap(const std::string &mapping)
     {
+        if (mapping.empty()) return;
         return _device->setFrontendMapping(_direction, mapping);
     }
 
@@ -343,31 +336,11 @@ public:
     virtual void work(void) = 0;
 
 protected:
-    bool isReady(void)
-    {
-        if (_device != nullptr) return true;
-        if (_deviceFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready) return false;
-        _device = _deviceFuture.get();
-
-        //call the cached settings now that the device exists
-        for (const auto &pair : _cachedArgs)
-        {
-            POTHOS_EXCEPTION_TRY
-            {
-                Pothos::Block::opaqueCallHandler(pair.first, pair.second.data(), pair.second.size());
-            }
-            POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
-            {
-                poco_error_f2(Poco::Logger::get("SDRBlock"), "call %s threw: %s", pair.first, ex.displayText());
-            }
-        }
-
-        return true;
-    }
-
+    bool isReady(void);
     void emitActivationSignals(void);
 
     const int _direction;
+    const Pothos::DType _dtype;
     const std::vector<size_t> _channels;
     SoapySDR::Device *_device;
     SoapySDR::Stream *_stream;

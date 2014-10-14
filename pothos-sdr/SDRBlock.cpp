@@ -3,9 +3,11 @@
 
 #include "SDRBlock.hpp"
 #include <SoapySDR/Version.hpp>
+#include <mutex>
 
-SDRBlock::SDRBlock(const int direction, const std::vector<size_t> &channels):
+SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::vector<size_t> &channels):
     _direction(direction),
+    _dtype(dtype),
     _channels(channels),
     _device(nullptr),
     _stream(nullptr),
@@ -107,6 +109,41 @@ SDRBlock::~SDRBlock(void)
 {
     if (_stream != nullptr) _device->closeStream(_stream);
     if (_device != nullptr) SoapySDR::Device::unmake(_device);
+}
+
+static SoapySDR::Device *makeDevice(const std::map<std::string, std::string> &deviceArgs)
+{
+    static std::mutex mutex; //protect device make -- its not thread safe
+    std::unique_lock<std::mutex> lock(mutex);
+    return SoapySDR::Device::make(deviceArgs);
+}
+
+void SDRBlock::setupDevice(const std::map<std::string, std::string> &deviceArgs)
+{
+    _deviceFuture = std::async(std::launch::async, &makeDevice, deviceArgs);
+}
+
+bool SDRBlock::isReady(void)
+{
+    if (_device != nullptr) return true;
+    if (_deviceFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready) return false;
+    _device = _deviceFuture.get();
+    assert(_device != nullptr);
+
+    //call the cached settings now that the device exists
+    for (const auto &pair : _cachedArgs)
+    {
+        POTHOS_EXCEPTION_TRY
+        {
+            Pothos::Block::opaqueCallHandler(pair.first, pair.second.data(), pair.second.size());
+        }
+        POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
+        {
+            poco_error_f2(Poco::Logger::get("SDRBlock"), "call %s threw: %s", pair.first, ex.displayText());
+        }
+    }
+
+    return true;
 }
 
 void SDRBlock::emitActivationSignals(void)

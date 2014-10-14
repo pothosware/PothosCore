@@ -42,7 +42,7 @@
  * |param deviceArgs[Device Args] Device construction arguments.
  * A map of key/value string pairs that identifies a SDR device.
  * |default {"driver":"null", "type":"null"}
- * |preview disable
+ * |preview valid
  * |tab Streaming
  *
  * |param dtype[Data Type] The data type used by the stream ports.
