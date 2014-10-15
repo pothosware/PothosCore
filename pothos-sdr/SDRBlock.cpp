@@ -3,6 +3,7 @@
 
 #include "SDRBlock.hpp"
 #include <SoapySDR/Version.hpp>
+#include <Poco/SingletonHolder.h>
 #include <mutex>
 
 SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::vector<size_t> &channels):
@@ -119,10 +120,16 @@ SDRBlock::~SDRBlock(void)
     if (_device != nullptr) SoapySDR::Device::unmake(_device);
 }
 
+static std::mutex &getMutex(void)
+{
+    static Poco::SingletonHolder<std::mutex> sh;
+    return *sh.get();
+}
+
 static SoapySDR::Device *makeDevice(const std::map<std::string, std::string> &deviceArgs)
 {
-    static std::mutex mutex; //protect device make -- its not thread safe
-    std::unique_lock<std::mutex> lock(mutex);
+    //protect device make -- its not thread safe
+    std::unique_lock<std::mutex> lock(getMutex());
     return SoapySDR::Device::make(deviceArgs);
 }
 
