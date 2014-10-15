@@ -35,10 +35,7 @@ class TopologyEngine : public QObject
     Q_OBJECT
 public:
     TopologyEngine(QObject *parent);
-    ~TopologyEngine(void)
-    {
-        this->clear();
-    }
+    ~TopologyEngine(void);
 
     //! Commit and run the topology
     void commitUpdate(const GraphObjectList &graphObjects);

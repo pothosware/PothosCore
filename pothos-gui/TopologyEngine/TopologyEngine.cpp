@@ -13,6 +13,7 @@
 #include <Poco/URI.h>
 #include <Poco/NumberParser.h>
 #include <Poco/MD5Engine.h>
+#include <Poco/Logger.h>
 #include <iostream>
 #include <cassert>
 
@@ -22,6 +23,18 @@ TopologyEngine::TopologyEngine(QObject *parent):
     _active(false)
 {
     return;
+}
+
+TopologyEngine::~TopologyEngine(void)
+{
+    try
+    {
+        this->clear();
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        poco_error(Poco::Logger::get("PothosGui.TopologyEngine.destructor"), ex.displayText());
+    }
 }
 
 void TopologyEngine::commitUpdate(const GraphObjectList &graphObjects)
