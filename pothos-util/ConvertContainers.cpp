@@ -53,6 +53,17 @@ static Pothos::ObjectMap convertProxyMapToObjectMap(const Pothos::ProxyMap &m)
     return objMap;
 }
 
+template <typename KeyType, typename ValType>
+std::map<KeyType, ValType> convertProxyMapToNativeMap(const Pothos::ProxyMap &m)
+{
+    std::map<KeyType, ValType> out;
+    for (const auto &pair : m)
+    {
+        out[pair.first.convert<KeyType>()] = pair.second.convert<ValType>();
+    }
+    return out;
+}
+
 static Pothos::ProxyVector convertObjectVectorToProxyVector(const Pothos::ObjectVector &v)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
@@ -113,6 +124,7 @@ pothos_static_block(pothosObjectRegisterConvertContainers)
     Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_object_vec", Pothos::Callable(&convertProxyVectorToObjectVector));
     Pothos::PluginRegistry::add("/object/convert/containers/proxy_set_to_object_set", Pothos::Callable(&convertProxySetToObjectSet));
     Pothos::PluginRegistry::add("/object/convert/containers/proxy_map_to_object_map", Pothos::Callable(&convertProxyMapToObjectMap));
+    Pothos::PluginRegistry::add("/object/convert/containers/proxy_map_to_string_map", Pothos::Callable(&convertProxyMapToNativeMap<std::string, std::string>));
 
     Pothos::PluginRegistry::add("/object/convert/containers/object_vec_to_proxy_vec", Pothos::Callable(&convertObjectVectorToProxyVector));
     Pothos::PluginRegistry::add("/object/convert/containers/object_set_to_proxy_set", Pothos::Callable(&convertObjectSetToProxySet));
