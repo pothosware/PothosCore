@@ -131,8 +131,16 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a04448ac265dd4ed39378803718ff73b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a87a9df3615757d7f76cda2d631bcc2bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#a87a9df3615757d7f76cda2d631bcc2bf">operator bool</a> (void) const </td></tr>
 <tr class="separator:a87a9df3615757d7f76cda2d631bcc2bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac60eb59526419f0a9c3b702181732ccb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#ac60eb59526419f0a9c3b702181732ccb">custom</a> (void) const </td></tr>
-<tr class="separator:ac60eb59526419f0a9c3b702181732ccb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04779e29232a992bf428c15983e6ac11"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#a04779e29232a992bf428c15983e6ac11">isCustom</a> (void) const </td></tr>
+<tr class="separator:a04779e29232a992bf428c15983e6ac11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc73d39e87f4b819f49e2a1c26a4690e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#abc73d39e87f4b819f49e2a1c26a4690e">isFloat</a> (void) const </td></tr>
+<tr class="separator:abc73d39e87f4b819f49e2a1c26a4690e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb8aacfbb9680637188675646899c114"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#acb8aacfbb9680637188675646899c114">isInteger</a> (void) const </td></tr>
+<tr class="separator:acb8aacfbb9680637188675646899c114"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbc465d2fcfc5c7b0bdc38de7faca25c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#adbc465d2fcfc5c7b0bdc38de7faca25c">isSigned</a> (void) const </td></tr>
+<tr class="separator:adbc465d2fcfc5c7b0bdc38de7faca25c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41263f9cf941e6beb6b9b6b0f09d298d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#a41263f9cf941e6beb6b9b6b0f09d298d">isComplex</a> (void) const </td></tr>
+<tr class="separator:a41263f9cf941e6beb6b9b6b0f09d298d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65e8b64921ed2c28b3ddc3f285a479d0"><td class="memTemplParams" colspan="2">template&lt;class Archive &gt; </td></tr>
 <tr class="memitem:a65e8b64921ed2c28b3ddc3f285a479d0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#a65e8b64921ed2c28b3ddc3f285a479d0">serialize</a> (Archive &amp;ar, const unsigned int version)</td></tr>
 <tr class="memdesc:a65e8b64921ed2c28b3ddc3f285a479d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization support.  <a href="#a65e8b64921ed2c28b3ddc3f285a479d0">More...</a><br/></td></tr>
@@ -320,31 +328,6 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="ac60eb59526419f0a9c3b702181732ccb"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool Pothos::DType::custom </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Does this dtype represent a custom type? </p>
-
-</div>
-</div>
 <a class="anchor" id="ac5dabb9e05bd7736bfed3391a090ed10"></a>
 <div class="memitem">
 <div class="memproto">
@@ -420,6 +403,96 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get the element type descriptor. </p>
+
+</div>
+</div>
+<a class="anchor" id="a41263f9cf941e6beb6b9b6b0f09d298d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Pothos::DType::isComplex </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Does this dtype represent a complex data type? </p>
+<dl class="section return"><dt>Returns</dt><dd>true when the type is std::complex&lt;primitive type&gt; </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a04779e29232a992bf428c15983e6ac11"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Pothos::DType::isCustom </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Does this dtype represent a custom type? </p>
+<dl class="section return"><dt>Returns</dt><dd>true when the type was constructed with "custom" </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="abc73d39e87f4b819f49e2a1c26a4690e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Pothos::DType::isFloat </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Does this dtype represent a floating point data type? </p>
+<dl class="section return"><dt>Returns</dt><dd>true for floats, doubles, and complex floats, doubles </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="acb8aacfbb9680637188675646899c114"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Pothos::DType::isInteger </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Does this dtype represent an integer data type? </p>
+<dl class="section return"><dt>Returns</dt><dd>true for fixed width integer types and complex integer types </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="adbc465d2fcfc5c7b0bdc38de7faca25c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Pothos::DType::isSigned </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Does this dtype represent a signed data type? </p>
+<dl class="section return"><dt>Returns</dt><dd>true for signed integer, complex signed integer types. </dd></dl>
 
 </div>
 </div>
@@ -546,7 +619,7 @@ template&lt;class Archive &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Sep 25 2014 23:38:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Oct 15 2014 14:53:54 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

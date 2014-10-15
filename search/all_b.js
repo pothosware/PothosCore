@@ -1,7 +1,7 @@
 var searchData=
 [
   ['label',['Label',['../classPothos_1_1Label.html',1,'Pothos']]],
-  ['label',['Label',['../classPothos_1_1Label.html#a4dd838466c71bda03fbd67784db3c6c4',1,'Pothos::Label::Label(void)'],['../classPothos_1_1Label.html#a59253717527c4aaeee3c849c8bc71626',1,'Pothos::Label::Label(ValueType &amp;&amp;data, const unsigned long long index)']]],
+  ['label',['Label',['../classPothos_1_1Label.html#a4dd838466c71bda03fbd67784db3c6c4',1,'Pothos::Label::Label(void)'],['../classPothos_1_1Label.html#a553e8cbffaa707e1171f89e5e16c7c2a',1,'Pothos::Label::Label(const std::string &amp;id, ValueType &amp;&amp;data, const unsigned long long index)']]],
   ['label_2ehpp',['Label.hpp',['../Label_8hpp.html',1,'']]],
   ['labeliteratorrange',['LabelIteratorRange',['../classPothos_1_1LabelIteratorRange.html',1,'Pothos']]],
   ['labeliteratorrange',['LabelIteratorRange',['../classPothos_1_1LabelIteratorRange.html#a3e6c07a545466db5ca3955e6c20f7e77',1,'Pothos::LabelIteratorRange::LabelIteratorRange(void)'],['../classPothos_1_1LabelIteratorRange.html#ac012841d1d53d1ae05da937f216d102d',1,'Pothos::LabelIteratorRange::LabelIteratorRange(const IterType &amp;begin, const IterType &amp;end)'],['../classPothos_1_1LabelIteratorRange.html#a2c84728f2415220151a00892e7c0af0f',1,'Pothos::LabelIteratorRange::LabelIteratorRange(const RangeType &amp;range)']]],
