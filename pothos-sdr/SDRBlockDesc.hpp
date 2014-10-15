@@ -72,6 +72,16 @@
  * |default 1e6
  * |tab Streaming
  *
+ * |param activateStream[Activate Stream] Stream activation control.
+ * The default action is to activate the stream when the block becomes active.
+ * The user can disable automatic activation in favor of direct control
+ * via registered streamControl() method or streamControl() slot.
+ * |default true
+ * |option [Automatic] true
+ * |option [Manual] false
+ * |tab Streaming
+ * |preview disable
+ *
  * |param frontendMap[Frontend map] Specify the mapping of stream channels to RF frontends.
  * The format of the mapping is implementation-specific.
  * |default ""
@@ -101,6 +111,7 @@
  * |default false
  * |option [Automatic] true
  * |option [Manual] false
+ * |widget ComboBox(editable=true)
  * |preview valid
  * |tab Channels
  *
@@ -130,6 +141,15 @@
  * |default 0.0
  * |preview valid
  * |tab Channels
+ *
+ * |param dcOffsetMode[DC Offset Mode] Enable/disable automatic DC offset removal.
+ * DC offset removal subtracts out the signal average. Not supported on all platforms.
+ * |default true
+ * |option [Enable] true
+ * |option [Disable] false
+ * |widget ComboBox(editable=true)
+ * |preview disable
+ * |tab Channels
  * 
  * |param clockRate[Clock rate] The master reference clock rate.
  * |default 0.0
@@ -153,12 +173,14 @@
  * |initializer setupDevice(deviceArgs)
  * |initializer setupStream(streamArgs)
  * |setter setSampleRate(sampleRate)
+ * |setter setActivateStream(activateStream)
  * |setter setFrontendMap(frontendMap)
  * |setter setFrequency(frequency, tuneArgs)
  * |setter setGainMode(gainMode)
  * |setter setGain(gain)
  * |setter setAntenna(antenna)
  * |setter setBandwidth(bandwidth)
+ * |setter setDCOffsetMode(dcOffsetMode)
  * |setter setClockRate(clockRate)
  * |setter setClockSource(clockSource)
  * |setter setTimeSource(timeSource)

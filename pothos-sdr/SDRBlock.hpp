@@ -49,6 +49,14 @@ public:
         return _device->listSampleRates(_direction, _channels.front());
     }
 
+    void setActivateStream(const bool activateStream)
+    {
+        _activateStream = activateStream;
+    }
+
+    /*******************************************************************
+     * Frontend map
+     ******************************************************************/
     void setFrontendMap(const std::string &mapping)
     {
         if (mapping.empty()) return;
@@ -240,6 +248,31 @@ public:
     }
 
     /*******************************************************************
+     * DC offset mode
+     ******************************************************************/
+    void setDCOffsetMode(const bool automatic)
+    {
+        for (size_t i = 0; i < _channels.size(); i++) this->setDCOffsetMode(i, automatic);
+    }
+
+    void setDCOffsetMode(const std::vector<bool> &automatic)
+    {
+        for (size_t i = 0; i < automatic.size(); i++) this->setDCOffsetMode(i, automatic[i]);
+    }
+
+    void setDCOffsetMode(const size_t chan, const bool automatic)
+    {
+        if (chan >= _channels.size()) return;
+        return _device->setDCOffsetMode(_direction, _channels.at(chan), automatic);
+    }
+
+    bool getDCOffsetMode(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return 0.0;
+        return _device->getDCOffsetMode(_direction, _channels.at(chan));
+    }
+
+    /*******************************************************************
      * Clocking config
      ******************************************************************/
     void setClockRate(const double rate)
@@ -311,6 +344,7 @@ protected:
     bool isReady(void);
     void emitActivationSignals(void);
 
+    bool _activateStream;
     const int _direction;
     const Pothos::DType _dtype;
     const std::vector<size_t> _channels;
