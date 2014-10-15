@@ -7,7 +7,8 @@
  * The SDR @TITLE@ block configures the @XCVR@ end of an SDR
  * and interfaces baseband samples to 1 or more data ports.
  *
- * The SDR @TITLE@ block has a number of setter methods that double as slots
+ * <h3>Advanced configuration</h3>
+ * The SDR @TITLE@ block has a number of setter methods or slots
  * which can be used to make configuration calls from an external block:
  * <ul>
  * <li>setSampleRate(rate)</li>
@@ -20,6 +21,7 @@
  * <li>setGain(chan, gainDict)</li>
  * <li>setAntenna(chan, antenna)</li>
  * <li>setBandwidth(chan, bw)</li>
+ * <li>setDCOffsetMode(chan, automatic)</li>
  * <li>setClockRate(rate)</li>
  * <li>setClockSource(source)</li>
  * <li>setTimeSource(source)</li>
@@ -27,13 +29,29 @@
  * <li>setCommandTime(timeNs)</li>
  * </ul>
  *
- * All calls which a channel parameter also have the following call variants.
+ * All calls which have a channel parameter also have the following call variants.
  * Consider setFoo(3, val):
  * <ul>
  * <li>setFoo(3, val) sets val on channel 3</li>
  * <li>setFoo3(val) also sets on for channel 3</li>
  * <li>setFoo(val) sets val on all channels</li>
  * <li>setFoo(valArray) sets valArray[i] on channel[i]</li>
+ * </ul>
+ *
+ * <h3>Advanced streaming</h3>
+ * By default, the block begins streaming upon activation.
+ * To disable this behavior, modify the auto activate property.
+ *
+ * The user can access the streaming control directly
+ * for advanced usage through the streamControl() slot.
+ * The streamControl() method has the following variants:
+ * <ul>
+ * <li>streamControl("ACTIVATE") - stream continuously immediately</li>
+ * <li>streamControl("ACTIVATE_AT", timeNs) - stream continuously starting at timeNs</li>
+ * <li>streamControl("ACTIVATE_BURST", 0, numElems) - stream a burst of size numElems immediately</li>
+ * <li>streamControl("ACTIVATE_BURST_AT", timeNs, numElems) - stream a burst of size numElems at timeNs</li>
+ * <li>streamControl("DEACTIVATE") - halt a continuous stream</li>
+ * <li>streamControl("DEACTIVATE_AT", timeNs) - halt a continuous stream at timeNs</li>
  * </ul>
  *
  * |category @CATEGORY@
@@ -72,10 +90,10 @@
  * |default 1e6
  * |tab Streaming
  *
- * |param activateStream[Activate Stream] Stream activation control.
+ * |param autoActivate[Auto Activate] Automatic stream activation control.
  * The default action is to activate the stream when the block becomes active.
  * The user can disable automatic activation in favor of direct control
- * via registered streamControl() method or streamControl() slot.
+ * via the registered streamControl() slot.
  * |default true
  * |option [Automatic] true
  * |option [Manual] false
@@ -173,7 +191,7 @@
  * |initializer setupDevice(deviceArgs)
  * |initializer setupStream(streamArgs)
  * |setter setSampleRate(sampleRate)
- * |setter setActivateStream(activateStream)
+ * |setter setAutoActivate(autoActivate)
  * |setter setFrontendMap(frontendMap)
  * |setter setFrequency(frequency, tuneArgs)
  * |setter setGainMode(gainMode)

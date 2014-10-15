@@ -49,10 +49,12 @@ public:
         return _device->listSampleRates(_direction, _channels.front());
     }
 
-    void setActivateStream(const bool activateStream)
+    void setAutoActivate(const bool autoActivate)
     {
-        _activateStream = activateStream;
+        _autoActivate = autoActivate;
     }
+
+    void streamControl(const std::string &what, const long long timeNs, const size_t numElems);
 
     /*******************************************************************
      * Frontend map
@@ -302,6 +304,9 @@ public:
         return _device->listClockSources();
     }
 
+    /*******************************************************************
+     * Timing
+     ******************************************************************/
     void setTimeSource(const std::string &source)
     {
         if (source.empty()) return;
@@ -334,6 +339,19 @@ public:
     }
 
     /*******************************************************************
+     * Sensors
+     ******************************************************************/
+    std::vector<std::string> getSensors(void) const
+    {
+        return _device->listSensors();
+    }
+
+    std::string getSensor(const std::string &name) const
+    {
+        return _device->readSensor(name);
+    }
+
+    /*******************************************************************
      * Streaming implementation
      ******************************************************************/
     virtual void activate(void);
@@ -344,7 +362,7 @@ protected:
     bool isReady(void);
     void emitActivationSignals(void);
 
-    bool _activateStream;
+    bool _autoActivate;
     const int _direction;
     const Pothos::DType _dtype;
     const std::vector<size_t> _channels;

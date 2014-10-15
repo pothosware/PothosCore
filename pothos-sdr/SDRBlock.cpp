@@ -7,7 +7,7 @@
 #include <mutex>
 
 SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::vector<size_t> &channels):
-    _activateStream(true),
+    _autoActivate(true),
     _direction(direction),
     _dtype(dtype),
     _channels(channels),
@@ -27,7 +27,10 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getSampleRates));
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setFrontendMap));
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getFrontendMap));
-    this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setActivateStream));
+    this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setAutoActivate));
+    this->registerCallable("streamControl", Pothos::Callable(&SDRBlock::streamControl).bind(std::ref(*this), 0)); //3 arg version
+    this->registerCallable("streamControl", Pothos::Callable(&SDRBlock::streamControl).bind(std::ref(*this), 0).bind(0, 3)); //2 arg version
+    this->registerCallable("streamControl", Pothos::Callable(&SDRBlock::streamControl).bind(std::ref(*this), 0).bind(0, 2).bind(0, 3)); //1 arg version
 
     //channels -- called by setters
     this->registerCallable("setFrequency", Pothos::Callable::make<const double>(&SDRBlock::setFrequency).bind(std::ref(*this), 0));
@@ -101,6 +104,8 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setHardwareTime));
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getHardwareTime));
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setCommandTime));
+    this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getSensor));
+    this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getSensors));
 
     //probes
     this->registerProbe("getSampleRate");
@@ -112,6 +117,8 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerProbe("getTimeSource");
     this->registerProbe("getTimeSources");
     this->registerProbe("getHardwareTime");
+    this->registerProbe("getSensor");
+    this->registerProbe("getSensors");
 }
 
 SDRBlock::~SDRBlock(void)
@@ -204,6 +211,7 @@ void SDRBlock::emitActivationSignals(void)
     this->callVoid("getTimeSourceTriggered", this->getTimeSource());
     this->callVoid("getTimeSourcesTriggered", this->getTimeSources());
     this->callVoid("getHardwareTimeTriggered", this->getHardwareTime());
+    this->callVoid("getSensorsTriggered", this->getSensors());
     for (size_t i = 0; i < _channels.size(); i++)
     {
         const auto chanStr = std::to_string(i);
@@ -215,6 +223,7 @@ void SDRBlock::emitActivationSignals(void)
         this->callVoid("getAntennas"+chanStr+"Triggered", this->getAntennas(i));
         this->callVoid("getBandwidth"+chanStr+"Triggered", this->getBandwidth(i));
         this->callVoid("getBandwidths"+chanStr+"Triggered", this->getBandwidths(i));
+        this->callVoid("getDCOffsetMode"+chanStr+"Triggered", this->getDCOffsetMode(i));
     }
 }
 
@@ -222,7 +231,7 @@ void SDRBlock::activate(void)
 {
     if (not this->isReady()) throw Pothos::Exception("SDRSource::activate()", "device not ready");
 
-    if (_activateStream)
+    if (_autoActivate)
     {
         const int ret = _device->activateStream(_stream);
         if (ret != 0) throw Pothos::Exception("SDRBlock::activate()", "activateStream returned " + std::to_string(ret));
@@ -235,4 +244,16 @@ void SDRBlock::deactivate(void)
 {
     const int ret = _device->deactivateStream(_stream);
     if (ret != 0) throw Pothos::Exception("SDRBlock::activate()", "deactivateStream returned " + std::to_string(ret));
+}
+
+void SDRBlock::streamControl(const std::string &what, const long long timeNs, const size_t numElems)
+{
+    int r = 0;
+    if (what == "ACTIVATE")          r = _device->activateStream(_stream, 0, timeNs, numElems);
+    if (what == "ACTIVATE_AT")       r = _device->activateStream(_stream, SOAPY_SDR_HAS_TIME, timeNs, numElems);
+    if (what == "ACTIVATE_BURST")    r = _device->activateStream(_stream, SOAPY_SDR_END_BURST, timeNs, numElems);
+    if (what == "ACTIVATE_BURST_AT") r = _device->activateStream(_stream, SOAPY_SDR_HAS_TIME | SOAPY_SDR_END_BURST, timeNs, numElems);
+    if (what == "DEACTIVATE")        r = _device->deactivateStream(_stream, 0, timeNs);
+    if (what == "DEACTIVATE_AT")     r = _device->deactivateStream(_stream, SOAPY_SDR_HAS_TIME, timeNs);
+    if (r != 0) throw Pothos::Exception("SDRBlock::streamControl("+what+")", "de/activateStream returned " + std::to_string(r));
 }
