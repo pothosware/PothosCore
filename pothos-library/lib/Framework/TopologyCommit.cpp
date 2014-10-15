@@ -81,7 +81,7 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
         if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
     }
-    if (not errors.empty()) throw Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
+    if (not errors.empty()) throw Pothos::TopologyConnectError(errors);
 }
 
 /***********************************************************************
@@ -113,7 +113,7 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
         const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
         if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
     }
-    if (not errors.empty()) throw Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
+    if (not errors.empty()) throw Pothos::TopologyConnectError(errors);
 }
 
 /***********************************************************************
@@ -184,7 +184,7 @@ void topologySubCommit(Pothos::Topology &topology)
         const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
         if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
     }
-    if (not errors.empty()) throw Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
+    if (not errors.empty()) throw Pothos::TopologyConnectError(errors);
 }
 
 /***********************************************************************
@@ -241,10 +241,10 @@ void Pothos::Topology::commit(void)
         try {future.get();}
         catch (const Exception &ex)
         {
-            errors.append(ex.displayText()+"\n");
+            errors.append(ex.message()+"\n");
         }
     }
-    if (not errors.empty()) throw Pothos::TopologyConnectError("Pothos::Exectutor::commit()", errors);
+    if (not errors.empty()) throw Pothos::TopologyConnectError("Pothos::Topology::commit()", errors);
 
     //set thread pools for all blocks in this process
     if (this->getThreadPool()) for (auto block : getObjSetFromFlowList(flatFlows))

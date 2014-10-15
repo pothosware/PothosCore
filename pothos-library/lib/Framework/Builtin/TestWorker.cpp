@@ -122,6 +122,6 @@ POTHOS_TEST_BLOCK("/framework/tests", test_activate_throw)
     {
         Pothos::Topology t;
         t.connect(w0, 0, w1, 0);
-        POTHOS_TEST_THROWS(t.commit(), Pothos::Exception);
+        POTHOS_TEST_THROWS(t.commit(), Pothos::TopologyConnectError);
     }
 }
