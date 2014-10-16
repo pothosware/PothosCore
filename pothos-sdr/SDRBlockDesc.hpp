@@ -7,7 +7,7 @@
  * The SDR @TITLE@ block configures the @XCVR@ end of an SDR
  * and interfaces baseband samples to 1 or more data ports.
  *
- * <h3>Advanced configuration</h3>
+ * <h3>Runtime configuration</h3>
  * The SDR @TITLE@ block has a number of setter methods or slots
  * which can be used to make configuration calls from an external block:
  * <ul>
@@ -38,7 +38,7 @@
  * <li>setFoo(valArray) sets valArray[i] on channel[i]</li>
  * </ul>
  *
- * <h3>Advanced streaming</h3>
+ * <h3>Advanced stream control</h3>
  * By default, the block begins streaming upon activation.
  * To disable this behavior, modify the auto activate property.
  *
@@ -52,6 +52,23 @@
  * <li>streamControl("ACTIVATE_BURST_AT", timeNs, numElems) - stream a burst of size numElems at timeNs</li>
  * <li>streamControl("DEACTIVATE") - halt a continuous stream</li>
  * <li>streamControl("DEACTIVATE_AT", timeNs) - halt a continuous stream at timeNs</li>
+ * </ul>
+ *
+ * <h3>Stream metadata</h3>
+ * The SDR source block uses labels to associate metadata and events with the output streams.
+ * The SDR source block produces the following labels:
+ * <ul>
+ * <li>rxTime - the hardware time in ns of the associated stream element</li>
+ * <li>rxEnd - a burst has ended with the associated stream element</li>
+ * <li>rxFreq - the center frequency of the chain from the last tune operation</li>
+ * <li>rxRate - the sample rate of the channel the last call to setSampleRate()</li>
+ * </ul>
+ *
+ * The SDR sink block uses labels to control transmission time and bursts with the input stream.
+ * The SDR sink is responsive to the following labels:
+ * <ul>
+ * <li>txTime - the hardware transmit time for the associated stream element</li>
+ * <li>txEnd - the associated stream element signifies the end of a burst</li>
  * </ul>
  *
  * |category @CATEGORY@
@@ -168,7 +185,7 @@
  * |widget ComboBox(editable=true)
  * |preview disable
  * |tab Channels
- * 
+ *
  * |param clockRate[Clock rate] The master reference clock rate.
  * |default 0.0
  * |units Hz
