@@ -5,16 +5,18 @@
 #include <SoapySDR/Version.hpp>
 #include <Poco/SingletonHolder.h>
 #include <mutex>
+#include <cassert>
 
-SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::vector<size_t> &channels):
+SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::vector<size_t> &chs):
     _autoActivate(true),
     _direction(direction),
     _dtype(dtype),
-    _channels(channels),
+    _channels(chs.empty()?std::vector<size_t>(1, 0):chs),
     _device(nullptr),
     _stream(nullptr),
-    _pendingLabels(channels.size())
+    _pendingLabels(_channels.size())
 {
+    assert(not _channels.empty());
     if (SoapySDR::getABIVersion() != SOAPY_SDR_ABI_VERSION) throw Pothos::Exception("SDRBlock::make()",
         Poco::format("Failed ABI check. Pothos SDR %s. Soapy SDR %s. Rebuild the module.",
         std::string(SOAPY_SDR_ABI_VERSION), SoapySDR::getABIVersion()));

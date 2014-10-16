@@ -89,8 +89,9 @@
  *
  * |param channels[Channels] A list of available streaming channels.
  * Each element maps a port index on the block to a device channel.
- * |default [0]
- * |preview disable
+ * When channels is empty, the block automatically selects channel 0.
+ * |default []
+ * |preview valid
  * |tab Streaming
  *
  * |param streamArgs[Stream Args] Additional stream arguments.
