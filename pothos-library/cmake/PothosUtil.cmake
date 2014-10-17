@@ -4,15 +4,6 @@ endif()
 set(INCLUDED_POTHOS_UTIL_CMAKE TRUE)
 
 ########################################################################
-# Project settings
-########################################################################
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-find_package(Pothos)
-
-#recommended compiler flags (must be included at global scope)
-include(PothosStandardFlags)
-
-########################################################################
 ## POTHOS_MODULE_UTIL - build and install modules for Pothos
 ##
 ## This utility can handle the build and installation operations
@@ -91,9 +82,9 @@ function(POTHOS_MODULE_UTIL)
     endif()
 
     #setup module build and install rules
-    include_directories(${POTHOS_INCLUDE_DIRS})
+    include_directories(${Pothos_INCLUDE_DIRS})
     add_library(${POTHOS_MODULE_UTIL_TARGET} MODULE ${POTHOS_MODULE_UTIL_SOURCES})
-    target_link_libraries(${POTHOS_MODULE_UTIL_TARGET} ${POTHOS_LIBRARIES} ${POTHOS_MODULE_UTIL_LIBRARIES})
+    target_link_libraries(${POTHOS_MODULE_UTIL_TARGET} ${Pothos_LIBRARIES} ${POTHOS_MODULE_UTIL_LIBRARIES})
     set_target_properties(${POTHOS_MODULE_UTIL_TARGET} PROPERTIES DEBUG_POSTFIX "") #same name in debug mode
     install(
         TARGETS ${POTHOS_MODULE_UTIL_TARGET}

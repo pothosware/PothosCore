@@ -13,7 +13,7 @@ endif()
 # Local includes
 ########################################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${POTHOS_INCLUDE_DIRS})
+include_directories(${Pothos_INCLUDE_DIRS})
 
 ########################################################################
 # Theron dependency
@@ -22,7 +22,7 @@ set(THERON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../theron)
 include(${CMAKE_CURRENT_SOURCE_DIR}/TheronSetup.cmake)
 include_directories(${THERON_INCLUDE_DIRS})
 link_directories(${THERON_LIBRARY_DIRS})
-list(APPEND POTHOS_LIBRARIES ${THERON_LIBRARIES})
+list(APPEND Pothos_LIBRARIES ${THERON_LIBRARIES})
 add_definitions(${THERON_DEFINES})
 list(APPEND POTHOS_SOURCES ${THERON_SOURCES})
 
@@ -52,7 +52,7 @@ if (APPLE)
     #Need to link to CoreFoundation to fix dlopen() issue:
     #http://openradar.appspot.com/7209349
     find_library(COREFOUNDATION_LIBRARY CoreFoundation)
-    list(APPEND POTHOS_LIBRARIES ${COREFOUNDATION_LIBRARY})
+    list(APPEND Pothos_LIBRARIES ${COREFOUNDATION_LIBRARY})
 endif()
 
 ########################################################################
@@ -217,8 +217,8 @@ if(MSVC)
 endif(MSVC)
 
 add_library(Pothos SHARED ${POTHOS_SOURCES})
-list(REMOVE_ITEM POTHOS_LIBRARIES Pothos) #cant link to self
-target_link_libraries(Pothos ${POTHOS_LIBRARIES})
+list(REMOVE_ITEM Pothos_LIBRARIES Pothos) #cant link to self
+target_link_libraries(Pothos ${Pothos_LIBRARIES})
 set_target_properties(Pothos PROPERTIES VERSION ${POTHOS_VERSION})
 set_target_properties(Pothos PROPERTIES DEFINE_SYMBOL "POTHOS_DLL_EXPORTS")
 

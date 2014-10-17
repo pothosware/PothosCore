@@ -5,13 +5,9 @@ cmake_minimum_required(VERSION 2.8.9)
 project(PothosPython)
 enable_language(CXX)
 
-if (NOT POTHOS_MODULE_PATH)
-    set(POTHOS_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/share/Pothos/cmake/Modules")
-endif()
-
-include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
-set(POTHOS_PYTHON_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
-include(${POTHOS_PYTHON_MODULE_PATH}/PothosPythonUtil.cmake)
+find_package(Pothos CONFIG REQUIRED)
+list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
+include(PothosPythonUtil)
 
 ########################################################################
 ## Find python
@@ -67,8 +63,10 @@ POTHOS_MODULE_UTIL(
 # Install cmake helper modules
 ########################################################################
 install(
-    DIRECTORY cmake/Modules
-    DESTINATION share/Pothos/cmake
+    FILES
+        cmake/PothosPythonUtil.cmake
+        cmake/PothosPythonUtil.hpp
+    DESTINATION ${POTHOS_CMAKE_DIRECTORY}
 )
 
 ########################################################################

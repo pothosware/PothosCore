@@ -3,12 +3,6 @@ if(DEFINED INCLUDED_POTHOS_PYTHON_UTIL_CMAKE)
 endif()
 set(INCLUDED_POTHOS_PYTHON_UTIL_CMAKE TRUE)
 
-# include support for POTHOS_MODULE_UTIL()
-if (NOT POTHOS_MODULE_PATH)
-    set(POTHOS_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-endif()
-include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
-
 # where to install python modules
 set(POTHOS_PYTHON_DIR lib${LIB_SUFFIX}/Pothos/python)
 
