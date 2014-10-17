@@ -11,25 +11,24 @@ set(POTHOS_MINOR_VERSION 1)
 set(POTHOS_PATCH_VERSION 0)
 set(POTHOS_VERSION ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATCH_VERSION})
 
-#TODO this project can only be built as a submodule for now
-#we expect POTHOS_SOURCE_DIR, POTHOS_BINARY_DIR, POTHOS_LIBRARIES, POTHOS_INCLUDE_DIRS
-#set(POTHOS_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
-#include(PothosProjectDefaults)
+find_package(Pothos NO_MODULE REQUIRED)
 
 ########################################################################
 # Install cmake helper modules
 ########################################################################
 install(
-    DIRECTORY cmake/Modules
-    DESTINATION share/Pothos/cmake
+    FILES
+        cmake/PothosConfig.cmake
+        cmake/PothosProjectDefaults.cmake
+        cmake/PothosStandardFlags.cmake
+        cmake/PothosUtil.cmake
+    DESTINATION ${POTHOS_CMAKE_DIRECTORY}
     COMPONENT pothos_devel
 )
 
 ########################################################################
 # Enter the subdirectory configuration
 ########################################################################
-include(PothosStandardFlags)
-
 add_subdirectory(include)
 add_subdirectory(lib)
 add_subdirectory(apps)

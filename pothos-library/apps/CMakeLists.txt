@@ -2,7 +2,7 @@
 # Local includes
 ########################################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${POTHOS_INCLUDE_DIRS})
+include_directories(${Pothos_INCLUDE_DIRS})
 
 ########################################################################
 # apps
@@ -16,7 +16,7 @@ list(APPEND SOURCES
     PothosUtilDocParse.cpp
 )
 add_executable(PothosUtil ${SOURCES})
-target_link_libraries(PothosUtil Pothos ${POTHOS_LIBRARIES})
+target_link_libraries(PothosUtil Pothos ${Pothos_LIBRARIES})
 install(TARGETS PothosUtil
     RUNTIME DESTINATION bin COMPONENT pothos_runtime
 )

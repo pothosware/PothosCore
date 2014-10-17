@@ -5,17 +5,13 @@ cmake_minimum_required(VERSION 2.8.9)
 project(PothosGui)
 enable_language(CXX)
 
-if (NOT POTHOS_MODULE_PATH)
-    set(POTHOS_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/share/Pothos/cmake/Modules")
-endif()
-
-include(${POTHOS_MODULE_PATH}/PothosUtil.cmake)
+find_package(Pothos NO_MODULE REQUIRED)
 
 ########################################################################
 # Local includes
 ########################################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${POTHOS_INCLUDE_DIRS})
+include_directories(${Pothos_INCLUDE_DIRS})
 
 ########################################################################
 # QT4 devel setup
@@ -25,7 +21,7 @@ include_directories(${POTHOS_INCLUDE_DIRS})
 #    return()
 #endif()
 #include(${QT_USE_FILE})
-#list(APPEND POTHOS_LIBRARIES ${QT_LIBRARIES})
+#list(APPEND Pothos_LIBRARIES ${QT_LIBRARIES})
 
 ########################################################################
 # QT5 devel setup
@@ -45,7 +41,7 @@ if(NOT Qt5Widgets_FOUND)
 endif()
 include_directories(${Qt5Widgets_INCLUDE_DIRS})
 add_definitions(${Qt5Widgets_DEFINITIONS})
-list(APPEND POTHOS_LIBRARIES ${Qt5Widgets_LIBRARIES})
+list(APPEND Pothos_LIBRARIES ${Qt5Widgets_LIBRARIES})
 
 # Widgets finds its own dependencies.
 find_package(Qt5Concurrent)
@@ -55,7 +51,7 @@ if(NOT Qt5Concurrent_FOUND)
 endif()
 include_directories(${Qt5Concurrent_INCLUDE_DIRS})
 add_definitions(${Qt5Concurrent_DEFINITIONS})
-list(APPEND POTHOS_LIBRARIES ${Qt5Concurrent_LIBRARIES})
+list(APPEND Pothos_LIBRARIES ${Qt5Concurrent_LIBRARIES})
 
 ########################################################################
 # Color picker library - LGPL separate library
@@ -63,13 +59,13 @@ list(APPEND POTHOS_LIBRARIES ${Qt5Concurrent_LIBRARIES})
 include_directories(qtcolorpicker/src)
 add_library(QtColorPicker SHARED qtcolorpicker/src/qtcolorpicker.cpp)
 set_target_properties(QtColorPicker PROPERTIES DEFINE_SYMBOL "QT_QTCOLORPICKER_EXPORT")
-target_link_libraries(QtColorPicker ${POTHOS_LIBRARIES})
+target_link_libraries(QtColorPicker ${Pothos_LIBRARIES})
 install(TARGETS QtColorPicker
     LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_gui # .so file
     ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_gui # .lib file
     RUNTIME DESTINATION bin              COMPONENT pothos_gui # .dll file
 )
-list(APPEND POTHOS_LIBRARIES QtColorPicker)
+list(APPEND Pothos_LIBRARIES QtColorPicker)
 
 ########################################################################
 # GUI Main App
@@ -134,7 +130,7 @@ set(SOURCES
     TopologyEngine/EvalBlockCache.cpp
 )
 add_executable(PothosGui ${SOURCES})
-target_link_libraries(PothosGui Pothos ${POTHOS_LIBRARIES})
+target_link_libraries(PothosGui Pothos ${Pothos_LIBRARIES})
 install(
     TARGETS PothosGui
     RUNTIME DESTINATION bin

@@ -5,11 +5,8 @@ cmake_minimum_required(VERSION 2.8.9)
 project(PothosPythonTestBlocks)
 enable_language(CXX)
 
-if (NOT POTHOS_PYTHON_MODULE_PATH)
-    set(POTHOS_PYTHON_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/share/Pothos/cmake/Modules")
-endif()
-
-include(${POTHOS_PYTHON_MODULE_PATH}/PothosPythonUtil.cmake)
+find_package(Pothos NO_MODULE REQUIRED)
+include(PothosPythonUtil)
 
 ########################################################################
 ## Build and install tester blocks for python bindings

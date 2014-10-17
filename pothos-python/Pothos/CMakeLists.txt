@@ -13,9 +13,9 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     add_compile_options(-Wno-missing-field-initializers)
 endif()
 
-include_directories(${POTHOS_INCLUDE_DIRS})
+include_directories(${Pothos_INCLUDE_DIRS})
 add_library(PothosModule MODULE ${MODULE_SOURCES})
-target_link_libraries(PothosModule ${POTHOS_LIBRARIES} ${PYTHON_LIBRARIES})
+target_link_libraries(PothosModule ${Pothos_LIBRARIES} ${PYTHON_LIBRARIES})
 
 #remove lib prefix and possible debug (d) postfix for importable module name
 set_target_properties(PothosModule PROPERTIES
