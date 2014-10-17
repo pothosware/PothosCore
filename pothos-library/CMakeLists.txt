@@ -19,7 +19,6 @@ find_package(Pothos NO_MODULE REQUIRED)
 install(
     FILES
         cmake/PothosConfig.cmake
-        cmake/PothosProjectDefaults.cmake
         cmake/PothosStandardFlags.cmake
         cmake/PothosUtil.cmake
     DESTINATION ${POTHOS_CMAKE_DIRECTORY}

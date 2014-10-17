@@ -12,9 +12,12 @@ set(INCLUDED_POTHOS_CONFIG_CMAKE TRUE)
 # POTHOS_CMAKE_DIRECTORY - where to install CMake files
 ########################################################################
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-include(PothosProjectDefaults) #defines LIB_SUFFIX
+include(PothosStandardFlags) #compiler settings
 include(PothosUtil) #utility functions
 
+########################################################################
+# install directory for cmake files
+########################################################################
 if (UNIX)
     set(POTHOS_CMAKE_DIRECTORY share/cmake/Pothos)
 elseif (WIN32)
@@ -22,9 +25,41 @@ elseif (WIN32)
 endif ()
 
 ########################################################################
+# select the release build type by default to get optimization flags
+########################################################################
+if(NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE "Release")
+   message(STATUS "Build type not specified: defaulting to release.")
+endif(NOT CMAKE_BUILD_TYPE)
+set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
+
+########################################################################
+# Automatic LIB_SUFFIX detection + configuration option
+########################################################################
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(LINUX TRUE)
+endif()
+
+if(LINUX AND EXISTS "/etc/debian_version")
+    set(DEBIAN TRUE)
+endif()
+
+if(LINUX AND EXISTS "/etc/redhat-release")
+    set(REDHAT TRUE)
+endif()
+
+if(LINUX AND EXISTS "/etc/slackware-version")
+    set(SLACKWARE TRUE)
+endif()
+
+if(NOT DEFINED LIB_SUFFIX AND (REDHAT OR SLACKWARE) AND CMAKE_SYSTEM_PROCESSOR MATCHES "64$")
+    SET(LIB_SUFFIX 64)
+endif()
+set(LIB_SUFFIX ${LIB_SUFFIX} CACHE STRING "lib directory suffix")
+
+########################################################################
 ## it-tree build support
 ########################################################################
-
 if (POTHOS_IN_TREE_SOURCE_DIR)
 
     list(APPEND Pothos_LIBRARIES
@@ -41,7 +76,7 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
 
     get_target_property(POTHOS_UTIL_EXE PothosUtil LOCATION_${CMAKE_BUILD_TYPE})
 
-    if(MSVC)
+    if(MSVC AND POTHOS_UTIL_EXE)
         set(built_dll_paths "%PATH%")
         foreach(target ${Pothos_LIBRARIES})
             get_target_property(library_location ${target} LOCATION_${CMAKE_BUILD_TYPE})
@@ -54,7 +89,7 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
             "${POTHOS_UTIL_EXE} %*\n"
         )
         set(POTHOS_UTIL_EXE ${PROJECT_BINARY_DIR}/PothosUtil.bat)
-    endif(MSVC)
+    endif()
 
     return()
 endif ()

@@ -3,9 +3,6 @@ if(DEFINED INCLUDED_POTHOS_UTIL_CMAKE)
 endif()
 set(INCLUDED_POTHOS_UTIL_CMAKE TRUE)
 
-#recommended compiler flags (must be included at global scope)
-include(PothosStandardFlags)
-
 ########################################################################
 ## POTHOS_MODULE_UTIL - build and install modules for Pothos
 ##

@@ -11,6 +11,16 @@ set(Pothos_DIR ${PROJECT_SOURCE_DIR}/pothos-library/cmake)
 set(POTHOS_IN_TREE_SOURCE_DIR ${PROJECT_SOURCE_DIR})
 
 ########################################################################
+# Clang required flag because only libc++ supports C++11.
+# Poco must be built with this flag when using clang.
+# Mixing versions of the stdlib would cause ABI errors.
+########################################################################
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    #The stdlib flag setting supports c++11 library features.
+    set(CMAKE_CXX_FLAGS "-stdlib=libc++")
+endif()
+
+########################################################################
 # POCO dependency - always build it
 ########################################################################
 set(BUILD_POCO TRUE) #always build -- want version 1.5
