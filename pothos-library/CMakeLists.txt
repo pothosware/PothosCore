@@ -11,7 +11,7 @@ set(POTHOS_MINOR_VERSION 1)
 set(POTHOS_PATCH_VERSION 0)
 set(POTHOS_VERSION ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATCH_VERSION})
 
-find_package(Pothos NO_MODULE REQUIRED)
+find_package(Pothos CONFIG REQUIRED)
 
 ########################################################################
 # Install cmake helper modules

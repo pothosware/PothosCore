@@ -11,7 +11,7 @@ set(INCLUDED_POTHOS_CONFIG_CMAKE TRUE)
 # Pothos_LIBRARIES - Pothos development libraries
 # POTHOS_CMAKE_DIRECTORY - where to install CMake files
 ########################################################################
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
 include(PothosStandardFlags) #compiler settings
 include(PothosUtil) #utility functions
 

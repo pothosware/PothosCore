@@ -5,12 +5,12 @@ cmake_minimum_required(VERSION 2.8.9)
 project(PothosSDR)
 enable_language(CXX)
 
-find_package(Pothos NO_MODULE REQUIRED)
+find_package(Pothos CONFIG REQUIRED)
 
 ########################################################################
 ## Find SoapySDR
 ########################################################################
-find_package(SoapySDR NO_MODULE)
+find_package(SoapySDR CONFIG)
 
 if (SoapySDR_FOUND)
     message(STATUS "SoapySDR_INCLUDE_DIRS: ${SoapySDR_INCLUDE_DIRS}")
