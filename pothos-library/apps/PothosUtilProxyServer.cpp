@@ -122,7 +122,6 @@ void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
     Poco::Net::TCPServer tcpServer(factory, serverSocket);
 
     //start the server
-    serverSocket.listen();
     tcpServer.start();
     std::cout << "Host: " << serverSocket.address().host().toString() << std::endl;
     std::cout << "Port: " << serverSocket.address().port() << std::endl;
