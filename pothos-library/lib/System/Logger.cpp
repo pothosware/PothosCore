@@ -16,6 +16,7 @@
 #include <Poco/Net/RemoteSyslogListener.h>
 #include <Poco/Net/DatagramSocket.h>
 #include <Poco/SingletonHolder.h>
+#include <Poco/String.h>
 #include <Poco/AutoPtr.h>
 #include <iostream>
 #include <chrono>
@@ -84,11 +85,26 @@ protected:
         if (not _outbuf.empty() and (_outbuf.back() == '\n' or _flush))
         {
             if (_outbuf.back() == '\n') _outbuf = _outbuf.substr(0, _outbuf.size()-1);
-            if (not _outbuf.empty()) {poco_information(_logger, _outbuf);}
+            if (not _outbuf.empty()) _logger.log(Poco::Message("", _outbuf, this->guessPrio(_outbuf)));
             _outbuf.clear();
             _flush = false;
         }
         return 0;
+    }
+
+    /*!
+     * Guess the priority using keywords in the front of the message.
+     */
+    Poco::Message::Priority guessPrio(const std::string &msg)
+    {
+        const auto searchStr = Poco::toLower(msg.substr(0, 25));
+        if (searchStr.find("fatal") != std::string::npos) return Poco::Message::PRIO_FATAL;
+        if (searchStr.find("critical") != std::string::npos) return Poco::Message::PRIO_CRITICAL;
+        if (searchStr.find("error") != std::string::npos) return Poco::Message::PRIO_ERROR;
+        if (searchStr.find("warning") != std::string::npos) return Poco::Message::PRIO_WARNING;
+        if (searchStr.find("debug") != std::string::npos) return Poco::Message::PRIO_DEBUG;
+        if (searchStr.find("trace") != std::string::npos) return Poco::Message::PRIO_TRACE;
+        return Poco::Message::PRIO_INFORMATION;
     }
 
 private:
