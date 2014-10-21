@@ -14,7 +14,7 @@ public:
     SDRSink(const Pothos::DType &dtype, const std::vector<size_t> &channels):
         SDRBlock(SOAPY_SDR_TX, dtype, channels)
     {
-        for (size_t i = 0; i < channels.size(); i++) this->setupInput(i, dtype);
+        for (size_t i = 0; i < _channels.size(); i++) this->setupInput(i, dtype);
     }
 
     /*******************************************************************

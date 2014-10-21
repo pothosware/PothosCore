@@ -15,7 +15,7 @@ public:
         SDRBlock(SOAPY_SDR_RX, dtype, channels),
         _postTime(false)
     {
-        for (size_t i = 0; i < channels.size(); i++) this->setupOutput(i, dtype);
+        for (size_t i = 0; i < _channels.size(); i++) this->setupOutput(i, dtype);
     }
 
     /*******************************************************************
@@ -65,15 +65,16 @@ public:
         }
 
         //post labels from stream data
-        if ((flags & SOAPY_SDR_END_BURST) != 0)
-        {
-            const Pothos::Label lbl("rxEnd", true, ret-1);
-            for (auto output : this->outputs()) output->postLabel(lbl);
-        }
         if (_postTime and (flags & SOAPY_SDR_HAS_TIME) != 0)
         {
             _postTime = false;
             const Pothos::Label lbl("rxTime", timeNs, 0);
+            for (auto output : this->outputs()) output->postLabel(lbl);
+        }
+        if ((flags & SOAPY_SDR_END_BURST) != 0)
+        {
+            _postTime = true; //discontinuity: repost time on next receive
+            const Pothos::Label lbl("rxEnd", true, ret-1);
             for (auto output : this->outputs()) output->postLabel(lbl);
         }
     }

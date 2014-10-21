@@ -176,7 +176,6 @@ void SDRBlock::setupStream(const std::map<std::string, std::string> &streamArgs)
 
     //create the stream
     _stream = _device->setupStream(_direction, format, _channels, streamArgs);
-    assert(_stream != nullptr);
 }
 
 bool SDRBlock::isReady(void)
