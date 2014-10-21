@@ -18,8 +18,8 @@ int portNameToIndex(const std::string &name)
 /***********************************************************************
  * Port allocation templated implementation
  **********************************************************************/
-template <typename ImplType, typename PortsType, typename PortNamesType>
-void Pothos::WorkerActor::allocatePort(PortsType &ports, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain)
+template <typename ImplType, typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+void Pothos::WorkerActor::allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain)
 {
     auto &port = ports[name];
     typedef typename PortsType::mapped_type::element_type T;
@@ -29,12 +29,27 @@ void Pothos::WorkerActor::allocatePort(PortsType &ports, PortNamesType &portName
     port->_domain = domain;
     port->_name = name;
     port->_index = portNameToIndex(name);
+
+    //record port name in order of allocation
     portNames.push_back(name);
+
+    //install port pointer into named ports
+    namedPorts[name] = port.get();
+
+    //install pointer into indexed ports (if its indexable)
+    if (port->index() != -1)
+    {
+        const auto index = size_t(port->index());
+        indexedPorts.resize(std::max(index+1, indexedPorts.size()), nullptr);
+        indexedPorts[index] = port.get();
+    }
+
+    //resizes work info indexable pointers
     this->updatePorts();
 }
 
-template <typename ImplType, typename PortsType, typename IndexedPortsType, typename PortNamesType>
-void Pothos::WorkerActor::autoAllocatePort(PortsType &ports, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name)
+template <typename ImplType, typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+void Pothos::WorkerActor::autoAllocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name)
 {
     const int index = portNameToIndex(name);
     if (index == -1) return;
@@ -44,60 +59,11 @@ void Pothos::WorkerActor::autoAllocatePort(PortsType &ports, IndexedPortsType &i
     for (int i = index-1; i >= 0; i--)
     {
         if (ports.count(std::to_string(i)) == 0) continue;
-        this->allocatePort<ImplType>(ports, portNames, name, indexedPorts[i]->dtype(), indexedPorts[i]->domain());
+        this->allocatePort<ImplType>(ports, namedPorts, indexedPorts, portNames, name, indexedPorts[i]->dtype(), indexedPorts[i]->domain());
         break;
     }
 
-    //add to named ports list
-    for (auto it = portNames.begin(); it != portNames.end(); it++)
-    {
-        if (portNameToIndex(*it)+1 == index)
-        {
-            portNames.insert(it+1, name);
-            break;
-        }
-    }
-
     //TODO mark this port automatic so it can be deleted when unsubscribed
-
-    this->updatePorts();
-}
-
-template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
-void updatePortsT(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames)
-{
-    int numIndexed = 0;
-
-    //refill named ports from ports
-    namedPorts.clear();
-    for (auto &entry : ports)
-    {
-        auto &port = *entry.second;
-        assert(port.name() == entry.first);
-        namedPorts[port.name()] = &port;
-        if (port.index() != -1) numIndexed = std::max(numIndexed, port.index()+1);
-    }
-
-    //refill indexed ports from ports
-    indexedPorts.resize(numIndexed, nullptr);
-    for (size_t i = 0; i < indexedPorts.size(); i++)
-    {
-        auto it = ports.find(std::to_string(i));
-        if (it == ports.end()) continue;
-        indexedPorts[i] = it->second.get();
-        assert(indexedPorts[i]->index() == i);
-    }
-
-    //autodelete from port names
-    for (auto it = portNames.begin(); it != portNames.end();)
-    {
-        if (ports.count(*it) == 0)
-        {
-            portNames.erase(it);
-            it = portNames.begin(); //iterator invalidated, restart loop
-        }
-        else it++;
-    }
 }
 
 /***********************************************************************
@@ -105,34 +71,34 @@ void updatePortsT(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType
  **********************************************************************/
 void Pothos::WorkerActor::allocateInput(const std::string &name, const DType &dtype, const std::string &domain)
 {
-    this->allocatePort<InputPortImpl>(this->inputs, block->_inputPortNames, name, dtype, domain);
+    this->allocatePort<InputPortImpl>(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames, name, dtype, domain);
 }
 
 void Pothos::WorkerActor::allocateOutput(const std::string &name, const DType &dtype, const std::string &domain)
 {
-    this->allocatePort<OutputPortImpl>(this->outputs, block->_outputPortNames, name, dtype, domain);
+    this->allocatePort<OutputPortImpl>(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames, name, dtype, domain);
 }
 
 void Pothos::WorkerActor::allocateSignal(const std::string &name)
 {
-    this->allocateOutput(name, "byte", "");
+    this->allocateOutput(name, "", "");
     this->outputs[name]->_impl->isSignal = true;
 }
 
 void Pothos::WorkerActor::allocateSlot(const std::string &name)
 {
-    this->allocateInput(name, "byte", "");
+    this->allocateInput(name, "", "");
     this->inputs[name]->_impl->isSlot = true;
 }
 
 void Pothos::WorkerActor::autoAllocateInput(const std::string &name)
 {
-    this->autoAllocatePort<InputPortImpl>(this->inputs, block->_indexedInputs, block->_inputPortNames, name);
+    this->autoAllocatePort<InputPortImpl>(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames, name);
 }
 
 void Pothos::WorkerActor::autoAllocateOutput(const std::string &name)
 {
-    this->autoAllocatePort<OutputPortImpl>(this->outputs, block->_indexedOutputs, block->_outputPortNames, name);
+    this->autoAllocatePort<OutputPortImpl>(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames, name);
 }
 
 void Pothos::WorkerActor::updatePorts(void)
@@ -140,6 +106,5 @@ void Pothos::WorkerActor::updatePorts(void)
     block->_workInfo.inputPointers.resize(block->_indexedInputs.size());
     block->_workInfo.outputPointers.resize(block->_indexedOutputs.size());
 
-    updatePortsT(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames);
-    updatePortsT(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames);
+    //TODO autodelete ports when automatic and unsubscribed
 }

@@ -32,7 +32,7 @@ void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, 
         }
         POTHOS_EXCEPTION_CATCH(const Exception &ex)
         {
-            poco_error_f2(Poco::Logger::get("Pothos.Block.callSlot"), "%s: %s", block->getName(), ex.displayText());
+            poco_error_f3(Poco::Logger::get("Pothos.Block.callSlot"), "%s[%s]: %s", block->getName(), input.name(), ex.displayText());
         }
         return this->bump();
     }

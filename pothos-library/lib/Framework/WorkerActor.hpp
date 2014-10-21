@@ -159,13 +159,13 @@ public:
     void allocateOutput(const std::string &name, const DType &dtype, const std::string &domain);
     void allocateSignal(const std::string &name);
     void allocateSlot(const std::string &name);
-    template <typename ImplType, typename PortsType, typename PortNamesType>
-    void allocatePort(PortsType &ports, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain);
+    template <typename ImplType, typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+    void allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain);
 
     void autoAllocateInput(const std::string &name);
     void autoAllocateOutput(const std::string &name);
-    template <typename ImplType, typename PortsType, typename IndexedPortsType, typename PortNamesType>
-    void autoAllocatePort(PortsType &ports, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name);
+    template <typename ImplType, typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+    void autoAllocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name);
 
     /*!
      * updatePorts() called after making changes to ports.
