@@ -36,7 +36,9 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
 
     //channels -- called by setters
     this->registerCallable("setFrequency", Pothos::Callable::make<const double>(&SDRBlock::setFrequency).bind(std::ref(*this), 0));
+    this->registerCallable("setFrequency", Pothos::Callable::make<const double>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(std::map<std::string, std::string>(), 2));
     this->registerCallable("setFrequency", Pothos::Callable::make<const std::vector<double> &>(&SDRBlock::setFrequency).bind(std::ref(*this), 0));
+    this->registerCallable("setFrequency", Pothos::Callable::make<const std::vector<double> &>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(std::map<std::string, std::string>(), 2));
     this->registerCallable("setGainMode", Pothos::Callable::make<const bool>(&SDRBlock::setGainMode).bind(std::ref(*this), 0));
     this->registerCallable("setGainMode", Pothos::Callable::make<const std::vector<bool> &>(&SDRBlock::setGainMode).bind(std::ref(*this), 0));
     this->registerCallable("setGain", Pothos::Callable::make<const double>(&SDRBlock::setGain).bind(std::ref(*this), 0));

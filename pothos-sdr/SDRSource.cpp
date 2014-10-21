@@ -40,6 +40,9 @@ public:
         //handle error
         if (ret <= 0)
         {
+            //consider this to mean that the HW produced size 0 transfer
+            //the flags and time may be valid, but we are discarding here
+            if (ret == 0) return this->yield();
             //got timeout? just call again
             if (ret == SOAPY_SDR_TIMEOUT) return this->yield();
             //got overflow? call again, discontinuity means repost time

@@ -51,9 +51,11 @@ POTHOS_MODULE_UTIL(
         SDRBlock.cpp
         SDRSource.cpp
         SDRSink.cpp
+        DemoController.cpp
     LIBRARIES ${SoapySDR_LIBRARIES}
     DESTINATION sdr
     DOC_SOURCES
+        DemoController.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/SDRSourceDesc.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/SDRSinkDesc.hpp
 )
