@@ -293,9 +293,11 @@ void GraphConnection::render(QPainter &painter)
         for (const auto &pair : this->getSigSlotPairs())
         {
             if (not text.isEmpty()) text += "<br />";
-            text += QString("%1:%2")
-                .arg(this->getKeyName(pair.first, this->getOutputEndpoint()).toHtmlEscaped())
-                .arg(this->getKeyName(pair.second, this->getInputEndpoint()).toHtmlEscaped());
+            //abbreviate the text by only showing the destinations
+            //text += QString("%1:%2")
+            //    .arg(this->getKeyName(pair.first, this->getOutputEndpoint()).toHtmlEscaped())
+            //    .arg(this->getKeyName(pair.second, this->getInputEndpoint()).toHtmlEscaped());
+            text += this->getKeyName(pair.second, this->getInputEndpoint()).toHtmlEscaped();
         }
         if (text.isEmpty()) text = tr("<b>Empty</b>");
         _impl->lineText = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
@@ -362,7 +364,8 @@ void GraphConnection::render(QPainter &painter)
         const auto &text = _impl->lineText;
         painter.translate((largestLine.p1() + largestLine.p2())/2.0);
         painter.rotate(int(largestLine.angle())%180);
-        const QRectF textRect(QPointF(-text.size().width()/2, -text.size().height() - GraphConnectionGirth), text.size());
+        const auto hs = this->getSigSlotPairs().size()/std::ceil(this->getSigSlotPairs().size()/2.0);
+        const QRectF textRect(QPointF(-text.size().width()/2, -text.size().height()/hs - GraphConnectionGirth), text.size());
         painter.drawStaticText(textRect.topLeft(), text);
         _impl->textRect = painter.worldTransform().mapRect(textRect);
         painter.restore();
