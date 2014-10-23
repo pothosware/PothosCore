@@ -20,6 +20,7 @@ install(
     FILES
         cmake/PothosConfig.cmake
         cmake/PothosStandardFlags.cmake
+        cmake/PothosLibraryConfig.cmake
         cmake/PothosUtil.cmake
     DESTINATION ${POTHOS_CMAKE_DIRECTORY}
     COMPONENT pothos_devel

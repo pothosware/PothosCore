@@ -16,8 +16,6 @@ endif()
 # Compiler flags that are generally always a good idea to set
 # or sensible to use because of the project's constraints.
 ########################################################################
-set(CMAKE_POSITION_INDEPENDENT_CODE ON) #sets -fPIC for GNU compiler x64
-
 if(CMAKE_COMPILER_IS_GNUCXX)
 
     #C++11 is a required language feature for this project

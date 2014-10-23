@@ -13,6 +13,7 @@ set(INCLUDED_POTHOS_CONFIG_CMAKE TRUE)
 ########################################################################
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
 include(PothosStandardFlags) #compiler settings
+include(PothosLibraryConfig) #library settings
 include(PothosUtil) #utility functions
 
 ########################################################################
@@ -32,30 +33,6 @@ if(NOT CMAKE_BUILD_TYPE)
    message(STATUS "Build type not specified: defaulting to release.")
 endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
-
-########################################################################
-# Automatic LIB_SUFFIX detection + configuration option
-########################################################################
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(LINUX TRUE)
-endif()
-
-if(LINUX AND EXISTS "/etc/debian_version")
-    set(DEBIAN TRUE)
-endif()
-
-if(LINUX AND EXISTS "/etc/redhat-release")
-    set(REDHAT TRUE)
-endif()
-
-if(LINUX AND EXISTS "/etc/slackware-version")
-    set(SLACKWARE TRUE)
-endif()
-
-if(NOT DEFINED LIB_SUFFIX AND (REDHAT OR SLACKWARE) AND CMAKE_SYSTEM_PROCESSOR MATCHES "64$")
-    SET(LIB_SUFFIX 64)
-endif()
-set(LIB_SUFFIX ${LIB_SUFFIX} CACHE STRING "lib directory suffix")
 
 ########################################################################
 ## it-tree build support
