@@ -61,9 +61,10 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
             file(TO_NATIVE_PATH ${library_location} library_location)
             set(built_dll_paths "${library_location};${built_dll_paths}")
         endforeach(target)
+        file(TO_NATIVE_PATH "${POTHOS_UTIL_EXE}" POTHOS_UTIL_EXE)
         file(WRITE ${PROJECT_BINARY_DIR}/PothosUtil.bat
             "set PATH=${built_dll_paths}\n"
-            "${POTHOS_UTIL_EXE} %*\n"
+            "\"${POTHOS_UTIL_EXE}\" %*\n"
         )
         set(POTHOS_UTIL_EXE ${PROJECT_BINARY_DIR}/PothosUtil.bat)
     endif()
@@ -90,6 +91,16 @@ find_program(
 )
 if(NOT POTHOS_UTIL_EXE)
     message(FATAL_ERROR "cannot find PothosUtil in ${POTHOS_ROOT}/bin")
+endif()
+
+if(MSVC)
+    file(TO_NATIVE_PATH "${POTHOS_ROOT}/bin" bin_path)
+    file(TO_NATIVE_PATH "${POTHOS_UTIL_EXE}" POTHOS_UTIL_EXE)
+    file(WRITE ${PROJECT_BINARY_DIR}/PothosUtil.bat
+        "set PATH=${bin_path};%PATH%\n"
+        "\"${POTHOS_UTIL_EXE}\" %*\n"
+    )
+    set(POTHOS_UTIL_EXE ${PROJECT_BINARY_DIR}/PothosUtil.bat)
 endif()
 
 set(__success_code "200")
