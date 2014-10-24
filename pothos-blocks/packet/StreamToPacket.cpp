@@ -76,7 +76,12 @@ public:
         //grab the input buffer
         Pothos::Packet packet;
         packet.payload = inputPort->buffer();
-        if (_mtu != 0) packet.payload.length = std::min(_mtu, packet.payload.length);
+        if (_mtu != 0)
+        {
+            const auto elemSize = packet.payload.dtype.size();
+            const auto mtuElems = (_mtu/elemSize)*elemSize;
+            packet.payload.length = std::min(mtuElems, packet.payload.length);
+        }
         inputPort->consume(packet.payload.length);
 
         //grab the input labels
