@@ -82,10 +82,11 @@ public:
         //grab the input labels
         while (inputPort->labels().begin() != inputPort->labels().end())
         {
-            const auto &label = *inputPort->labels().begin();
-            if (label.index >= packet.payload.length) break;
+            auto label = *inputPort->labels().begin();
+            label.index /= packet.payload.dtype.size(); //bytes to elements
+            if (label.index >= packet.payload.elements()) break;
             packet.labels.push_back(label);
-            inputPort->removeLabel(label);
+            inputPort->removeLabel(*inputPort->labels().begin());
         }
 
         //produce the packet

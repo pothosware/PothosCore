@@ -30,7 +30,7 @@ public:
     PacketToStream(void)
     {
         this->setupInput(0);
-        this->setupOutput(0, "byte", this->uid()/*unique domain*/);
+        this->setupOutput(0, "", this->uid()/*unique domain*/);
     }
 
     static Block *make(void)
@@ -56,8 +56,9 @@ public:
         const auto &packet = msg.extract<Pothos::Packet>();
 
         //post output labels
-        for (const auto &label : packet.labels)
+        for (auto label : packet.labels)
         {
+            label.index *= packet.payload.dtype.size(); //elements to bytes
             outputPort->postLabel(label);
         }
 

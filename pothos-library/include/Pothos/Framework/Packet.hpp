@@ -49,8 +49,8 @@ struct POTHOS_API Packet
 
     /*!
      * Labels associated with the payload.
-     * The label indexes are byte-offsets
-     * relative to the start of the buffer.
+     * Each label index is an element-offset relative to the start of the payload.
+     * The element size can be determined from the type of the payload buffer.
      */
     std::vector<Label> labels;
 };
