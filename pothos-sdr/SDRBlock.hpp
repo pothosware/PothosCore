@@ -87,8 +87,8 @@ public:
     {
         if (chan >= _channels.size()) return;
         if (freq == 0.0) return;
+        _device->setFrequency(_direction, _channels.at(chan), freq, args);
         _pendingLabels[chan]["rxFreq"] = Pothos::Object(_device->getFrequency(_direction, _channels.at(chan)));
-        return _device->setFrequency(_direction, _channels.at(chan), freq, args);
     }
 
     double getFrequency(const size_t chan) const
