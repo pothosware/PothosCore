@@ -236,7 +236,17 @@ void SDRBlock::activate(void)
 
     if (_autoActivate)
     {
-        const int ret = _device->activateStream(_stream);
+        int ret = 0;
+        //use time alignment for multi-channel rx setup when hardware time is supported
+        if (_device->hasHardwareTime() and _direction == SOAPY_SDR_RX)
+        {
+            const auto delta = long(1e9*0.05); //50ms in the future for time-aligned streaming
+            ret = _device->activateStream(_stream, SOAPY_SDR_HAS_TIME, _device->getHardwareTime()+delta);
+        }
+        else
+        {
+            ret = _device->activateStream(_stream);
+        }
         if (ret != 0) throw Pothos::Exception("SDRBlock::activate()", "activateStream returned " + std::to_string(ret));
     }
 
