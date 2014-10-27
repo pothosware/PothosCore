@@ -43,10 +43,13 @@ void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
 
     const auto timeStr = Poco::DateTimeFormatter::format(msg.getTime(), "%H:%M:%s");
 
+    auto body = QString::fromStdString(msg.getText()).toHtmlEscaped();
+    if (body.count("\n") > 1) body = "<pre>"+body+"</pre>";
+
     auto line = QString("<font color=\"%1\"><b>[%2] %3:</b></font> %4<br />").arg(
         color, QString::fromStdString(timeStr),
         QString::fromStdString(msg.getSource()),
-        QString::fromStdString(msg.getText()).toHtmlEscaped());
+        body);
 
     _text->insertHtml(line);
 }
