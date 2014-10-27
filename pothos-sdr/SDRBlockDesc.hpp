@@ -166,10 +166,13 @@
  *
  * |param antenna[Antenna] The selected antenna for the RF frontend.
  * Provide a single value for all channels or a list of values for each channel.
+ * <ul>
+ * <li>Example: "RX1"</li>
+ * <li>Example: ["RX1", "RX3"]</li>
+ * </ul>
  * |default ""
  * |tab Channels
  * |preview valid
- * |widget StringEntry()
  *
  * |param bandwidth[Bandwidth] The filter bandwidth setting.
  * Provide a single value for all channels or a list of values for each channel.
