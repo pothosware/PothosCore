@@ -4,15 +4,16 @@
 #include "MessageWindow/LoggerDisplay.hpp"
 #include "MessageWindow/LoggerChannel.hpp"
 #include <QTextEdit>
+#include <QScrollBar>
 #include <Poco/DateTimeFormatter.h>
+#include <iostream>
 
 LoggerDisplay::LoggerDisplay(QWidget *parent):
-    QScrollArea(parent),
+    QStackedWidget(parent),
     _channel(new LoggerChannel(nullptr)),
     _text(new QTextEdit(this))
 {
-    this->setWidgetResizable(true);
-    this->setWidget(_text);
+    this->addWidget(_text);
     _text->setReadOnly(true);
 
     qRegisterMetaType<Poco::Message>("Poco::Message");
@@ -51,5 +52,14 @@ void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
         QString::fromStdString(msg.getSource()),
         body);
 
+    const bool autoScroll = _text->verticalScrollBar()->value()+50 > _text->verticalScrollBar()->maximum();
+
     _text->insertHtml(line);
+
+    if (autoScroll)
+    {
+        auto c =  _text->textCursor();
+        c.movePosition(QTextCursor::End);
+        _text->setTextCursor(c);
+    }
 }

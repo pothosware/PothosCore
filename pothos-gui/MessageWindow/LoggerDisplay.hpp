@@ -3,14 +3,14 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <QScrollArea>
+#include <QStackedWidget>
 #include <Poco/Message.h>
 #include <Poco/AutoPtr.h>
 
 class LoggerChannel;
 class QTextEdit;
 
-class LoggerDisplay : public QScrollArea
+class LoggerDisplay : public QStackedWidget
 {
     Q_OBJECT
 public:
