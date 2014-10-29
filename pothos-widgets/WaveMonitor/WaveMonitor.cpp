@@ -141,6 +141,7 @@ void WaveMonitor::handleUpdateAxis(void)
 
     _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
     _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
+    _mainPlot->updateAxes(); //update after axis changes
     _zoomer->setZoomBase(); //record current axis settings
     this->handleZoomed(_zoomer->zoomBase()); //reload
 }
@@ -151,6 +152,7 @@ void WaveMonitor::handleZoomed(const QRectF &rect)
     if (rect == _zoomer->zoomBase())
     {
         _mainPlot->setAxisAutoScale(QwtPlot::yLeft);
+        _mainPlot->updateAxes(); //update after axis changes
     }
 }
 

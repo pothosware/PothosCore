@@ -198,15 +198,17 @@ void Spectrogram::handleUpdateAxis(void)
 
     _sampleRateWoAxisUnits = _sampleRate/factor;
     _centerFreqWoAxisUnits = _centerFreq/factor;
+
+    //update main plot axis
     _mainPlot->setAxisScale(QwtPlot::xBottom, _centerFreqWoAxisUnits-_sampleRateWoAxisUnits/2, _centerFreqWoAxisUnits+_sampleRateWoAxisUnits/2);
-    _plotRaster->setInterval(Qt::XAxis, _mainPlot->axisInterval(QwtPlot::xBottom));
-
     _mainPlot->setAxisScale(QwtPlot::yLeft, 0, _timeSpan);
-    _plotRaster->setInterval(Qt::YAxis, _mainPlot->axisInterval(QwtPlot::yLeft));
-
     _mainPlot->setAxisScale(QwtPlot::yRight, _refLevel-_dynRange, _refLevel);
-    _plotRaster->setInterval(Qt::ZAxis, _mainPlot->axisInterval(QwtPlot::yRight));
     _mainPlot->axisWidget(QwtPlot::yRight)->setColorMap(_plotRaster->interval(Qt::ZAxis), this->makeColorMap());
+
+    _mainPlot->updateAxes(); //update after axis changes before setting raster
+    _plotRaster->setInterval(Qt::XAxis, _mainPlot->axisInterval(QwtPlot::xBottom));
+    _plotRaster->setInterval(Qt::YAxis, _mainPlot->axisInterval(QwtPlot::yLeft));
+    _plotRaster->setInterval(Qt::ZAxis, _mainPlot->axisInterval(QwtPlot::yRight));
 
     _zoomer->setZoomBase(); //record current axis settings
 }

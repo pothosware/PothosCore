@@ -164,6 +164,7 @@ void Periodogram::handleUpdateAxis(void)
     _centerFreqWoAxisUnits = _centerFreq/factor;
     _mainPlot->setAxisScale(QwtPlot::xBottom, _centerFreqWoAxisUnits-_sampleRateWoAxisUnits/2, _centerFreqWoAxisUnits+_sampleRateWoAxisUnits/2);
     _mainPlot->setAxisScale(QwtPlot::yLeft, _refLevel-_dynRange, _refLevel);
+    _mainPlot->updateAxes(); //update after axis changes
     _zoomer->setZoomBase(); //record current axis settings
     this->handleZoomed(_zoomer->zoomBase()); //reload
 }
