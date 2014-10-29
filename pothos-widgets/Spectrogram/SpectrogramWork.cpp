@@ -56,6 +56,19 @@ void Spectrogram::work(void)
     if (inPort->elements() == 0) return;
     inPort->consume(inPort->elements());
 
+    //use special stream labels to modify parameters
+    for (const auto &label : inPort->labels())
+    {
+        if (label.id == _freqLabelId and label.data.canConvert(typeid(double)))
+        {
+            this->setCenterFrequency(label.data.convert<double>());
+        }
+        if (label.id == _rateLabelId and label.data.canConvert(typeid(double)))
+        {
+            this->setSampleRate(label.data.convert<double>());
+        }
+    }
+
     //perform the plotter update
     if (doUpdate and this->updateCurve(inPort))
     {

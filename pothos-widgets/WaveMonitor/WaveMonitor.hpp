@@ -62,6 +62,13 @@ class QwtPlotMarker;
  * |widget StringEntry()
  * |preview disable
  *
+ * |param rateLabelId[Rate Label ID] Labels with this ID can be used to set the sample rate.
+ * To ignore sample rate labels, set this parameter to an empty string.
+ * |default "rxRate"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Labels
+ *
  * |mode graphWidget
  * |factory /widgets/wave_monitor()
  * |initializer setNumInputs(numInputs)
@@ -72,6 +79,7 @@ class QwtPlotMarker;
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
+ * |setter setRateLabelId(rateLabelId)
  **********************************************************************/
 class WaveMonitor : public QWidget, public Pothos::Block
 {
@@ -137,6 +145,11 @@ public:
     void enableYAxis(const bool enb);
     void setYAxisTitle(const QString &title);
 
+    void setRateLabelId(const std::string &id)
+    {
+        _rateLabelId = id;
+    }
+
     void activate(void);
     void work(void);
     bool updateCurve(Pothos::InputPort *inPort);
@@ -166,6 +179,7 @@ private:
     double _sampleRate;
     double _timeSpan;
     size_t _numPoints;
+    std::string _rateLabelId;
 
     //per-port data structs
     std::map<size_t, std::chrono::high_resolution_clock::time_point> _lastUpdateTimes;

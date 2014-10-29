@@ -113,6 +113,15 @@ void WaveMonitor::work(void)
         if (inPort->elements() == 0) continue;
         inPort->consume(inPort->elements());
 
+        //use special stream labels to modify parameters
+        for (const auto &label : inPort->labels())
+        {
+            if (label.id == _rateLabelId and label.data.canConvert(typeid(double)))
+            {
+                this->setSampleRate(label.data.convert<double>());
+            }
+        }
+
         //should we update the plotter with these values?
         auto &lastUpdateTime = _lastUpdateTimes[inPort->index()];
         const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/_displayRate));

@@ -92,6 +92,20 @@ class MySpectrogramRasterData;
  * |default true
  * |preview disable
  *
+ * |param freqLabelId[Freq Label ID] Labels with this ID can be used to set the center frequency.
+ * To ignore frequency labels, set this parameter to an empty string.
+ * |default "rxFreq"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Labels
+ *
+ * |param rateLabelId[Rate Label ID] Labels with this ID can be used to set the sample rate.
+ * To ignore sample rate labels, set this parameter to an empty string.
+ * |default "rxRate"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Labels
+ *
  * |mode graphWidget
  * |factory /widgets/spectrogram()
  * |setter setTitle(title)
@@ -105,6 +119,8 @@ class MySpectrogramRasterData;
  * |setter setDynamicRange(dynRange)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
+ * |setter setFreqLabelId(freqLabelId)
+ * |setter setRateLabelId(rateLabelId)
  **********************************************************************/
 class Spectrogram : public QWidget, public Pothos::Block
 {
@@ -191,6 +207,16 @@ public:
     void enableXAxis(const bool enb);
     void enableYAxis(const bool enb);
 
+    void setFreqLabelId(const std::string &id)
+    {
+        _freqLabelId = id;
+    }
+
+    void setRateLabelId(const std::string &id)
+    {
+        _rateLabelId = id;
+    }
+
     void activate(void);
     void deactivate(void);
     void work(void);
@@ -227,6 +253,8 @@ private:
     double _timeSpan;
     double _refLevel;
     double _dynRange;
+    std::string _freqLabelId;
+    std::string _rateLabelId;
     std::chrono::high_resolution_clock::time_point _timeLastUpdate;
     Pothos::BufferChunk _rasterBuff;
     QwtColorMap *makeColorMap(void) const;

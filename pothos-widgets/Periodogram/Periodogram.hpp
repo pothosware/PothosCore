@@ -102,6 +102,20 @@ class QwtPlotZoomer;
  * |widget StringEntry()
  * |preview disable
  *
+ * |param freqLabelId[Freq Label ID] Labels with this ID can be used to set the center frequency.
+ * To ignore frequency labels, set this parameter to an empty string.
+ * |default "rxFreq"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Labels
+ *
+ * |param rateLabelId[Rate Label ID] Labels with this ID can be used to set the sample rate.
+ * To ignore sample rate labels, set this parameter to an empty string.
+ * |default "rxRate"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Labels
+ *
  * |mode graphWidget
  * |factory /widgets/periodogram()
  * |initializer setNumInputs(numInputs)
@@ -117,6 +131,8 @@ class QwtPlotZoomer;
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
+ * |setter setFreqLabelId(freqLabelId)
+ * |setter setRateLabelId(rateLabelId)
  **********************************************************************/
 class Periodogram : public QWidget, public Pothos::Block
 {
@@ -211,6 +227,16 @@ public:
     void enableYAxis(const bool enb);
     void setYAxisTitle(const QString &title);
 
+    void setFreqLabelId(const std::string &id)
+    {
+        _freqLabelId = id;
+    }
+
+    void setRateLabelId(const std::string &id)
+    {
+        _rateLabelId = id;
+    }
+
     void activate(void);
     void work(void);
     bool updateCurve(Pothos::InputPort *inPort);
@@ -247,6 +273,8 @@ private:
     double _refLevel;
     double _dynRange;
     bool _autoScale;
+    std::string _freqLabelId;
+    std::string _rateLabelId;
 
     //per-port data structs
     std::map<size_t, std::chrono::high_resolution_clock::time_point> _lastUpdateTimes;

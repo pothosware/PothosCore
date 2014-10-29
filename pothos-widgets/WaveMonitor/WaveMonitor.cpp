@@ -20,6 +20,7 @@ WaveMonitor::WaveMonitor(void):
     _sampleRate(1.0),
     _timeSpan(1.0),
     _numPoints(1024),
+    _rateLabelId("rxRate"),
     _nextColorIndex(0)
 {
     //setup block
@@ -37,6 +38,7 @@ WaveMonitor::WaveMonitor(void):
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, enableYAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setYAxisTitle));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setRateLabelId));
     this->setupInput(0);
 
     //layout

@@ -23,7 +23,9 @@ Periodogram::Periodogram(void):
     _numBins(1024),
     _refLevel(0.0),
     _dynRange(100.0),
-    _autoScale(false)
+    _autoScale(false),
+    _freqLabelId("rxFreq"),
+    _rateLabelId("rxRate")
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     _window = env->findProxy("Pothos/Util/WindowFunction").callProxy("new");
@@ -52,6 +54,8 @@ Periodogram::Periodogram(void):
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableYAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setYAxisTitle));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setFreqLabelId));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setRateLabelId));
     this->registerSignal("frequencySelected");
     this->setupInput(0);
 

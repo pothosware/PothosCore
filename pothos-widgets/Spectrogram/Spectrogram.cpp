@@ -31,7 +31,9 @@ Spectrogram::Spectrogram(void):
     _numBins(1024),
     _timeSpan(10.0),
     _refLevel(0.0),
-    _dynRange(100.0)
+    _dynRange(100.0),
+    _freqLabelId("rxFreq"),
+    _rateLabelId("rxRate")
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     _window = env->findProxy("Pothos/Util/WindowFunction").callProxy("new");
@@ -57,6 +59,8 @@ Spectrogram::Spectrogram(void):
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, dynamicRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, enableYAxis));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setFreqLabelId));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setRateLabelId));
     this->registerSignal("frequencySelected");
     this->setupInput(0);
 
