@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Periodogram.hpp"
+#include "PeriodogramChannel.hpp"
 #include "MyPlotUtils.hpp"
 #include <qwt_plot_curve.h>
 #include <qwt_plot.h>
@@ -13,7 +14,8 @@
 void Periodogram::activate(void)
 {
     //install legend for multiple channels
-    if (this->inputs().size() > 1) QMetaObject::invokeMethod(this, "installLegend", Qt::QueuedConnection);
+    //if (this->inputs().size() > 1)
+    QMetaObject::invokeMethod(this, "installLegend", Qt::QueuedConnection);
 }
 
 /***********************************************************************
@@ -42,21 +44,9 @@ bool Periodogram::updateCurve(Pothos::InputPort *inPort)
 
 void Periodogram::handlePowerBins(const int index, const std::valarray<float> &powerBins)
 {
-    QVector<QPointF> points(powerBins.size());
-    for (size_t i = 0; i < powerBins.size(); i++)
-    {
-        auto freq = (_sampleRateWoAxisUnits*i)/(powerBins.size()-1) - _sampleRateWoAxisUnits/2;
-        points[i] = QPointF(freq+_centerFreqWoAxisUnits, powerBins[i]);
-    }
-
     auto &curve = _curves[index];
-    if (not curve)
-    {
-        curve.reset(new QwtPlotCurve(QString("Ch%1").arg(index)));
-        curve->attach(_mainPlot);
-        curve->setPen(pastelize(getDefaultCurveColor(index)));
-    }
-    _curves.at(index)->setSamples(points);
+    if (not curve) curve.reset(new PeriodogramChannel(index, _mainPlot));
+    curve->update(powerBins, _sampleRateWoAxisUnits, _centerFreqWoAxisUnits);
 }
 
 void Periodogram::work(void)

@@ -16,6 +16,7 @@ class MyQwtPlot;
 class QwtPlotGrid;
 class QwtPlotCurve;
 class QwtPlotZoomer;
+class PeriodogramChannel;
 
 /***********************************************************************
  * |PothosDoc Periodogram
@@ -279,5 +280,5 @@ private:
     //per-port data structs
     std::map<size_t, std::chrono::high_resolution_clock::time_point> _lastUpdateTimes;
     std::map<size_t, Pothos::BufferChunk> _rasterBuffs;
-    std::map<size_t, std::shared_ptr<QwtPlotCurve>> _curves;
+    std::map<size_t, std::shared_ptr<PeriodogramChannel>> _curves;
 };
