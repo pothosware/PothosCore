@@ -402,7 +402,7 @@ bool PothosPacketSocketEndpoint::isReady(void)
  **********************************************************************/
 void PothosPacketSocketEndpoint::openComms(void)
 {
-    Pothos::BufferChunk buffer;
+    Pothos::BufferChunk buffer(1024);
     uint16_t type;
     uint64_t index;
 
@@ -444,7 +444,7 @@ void PothosPacketSocketEndpoint::closeComms(void)
 {
     if (_impl->state == EP_STATE_CLOSED) return;
 
-    Pothos::BufferChunk buffer;
+    Pothos::BufferChunk buffer(1024);
     uint16_t type;
     uint64_t index;
 
