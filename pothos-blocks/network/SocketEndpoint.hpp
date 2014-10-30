@@ -57,7 +57,7 @@ public:
     /*!
      * Receive data from the remote endpoint.
      */
-    void recv(uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const std::chrono::high_resolution_clock::duration &timeout = std::chrono::milliseconds(500));
+    void recv(uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const std::chrono::high_resolution_clock::duration &timeout = std::chrono::milliseconds(100));
 
     /*!
      * Send data to the remote endpoint.
