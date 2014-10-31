@@ -56,15 +56,6 @@ if(BUILD_POCO)
     set(POCO_Net_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/poco/Net/include)
     set(POCO_Net_LIBRARY_REL PocoNet)
 
-    set(POCO_Data_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/poco/Data/include)
-    set(POCO_Data_LIBRARY_REL PocoData)
-
-    set(POCO_DataSQLite_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/poco/Data/SQLite/include)
-    set(POCO_DataSQLite_LIBRARY_REL PocoDataSQLite)
-
-    set(POCO_MongoDB_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/poco/MongoDB/include)
-    set(POCO_MongoDB_LIBRARY_REL PocoMongoDB)
-
     set(POCO_JSON_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/poco/JSON/include)
     set(POCO_JSON_LIBRARY_REL PocoJSON)
 
@@ -81,9 +72,6 @@ list(APPEND POCO_INCLUDE_DIRS
     ${POCO_Util_INCLUDE_DIR}
     ${POCO_XML_INCLUDE_DIR}
     ${POCO_Net_INCLUDE_DIR}
-    ${POCO_Data_INCLUDE_DIR}
-    ${POCO_DataSQLite_INCLUDE_DIR}
-    ${POCO_MongoDB_INCLUDE_DIR}
     ${POCO_JSON_INCLUDE_DIR}
 )
 
@@ -92,9 +80,6 @@ list(APPEND POCO_LIBRARIES
     ${POCO_Util_LIBRARY_REL}
     ${POCO_XML_LIBRARY_REL}
     ${POCO_Net_LIBRARY_REL}
-    ${POCO_Data_LIBRARY_REL}
-    ${POCO_DataSQLite_LIBRARY_REL}
-    ${POCO_MongoDB_LIBRARY_REL}
     ${POCO_JSON_LIBRARY_REL}
 )
 

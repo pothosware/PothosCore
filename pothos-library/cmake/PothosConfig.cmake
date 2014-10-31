@@ -154,7 +154,7 @@ list(APPEND Pothos_INCLUDE_DIRS ${POTHOS_INCLUDE_DIR})
 ########################################################################
 ## locate the Poco libraries
 ########################################################################
-foreach(lib Foundation Data JSON XML Util Zip Net PDF MongoDB DataSQLite)
+foreach(lib Foundation JSON XML Util Net)
     find_library(
         POCO_LIBRARY_${lib} Poco${lib} Poco${lib}d
         PATHS ${POTHOS_ROOT}/lib${LIB_SUFFIX}
