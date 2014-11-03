@@ -65,7 +65,6 @@ protected:
     {
         if (change == ItemPositionChange)
         {
-            std::cout << "ItemPositionChange\n";
             emit this->positionChanged(this->getRelativePoint());
         }
         return QGraphicsObject::itemChange(change, value);
@@ -163,6 +162,10 @@ private:
  * |PothosDoc Planar Select
  *
  * A two-dimensional point selection widget.
+ * The point is changed graphically by dragging a crosshair across a rectangular region.
+ * When the crosshair point is changed, the new value is emitted
+ * as a two dimensional vector of doubles through the "valueChanged" signal,
+ * and as a complex number through the "complexValueChanged" signal.
  *
  * |category /Widgets
  * |keywords 2d plane cartesian complex
@@ -205,6 +208,8 @@ public:
         this->registerSignal("complexValueChanged");
 
         _layout->addWidget(_view);
+        _layout->setContentsMargins(QMargins(0, 0, 0, 0));
+        _layout->setSpacing(0);
         connect(_view, SIGNAL(positionChanged(const QPointF &)), this, SLOT(handlePositionChanged(const QPointF &)));
     }
 
