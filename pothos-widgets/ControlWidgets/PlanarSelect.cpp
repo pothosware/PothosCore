@@ -12,6 +12,9 @@
 #include <complex>
 #include <iostream>
 
+/***********************************************************************
+ * Draggable crosshairs for point selection
+ **********************************************************************/
 class PlanarSelectCrossHairs : public QGraphicsObject
 {
     Q_OBJECT
@@ -21,6 +24,7 @@ public:
     {
         this->setFlag(QGraphicsItem::ItemIsMovable);
         this->setFlag(QGraphicsItem::ItemIsSelectable);
+        this->setFlag(QGraphicsItem::ItemSendsGeometryChanges);
     }
 
     QRectF boundingRect(void) const
@@ -35,10 +39,45 @@ public:
         painter->drawLine(QPointF(-_length/2, 0), QPointF(_length/2, 0));
     }
 
+    QPointF getRelativePoint(void) const
+    {
+        const auto sr = this->scene()->sceneRect();
+        const auto p = this->pos() - sr.topLeft();
+        return QPointF(p.x()/sr.width(), 1.0-(p.y()/sr.height()));
+    }
+
+    void setRelativePoint(const QPointF &rel_)
+    {
+        //clip to 0.0 -> 1.0 to keep in bounds
+        QPointF rel(
+            std::max(std::min(rel_.x(), 1.0), 0.0),
+            std::max(std::min(rel_.y(), 1.0), 0.0));
+        const auto sr = this->scene()->sceneRect();
+        const auto p = QPointF(rel.x()*sr.width(), (1.0-rel.y())*sr.height());
+        this->setPos(p + sr.topLeft());
+    }
+
+signals:
+    void positionChanged(const QPointF &);
+
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value)
+    {
+        if (change == ItemPositionChange)
+        {
+            std::cout << "ItemPositionChange\n";
+            emit this->positionChanged(this->getRelativePoint());
+        }
+        return QGraphicsObject::itemChange(change, value);
+    }
+
 private:
     qreal _length;
 };
 
+/***********************************************************************
+ * Custom scene with axis background
+ **********************************************************************/
 class PlanarSelectGraphicsScene : public QGraphicsScene
 {
     Q_OBJECT
@@ -74,31 +113,49 @@ public:
     }
 };
 
+/***********************************************************************
+ * Custom view with scene resize
+ **********************************************************************/
 class PlanarSelectGraphicsView : public QGraphicsView
 {
     Q_OBJECT
 public:
     PlanarSelectGraphicsView(QWidget *parent):
-        QGraphicsView(parent)
+        QGraphicsView(parent),
+        _crossHairs(new PlanarSelectCrossHairs())
     {
         this->setScene(new PlanarSelectGraphicsScene(this));
         this->scene()->setBackgroundBrush(Qt::white);
-
-        auto crossHairs = new PlanarSelectCrossHairs();
-        this->scene()->addItem(crossHairs);
+        this->scene()->addItem(_crossHairs);
 
         //set high quality rendering
         this->setRenderHint(QPainter::Antialiasing);
         this->setRenderHint(QPainter::HighQualityAntialiasing);
         this->setRenderHint(QPainter::SmoothPixmapTransform);
+
+        //forward position changed signal
+        connect(_crossHairs, SIGNAL(positionChanged(const QPointF &)), this, SIGNAL(positionChanged(const QPointF &)));
     }
+
+    void setPosition(const QPointF &pos)
+    {
+        _crossHairs->setRelativePoint(pos);
+    }
+
+signals:
+    void positionChanged(const QPointF &);
 
 protected:
     void resizeEvent(QResizeEvent *event)
     {
         QGraphicsView::resizeEvent(event);
+        const auto p = _crossHairs->getRelativePoint();
         this->scene()->setSceneRect(QRectF(QPointF(), event->size()));
+        _crossHairs->setRelativePoint(p);
     }
+
+private:
+    PlanarSelectCrossHairs *_crossHairs;
 };
 
 
@@ -148,6 +205,7 @@ public:
         this->registerSignal("complexValueChanged");
 
         _layout->addWidget(_view);
+        connect(_view, SIGNAL(positionChanged(const QPointF &)), this, SLOT(handlePositionChanged(const QPointF &)));
     }
 
     QWidget *widget(void)
@@ -157,18 +215,24 @@ public:
 
     std::vector<double> value(void) const
     {
-        
+        std::vector<double> vals(2);
+        vals[0] = _value.x();
+        vals[1] = _value.y();
+        return vals;
     }
 
     std::complex<double> complexValue(void) const
     {
-        const auto val = this->value();
-        return std::complex<double>(val[0], val[1]);
+        return std::complex<double>(_value.x(), _value.y());
     }
 
     void setValue(const std::vector<double> &value)
     {
         if (value.size() != 2) throw Pothos::RangeException("PlanarSelect::setValue()", "value size must be 2");
+        _value = QPointF(value[0], value[1]);
+        const auto pos = _value - _minimum;
+        const auto range = _maximum - _minimum;
+        _view->setPosition(QPointF(pos.x()/range.x(), pos.y()/range.y()));
     }
 
     void setMinimum(const std::vector<double> &minimum)
@@ -186,14 +250,30 @@ public:
     void activate(void)
     {
         //emit current value when design becomes active
+        this->emitValuesChanged();
+    }
+
+private slots:
+
+    void handlePositionChanged(const QPointF &pos)
+    {
+        const auto range = _maximum - _minimum;
+        _value = QPointF(pos.x()*range.x(), pos.y()*range.y()) + _minimum;
+        this->emitValuesChanged();
+    }
+
+private:
+
+    void emitValuesChanged(void)
+    {
         this->callVoid("valueChanged", this->value());
         this->callVoid("complexValueChanged", this->complexValue());
     }
 
-private:
     QPointF _minimum;
     QPointF _maximum;
-    QGraphicsView *_view;
+    QPointF _value;
+    PlanarSelectGraphicsView *_view;
     QHBoxLayout *_layout;
 };
 
