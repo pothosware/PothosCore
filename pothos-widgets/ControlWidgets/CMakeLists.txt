@@ -7,6 +7,7 @@ set(SOURCES
     TextDisplay.cpp
     DropDown.cpp
     RadioGroup.cpp
+    PlanarSelect.cpp
     QwtSlider.cpp
 )
 
