@@ -7,6 +7,7 @@
 #include <QGraphicsObject>
 #include <QHBoxLayout>
 #include <QResizeEvent>
+#include <QMouseEvent>
 #include <QPainter>
 #include <vector>
 #include <complex>
@@ -39,34 +40,13 @@ public:
         painter->drawLine(QPointF(-_length/2, 0), QPointF(_length/2, 0));
     }
 
-    QPointF getRelativePoint(void) const
-    {
-        const auto sr = this->scene()->sceneRect();
-        const auto p = this->pos() - sr.topLeft();
-        return QPointF(p.x()/sr.width(), 1.0-(p.y()/sr.height()));
-    }
-
-    void setRelativePoint(const QPointF &rel_)
-    {
-        //clip to 0.0 -> 1.0 to keep in bounds
-        QPointF rel(
-            std::max(std::min(rel_.x(), 1.0), 0.0),
-            std::max(std::min(rel_.y(), 1.0), 0.0));
-        const auto sr = this->scene()->sceneRect();
-        const auto p = QPointF(rel.x()*sr.width(), (1.0-rel.y())*sr.height());
-        this->setPos(p + sr.topLeft());
-    }
-
 signals:
-    void positionChanged(const QPointF &);
+    void positionChanged(void);
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value)
     {
-        if (change == ItemPositionChange)
-        {
-            emit this->positionChanged(this->getRelativePoint());
-        }
+        if (change == ItemPositionChange) emit this->positionChanged();
         return QGraphicsObject::itemChange(change, value);
     }
 
@@ -133,27 +113,66 @@ public:
         this->setRenderHint(QPainter::SmoothPixmapTransform);
 
         //forward position changed signal
-        connect(_crossHairs, SIGNAL(positionChanged(const QPointF &)), this, SIGNAL(positionChanged(const QPointF &)));
+        connect(_crossHairs, SIGNAL(positionChanged(void)), this, SLOT(handleCrossHairsPointChanged(void)));
     }
 
-    void setPosition(const QPointF &pos)
+    QPointF getPosition(void) const
     {
-        _crossHairs->setRelativePoint(pos);
+        return this->scenePosToRelPos(_crossHairs->pos());
+    }
+
+    void setPosition(const QPointF &rel_)
+    {
+        //clip to 0.0 -> 1.0 to keep in bounds
+        QPointF rel(
+            std::max(std::min(rel_.x(), 1.0), 0.0),
+            std::max(std::min(rel_.y(), 1.0), 0.0));
+        const auto sr = this->scene()->sceneRect();
+        const auto p = QPointF(rel.x()*sr.width(), (1.0-rel.y())*sr.height());
+        _crossHairs->setPos(p + sr.topLeft());
     }
 
 signals:
     void positionChanged(const QPointF &);
 
+private slots:
+    void handleCrossHairsPointChanged(void)
+    {
+        emit this->positionChanged(this->getPosition());
+    }
+
 protected:
     void resizeEvent(QResizeEvent *event)
     {
         QGraphicsView::resizeEvent(event);
-        const auto p = _crossHairs->getRelativePoint();
+        bool oldState = this->blockSignals(true);
+        const auto p = this->getPosition();
         this->scene()->setSceneRect(QRectF(QPointF(), event->size()));
-        _crossHairs->setRelativePoint(p);
+        this->setPosition(p);
+        this->blockSignals(oldState);
+    }
+
+    void mousePressEvent(QMouseEvent *mouseEvent)
+    {
+        QGraphicsView::mousePressEvent(mouseEvent);
+        if (mouseEvent->button() == Qt::LeftButton)
+        {
+            mouseEvent->accept();
+            const auto pos = this->scenePosToRelPos(this->mapToScene(mouseEvent->pos()));
+            this->setPosition(pos);
+            emit this->positionChanged(pos);
+        }
     }
 
 private:
+
+    QPointF scenePosToRelPos(const QPointF &scenePos) const
+    {
+        const auto sr = this->scene()->sceneRect();
+        auto p = scenePos - sr.topLeft();
+        return QPointF(p.x()/sr.width(), 1.0-(p.y()/sr.height()));
+    }
+
     PlanarSelectCrossHairs *_crossHairs;
 };
 
