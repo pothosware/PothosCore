@@ -275,6 +275,26 @@ public:
     }
 
     /*******************************************************************
+     * DC offset adjust
+     ******************************************************************/
+    void setDCOffsetAdjust(const std::complex<double> &correction)
+    {
+        for (size_t i = 0; i < _channels.size(); i++) this->setDCOffsetAdjust(i, correction);
+    }
+
+    void setDCOffsetAdjust(const size_t chan, const std::complex<double> &correction)
+    {
+        if (chan >= _channels.size()) return;
+        return _device->setDCOffset(_direction, _channels.at(chan), correction);
+    }
+
+    std::complex<double> getDCOffsetAdjust(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return 0.0;
+        return _device->getDCOffset(_direction, _channels.at(chan));
+    }
+
+    /*******************************************************************
      * Clocking config
      ******************************************************************/
     void setClockRate(const double rate)

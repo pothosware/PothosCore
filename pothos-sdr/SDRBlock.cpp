@@ -50,6 +50,7 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerCallable("setBandwidth", Pothos::Callable::make<const std::vector<double> &>(&SDRBlock::setBandwidth).bind(std::ref(*this), 0));
     this->registerCallable("setDCOffsetMode", Pothos::Callable::make<const bool>(&SDRBlock::setDCOffsetMode).bind(std::ref(*this), 0));
     this->registerCallable("setDCOffsetMode", Pothos::Callable::make<const std::vector<bool> &>(&SDRBlock::setDCOffsetMode).bind(std::ref(*this), 0));
+    this->registerCallable("setDCOffsetAdjust", Pothos::Callable::make<const std::complex<double> &>(&SDRBlock::setDCOffsetAdjust).bind(std::ref(*this), 0));
 
     //channels
     for (size_t i = 0; i < _channels.size(); i++)
@@ -83,6 +84,9 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
         //dc offset mode
         this->registerCallable("setDCOffsetMode"+chanStr, Pothos::Callable::make<const size_t>(&SDRBlock::setDCOffsetMode).bind(std::ref(*this), 0).bind(i, 1));
         this->registerCallable("getDCOffsetMode"+chanStr, Pothos::Callable::make<const size_t>(&SDRBlock::getDCOffsetMode).bind(std::ref(*this), 0).bind(i, 1));
+        //dc offset adjust
+        this->registerCallable("setDCOffsetAdjust"+chanStr, Pothos::Callable::make<const size_t>(&SDRBlock::setDCOffsetAdjust).bind(std::ref(*this), 0).bind(i, 1));
+        this->registerCallable("getDCOffsetAdjust"+chanStr, Pothos::Callable::make<const size_t>(&SDRBlock::getDCOffsetAdjust).bind(std::ref(*this), 0).bind(i, 1));
 
         //channel probes
         this->registerProbe("getFrequency"+chanStr);
@@ -94,6 +98,7 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
         this->registerProbe("getBandwidth"+chanStr);
         this->registerProbe("getBandwidths"+chanStr);
         this->registerProbe("getDCOffsetMode"+chanStr);
+        this->registerProbe("getDCOffsetAdjust"+chanStr);
     }
 
     //clocking
