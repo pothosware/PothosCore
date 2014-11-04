@@ -270,8 +270,6 @@ public:
     }
 
 private slots:
-    void installLegend(void);
-    void handleLegendChecked(const QVariant &, bool, int);
     void handlePickerSelected(const QPointF &);
     void handlePowerBins(const int index, const std::valarray<float> &bins);
     void handleUpdateAxis(void);

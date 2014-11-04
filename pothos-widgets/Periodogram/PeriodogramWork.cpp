@@ -13,9 +13,7 @@
  **********************************************************************/
 void Periodogram::activate(void)
 {
-    //install legend for multiple channels
-    //if (this->inputs().size() > 1)
-    QMetaObject::invokeMethod(this, "installLegend", Qt::QueuedConnection);
+    return;
 }
 
 /***********************************************************************
