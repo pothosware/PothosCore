@@ -128,6 +128,10 @@ set(SOURCES
     TopologyEngine/TopologyTraversal.cpp
     TopologyEngine/EvalGraphBlock.cpp
     TopologyEngine/EvalBlockCache.cpp
+
+    EvalEngine/EvalEngine.cpp
+    EvalEngine/ZoneEngine.cpp
+    EvalEngine/BlockEngine.cpp
 )
 add_executable(PothosGui ${SOURCES})
 target_link_libraries(PothosGui Pothos ${Pothos_LIBRARIES})
