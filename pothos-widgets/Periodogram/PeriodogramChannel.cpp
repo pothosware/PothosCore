@@ -80,12 +80,12 @@ void PeriodogramChannel::handleLegendChecked(const QVariant &itemInfo, bool on, 
     if (item == _maxHoldCurve.get())
     {
         _maxHoldCurve->setVisible(on);
-        if (not on) _maxHoldBuffer.clear();
+        if (on) _maxHoldBuffer.clear();
     }
     if (item == _minHoldCurve.get())
     {
         _minHoldCurve->setVisible(on);
-        if (not on) _minHoldBuffer.clear();
+        if (on) _minHoldBuffer.clear();
     }
 }
 
