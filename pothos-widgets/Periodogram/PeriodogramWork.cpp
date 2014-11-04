@@ -46,7 +46,7 @@ void Periodogram::handlePowerBins(const int index, const std::valarray<float> &p
 {
     auto &curve = _curves[index];
     if (not curve) curve.reset(new PeriodogramChannel(index, _mainPlot));
-    curve->update(powerBins, _sampleRateWoAxisUnits, _centerFreqWoAxisUnits);
+    curve->update(powerBins, _sampleRateWoAxisUnits, _centerFreqWoAxisUnits, _averageFactor);
 }
 
 void Periodogram::work(void)

@@ -86,6 +86,14 @@ class PeriodogramChannel;
  * |option [Use limits] false
  * |preview disable
  *
+ * |param averaging[Averaging] Averaging factor for moving average over FFT bins.
+ * A factor of 0.0 means no averaging.
+ * A factor of 1.0 means max averaging.
+ * Increasing the value increases the averaging window.
+ * |default 0.0
+ * |preview disable
+ * |widget DoubleSpinBox(minimum=0.0, maximum=1.0, step=0.05, decimals=3)
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
@@ -129,6 +137,7 @@ class PeriodogramChannel;
  * |setter setReferenceLevel(refLevel)
  * |setter setDynamicRange(dynRange)
  * |setter setAutoScale(autoScale)
+ * |setter setAverageFactor(averaging)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
@@ -238,6 +247,14 @@ public:
         _rateLabelId = id;
     }
 
+    void setAverageFactor(const double factor)
+    {
+        if (factor > 1.0 or factor < 0.0) throw Pothos::RangeException(
+            "Periodigram::setAverageFactor("+std::to_string(factor)+")",
+            "factor must be in [1.0, 0.0]");
+        _averageFactor = factor;
+    }
+
     void activate(void);
     void work(void);
     bool updateCurve(Pothos::InputPort *inPort);
@@ -276,6 +293,7 @@ private:
     bool _autoScale;
     std::string _freqLabelId;
     std::string _rateLabelId;
+    double _averageFactor;
 
     //per-port data structs
     std::map<size_t, std::chrono::high_resolution_clock::time_point> _lastUpdateTimes;
