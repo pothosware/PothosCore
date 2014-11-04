@@ -45,8 +45,8 @@ signals:
     void deactivateDesign(void);
 
 private slots:
-    //void handleHostUriListChanged(void);
-    //void handleAffinityZonesChanged(void);
+    void handleHostUriListChanged(void);
+    void handleAffinityZonesChanged(void);
 
 private:
     //host uris to process name to zone engine
