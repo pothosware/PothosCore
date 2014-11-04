@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <QGroupBox>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGraphicsObject>
@@ -189,6 +190,10 @@ private:
  * |category /Widgets
  * |keywords 2d plane cartesian complex
  *
+ * |param title The name of the value displayed by this widget
+ * |default "My Coordinate"
+ * |widget StringEntry()
+ *
  * |param value The initial value of this slider.
  * |default [0.0, 0.0]
  *
@@ -200,11 +205,12 @@ private:
  *
  * |mode graphWidget
  * |factory /widgets/planar_select()
+ * |setter setTitle(title)
  * |setter setMinimum(minimum)
  * |setter setMaximum(maximum)
  * |setter setValue(value)
  **********************************************************************/
-class PlanarSelect : public QWidget, public Pothos::Block
+class PlanarSelect : public QGroupBox, public Pothos::Block
 {
     Q_OBJECT
 public:
@@ -218,8 +224,10 @@ public:
         _view(new PlanarSelectGraphicsView(this)),
         _layout(new QHBoxLayout(this))
     {
+        this->setStyleSheet("QGroupBox {font-weight: bold;}");
         this->registerCall(this, POTHOS_FCN_TUPLE(PlanarSelect, widget));
         this->registerCall(this, POTHOS_FCN_TUPLE(PlanarSelect, value));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PlanarSelect, setTitle));
         this->registerCall(this, POTHOS_FCN_TUPLE(PlanarSelect, setValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(PlanarSelect, setMinimum));
         this->registerCall(this, POTHOS_FCN_TUPLE(PlanarSelect, setMaximum));
@@ -235,6 +243,11 @@ public:
     QWidget *widget(void)
     {
         return this;
+    }
+
+    void setTitle(const QString &title)
+    {
+        QMetaObject::invokeMethod(this, "handleSetTitle", Qt::QueuedConnection, Q_ARG(QString, title));
     }
 
     std::vector<double> value(void) const
@@ -284,6 +297,18 @@ private slots:
         const auto range = _maximum - _minimum;
         _value = QPointF(pos.x()*range.x(), pos.y()*range.y()) + _minimum;
         this->emitValuesChanged();
+    }
+
+    void handleSetTitle(const QString &title)
+    {
+        QGroupBox::setTitle(title);
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent *event)
+    {
+        QGroupBox::mousePressEvent(event);
+        event->ignore(); //allows for dragging from QGroupBox title
     }
 
 private:
