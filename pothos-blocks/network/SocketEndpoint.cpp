@@ -402,7 +402,7 @@ bool PothosPacketSocketEndpoint::isReady(void)
  **********************************************************************/
 void PothosPacketSocketEndpoint::openComms(void)
 {
-    Pothos::BufferChunk buffer;
+    Pothos::BufferChunk buffer(1024);
     uint16_t type;
     uint64_t index;
 
@@ -420,9 +420,9 @@ void PothosPacketSocketEndpoint::openComms(void)
         _impl->state = EP_STATE_SYN_SENT;
     }
 
-    //loop until timeout
-    const auto exitTime = Poco::Timestamp() + Poco::Timespan(Poco::Timespan::TimeDiff(0.5*1e6)); //half a second
-    while (Poco::Timestamp() < exitTime)
+    //loop until timeout (we will exit before timeout under normal conditions)
+    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(500); //half a second
+    while (std::chrono::high_resolution_clock::now() < exitTime)
     {
         if (_impl->state == EP_STATE_ESTABLISHED) break;
         if (_impl->state == EP_STATE_CLOSED) break;
@@ -444,7 +444,7 @@ void PothosPacketSocketEndpoint::closeComms(void)
 {
     if (_impl->state == EP_STATE_CLOSED) return;
 
-    Pothos::BufferChunk buffer;
+    Pothos::BufferChunk buffer(1024);
     uint16_t type;
     uint64_t index;
 
@@ -463,9 +463,9 @@ void PothosPacketSocketEndpoint::closeComms(void)
         _impl->state = EP_STATE_CLOSED;
     }
 
-    //loop until timeout
-    const auto exitTime = Poco::Timestamp() + Poco::Timespan(Poco::Timespan::TimeDiff(0.5*1e6)); //half a second
-    while (Poco::Timestamp() < exitTime)
+    //loop until timeout (we will exit before timeout under normal conditions)
+    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(500); //half a second
+    while (std::chrono::high_resolution_clock::now() < exitTime)
     {
         if (_impl->state == EP_STATE_TIME_WAIT) _impl->state = EP_STATE_CLOSED;
         if (_impl->state == EP_STATE_CLOSED) break;

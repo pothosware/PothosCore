@@ -94,10 +94,10 @@ include_directories( CppUnit/include Foundation/include XML/include Net/include 
 
 include(CheckTypeSize)
 include(FindCygwin)
-include(FindOpenSSL)
+#include(FindOpenSSL)
 #include(CMakeDetermineCompilerId)
 
-include(FindMySQL)
+#include(FindMySQL)
 
 #include(FindAPR)
 #include(FindApache2)
@@ -161,8 +161,8 @@ ENDIF ()
 add_subdirectory(Foundation)
 add_subdirectory(XML)
 add_subdirectory(JSON)
-add_subdirectory(MongoDB)
-add_subdirectory(PDF)
+#add_subdirectory(MongoDB)
+#add_subdirectory(PDF)
 add_subdirectory(Util)
 add_subdirectory(Net)
 #add_subdirectory(Web)
@@ -174,9 +174,9 @@ if(OPENSSL_FOUND)
     add_subdirectory(Crypto)
 endif(OPENSSL_FOUND)
 
-add_subdirectory(Data)
+#add_subdirectory(Data)
 #add_subdirectory(WebWidgets)
-add_subdirectory(Zip)
+#add_subdirectory(Zip)
 
 if(APRUTIL_FOUND AND APACHE_FOUND)
     add_subdirectory(ApacheConnector)
@@ -189,8 +189,8 @@ CONFIGURE_FILE(
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 
-ADD_CUSTOM_TARGET(uninstall
-  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+#ADD_CUSTOM_TARGET(uninstall
+#  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
 #############################################################
 # Enable packaging

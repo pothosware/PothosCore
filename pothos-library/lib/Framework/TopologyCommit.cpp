@@ -8,6 +8,26 @@
 #include <iostream>
 #include <future>
 
+struct FutureInfo
+{
+    FutureInfo(const std::string &what, const Pothos::Proxy &block, const Pothos::Proxy &result):
+        what(what), block(block), result(result){}
+    std::string what;
+    Pothos::Proxy block;
+    Pothos::Proxy result;
+};
+
+std::string collectFutureInfoErrors(const std::vector<FutureInfo> infoFutures)
+{
+    std::string errors;
+    for (auto future : infoFutures)
+    {
+        const auto &msg = future.result.call<std::string>("WaitInfo");
+        if (not msg.empty()) errors.append(future.block.call<std::string>("getName")+"."+future.what+": "+msg+"\n");
+    }
+    return errors;
+}
+
 /***********************************************************************
  * helpers to deal with buffer managers
  **********************************************************************/
@@ -24,7 +44,7 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
     }
 
     //result list is used to ack all install messages
-    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
+    std::vector<FutureInfo> infoFutures;
 
     //for each source port -- install managers
     for (const auto &pair : srcs)
@@ -70,17 +90,11 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         }
 
         auto result = src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, manager);
-        const auto msg = Poco::format("%s.setOutputBufferManager(%s)", src.obj.call<std::string>("getName"), src.name);
-        infoReceivers.push_back(std::make_pair(msg, result));
+        infoFutures.push_back(FutureInfo(Poco::format("setOutputBufferManager(%s)", src.name), src.obj, result));
     }
 
     //check all subscribe message results
-    std::string errors;
-    for (auto infoReceiver : infoReceivers)
-    {
-        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
-        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
-    }
+    const auto errors = collectFutureInfoErrors(infoFutures);
     if (not errors.empty()) throw Pothos::TopologyConnectError(errors);
 }
 
@@ -92,7 +106,7 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
     const bool isInputAction = action.find("INPUT") != std::string::npos;
 
     //result list is used to ack all subscribe messages
-    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
+    std::vector<FutureInfo> infoFutures;
 
     //add new data acceptors
     for (const auto &flow : flows)
@@ -102,17 +116,11 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
 
         auto actor = pri.obj.callProxy("get:_actor");
         auto result = actor.callProxy("sendPortSubscriberMessage", action, pri.name, sec.obj.callProxy("getPointer"), sec.name);
-        const auto msg = Poco::format("%s.sendPortSubscriberMessage(%s)", pri.obj.call<std::string>("getName"), action);
-        infoReceivers.push_back(std::make_pair(msg, result));
+        infoFutures.push_back(FutureInfo(Poco::format("sendPortSubscriberMessage(%s)", action), pri.obj, result));
     }
 
     //check all subscribe message results
-    std::string errors;
-    for (auto infoReceiver : infoReceivers)
-    {
-        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
-        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
-    }
+    const auto errors = collectFutureInfoErrors(infoFutures);
     if (not errors.empty()) throw Pothos::TopologyConnectError(errors);
 }
 
@@ -156,14 +164,13 @@ void topologySubCommit(Pothos::Topology &topology)
     installBufferManagers(newFlows);
 
     //result list is used to ack all de/activate messages
-    std::vector<std::pair<std::string, Pothos::Proxy>> infoReceivers;
+    std::vector<FutureInfo> infoFutures;
 
     //send activate to all new blocks not already in active flows
     for (auto block : getObjSetFromFlowList(newFlows, activeFlatFlows))
     {
-        auto actor = block.callProxy("get:_actor");
-        const auto msg = Poco::format("%s.sendActivateMessage()", block.call<std::string>("getName"));
-        infoReceivers.push_back(std::make_pair(msg, actor.callProxy("sendActivateMessage")));
+        auto result = block.callProxy("get:_actor").callProxy("sendActivateMessage");
+        infoFutures.push_back(FutureInfo("sendActivateMessage()", block, result));
     }
 
     //update current flows
@@ -172,18 +179,12 @@ void topologySubCommit(Pothos::Topology &topology)
     //send deactivate to all old blocks not in current active flows
     for (auto block : getObjSetFromFlowList(oldFlows, _impl->activeFlatFlows))
     {
-        auto actor = block.callProxy("get:_actor");
-        const auto msg = Poco::format("%s.sendDeactivateMessage()", block.call<std::string>("getName"));
-        infoReceivers.push_back(std::make_pair(msg, actor.callProxy("sendDeactivateMessage")));
+        auto result = block.callProxy("get:_actor").callProxy("sendDeactivateMessage");
+        infoFutures.push_back(FutureInfo("sendDeactivateMessage()", block, result));
     }
 
     //check all de/activate message results
-    std::string errors;
-    for (auto infoReceiver : infoReceivers)
-    {
-        const auto &msg = infoReceiver.second.call<std::string>("WaitInfo");
-        if (not msg.empty()) errors.append(infoReceiver.first+": "+msg+"\n");
-    }
+    const auto errors = collectFutureInfoErrors(infoFutures);
     if (not errors.empty()) throw Pothos::TopologyConnectError(errors);
 }
 
