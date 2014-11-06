@@ -4,7 +4,6 @@
 #include "PeriodogramChannel.hpp"
 #include <qwt_plot_curve.h>
 #include <qwt_legend.h>
-#include <qwt_legend_label.h>
 #include <cmath>
 
 template <typename T>
@@ -13,7 +12,7 @@ T movingAvgPowerBinFilter(const T alpha, const T prev, const T curr)
     return 10*std::log((1-alpha)*std::exp(prev/10) + alpha*std::exp(curr/10));
 }
 
-PeriodogramChannel::PeriodogramChannel(const size_t index, QwtPlot *plot):
+PeriodogramChannel::PeriodogramChannel(const size_t index, MyQwtPlot *plot):
     _plot(plot)
 {
     _channelCurve.reset(new QwtPlotCurve(QString("Ch%1").arg(index)));
@@ -37,10 +36,9 @@ PeriodogramChannel::PeriodogramChannel(const size_t index, QwtPlot *plot):
     _maxHoldCurve->attach(plot);
     _minHoldCurve->attach(plot);
 
-    this->setChecked(_channelCurve.get());
-    this->setChecked(_maxHoldCurve.get());
-    this->setChecked(_minHoldCurve.get());
-    plot->updateLegend();
+    plot->updateChecked(_channelCurve.get());
+    plot->updateChecked(_maxHoldCurve.get());
+    plot->updateChecked(_minHoldCurve.get());
 
     connect(plot->legend(), SIGNAL(checked(const QVariant &, bool, int)), this, SLOT(handleLegendChecked(const QVariant &, bool, int)));
 }
@@ -98,12 +96,4 @@ void PeriodogramChannel::initBufferSize(const std::valarray<float> &powerBins, Q
     {
         buff[i] = QPointF(0, powerBins[i]);
     }
-}
-
-void PeriodogramChannel::setChecked(QwtPlotItem *item)
-{
-    auto legend = dynamic_cast<QwtLegend *>(_plot->legend());
-    auto info = legend->legendWidget(_plot->itemToInfo(item));
-    auto label = dynamic_cast<QwtLegendLabel *>(info);
-    label->setChecked(item->isVisible());
 }

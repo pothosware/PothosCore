@@ -83,7 +83,10 @@ void WaveMonitor::handleSamples(const int index, const int whichCurve, const std
             _curves[index][0]->setTitle(QString("Re%1").arg(index));
             _curves[index][1]->setTitle(QString("Im%1").arg(index));
             this->installLegend(); //legend not installed with single input? well its complex...
+            _mainPlot->updateChecked(_curves[index][0].get());
+            _mainPlot->updateChecked(_curves[index][1].get());
         }
+        _mainPlot->updateChecked(curve.get());
     }
     curve->setSamples(points);
 

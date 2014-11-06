@@ -16,7 +16,7 @@ class PeriodogramChannel : QObject
 {
     Q_OBJECT
 public:
-    PeriodogramChannel(const size_t index, QwtPlot *plot);
+    PeriodogramChannel(const size_t index, MyQwtPlot *plot);
 
     ~PeriodogramChannel(void);
 
@@ -29,7 +29,6 @@ private slots:
 private:
 
     void initBufferSize(const std::valarray<float> &powerBins, QVector<QPointF> &buff);
-    void setChecked(QwtPlotItem *item);
 
     QwtPlot *_plot;
     QVector<QPointF> _channelBuffer;

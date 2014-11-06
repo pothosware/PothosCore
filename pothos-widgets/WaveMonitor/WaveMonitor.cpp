@@ -168,7 +168,7 @@ void WaveMonitor::installLegend(void)
 
 void WaveMonitor::handleLegendChecked(const QVariant &itemInfo, bool on, int)
 {
-    _mainPlot->infoToItem(itemInfo)->setVisible(not on);
+    _mainPlot->infoToItem(itemInfo)->setVisible(on);
 }
 
 /***********************************************************************
