@@ -18,6 +18,11 @@ EvalEngine::~EvalEngine(void)
     return;
 }
 
+void EvalEngine::submitTopology(const GraphObjectList &graphObjects)
+{
+    
+}
+
 void EvalEngine::handleHostUriListChanged(void)
 {
     auto dock = dynamic_cast<HostExplorerDock *>(getObjectMap()["hostExplorerDock"]);

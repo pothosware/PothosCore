@@ -3,6 +3,7 @@
 
 #include "PothosGuiUtils.hpp" //action map
 #include "TopologyEngine/TopologyEngine.hpp"
+#include "EvalEngine/EvalEngine.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
@@ -39,7 +40,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     _moveGraphObjectsMapper(new QSignalMapper(this)),
     _insertGraphWidgetsMapper(new QSignalMapper(this)),
     _stateManager(new GraphStateManager(this)),
-    _topologyEngine(new TopologyEngine(this))
+    _topologyEngine(new TopologyEngine(this)),
+    _evalEngine(new EvalEngine(this))
 {
     this->setMovable(true);
     this->setUsesScrollButtons(true);
@@ -877,6 +879,7 @@ void GraphEditor::handleBlockXcrement(const int adj)
 
 void GraphEditor::updateExecutionEngine(void)
 {
+    _evalEngine->submitTopology(this->getGraphObjects());
     if (not _topologyEngine->active()) return;
     try
     {

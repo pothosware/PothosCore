@@ -15,6 +15,7 @@ class GraphDraw;
 class QSignalMapper;
 class QTabWidget;
 class TopologyEngine;
+class EvalEngine;
 
 class GraphEditor : public QTabWidget
 {
@@ -141,4 +142,5 @@ private:
 
     void updateExecutionEngine(void);
     TopologyEngine *_topologyEngine;
+    EvalEngine *_evalEngine;
 };
