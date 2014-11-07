@@ -125,8 +125,9 @@ set(SOURCES
     GraphObjects/GraphWidgetContainer.cpp
 
     EvalEngine/EvalEngine.cpp
-    EvalEngine/ZoneEngine.cpp
-    EvalEngine/BlockEngine.cpp
+    EvalEngine/BlockEval.cpp
+    EvalEngine/ThreadPoolEval.cpp
+    EvalEngine/EnvironmentEval.cpp
     EvalEngine/TopologyTraversal.cpp
 )
 add_executable(PothosGui ${SOURCES})

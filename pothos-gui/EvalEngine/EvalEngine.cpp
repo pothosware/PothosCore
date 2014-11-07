@@ -3,8 +3,9 @@
 
 #include "PothosGuiUtils.hpp" //getObjectMap
 #include "EvalEngine.hpp"
-#include "ZoneEngine.hpp"
-#include "BlockEngine.hpp"
+#include "BlockEval.hpp"
+#include "ThreadPoolEval.hpp"
+#include "EnvironmentEval.hpp"
 #include "TopologyTraversal.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
@@ -47,8 +48,9 @@ struct EvalEngine::Impl
 
     //active evaluation hooks
     EvalInfo latestEvalInfo;
-    std::map<QString, std::shared_ptr<ZoneEngine>> zoneEngines;
-    std::map<GraphBlock *, std::shared_ptr<BlockEngine>> blockEngines;
+    std::map<HostProcPair, std::shared_ptr<EnvironmentEval>> environmentEvals;
+    std::map<QString, std::shared_ptr<ThreadPoolEval>> threadPoolEvals;
+    std::map<GraphBlock *, std::shared_ptr<BlockEval>> blockEvals;
 };
 
 /***********************************************************************
@@ -167,8 +169,9 @@ void EvalEngine::reEvalAll(void)
 {
     const auto &latestInfo = _impl->latestEvalInfo;
 
-    std::map<GraphBlock *, std::shared_ptr<BlockEngine>> newBlockEngines;
-    std::map<QString, std::shared_ptr<ZoneEngine>> newZoneEngines;
+    std::map<GraphBlock *, std::shared_ptr<BlockEval>> newBlockEvals;
+    std::map<QString, std::shared_ptr<ThreadPoolEval>> newThreadPoolEvals;
+    std::map<HostProcPair, std::shared_ptr<EnvironmentEval>> newEnvironmentEvals;
 
     //merge in the block info
     for (const auto &blockInfo : latestInfo.blockInfo)
@@ -176,39 +179,60 @@ void EvalEngine::reEvalAll(void)
         auto blockPtr = blockInfo.block.data();
         const auto &zone = blockInfo.zone;
 
-        //copy the block engine or make a new one
+        //extract the configuration for this zone
+        Poco::JSON::Object::Ptr config;
         {
-            auto it = _impl->blockEngines.find(blockPtr);
-            if (it != _impl->blockEngines.end()) newBlockEngines[blockPtr] = it->second;
-            else newBlockEngines[blockPtr].reset(new BlockEngine());
-            newBlockEngines[blockPtr]->acceptInfo(blockInfo);
-        }
-
-        //copy the zone or make a new one
-        if (newZoneEngines.count(zone) != 0) continue;
-        auto &zoneEngine = newZoneEngines[zone];
-        {
-            auto it = _impl->zoneEngines.find(zone);
-            if (it != _impl->zoneEngines.end()) zoneEngine = _impl->zoneEngines.at(zone);
-            else zoneEngine.reset(new ZoneEngine());
-        }
-
-        //set the latest config for this zone
-        {
-            Poco::JSON::Object::Ptr config;
             auto it = latestInfo.zoneInfo.find(zone);
             if (it != latestInfo.zoneInfo.end()) config = it->second;
-            zoneEngine->acceptConfig(config);
         }
+        const auto hostProcKey = EnvironmentEval::getHostProcFromConfig(config);
+
+        //copy the block eval or make a new one
+        auto &blockEval = _impl->blockEvals[blockPtr];
+        if (not blockEval)
+        {
+            auto it = _impl->blockEvals.find(blockPtr);
+            if (it != _impl->blockEvals.end()) blockEval = it->second;
+            else blockEval.reset(new BlockEval());
+        }
+
+        //copy the thread pool or make a new one
+        auto &threadPoolEval = newThreadPoolEvals[zone];
+        if (not threadPoolEval)
+        {
+            auto it = _impl->threadPoolEvals.find(zone);
+            if (it != _impl->threadPoolEvals.end()) threadPoolEval = _impl->threadPoolEvals.at(zone);
+            else threadPoolEval.reset(new ThreadPoolEval());
+        }
+
+        //copy the eval environment or make a new one
+        auto &envEval = newEnvironmentEvals[hostProcKey];
+        if (not envEval)
+        {
+            auto it = _impl->environmentEvals.find(hostProcKey);
+            if (it != _impl->environmentEvals.end()) envEval = it->second;
+            envEval.reset(new EnvironmentEval());
+        }
+
+        //pass config and env into thread pool
+        threadPoolEval->acceptConfig(config);
+        threadPoolEval->acceptEnvironment(envEval);
+
+        //pass info, env, and thread pool into block
+        blockEval->acceptInfo(blockInfo);
+        blockEval->acceptThreadPool(threadPoolEval);
+        blockEval->acceptEnvironment(envEval);
     }
 
     //swap in the latest engines that are in-use
-    _impl->blockEngines = newBlockEngines;
-    _impl->zoneEngines = newZoneEngines;
+    _impl->blockEvals = newBlockEvals;
+    _impl->threadPoolEvals = newThreadPoolEvals;
+    _impl->environmentEvals = newEnvironmentEvals;
 
-    //update all zones in case there were changes
-    for (auto &pair : _impl->zoneEngines) pair.second->update();
-
-    //update all the blocks in case there were changes
-    for (auto &pair : _impl->blockEngines) pair.second->update();
+    //1) update all environments in case there were changes
+    for (auto &pair : _impl->environmentEvals) pair.second->update();
+    //2) update all thread pools in case there were changes
+    for (auto &pair : _impl->threadPoolEvals) pair.second->update();
+    //3) update all the blocks in case there were changes
+    for (auto &pair : _impl->blockEvals) pair.second->update();
 }

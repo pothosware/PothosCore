@@ -10,7 +10,8 @@
 #include <QString>
 #include <memory>
 
-class ZoneEngine;
+class EnvironmentEval;
+class ThreadPoolEval;
 class GraphBlock;
 
 /*!
@@ -31,14 +32,14 @@ struct BlockInfo
     Poco::JSON::Object::Ptr desc;
 };
 
-class BlockEngine : public QObject
+class BlockEval : public QObject
 {
     Q_OBJECT
 public:
 
-    BlockEngine(void);
+    BlockEval(void);
 
-    ~BlockEngine(void);
+    ~BlockEval(void);
 
     /*!
      * Called under re-eval to apply the latest info.
@@ -46,10 +47,23 @@ public:
      */
     void acceptInfo(const BlockInfo &info);
 
+    /*!
+     * Called under re-eval to apply the latest environment.
+     * This call should take the info and not process.
+     */
+    void acceptEnvironment(const std::shared_ptr<EnvironmentEval> &env);
+
+    /*!
+     * Called under re-eval to apply the latest thread pool.
+     * This call should take the info and not process.
+     */
+    void acceptThreadPool(const std::shared_ptr<ThreadPoolEval> &tp);
+
     void update(void);
 
 private:
 
-    std::shared_ptr<ZoneEngine> _zoneEngine;
+    std::shared_ptr<EnvironmentEval> _environmentEval;
+    std::shared_ptr<ThreadPoolEval> _threadPoolEval;
     BlockInfo _lastBlockInfo;
 };

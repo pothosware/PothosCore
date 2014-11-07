@@ -8,16 +8,19 @@
 #include <QObject>
 #include <QString>
 #include <memory>
-#include <set>
+#include <string>
+#include <utility>
 
-class ZoneEngine : public QObject
+typedef std::pair<std::string, std::string> HostProcPair;
+
+class EnvironmentEval : public QObject
 {
     Q_OBJECT
 public:
 
-    ZoneEngine(void);
+    EnvironmentEval(void);
 
-    ~ZoneEngine(void);
+    ~EnvironmentEval(void);
 
     void evalExpr(const QString &expr);
 
@@ -29,13 +32,19 @@ public:
      */
     void acceptConfig(const Poco::JSON::Object::Ptr &config);
 
+    /*!
+     * Deal with changes from the latest config.
+     */
     void update(void);
+
+    static HostProcPair getHostProcFromConfig(const Poco::JSON::Object::Ptr &config)
+    {
+        auto hostUri = config?config->getValue<std::string>("hostUri"):"tcp://localhost";
+        auto processName = config?config->getValue<std::string>("processName"):"";
+        return std::make_pair(hostUri, processName);
+    }
 
 private:
     Pothos::ProxyEnvironment::Sptr _env;
     Pothos::Proxy _eval;
-    Pothos::Proxy _threadPool;
-
-    //! last known zone configuration
-    Poco::JSON::Object::Ptr _zoneConfig;
 };
