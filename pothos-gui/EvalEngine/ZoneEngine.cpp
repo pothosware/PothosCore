@@ -3,8 +3,7 @@
 
 #include "ZoneEngine.hpp"
 
-ZoneEngine::ZoneEngine(QObject *parent):
-    QObject(parent)
+ZoneEngine::ZoneEngine(void)
 {
     return;
 }
@@ -12,4 +11,14 @@ ZoneEngine::ZoneEngine(QObject *parent):
 ZoneEngine::~ZoneEngine(void)
 {
     return;
+}
+
+void ZoneEngine::acceptConfig(const Poco::JSON::Object::Ptr &config)
+{
+    
+}
+
+void ZoneEngine::update(void)
+{
+    
 }

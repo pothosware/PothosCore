@@ -15,13 +15,21 @@ class ZoneEngine : public QObject
     Q_OBJECT
 public:
 
-    ZoneEngine(QObject *parent);
+    ZoneEngine(void);
 
     ~ZoneEngine(void);
 
     void evalExpr(const QString &expr);
 
     bool isEnvironmentAlive(void);
+
+    /*!
+     * Called under re-eval to apply the latest config.
+     * This call should take the info and not process.
+     */
+    void acceptConfig(const Poco::JSON::Object::Ptr &config);
+
+    void update(void);
 
 private:
     Pothos::ProxyEnvironment::Sptr _env;

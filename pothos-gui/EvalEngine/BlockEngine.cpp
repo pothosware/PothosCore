@@ -3,8 +3,7 @@
 
 #include "BlockEngine.hpp"
 
-BlockEngine::BlockEngine(QObject *parent):
-    QObject(parent)
+BlockEngine::BlockEngine(void)
 {
     return;
 }
@@ -12,4 +11,14 @@ BlockEngine::BlockEngine(QObject *parent):
 BlockEngine::~BlockEngine(void)
 {
     return;
+}
+
+void BlockEngine::acceptInfo(const BlockInfo &info)
+{
+    
+}
+
+void BlockEngine::update(void)
+{
+    
 }
