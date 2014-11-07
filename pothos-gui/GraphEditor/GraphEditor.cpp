@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //action map
-#include "TopologyEngine/TopologyEngine.hpp"
 #include "EvalEngine/EvalEngine.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
 #include "GraphEditor/GraphEditor.hpp"
@@ -40,7 +39,6 @@ GraphEditor::GraphEditor(QWidget *parent):
     _moveGraphObjectsMapper(new QSignalMapper(this)),
     _insertGraphWidgetsMapper(new QSignalMapper(this)),
     _stateManager(new GraphStateManager(this)),
-    _topologyEngine(new TopologyEngine(this)),
     _evalEngine(new EvalEngine(this))
 {
     this->setMovable(true);
@@ -146,7 +144,7 @@ void GraphEditor::updateEnabledActions(void)
     getActionMap()["redo"]->setEnabled(_stateManager->isSubsequentAvailable());
     getActionMap()["save"]->setEnabled(not _stateManager->isCurrentSaved());
     getActionMap()["reload"]->setEnabled(not this->getCurrentFilePath().isEmpty());
-    getActionMap()["activateTopology"]->setChecked(_topologyEngine->active());
+    //FIXME getActionMap()["activateTopology"]->setChecked(_topologyEngine->active());
 
     //can we paste something from the clipboard?
     auto mimeData = QApplication::clipboard()->mimeData();
@@ -815,6 +813,7 @@ void GraphEditor::handleStateChange(const GraphState &state)
 void GraphEditor::handleToggleActivateTopology(const bool enable)
 {
     if (not this->isVisible()) return;
+    /*
     _topologyEngine->setActive(enable);
     if (enable) this->updateExecutionEngine();
     else
@@ -826,6 +825,7 @@ void GraphEditor::handleToggleActivateTopology(const bool enable)
     {
         poco_error(Poco::Logger::get("PothosGui.GraphEditor.clearTopology"), ex.displayText());
     }
+    */
 }
 
 void GraphEditor::handleShowPortNames(void)
@@ -880,6 +880,7 @@ void GraphEditor::handleBlockXcrement(const int adj)
 void GraphEditor::updateExecutionEngine(void)
 {
     _evalEngine->submitTopology(this->getGraphObjects());
+    /*
     if (not _topologyEngine->active()) return;
     try
     {
@@ -890,6 +891,7 @@ void GraphEditor::updateExecutionEngine(void)
         poco_error(Poco::Logger::get("PothosGui.GraphEditor.commitTopology"), ex.displayText());
         getActionMap()["activateTopology"]->setChecked(false);
     }
+    */
 }
 
 void GraphEditor::save(void)

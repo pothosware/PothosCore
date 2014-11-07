@@ -87,9 +87,9 @@ private:
     std::map<QString, Pothos::Proxy> _zoneToThreadPool;
 
     std::map<std::string, Pothos::Proxy> _upidToEvalEnvironment;
-
+public:
     static std::vector<ConnectionInfo> getConnectionInfo(const GraphObjectList &graphObjects);
-
+private:
     //! The topology object thats executing this design
     std::shared_ptr<Pothos::Topology> _topology;
 

@@ -8,6 +8,8 @@
 #include <QString>
 #include <memory>
 
+class ZoneEngine;
+
 class BlockEngine : public QObject
 {
     Q_OBJECT
@@ -16,6 +18,7 @@ public:
     BlockEngine(QObject *parent);
 
     ~BlockEngine(void);
+
 
 private:
 };

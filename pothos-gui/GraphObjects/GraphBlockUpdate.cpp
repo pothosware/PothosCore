@@ -114,6 +114,7 @@ void GraphBlock::initOutputsFromDesc(void)
  **********************************************************************/
 void GraphBlock::update(void)
 {
+    /*
     auto engine = this->draw()->getGraphEditor()->getTopologyEngine();
     auto blockProxy = engine->evalGraphBlock(this);
     if (this->isGraphWidget() and blockProxy)
@@ -122,5 +123,6 @@ void GraphBlock::update(void)
         if (proxyBlock) _impl->graphWidget = proxyBlock.call<QWidget *>("widget");
         else _impl->graphWidget = nullptr;
     }
+    */
     QGraphicsObject::update();
 }

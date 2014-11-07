@@ -4,12 +4,11 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Proxy/Environment.hpp>
+#include <Poco/JSON/Object.h>
 #include <QObject>
 #include <QString>
 #include <memory>
 #include <set>
-
-class BlockEngine;
 
 class ZoneEngine : public QObject
 {
@@ -28,5 +27,7 @@ private:
     Pothos::ProxyEnvironment::Sptr _env;
     Pothos::Proxy _eval;
     Pothos::Proxy _threadPool;
-    std::set<std::shared_ptr<BlockEngine>> _blockCaches;
+
+    //! last known zone configuration
+    Poco::JSON::Object::Ptr _zoneConfig;
 };

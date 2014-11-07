@@ -83,8 +83,8 @@ void GraphEditor::handleShowFlattenedDialog(void)
 
         auto tabs = new QTabWidget(dialog);
         layout->addWidget(tabs);
-        tabs->addTab(widgetFromDotMarkup(_topologyEngine->getTopology()->toDotMarkup(true/*flat hier*/), tabs), "Rendered view");
-        tabs->addTab(widgetFromDotMarkup(_topologyEngine->getTopology()->toDotMarkup(false/*top view*/), tabs), "Designer view");
+        //FIXME tabs->addTab(widgetFromDotMarkup(_topologyEngine->getTopology()->toDotMarkup(true/*flat hier*/), tabs), "Rendered view");
+        //FIXME tabs->addTab(widgetFromDotMarkup(_topologyEngine->getTopology()->toDotMarkup(false/*top view*/), tabs), "Designer view");
 
         dialog->show();
         dialog->adjustSize();

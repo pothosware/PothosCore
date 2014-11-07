@@ -8,9 +8,56 @@
 #include <QString>
 #include <QObject>
 #include <memory>
+#include <condition_variable>
+#include <mutex>
 #include <map>
+#include <thread>
 
 class ZoneEngine;
+class BlockEngine;
+class GraphBlock;
+
+/*!
+ * Information about a connection between src and dst ports.
+ * This is everything important we need to know about connections,
+ * but extracted so we can access it in a thread-safe manner.
+ */
+struct ConnectionInfo
+{
+    std::string srcId, srcPort;
+    std::string dstId, dstPort;
+    std::string toString(void) const
+    {
+        return "("+srcId+"["+srcPort+"], "+dstId+"["+dstPort+"])";
+    }
+};
+
+/*!
+ * Information about a block that is used for background evaluation.
+ * This is everything important we need to know about a block,
+ * but extracted so we can access it in a thread-safe manner.
+ * We store the GraphBlock in a QPointer which can only be
+ * looked at in the GUI thread context. Which we will use
+ * to update the block after evaluation from the GUI thread.
+ */
+struct BlockInfo
+{
+    QPointer<GraphBlock> block;
+    QString id;
+    QString zone;
+    std::map<QString, QString> properties;
+    std::map<QString, Poco::JSON::Object::Ptr> paramDescs;
+    Poco::JSON::Object::Ptr desc;
+};
+
+/*!
+ * Topology information passed into the evaluation thread.
+ */
+struct TopologyInfo
+{
+    std::vector<BlockInfo> blockInfo;
+    std::vector<ConnectionInfo> connectionInfo;
+};
 
 /*!
  * The EvalEngine is the entry point for submitting design changes.
@@ -49,6 +96,24 @@ private slots:
     void handleAffinityZonesChanged(void);
 
 private:
-    //host uris to process name to zone engine
-    std::map<std::string, std::map<std::string, std::shared_ptr<ZoneEngine>>> _zones;
+
+    static std::vector<ConnectionInfo> getConnectionInfo(const GraphObjectList &graphObjects);
+
+    //async event handler thread hooks
+    void startEvalThread(void);
+    void stopEvalThread(void);
+    void runEvalThread(void);
+    void handleEvent(const TopologyInfo &info);
+
+    //thread communication event queue
+    std::mutex _eventMutex;
+    std::condition_variable _eventCond;
+    TopologyInfo _evalThreadInfo;
+    bool _evalThreadRunning;
+    std::thread _evalThread;
+
+    //active evaluation hooks
+    void reEvalAll(void);
+    std::map<std::string, std::shared_ptr<ZoneEngine>> _zoneEngines;
+    std::map<QString, std::shared_ptr<BlockEngine>> _blockEngines;
 };

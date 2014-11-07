@@ -14,7 +14,6 @@ class GraphConnection;
 class GraphDraw;
 class QSignalMapper;
 class QTabWidget;
-class TopologyEngine;
 class EvalEngine;
 
 class GraphEditor : public QTabWidget
@@ -68,11 +67,6 @@ public:
 
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);
-
-    TopologyEngine *getTopologyEngine(void) const
-    {
-        return _topologyEngine;
-    }
 
 signals:
     void newTitleSubtext(const QString &);
@@ -141,6 +135,5 @@ private:
     void updateEnabledActions(void);
 
     void updateExecutionEngine(void);
-    TopologyEngine *_topologyEngine;
     EvalEngine *_evalEngine;
 };

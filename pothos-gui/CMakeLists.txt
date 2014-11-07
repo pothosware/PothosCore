@@ -124,14 +124,10 @@ set(SOURCES
     GraphObjects/GraphWidget.cpp
     GraphObjects/GraphWidgetContainer.cpp
 
-    TopologyEngine/TopologyEngine.cpp
-    TopologyEngine/TopologyTraversal.cpp
-    TopologyEngine/EvalGraphBlock.cpp
-    TopologyEngine/EvalBlockCache.cpp
-
     EvalEngine/EvalEngine.cpp
     EvalEngine/ZoneEngine.cpp
     EvalEngine/BlockEngine.cpp
+    EvalEngine/TopologyTraversal.cpp
 )
 add_executable(PothosGui ${SOURCES})
 target_link_libraries(PothosGui Pothos ${Pothos_LIBRARIES})
