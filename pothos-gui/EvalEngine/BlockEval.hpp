@@ -3,11 +3,12 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Proxy/Environment.hpp>
+#include <Pothos/Proxy/Proxy.hpp>
 #include <Poco/JSON/Object.h>
 #include <QObject>
 #include <QPointer>
 #include <QString>
+#include <QStringList>
 #include <memory>
 
 class EnvironmentEval;
@@ -30,6 +31,17 @@ struct BlockInfo
     std::map<QString, QString> properties;
     std::map<QString, Poco::JSON::Object::Ptr> paramDescs;
     Poco::JSON::Object::Ptr desc;
+};
+
+//! values to pass back to the gui thread to update the block
+struct BlockStatus
+{
+    QPointer<GraphBlock> block;
+    std::map<QString, std::string> propertyTypeInfos;
+    std::map<QString, QString> propertyErrorMsgs;
+    QStringList blockErrorMsgs;
+    Poco::JSON::Array::Ptr inPortDesc;
+    Poco::JSON::Array::Ptr outPortDesc;
 };
 
 class BlockEval : public QObject
@@ -59,11 +71,38 @@ public:
      */
     void acceptThreadPool(const std::shared_ptr<ThreadPoolEval> &tp);
 
+    /*!
+     * Perform update work after changes applied.
+     */
     void update(void);
+
+private slots:
+    void postStatusToBlock(const BlockStatus &status);
 
 private:
 
-    std::shared_ptr<EnvironmentEval> _environmentEval;
-    std::shared_ptr<ThreadPoolEval> _threadPoolEval;
+    //! critical change? need to make a new block
+    bool hasCriticalChange(void) const;
+
+    //! any setters that changed so we can re-call them
+    std::vector<Poco::JSON::Object::Ptr> settersChangedList(void) const;
+
+    //! detect a change in properties before vs after
+    bool didPropKeyHaveChange(const QString &key) const;
+
+    std::shared_ptr<EnvironmentEval> _newEnvironmentEval;
+    std::shared_ptr<EnvironmentEval> _lastEnvironmentEval;
+    std::shared_ptr<ThreadPoolEval> _newThreadPoolEval;
+    std::shared_ptr<ThreadPoolEval> _lastThreadPoolEval;
+    BlockInfo _newBlockInfo;
     BlockInfo _lastBlockInfo;
+
+    //! tracking status in the eval thread context
+    BlockStatus _lastBlockStatus;
+
+    //remote block evaluator
+    Pothos::Proxy _blockEval;
+
+    //remote block itself
+    //Pothos::Proxy _blockProxy;
 };

@@ -214,6 +214,9 @@ void EvalEngine::reEvalAll(void)
             envEval.reset(new EnvironmentEval());
         }
 
+        //pass config into the environment
+        envEval->acceptConfig(zone, config);
+
         //pass config and env into thread pool
         threadPoolEval->acceptConfig(config);
         threadPoolEval->acceptEnvironment(envEval);

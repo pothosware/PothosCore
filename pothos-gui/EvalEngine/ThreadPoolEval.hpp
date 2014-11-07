@@ -3,7 +3,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Proxy/Environment.hpp>
+#include <Pothos/Proxy/Proxy.hpp>
 #include <Poco/JSON/Object.h>
 #include <QObject>
 #include <QString>
@@ -39,9 +39,13 @@ public:
     void update(void);
 
     //! Get the thread pool that will be set on blocks
-    Pothos::Proxy getThreadPool(void);
+    Pothos::Proxy getThreadPool(void) const
+    {
+        return _threadPool;
+    }
 
 private:
     Poco::JSON::Object::Ptr _newZoneConfig;
     Poco::JSON::Object::Ptr _lastZoneConfig;
+    Pothos::Proxy _threadPool;
 };

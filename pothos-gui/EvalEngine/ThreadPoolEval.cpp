@@ -32,6 +32,6 @@ void ThreadPoolEval::update(void)
     _newZoneConfig->stringify(newConfig);
     if (oldConfig.str() != newConfig.str())
     {
-        
+        //TODO make new thread pool
     }
 }
