@@ -41,11 +41,20 @@ void EnvironmentEval::update(void)
     _eval = EvalEnvironment.callProxy("make");
 }
 
+HostProcPair EnvironmentEval::getHostProcFromConfig(const QString &zoneName, const Poco::JSON::Object::Ptr &config)
+{
+    if (zoneName == "gui") return HostProcPair("gui://localhost", "gui");
+
+    auto hostUri = config?config->getValue<std::string>("hostUri"):"tcp://localhost";
+    auto processName = config?config->getValue<std::string>("processName"):"";
+    return HostProcPair(hostUri, processName);
+}
+
 Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
 {
     if (_zoneName == "gui") return Pothos::ProxyEnvironment::make("managed");
 
-    const auto hostUri = getHostProcFromConfig(_config).first;
+    const auto hostUri = getHostProcFromConfig(_zoneName, _config).first;
 
     //connect to the remote host and spawn a server
     auto serverEnv = Pothos::RemoteClient(hostUri).makeEnvironment("managed");

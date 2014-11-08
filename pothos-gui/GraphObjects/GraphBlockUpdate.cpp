@@ -4,7 +4,6 @@
 #include "GraphObjects/GraphBlockImpl.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
-#include "TopologyEngine/TopologyEngine.hpp"
 #include <QWidget>
 #include <Pothos/Proxy.hpp>
 #include <Poco/Logger.h>

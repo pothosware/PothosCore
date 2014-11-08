@@ -102,6 +102,12 @@ public:
      */
     void update(void);
 
+    //! Get access to the active topology
+    Pothos::Topology *getTopology(void) const
+    {
+        return _topology;
+    }
+
 private:
     ConnectionInfos _newConnectionInfo;
     ConnectionInfos _lastConnectionInfo;

@@ -45,6 +45,9 @@ public slots:
      */
     void submitBlock(QObject *block);
 
+    //! query the dot markup for the active topology
+    std::string getTopologyDotMarkup(const bool arg);
+
 signals:
 
     //! A failure occured, this is a notification to deactivate

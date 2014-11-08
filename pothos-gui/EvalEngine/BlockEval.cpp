@@ -132,7 +132,8 @@ void BlockEval::update(void)
                 if (_newBlockInfo.isGraphWidget)
                 {
                     QMetaObject::invokeMethod(this, "blockEvalInGUIContext", Qt::BlockingQueuedConnection);
-                    _lastBlockStatus.widget = this->getProxyBlock().call<QWidget *>("widget");
+                    if (not _blockEval) evalSuccess = false;
+                    else _lastBlockStatus.widget = this->getProxyBlock().call<QWidget *>("widget");
                 }
                 else _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
             }
@@ -326,5 +327,14 @@ bool BlockEval::updateAllProperties(void)
 
 void BlockEval::blockEvalInGUIContext(void)
 {
-    _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
+    try
+    {
+        _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        _blockEval = Pothos::Proxy();
+        poco_error_f2(Poco::Logger::get("PothosGui.BlockEval.guiEval"), "%s-%s", _newBlockInfo.id.toStdString(), ex.displayText());
+        _lastBlockStatus.blockErrorMsgs.push_back(tr("Failed to eval in GUI context %1-%2").arg(_newBlockInfo.id).arg(QString::fromStdString(ex.message())));
+    }
 }

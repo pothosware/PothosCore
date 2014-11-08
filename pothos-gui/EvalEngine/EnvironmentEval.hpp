@@ -39,12 +39,7 @@ public:
     void update(void);
 
     //! Shared method to parse the zone config into host uri and process name
-    static HostProcPair getHostProcFromConfig(const Poco::JSON::Object::Ptr &config)
-    {
-        auto hostUri = config?config->getValue<std::string>("hostUri"):"tcp://localhost";
-        auto processName = config?config->getValue<std::string>("processName"):"";
-        return std::make_pair(hostUri, processName);
-    }
+    static HostProcPair getHostProcFromConfig(const QString &zoneName, const Poco::JSON::Object::Ptr &config);
 
     //! Get access to the proxy environment
     Pothos::ProxyEnvironment::Sptr getEnv(void) const

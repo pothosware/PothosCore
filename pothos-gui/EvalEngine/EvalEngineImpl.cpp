@@ -8,6 +8,7 @@
 #include "EnvironmentEval.hpp"
 #include "TopologyEval.hpp"
 #include "GraphObjects/GraphBlock.hpp"
+#include <Pothos/Framework/Topology.hpp>
 #include <QThread>
 #include <QAbstractEventDispatcher>
 #include <cassert>
@@ -29,7 +30,11 @@ EvalEngineImpl::~EvalEngineImpl(void)
 void EvalEngineImpl::submitActivateTopology(const bool enable)
 {
     //make a new topology evaluator only if enabled and DNE
-    if (enable and _topologyEval) _topologyEval.reset(new TopologyEval());
+    if (enable and not _topologyEval)
+    {
+        _topologyEval.reset(new TopologyEval());
+        this->reEvalAll();
+    }
 
     //if disabled, clear the current evaluator if present
     if (not enable) _topologyEval.reset();
@@ -59,6 +64,15 @@ void EvalEngineImpl::submitZoneInfo(const ZoneInfos &info)
     this->reEvalAll();
 }
 
+std::string EvalEngineImpl::getTopologyDotMarkup(const bool arg)
+{
+    //have to do this in case this call compressed an eval-worthy event
+    this->reEvalAll();
+
+    if (not _topologyEval) return "";
+    return _topologyEval->getTopology()->toDotMarkup(arg);
+}
+
 void EvalEngineImpl::reEvalAll(void)
 {
     //Do not evaluate when there are pending events in the queue.
@@ -82,7 +96,7 @@ void EvalEngineImpl::reEvalAll(void)
             auto it = _zoneInfo.find(zone);
             if (it != _zoneInfo.end()) config = it->second;
         }
-        const auto hostProcKey = EnvironmentEval::getHostProcFromConfig(config);
+        const auto hostProcKey = EnvironmentEval::getHostProcFromConfig(zone, config);
 
         //copy the block eval or make a new one
         auto &blockEval = newBlockEvals[blockPtr];

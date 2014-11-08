@@ -49,6 +49,9 @@ public slots:
     //! Submit most up to date zone information
     void submitZoneInfo(const ZoneInfos &info);
 
+    //! query the dot markup for the active topology
+    std::string getTopologyDotMarkup(const bool arg);
+
 private:
     void reEvalAll(void);
 

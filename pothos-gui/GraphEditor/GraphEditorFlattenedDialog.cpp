@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
-#include "TopologyEngine/TopologyEngine.hpp"
+#include "EvalEngine/EvalEngine.hpp"
 #include <Pothos/Framework/Topology.hpp>
 #include <Pothos/Exception.hpp>
 #include <Poco/Pipe.h>
@@ -83,8 +83,8 @@ void GraphEditor::handleShowFlattenedDialog(void)
 
         auto tabs = new QTabWidget(dialog);
         layout->addWidget(tabs);
-        //FIXME tabs->addTab(widgetFromDotMarkup(_topologyEngine->getTopology()->toDotMarkup(true/*flat hier*/), tabs), "Rendered view");
-        //FIXME tabs->addTab(widgetFromDotMarkup(_topologyEngine->getTopology()->toDotMarkup(false/*top view*/), tabs), "Designer view");
+        tabs->addTab(widgetFromDotMarkup(_evalEngine->getTopologyDotMarkup(true/*flat hier*/), tabs), "Rendered view");
+        tabs->addTab(widgetFromDotMarkup(_evalEngine->getTopologyDotMarkup(false/*top view*/), tabs), "Designer view");
 
         dialog->show();
         dialog->adjustSize();
