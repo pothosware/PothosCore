@@ -51,9 +51,9 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnecti
     return inputEndpoints;
 }
 
-std::vector<ConnectionInfo> TopologyEval::getConnectionInfo(const GraphObjectList &graphObjects)
+ConnectionInfos TopologyEval::getConnectionInfo(const GraphObjectList &graphObjects)
 {
-    std::vector<ConnectionInfo> connections;
+    ConnectionInfos connections;
     for (auto graphObject : graphObjects)
     {
         auto connection = dynamic_cast<GraphConnection *>(graphObject);
@@ -71,11 +71,11 @@ std::vector<ConnectionInfo> TopologyEval::getConnectionInfo(const GraphObjectLis
             for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
             {
                 ConnectionInfo info;
-                info.srcBlock = outputEp.getObj();
+                info.srcBlock = dynamic_cast<GraphBlock *>(outputEp.getObj().data());
                 info.srcPort = outputEp.getKey().id.toStdString();
-                info.dstBlock = subEp.getObj();
+                info.dstBlock = dynamic_cast<GraphBlock *>(subEp.getObj().data());
                 info.dstPort = subEp.getKey().id.toStdString();
-                connections.push_back(info);
+                connections.insert(info);
             }
         }
     }

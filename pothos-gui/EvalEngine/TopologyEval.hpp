@@ -9,6 +9,8 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <functional> //std::hash
+#include <unordered_set>
 
 class GraphObject;
 class GraphBlock;
@@ -26,9 +28,48 @@ namespace Pothos
  */
 struct ConnectionInfo
 {
-    GraphObject *srcBlock, *dstBlock;
+    ConnectionInfo(void):
+        srcBlock(nullptr),
+        dstBlock(nullptr){}
+    GraphBlock *srcBlock, *dstBlock;
     std::string srcPort, dstPort;
 };
+
+//! equality operator for ConnectionInfo for unordered_set
+inline bool operator==(const ConnectionInfo &lhs, const ConnectionInfo &rhs)
+{
+    return
+        (lhs.srcBlock == rhs.srcBlock) and
+        (lhs.dstBlock == rhs.dstBlock) and
+        (lhs.srcPort == rhs.srcPort) and
+        (lhs.dstPort == rhs.dstPort);
+}
+
+//! hash support for ConnectionInfo for unordered_set
+namespace std
+{
+    template<>
+    struct hash<ConnectionInfo>
+    {
+        typedef ConnectionInfo argument_type;
+        typedef std::size_t value_type;
+
+        static value_type hash_combine(const value_type in0, const value_type in1)
+        {
+            return in0 ^ (in1 << 1);
+        }
+
+        value_type operator()(argument_type const& s) const
+        {
+            return hash_combine(
+                hash_combine(std::hash<std::string>()(s.srcPort), std::hash<std::size_t>()(size_t(s.srcBlock))),
+                hash_combine(std::hash<std::string>()(s.dstPort), std::hash<std::size_t>()(size_t(s.dstBlock))));
+        }
+    };
+}
+
+//! typedef for multiple connection informations
+typedef std::unordered_set<ConnectionInfo> ConnectionInfos;
 
 /*!
  * TopologyEval takes up to date connection information
@@ -44,12 +85,12 @@ public:
     ~TopologyEval(void);
 
     //! helper to parse graph objects into a list of thread-safe info
-    static std::vector<ConnectionInfo> getConnectionInfo(const GraphObjectList &graphObjects);
+    static ConnectionInfos getConnectionInfo(const GraphObjectList &graphObjects);
 
     /*!
      * Pass-in up-to-date connection information.
      */
-    void acceptConnectionInfo(const std::vector<ConnectionInfo> &);
+    void acceptConnectionInfo(const ConnectionInfos &);
 
     /*!
      * Pass-in up-to-date block eval objects.
@@ -62,12 +103,12 @@ public:
     void update(void);
 
 private:
-    std::vector<ConnectionInfo> _newConnectionInfo;
-    std::vector<ConnectionInfo> _lastConnectionInfo;
+    ConnectionInfos _newConnectionInfo;
+    ConnectionInfos _lastConnectionInfo;
 
     std::map<GraphBlock *, std::shared_ptr<BlockEval>> _newBlockEvals;
     std::map<GraphBlock *, std::shared_ptr<BlockEval>> _lastBlockEvals;
 
     //! The topology object thats executing this design
-    std::shared_ptr<Pothos::Topology> _topology;
+    Pothos::Topology *_topology;
 };

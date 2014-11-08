@@ -28,7 +28,11 @@ EvalEngineImpl::~EvalEngineImpl(void)
 
 void EvalEngineImpl::submitActivateTopology(const bool enable)
 {
-    //TODO
+    //make a new topology evaluator only if enabled and DNE
+    if (enable and _topologyEval) _topologyEval.reset(new TopologyEval());
+
+    //if disabled, clear the current evaluator if present
+    if (not enable) _topologyEval.reset();
 }
 
 void EvalEngineImpl::submitBlock(const BlockInfo &info)
@@ -134,4 +138,11 @@ void EvalEngineImpl::reEvalAll(void)
     for (auto &pair : _threadPoolEvals) pair.second->update();
     //3) update all the blocks in case there were changes
     for (auto &pair : _blockEvals) pair.second->update();
+    //4) update topology when present (activation mode)
+    if (_topologyEval)
+    {
+        _topologyEval->acceptConnectionInfo(_connectionInfo);
+        _topologyEval->acceptBlockEvals(_blockEvals);
+        _topologyEval->update();
+    }
 }

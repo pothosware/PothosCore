@@ -13,11 +13,11 @@
 
 class EnvironmentEval;
 class ThreadPoolEval;
+class TopologyEval;
 class BlockEval;
 class GraphBlock;
 
 typedef std::map<GraphBlock *, BlockInfo> BlockInfos;
-typedef std::vector<ConnectionInfo> ConnectionInfos;
 typedef std::map<QString, Poco::JSON::Object::Ptr> ZoneInfos;
 
 /*!
@@ -61,4 +61,5 @@ private:
     std::map<HostProcPair, std::shared_ptr<EnvironmentEval>> _environmentEvals;
     std::map<QString, std::shared_ptr<ThreadPoolEval>> _threadPoolEvals;
     std::map<GraphBlock *, std::shared_ptr<BlockEval>> _blockEvals;
+    std::shared_ptr<TopologyEval> _topologyEval;
 };
