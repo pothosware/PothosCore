@@ -101,6 +101,12 @@ void EvalEngine::submitTopology(const GraphObjectList &graphObjects)
     this->submitInfo();
 }
 
+void EvalEngine::submitActivityState(const bool active)
+{
+    _impl->mainEvalInfo.topologyActive = active;
+    this->submitInfo();
+}
+
 void EvalEngine::handleAffinityZonesChanged(void)
 {
     auto dock = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]);

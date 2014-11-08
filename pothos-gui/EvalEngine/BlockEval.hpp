@@ -56,6 +56,17 @@ public:
     ~BlockEval(void);
 
     /*!
+     * Is the block eval in a usable state?
+     * Environment active, no errors, ports queried...
+     */
+    bool isReady(void) const;
+
+    /*!
+     * Get the remote proxy block from the evaluator
+     */
+    Pothos::Proxy getProxyBlock(void) const;
+
+    /*!
      * Called under re-eval to apply the latest info.
      * This call should take the info and not process.
      */

@@ -118,6 +118,7 @@ private slots:
     void handleBlockIncrement(void);
     void handleBlockDecrement(void);
     void handleBlockXcrement(const int adj);
+    void handleEvalEngineDeactivate(void);
 
 private:
     QTabWidget *_parentTabWidget;
@@ -137,4 +138,5 @@ private:
     //! update enabled actions based on state - after a change or when editor becomes visible
     void updateEnabledActions(void);
     EvalEngine *_evalEngine;
+    bool _isTopologyActive;
 };

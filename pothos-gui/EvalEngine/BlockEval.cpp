@@ -40,6 +40,27 @@ BlockEval::~BlockEval(void)
     return;
 }
 
+bool BlockEval::isReady(void) const
+{
+    if (not _lastBlockStatus.blockErrorMsgs.empty()) return false;
+
+    for (const auto &pair : _lastBlockStatus.propertyErrorMsgs)
+    {
+        if (not pair.second.isEmpty()) return false;
+    }
+
+    if (not _lastBlockStatus.inPortDesc) return false;
+
+    if (not _lastBlockStatus.outPortDesc) return false;
+
+    return true;
+}
+
+Pothos::Proxy BlockEval::getProxyBlock(void) const
+{
+    return _blockEval.callProxy("getProxyBlock");
+}
+
 void BlockEval::acceptInfo(const BlockInfo &info)
 {
     _newBlockInfo = info;
@@ -111,8 +132,7 @@ void BlockEval::update(void)
                 if (_newBlockInfo.isGraphWidget)
                 {
                     QMetaObject::invokeMethod(this, "blockEvalInGUIContext", Qt::BlockingQueuedConnection);
-                    auto proxyBlock = _blockEval.callProxy("getProxyBlock");
-                    _lastBlockStatus.widget = proxyBlock.call<QWidget *>("widget");
+                    _lastBlockStatus.widget = this->getProxyBlock().call<QWidget *>("widget");
                 }
                 else _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
             }
@@ -135,7 +155,7 @@ void BlockEval::update(void)
     //load its port info
     if (evalSuccess) try
     {
-        auto proxyBlock = _blockEval.callProxy("getProxyBlock");
+        auto proxyBlock = this->getProxyBlock();
         _lastBlockStatus.inPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo"));
         _lastBlockStatus.outPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo"));
     }
@@ -155,8 +175,7 @@ void BlockEval::update(void)
         const auto &threadPool = _lastThreadPoolEval->getThreadPool();
         try
         {
-            auto proxyBlock = _blockEval.callProxy("getProxyBlock");
-            if (threadPool) proxyBlock.callVoid("setThreadPool", threadPool);
+            if (threadPool) this->getProxyBlock().callVoid("setThreadPool", threadPool);
         }
         catch(const Pothos::Exception &ex)
         {
