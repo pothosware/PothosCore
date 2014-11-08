@@ -4,8 +4,12 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
-#include <QString>
 #include <QObject>
+
+class QThread;
+class EvalEngineImpl;
+class AffinityZonesDock;
+class QSignalMapper;
 
 /*!
  * The EvalEngine is the entry point for submitting design changes.
@@ -21,6 +25,8 @@ public:
 
     ~EvalEngine(void);
 
+public slots:
+
     /*!
      * Submit the most recent version of the topology.
      * This lets us know which blocks in the cache are part of the design,
@@ -32,7 +38,12 @@ public:
      * Activate or deactivate the design.
      * If the activation fails, deactivateDesign() will be emitted.
      */
-    void submitActivityState(const bool active);
+    void submitActivateTopology(const bool active);
+
+    /*!
+     * Submit individual graph block for re-eval.
+     */
+    void submitBlock(QObject *block);
 
 signals:
 
@@ -43,16 +54,8 @@ private slots:
     void handleAffinityZonesChanged(void);
 
 private:
-
-    void reEvalAll(void);
-
-    //async event handler thread hooks
-    void startEvalThread(void);
-    void stopEvalThread(void);
-    void runEvalThread(void);
-    void submitInfo(void);
-
-    //private data
-    struct Impl;
-    Impl *_impl;
+    QThread *_thread;
+    EvalEngineImpl *_impl;
+    QSignalMapper *_blockEvalMapper;
+    AffinityZonesDock *_affinityDock;
 };

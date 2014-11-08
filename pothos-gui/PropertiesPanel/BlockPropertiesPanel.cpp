@@ -7,8 +7,6 @@
 #include "BlockPropertyEditWidget.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphObjects/GraphBlock.hpp"
-#include "GraphEditor/GraphDraw.hpp"
-#include "GraphEditor/GraphEditor.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -270,8 +268,7 @@ void BlockPropertiesPanel::handleEditWidgetChanged(void)
 
 void BlockPropertiesPanel::handleUpdateTimerExpired(void)
 {
-    //TODO -- this is overkill, we need to submit a block-only re-eval
-    _block->draw()->getGraphEditor()->updateExecutionEngine();
+    emit _block->triggerEvalEvent();
 }
 
 void BlockPropertiesPanel::handleBlockEvalDone(void)
@@ -290,7 +287,7 @@ void BlockPropertiesPanel::handleCancel(void)
     {
         _block->setPropertyValue(propKey, _propIdToOriginal[propKey]);
     }
-    this->handleUpdateTimerExpired(); //update after change reversion
+    emit _block->triggerEvalEvent(); //update after change reversion
 
     //an edit widget return press signal may have us here,
     //and not the commit button, so make sure panel is deleted

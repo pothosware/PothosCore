@@ -815,7 +815,7 @@ void GraphEditor::handleStateChange(const GraphState &state)
 void GraphEditor::handleToggleActivateTopology(const bool enable)
 {
     if (not this->isVisible()) return;
-    _evalEngine->submitActivityState(enable);
+    _evalEngine->submitActivateTopology(enable);
     _isTopologyActive = enable;
 }
 

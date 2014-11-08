@@ -125,6 +125,7 @@ set(SOURCES
     GraphObjects/GraphWidgetContainer.cpp
 
     EvalEngine/EvalEngine.cpp
+    EvalEngine/EvalEngineImpl.cpp
     EvalEngine/BlockEval.cpp
     EvalEngine/ThreadPoolEval.cpp
     EvalEngine/EnvironmentEval.cpp

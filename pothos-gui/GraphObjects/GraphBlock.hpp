@@ -111,6 +111,9 @@ signals:
     //! Called by the evaluator when eval completed
     void evalDoneEvent(void);
 
+    //! Called externally to trigger individual eval
+    void triggerEvalEvent(void);
+
 private:
     void initPropertiesFromDesc(void);
     void initInputsFromDesc(void);
