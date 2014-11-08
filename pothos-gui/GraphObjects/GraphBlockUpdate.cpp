@@ -108,21 +108,3 @@ void GraphBlock::initOutputsFromDesc(void)
         if (info->has("dtype")) this->setOutputPortTypeStr(portKey, info->getValue<std::string>("dtype"));
     }
 }
-
-/***********************************************************************
- * instantiate the block, check for errors, query the ports
- **********************************************************************/
-void GraphBlock::update(void)
-{
-    /*
-    auto engine = this->draw()->getGraphEditor()->getTopologyEngine();
-    auto blockProxy = engine->evalGraphBlock(this);
-    if (this->isGraphWidget() and blockProxy)
-    {
-        auto proxyBlock = blockProxy.callProxy("getProxyBlock");
-        if (proxyBlock) _impl->graphWidget = proxyBlock.call<QWidget *>("widget");
-        else _impl->graphWidget = nullptr;
-    }
-    */
-    QGraphicsObject::update();
-}

@@ -15,6 +15,7 @@
 #include <queue>
 #include <map>
 #include <thread>
+#include <cassert>
 
 /*!
  * Information passed into the evaluation thread.
@@ -85,6 +86,7 @@ void EvalEngine::submitTopology(const GraphObjectList &graphObjects)
         if (block == nullptr) continue;
         BlockInfo blockInfo;
         blockInfo.block = block;
+        blockInfo.isGraphWidget = block->isGraphWidget();
         blockInfo.id = block->getId();
         blockInfo.zone = block->getAffinityZone();
         blockInfo.desc = block->getBlockDesc();
@@ -188,7 +190,7 @@ void EvalEngine::reEvalAll(void)
         const auto hostProcKey = EnvironmentEval::getHostProcFromConfig(config);
 
         //copy the block eval or make a new one
-        auto &blockEval = _impl->blockEvals[blockPtr];
+        auto &blockEval = newBlockEvals[blockPtr];
         if (not blockEval)
         {
             auto it = _impl->blockEvals.find(blockPtr);
@@ -215,13 +217,16 @@ void EvalEngine::reEvalAll(void)
         }
 
         //pass config into the environment
+        assert(envEval);
         envEval->acceptConfig(zone, config);
 
         //pass config and env into thread pool
+        assert(threadPoolEval);
         threadPoolEval->acceptConfig(config);
         threadPoolEval->acceptEnvironment(envEval);
 
         //pass info, env, and thread pool into block
+        assert(blockEval);
         blockEval->acceptInfo(blockInfo);
         blockEval->acceptThreadPool(threadPoolEval);
         blockEval->acceptEnvironment(envEval);

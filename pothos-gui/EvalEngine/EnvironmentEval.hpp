@@ -46,6 +46,12 @@ public:
         return std::make_pair(hostUri, processName);
     }
 
+    //! Get access to the proxy environment
+    Pothos::ProxyEnvironment::Sptr getEnv(void) const
+    {
+        return _env;
+    }
+
     //! Get access to the expression evaluator
     Pothos::Proxy getEval(void) const
     {

@@ -72,6 +72,11 @@ QWidget *GraphBlock::getGraphWidget(void) const
     return _impl->graphWidget.data();
 }
 
+void GraphBlock::setGraphWidget(QWidget *widget)
+{
+    _impl->graphWidget = widget;
+}
+
 void GraphBlock::setTitle(const QString &title)
 {
     _impl->title = title;

@@ -26,6 +26,7 @@ class GraphBlock;
 struct BlockInfo
 {
     QPointer<GraphBlock> block;
+    bool isGraphWidget;
     QString id;
     QString zone;
     std::map<QString, QString> properties;
@@ -37,6 +38,7 @@ struct BlockInfo
 struct BlockStatus
 {
     QPointer<GraphBlock> block;
+    QWidget *widget;
     std::map<QString, std::string> propertyTypeInfos;
     std::map<QString, QString> propertyErrorMsgs;
     QStringList blockErrorMsgs;
@@ -79,6 +81,12 @@ public:
 private slots:
     void postStatusToBlock(const BlockStatus &status);
 
+    /*!
+     * Call block eval from the gui thread context.
+     * This is required for blocks that have widgets.
+     */
+    void blockEvalInGUIContext(void);
+
 private:
 
     //! critical change? need to make a new block
@@ -89,6 +97,15 @@ private:
 
     //! detect a change in properties before vs after
     bool didPropKeyHaveChange(const QString &key) const;
+
+    /*!
+     * Create the remote block evaluator if needed.
+     * Call evalProperty on all properties.
+     * Record error conditions of each property.
+     * Record the data type of each property.
+     * \return true for success, false for error
+     */
+    bool updateAllProperties(void);
 
     std::shared_ptr<EnvironmentEval> _newEnvironmentEval;
     std::shared_ptr<EnvironmentEval> _lastEnvironmentEval;

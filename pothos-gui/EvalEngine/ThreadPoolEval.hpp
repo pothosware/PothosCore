@@ -45,6 +45,12 @@ public:
     }
 
 private:
+
+    Pothos::Proxy makeThreadPool(void);
+
+    std::shared_ptr<EnvironmentEval> _newEnvironmentEval;
+    std::shared_ptr<EnvironmentEval> _lastEnvironmentEval;
+
     Poco::JSON::Object::Ptr _newZoneConfig;
     Poco::JSON::Object::Ptr _lastZoneConfig;
     Pothos::Proxy _threadPool;
