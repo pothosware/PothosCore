@@ -7,6 +7,8 @@
 #include "BlockPropertyEditWidget.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphObjects/GraphBlock.hpp"
+#include "GraphEditor/GraphDraw.hpp"
+#include "GraphEditor/GraphEditor.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -209,6 +211,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     connect(_updateTimer, SIGNAL(timeout(void)), this, SLOT(handleUpdateTimerExpired(void)));
 
     connect(_block, SIGNAL(destroyed(QObject*)), this, SLOT(handleBlockDestroyed(QObject*)));
+    connect(_block, SIGNAL(evalDoneEvent(void)), this, SLOT(handleBlockEvalDone(void)));
     this->updateAllForms();
     _ignoreChanges = false;
 }
@@ -261,7 +264,11 @@ void BlockPropertiesPanel::handleEditWidgetChanged(void)
 
 void BlockPropertiesPanel::handleUpdateTimerExpired(void)
 {
-    _block->update();
+    _block->draw()->getGraphEditor()->updateExecutionEngine();
+}
+
+void BlockPropertiesPanel::handleBlockEvalDone(void)
+{
     this->updateAllForms();
 }
 

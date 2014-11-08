@@ -68,6 +68,9 @@ public:
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);
 
+    //! called after any changes -- including properties panel
+    void updateExecutionEngine(void);
+
 signals:
     void newTitleSubtext(const QString &);
 
@@ -133,7 +136,5 @@ private:
 
     //! update enabled actions based on state - after a change or when editor becomes visible
     void updateEnabledActions(void);
-
-    void updateExecutionEngine(void);
     EvalEngine *_evalEngine;
 };

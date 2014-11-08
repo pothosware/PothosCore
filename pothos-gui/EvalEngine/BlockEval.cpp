@@ -8,6 +8,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Framework.hpp>
 #include <Poco/Logger.h>
+#include <QWidget>
 #include <cassert>
 #include <iostream>
 #include <QApplication>
@@ -42,6 +43,7 @@ BlockEval::~BlockEval(void)
 void BlockEval::acceptInfo(const BlockInfo &info)
 {
     _newBlockInfo = info;
+    assert(_newBlockInfo.desc);
 }
 
 void BlockEval::acceptEnvironment(const std::shared_ptr<EnvironmentEval> &env)
@@ -59,6 +61,8 @@ void BlockEval::acceptThreadPool(const std::shared_ptr<ThreadPoolEval> &tp)
  **********************************************************************/
 void BlockEval::update(void)
 {
+    bool evalSuccess = true;
+
     //the environment changed? clear everything
     if (_newEnvironmentEval != _lastEnvironmentEval)
     {
@@ -81,16 +85,17 @@ void BlockEval::update(void)
             }
             catch (const Pothos::Exception &ex)
             {
-                poco_error_f2(Poco::Logger::get("PothosGui.BlockEval.update"),
-                    "cached block call('%s'): %s", setter->getValue<std::string>("name"), ex.displayText());
+                poco_error_f3(Poco::Logger::get("PothosGui.BlockEval.update"),
+                    "%s::%s(...) - %s", _newBlockInfo.id.toStdString(), setter->getValue<std::string>("name"), ex.displayText());
+                _lastBlockStatus.blockErrorMsgs.push_back(tr("%1::%2(...) - %3")
+                    .arg(_newBlockInfo.id)
+                    .arg(QString::fromStdString(setter->getValue<std::string>("name")))
+                    .arg(QString::fromStdString(ex.displayText())));
                 setterError = true;
                 break;
             }
         }
-        if (not setterError)
-        {
-            //TODO record this...
-        }
+        if (setterError) evalSuccess = false;
     }
 
     //otherwise, make a new block and all calls
@@ -98,38 +103,43 @@ void BlockEval::update(void)
     {
         //update all properties - regardless of changes
         //this may create a new _blockEval if needed
-        this->updateAllProperties();
-
-        //full eval
-        assert(_newBlockInfo.desc);
-        //widget blocks have to be evaluated in the GUI thread context, otherwise, eval here
-        if (_newBlockInfo.isGraphWidget)
+        if (this->updateAllProperties())
         {
-            QMetaObject::invokeMethod(this, "blockEvalInGUIContext", Qt::BlockingQueuedConnection);
-            auto proxyBlock = _blockEval.callProxy("getProxyBlock");
-            _lastBlockStatus.widget = proxyBlock.call<QWidget *>("widget");
+            try
+            {
+                //widget blocks have to be evaluated in the GUI thread context, otherwise, eval here
+                if (_newBlockInfo.isGraphWidget)
+                {
+                    QMetaObject::invokeMethod(this, "blockEvalInGUIContext", Qt::BlockingQueuedConnection);
+                    auto proxyBlock = _blockEval.callProxy("getProxyBlock");
+                    _lastBlockStatus.widget = proxyBlock.call<QWidget *>("widget");
+                }
+                else _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
+            }
+            catch(const Pothos::Exception &ex)
+            {
+                poco_error(Poco::Logger::get("PothosGui.BlockEval.update"), ex.displayText());
+                _lastBlockStatus.blockErrorMsgs.push_back(QString::fromStdString(ex.message()));
+                evalSuccess = false;
+            }
         }
-        else _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
+        else evalSuccess = false;
     }
 
-    /*
-        TODO:
-        //validate the id
-        if (block->getId().isEmpty())
-        {
-            block->addBlockErrorMsg(tr("Error: empty ID"));
-        }
+    //validate the id
+    if (_newBlockInfo.id.isEmpty())
+    {
+        _lastBlockStatus.blockErrorMsgs.push_back(tr("Error: empty ID"));
+    }
 
-        //property errors -- cannot continue
-        if (not cache->updateChangedProperties(block))
-        {
-            block->addBlockErrorMsg(tr("Error: cannot evaluate this block with property errors"));
-            return Pothos::Proxy();
-        }
-    */
+    //property errors -- cannot continue
+    if (not evalSuccess)
+    {
+        _lastBlockStatus.blockErrorMsgs.push_back(tr("Error: cannot evaluate this block with property errors"));
+    }
 
     //load its port info
-    try
+    if (evalSuccess) try
     {
         auto proxyBlock = _blockEval.callProxy("getProxyBlock");
         _lastBlockStatus.inPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo"));
@@ -139,21 +149,31 @@ void BlockEval::update(void)
     //parser errors report
     catch(const Pothos::Exception &ex)
     {
-        poco_error(Poco::Logger::get("PothosGui.TopologyEngine.evalGraphBlock"), ex.displayText());
+        poco_error(Poco::Logger::get("PothosGui.BlockEval.update"), ex.displayText());
         _lastBlockStatus.blockErrorMsgs.push_back(QString::fromStdString(ex.message()));
+        evalSuccess = false;
     }
 
     //set the thread pool
-    if (_newThreadPoolEval != _lastThreadPoolEval)
+    if (evalSuccess and _newThreadPoolEval != _lastThreadPoolEval)
     {
         _lastThreadPoolEval = _newThreadPoolEval;
         const auto &threadPool = _lastThreadPoolEval->getThreadPool();
-        auto proxyBlock = _blockEval.callProxy("getProxyBlock");
-        if (threadPool) proxyBlock.callVoid("setThreadPool", threadPool);
+        try
+        {
+            auto proxyBlock = _blockEval.callProxy("getProxyBlock");
+            if (threadPool) proxyBlock.callVoid("setThreadPool", threadPool);
+        }
+        catch(const Pothos::Exception &ex)
+        {
+            poco_error(Poco::Logger::get("PothosGui.BlockEval.update"), ex.displayText());
+            _lastBlockStatus.blockErrorMsgs.push_back(QString::fromStdString(ex.message()));
+            evalSuccess = false;
+        }
     }
 
     //stash the most recent state
-    _lastBlockInfo = _newBlockInfo;
+    if (evalSuccess) _lastBlockInfo = _newBlockInfo;
 
     //post the most recent status into the block in the gui thread context
     _lastBlockStatus.block = _newBlockInfo.block;
@@ -186,7 +206,9 @@ void BlockEval::postStatusToBlock(const BlockStatus &status)
         block->setPortDesc(status.inPortDesc, status.outPortDesc);
     }
     block->setGraphWidget(status.widget);
-    block->update();
+
+    block->update(); //cause redraw after changes
+    emit block->evalDoneEvent(); //trigger done event subscribers
 }
 
 /***********************************************************************
@@ -250,7 +272,10 @@ bool BlockEval::updateAllProperties(void)
         auto evalEnv = _newEnvironmentEval->getEval();
         auto BlockEval = evalEnv.getEnvironment()->findProxy("Pothos/Util/BlockEval");
         _blockEval = BlockEval.callProxy("new", evalEnv);
+        _lastThreadPoolEval.reset();
     }
+
+    _lastBlockStatus.blockErrorMsgs.clear();
 
     bool hasError = false;
     for (const auto &pair : _newBlockInfo.properties)

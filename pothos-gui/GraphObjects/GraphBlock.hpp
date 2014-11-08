@@ -106,6 +106,11 @@ public:
     const QString &getAffinityZone(void) const;
     void setAffinityZone(const QString &zone);
 
+signals:
+
+    //! Called by the evaluator when eval completed
+    void evalDoneEvent(void);
+
 private:
     void initPropertiesFromDesc(void);
     void initInputsFromDesc(void);

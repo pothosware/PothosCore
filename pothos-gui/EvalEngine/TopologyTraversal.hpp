@@ -14,6 +14,8 @@
  */
 struct ConnectionInfo
 {
+    //TODO use graph block ptr, not id...
+    //the block ptr is already a unique key used to lookup the block evals
     std::string srcId, srcPort;
     std::string dstId, dstPort;
     std::string toString(void) const

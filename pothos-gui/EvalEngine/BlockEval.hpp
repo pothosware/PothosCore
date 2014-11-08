@@ -38,7 +38,7 @@ struct BlockInfo
 struct BlockStatus
 {
     QPointer<GraphBlock> block;
-    QWidget *widget;
+    QPointer<QWidget> widget;
     std::map<QString, std::string> propertyTypeInfos;
     std::map<QString, QString> propertyErrorMsgs;
     QStringList blockErrorMsgs;
@@ -79,6 +79,10 @@ public:
     void update(void);
 
 private slots:
+
+    /*!
+     * Update the block from the gui thread context.
+     */
     void postStatusToBlock(const BlockStatus &status);
 
     /*!
@@ -119,7 +123,4 @@ private:
 
     //remote block evaluator
     Pothos::Proxy _blockEval;
-
-    //remote block itself
-    //Pothos::Proxy _blockProxy;
 };

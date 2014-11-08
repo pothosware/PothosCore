@@ -122,6 +122,7 @@ void EvalEngine::stopEvalThread(void)
 {
     _impl->mainEvalInfo.runEvalThread = false;
     this->submitInfo();
+    _impl->evalThread.join();
 }
 
 void EvalEngine::submitInfo(void)
@@ -213,7 +214,7 @@ void EvalEngine::reEvalAll(void)
         {
             auto it = _impl->environmentEvals.find(hostProcKey);
             if (it != _impl->environmentEvals.end()) envEval = it->second;
-            envEval.reset(new EnvironmentEval());
+            else envEval.reset(new EnvironmentEval());
         }
 
         //pass config into the environment

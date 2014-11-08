@@ -43,6 +43,8 @@ private slots:
 
     void handleUpdateTimerExpired(void);
 
+    void handleBlockEvalDone(void);
+
     void handleDocTabChanged(int);
 
 signals:
