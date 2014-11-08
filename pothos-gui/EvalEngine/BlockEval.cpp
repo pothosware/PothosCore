@@ -132,12 +132,6 @@ void BlockEval::update(void)
         _lastBlockStatus.blockErrorMsgs.push_back(tr("Error: empty ID"));
     }
 
-    //property errors -- cannot continue
-    if (not evalSuccess)
-    {
-        _lastBlockStatus.blockErrorMsgs.push_back(tr("Error: cannot evaluate this block with property errors"));
-    }
-
     //load its port info
     if (evalSuccess) try
     {
@@ -172,8 +166,22 @@ void BlockEval::update(void)
         }
     }
 
+    //report block level error when properties errors are present
+    if (not evalSuccess and _lastBlockStatus.blockErrorMsgs.empty())
+    {
+        for (const auto &pair : _lastBlockStatus.propertyErrorMsgs)
+        {
+            if (pair.second.isEmpty()) continue;
+            _lastBlockStatus.blockErrorMsgs.push_back(tr("Error: cannot evaluate this block with property errors"));
+            break;
+        }
+    }
+
     //stash the most recent state
     if (evalSuccess) _lastBlockInfo = _newBlockInfo;
+
+    //we should have at least one error reported when not success
+    assert(evalSuccess or not _lastBlockStatus.blockErrorMsgs.empty());
 
     //post the most recent status into the block in the gui thread context
     _lastBlockStatus.block = _newBlockInfo.block;

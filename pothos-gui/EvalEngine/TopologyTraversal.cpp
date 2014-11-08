@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "TopologyTraversal.hpp"
+#include "TopologyEval.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
@@ -51,7 +51,7 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnecti
     return inputEndpoints;
 }
 
-std::vector<ConnectionInfo> TopologyTraversal::getConnectionInfo(const GraphObjectList &graphObjects)
+std::vector<ConnectionInfo> TopologyEval::getConnectionInfo(const GraphObjectList &graphObjects)
 {
     std::vector<ConnectionInfo> connections;
     for (auto graphObject : graphObjects)
@@ -71,9 +71,9 @@ std::vector<ConnectionInfo> TopologyTraversal::getConnectionInfo(const GraphObje
             for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
             {
                 ConnectionInfo info;
-                info.srcId = outputEp.getObj()->getId().toStdString();
+                info.srcBlock = outputEp.getObj();
                 info.srcPort = outputEp.getKey().id.toStdString();
-                info.dstId = subEp.getObj()->getId().toStdString();
+                info.dstBlock = subEp.getObj();
                 info.dstPort = subEp.getKey().id.toStdString();
                 connections.push_back(info);
             }

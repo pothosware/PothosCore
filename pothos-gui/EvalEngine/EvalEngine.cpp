@@ -6,7 +6,7 @@
 #include "BlockEval.hpp"
 #include "ThreadPoolEval.hpp"
 #include "EnvironmentEval.hpp"
-#include "TopologyTraversal.hpp"
+#include "TopologyEval.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include <memory>
@@ -76,7 +76,7 @@ void EvalEngine::submitTopology(const GraphObjectList &graphObjects)
     //extract all relevant information to process this in another thread:
 
     //a list of connection information
-    _impl->mainEvalInfo.connectionInfo = TopologyTraversal::getConnectionInfo(graphObjects);
+    _impl->mainEvalInfo.connectionInfo = TopologyEval::getConnectionInfo(graphObjects);
 
     //a list of block eval instructions
     _impl->mainEvalInfo.blockInfo.clear();

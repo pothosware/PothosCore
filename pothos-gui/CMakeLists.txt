@@ -128,6 +128,7 @@ set(SOURCES
     EvalEngine/BlockEval.cpp
     EvalEngine/ThreadPoolEval.cpp
     EvalEngine/EnvironmentEval.cpp
+    EvalEngine/TopologyEval.cpp
     EvalEngine/TopologyTraversal.cpp
 )
 add_executable(PothosGui ${SOURCES})

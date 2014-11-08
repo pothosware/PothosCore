@@ -22,7 +22,13 @@
 #include <sstream>
 #include <cassert>
 
-static const long UPDATE_TIMER_MS = 500;
+/*!
+ * We could remove the timer with the eval-background system.
+ * But rather, it may still be useful to have an idle period
+ * in which we accept new edit events before submitting changes.
+ * So just leave this as a small number for the time-being.
+ */
+static const long UPDATE_TIMER_MS = 10;
 
 BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     QWidget(parent),
@@ -47,11 +53,6 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         auto label = new QLabel(QString("<h1>%1</h1>").arg(_block->getTitle().toHtmlEscaped()), this);
         label->setAlignment(Qt::AlignCenter);
         _formLayout->addRow(label);
-    }
-
-    //errors
-    {
-        _formLayout->addRow(_blockErrorLabel);
     }
 
     //id
@@ -119,6 +120,11 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         }
         else _formLayout->addRow(_affinityZoneLabel, _affinityZoneBox);
         connect(_affinityZoneBox, SIGNAL(activated(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+    }
+
+    //errors
+    {
+        _formLayout->addRow(_blockErrorLabel);
     }
 
     //draw the block's preview onto a mini pixmap
@@ -264,6 +270,7 @@ void BlockPropertiesPanel::handleEditWidgetChanged(void)
 
 void BlockPropertiesPanel::handleUpdateTimerExpired(void)
 {
+    //TODO -- this is overkill, we need to submit a block-only re-eval
     _block->draw()->getGraphEditor()->updateExecutionEngine();
 }
 
@@ -283,7 +290,7 @@ void BlockPropertiesPanel::handleCancel(void)
     {
         _block->setPropertyValue(propKey, _propIdToOriginal[propKey]);
     }
-    _block->update(); //update after change reversion
+    this->handleUpdateTimerExpired(); //update after change reversion
 
     //an edit widget return press signal may have us here,
     //and not the commit button, so make sure panel is deleted
