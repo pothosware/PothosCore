@@ -16,6 +16,7 @@ class ThreadPoolEval;
 class TopologyEval;
 class BlockEval;
 class GraphBlock;
+class QTimer;
 
 typedef std::map<GraphBlock *, BlockInfo> BlockInfos;
 typedef std::map<QString, Poco::JSON::Object::Ptr> ZoneInfos;
@@ -40,11 +41,8 @@ public slots:
     //! Submit a single block info for individual re-eval
     void submitBlock(const BlockInfo &info);
 
-    //! Submit most up to date block information
-    void submitBlocks(const BlockInfos &info);
-
-    //! Submit most up to date connection information
-    void submitConnections(const ConnectionInfos &connections);
+    //! Submit most up to date topology information
+    void submitTopology(const BlockInfos &blockInfos, const ConnectionInfos &connections);
 
     //! Submit most up to date zone information
     void submitZoneInfo(const ZoneInfos &info);
@@ -52,8 +50,14 @@ public slots:
     //! query the dot markup for the active topology
     std::string getTopologyDotMarkup(const bool arg);
 
+private slots:
+    void handleMonitorTimeout(void);
+
 private:
-    void reEvalAll(void);
+    void evaluate(void);
+    bool _requireEval;
+
+    QTimer *_monitorTimer;
 
     //most recent info
     BlockInfos _blockInfo;

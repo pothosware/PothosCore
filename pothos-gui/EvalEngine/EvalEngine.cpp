@@ -65,8 +65,7 @@ void EvalEngine::submitTopology(const GraphObjectList &graphObjects)
     const auto connInfos = TopologyEval::getConnectionInfo(graphObjects);
 
     //submit the information to the eval thread object
-    QMetaObject::invokeMethod(_impl, "submitBlocks", Qt::QueuedConnection, Q_ARG(BlockInfos, blockInfos));
-    QMetaObject::invokeMethod(_impl, "submitConnections", Qt::QueuedConnection, Q_ARG(ConnectionInfos, connInfos));
+    QMetaObject::invokeMethod(_impl, "submitTopology", Qt::QueuedConnection, Q_ARG(BlockInfos, blockInfos), Q_ARG(ConnectionInfos, connInfos));
 }
 
 void EvalEngine::submitActivateTopology(const bool active)

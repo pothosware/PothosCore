@@ -10,16 +10,24 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include <Pothos/Framework/Topology.hpp>
 #include <QThread>
+#include <QTimer>
 #include <QAbstractEventDispatcher>
 #include <cassert>
 
-EvalEngineImpl::EvalEngineImpl(void)
+static const int MONITOR_INTERVAL_MS = 1000;
+
+EvalEngineImpl::EvalEngineImpl(void):
+    _requireEval(false),
+    _monitorTimer(new QTimer(this))
 {
     qRegisterMetaType<BlockInfo>("BlockInfo");
     qRegisterMetaType<BlockInfos>("BlockInfos");
     qRegisterMetaType<ConnectionInfo>("ConnectionInfo");
     qRegisterMetaType<ConnectionInfos>("ConnectionInfos");
     qRegisterMetaType<ZoneInfos>("ZoneInfos");
+
+    connect(_monitorTimer, SIGNAL(timeout(void)), this, SLOT(handleMonitorTimeout(void)));
+    _monitorTimer->setInterval(MONITOR_INTERVAL_MS);
 }
 
 EvalEngineImpl::~EvalEngineImpl(void)
@@ -33,7 +41,8 @@ void EvalEngineImpl::submitActivateTopology(const bool enable)
     if (enable and not _topologyEval)
     {
         _topologyEval.reset(new TopologyEval());
-        this->reEvalAll();
+        _requireEval = true;
+        this->evaluate();
     }
 
     //if disabled, clear the current evaluator if present
@@ -43,41 +52,52 @@ void EvalEngineImpl::submitActivateTopology(const bool enable)
 void EvalEngineImpl::submitBlock(const BlockInfo &info)
 {
     _blockInfo[info.block.data()] = info;
-    this->reEvalAll();
+    _requireEval = true;
+    this->evaluate();
 }
 
-void EvalEngineImpl::submitBlocks(const BlockInfos &info)
+void EvalEngineImpl::submitTopology(const BlockInfos &blockInfos, const ConnectionInfos &connections)
 {
-    _blockInfo = info;
-    this->reEvalAll();
-}
-
-void EvalEngineImpl::submitConnections(const ConnectionInfos &info)
-{
-    _connectionInfo = info;
-    this->reEvalAll();
+    _blockInfo = blockInfos;
+    _connectionInfo = connections;
+    _requireEval = true;
+    this->evaluate();
 }
 
 void EvalEngineImpl::submitZoneInfo(const ZoneInfos &info)
 {
     _zoneInfo = info;
-    this->reEvalAll();
+    _requireEval = true;
+    this->evaluate();
 }
 
 std::string EvalEngineImpl::getTopologyDotMarkup(const bool arg)
 {
     //have to do this in case this call compressed an eval-worthy event
-    this->reEvalAll();
+    this->evaluate();
 
     if (not _topologyEval) return "";
     return _topologyEval->getTopology()->toDotMarkup(arg);
 }
 
-void EvalEngineImpl::reEvalAll(void)
+void EvalEngineImpl::handleMonitorTimeout(void)
+{
+    //check all environments for errors
+
+    //errors? check if the host is online
+
+    this->evaluate();
+}
+
+void EvalEngineImpl::evaluate(void)
 {
     //Do not evaluate when there are pending events in the queue.
     //Evaluate only after all events received - AKA event compression.
     if (this->thread()->eventDispatcher()->hasPendingEvents()) return;
+
+    //Only evaluate if require evaluate was flagged by a slot
+    if (not _requireEval) return;
+    _requireEval = false;
 
     std::map<GraphBlock *, std::shared_ptr<BlockEval>> newBlockEvals;
     std::map<QString, std::shared_ptr<ThreadPoolEval>> newThreadPoolEvals;
