@@ -738,7 +738,7 @@ void PothosPacketSocketEndpoint::Impl::send(const uint16_t flags, const uint16_t
     size_t bytesLeft = numBytes;
     while (bytesLeft != 0)
     {
-        ret = this->iface->send((const void *)(size_t(buff)+numBytes-bytesLeft), bytesLeft, (bytesLeft==0)?0:MSG_MORE);
+        ret = this->iface->send((const void *)(size_t(buff)+numBytes-bytesLeft), bytesLeft);
         if (ret <= 0)
         {
             throw Pothos::Exception("PothosPacketSocketEndpoint::send(payload)", std::to_string(ret));
