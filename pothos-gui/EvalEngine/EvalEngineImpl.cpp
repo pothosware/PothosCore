@@ -25,6 +25,7 @@ EvalEngineImpl::EvalEngineImpl(void):
     qRegisterMetaType<ConnectionInfo>("ConnectionInfo");
     qRegisterMetaType<ConnectionInfos>("ConnectionInfos");
     qRegisterMetaType<ZoneInfos>("ZoneInfos");
+    qRegisterMetaType<std::vector<size_t>>("std::vector<size_t>");
 
     connect(_monitorTimer, SIGNAL(timeout(void)), this, SLOT(handleMonitorTimeout(void)));
     _monitorTimer->setInterval(MONITOR_INTERVAL_MS);
@@ -84,6 +85,13 @@ void EvalEngineImpl::submitTopology(const BlockInfos &blockInfos, const Connecti
 
     _blockInfo = blockInfos;
     _connectionInfo = connections;
+    _requireEval = true;
+    this->evaluate();
+}
+
+void EvalEngineImpl::submitReeval(const std::vector<size_t> &uids)
+{
+    for (const auto &uid : uids) _blockEvals.erase(uid);
     _requireEval = true;
     this->evaluate();
 }

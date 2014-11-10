@@ -137,6 +137,7 @@ void GraphDraw::keyPressEvent(QKeyEvent *event)
     if (event->key() == Qt::Key_Return) getActionMap()["properties"]->activate(QAction::Trigger);
     if (event->key() == Qt::Key_E) getActionMap()["enable"]->activate(QAction::Trigger);
     if (event->key() == Qt::Key_D) getActionMap()["disable"]->activate(QAction::Trigger);
+    if (event->key() == Qt::Key_R) getActionMap()["reeval"]->activate(QAction::Trigger);
     QGraphicsView::keyPressEvent(event);
 }
 
@@ -161,6 +162,7 @@ void GraphDraw::updateEnabledActions(void)
     getActionMap()["decrement"]->setEnabled(selectedBlocks);
     getActionMap()["enable"]->setEnabled(selectedBlocks);
     getActionMap()["disable"]->setEnabled(selectedBlocks);
+    getActionMap()["reeval"]->setEnabled(selectedBlocks);
     getMenuMap()["setAffinityZone"]->setEnabled(selectedBlocks);
 
     //and enable/disable the actions in the move graph objects submenu

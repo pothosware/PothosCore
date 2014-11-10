@@ -44,6 +44,9 @@ public slots:
     //! Submit most up to date topology information
     void submitTopology(const BlockInfos &blockInfos, const ConnectionInfos &connections);
 
+    //! Submit a list if UIDs to re-evaluate
+    void submitReeval(const std::vector<size_t> &uids);
+
     //! Submit most up to date zone information
     void submitZoneInfo(const ZoneInfos &info);
 

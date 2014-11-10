@@ -35,6 +35,12 @@ public slots:
     void submitTopology(const GraphObjectList &graphObjects);
 
     /*!
+     * Submit a set of graph objects for re-evaluation.
+     * The state of these objects will be cleared and re-processed.
+     */
+    void submitReeval(const GraphObjectList &graphObjects);
+
+    /*!
      * Activate or deactivate the design.
      * If the activation fails, deactivateDesign() will be emitted.
      */

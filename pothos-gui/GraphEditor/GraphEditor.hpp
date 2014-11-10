@@ -106,6 +106,7 @@ private slots:
     void handleEnable(void);
     void handleSetEnabled(const bool enb);
     void handleDisable(void);
+    void handleReeval(void);
     void handleResetState(int);
     void handleAffinityZoneClicked(const QString &zone);
     void handleAffinityZoneChanged(const QString &zone);

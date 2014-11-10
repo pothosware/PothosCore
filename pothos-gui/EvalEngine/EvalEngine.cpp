@@ -70,6 +70,13 @@ void EvalEngine::submitTopology(const GraphObjectList &graphObjects)
     QMetaObject::invokeMethod(_impl, "submitTopology", Qt::QueuedConnection, Q_ARG(BlockInfos, blockInfos), Q_ARG(ConnectionInfos, connInfos));
 }
 
+void EvalEngine::submitReeval(const GraphObjectList &graphObjects)
+{
+    std::vector<size_t> uids;
+    for (auto obj : graphObjects) uids.push_back(obj->uid());
+    QMetaObject::invokeMethod(_impl, "submitReeval", Qt::QueuedConnection, Q_ARG(std::vector<size_t>, uids));
+}
+
 void EvalEngine::submitActivateTopology(const bool active)
 {
     QMetaObject::invokeMethod(_impl, "submitActivateTopology", Qt::QueuedConnection, Q_ARG(bool, active));

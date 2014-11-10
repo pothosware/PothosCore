@@ -74,6 +74,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["redo"], SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
     connect(getActionMap()["enable"], SIGNAL(triggered(void)), this, SLOT(handleEnable(void)));
     connect(getActionMap()["disable"], SIGNAL(triggered(void)), this, SLOT(handleDisable(void)));
+    connect(getActionMap()["reeval"], SIGNAL(triggered(void)), this, SLOT(handleReeval(void)));
     connect(getMenuMap()["setAffinityZone"], SIGNAL(zoneClicked(const QString &)), this, SLOT(handleAffinityZoneClicked(const QString &)));
     connect(getObjectMap()["affinityZonesDock"], SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
     connect(getActionMap()["showGraphFlattenedView"], SIGNAL(triggered(void)), this, SLOT(handleShowFlattenedDialog(void)));
@@ -750,6 +751,13 @@ void GraphEditor::handleSetEnabled(const bool enb)
 
     if (enb) handleStateChange(GraphState("document-import", tr("Enable %1").arg(draw->getSelectionDescription(GRAPH_BLOCK))));
     else handleStateChange(GraphState("document-export", tr("Disable %1").arg(draw->getSelectionDescription(GRAPH_BLOCK))));
+}
+
+void GraphEditor::handleReeval(void)
+{
+    if (not this->isVisible()) return;
+    auto draw = this->getCurrentGraphDraw();
+    _evalEngine->submitReeval(draw->getObjectsSelected(GRAPH_BLOCK));
 }
 
 void GraphEditor::handleResetState(int stateNo)

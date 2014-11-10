@@ -219,10 +219,19 @@ void PothosGuiMainWindow::createActions(void)
     _actionMap["redo"] = _redoAction;
 
     _enableAction = new QAction(makeIconFromTheme("document-import"), tr("Enable"), this);
+    _enableAction->setStatusTip(tr("Enable selected graph objects"));
+    _enableAction->setShortcut(QKeySequence(Qt::Key_E));
     _actionMap["enable"] = _enableAction;
 
     _disableAction = new QAction(makeIconFromTheme("document-export"), tr("Disable"), this);
+    _disableAction->setStatusTip(tr("Disable selected graph objects"));
+    _disableAction->setShortcut(QKeySequence(Qt::Key_D));
     _actionMap["disable"] = _disableAction;
+
+    _reevalAction = new QAction(makeIconFromTheme("document-revert"), tr("Re-eval"), this);
+    _reevalAction->setStatusTip(tr("Re-evaluate selected graph objects"));
+    _reevalAction->setShortcut(QKeySequence(Qt::Key_R));
+    _actionMap["reeval"] = _reevalAction;
 
     _cutAction = new QAction(makeIconFromTheme("edit-cut"), tr("Cu&t"), this);
     _cutAction->setShortcut(QKeySequence::Cut);
@@ -364,6 +373,7 @@ void PothosGuiMainWindow::createMenus(void)
     _editMenu->addSeparator();
     _editMenu->addAction(_enableAction);
     _editMenu->addAction(_disableAction);
+    _editMenu->addAction(_reevalAction);
     _editMenu->addSeparator();
     _editMenu->addAction(_rotateLeftAction);
     _editMenu->addAction(_rotateRightAction);
