@@ -211,3 +211,20 @@ void EvalEngineImpl::evaluate(void)
         _topologyEval->update();
     }
 }
+
+void EvalEngineImpl::submitCleanup(void)
+{
+    //clear state
+    _blockInfo.clear();
+    _connectionInfo.clear();
+    _zoneInfo.clear();
+
+    //clear evals
+    _topologyEval.reset();
+    _blockEvals.clear();
+    _threadPoolEvals.clear();
+    _environmentEvals.clear();
+
+    //stop the monitor
+    _monitorTimer->stop();
+}

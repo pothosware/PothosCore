@@ -38,6 +38,7 @@ EvalEngine::EvalEngine(QObject *parent):
 
 EvalEngine::~EvalEngine(void)
 {
+    QMetaObject::invokeMethod(_impl, "submitCleanup", Qt::BlockingQueuedConnection);
     delete _impl;
     _thread->quit();
     _thread->wait();

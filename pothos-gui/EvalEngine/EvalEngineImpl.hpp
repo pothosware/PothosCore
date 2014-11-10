@@ -58,6 +58,9 @@ public slots:
     //! query the dot markup for the active topology
     std::string getTopologyDotMarkup(const bool arg);
 
+    //! Cleanup and shutdown prior to destruction
+    void submitCleanup(void);
+
 private slots:
     void handleMonitorTimeout(void);
 
