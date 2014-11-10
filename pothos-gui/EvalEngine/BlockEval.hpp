@@ -133,6 +133,13 @@ private:
      */
     bool updateAllProperties(void);
 
+    /*!
+     * The main evaluation procedure for dealing with changes.
+     * Return true for success and false for failure.
+     */
+    bool evaluationProcedure(void);
+
+    //! Internal helper for error message formatting
     void reportError(const std::string &action, const Pothos::Exception &ex);
 
     std::shared_ptr<EnvironmentEval> _newEnvironmentEval;

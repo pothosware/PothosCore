@@ -88,20 +88,41 @@ void BlockEval::acceptThreadPool(const std::shared_ptr<ThreadPoolEval> &tp)
     _newThreadPoolEval = tp;
 }
 
-/***********************************************************************
- * update performs block evaluation
- **********************************************************************/
 void BlockEval::update(void)
 {
+    //clear old error messages -- lets make new ones
+    _lastBlockStatus.blockErrorMsgs.clear();
+    _lastBlockStatus.propertyErrorMsgs.clear();
+
+    //perform evaluation
+    const bool evalSuccess = this->evaluationProcedure();
+
+    //When eval fails, do a re-check on the environment.
+    //Because block eval could have killed the environment.
+    if (not evalSuccess) _newEnvironmentEval->update();
+
+    //When environment fails, replace the block error messages
+    //with the error message from the evaluation environment.
     if (_newEnvironmentEval->isFailureState())
     {
         _lastBlockStatus.blockErrorMsgs.clear();
         _lastBlockStatus.propertyErrorMsgs.clear();
-        _lastBlockStatus.blockErrorMsgs.push_back(tr("Remote environment error"));
-        QMetaObject::invokeMethod(this, "postStatusToBlock", Qt::QueuedConnection, Q_ARG(BlockStatus, _lastBlockStatus));
-        return;
+        _lastBlockStatus.blockErrorMsgs.push_back(_newEnvironmentEval->getErrorMsg());
     }
 
+    //we should have at least one error reported when not success
+    assert(evalSuccess or not _lastBlockStatus.blockErrorMsgs.empty());
+
+    //post the most recent status into the block in the gui thread context
+    QMetaObject::invokeMethod(this, "postStatusToBlock", Qt::QueuedConnection, Q_ARG(BlockStatus, _lastBlockStatus));
+}
+
+/***********************************************************************
+ * evaluation procedure implementation
+ **********************************************************************/
+bool BlockEval::evaluationProcedure(void)
+{
+    if (_newEnvironmentEval->isFailureState()) return false;
     bool evalSuccess = true;
 
     //the environment changed? clear everything
@@ -135,31 +156,28 @@ void BlockEval::update(void)
     }
 
     //otherwise, make a new block and all calls
-    else
+    //update all properties - regardless of changes
+    //this may create a new _blockEval if needed
+    else if (this->updateAllProperties())
     {
-        //update all properties - regardless of changes
-        //this may create a new _blockEval if needed
-        if (this->updateAllProperties())
+        try
         {
-            try
+            //widget blocks have to be evaluated in the GUI thread context, otherwise, eval here
+            if (_newBlockInfo.isGraphWidget)
             {
-                //widget blocks have to be evaluated in the GUI thread context, otherwise, eval here
-                if (_newBlockInfo.isGraphWidget)
-                {
-                    QMetaObject::invokeMethod(this, "blockEvalInGUIContext", Qt::BlockingQueuedConnection);
-                    if (not _blockEval) evalSuccess = false;
-                    else _lastBlockStatus.widget = this->getProxyBlock().call<QWidget *>("widget");
-                }
-                else _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
+                QMetaObject::invokeMethod(this, "blockEvalInGUIContext", Qt::BlockingQueuedConnection);
+                if (not _blockEval) evalSuccess = false;
+                else _lastBlockStatus.widget = this->getProxyBlock().call<QWidget *>("widget");
             }
-            catch(const Pothos::Exception &ex)
-            {
-                this->reportError("eval", ex);
-                evalSuccess = false;
-            }
+            else _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
         }
-        else evalSuccess = false;
+        catch(const Pothos::Exception &ex)
+        {
+            this->reportError("eval", ex);
+            evalSuccess = false;
+        }
     }
+    else evalSuccess = false;
 
     //validate the id
     if (_newBlockInfo.id.isEmpty())
@@ -212,11 +230,7 @@ void BlockEval::update(void)
     //stash the most recent state
     if (evalSuccess) _lastBlockInfo = _newBlockInfo;
 
-    //we should have at least one error reported when not success
-    assert(evalSuccess or not _lastBlockStatus.blockErrorMsgs.empty());
-
-    //post the most recent status into the block in the gui thread context
-    QMetaObject::invokeMethod(this, "postStatusToBlock", Qt::QueuedConnection, Q_ARG(BlockStatus, _lastBlockStatus));
+    return evalSuccess;
 }
 
 /***********************************************************************
@@ -227,7 +241,13 @@ void BlockEval::postStatusToBlock(const BlockStatus &status)
     auto &block = status.block;
     if (not block) return; //block no longer exists
 
+    //clear old error messages
     block->clearBlockErrorMsgs();
+    for (const auto &propKey : block->getProperties())
+    {
+        block->setPropertyErrorMsg(propKey, "");
+    }
+
     for (const auto &pair : status.propertyTypeInfos)
     {
         block->setPropertyTypeStr(pair.first, pair.second);
@@ -305,16 +325,18 @@ bool BlockEval::didPropKeyHaveChange(const QString &key) const
 
 bool BlockEval::updateAllProperties(void)
 {
-    //TODO this can fail
-    if (not _blockEval)
+    if (not _blockEval) try
     {
         auto evalEnv = _newEnvironmentEval->getEval();
         auto BlockEval = evalEnv.getEnvironment()->findProxy("Pothos/Util/BlockEval");
         _blockEval = BlockEval.callProxy("new", evalEnv);
         _lastThreadPoolEval.reset();
     }
-
-    _lastBlockStatus.blockErrorMsgs.clear();
+    catch (const Pothos::Exception &ex)
+    {
+        this->reportError("make", ex);
+        return false;
+    }
 
     bool hasError = false;
     for (const auto &pair : _newBlockInfo.properties)
@@ -325,7 +347,6 @@ bool BlockEval::updateAllProperties(void)
         {
             auto obj = _blockEval.callProxy("evalProperty", propKey.toStdString(), propVal.toStdString());
             _lastBlockStatus.propertyTypeInfos[propKey] = obj.call<std::string>("getTypeString");
-            _lastBlockStatus.propertyErrorMsgs[propKey] = "";
         }
         catch (const Pothos::Exception &ex)
         {

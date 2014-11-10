@@ -49,6 +49,19 @@ void EnvironmentEval::update(void)
     {
         poco_error(Poco::Logger::get("PothosGui.EnvironmentEval.update"), ex.displayText());
         _failureState = true;
+
+        _errorMsg = tr("Remote environment crashed"); //default error message
+
+        //determine if the remote host is offline for a better error message
+        const auto hostUri = getHostProcFromConfig(_zoneName, _config).first;
+        try
+        {
+            Pothos::RemoteClient client(hostUri);
+        }
+        catch(const Pothos::RemoteClientError &)
+        {
+            _errorMsg = tr("Remote host %1 is offline").arg(QString::fromStdString(hostUri));
+        }
     }
 }
 

@@ -54,6 +54,12 @@ public:
         return _failureState;
     }
 
+    //! Get the error message associated with the failure state
+    const QString &getErrorMsg(void) const
+    {
+        return _errorMsg;
+    }
+
 private:
     Pothos::ProxyEnvironment::Sptr makeEnvironment(void);
 
@@ -62,4 +68,5 @@ private:
     Pothos::ProxyEnvironment::Sptr _env;
     Pothos::Proxy _eval;
     bool _failureState;
+    QString _errorMsg;
 };
