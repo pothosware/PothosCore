@@ -25,7 +25,8 @@ Periodogram::Periodogram(void):
     _dynRange(100.0),
     _autoScale(false),
     _freqLabelId("rxFreq"),
-    _rateLabelId("rxRate")
+    _rateLabelId("rxRate"),
+    _averageFactor(0.0)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     _window = env->findProxy("Pothos/Util/WindowFunction").callProxy("new");
@@ -51,6 +52,7 @@ Periodogram::Periodogram(void):
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, referenceLevel));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, dynamicRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, autoScale));
+    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setAverageFactor));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableYAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setYAxisTitle));
@@ -72,6 +74,10 @@ Periodogram::Periodogram(void):
         connect(_zoomer, SIGNAL(zoomed(const QRectF &)), this, SLOT(handleZoomed(const QRectF &)));
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
+
+        auto legend = new QwtLegend(_mainPlot);
+        legend->setDefaultItemMode(QwtLegendData::Checkable);
+        _mainPlot->insertLegend(legend);
     }
 
     //setup grid
@@ -200,19 +206,6 @@ void Periodogram::enableYAxis(const bool enb)
 void Periodogram::setYAxisTitle(const QString &title)
 {
     QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::yLeft), Q_ARG(QwtText, MyPlotAxisTitle(title)));
-}
-
-void Periodogram::installLegend(void)
-{
-    auto legend = new QwtLegend(_mainPlot);
-    legend->setDefaultItemMode(QwtLegendData::Checkable);
-    connect(legend, SIGNAL(checked(const QVariant &, bool, int)), this, SLOT(handleLegendChecked(const QVariant &, bool, int)));
-    _mainPlot->insertLegend(legend);
-}
-
-void Periodogram::handleLegendChecked(const QVariant &itemInfo, bool on, int)
-{
-    _mainPlot->infoToItem(itemInfo)->setVisible(not on);
 }
 
 void Periodogram::handlePickerSelected(const QPointF &p)

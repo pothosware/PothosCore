@@ -6,6 +6,8 @@
 #include <QColor>
 #include <qwt_plot.h>
 
+class QwtPlotItem;
+
 //! Get a color for a plotter curve given an index
 POTHOS_WIDGET_UTILS_EXPORT QColor getDefaultCurveColor(const size_t whichCurve);
 
@@ -20,6 +22,9 @@ class POTHOS_WIDGET_UTILS_EXPORT MyQwtPlot : public QwtPlot
     Q_OBJECT
 public:
     MyQwtPlot(QWidget *parent);
+
+    //! update checked status based on visibility
+    void updateChecked(QwtPlotItem *item);
 
 public slots:
     void setTitle(const QwtText &text);

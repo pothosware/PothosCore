@@ -6,6 +6,7 @@ POTHOS_MODULE_UTIL(
     SOURCES
         Periodogram.cpp
         PeriodogramWork.cpp
+        PeriodogramChannel.cpp
     DOC_SOURCES Periodogram.hpp
     LIBRARIES ${Qt5_LIBRARIES}
     DESTINATION widgets

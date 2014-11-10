@@ -6,6 +6,8 @@
 #include <valarray>
 #include <qwt_legend_data.h>
 #include <qwt_plot_canvas.h>
+#include <qwt_legend.h>
+#include <qwt_legend_label.h>
 #include <qwt_text.h>
 #include <QMouseEvent>
 
@@ -77,6 +79,17 @@ void MyQwtPlot::setTitle(const QwtText &text)
 void MyQwtPlot::setAxisTitle(const int id, const QwtText &text)
 {
     QwtPlot::setAxisTitle(id, text);
+}
+
+void MyQwtPlot::updateChecked(QwtPlotItem *item)
+{
+    auto legend = dynamic_cast<QwtLegend *>(this->legend());
+    if (legend == nullptr) return; //no legend
+    auto info = legend->legendWidget(this->itemToInfo(item));
+    auto label = dynamic_cast<QwtLegendLabel *>(info);
+    if (label == nullptr) return; //no label
+    label->setChecked(item->isVisible());
+    this->updateLegend();
 }
 
 #include "MyPlotUtils.moc"
