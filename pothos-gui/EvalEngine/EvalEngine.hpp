@@ -5,8 +5,10 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include <QObject>
+#include <chrono>
 
 class QThread;
+class QTimer;
 class EvalEngineImpl;
 class AffinityZonesDock;
 class QSignalMapper;
@@ -61,10 +63,14 @@ signals:
 
 private slots:
     void handleAffinityZonesChanged(void);
+    void handleEvalThreadHeartBeat(void);
+    void handleMonitorTimeout(void);
 
 private:
     QThread *_thread;
+    QTimer *_monitorTimer;
     EvalEngineImpl *_impl;
     QSignalMapper *_blockEvalMapper;
     AffinityZonesDock *_affinityDock;
+    std::chrono::system_clock::time_point _lastHeartBeat;
 };

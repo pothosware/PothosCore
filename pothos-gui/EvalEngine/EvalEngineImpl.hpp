@@ -33,6 +33,11 @@ public:
 
     ~EvalEngineImpl(void);
 
+signals:
+
+    //! Emitted by the monitor timer to signal that this thread is not-blocked
+    void monitorHeartBeat(void);
+
 public slots:
 
     //! Submit trigger for de/activation of the topology

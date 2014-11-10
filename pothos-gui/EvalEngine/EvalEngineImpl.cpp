@@ -28,7 +28,8 @@ EvalEngineImpl::EvalEngineImpl(void):
     qRegisterMetaType<std::vector<size_t>>("std::vector<size_t>");
 
     connect(_monitorTimer, SIGNAL(timeout(void)), this, SLOT(handleMonitorTimeout(void)));
-    _monitorTimer->setInterval(MONITOR_INTERVAL_MS);
+    connect(_monitorTimer, SIGNAL(timeout(void)), this, SIGNAL(monitorHeartBeat(void)));
+    _monitorTimer->start(MONITOR_INTERVAL_MS);
 }
 
 EvalEngineImpl::~EvalEngineImpl(void)

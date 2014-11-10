@@ -6,13 +6,18 @@
 #include "EvalEngineImpl.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
+#include <Poco/Logger.h>
 #include <QSignalMapper>
 #include <QThread>
+#include <QTimer>
 #include <cassert>
+
+static const int MONITOR_INTERVAL_MS = 1000;
 
 EvalEngine::EvalEngine(QObject *parent):
     QObject(parent),
-    _thread(new QThread()),
+    _thread(new QThread(this)),
+    _monitorTimer(new QTimer(this)),
     _impl(new EvalEngineImpl()),
     _blockEvalMapper(new QSignalMapper(this)),
     _affinityDock(dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]))
@@ -26,6 +31,9 @@ EvalEngine::EvalEngine(QObject *parent):
 
     //manual call so initial zone info gets loaded into the evaluator
     this->handleAffinityZonesChanged();
+
+    connect(_monitorTimer, SIGNAL(timeout(void)), this, SLOT(handleMonitorTimeout(void)));
+    connect(_impl, SIGNAL(monitorHeartBeat(void)), this, SLOT(handleEvalThreadHeartBeat(void)));
 }
 
 EvalEngine::~EvalEngine(void)
@@ -107,4 +115,23 @@ void EvalEngine::handleAffinityZonesChanged(void)
         zoneInfos[zoneName] = _affinityDock->zoneToConfig(zoneName);
     }
     QMetaObject::invokeMethod(_impl, "submitZoneInfo", Qt::QueuedConnection, Q_ARG(ZoneInfos, zoneInfos));
+}
+
+void EvalEngine::handleEvalThreadHeartBeat(void)
+{
+    _lastHeartBeat = std::chrono::system_clock::now();
+
+    //make sure monitor is started when we see the heartbeat
+    //this starts the monitor on initialization and after failure
+    if (not _monitorTimer->isActive()) _monitorTimer->start(MONITOR_INTERVAL_MS);
+}
+
+void EvalEngine::handleMonitorTimeout(void)
+{
+    if ((std::chrono::system_clock::now() - _lastHeartBeat) > std::chrono::seconds(10))
+    {
+        _monitorTimer->stop(); //stop so the error messages will not continue
+        poco_fatal(Poco::Logger::get("PothosGui.EvalEngine.monitor"),
+            "Detected evaluation thread lock-up. The evaluator will not function.");
+    }
 }
