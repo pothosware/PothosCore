@@ -23,6 +23,9 @@ EvalEngine::EvalEngine(QObject *parent):
 
     _impl->moveToThread(_thread);
     _thread->start();
+
+    //manual call so initial zone info gets loaded into the evaluator
+    this->handleAffinityZonesChanged();
 }
 
 EvalEngine::~EvalEngine(void)
