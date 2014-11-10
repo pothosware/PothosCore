@@ -29,6 +29,7 @@ struct BlockInfo
     QPointer<GraphBlock> block;
     bool isGraphWidget;
     QString id;
+    size_t uid;
     QString zone;
     std::map<QString, QString> properties;
     std::map<QString, Poco::JSON::Object::Ptr> paramDescs;

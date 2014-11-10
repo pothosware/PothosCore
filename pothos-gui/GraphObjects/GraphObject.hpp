@@ -39,6 +39,13 @@ public:
     virtual void setId(const QString &id);
     const QString &getId(void) const;
 
+    /*!
+     * A process-wide unique ID per object.
+     * This is used by the evaluator to identify objects.
+     * Pointers get reused and are therfore not reliable.
+     */
+    size_t uid(void) const;
+
     //! render without a painter to do-precalculations
     void prerender(void);
     virtual void render(QPainter &painter);

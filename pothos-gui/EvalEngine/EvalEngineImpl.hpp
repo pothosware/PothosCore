@@ -18,7 +18,7 @@ class BlockEval;
 class GraphBlock;
 class QTimer;
 
-typedef std::map<GraphBlock *, BlockInfo> BlockInfos;
+typedef std::map<size_t, BlockInfo> BlockInfos;
 typedef std::map<QString, Poco::JSON::Object::Ptr> ZoneInfos;
 
 /*!
@@ -67,6 +67,6 @@ private:
     //current state of the evaluator
     std::map<HostProcPair, std::shared_ptr<EnvironmentEval>> _environmentEvals;
     std::map<QString, std::shared_ptr<ThreadPoolEval>> _threadPoolEvals;
-    std::map<GraphBlock *, std::shared_ptr<BlockEval>> _blockEvals;
+    std::map<size_t, std::shared_ptr<BlockEval>> _blockEvals;
     std::shared_ptr<TopologyEval> _topologyEval;
 };

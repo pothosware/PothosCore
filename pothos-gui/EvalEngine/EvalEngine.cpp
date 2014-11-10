@@ -38,6 +38,7 @@ static BlockInfo blockToBlockInfo(GraphBlock *block)
     blockInfo.block = block;
     blockInfo.isGraphWidget = block->isGraphWidget();
     blockInfo.id = block->getId();
+    blockInfo.uid = block->uid();
     blockInfo.zone = block->getAffinityZone();
     blockInfo.desc = block->getBlockDesc();
     for (const auto &propKey : block->getProperties())
@@ -58,7 +59,7 @@ void EvalEngine::submitTopology(const GraphObjectList &graphObjects)
         if (block == nullptr) continue;
         _blockEvalMapper->setMapping(block, block);
         connect(block, SIGNAL(triggerEvalEvent(void)), _blockEvalMapper, SLOT(map(void)));
-        blockInfos[block] = blockToBlockInfo(block);
+        blockInfos[block->uid()] = blockToBlockInfo(block);
     }
 
     //create a list of connection eval information

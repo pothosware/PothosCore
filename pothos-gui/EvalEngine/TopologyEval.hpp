@@ -11,8 +11,6 @@
 #include <memory>
 #include <map>
 
-class GraphObject;
-class GraphBlock;
 class BlockEval;
 
 namespace Pothos
@@ -28,9 +26,9 @@ namespace Pothos
 struct ConnectionInfo
 {
     ConnectionInfo(void):
-        srcBlock(nullptr),
-        dstBlock(nullptr){}
-    GraphBlock *srcBlock, *dstBlock;
+        srcBlockUID(0),
+        dstBlockUID(0){}
+    size_t srcBlockUID, dstBlockUID;
     std::string srcPort, dstPort;
 };
 
@@ -61,7 +59,7 @@ public:
     /*!
      * Pass-in up-to-date block eval objects.
      */
-    void acceptBlockEvals(const std::map<GraphBlock *, std::shared_ptr<BlockEval>> &);
+    void acceptBlockEvals(const std::map<size_t, std::shared_ptr<BlockEval>> &);
 
     /*!
      * Perform update work after changes applied.
@@ -84,8 +82,8 @@ private:
     ConnectionInfos _newConnectionInfo;
     ConnectionInfos _lastConnectionInfo;
 
-    std::map<GraphBlock *, std::shared_ptr<BlockEval>> _newBlockEvals;
-    std::map<GraphBlock *, std::shared_ptr<BlockEval>> _lastBlockEvals;
+    std::map<size_t, std::shared_ptr<BlockEval>> _newBlockEvals;
+    std::map<size_t, std::shared_ptr<BlockEval>> _lastBlockEvals;
 
     //! The topology object thats executing this design
     Pothos::Topology *_topology;

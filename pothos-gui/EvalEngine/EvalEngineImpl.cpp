@@ -51,7 +51,7 @@ void EvalEngineImpl::submitActivateTopology(const bool enable)
 
 void EvalEngineImpl::submitBlock(const BlockInfo &info)
 {
-    _blockInfo[info.block.data()] = info;
+    _blockInfo[info.uid] = info;
     _requireEval = true;
     this->evaluate();
 }
@@ -97,7 +97,7 @@ void EvalEngineImpl::evaluate(void)
     if (not _requireEval) return;
     _requireEval = false;
 
-    std::map<GraphBlock *, std::shared_ptr<BlockEval>> newBlockEvals;
+    std::map<size_t, std::shared_ptr<BlockEval>> newBlockEvals;
     std::map<QString, std::shared_ptr<ThreadPoolEval>> newThreadPoolEvals;
     std::map<HostProcPair, std::shared_ptr<EnvironmentEval>> newEnvironmentEvals;
 

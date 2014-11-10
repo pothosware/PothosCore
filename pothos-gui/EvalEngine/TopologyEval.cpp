@@ -23,7 +23,7 @@ void TopologyEval::acceptConnectionInfo(const ConnectionInfos &info)
     _newConnectionInfo = info;
 }
 
-void TopologyEval::acceptBlockEvals(const std::map<GraphBlock *, std::shared_ptr<BlockEval>> &info)
+void TopologyEval::acceptBlockEvals(const std::map<size_t, std::shared_ptr<BlockEval>> &info)
 {
     _newBlockEvals = info;
 }
@@ -47,10 +47,10 @@ void TopologyEval::update(void)
     //create new connections
     for (const auto &conn : _newConnectionInfo)
     {
-        assert(_newBlockEvals.count(conn.srcBlock) != 0);
-        assert(_newBlockEvals.count(conn.dstBlock) != 0);
-        auto src = _newBlockEvals.at(conn.srcBlock)->getProxyBlock();
-        auto dst = _newBlockEvals.at(conn.dstBlock)->getProxyBlock();
+        assert(_newBlockEvals.count(conn.srcBlockUID) != 0);
+        assert(_newBlockEvals.count(conn.dstBlockUID) != 0);
+        auto src = _newBlockEvals.at(conn.srcBlockUID)->getProxyBlock();
+        auto dst = _newBlockEvals.at(conn.dstBlockUID)->getProxyBlock();
         try
         {
             _topology->connect(src, conn.srcPort, dst, conn.dstPort);
