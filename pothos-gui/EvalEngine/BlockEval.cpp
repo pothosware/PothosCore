@@ -40,8 +40,18 @@ BlockEval::~BlockEval(void)
     return;
 }
 
+bool BlockEval::isInfoMatch(const BlockInfo &info) const
+{
+    if (info.id != _newBlockInfo.id) return false;
+    if (not info.desc) return false;
+    if (not _newBlockInfo.desc) return false;
+    return info.desc->getValue<std::string>("path") == _newBlockInfo.desc->getValue<std::string>("path");
+}
+
 bool BlockEval::isReady(void) const
 {
+    if (not _newBlockInfo.enabled) return false;
+
     if (not _lastBlockStatus.blockErrorMsgs.empty()) return false;
 
     for (const auto &pair : _lastBlockStatus.propertyErrorMsgs)

@@ -58,6 +58,30 @@ void EvalEngineImpl::submitBlock(const BlockInfo &info)
 
 void EvalEngineImpl::submitTopology(const BlockInfos &blockInfos, const ConnectionInfos &connections)
 {
+    //Special algorithm to reuse the block evals after a complete state reset.
+    //determine if any of the infos refer to blocks in this current eval state
+    size_t overlap = 0;
+    for (const auto &pair : blockInfos) overlap += _blockEvals.count(pair.first);
+
+    //If not, assume the graph performed a complete state reset.
+    //The UIDs will not be valid lookups for the block evals.
+    //Therefore, re-map the block evals using the graph object ID.
+    if (overlap == 0)
+    {
+        std::map<size_t, std::shared_ptr<BlockEval>> newBlockEvals;
+        for (const auto &infoPair : blockInfos)
+        {
+            for (const auto &evalPair : _blockEvals)
+            {
+                if (evalPair.second->isInfoMatch(infoPair.second))
+                {
+                    newBlockEvals[infoPair.first] = evalPair.second;
+                }
+            }
+        }
+        _blockEvals = newBlockEvals;
+    }
+
     _blockInfo = blockInfos;
     _connectionInfo = connections;
     _requireEval = true;

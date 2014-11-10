@@ -70,10 +70,6 @@ ConnectionInfos TopologyEval::getConnectionInfo(const GraphObjectList &graphObje
 
             for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
             {
-                //skip disabled blocks
-                if (not dynamic_cast<GraphBlock *>(outputEp.getObj().data())->isEnabled()) continue;
-                if (not dynamic_cast<GraphBlock *>(subEp.getObj().data())->isEnabled()) continue;
-
                 ConnectionInfo info;
                 info.srcBlockUID = outputEp.getObj()->uid();
                 info.srcPort = outputEp.getKey().id.toStdString();

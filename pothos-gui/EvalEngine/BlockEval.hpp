@@ -30,6 +30,7 @@ struct BlockInfo
     bool isGraphWidget;
     QString id;
     size_t uid;
+    bool enabled;
     QString zone;
     std::map<QString, QString> properties;
     std::map<QString, Poco::JSON::Object::Ptr> paramDescs;
@@ -56,6 +57,14 @@ public:
     BlockEval(void);
 
     ~BlockEval(void);
+
+    /*!
+     * Does this information probably refer to this block?
+     * We say probably, because this is a guess without UID.
+     * Its an info match when the object ID matches,
+     * and the block description path is identical.
+     */
+    bool isInfoMatch(const BlockInfo &info) const;
 
     /*!
      * Is the block eval in a usable state?

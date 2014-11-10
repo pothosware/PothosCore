@@ -47,13 +47,22 @@ void TopologyEval::update(void)
     //create new connections
     for (const auto &conn : _newConnectionInfo)
     {
+        //locate the src and dst block evals
         assert(_newBlockEvals.count(conn.srcBlockUID) != 0);
         assert(_newBlockEvals.count(conn.dstBlockUID) != 0);
-        auto src = _newBlockEvals.at(conn.srcBlockUID)->getProxyBlock();
-        auto dst = _newBlockEvals.at(conn.dstBlockUID)->getProxyBlock();
+        auto src = _newBlockEvals.at(conn.srcBlockUID);
+        auto dst = _newBlockEvals.at(conn.dstBlockUID);
+
+        //dont include error or disabled blocks in the active flows
+        if (not src->isReady()) continue;
+        if (not dst->isReady()) continue;
+
+        //attempt to create the connection
         try
         {
-            _topology->connect(src, conn.srcPort, dst, conn.dstPort);
+            _topology->connect(
+                src->getProxyBlock(), conn.srcPort,
+                dst->getProxyBlock(), conn.dstPort);
         }
         catch (const Pothos::Exception &ex)
         {

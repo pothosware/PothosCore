@@ -39,6 +39,7 @@ static BlockInfo blockToBlockInfo(GraphBlock *block)
     blockInfo.isGraphWidget = block->isGraphWidget();
     blockInfo.id = block->getId();
     blockInfo.uid = block->uid();
+    blockInfo.enabled = block->isEnabled();
     blockInfo.zone = block->getAffinityZone();
     blockInfo.desc = block->getBlockDesc();
     for (const auto &propKey : block->getProperties())
