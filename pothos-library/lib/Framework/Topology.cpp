@@ -120,14 +120,14 @@ void Pothos::Topology::_connect(
     {
         auto outs = getConnectable(src).call<std::vector<std::string>>("outputPortNames");
         if (std::find(outs.begin(), outs.end(), srcName) == outs.end())
-            throw Pothos::TopologyConnectError("Pothos::Topology::connect()", src.toString() + " has no output port named " + srcName);
+            throw Pothos::TopologyConnectError("Pothos::Topology::connect()", flow.src.toString() + " has no output port named " + srcName);
     }
 
     if (flow.dst.obj)
     {
         auto ins = getConnectable(dst).call<std::vector<std::string>>("inputPortNames");
         if (std::find(ins.begin(), ins.end(), dstName) == ins.end())
-            throw Pothos::TopologyConnectError("Pothos::Topology::connect()", dst.toString() + " has no input port named " + dstName);
+            throw Pothos::TopologyConnectError("Pothos::Topology::connect()", flow.dst.toString() + " has no input port named " + dstName);
     }
 
     //store port info for connections to the hierachy
@@ -179,11 +179,11 @@ void Pothos::Topology::_disconnect(
     //validate that the ports exists before disconnection
     auto outs = getConnectable(src).call<std::vector<std::string>>("outputPortNames");
     if (std::find(outs.begin(), outs.end(), srcName) == outs.end())
-        throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()", src.toString() + " has no output port named " + srcName);
+        throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()", flow.src.toString() + " has no output port named " + srcName);
 
     auto ins = getConnectable(dst).call<std::vector<std::string>>("inputPortNames");
     if (std::find(ins.begin(), ins.end(), dstName) == ins.end())
-        throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()", dst.toString() + " has no input port named " + dstName);
+        throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()", flow.dst.toString() + " has no input port named " + dstName);
 
     //clear port info for disconnections from the hierachy
     if (not flow.src.obj) _impl->outputPortNames.erase(std::find(_impl->outputPortNames.begin(), _impl->outputPortNames.end(), srcName));
