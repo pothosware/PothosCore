@@ -16,6 +16,18 @@
 #include <iostream>
 
 /***********************************************************************
+ * Ensure that the MSG_MORE flag exists:
+ * MSG_MORE hints to send that there is guaranteed additional data.
+ **********************************************************************/
+#ifdef _MSC_VER
+#define MSG_MORE MSG_PARTIAL
+#endif
+
+#ifndef MSG_MORE
+#define MSG_MORE 0
+#endif
+
+/***********************************************************************
  * Socket interface abstraction
  **********************************************************************/
 struct PothosPacketSocketEndpointInterface
@@ -26,10 +38,9 @@ struct PothosPacketSocketEndpointInterface
 
     virtual bool isRecvReady(const std::chrono::high_resolution_clock::duration &timeout) = 0;
 
-    virtual int send(const void *buff, const size_t length) = 0;
+    virtual int send(const void *buff, const size_t length, const int flags = 0) = 0;
 
-    virtual int recv(void *buff, const size_t length) = 0;
-
+    virtual int recv(void *buff, const size_t length, const int flags = 0) = 0;
 };
 
 /***********************************************************************
@@ -81,14 +92,14 @@ struct PothosPacketSocketEndpointInterfaceTcp : PothosPacketSocketEndpointInterf
         return clientSock.poll(Poco::Timespan(Poco::Timespan::TimeDiff(1e6*0.05)), Poco::Net::Socket::SELECT_READ);
     }
 
-    int send(const void *buff, const size_t length)
+    int send(const void *buff, const size_t length, const int flags)
     {
-        return clientSock.sendBytes(buff, int(length), 0);
+        return clientSock.sendBytes(buff, int(length), flags);
     }
 
-    int recv(void *buff, const size_t length)
+    int recv(void *buff, const size_t length, const int flags)
     {
-        return clientSock.receiveBytes(buff, int(length), 0);
+        return clientSock.receiveBytes(buff, int(length), flags);
     }
 
     bool server;
@@ -213,20 +224,20 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
         return UDT::select(1, &readfds, nullptr, nullptr, &tv) == 1;
     }
 
-    int send(const void *buff, const size_t length)
+    int send(const void *buff, const size_t length, const int flags)
     {
         int bytes = int(length);
         #ifdef _MSC_VER
         bytes = std::min(bytes, 1024*8);
         #endif
-        int r = UDT::send(this->clientSock, (const char *)buff, bytes, 0);
+        int r = UDT::send(this->clientSock, (const char *)buff, bytes, flags);
         if (r == UDT::ERROR) throw Pothos::RuntimeException("UDT::send()", UDT::getlasterror().getErrorMessage());
         return r;
     }
 
-    int recv(void *buff, const size_t length)
+    int recv(void *buff, const size_t length, const int flags)
     {
-        int r = UDT::recv(this->clientSock, (char *)buff, int(length), 0);
+        int r = UDT::recv(this->clientSock, (char *)buff, int(length), flags);
         if (r == UDT::ERROR) throw Pothos::RuntimeException("UDT::recv()", UDT::getlasterror().getErrorMessage());
         return r;
     }
@@ -637,7 +648,7 @@ void PothosPacketSocketEndpoint::Impl::recv(uint16_t &flags, uint16_t &type, uin
     if (this->bytesLeftInStream == 0)
     {
         //receive the header
-        ret = this->iface->recv(&header, sizeof(header));
+        ret = this->iface->recv(&header, sizeof(header), MSG_WAITALL);
         if (ret <= 0)
         {
             throw Pothos::Exception("PothosPacketSocketEndpoint::recv(header)", std::to_string(ret));
@@ -716,7 +727,7 @@ void PothosPacketSocketEndpoint::Impl::send(const uint16_t flags, const uint16_t
     header.indexWord[1] = Poco::ByteOrder::toNetwork(uint32_t(index >> 0));
 
     //send the header
-    ret = this->iface->send(&header, sizeof(header));
+    ret = this->iface->send(&header, sizeof(header), (numBytes==0)?0:MSG_MORE);
     if (ret != int(sizeof(header)))
     {
         throw Pothos::Exception("PothosPacketSocketEndpoint::send(header)", std::to_string(ret));
@@ -727,7 +738,7 @@ void PothosPacketSocketEndpoint::Impl::send(const uint16_t flags, const uint16_t
     size_t bytesLeft = numBytes;
     while (bytesLeft != 0)
     {
-        ret = this->iface->send((const void *)(size_t(buff)+numBytes-bytesLeft), bytesLeft);
+        ret = this->iface->send((const void *)(size_t(buff)+numBytes-bytesLeft), bytesLeft, (bytesLeft==0)?0:MSG_MORE);
         if (ret <= 0)
         {
             throw Pothos::Exception("PothosPacketSocketEndpoint::send(payload)", std::to_string(ret));
