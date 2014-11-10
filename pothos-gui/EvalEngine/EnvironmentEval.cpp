@@ -6,9 +6,11 @@
 #include <Pothos/Remote.hpp>
 #include <Pothos/System/Logger.hpp>
 #include <Poco/URI.h>
+#include <Poco/Logger.h>
 #include <sstream>
 
-EnvironmentEval::EnvironmentEval(void)
+EnvironmentEval::EnvironmentEval(void):
+    _failureState(false)
 {
     return;
 }
@@ -16,11 +18,6 @@ EnvironmentEval::EnvironmentEval(void)
 EnvironmentEval::~EnvironmentEval(void)
 {
     return;
-}
-
-bool EnvironmentEval::isEnvironmentAlive(void)
-{
-    return true; //TODO
 }
 
 void EnvironmentEval::acceptConfig(const QString &zoneName, const Poco::JSON::Object::Ptr &config)
@@ -31,14 +28,28 @@ void EnvironmentEval::acceptConfig(const QString &zoneName, const Poco::JSON::Ob
 
 void EnvironmentEval::update(void)
 {
-    if (_env) return;
+    if (this->isFailureState()) return;
 
-    //TODO any of this could fail...
-    //figure it out...
-
-    _env = this->makeEnvironment();
-    auto EvalEnvironment = _env->findProxy("Pothos/Util/EvalEnvironment");
-    _eval = EvalEnvironment.callProxy("make");
+    try
+    {
+        //env already exists, try test communication
+        if (_env)
+        {
+            _env->findProxy("Pothos/Util/EvalEnvironment");
+        }
+        //otherwise, make a new env
+        else
+        {
+            _env = this->makeEnvironment();
+            auto EvalEnvironment = _env->findProxy("Pothos/Util/EvalEnvironment");
+            _eval = EvalEnvironment.callProxy("make");
+        }
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        poco_error(Poco::Logger::get("PothosGui.EnvironmentEval.update"), ex.displayText());
+        _failureState = true;
+    }
 }
 
 HostProcPair EnvironmentEval::getHostProcFromConfig(const QString &zoneName, const Poco::JSON::Object::Ptr &config)

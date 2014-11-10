@@ -65,6 +65,7 @@ void BlockEval::acceptInfo(const BlockInfo &info)
 {
     _newBlockInfo = info;
     assert(_newBlockInfo.desc);
+    _lastBlockStatus.block = _newBlockInfo.block;
 }
 
 void BlockEval::acceptEnvironment(const std::shared_ptr<EnvironmentEval> &env)
@@ -82,6 +83,15 @@ void BlockEval::acceptThreadPool(const std::shared_ptr<ThreadPoolEval> &tp)
  **********************************************************************/
 void BlockEval::update(void)
 {
+    if (_newEnvironmentEval->isFailureState())
+    {
+        _lastBlockStatus.blockErrorMsgs.clear();
+        _lastBlockStatus.propertyErrorMsgs.clear();
+        _lastBlockStatus.blockErrorMsgs.push_back(tr("Remote environment error"));
+        QMetaObject::invokeMethod(this, "postStatusToBlock", Qt::QueuedConnection, Q_ARG(BlockStatus, _lastBlockStatus));
+        return;
+    }
+
     bool evalSuccess = true;
 
     //the environment changed? clear everything
@@ -106,12 +116,7 @@ void BlockEval::update(void)
             }
             catch (const Pothos::Exception &ex)
             {
-                poco_error_f3(Poco::Logger::get("PothosGui.BlockEval.update"),
-                    "%s::%s(...) - %s", _newBlockInfo.id.toStdString(), setter->getValue<std::string>("name"), ex.displayText());
-                _lastBlockStatus.blockErrorMsgs.push_back(tr("%1::%2(...) - %3")
-                    .arg(_newBlockInfo.id)
-                    .arg(QString::fromStdString(setter->getValue<std::string>("name")))
-                    .arg(QString::fromStdString(ex.displayText())));
+                this->reportError(setter->getValue<std::string>("name"), ex);
                 setterError = true;
                 break;
             }
@@ -139,8 +144,7 @@ void BlockEval::update(void)
             }
             catch(const Pothos::Exception &ex)
             {
-                poco_error(Poco::Logger::get("PothosGui.BlockEval.update"), ex.displayText());
-                _lastBlockStatus.blockErrorMsgs.push_back(QString::fromStdString(ex.message()));
+                this->reportError("eval", ex);
                 evalSuccess = false;
             }
         }
@@ -164,8 +168,7 @@ void BlockEval::update(void)
     //parser errors report
     catch(const Pothos::Exception &ex)
     {
-        poco_error(Poco::Logger::get("PothosGui.BlockEval.update"), ex.displayText());
-        _lastBlockStatus.blockErrorMsgs.push_back(QString::fromStdString(ex.message()));
+        this->reportError("portInfo", ex);
         evalSuccess = false;
     }
 
@@ -180,8 +183,7 @@ void BlockEval::update(void)
         }
         catch(const Pothos::Exception &ex)
         {
-            poco_error(Poco::Logger::get("PothosGui.BlockEval.update"), ex.displayText());
-            _lastBlockStatus.blockErrorMsgs.push_back(QString::fromStdString(ex.message()));
+            this->reportError("setThreadPool", ex);
             evalSuccess = false;
         }
     }
@@ -204,7 +206,6 @@ void BlockEval::update(void)
     assert(evalSuccess or not _lastBlockStatus.blockErrorMsgs.empty());
 
     //post the most recent status into the block in the gui thread context
-    _lastBlockStatus.block = _newBlockInfo.block;
     QMetaObject::invokeMethod(this, "postStatusToBlock", Qt::QueuedConnection, Q_ARG(BlockStatus, _lastBlockStatus));
 }
 
@@ -323,6 +324,16 @@ bool BlockEval::updateAllProperties(void)
         }
     }
     return not hasError;
+}
+
+void BlockEval::reportError(const std::string &action, const Pothos::Exception &ex)
+{
+    poco_error_f2(Poco::Logger::get("PothosGui.BlockEval."+action),
+        "%s(...) - %s", _newBlockInfo.id.toStdString(), ex.displayText());
+    _lastBlockStatus.blockErrorMsgs.push_back(tr("%1::%2(...) - %3")
+        .arg(_newBlockInfo.id)
+        .arg(QString::fromStdString(action))
+        .arg(QString::fromStdString(ex.displayText())));
 }
 
 void BlockEval::blockEvalInGUIContext(void)

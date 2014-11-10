@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Proxy/Proxy.hpp>
+#include <Pothos/Exception.hpp>
 #include <Poco/JSON/Object.h>
 #include <QObject>
 #include <QPointer>
@@ -121,6 +122,8 @@ private:
      * \return true for success, false for error
      */
     bool updateAllProperties(void);
+
+    void reportError(const std::string &action, const Pothos::Exception &ex);
 
     std::shared_ptr<EnvironmentEval> _newEnvironmentEval;
     std::shared_ptr<EnvironmentEval> _lastEnvironmentEval;

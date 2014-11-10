@@ -23,11 +23,6 @@ public:
     ~EnvironmentEval(void);
 
     /*!
-     * Is the server process active? Can we communicate?
-     */
-    bool isEnvironmentAlive(void);
-
-    /*!
      * Called under re-eval to apply the latest config.
      * This call should take the info and not process.
      */
@@ -53,6 +48,12 @@ public:
         return _eval;
     }
 
+    //! An error caused the environment to go into failure state
+    bool isFailureState(void) const
+    {
+        return _failureState;
+    }
+
 private:
     Pothos::ProxyEnvironment::Sptr makeEnvironment(void);
 
@@ -60,4 +61,5 @@ private:
     Poco::JSON::Object::Ptr _config;
     Pothos::ProxyEnvironment::Sptr _env;
     Pothos::Proxy _eval;
+    bool _failureState;
 };

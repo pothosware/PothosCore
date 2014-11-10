@@ -44,6 +44,12 @@ public:
         return _threadPool;
     }
 
+    //! An error caused the environment to go into failure state
+    bool isFailureState(void) const
+    {
+        return _failureState;
+    }
+
 private:
 
     Pothos::Proxy makeThreadPool(void);
@@ -54,4 +60,5 @@ private:
     Poco::JSON::Object::Ptr _newZoneConfig;
     Poco::JSON::Object::Ptr _lastZoneConfig;
     Pothos::Proxy _threadPool;
+    bool _failureState;
 };

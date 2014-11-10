@@ -4,13 +4,12 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
+#include <Pothos/Proxy/Proxy.hpp>
 #include <QObject>
 #include <string>
 #include <vector>
 #include <memory>
 #include <map>
-#include <functional> //std::hash
-#include <unordered_set>
 
 class GraphObject;
 class GraphBlock;
@@ -35,41 +34,8 @@ struct ConnectionInfo
     std::string srcPort, dstPort;
 };
 
-//! equality operator for ConnectionInfo for unordered_set
-inline bool operator==(const ConnectionInfo &lhs, const ConnectionInfo &rhs)
-{
-    return
-        (lhs.srcBlock == rhs.srcBlock) and
-        (lhs.dstBlock == rhs.dstBlock) and
-        (lhs.srcPort == rhs.srcPort) and
-        (lhs.dstPort == rhs.dstPort);
-}
-
-//! hash support for ConnectionInfo for unordered_set
-namespace std
-{
-    template<>
-    struct hash<ConnectionInfo>
-    {
-        typedef ConnectionInfo argument_type;
-        typedef std::size_t value_type;
-
-        static value_type hash_combine(const value_type in0, const value_type in1)
-        {
-            return in0 ^ (in1 << 1);
-        }
-
-        value_type operator()(argument_type const& s) const
-        {
-            return hash_combine(
-                hash_combine(std::hash<std::string>()(s.srcPort), std::hash<std::size_t>()(size_t(s.srcBlock))),
-                hash_combine(std::hash<std::string>()(s.dstPort), std::hash<std::size_t>()(size_t(s.dstBlock))));
-        }
-    };
-}
-
 //! typedef for multiple connection informations
-typedef std::unordered_set<ConnectionInfo> ConnectionInfos;
+typedef std::vector<ConnectionInfo> ConnectionInfos;
 
 /*!
  * TopologyEval takes up to date connection information
@@ -108,6 +74,12 @@ public:
         return _topology;
     }
 
+    //! An error caused the topology to go into failure state
+    bool isFailureState(void) const
+    {
+        return _failureState;
+    }
+
 private:
     ConnectionInfos _newConnectionInfo;
     ConnectionInfos _lastConnectionInfo;
@@ -117,4 +89,6 @@ private:
 
     //! The topology object thats executing this design
     Pothos::Topology *_topology;
+
+    bool _failureState;
 };

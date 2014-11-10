@@ -5,9 +5,11 @@
 #include "EnvironmentEval.hpp"
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>
+#include <Poco/Logger.h>
 #include <sstream>
 
-ThreadPoolEval::ThreadPoolEval(void)
+ThreadPoolEval::ThreadPoolEval(void):
+    _failureState(false)
 {
     return;
 }
@@ -59,6 +61,12 @@ Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
 
 void ThreadPoolEval::update(void)
 {
+    if (_newEnvironmentEval->isFailureState())
+    {
+        _failureState = true;
+    }
+    if (this->isFailureState()) return;
+
     bool requireNewThreadPool = false;
 
     //evaluation environment change?
@@ -89,7 +97,14 @@ void ThreadPoolEval::update(void)
     //make a new thread pool
     if (requireNewThreadPool and _newEnvironmentEval and _newZoneConfig)
     {
-        //TODO this can fail...
-        _threadPool = this->makeThreadPool();
+        try
+        {
+            _threadPool = this->makeThreadPool();
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            poco_error(Poco::Logger::get("PothosGui.ThreadPoolEval.update"), ex.displayText());
+            _failureState = true;
+        }
     }
 }

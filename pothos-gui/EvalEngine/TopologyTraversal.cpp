@@ -75,7 +75,7 @@ ConnectionInfos TopologyEval::getConnectionInfo(const GraphObjectList &graphObje
                 info.srcPort = outputEp.getKey().id.toStdString();
                 info.dstBlock = dynamic_cast<GraphBlock *>(subEp.getObj().data());
                 info.dstPort = subEp.getKey().id.toStdString();
-                if (info.srcBlock->isEnabled() and info.dstBlock->isEnabled()) connections.insert(info);
+                if (info.srcBlock->isEnabled() and info.dstBlock->isEnabled()) connections.push_back(info);
             }
         }
     }
