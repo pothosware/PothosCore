@@ -38,6 +38,9 @@ signals:
     //! Emitted by the monitor timer to signal that this thread is not-blocked
     void monitorHeartBeat(void);
 
+    //! A failure occured, this is a notification to deactivate
+    void deactivateDesign(void);
+
 public slots:
 
     //! Submit trigger for de/activation of the topology

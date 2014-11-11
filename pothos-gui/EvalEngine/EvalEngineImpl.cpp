@@ -209,6 +209,13 @@ void EvalEngineImpl::evaluate(void)
         _topologyEval->acceptConnectionInfo(_connectionInfo);
         _topologyEval->acceptBlockEvals(_blockEvals);
         _topologyEval->update();
+
+        //deactivate design in the face of certain failures
+        if (_topologyEval->isFailureState())
+        {
+            _topologyEval.reset();
+            emit this->deactivateDesign();
+        }
     }
 }
 
