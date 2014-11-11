@@ -75,6 +75,7 @@ QWidget *GraphBlock::getGraphWidget(void) const
 void GraphBlock::setGraphWidget(QWidget *widget)
 {
     _impl->graphWidget = widget;
+    _impl->changed = true;
 }
 
 void GraphBlock::setTitle(const QString &title)
@@ -96,6 +97,7 @@ void GraphBlock::clearBlockErrorMsgs(void)
 
 void GraphBlock::addBlockErrorMsg(const QString &msg)
 {
+    assert(not msg.isEmpty());
     _impl->blockErrorMsgs.push_back(msg);
     _impl->changed = true;
 }
@@ -216,11 +218,13 @@ bool GraphBlock::getPropertyPreview(const QString &key) const
 void GraphBlock::setPropertyPreviewMode(const QString &key, const QString &value)
 {
     _impl->propertiesPreview[key] = value;
+    _impl->changed = true;
 }
 
 void GraphBlock::setPropertyErrorMsg(const QString &key, const QString &msg)
 {
     _impl->propertiesErrorMsg[key] = msg;
+    _impl->changed = true;
 }
 
 const QString &GraphBlock::getPropertyErrorMsg(const QString &key) const
@@ -231,6 +235,7 @@ const QString &GraphBlock::getPropertyErrorMsg(const QString &key) const
 void GraphBlock::setPropertyTypeStr(const QString &key, const std::string &type)
 {
     _impl->propertiesTypeStr[key] = type;
+    _impl->changed = true;
 }
 
 const std::string &GraphBlock::getPropertyTypeStr(const QString &key) const

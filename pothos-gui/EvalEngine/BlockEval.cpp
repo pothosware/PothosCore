@@ -127,6 +127,7 @@ bool BlockEval::evaluationProcedure(void)
 {
     if (_newEnvironmentEval->isFailureState())
     {
+        assert(not _newEnvironmentEval->getErrorMsg().isEmpty());
         _lastBlockStatus.blockErrorMsgs.push_back(_newEnvironmentEval->getErrorMsg());
         return false;
     }
@@ -135,7 +136,6 @@ bool BlockEval::evaluationProcedure(void)
     //the environment changed? clear everything
     if (_newEnvironment != _lastEnvironment)
     {
-        std::cout << "env changed " << _newBlockInfo.id.toStdString() <<  "!!\n";
         _lastEnvironmentEval = _newEnvironmentEval;
         _lastEnvironment = _newEnvironment;
         _lastBlockInfo = BlockInfo();
@@ -212,6 +212,7 @@ bool BlockEval::evaluationProcedure(void)
     //set the thread pool
     if (evalSuccess and _newThreadPoolEval->isFailureState())
     {
+        assert(not _newThreadPoolEval->getErrorMsg().isEmpty());
         _lastBlockStatus.blockErrorMsgs.push_back(_newThreadPoolEval->getErrorMsg());
         evalSuccess = false;
     }

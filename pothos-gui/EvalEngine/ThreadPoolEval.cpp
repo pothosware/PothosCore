@@ -64,8 +64,12 @@ Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
 void ThreadPoolEval::update(void)
 {
     _newEnvironment = _newEnvironmentEval->getEnv();
-    if (_newEnvironmentEval->isFailureState()) _failureState = true;
-    if (this->isFailureState()) return;
+    if (_newEnvironmentEval->isFailureState())
+    {
+        _errorMsg = _newEnvironmentEval->getErrorMsg();
+        _failureState = true;
+        return;
+    }
 
     //evaluation environment change?
     bool requireNewThreadPool = _newEnvironment != _lastEnvironment;
@@ -92,6 +96,7 @@ void ThreadPoolEval::update(void)
             _lastEnvironmentEval = _newEnvironmentEval;
             _lastEnvironment = _newEnvironment;
             _lastZoneConfig = _newZoneConfig;
+            _failureState = false;
         }
         catch (const Pothos::Exception &ex)
         {
