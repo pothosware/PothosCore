@@ -91,11 +91,13 @@ QString GraphBlock::getTitle(void) const
 void GraphBlock::clearBlockErrorMsgs(void)
 {
     _impl->blockErrorMsgs.clear();
+    _impl->changed = true;
 }
 
 void GraphBlock::addBlockErrorMsg(const QString &msg)
 {
     _impl->blockErrorMsgs.push_back(msg);
+    _impl->changed = true;
 }
 
 const QStringList &GraphBlock::getBlockErrorMsgs(void) const
