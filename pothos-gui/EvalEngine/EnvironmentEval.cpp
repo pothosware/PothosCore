@@ -28,7 +28,7 @@ void EnvironmentEval::acceptConfig(const QString &zoneName, const Poco::JSON::Ob
 
 void EnvironmentEval::update(void)
 {
-    if (this->isFailureState()) return;
+    if (this->isFailureState()) _env.reset();
 
     try
     {
@@ -43,25 +43,27 @@ void EnvironmentEval::update(void)
             _env = this->makeEnvironment();
             auto EvalEnvironment = _env->findProxy("Pothos/Util/EvalEnvironment");
             _eval = EvalEnvironment.callProxy("make");
+            _failureState = false;
         }
     }
     catch (const Pothos::Exception &ex)
     {
-        poco_error(Poco::Logger::get("PothosGui.EnvironmentEval.update"), ex.displayText());
+        //dont report errors if we were already in failure mode
+        if (_failureState) return;
         _failureState = true;
 
-        _errorMsg = tr("Remote environment crashed"); //default error message
-
-        //determine if the remote host is offline for a better error message
+        //determine if the remote host is offline or the process just crashed
         const auto hostUri = getHostProcFromConfig(_zoneName, _config).first;
         try
         {
             Pothos::RemoteClient client(hostUri);
+            _errorMsg = tr("Remote environment %1 crashed").arg(_zoneName);
         }
         catch(const Pothos::RemoteClientError &)
         {
             _errorMsg = tr("Remote host %1 is offline").arg(QString::fromStdString(hostUri));
         }
+        poco_error_f2(Poco::Logger::get("PothosGui.EnvironmentEval.update"), "%s - %s", ex.displayText(), _errorMsg.toStdString());
     }
 }
 

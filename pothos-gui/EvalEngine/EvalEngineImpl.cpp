@@ -163,7 +163,7 @@ void EvalEngineImpl::evaluate(void)
         if (not threadPoolEval)
         {
             auto it = _threadPoolEvals.find(zone);
-            if (it != _threadPoolEvals.end() and not it->second->isFailureState()) threadPoolEval = _threadPoolEvals.at(zone);
+            if (it != _threadPoolEvals.end()) threadPoolEval = _threadPoolEvals.at(zone);
             else threadPoolEval.reset(new ThreadPoolEval());
         }
 
@@ -172,7 +172,7 @@ void EvalEngineImpl::evaluate(void)
         if (not envEval)
         {
             auto it = _environmentEvals.find(hostProcKey);
-            if (it != _environmentEvals.end() and not it->second->isFailureState()) envEval = it->second;
+            if (it != _environmentEvals.end()) envEval = it->second;
             else envEval.reset(new EnvironmentEval());
         }
 
@@ -214,6 +214,7 @@ void EvalEngineImpl::evaluate(void)
         if (_topologyEval->isFailureState())
         {
             _topologyEval.reset();
+            _blockEvals.clear();
             emit this->deactivateDesign();
         }
     }

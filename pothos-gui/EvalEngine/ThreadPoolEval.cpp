@@ -31,6 +31,8 @@ void ThreadPoolEval::acceptEnvironment(const std::shared_ptr<EnvironmentEval> &e
 
 Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
 {
+    if (not _newZoneConfig) return Pothos::Proxy();
+
     auto env = _newEnvironmentEval->getEnv();
     const auto &config = _newZoneConfig;
 
@@ -61,27 +63,15 @@ Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
 
 void ThreadPoolEval::update(void)
 {
-    if (_newEnvironmentEval->isFailureState())
-    {
-        _failureState = true;
-    }
+    _newEnvironment = _newEnvironmentEval->getEnv();
+    if (_newEnvironmentEval->isFailureState()) _failureState = true;
     if (this->isFailureState()) return;
 
-    bool requireNewThreadPool = false;
-
     //evaluation environment change?
-    if (_lastEnvironmentEval != _newEnvironmentEval)
-    {
-        _lastEnvironmentEval = _newEnvironmentEval;
-        requireNewThreadPool = true;
-    }
+    bool requireNewThreadPool = _newEnvironment != _lastEnvironment;
 
     //zone configuration change?
-    if (not _newZoneConfig)
-    {
-        _threadPool = Pothos::Proxy();
-    }
-    else if (_newZoneConfig and _lastZoneConfig)
+    if (_newZoneConfig and _lastZoneConfig)
     {
         //a config change of any kind means a new thread pool
         std::stringstream oldConfig, newConfig;
@@ -92,18 +82,21 @@ void ThreadPoolEval::update(void)
             requireNewThreadPool = true;
         }
     }
-    _lastZoneConfig = _newZoneConfig;
 
     //make a new thread pool
-    if (requireNewThreadPool and _newEnvironmentEval and _newZoneConfig)
+    if (requireNewThreadPool)
     {
         try
         {
             _threadPool = this->makeThreadPool();
+            _lastEnvironmentEval = _newEnvironmentEval;
+            _lastEnvironment = _newEnvironment;
+            _lastZoneConfig = _newZoneConfig;
         }
         catch (const Pothos::Exception &ex)
         {
             poco_error(Poco::Logger::get("PothosGui.ThreadPoolEval.update"), ex.displayText());
+            _errorMsg = QString::fromStdString(ex.displayText());
             _failureState = true;
         }
     }

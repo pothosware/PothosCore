@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Proxy/Proxy.hpp>
+#include <Pothos/Proxy/Environment.hpp>
 #include <Poco/JSON/Object.h>
 #include <QObject>
 #include <QString>
@@ -50,15 +51,31 @@ public:
         return _failureState;
     }
 
+    //! Get the error message associated with the failure state
+    const QString &getErrorMsg(void) const
+    {
+        return _errorMsg;
+    }
+
 private:
 
     Pothos::Proxy makeThreadPool(void);
 
+    //Tracking state for the eval environment:
+    //Also stash the actual proxy environment here.
+    //The proxy environment provided by eval may change,
+    //which we will use to determine pool re-evaluation.
     std::shared_ptr<EnvironmentEval> _newEnvironmentEval;
     std::shared_ptr<EnvironmentEval> _lastEnvironmentEval;
+    Pothos::ProxyEnvironment::Sptr _newEnvironment;
+    Pothos::ProxyEnvironment::Sptr _lastEnvironment;
 
+    //Tracking state for the thread pool configuration.
+    //A change in config merritts making a new thread pool.
     Poco::JSON::Object::Ptr _newZoneConfig;
     Poco::JSON::Object::Ptr _lastZoneConfig;
+
     Pothos::Proxy _threadPool;
     bool _failureState;
+    QString _errorMsg;
 };

@@ -90,6 +90,9 @@ void BlockEval::acceptThreadPool(const std::shared_ptr<ThreadPoolEval> &tp)
 
 void BlockEval::update(void)
 {
+    _newEnvironment = _newEnvironmentEval->getEnv();
+    _newThreadPool = _newThreadPoolEval->getThreadPool();
+
     //clear old error messages -- lets make new ones
     _lastBlockStatus.blockErrorMsgs.clear();
     _lastBlockStatus.propertyErrorMsgs.clear();
@@ -122,13 +125,19 @@ void BlockEval::update(void)
  **********************************************************************/
 bool BlockEval::evaluationProcedure(void)
 {
-    if (_newEnvironmentEval->isFailureState()) return false;
+    if (_newEnvironmentEval->isFailureState())
+    {
+        _lastBlockStatus.blockErrorMsgs.push_back(_newEnvironmentEval->getErrorMsg());
+        return false;
+    }
     bool evalSuccess = true;
 
     //the environment changed? clear everything
-    if (_newEnvironmentEval != _lastEnvironmentEval)
+    if (_newEnvironment != _lastEnvironment)
     {
+        std::cout << "env changed " << _newBlockInfo.id.toStdString() <<  "!!\n";
         _lastEnvironmentEval = _newEnvironmentEval;
+        _lastEnvironment = _newEnvironment;
         _lastBlockInfo = BlockInfo();
         _blockEval = Pothos::Proxy();
     }
@@ -201,13 +210,20 @@ bool BlockEval::evaluationProcedure(void)
     }
 
     //set the thread pool
-    if (evalSuccess and _newThreadPoolEval != _lastThreadPoolEval)
+    if (evalSuccess and _newThreadPoolEval->isFailureState())
     {
-        _lastThreadPoolEval = _newThreadPoolEval;
-        const auto &threadPool = _lastThreadPoolEval->getThreadPool();
+        _lastBlockStatus.blockErrorMsgs.push_back(_newThreadPoolEval->getErrorMsg());
+        evalSuccess = false;
+    }
+
+    //set the thread pool
+    if (evalSuccess and not (_newThreadPool == _lastThreadPool))
+    {
         try
         {
-            if (threadPool) this->getProxyBlock().callVoid("setThreadPool", threadPool);
+            if (_newThreadPool) this->getProxyBlock().callVoid("setThreadPool", _newThreadPool);
+            _lastThreadPool = _newThreadPool;
+            _lastThreadPoolEval = _newThreadPoolEval;
         }
         catch(const Pothos::Exception &ex)
         {

@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Proxy/Proxy.hpp>
+#include <Pothos/Proxy/Environment.hpp>
 #include <Pothos/Exception.hpp>
 #include <Poco/JSON/Object.h>
 #include <QObject>
@@ -142,10 +143,24 @@ private:
     //! Internal helper for error message formatting
     void reportError(const std::string &action, const Pothos::Exception &ex);
 
+    //Tracking state for the eval environment:
+    //Also stash the actual proxy environment here.
+    //The proxy environment provided by eval may change,
+    //which we will use to determine block re-evaluation.
     std::shared_ptr<EnvironmentEval> _newEnvironmentEval;
     std::shared_ptr<EnvironmentEval> _lastEnvironmentEval;
+    Pothos::ProxyEnvironment::Sptr _newEnvironment;
+    Pothos::ProxyEnvironment::Sptr _lastEnvironment;
+
+    //Tracking state for the thread pool:
+    //Also stash the actual thread pool here.
+    //The proxy thread pool provided by eval may change,
+    //which we will use to determine setting a new pool.
     std::shared_ptr<ThreadPoolEval> _newThreadPoolEval;
     std::shared_ptr<ThreadPoolEval> _lastThreadPoolEval;
+    Pothos::Proxy _newThreadPool;
+    Pothos::Proxy _lastThreadPool;
+
     BlockInfo _newBlockInfo;
     BlockInfo _lastBlockInfo;
 
