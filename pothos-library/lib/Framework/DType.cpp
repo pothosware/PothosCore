@@ -126,7 +126,7 @@ public:
         {
             return _typeHashToElemType.at(type.hash_code());
         }
-        catch (const std::exception &ex)
+        catch (const std::exception &)
         {
             throw Pothos::DTypeUnknownError("Pothos::DType("+Pothos::Util::typeInfoToString(type)+")", "unsupported element type");
         }
