@@ -137,7 +137,7 @@ void EvalEngineImpl::evaluate(void)
     //merge in the block info
     for (const auto &blockInfoPair : _blockInfo)
     {
-        auto blockPtr = blockInfoPair.first;
+        auto blockUID = blockInfoPair.first;
         const auto &blockInfo = blockInfoPair.second;
         const auto &zone = blockInfo.zone;
 
@@ -150,10 +150,10 @@ void EvalEngineImpl::evaluate(void)
         const auto hostProcKey = EnvironmentEval::getHostProcFromConfig(zone, config);
 
         //copy the block eval or make a new one
-        auto &blockEval = newBlockEvals[blockPtr];
+        auto &blockEval = newBlockEvals[blockUID];
         if (not blockEval)
         {
-            auto it = _blockEvals.find(blockPtr);
+            auto it = _blockEvals.find(blockUID);
             if (it != _blockEvals.end()) blockEval = it->second;
             else blockEval.reset(new BlockEval());
         }
@@ -216,6 +216,8 @@ void EvalEngineImpl::evaluate(void)
             _topologyEval.reset();
             _blockEvals.clear();
             emit this->deactivateDesign();
+            //cause an immediate re-evaluation
+            QMetaObject::invokeMethod(this, "handleMonitorTimeout", Qt::QueuedConnection);
         }
     }
 }
