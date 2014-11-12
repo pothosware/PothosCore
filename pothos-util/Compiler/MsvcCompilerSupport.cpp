@@ -116,7 +116,7 @@ std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerAr
     //log the command
     std::string cmdToLog = "cl.exe ";
     for (const auto &a : args) cmdToLog += a + " ";
-    poco_information(Poco::Logger::get("Pothos.MsvcCompilerSupport.compileCppModule"), cmdToLog);
+    //poco_information(Poco::Logger::get("Pothos.MsvcCompilerSupport.compileCppModule"), cmdToLog);
 
     //launch
     Poco::Pipe outPipe;
