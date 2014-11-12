@@ -432,7 +432,7 @@ void PothosPacketSocketEndpoint::openComms(void)
     }
 
     //loop until timeout (we will exit before timeout under normal conditions)
-    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(500); //half a second
+    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(100);
     while (std::chrono::high_resolution_clock::now() < exitTime)
     {
         if (_impl->state == EP_STATE_ESTABLISHED) break;
@@ -475,17 +475,20 @@ void PothosPacketSocketEndpoint::closeComms(void)
     }
 
     //loop until timeout (we will exit before timeout under normal conditions)
-    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(500); //half a second
+    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(100);
     while (std::chrono::high_resolution_clock::now() < exitTime)
     {
-        if (_impl->state == EP_STATE_TIME_WAIT) _impl->state = EP_STATE_CLOSED;
         if (_impl->state == EP_STATE_CLOSED) break;
         this->recv(type, index, buffer);
     }
 
+    //the loop above is meant to timeout in the time-wait state
+    if (_impl->state == EP_STATE_TIME_WAIT) _impl->state = EP_STATE_CLOSED;
+
     //check the state on loop exit
     if (_impl->state != EP_STATE_CLOSED)
     {
+        _impl->state = EP_STATE_CLOSED;
         throw Pothos::RuntimeException("PothosPacketSocketEndpoint::closeComms()", "handshake failed");
     }
 }
