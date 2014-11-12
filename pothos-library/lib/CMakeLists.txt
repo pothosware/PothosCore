@@ -179,6 +179,7 @@ list(APPEND POTHOS_SOURCES
 
 if(WIN32)
     list(APPEND POTHOS_SOURCES Framework/SharedBufferWindows.cpp)
+    list(APPEND POTHOS_SOURCES Framework/WindowsDelayLoadedSymbols.cpp)
 elseif(UNIX)
     list(APPEND POTHOS_SOURCES Framework/SharedBufferUnix.cpp)
 endif()

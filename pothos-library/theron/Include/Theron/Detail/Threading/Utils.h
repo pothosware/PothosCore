@@ -15,6 +15,8 @@
 #if THERON_WINDOWS
 
 #include <windows.h>
+//delay loaded symbols for windows backwards compatibility
+BOOL DL_GetNumaNodeProcessorMaskEx(USHORT Node, PGROUP_AFFINITY ProcessorMask);
 
 #elif THERON_BOOST
 
@@ -338,7 +340,7 @@ inline bool Utils::SetThreadAffinity(const uint32_t nodeMask, const uint32_t pro
         if (nodeMask & (1UL << node))
         {
             GROUP_AFFINITY groupAffinity;
-            if (!GetNumaNodeProcessorMaskEx(static_cast<USHORT>(node), &groupAffinity))
+            if (!DL_GetNumaNodeProcessorMaskEx(static_cast<USHORT>(node), &groupAffinity))
             {
                 return false;
             }

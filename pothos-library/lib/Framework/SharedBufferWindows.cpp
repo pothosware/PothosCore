@@ -6,6 +6,11 @@
 #include <Poco/Format.h>
 #include <windows.h>
 
+//delay loaded symbols for windows backwards compatibility
+LPVOID DL_VirtualAllocExNuma(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect, DWORD nndPreferred);
+HANDLE DL_CreateFileMappingNuma(HANDLE hFile, LPSECURITY_ATTRIBUTES lpFileMappingAttributes, DWORD flProtect, DWORD dwMaximumSizeHigh, DWORD dwMaximumSizeLow, LPCTSTR lpName, DWORD nndPreferred);
+LPVOID DL_MapViewOfFileExNuma(HANDLE hFileMappingObject, DWORD dwDesiredAccess, DWORD dwFileOffsetHigh, DWORD dwFileOffsetLow, SIZE_T dwNumberOfBytesToMap, LPVOID lpBaseAddress, DWORD nndPreferred);
+
 /***********************************************************************
  * GetSystemInfo configuration values
  **********************************************************************/
@@ -39,7 +44,7 @@ public:
     {
         const DWORD nndPreferred = (nodeAffinity == -1)? NUMA_NO_PREFERRED_NODE : nodeAffinity;
 
-        virtualAddr = VirtualAllocExNuma(
+        virtualAddr = DL_VirtualAllocExNuma(
             GetCurrentProcess(),
             NULL,
             numBytes,
@@ -122,7 +127,7 @@ CircularBufferContainer::CircularBufferContainer(const size_t numBytes, const lo
     /*******************************************************************
      * Step 1) get a chunk of physical memory
      ******************************************************************/
-    hFileMappingObject = CreateFileMappingNuma(
+    hFileMappingObject = DL_CreateFileMappingNuma(
         INVALID_HANDLE_VALUE,
         nullptr, //default security descripto
         PAGE_READWRITE, //rw mode
@@ -134,7 +139,7 @@ CircularBufferContainer::CircularBufferContainer(const size_t numBytes, const lo
     /*******************************************************************
      * Step 2) find a 2X chunk of virtual memory
      ******************************************************************/
-    virtualAddr2X = VirtualAllocExNuma(
+    virtualAddr2X = DL_VirtualAllocExNuma(
         GetCurrentProcess(),
         NULL, //determine address
         numBytes*2, //2x bytes
@@ -153,7 +158,7 @@ CircularBufferContainer::CircularBufferContainer(const size_t numBytes, const lo
     /*******************************************************************
      * Step 3) perform overlapping virtual mappings
      ******************************************************************/
-    hMapViewOfFile0 = MapViewOfFileExNuma(
+    hMapViewOfFile0 = DL_MapViewOfFileExNuma(
         hFileMappingObject,
         FILE_MAP_ALL_ACCESS,
         0, 0, //offset high, low
@@ -162,7 +167,7 @@ CircularBufferContainer::CircularBufferContainer(const size_t numBytes, const lo
         nndPreferred);
     if (hMapViewOfFile0 == nullptr) this->errorOut("MapViewOfFileExNuma(0)");
 
-    hMapViewOfFile1 = MapViewOfFileExNuma(
+    hMapViewOfFile1 = DL_MapViewOfFileExNuma(
         hFileMappingObject,
         FILE_MAP_ALL_ACCESS,
         0, 0, //offset high, low
