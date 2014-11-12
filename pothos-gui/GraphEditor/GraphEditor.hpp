@@ -14,7 +14,7 @@ class GraphConnection;
 class GraphDraw;
 class QSignalMapper;
 class QTabWidget;
-class TopologyEngine;
+class EvalEngine;
 
 class GraphEditor : public QTabWidget
 {
@@ -68,11 +68,6 @@ public:
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);
 
-    TopologyEngine *getTopologyEngine(void) const
-    {
-        return _topologyEngine;
-    }
-
 signals:
     void newTitleSubtext(const QString &);
 
@@ -111,6 +106,7 @@ private slots:
     void handleEnable(void);
     void handleSetEnabled(const bool enb);
     void handleDisable(void);
+    void handleReeval(void);
     void handleResetState(int);
     void handleAffinityZoneClicked(const QString &zone);
     void handleAffinityZoneChanged(const QString &zone);
@@ -120,6 +116,7 @@ private slots:
     void handleBlockIncrement(void);
     void handleBlockDecrement(void);
     void handleBlockXcrement(const int adj);
+    void handleEvalEngineDeactivate(void);
 
 private:
     QTabWidget *_parentTabWidget;
@@ -139,6 +136,9 @@ private:
     //! update enabled actions based on state - after a change or when editor becomes visible
     void updateEnabledActions(void);
 
+    //! called after state changes
     void updateExecutionEngine(void);
-    TopologyEngine *_topologyEngine;
+
+    EvalEngine *_evalEngine;
+    bool _isTopologyActive;
 };

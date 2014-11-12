@@ -7,18 +7,28 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
 #include <QPainter>
+#include <Poco/SingletonHolder.h>
 #include <cassert>
+#include <atomic>
 #include <iostream>
+
+static std::atomic<size_t> &getUIDAtomic(void)
+{
+    static Poco::SingletonHolder<std::atomic<size_t>> sh;
+    return *sh.get();
+}
 
 struct GraphObject::Impl
 {
     Impl(void):
-        deleteFlag(false)
+        deleteFlag(false),
+        uid(getUIDAtomic()++)
     {
         return;
     }
     QString id;
     bool deleteFlag;
+    size_t uid;
 };
 
 GraphObject::GraphObject(QObject *parent):
@@ -59,6 +69,12 @@ const QString &GraphObject::getId(void) const
 {
     assert(_impl);
     return _impl->id;
+}
+
+size_t GraphObject::uid(void) const
+{
+    assert(_impl);
+    return _impl->uid;
 }
 
 QRectF GraphObject::boundingRect(void) const

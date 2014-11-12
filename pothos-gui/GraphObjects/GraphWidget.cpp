@@ -65,6 +65,7 @@ void GraphWidget::setGraphBlock(GraphBlock *block)
     _impl->block = block;
     connect(block, SIGNAL(destroyed(QObject *)), this, SLOT(handleBlockDestroyed(QObject *)));
     connect(block, SIGNAL(IDChanged(const QString &)), this, SLOT(handleBlockIdChanged(const QString &)));
+    connect(block, SIGNAL(evalDoneEvent(void)), this, SLOT(handleBlockEvalDone(void)));
     this->handleBlockIdChanged(block->getId()); //init value
 }
 
@@ -107,12 +108,9 @@ QVariant GraphWidget::itemChange(GraphicsItemChange change, const QVariant &valu
     return QGraphicsItem::itemChange(change, value);
 }
 
-void GraphWidget::render(QPainter &)
+void GraphWidget::handleBlockEvalDone(void)
 {
-    assert(_impl);
-
-    //update display widget when not set
-    _impl->block->prerender();
+    //the widget could have changed when a block eval completes
     auto graphWidget = _impl->block->getGraphWidget();
     _impl->container->setWidget(graphWidget);
 }

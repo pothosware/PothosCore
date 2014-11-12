@@ -53,6 +53,16 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(NetworkSink, getActualPort));
     }
 
+    ~NetworkSink(void)
+    {
+        //the thread cannot be left running
+        if (handlerThread.joinable())
+        {
+            running = false;
+            handlerThread.join();
+        }
+    }
+
     std::string getActualPort(void) const
     {
         return _ep.getActualPort();
@@ -86,7 +96,8 @@ public:
             uint16_t type;
             uint64_t index;
             Pothos::BufferChunk buffer;
-            _ep.recv(type, index, buffer);
+            try {_ep.recv(type, index, buffer);}
+            catch (...){}
         }
     }
 

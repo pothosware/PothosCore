@@ -102,6 +102,7 @@ RemoteProxyEnvironment::~RemoteProxyEnvironment(void)
     }
     catch(const Pothos::Exception &ex)
     {
+        if (not this->connectionActive) return;
         poco_error(Poco::Logger::get("Pothos.RemoteProxyEnvironment"), "destructor threw: "+ex.displayText());
     }
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "TopologyEngine/TopologyEngine.hpp"
+#include "TopologyEval.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
@@ -51,9 +51,9 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnecti
     return inputEndpoints;
 }
 
-std::vector<ConnectionInfo> TopologyEngine::getConnectionInfo(const GraphObjectList &graphObjects)
+ConnectionInfos TopologyEval::getConnectionInfo(const GraphObjectList &graphObjects)
 {
-    std::vector<ConnectionInfo> connections;
+    ConnectionInfos connections;
     for (auto graphObject : graphObjects)
     {
         auto connection = dynamic_cast<GraphConnection *>(graphObject);
@@ -71,9 +71,9 @@ std::vector<ConnectionInfo> TopologyEngine::getConnectionInfo(const GraphObjectL
             for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
             {
                 ConnectionInfo info;
-                info.srcId = outputEp.getObj()->getId().toStdString();
+                info.srcBlockUID = outputEp.getObj()->uid();
                 info.srcPort = outputEp.getKey().id.toStdString();
-                info.dstId = subEp.getObj()->getId().toStdString();
+                info.dstBlockUID = subEp.getObj()->uid();
                 info.dstPort = subEp.getKey().id.toStdString();
                 connections.push_back(info);
             }

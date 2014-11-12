@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //action map
-#include "TopologyEngine/TopologyEngine.hpp"
+#include "EvalEngine/EvalEngine.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
@@ -39,7 +39,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     _moveGraphObjectsMapper(new QSignalMapper(this)),
     _insertGraphWidgetsMapper(new QSignalMapper(this)),
     _stateManager(new GraphStateManager(this)),
-    _topologyEngine(new TopologyEngine(this))
+    _evalEngine(new EvalEngine(this)),
+    _isTopologyActive(false)
 {
     this->setMovable(true);
     this->setUsesScrollButtons(true);
@@ -73,6 +74,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["redo"], SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
     connect(getActionMap()["enable"], SIGNAL(triggered(void)), this, SLOT(handleEnable(void)));
     connect(getActionMap()["disable"], SIGNAL(triggered(void)), this, SLOT(handleDisable(void)));
+    connect(getActionMap()["reeval"], SIGNAL(triggered(void)), this, SLOT(handleReeval(void)));
     connect(getMenuMap()["setAffinityZone"], SIGNAL(zoneClicked(const QString &)), this, SLOT(handleAffinityZoneClicked(const QString &)));
     connect(getObjectMap()["affinityZonesDock"], SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
     connect(getActionMap()["showGraphFlattenedView"], SIGNAL(triggered(void)), this, SLOT(handleShowFlattenedDialog(void)));
@@ -82,6 +84,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["decrement"], SIGNAL(triggered(void)), this, SLOT(handleBlockDecrement(void)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
+    connect(_evalEngine, SIGNAL(deactivateDesign(void)), this, SLOT(handleEvalEngineDeactivate(void)));
     connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
 }
 
@@ -144,7 +147,7 @@ void GraphEditor::updateEnabledActions(void)
     getActionMap()["redo"]->setEnabled(_stateManager->isSubsequentAvailable());
     getActionMap()["save"]->setEnabled(not _stateManager->isCurrentSaved());
     getActionMap()["reload"]->setEnabled(not this->getCurrentFilePath().isEmpty());
-    getActionMap()["activateTopology"]->setChecked(_topologyEngine->active());
+    getActionMap()["activateTopology"]->setChecked(_isTopologyActive);
 
     //can we paste something from the clipboard?
     auto mimeData = QApplication::clipboard()->mimeData();
@@ -750,6 +753,13 @@ void GraphEditor::handleSetEnabled(const bool enb)
     else handleStateChange(GraphState("document-export", tr("Disable %1").arg(draw->getSelectionDescription(GRAPH_BLOCK))));
 }
 
+void GraphEditor::handleReeval(void)
+{
+    if (not this->isVisible()) return;
+    auto draw = this->getCurrentGraphDraw();
+    _evalEngine->submitReeval(draw->getObjectsSelected(GRAPH_BLOCK));
+}
+
 void GraphEditor::handleResetState(int stateNo)
 {
     if (not this->isVisible()) return;
@@ -813,17 +823,8 @@ void GraphEditor::handleStateChange(const GraphState &state)
 void GraphEditor::handleToggleActivateTopology(const bool enable)
 {
     if (not this->isVisible()) return;
-    _topologyEngine->setActive(enable);
-    if (enable) this->updateExecutionEngine();
-    else
-    try
-    {
-        _topologyEngine->clear();
-    }
-    catch (const Pothos::Exception &ex)
-    {
-        poco_error(Poco::Logger::get("PothosGui.GraphEditor.clearTopology"), ex.displayText());
-    }
+    _evalEngine->submitActivateTopology(enable);
+    _isTopologyActive = enable;
 }
 
 void GraphEditor::handleShowPortNames(void)
@@ -877,16 +878,13 @@ void GraphEditor::handleBlockXcrement(const int adj)
 
 void GraphEditor::updateExecutionEngine(void)
 {
-    if (not _topologyEngine->active()) return;
-    try
-    {
-        _topologyEngine->commitUpdate(this->getGraphObjects());
-    }
-    catch (const Pothos::Exception &ex)
-    {
-        poco_error(Poco::Logger::get("PothosGui.GraphEditor.commitTopology"), ex.displayText());
-        getActionMap()["activateTopology"]->setChecked(false);
-    }
+    _evalEngine->submitTopology(this->getGraphObjects());
+}
+
+void GraphEditor::handleEvalEngineDeactivate(void)
+{
+    getActionMap()["activateTopology"]->setChecked(false);
+    _isTopologyActive = false;
 }
 
 void GraphEditor::save(void)

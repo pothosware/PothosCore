@@ -26,8 +26,6 @@ public:
 
     QPainterPath shape(void) const;
 
-    void render(QPainter &painter);
-
     Poco::JSON::Object::Ptr serialize(void) const;
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
@@ -36,6 +34,7 @@ private slots:
     void handleBlockDestroyed(QObject *);
     void handleWidgetResized(void);
     void handleBlockIdChanged(const QString &id);
+    void handleBlockEvalDone(void);
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);

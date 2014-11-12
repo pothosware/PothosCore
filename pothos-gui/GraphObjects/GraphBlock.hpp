@@ -31,6 +31,7 @@ public:
     //! Does this graph block represent a display widget
     bool isGraphWidget(void) const;
     QWidget *getGraphWidget(void) const;
+    void setGraphWidget(QWidget *);
 
     void setTitle(const QString &title);
     QString getTitle(void) const;
@@ -105,7 +106,14 @@ public:
     const QString &getAffinityZone(void) const;
     void setAffinityZone(const QString &zone);
 
-    void update(void);
+signals:
+
+    //! Called by the evaluator when eval completed
+    void evalDoneEvent(void);
+
+    //! Called externally to trigger individual eval
+    void triggerEvalEvent(void);
+
 private:
     void initPropertiesFromDesc(void);
     void initInputsFromDesc(void);
