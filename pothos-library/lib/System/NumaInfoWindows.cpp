@@ -4,6 +4,10 @@
 #include <Pothos/System/NumaInfo.hpp>
 #include <Windows.h>
 
+//delay loaded symbols for windows backwards compatibility
+BOOL DL_GetNumaAvailableMemoryNodeEx(USHORT Node, PULONGLONG AvailableBytes);
+BOOL DL_GetNumaNodeProcessorMaskEx(USHORT Node, PGROUP_AFFINITY ProcessorMask);
+
 //http://msdn.microsoft.com/en-us/library/windows/desktop/aa363804%28v=vs.85%29.aspx
 
 std::vector<Pothos::System::NumaInfo> Pothos::System::NumaInfo::get(void)
@@ -18,11 +22,11 @@ std::vector<Pothos::System::NumaInfo> Pothos::System::NumaInfo::get(void)
         info.nodeNumber = node;
 
         ULONGLONG AvailableBytes = 0;
-        if (not GetNumaAvailableMemoryNodeEx(node, &AvailableBytes)) AvailableBytes = 0;
+        if (not DL_GetNumaAvailableMemoryNodeEx(node, &AvailableBytes)) AvailableBytes = 0;
         info.freeMemory = AvailableBytes;
 
         GROUP_AFFINITY ProcessorMask;
-        if (GetNumaNodeProcessorMaskEx(node, &ProcessorMask))
+        if (DL_GetNumaNodeProcessorMaskEx(node, &ProcessorMask))
         {
             for (int i = 0; i < sizeof(ProcessorMask.Mask) * 8; i++)
             {
