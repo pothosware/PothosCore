@@ -54,11 +54,12 @@ class TestPothosModule(unittest.TestCase):
         print(reg.callProxy("/blocks/feeder_source", "int"))
         print(hash(reg))
 
-import StringIO
+try: from StringIO import StringIO
+except ImportError: from io import StringIO
 
 def main():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestPothosModule)
-    sio = StringIO.StringIO()
+    sio = StringIO()
     result = unittest.TextTestRunner(stream=sio, verbosity=2).run(suite)
     print(sio.getvalue())
     if not result.wasSuccessful(): raise Exception("unittest FAIL")
