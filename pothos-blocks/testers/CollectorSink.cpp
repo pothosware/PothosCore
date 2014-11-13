@@ -86,19 +86,17 @@ void CollectorSink::verifyTestPlan(const Poco::JSON::Object::Ptr &expected) cons
 
     if (expected->has("expectedValues"))
     {
-        auto elemDType = this->input(0)->dtype();
-        auto expectedValues = expected->getArray("expectedValues");
+        if (not (_buffer.dtype == this->input(0)->dtype())) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
+            Poco::format("Buffer type mismatch: expected %s -> actual %s", this->input(0)->dtype().toString(), _buffer.dtype.toString()));
 
-        auto numActualElems = _buffer.length/elemDType.size();
+        auto expectedValues = expected->getArray("expectedValues");
+        auto intBuffer = _buffer.convert(typeid(int));
+        auto numActualElems = intBuffer.elements();
 
         for (size_t i = 0; i < std::min(numActualElems, expectedValues->size()); i++)
         {
-            auto value = expectedValues->getElement<int>(i);
-            int actual = 0;
-            if (elemDType.size() == 1) actual = _buffer.as<char *>()[i];
-            else if (elemDType.size() == 2) actual = _buffer.as<short *>()[i];
-            else if (elemDType.size() == 4) actual = _buffer.as<int *>()[i];
-            else throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()", "cant handle this dtype: " + elemDType.toString());
+            const auto value = expectedValues->getElement<int>(i);
+            const auto actual = intBuffer.as<const int *>()[i];
             if (value != actual) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
                 Poco::format("Value check for element %d: expected %d -> actual %d", int(i), value, actual));
         }
