@@ -70,14 +70,20 @@ SessionImpl::SessionImpl(const std::string& connect,
 
 SessionImpl::~SessionImpl()
 {
-	if (isTransaction() && !getFeature("autoCommit"))
+	try
 	{
-		try { rollback(); }
-		catch (...) { }
-	}
+		if (isTransaction() && !getFeature("autoCommit"))
+		{
+			try { rollback(); }
+			catch (...) { }
+		}
 
-	try { close(); }
-	catch (...) { }
+		close();
+	}
+	catch (...)
+	{
+		poco_unexpected();
+	}
 }
 
 
@@ -100,7 +106,7 @@ void SessionImpl::open(const std::string& connect)
 
 	poco_assert_dbg (!connectionString().empty());
 
-	SQLUINTEGER tout = static_cast<SQLUINTEGER>(getLoginTimeout());
+	SQLULEN tout = static_cast<SQLULEN>(getLoginTimeout());
 	if (Utility::isError(SQLSetConnectAttr(_db, SQL_ATTR_LOGIN_TIMEOUT, (SQLPOINTER) tout, 0)))
 	{
 		if (Utility::isError(SQLGetConnectAttr(_db, SQL_ATTR_LOGIN_TIMEOUT, &tout, 0, 0)) ||
@@ -162,7 +168,7 @@ void SessionImpl::open(const std::string& connect)
 
 bool SessionImpl::isConnected()
 {
-	SQLUINTEGER value = 0;
+	SQLULEN value = 0;
 
 	if (Utility::isError(Poco::Data::ODBC::SQLGetConnectAttr(_db,
 		SQL_ATTR_CONNECTION_DEAD,
@@ -187,7 +193,7 @@ void SessionImpl::setConnectionTimeout(std::size_t timeout)
 
 std::size_t SessionImpl::getConnectionTimeout()
 {
-	SQLUINTEGER value = 0;
+	SQLULEN value = 0;
 
 	checkError(Poco::Data::ODBC::SQLGetConnectAttr(_db,
 		SQL_ATTR_CONNECTION_TIMEOUT,
@@ -238,7 +244,7 @@ void SessionImpl::setTransactionIsolation(Poco::UInt32 ti)
 
 Poco::UInt32 SessionImpl::getTransactionIsolation()
 {
-	SQLUINTEGER isolation = 0;
+	SQLULEN isolation = 0;
 	checkError(SQLGetConnectAttr(_db, SQL_ATTR_TXN_ISOLATION,
 		&isolation,
 		0,
@@ -273,7 +279,7 @@ Poco::UInt32 SessionImpl::getDefaultTransactionIsolation()
 }
 
 
-Poco::UInt32 SessionImpl::transactionIsolation(SQLUINTEGER isolation)
+Poco::UInt32 SessionImpl::transactionIsolation(SQLULEN isolation)
 {
 	if (0 == isolation)
 		throw InvalidArgumentException("transactionIsolation(SQLUINTEGER)");
@@ -311,7 +317,7 @@ void SessionImpl::autoCommit(const std::string&, bool val)
 
 bool SessionImpl::isAutoCommit(const std::string&)
 {
-	Poco::UInt32 value = 0;
+	SQLULEN value = 0;
 
 	checkError(Poco::Data::ODBC::SQLGetConnectAttr(_db,
 		SQL_ATTR_AUTOCOMMIT,
@@ -327,7 +333,7 @@ bool SessionImpl::isTransaction()
 {
 	if (!canTransact()) return false;
 
-	Poco::UInt32 value = 0;
+	SQLULEN value = 0;
 	checkError(Poco::Data::ODBC::SQLGetConnectAttr(_db,
 		SQL_ATTR_AUTOCOMMIT,
 		&value,

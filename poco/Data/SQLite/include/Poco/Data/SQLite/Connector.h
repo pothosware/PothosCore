@@ -104,13 +104,20 @@ struct SQLite_API SQLiteConnectorRegistrator
 	~SQLiteConnectorRegistrator()
 		/// Calls Poco::Data::SQLite::unregisterConnector();
 	{
-		Poco::Data::SQLite::Connector::unregisterConnector();
+		try
+		{
+			Poco::Data::SQLite::Connector::unregisterConnector();
+		}
+		catch (...)
+		{
+			poco_unexpected();
+		}
 	}
 };
 
 
 #if !defined(POCO_NO_AUTOMATIC_LIB_INIT)
-	#if defined(POCO_OS_FAMILY_WINDOWS)
+	#if defined(POCO_OS_FAMILY_WINDOWS) && !defined(__GNUC__)
 		extern "C" const struct SQLite_API SQLiteConnectorRegistrator pocoSQLiteConnectorRegistrator;
 		#if defined(SQLite_EXPORTS)
 			#if defined(_WIN64) || defined(_WIN32_WCE)

@@ -2,28 +2,28 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Crypto">
-      <UniqueIdentifier>{d4ebb36f-3e61-45c0-b87e-959a014c8253}</UniqueIdentifier>
+      <UniqueIdentifier>{bbaa03af-b73e-4f3a-a1a8-e767888865ac}</UniqueIdentifier>
     </Filter>
     <Filter Include="Crypto\Header Files">
-      <UniqueIdentifier>{6eae5f01-09fc-45a5-895a-6e9f6a6d134d}</UniqueIdentifier>
+      <UniqueIdentifier>{48d0e2ec-4948-4f8e-ba65-9eb01801a4e4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Crypto\Source Files">
-      <UniqueIdentifier>{92ff7879-7df8-430c-b971-5a0579bb9d04}</UniqueIdentifier>
+      <UniqueIdentifier>{3de57f06-3410-487d-863d-f5dd0732a048}</UniqueIdentifier>
     </Filter>
     <Filter Include="_Suite">
-      <UniqueIdentifier>{6844a11a-e58d-4e7d-a99c-67d67eb8727a}</UniqueIdentifier>
+      <UniqueIdentifier>{ebe6527a-0ff7-4cba-ad33-f7d055d066cc}</UniqueIdentifier>
     </Filter>
     <Filter Include="_Suite\Header Files">
-      <UniqueIdentifier>{517c4690-4d58-43a6-953a-3893b172e6b9}</UniqueIdentifier>
+      <UniqueIdentifier>{d40e9c54-d89f-4d02-a008-541870b5f33e}</UniqueIdentifier>
     </Filter>
     <Filter Include="_Suite\Source Files">
-      <UniqueIdentifier>{ede9974e-097d-408c-98f2-3a8a4c1a0feb}</UniqueIdentifier>
+      <UniqueIdentifier>{24bcd4be-bfd8-4c14-8c84-6df36969489c}</UniqueIdentifier>
     </Filter>
     <Filter Include="_Driver">
-      <UniqueIdentifier>{59fdd27b-49b8-4a08-bc87-2e9f1c3cc1a2}</UniqueIdentifier>
+      <UniqueIdentifier>{a9f74ae1-ec96-4f5e-8bb5-5c2dc04c0841}</UniqueIdentifier>
     </Filter>
     <Filter Include="_Driver\Source Files">
-      <UniqueIdentifier>{fda82ab0-2d8f-44c5-81ee-ee384fcb2d41}</UniqueIdentifier>
+      <UniqueIdentifier>{41ae5636-eaf6-42c7-bdf4-623a570315c8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -53,7 +53,7 @@
     <ClCompile Include="src\CryptoTestSuite.cpp">
       <Filter>_Suite\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\WinDriver.cpp">
+    <ClCompile Include="src\Driver.cpp">
       <Filter>_Driver\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
