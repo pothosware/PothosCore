@@ -42,7 +42,7 @@ POTHOS_TEST_BLOCK("/proxy/python/tests", test_python_block)
         topology.connect(forwarder, 0, collector, 0);
         std::cout << "topology commit\n";
         topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
+        POTHOS_TEST_TRUE(topology.waitInactive(0.5, 5.0));
     }
 
     collector.callVoid("verifyTestPlan", expected);
