@@ -26,6 +26,14 @@ endif()
 set(BUILD_POCO TRUE) #always build -- want version 1.5
 
 if(BUILD_POCO)
+    set(ENABLE_MONGODB OFF)
+    set(ENABLE_PDF OFF)
+    set(ENABLE_NETSSL OFF)
+    set(ENABLE_CRYPTO OFF)
+    set(ENABLE_DATA OFF)
+    set(ENABLE_SEVENZIP OFF)
+    set(ENABLE_ZIP OFF)
+    set(ENABLE_APACHECONNECTOR OFF)
 
     # Include the Pothos library config into the top level.
     # This brings in LIB_SUFFIX and RPATH settings for Poco.
@@ -110,11 +118,9 @@ add_subdirectory(pothos-sdr)
 
 #########################################################################
 # uninstall target
+# use poco's uninstall target, but overwrite the script
 #########################################################################
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/poco/cmake_uninstall.cmake"
     IMMEDIATE @ONLY)
-
-add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
