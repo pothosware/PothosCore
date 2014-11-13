@@ -11,6 +11,7 @@
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
 #include <Poco/Hash.h>
+#include <set>
 #include <map>
 
 /***********************************************************************
@@ -30,10 +31,22 @@ static ConvertMapType &getConvertMap(void)
     return *sh.get();
 }
 
+//given an input type (hash), what types can it can convert to?
+static std::map<size_t, std::set<size_t>> &getConvertIoMap(void)
+{
+    static Poco::SingletonHolder<std::map<size_t, std::set<size_t>>> sh;
+    return *sh.get();
+}
+
 //! combine two type hashes to form a unique hash such that hash(a, b) != hash(b, a)
+static inline size_t typesHashCombine(const size_t &inTypeHash, const size_t &outTypeHash)
+{
+    return inTypeHash ^ Poco::hash(outTypeHash);
+}
+
 static inline size_t typesHashCombine(const std::type_info &inType, const std::type_info &outType)
 {
-    return inType.hash_code() ^ Poco::hash(outType.hash_code());
+    return typesHashCombine(inType.hash_code(), outType.hash_code());
 }
 
 /***********************************************************************
@@ -58,10 +71,12 @@ static void handleConvertPluginEvent(const Pothos::Plugin &plugin, const std::st
         if (event == "add")
         {
             getConvertMap()[typesHashCombine(inputType, outputType)] = plugin;
+            getConvertIoMap()[inputType.hash_code()].insert(outputType.hash_code());
         }
         if (event == "remove")
         {
             getConvertMap()[typesHashCombine(inputType, outputType)] = Pothos::Plugin();
+            getConvertIoMap()[inputType.hash_code()].erase(outputType.hash_code());
         }
     }
     POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
@@ -87,6 +102,24 @@ static Pothos::Object convertObject(const Pothos::Object &inputObj, const std::t
     //find the plugin in the map, it will be null if not found
     Poco::RWLock::ScopedReadLock lock(getMapMutex());
     auto it = getConvertMap().find(typesHashCombine(inputObj.type(), outputType));
+
+    //try an intermediate conversion
+    if (it == getConvertMap().end())
+    {
+        auto itIo = getConvertIoMap().find(inputObj.type().hash_code());
+        if (itIo != getConvertIoMap().end()) for (const size_t intermHash : itIo->second)
+        {
+            auto it1 = getConvertMap().find(typesHashCombine(inputObj.type().hash_code(), intermHash));
+            auto it2 = getConvertMap().find(typesHashCombine(intermHash, outputType.hash_code()));
+            if (it1 != getConvertMap().end() and it2 != getConvertMap().end())
+            {
+                auto call1 = it1->second.getObject().extract<Pothos::Callable>();
+                auto call2 = it2->second.getObject().extract<Pothos::Callable>();
+                Pothos::Object intermediate = call1.opaqueCall(&inputObj, 1);
+                return call2.opaqueCall(&intermediate, 1);
+            }
+        }
+    }
 
     //thow an error when the conversion is not supported
     if (it == getConvertMap().end()) throw Pothos::ObjectConvertError(
@@ -117,5 +150,18 @@ bool Pothos::Object::canConvert(const std::type_info &srcType, const std::type_i
     if (srcType == dstType) return true;
     Poco::RWLock::ScopedReadLock lock(getMapMutex());
     auto it = getConvertMap().find(typesHashCombine(srcType, dstType));
+
+    //try an intermediate conversion
+    if (it == getConvertMap().end())
+    {
+        auto itIo = getConvertIoMap().find(srcType.hash_code());
+        if (itIo != getConvertIoMap().end()) for (const size_t intermHash : itIo->second)
+        {
+            auto it1 = getConvertMap().find(typesHashCombine(srcType.hash_code(), intermHash));
+            auto it2 = getConvertMap().find(typesHashCombine(intermHash, dstType.hash_code()));
+            if (it1 != getConvertMap().end() and it2 != getConvertMap().end()) return true;
+        }
+    }
+
     return (it != getConvertMap().end());
 }

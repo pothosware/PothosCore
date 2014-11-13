@@ -5,11 +5,14 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Exception.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
+#include <Pothos/Plugin.hpp>
+#include <Pothos/Callable.hpp>
 #include <Poco/Format.h>
 #include <type_traits>
 #include <limits>
 #include <complex>
 #include <string>
+#include <vector>
 
 /***********************************************************************
  * typedefs that make nice clean registry names since we use #name
@@ -108,3 +111,61 @@ OutType convertNum(const InType &in)
     convertNumHelper(in, out);
     return out;
 }
+
+/***********************************************************************
+ * helper function registers a converter for specific types
+ **********************************************************************/
+static void registerConvertNum(const std::string &inName, const std::string &outName, const Pothos::Callable &callable)
+{
+    const std::string name = inName + "_to_" + outName;
+    auto path = Pothos::PluginPath("/object/convert/numbers").join(name);
+    Pothos::PluginRegistry::add(path, callable);
+}
+
+/***********************************************************************
+ * template comprehension to handle vectors of numbers
+ **********************************************************************/
+template <typename InType, typename OutType>
+std::vector<OutType> convertVec(const std::vector<InType> &in)
+{
+    std::vector<OutType> out(in.size());
+    for (size_t i = 0; i < out.size(); i++)
+    {
+        out[i] = convertNum<InType, OutType>(in[i]);
+    }
+    return out;
+}
+
+/***********************************************************************
+ * helper function registers a converter for specific types
+ **********************************************************************/
+static void registerConvertVec(const std::string &inName, const std::string &outName, const Pothos::Callable &callable)
+{
+    const std::string name = inName + "_to_" + outName;
+    auto path = Pothos::PluginPath("/object/convert/vectors").join(name);
+    Pothos::PluginRegistry::add(path, callable);
+}
+
+/***********************************************************************
+ * macros to declare all conversion combinations
+ **********************************************************************/
+#define declare_number_conversion2(inType, outType) \
+    registerConvertNum(#inType, #outType, Pothos::Callable(&convertNum<inType, outType>)); \
+    registerConvertVec(#inType, #outType, Pothos::Callable(&convertVec<inType, outType>));
+
+#define declare_number_conversion1(inType) \
+    declare_number_conversion2(inType, char) \
+    declare_number_conversion2(inType, uchar) \
+    declare_number_conversion2(inType, schar) \
+    declare_number_conversion2(inType, ushort) \
+    declare_number_conversion2(inType, sshort) \
+    declare_number_conversion2(inType, uint) \
+    declare_number_conversion2(inType, sint) \
+    declare_number_conversion2(inType, ulong) \
+    declare_number_conversion2(inType, slong) \
+    declare_number_conversion2(inType, ullong) \
+    declare_number_conversion2(inType, sllong) \
+    declare_number_conversion2(inType, float) \
+    declare_number_conversion2(inType, double) \
+    declare_number_conversion2(inType, cfloat) \
+    declare_number_conversion2(inType, cdouble)
