@@ -106,11 +106,14 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
     }
 
     //iterate through the other objects in args
+    std::vector<Pothos::Proxy> localArgs(numArgs);
     for (size_t i = 0; i < numArgs; i++)
     {
         try
         {
-            argObjs.push_back(env->getHandle(args[i])->obj);
+            auto handle = env->getHandle(args[i]);
+            argObjs.push_back(handle->obj);
+            localArgs[i] = std::static_pointer_cast<Pothos::ProxyHandle>(handle);
         }
         catch(const Pothos::Exception &ex)
         {
@@ -157,7 +160,7 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         {
             try
             {
-                return env->makeHandle(toBase.opaqueCall(&argObjs.at(0), 1)).getHandle()->call(name, args, numArgs);
+                return env->makeHandle(toBase.opaqueCall(&argObjs.at(0), 1)).getHandle()->call(name, localArgs.data(), localArgs.size());
             }
             catch (const Pothos::ProxyHandleCallError &) {}
         }
