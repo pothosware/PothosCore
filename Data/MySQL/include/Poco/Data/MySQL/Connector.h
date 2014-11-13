@@ -85,13 +85,20 @@ struct MySQL_API MySQLConnectorRegistrator
 	~MySQLConnectorRegistrator()
 		/// Calls Poco::Data::MySQL::unregisterConnector();
 	{
-		Poco::Data::MySQL::Connector::unregisterConnector();
+		try
+		{
+			Poco::Data::MySQL::Connector::unregisterConnector();
+		}
+		catch (...)
+		{
+			poco_unexpected();
+		}
 	}
 };
 
 
 #if !defined(POCO_NO_AUTOMATIC_LIB_INIT)
-	#if defined(POCO_OS_FAMILY_WINDOWS)
+	#if defined(POCO_OS_FAMILY_WINDOWS) && !defined(__GNUC__)
 		extern "C" const struct MySQL_API MySQLConnectorRegistrator pocoMySQLConnectorRegistrator;
 		#if defined(MySQL_EXPORTS)
 			#if defined(_WIN64)

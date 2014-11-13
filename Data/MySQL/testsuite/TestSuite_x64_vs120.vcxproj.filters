@@ -2,28 +2,28 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="MySQL">
-      <UniqueIdentifier>{4c8ea7a0-a358-42ed-a17a-a8f247e9cd95}</UniqueIdentifier>
+      <UniqueIdentifier>{5123b43f-63d4-45f1-8136-1d3d68df9383}</UniqueIdentifier>
     </Filter>
     <Filter Include="MySQL\Header Files">
-      <UniqueIdentifier>{3fea38ef-9609-44e6-9abf-7e9b6e3c5f1d}</UniqueIdentifier>
+      <UniqueIdentifier>{254c4414-a846-4f1f-8d91-b3778c336082}</UniqueIdentifier>
     </Filter>
     <Filter Include="MySQL\Source Files">
-      <UniqueIdentifier>{f4d30dbb-53af-48d0-8c82-fe9d87ef133e}</UniqueIdentifier>
+      <UniqueIdentifier>{e8203bc2-9920-475d-aad9-ffeace99af68}</UniqueIdentifier>
     </Filter>
     <Filter Include="_Suite">
-      <UniqueIdentifier>{307af97b-fce9-45ba-9ee4-3bfc2def8a47}</UniqueIdentifier>
+      <UniqueIdentifier>{2431f190-ebf7-48ab-af4a-55eff1d78ae9}</UniqueIdentifier>
     </Filter>
     <Filter Include="_Suite\Header Files">
-      <UniqueIdentifier>{9253fe03-9699-4334-a341-c5182f1182ab}</UniqueIdentifier>
+      <UniqueIdentifier>{5a3631f0-0744-4170-a8ca-887a9187a9b7}</UniqueIdentifier>
     </Filter>
     <Filter Include="_Suite\Source Files">
-      <UniqueIdentifier>{918b29f5-7671-4e0b-8877-52c3bf242397}</UniqueIdentifier>
+      <UniqueIdentifier>{dfac1b36-700c-4610-b345-dab41c9753b7}</UniqueIdentifier>
     </Filter>
     <Filter Include="_Driver">
-      <UniqueIdentifier>{cfb000f2-227f-4032-8e96-cd655e838e1c}</UniqueIdentifier>
+      <UniqueIdentifier>{973366c5-d3a9-41a1-93f5-3a86367ca392}</UniqueIdentifier>
     </Filter>
     <Filter Include="_Driver\Source Files">
-      <UniqueIdentifier>{dd16254e-d394-43fe-9b70-d1cc39d6bf02}</UniqueIdentifier>
+      <UniqueIdentifier>{676fd25f-6b93-436b-8782-f85fcd668d6c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -47,6 +47,8 @@
     <ClCompile Include="src\MySQLTestSuite.cpp">
       <Filter>_Suite\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Driver.cpp" />
+    <ClCompile Include="src\Driver.cpp">
+      <Filter>_Driver\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
