@@ -80,8 +80,9 @@ list(APPEND POTHOS_SOURCES
     Object/Exception.cpp
 
     Object/Builtin/Compare.cpp
-    Object/Builtin/ConvertVecs.cpp
-    Object/Builtin/ConvertNums.cpp
+    Object/Builtin/ConvertIntermediate.cpp
+    Object/Builtin/ConvertIntegers.cpp
+    Object/Builtin/ConvertFloats.cpp
     Object/Builtin/ConvertString.cpp
     Object/Builtin/Hash.cpp
     Object/Builtin/Serialize.cpp
