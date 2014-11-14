@@ -1,11 +1,21 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include <Pothos/Config.hpp>
+#include <Windows.h>
+
+BOOL DL_GetLogicalProcessorInformationEx(LOGICAL_PROCESSOR_RELATIONSHIP RelationshipType, PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX Buffer, PDWORD ReturnedLength)
+{
+    typedef BOOL (WINAPI * GetLogicalProcessorInformationEx_t)(LOGICAL_PROCESSOR_RELATIONSHIP, PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX, PDWORD);
+    static auto fcn = (GetLogicalProcessorInformationEx_t)GetProcAddress(LoadLibrary("kernel32.dll"), "GetLogicalProcessorInformationEx");
+    if (not fcn) return false;
+    return fcn(RelationshipType, Buffer, ReturnedLength);
+}
+
 #include <Pothos/Plugin.hpp>
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/NumberFormatter.h>
-#include <Windows.h>
 #include <cassert>
 #include <iostream>
 
@@ -25,7 +35,7 @@ public:
   : m_pinfoBase(nullptr), m_pinfoCurrent(nullptr), m_cbRemaining(0)
  {
   DWORD cb = 0;
-  if (GetLogicalProcessorInformationEx(Relationship,
+  if (DL_GetLogicalProcessorInformationEx(Relationship,
                                        nullptr, &cb)) return;
   if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) return;
 
@@ -34,7 +44,7 @@ public:
                                      (LocalAlloc(LMEM_FIXED, cb));
   if (!m_pinfoBase) return;
 
-  if (!GetLogicalProcessorInformationEx(Relationship, 
+  if (!DL_GetLogicalProcessorInformationEx(Relationship, 
                                         m_pinfoBase, &cb)) return;
 
   m_pinfoCurrent = m_pinfoBase;

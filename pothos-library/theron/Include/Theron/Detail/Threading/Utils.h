@@ -17,6 +17,7 @@
 #include <windows.h>
 //delay loaded symbols for windows backwards compatibility
 BOOL DL_GetNumaNodeProcessorMaskEx(USHORT Node, PGROUP_AFFINITY ProcessorMask);
+LPVOID DL_VirtualAllocExNuma(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect, DWORD nndPreferred);
 
 #elif THERON_BOOST
 
@@ -569,7 +570,7 @@ inline void *Utils::AllocOnNode(const uint32_t node, const size_t size)
 #if THERON_WINDOWS
 
     #if _WIN32_WINNT >= 0x0600
-    return VirtualAllocExNuma(
+    return DL_VirtualAllocExNuma(
         GetCurrentProcess(),
         NULL,
         size,
