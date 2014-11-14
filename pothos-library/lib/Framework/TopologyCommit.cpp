@@ -2,19 +2,22 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
+#include "Framework/WorkerActor.hpp"
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Poco/Format.h>
 #include <iostream>
 #include <future>
 
+typedef std::shared_ptr<InfoReceiver<std::string>> StrInfoReceiver;
+
 struct FutureInfo
 {
-    FutureInfo(const std::string &what, const Pothos::Proxy &block, const Pothos::Proxy &result):
+    FutureInfo(const std::string &what, const Pothos::Proxy &block, const StrInfoReceiver &result):
         what(what), block(block), result(result){}
     std::string what;
     Pothos::Proxy block;
-    Pothos::Proxy result;
+    StrInfoReceiver result;
 };
 
 std::string collectFutureInfoErrors(const std::vector<FutureInfo> infoFutures)
@@ -22,7 +25,7 @@ std::string collectFutureInfoErrors(const std::vector<FutureInfo> infoFutures)
     std::string errors;
     for (auto future : infoFutures)
     {
-        const auto &msg = future.result.call<std::string>("WaitInfo");
+        const auto &msg = future.result->WaitInfo();
         if (not msg.empty()) errors.append(future.block.call<std::string>("getName")+"."+future.what+": "+msg+"\n");
     }
     return errors;
@@ -89,7 +92,7 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
             manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
         }
 
-        auto result = src.obj.callProxy("get:_actor").callProxy("setOutputBufferManager", src.name, manager);
+        auto result = src.obj.callProxy("get:_actor").call<StrInfoReceiver>("setOutputBufferManager", src.name, manager);
         infoFutures.push_back(FutureInfo(Poco::format("setOutputBufferManager(%s)", src.name), src.obj, result));
     }
 
@@ -115,7 +118,7 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
         const auto &sec = isInputAction?flow.dst:flow.src;
 
         auto actor = pri.obj.callProxy("get:_actor");
-        auto result = actor.callProxy("sendPortSubscriberMessage", action, pri.name, sec.obj.callProxy("getPointer"), sec.name);
+        auto result = actor.call<StrInfoReceiver>("sendPortSubscriberMessage", action, pri.name, sec.obj.callProxy("getPointer"), sec.name);
         infoFutures.push_back(FutureInfo(Poco::format("sendPortSubscriberMessage(%s)", action), pri.obj, result));
     }
 
@@ -169,7 +172,7 @@ void topologySubCommit(Pothos::Topology &topology)
     //send activate to all new blocks not already in active flows
     for (auto block : getObjSetFromFlowList(newFlows, activeFlatFlows))
     {
-        auto result = block.callProxy("get:_actor").callProxy("sendActivateMessage");
+        auto result = block.callProxy("get:_actor").call<StrInfoReceiver>("sendActivateMessage");
         infoFutures.push_back(FutureInfo("sendActivateMessage()", block, result));
     }
 
@@ -179,7 +182,7 @@ void topologySubCommit(Pothos::Topology &topology)
     //send deactivate to all old blocks not in current active flows
     for (auto block : getObjSetFromFlowList(oldFlows, _impl->activeFlatFlows))
     {
-        auto result = block.callProxy("get:_actor").callProxy("sendDeactivateMessage");
+        auto result = block.callProxy("get:_actor").call<StrInfoReceiver>("sendDeactivateMessage");
         infoFutures.push_back(FutureInfo("sendDeactivateMessage()", block, result));
     }
 

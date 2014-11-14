@@ -241,9 +241,3 @@ static auto managedWorkerActor = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, autoAllocateInput))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, autoAllocateOutput))
     .commit("Pothos/WorkerActor");
-
-static auto managedInfoReceiverString = Pothos::ManagedClass()
-    .registerClass<InfoReceiver<std::string>>()
-    .registerMethod(POTHOS_FCN_TUPLE(InfoReceiver<std::string>, make))
-    .registerMethod(POTHOS_FCN_TUPLE(InfoReceiver<std::string>, WaitInfo))
-    .commit("Pothos/InfoReceiverString");
