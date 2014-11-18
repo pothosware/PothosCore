@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Periodogram.hpp"
+#include "PeriodogramDisplay.hpp"
 #include "PeriodogramChannel.hpp"
 #include "MyPlotUtils.hpp"
 #include <qwt_plot_curve.h>
@@ -11,7 +11,7 @@
 /***********************************************************************
  * initialization functions
  **********************************************************************/
-void Periodogram::activate(void)
+void PeriodogramDisplay::activate(void)
 {
     return;
 }
@@ -19,7 +19,7 @@ void Periodogram::activate(void)
 /***********************************************************************
  * work functions
  **********************************************************************/
-bool Periodogram::updateCurve(Pothos::InputPort *inPort)
+bool PeriodogramDisplay::updateCurve(Pothos::InputPort *inPort)
 {
     //convert and append the new buffer
     auto buff = inPort->buffer();
@@ -40,14 +40,14 @@ bool Periodogram::updateCurve(Pothos::InputPort *inPort)
     return true;
 }
 
-void Periodogram::handlePowerBins(const int index, const std::valarray<float> &powerBins)
+void PeriodogramDisplay::handlePowerBins(const int index, const std::valarray<float> &powerBins)
 {
     auto &curve = _curves[index];
     if (not curve) curve.reset(new PeriodogramChannel(index, _mainPlot));
     curve->update(powerBins, _sampleRateWoAxisUnits, _centerFreqWoAxisUnits, _averageFactor);
 }
 
-void Periodogram::work(void)
+void PeriodogramDisplay::work(void)
 {
     bool doReplot = false;
 

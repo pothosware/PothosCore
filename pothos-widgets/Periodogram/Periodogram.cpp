@@ -1,218 +1,184 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Periodogram.hpp"
-#include "MyPlotStyler.hpp"
-#include "MyPlotPicker.hpp"
-#include "MyPlotUtils.hpp"
-#include <QResizeEvent>
-#include <qwt_plot.h>
-#include <qwt_plot_grid.h>
-#include <qwt_legend.h>
-#include <QHBoxLayout>
+#include "PeriodogramDisplay.hpp"
+#include <Pothos/Framework.hpp>
+#include <iostream>
 
-Periodogram::Periodogram(void):
-    _mainPlot(new MyQwtPlot(this)),
-    _plotGrid(new QwtPlotGrid()),
-    _zoomer(new MyPlotPicker(_mainPlot->canvas())),
-    _displayRate(1.0),
-    _sampleRate(1.0),
-    _sampleRateWoAxisUnits(1.0),
-    _centerFreq(0.0),
-    _centerFreqWoAxisUnits(0.0),
-    _numBins(1024),
-    _refLevel(0.0),
-    _dynRange(100.0),
-    _autoScale(false),
-    _freqLabelId("rxFreq"),
-    _rateLabelId("rxRate"),
-    _averageFactor(0.0)
+/***********************************************************************
+ * |PothosDoc Periodogram
+ *
+ * The periodogram plot displays a live two dimensional plot of power vs frequency.
+ *
+ * |category /Widgets
+ * |keywords frequency plot fft dft spectrum spectral
+ *
+ * |param numInputs[Num Inputs] The number of input ports.
+ * |default 1
+ * |widget SpinBox(minimum=1)
+ * |preview disable
+ *
+ * |param title The title of the plot
+ * |default "Power vs Frequency"
+ * |widget StringEntry()
+ *
+ * |param displayRate[Display Rate] How often the plotter updates.
+ * |default 10.0
+ * |units updates/sec
+ *
+ * |param sampleRate[Sample Rate] The rate of the input elements.
+ * |default 1e6
+ * |units samples/sec
+ *
+ * |param centerFreq[Center Freq] The center frequency of the plot.
+ * This value controls the labeling of the horizontal access.
+ * |default 0.0
+ * |units Hz
+ *
+ * |param numBins[Num FFT Bins] The number of bins per fourier transform.
+ * |default 1024
+ * |option 512
+ * |option 1024
+ * |option 2048
+ * |option 4096
+ * |widget ComboBox(editable=true)
+ *
+ * |param window[Window Type] The window function controls spectral leakage.
+ * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
+ * |default "hann"
+ * |option [Rectangular] "rectangular"
+ * |option [Hann] "hann"
+ * |option [Hamming] "hamming"
+ * |option [Blackman] "blackman"
+ * |option [Bartlett] "bartlett"
+ * |option [Flat-top] "flattop"
+ * |widget ComboBox(editable=true)
+ *
+ * |param refLevel[Reference Level] The maximum displayable power level.
+ * |default 0.0
+ * |units dBxx
+ * |widget DoubleSpinBox(minimum=-150, maximum=150, step=10, decimals=1)
+ * |preview disable
+ *
+ * |param dynRange[Dynamic Range] The ratio of largest to smallest displayable power level.
+ * The vertical axis will display values from the ref level to ref level - dynamic range.
+ * |default 100.0
+ * |units dB
+ * |widget DoubleSpinBox(minimum=10, maximum=150, step=10, decimals=1)
+ * |preview disable
+ *
+ * |param autoScale[Auto-Scale] Enable automatic scaling for the vertical axis.
+ * |default false
+ * |option [Auto scale] true
+ * |option [Use limits] false
+ * |preview disable
+ *
+ * |param averaging[Averaging] Averaging factor for moving average over FFT bins.
+ * A factor of 0.0 means no averaging.
+ * A factor of 1.0 means max averaging.
+ * Increasing the value increases the averaging window.
+ * |default 0.0
+ * |preview disable
+ * |widget DoubleSpinBox(minimum=0.0, maximum=1.0, step=0.05, decimals=3)
+ *
+ * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
+ * |option [Show] true
+ * |option [Hide] false
+ * |default true
+ * |preview disable
+ *
+ * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
+ * |option [Show] true
+ * |option [Hide] false
+ * |default true
+ * |preview disable
+ *
+ * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
+ * |default "dB"
+ * |widget StringEntry()
+ * |preview disable
+ *
+ * |param freqLabelId[Freq Label ID] Labels with this ID can be used to set the center frequency.
+ * To ignore frequency labels, set this parameter to an empty string.
+ * |default "rxFreq"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Labels
+ *
+ * |param rateLabelId[Rate Label ID] Labels with this ID can be used to set the sample rate.
+ * To ignore sample rate labels, set this parameter to an empty string.
+ * |default "rxRate"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Labels
+ *
+ * |mode graphWidget
+ * |factory /widgets/periodogram()
+ * |initializer setNumInputs(numInputs)
+ * |setter setTitle(title)
+ * |setter setDisplayRate(displayRate)
+ * |setter setSampleRate(sampleRate)
+ * |setter setCenterFrequency(centerFreq)
+ * |setter setNumFFTBins(numBins)
+ * |setter setWindowType(window)
+ * |setter setReferenceLevel(refLevel)
+ * |setter setDynamicRange(dynRange)
+ * |setter setAutoScale(autoScale)
+ * |setter setAverageFactor(averaging)
+ * |setter enableXAxis(enableXAxis)
+ * |setter enableYAxis(enableYAxis)
+ * |setter setYAxisTitle(yAxisTitle)
+ * |setter setFreqLabelId(freqLabelId)
+ * |setter setRateLabelId(rateLabelId)
+ **********************************************************************/
+class Periodogram : public Pothos::Topology
 {
-    auto env = Pothos::ProxyEnvironment::make("managed");
-    _window = env->findProxy("Pothos/Util/WindowFunction").callProxy("new");
-
-    //setup block
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, widget));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumInputs));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setTitle));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setDisplayRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setSampleRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setCenterFrequency));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumFFTBins));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setWindowType));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setReferenceLevel));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setDynamicRange));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setAutoScale));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, numInputs));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, title));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, displayRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, sampleRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, centerFrequency));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, numFFTBins));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, referenceLevel));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, dynamicRange));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, autoScale));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setAverageFactor));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableXAxis));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, enableYAxis));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setYAxisTitle));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setFreqLabelId));
-    this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setRateLabelId));
-    this->registerSignal("frequencySelected");
-    this->setupInput(0);
-
-    //layout
-    auto layout = new QHBoxLayout(this);
-    layout->setSpacing(0);
-    layout->setContentsMargins(QMargins());
-    layout->addWidget(_mainPlot);
-
-    //setup plotter
+public:
+    static Topology *make(void)
     {
-        _mainPlot->setCanvasBackground(MyPlotCanvasBg());
-        connect(_zoomer, SIGNAL(selected(const QPointF &)), this, SLOT(handlePickerSelected(const QPointF &)));
-        connect(_zoomer, SIGNAL(zoomed(const QRectF &)), this, SLOT(handleZoomed(const QRectF &)));
-        _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
-        _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
-
-        auto legend = new QwtLegend(_mainPlot);
-        legend->setDefaultItemMode(QwtLegendData::Checkable);
-        _mainPlot->insertLegend(legend);
+        return new Periodogram();
     }
 
-    //setup grid
+    Periodogram(void)
     {
-        _plotGrid->attach(_mainPlot);
-        _plotGrid->setPen(MyPlotGridPen());
+        _display.reset(new PeriodogramDisplay());
+        this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumInputs));
+
+        //connect to internal display block
+        this->connect(this, "setTitle", _display, "setTitle");
+        this->connect(this, "setDisplayRate", _display, "setDisplayRate");
+        this->connect(this, "setSampleRate", _display, "setSampleRate");
+        this->connect(this, "setCenterFrequency", _display, "setCenterFrequency");
+        this->connect(this, "setNumFFTBins", _display, "setNumFFTBins");
+        this->connect(this, "setWindowType", _display, "setWindowType");
+        this->connect(this, "setReferenceLevel", _display, "setReferenceLevel");
+        this->connect(this, "setDynamicRange", _display, "setDynamicRange");
+        this->connect(this, "setAutoScale", _display, "setAutoScale");
+        this->connect(this, "setAverageFactor", _display, "setAverageFactor");
+        this->connect(this, "enableXAxis", _display, "enableXAxis");
+        this->connect(this, "enableYAxis", _display, "enableYAxis");
+        this->connect(this, "setYAxisTitle", _display, "setYAxisTitle");
+        this->connect(_display, "frequencySelected", this, "frequencySelected");
     }
-}
 
-Periodogram::~Periodogram(void)
-{
-    return;
-}
-
-void Periodogram::setNumInputs(const size_t numInputs)
-{
-    for (size_t i = this->inputs().size(); i < numInputs; i++) this->setupInput(i);
-}
-
-void Periodogram::setTitle(const QString &title)
-{
-    QMetaObject::invokeMethod(_mainPlot, "setTitle", Qt::QueuedConnection, Q_ARG(QwtText, MyPlotTitle(title)));
-}
-
-void Periodogram::setDisplayRate(const double displayRate)
-{
-    _displayRate = displayRate;
-}
-
-void Periodogram::setSampleRate(const double sampleRate)
-{
-    _sampleRate = sampleRate;
-    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
-}
-
-void Periodogram::setCenterFrequency(const double freq)
-{
-    _centerFreq = freq;
-    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
-}
-
-void Periodogram::setNumFFTBins(const size_t numBins)
-{
-    _numBins = numBins;
-    _window.callVoid("setSize", numBins);
-}
-
-void Periodogram::setWindowType(const std::string &windowType)
-{
-    _window.callVoid("setType", windowType);
-}
-
-void Periodogram::setReferenceLevel(const double refLevel)
-{
-    _refLevel = refLevel;
-    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
-}
-
-void Periodogram::setDynamicRange(const double dynRange)
-{
-    _dynRange = dynRange;
-    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
-}
-
-void Periodogram::setAutoScale(const bool autoScale)
-{
-    _autoScale = autoScale;
-    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
-}
-
-void Periodogram::handleUpdateAxis(void)
-{
-    QString axisTitle("Hz");
-    double factor = std::max(_sampleRate, _centerFreq);
-    if (factor >= 2e9)
+    Pothos::Object opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
     {
-        factor = 1e9;
-        axisTitle = "GHz";
+        if (name == "setNumInputs") return Pothos::Topology::opaqueCallMethod(name, inputArgs, numArgs);
+        else return _display->opaqueCallMethod(name, inputArgs, numArgs);
     }
-    else if (factor >= 2e6)
+
+    void setNumInputs(const size_t numInputs)
     {
-        factor = 1e6;
-        axisTitle = "MHz";
+        _display->setNumInputs(numInputs);
+        for (size_t i = 0; i < numInputs; i++)
+        {
+            this->connect(this, i, _display, i);
+        }
     }
-    else if (factor >= 2e3)
-    {
-        factor = 1e3;
-        axisTitle = "kHz";
-    }
-    _mainPlot->setAxisTitle(QwtPlot::xBottom, axisTitle);
 
-    _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
-    _sampleRateWoAxisUnits = _sampleRate/factor;
-    _centerFreqWoAxisUnits = _centerFreq/factor;
-    _mainPlot->setAxisScale(QwtPlot::xBottom, _centerFreqWoAxisUnits-_sampleRateWoAxisUnits/2, _centerFreqWoAxisUnits+_sampleRateWoAxisUnits/2);
-    _mainPlot->setAxisScale(QwtPlot::yLeft, _refLevel-_dynRange, _refLevel);
-    _mainPlot->updateAxes(); //update after axis changes
-    _zoomer->setZoomBase(); //record current axis settings
-    this->handleZoomed(_zoomer->zoomBase()); //reload
-}
-
-void Periodogram::handleZoomed(const QRectF &rect)
-{
-    //when zoomed all the way out, return to autoscale
-    if (rect == _zoomer->zoomBase() and _autoScale)
-    {
-        _mainPlot->setAxisAutoScale(QwtPlot::yLeft);
-    }
-}
-
-QString Periodogram::title(void) const
-{
-    return _mainPlot->title().text();
-}
-
-void Periodogram::enableXAxis(const bool enb)
-{
-    _mainPlot->enableAxis(QwtPlot::xBottom, enb);
-}
-
-void Periodogram::enableYAxis(const bool enb)
-{
-    _mainPlot->enableAxis(QwtPlot::yLeft, enb);
-}
-
-void Periodogram::setYAxisTitle(const QString &title)
-{
-    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::yLeft), Q_ARG(QwtText, MyPlotAxisTitle(title)));
-}
-
-void Periodogram::handlePickerSelected(const QPointF &p)
-{
-    const double freq = p.x()*_sampleRate/_sampleRateWoAxisUnits;
-    this->callVoid("frequencySelected", freq);
-}
+private:
+    std::shared_ptr<PeriodogramDisplay> _display;
+};
 
 /***********************************************************************
  * registration
