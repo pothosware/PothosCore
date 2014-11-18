@@ -5,7 +5,7 @@
 #include <future>
 
 /***********************************************************************
- * helpers to deal with recursive topology comprehension
+ * helpers to deal with recursive topology comprehension - ports
  **********************************************************************/
 static std::vector<Port> resolvePorts(const Port &port, const bool isSource);
 
@@ -29,31 +29,79 @@ std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std:
     return ports;
 }
 
+static Port proxyToPort(const Pothos::Proxy &portProxy)
+{
+    Port port;
+    port.name = portProxy.call<std::string>("get:name");
+    port.obj = portProxy.callProxy("get:obj");
+    port.uid = portProxy.call<std::string>("get:uid");
+    return port;
+}
+
 static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
 {
     std::vector<Port> ports;
 
     //resolve ports connected to the topology
+    Pothos::Proxy subPorts;
     try
     {
-        auto subPorts = port.obj.callProxy("resolvePorts", port.name, isSource);
-        for (size_t i = 0; i < subPorts.call<size_t>("size"); i++)
-        {
-            auto portProxy = subPorts.callProxy("at", i);
-            Port port;
-            port.name = portProxy.call<std::string>("get:name");
-            port.obj = portProxy.callProxy("get:obj");
-            port.uid = portProxy.call<std::string>("get:uid");
-            ports.push_back(port);
-        }
+        subPorts = port.obj.callProxy("resolvePorts", port.name, isSource);
     }
     catch (const Pothos::Exception &)
     {
         //its just a block, no ports to resolve
         ports.push_back(port);
+        return ports;
+    }
+
+    const auto len = subPorts.call<size_t>("size");
+    for (size_t i = 0; i < len; i++)
+    {
+        ports.push_back(proxyToPort(subPorts.callProxy("at", i)));
     }
 
     return ports;
+}
+
+/***********************************************************************
+ * helpers to deal with recursive topology comprehension - flows
+ **********************************************************************/
+std::vector<Flow> resolveFlowsFromTopology(const Pothos::Topology &t)
+{
+    return t._impl->squashFlows(t._impl->flows);
+}
+
+static Flow proxyToFlow(const Pothos::Proxy &flowProxy)
+{
+    Flow flow;
+    flow.src = proxyToPort(flowProxy.callProxy("get:src"));
+    flow.dst = proxyToPort(flowProxy.callProxy("get:dst"));
+    return flow;
+}
+
+static std::vector<Flow> resolveFlows(const Pothos::Proxy &obj)
+{
+    std::vector<Flow> flows;
+
+    //resolve flows within the topology
+    Pothos::Proxy subFlows;
+    try
+    {
+        subFlows = obj.callProxy("resolveFlows");
+    }
+    catch (const Pothos::Exception &)
+    {
+        return flows;
+    }
+
+    const auto len = subFlows.call<size_t>("size");
+    for (size_t i = 0; i < len; i++)
+    {
+        flows.push_back(proxyToFlow(subFlows.callProxy("at", i)));
+    }
+
+    return flows;
 }
 
 /***********************************************************************
@@ -74,6 +122,21 @@ std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &f
         future_dsts.push_back(std::async(std::launch::async, &resolvePorts, flow.dst, false));
     }
 
+    //get a list of objects
+    std::map<std::string, Pothos::Proxy> uidToObj;
+    for (const auto &flow : flows)
+    {
+        if (flow.src.obj) uidToObj[flow.src.uid] = flow.src.obj;
+        if (flow.dst.obj) uidToObj[flow.dst.uid] = flow.dst.obj;
+    }
+
+    //spawn futures to resolve sub-topology flows
+    std::vector<std::shared_future<std::vector<Flow>>> futureFlows;
+    for (const auto &pair : uidToObj)
+    {
+        futureFlows.push_back(std::async(std::launch::async, &resolveFlows, pair.second));
+    }
+
     //create flat flows from futures
     std::vector<Flow> flatFlows;
     assert(future_srcs.size() == future_dsts.size());
@@ -90,6 +153,11 @@ std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &f
                 flatFlows.push_back(flatFlow);
             }
         }
+    }
+    for (const auto &futureFlow : futureFlows)
+    {
+        const auto flows = futureFlow.get();
+        flatFlows.insert(flatFlows.end(), flows.begin(), flows.end());
     }
 
     //only store the actual blocks

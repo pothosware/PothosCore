@@ -286,6 +286,7 @@ static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 }
 
 std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std::string &portName, const bool isSource);
+std::vector<Flow> resolveFlowsFromTopology(const Pothos::Topology &t);
 void topologySubCommit(Pothos::Topology &topology);
 
 static auto managedTopology = Pothos::ManagedClass()
@@ -295,6 +296,7 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("subCommit", &topologySubCommit)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
+    .registerMethod("resolveFlows", &resolveFlowsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setThreadPool))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, getThreadPool))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, commit))
@@ -309,6 +311,9 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, toDotMarkup))
     .commit("Pothos/Topology");
 
+/***********************************************************************
+ * port type registration
+ **********************************************************************/
 static auto managedPort = Pothos::ManagedClass()
     .registerClass<Port>()
     .registerField(POTHOS_FCN_TUPLE(Port, obj))
@@ -332,8 +337,27 @@ static auto managedPortVector = Pothos::ManagedClass()
     .registerMethod("at", &portVectorAt)
     .commit("Pothos/Topology/PortVector");
 
+/***********************************************************************
+ * flow type registration
+ **********************************************************************/
 static auto managedFlow = Pothos::ManagedClass()
     .registerClass<Flow>()
     .registerField(POTHOS_FCN_TUPLE(Flow, src))
     .registerField(POTHOS_FCN_TUPLE(Flow, dst))
     .commit("Pothos/Topology/Flow");
+
+static size_t flowVectorSize(const std::vector<Flow> &vec)
+{
+    return vec.size();
+}
+
+static Flow flowVectorAt(const std::vector<Flow> &vec, const size_t index)
+{
+    return vec.at(index);
+}
+
+static auto managedFlowVector = Pothos::ManagedClass()
+    .registerClass<std::vector<Flow>>()
+    .registerMethod("size", &flowVectorSize)
+    .registerMethod("at", &flowVectorAt)
+    .commit("Pothos/Topology/FlowVector");
