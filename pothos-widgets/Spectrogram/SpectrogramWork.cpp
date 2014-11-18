@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Spectrogram.hpp"
+#include "SpectrogramDisplay.hpp"
 #include "MyPlotUtils.hpp"
 #include <qwt_plot.h>
 #include <QTimer>
@@ -10,55 +10,33 @@
 /***********************************************************************
  * initialization functions
  **********************************************************************/
-void Spectrogram::activate(void)
+void SpectrogramDisplay::activate(void)
 {
     QMetaObject::invokeMethod(_replotTimer, "start", Qt::QueuedConnection);
 }
 
-void Spectrogram::deactivate(void)
+void SpectrogramDisplay::deactivate(void)
 {
     QMetaObject::invokeMethod(_replotTimer, "stop", Qt::QueuedConnection);
 }
 
 /***********************************************************************
- * work functions
+ * work function
  **********************************************************************/
-bool Spectrogram::updateCurve(Pothos::InputPort *inPort)
-{
-    //convert and append the new buffer
-    auto buff = inPort->buffer();
-    auto floatBuff = buff.convert(Pothos::DType(typeid(std::complex<float>)), buff.elements());
-    _rasterBuff.append(floatBuff);
-
-    //enough in the raster buffer?
-    if (_rasterBuff.elements() < this->numFFTBins()) return false;
-
-    //power bins to points on the curve
-    CArray fftBins(_rasterBuff.as<const std::complex<float> *>(), this->numFFTBins());
-    const auto powerBins = fftPowerSpectrum(fftBins, _window.call<std::vector<double>>("window"), _window.call<double>("power"));
-    this->appendBins(powerBins);
-
-    //clear old raster buffer
-    _rasterBuff = Pothos::BufferChunk();
-    return true;
-}
-
-void Spectrogram::work(void)
+void SpectrogramDisplay::work(void)
 {
     auto updateRate = this->height()/_timeSpan;
+    if (updateRate != _lastUpdateRate) this->callVoid("updateRateChanged", updateRate);
+    _lastUpdateRate = updateRate;
 
-    //should we update the plotter with these values?
-    const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/updateRate));
-    bool doUpdate = (std::chrono::high_resolution_clock::now() - _timeLastUpdate) > timeBetweenUpdates;
-
-    //create a new entry in the raster data + consume
     auto inPort = this->input(0);
-    if (inPort->elements() == 0) return;
-    inPort->consume(inPort->elements());
+    if (not inPort->hasMessage()) return;
+    const auto msg = inPort->popMessage();
 
-    //use special stream labels to modify parameters
-    for (const auto &label : inPort->labels())
+    //label-based messages have in-line commands
+    if (msg.type() == typeid(Pothos::Label))
     {
+        const auto &label = msg.convert<Pothos::Label>();
         if (label.id == _freqLabelId and label.data.canConvert(typeid(double)))
         {
             this->setCenterFrequency(label.data.convert<double>());
@@ -69,9 +47,18 @@ void Spectrogram::work(void)
         }
     }
 
-    //perform the plotter update
-    if (doUpdate and this->updateCurve(inPort))
+    //packet-based messages have payloads to FFT
+    if (msg.type() == typeid(Pothos::Packet))
     {
-        _timeLastUpdate = std::chrono::high_resolution_clock::now();
+        const auto &buff = msg.convert<Pothos::Packet>().payload;
+        auto floatBuff = buff.convert(Pothos::DType(typeid(std::complex<float>)), buff.elements());
+
+        //safe guard against FFT size changes, old buffers could still be in-flight
+        if (floatBuff.elements() != this->numFFTBins()) return;
+
+        //power bins to points on the curve
+        CArray fftBins(floatBuff.as<const std::complex<float> *>(), this->numFFTBins());
+        const auto powerBins = fftPowerSpectrum(fftBins, _window.call<std::vector<double>>("window"), _window.call<double>("power"));
+        this->appendBins(powerBins);
     }
 }

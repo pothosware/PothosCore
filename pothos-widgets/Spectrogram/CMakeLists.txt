@@ -6,7 +6,8 @@ POTHOS_MODULE_UTIL(
     SOURCES
         Spectrogram.cpp
         SpectrogramWork.cpp
-    DOC_SOURCES Spectrogram.hpp
+        SpectrogramDisplay.cpp
+    DOC_SOURCES Spectrogram.cpp
     LIBRARIES ${Qt5_LIBRARIES}
     DESTINATION widgets
 )
