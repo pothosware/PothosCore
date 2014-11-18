@@ -112,7 +112,7 @@ private slots:
      * Call block eval from the gui thread context.
      * This is required for blocks that have widgets.
      */
-    void blockEvalInGUIContext(void);
+    bool blockEvalInGUIContext(void);
 
 private:
 
@@ -169,4 +169,5 @@ private:
 
     //remote block evaluator
     Pothos::Proxy _blockEval;
+    Pothos::Proxy _proxyBlock;
 };

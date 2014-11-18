@@ -68,7 +68,7 @@ bool BlockEval::isReady(void) const
 
 Pothos::Proxy BlockEval::getProxyBlock(void) const
 {
-    return _blockEval.callProxy("getProxyBlock");
+    return _proxyBlock;
 }
 
 void BlockEval::acceptInfo(const BlockInfo &info)
@@ -140,6 +140,7 @@ bool BlockEval::evaluationProcedure(void)
         _lastEnvironment = _newEnvironment;
         _lastBlockInfo = BlockInfo();
         _blockEval = Pothos::Proxy();
+        _proxyBlock = Pothos::Proxy();
     }
 
     //special case: apply settings only
@@ -169,16 +170,15 @@ bool BlockEval::evaluationProcedure(void)
     //this may create a new _blockEval if needed
     else if (this->updateAllProperties())
     {
-        try
+        //widget blocks have to be evaluated in the GUI thread context, otherwise, eval here
+        if (_newBlockInfo.isGraphWidget)
         {
-            //widget blocks have to be evaluated in the GUI thread context, otherwise, eval here
-            if (_newBlockInfo.isGraphWidget)
-            {
-                QMetaObject::invokeMethod(this, "blockEvalInGUIContext", Qt::BlockingQueuedConnection);
-                if (not _blockEval) evalSuccess = false;
-                else _lastBlockStatus.widget = this->getProxyBlock().call<QWidget *>("widget");
-            }
-            else _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
+            QMetaObject::invokeMethod(this, "blockEvalInGUIContext", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, evalSuccess));
+        }
+        else try
+        {
+            _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
+            _proxyBlock = _blockEval.callProxy("getProxyBlock");
         }
         catch(const Pothos::Exception &ex)
         {
@@ -394,17 +394,20 @@ void BlockEval::reportError(const std::string &action, const Pothos::Exception &
         .arg(QString::fromStdString(ex.displayText())));
 }
 
-void BlockEval::blockEvalInGUIContext(void)
+bool BlockEval::blockEvalInGUIContext(void)
 {
     try
     {
         _blockEval.callProxy("setProperty", "remoteEnv", _newEnvironmentEval->getEval().getEnvironment());
         _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
+        _proxyBlock = _blockEval.callProxy("getProxyBlock");
+        _lastBlockStatus.widget = _proxyBlock.call<QWidget *>("widget");
+        return true;
     }
     catch (const Pothos::Exception &ex)
     {
-        _blockEval = Pothos::Proxy();
         poco_error_f2(Poco::Logger::get("PothosGui.BlockEval.guiEval"), "%s-%s", _newBlockInfo.id.toStdString(), ex.displayText());
         _lastBlockStatus.blockErrorMsgs.push_back(tr("Failed to eval in GUI context %1-%2").arg(_newBlockInfo.id).arg(QString::fromStdString(ex.message())));
+        return false;
     }
 }
