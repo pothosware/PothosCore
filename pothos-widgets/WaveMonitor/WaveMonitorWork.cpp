@@ -47,7 +47,7 @@ void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, co
 
     //create markers from labels
     auto &markers = _markers[index];
-    markers.clear(); //clear old markers
+    if (whichCurve == 0) markers.clear(); //clear old markers
     for (const auto &label : labels)
     {
         auto marker = new QwtPlotMarker();
@@ -116,6 +116,4 @@ void WaveMonitorDisplay::work(void)
     }
 
     QMetaObject::invokeMethod(_mainPlot, "replot", Qt::QueuedConnection);
-
-
 }
