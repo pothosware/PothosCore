@@ -196,10 +196,10 @@ void Pothos::Topology::_disconnect(
     _impl->flows.erase(it);
 }
 
-void Pothos::Topology::disconnectAll(void)
+void Pothos::Topology::disconnectAll(const bool recursive)
 {
     //call disconnect all on the sub-topologies
-    for (const auto &flow : _impl->flows)
+    if (recursive) for (const auto &flow : _impl->flows)
     {
         //throws ProxyHandleCallError on non topologies (aka blocks)
         if (flow.src.obj) try
@@ -286,6 +286,7 @@ static Pothos::ProxyVector getFlowsFromTopology(const Pothos::Topology &t)
 }
 
 std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std::string &portName, const bool isSource);
+std::vector<Flow> resolveFlowsFromTopology(const Pothos::Topology &t);
 void topologySubCommit(Pothos::Topology &topology);
 
 static auto managedTopology = Pothos::ManagedClass()
@@ -295,10 +296,12 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("subCommit", &topologySubCommit)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
+    .registerMethod("resolveFlows", &resolveFlowsFromTopology)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, setThreadPool))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, getThreadPool))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, commit))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, disconnectAll))
+    .registerMethod("disconnectAll", Pothos::Callable(&Pothos::Topology::disconnectAll).bind(false, 1))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, waitInactive))
     //and bind defaults into waitInactive for optional trailing arguments
     .registerMethod("waitInactive", Pothos::Callable(&Pothos::Topology::waitInactive).bind(1.0, 2))
@@ -308,6 +311,9 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, toDotMarkup))
     .commit("Pothos/Topology");
 
+/***********************************************************************
+ * port type registration
+ **********************************************************************/
 static auto managedPort = Pothos::ManagedClass()
     .registerClass<Port>()
     .registerField(POTHOS_FCN_TUPLE(Port, obj))
@@ -331,8 +337,27 @@ static auto managedPortVector = Pothos::ManagedClass()
     .registerMethod("at", &portVectorAt)
     .commit("Pothos/Topology/PortVector");
 
+/***********************************************************************
+ * flow type registration
+ **********************************************************************/
 static auto managedFlow = Pothos::ManagedClass()
     .registerClass<Flow>()
     .registerField(POTHOS_FCN_TUPLE(Flow, src))
     .registerField(POTHOS_FCN_TUPLE(Flow, dst))
     .commit("Pothos/Topology/Flow");
+
+static size_t flowVectorSize(const std::vector<Flow> &vec)
+{
+    return vec.size();
+}
+
+static Flow flowVectorAt(const std::vector<Flow> &vec, const size_t index)
+{
+    return vec.at(index);
+}
+
+static auto managedFlowVector = Pothos::ManagedClass()
+    .registerClass<std::vector<Flow>>()
+    .registerMethod("size", &flowVectorSize)
+    .registerMethod("at", &flowVectorAt)
+    .commit("Pothos/Topology/FlowVector");
