@@ -113,11 +113,12 @@ public:
 
     /*!
      * Disconnect all data flows inside this topology.
-     * This call is recursive and will disconnect all
-     * on the other sub-topologies in this data flow.
+     * This call can be recursive and will disconnect all
+     * on the other sub-topologies within this data flow.
      * No changes to the data flow occur until commit().
+     * \param recursive true to recurse through sub-topologies
      */
-    void disconnectAll(void);
+    void disconnectAll(const bool recursive = false);
 
     //! Create a connection between a source port and a destination port.
     void _connect(
