@@ -196,10 +196,10 @@ void Pothos::Topology::_disconnect(
     _impl->flows.erase(it);
 }
 
-void Pothos::Topology::disconnectAll(void)
+void Pothos::Topology::disconnectAll(const bool recursive)
 {
     //call disconnect all on the sub-topologies
-    for (const auto &flow : _impl->flows)
+    if (recursive) for (const auto &flow : _impl->flows)
     {
         //throws ProxyHandleCallError on non topologies (aka blocks)
         if (flow.src.obj) try
@@ -299,6 +299,7 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, getThreadPool))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, commit))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, disconnectAll))
+    .registerMethod("disconnectAll", Pothos::Callable(&Pothos::Topology::disconnectAll).bind(false, 1))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, waitInactive))
     //and bind defaults into waitInactive for optional trailing arguments
     .registerMethod("waitInactive", Pothos::Callable(&Pothos::Topology::waitInactive).bind(1.0, 2))
