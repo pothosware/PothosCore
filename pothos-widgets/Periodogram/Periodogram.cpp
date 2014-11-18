@@ -142,6 +142,12 @@ public:
     Periodogram(void)
     {
         _display.reset(new PeriodogramDisplay());
+
+        auto env = Pothos::ProxyEnvironment::make("managed");
+        auto registry = env->findProxy("Pothos/BlockRegistry");
+        _snooper = registry.callProxy("/blocks/stream_snooper");
+
+
         this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumInputs));
 
         //connect to internal display block
@@ -159,24 +165,39 @@ public:
         this->connect(this, "enableYAxis", _display, "enableYAxis");
         this->connect(this, "setYAxisTitle", _display, "setYAxisTitle");
         this->connect(_display, "frequencySelected", this, "frequencySelected");
+
+        //connect to the internal snooper block
+        this->connect(this, "setDisplayRate", _snooper, "setTriggerRate");
+        this->connect(this, "setNumFFTBins", _snooper, "setChunkSize");
+
     }
 
     Pothos::Object opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
     {
+        //calls that go to the snooper
+        if (name == "setDisplayRate") _snooper.callVoid("setTriggerRate", inputArgs[0].convert<double>());
+        if (name == "setNumFFTBins") _snooper.callVoid("setChunkSize", inputArgs[0].convert<size_t>());
+
+        //calls that go to the topology
         if (name == "setNumInputs") return Pothos::Topology::opaqueCallMethod(name, inputArgs, numArgs);
+
+        //forward everything else to display
         else return _display->opaqueCallMethod(name, inputArgs, numArgs);
     }
 
     void setNumInputs(const size_t numInputs)
     {
         _display->setNumInputs(numInputs);
+        _snooper.callVoid("setNumPorts", numInputs);
         for (size_t i = 0; i < numInputs; i++)
         {
-            this->connect(this, i, _display, i);
+            this->connect(this, i, _snooper, i);
+            this->connect(_snooper, i, _display, i);
         }
     }
 
 private:
+    Pothos::Proxy _snooper;
     std::shared_ptr<PeriodogramDisplay> _display;
 };
 

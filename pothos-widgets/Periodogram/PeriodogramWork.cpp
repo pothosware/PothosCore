@@ -7,6 +7,7 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot.h>
 #include <complex>
+#include <iostream>
 
 /***********************************************************************
  * initialization functions
@@ -53,6 +54,11 @@ void PeriodogramDisplay::work(void)
 
     for (auto inPort : this->inputs())
     {
+        if (inPort->hasMessage())
+        {
+            std::cout << inPort->popMessage().toString() << std::endl;
+        }
+        /*
         //always consume all available input
         if (inPort->elements() == 0) continue;
         inPort->consume(inPort->elements());
@@ -81,6 +87,7 @@ void PeriodogramDisplay::work(void)
             lastUpdateTime = std::chrono::high_resolution_clock::now();
             doReplot = true;
         }
+        */
     }
 
     if (doReplot) QMetaObject::invokeMethod(_mainPlot, "replot", Qt::QueuedConnection);
