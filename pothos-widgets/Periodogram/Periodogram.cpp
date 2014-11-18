@@ -113,7 +113,7 @@
  * |tab Labels
  *
  * |mode graphWidget
- * |factory /widgets/periodogram()
+ * |factory /widgets/periodogram(remoteEnv)
  * |initializer setNumInputs(numInputs)
  * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
@@ -134,17 +134,16 @@
 class Periodogram : public Pothos::Topology
 {
 public:
-    static Topology *make(void)
+    static Topology *make(const Pothos::ProxyEnvironment::Sptr &remoteEnv)
     {
-        return new Periodogram();
+        return new Periodogram(remoteEnv);
     }
 
-    Periodogram(void)
+    Periodogram(const Pothos::ProxyEnvironment::Sptr &remoteEnv)
     {
         _display.reset(new PeriodogramDisplay());
 
-        auto env = Pothos::ProxyEnvironment::make("managed");
-        auto registry = env->findProxy("Pothos/BlockRegistry");
+        auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
         _snooper = registry.callProxy("/blocks/stream_snooper");
 
         //register calls in this topology
@@ -188,6 +187,9 @@ public:
 
     void setNumInputs(const size_t numInputs)
     {
+        _display->setName(this->getName()+"Display");
+        _snooper.callVoid("setName", this->getName()+"Snooper");
+
         _display->setNumInputs(numInputs);
         _snooper.callVoid("setNumPorts", numInputs);
         for (size_t i = 0; i < numInputs; i++)
