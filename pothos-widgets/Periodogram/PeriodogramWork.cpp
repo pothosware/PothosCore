@@ -7,40 +7,10 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot.h>
 #include <complex>
-#include <iostream>
-
-/***********************************************************************
- * initialization functions
- **********************************************************************/
-void PeriodogramDisplay::activate(void)
-{
-    return;
-}
 
 /***********************************************************************
  * work functions
  **********************************************************************/
-bool PeriodogramDisplay::updateCurve(Pothos::InputPort *inPort)
-{
-    //convert and append the new buffer
-    auto buff = inPort->buffer();
-    auto floatBuff = buff.convert(Pothos::DType(typeid(std::complex<float>)), buff.elements());
-    auto &rasterBuff = _rasterBuffs[inPort->index()];
-    rasterBuff.append(floatBuff);
-
-    //enough in the raster buffer?
-    if (rasterBuff.elements() < this->numFFTBins()) return false;
-
-    //power bins to points on the curve
-    CArray fftBins(rasterBuff.as<const std::complex<float> *>(), this->numFFTBins());
-    const auto powerBins = fftPowerSpectrum(fftBins, _window.call<std::vector<double>>("window"), _window.call<double>("power"));
-    QMetaObject::invokeMethod(this, "handlePowerBins", Qt::QueuedConnection, Q_ARG(int, inPort->index()), Q_ARG(std::valarray<float>, powerBins));
-
-    //clear old raster buffer
-    rasterBuff = Pothos::BufferChunk();
-    return true;
-}
-
 void PeriodogramDisplay::handlePowerBins(const int index, const std::valarray<float> &powerBins)
 {
     auto &curve = _curves[index];
@@ -50,22 +20,15 @@ void PeriodogramDisplay::handlePowerBins(const int index, const std::valarray<fl
 
 void PeriodogramDisplay::work(void)
 {
-    bool doReplot = false;
-
     for (auto inPort : this->inputs())
     {
-        if (inPort->hasMessage())
-        {
-            std::cout << inPort->popMessage().toString() << std::endl;
-        }
-        /*
-        //always consume all available input
-        if (inPort->elements() == 0) continue;
-        inPort->consume(inPort->elements());
+        if (not inPort->hasMessage()) continue;
+        const auto msg = inPort->popMessage();
 
-        //use special stream labels to modify parameters
-        for (const auto &label : inPort->labels())
+        //label-based messages have in-line commands
+        if (msg.type() == typeid(Pothos::Label))
         {
+            const auto &label = msg.convert<Pothos::Label>();
             if (label.id == _freqLabelId and label.data.canConvert(typeid(double)))
             {
                 this->setCenterFrequency(label.data.convert<double>());
@@ -76,19 +39,21 @@ void PeriodogramDisplay::work(void)
             }
         }
 
-        //should we update the plotter with these values?
-        auto &lastUpdateTime = _lastUpdateTimes[inPort->index()];
-        const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/_displayRate));
-        bool doUpdate = (std::chrono::high_resolution_clock::now() - lastUpdateTime) > timeBetweenUpdates;
-
-        //perform the raster update
-        if (doUpdate and this->updateCurve(inPort))
+        //packet-based messages have payloads to FFT
+        if (msg.type() == typeid(Pothos::Packet))
         {
-            lastUpdateTime = std::chrono::high_resolution_clock::now();
-            doReplot = true;
+            const auto &buff = msg.convert<Pothos::Packet>().payload;
+            auto floatBuff = buff.convert(Pothos::DType(typeid(std::complex<float>)), buff.elements());
+
+            //safe guard against FFT size changes, old buffers could still be in-flight
+            if (floatBuff.elements() != this->numFFTBins()) continue;
+
+            //power bins to points on the curve
+            CArray fftBins(floatBuff.as<const std::complex<float> *>(), this->numFFTBins());
+            const auto powerBins = fftPowerSpectrum(fftBins, _window.call<std::vector<double>>("window"), _window.call<double>("power"));
+            QMetaObject::invokeMethod(this, "handlePowerBins", Qt::QueuedConnection, Q_ARG(int, inPort->index()), Q_ARG(std::valarray<float>, powerBins));
         }
-        */
     }
 
-    if (doReplot) QMetaObject::invokeMethod(_mainPlot, "replot", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(_mainPlot, "replot", Qt::QueuedConnection);
 }

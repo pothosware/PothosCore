@@ -7,7 +7,6 @@
 #include <Pothos/Proxy.hpp>
 #include <QWidget>
 #include <memory>
-#include <chrono>
 #include <map>
 #include <vector>
 #include "MyFFTUtils.hpp"
@@ -38,12 +37,6 @@ public:
     void setTitle(const QString &title);
 
     /*!
-     * update rate for the plotter
-     * how often to update the display
-     */
-    void setDisplayRate(const double displayRate);
-
-    /*!
      * sample rate for the plotter
      * controls the frequency scaling display
      */
@@ -65,11 +58,6 @@ public:
     size_t numInputs(void) const
     {
         return this->inputs().size();
-    }
-
-    double displayRate(void) const
-    {
-        return _displayRate;
     }
 
     double sampleRate(void) const
@@ -124,9 +112,7 @@ public:
         _averageFactor = factor;
     }
 
-    void activate(void);
     void work(void);
-    bool updateCurve(Pothos::InputPort *inPort);
 
     //allow for standard resize controls with the default size policy
     QSize minimumSizeHint(void) const
@@ -149,7 +135,6 @@ private:
     QwtPlotGrid *_plotGrid;
     QwtPlotZoomer *_zoomer;
     Pothos::Proxy _window;
-    double _displayRate;
     double _sampleRate;
     double _sampleRateWoAxisUnits;
     double _centerFreq;
@@ -163,7 +148,5 @@ private:
     double _averageFactor;
 
     //per-port data structs
-    std::map<size_t, std::chrono::high_resolution_clock::time_point> _lastUpdateTimes;
-    std::map<size_t, Pothos::BufferChunk> _rasterBuffs;
     std::map<size_t, std::shared_ptr<PeriodogramChannel>> _curves;
 };

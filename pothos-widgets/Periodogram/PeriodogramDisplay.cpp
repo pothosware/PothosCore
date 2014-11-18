@@ -15,7 +15,6 @@ PeriodogramDisplay::PeriodogramDisplay(void):
     _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
     _zoomer(new MyPlotPicker(_mainPlot->canvas())),
-    _displayRate(1.0),
     _sampleRate(1.0),
     _sampleRateWoAxisUnits(1.0),
     _centerFreq(0.0),
@@ -35,7 +34,6 @@ PeriodogramDisplay::PeriodogramDisplay(void):
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, widget));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setNumInputs));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setTitle));
-    this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setDisplayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setCenterFrequency));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setNumFFTBins));
@@ -45,7 +43,6 @@ PeriodogramDisplay::PeriodogramDisplay(void):
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setAutoScale));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, numInputs));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, title));
-    this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, displayRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, centerFrequency));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, numFFTBins));
@@ -100,11 +97,6 @@ void PeriodogramDisplay::setNumInputs(const size_t numInputs)
 void PeriodogramDisplay::setTitle(const QString &title)
 {
     QMetaObject::invokeMethod(_mainPlot, "setTitle", Qt::QueuedConnection, Q_ARG(QwtText, MyPlotTitle(title)));
-}
-
-void PeriodogramDisplay::setDisplayRate(const double displayRate)
-{
-    _displayRate = displayRate;
 }
 
 void PeriodogramDisplay::setSampleRate(const double sampleRate)

@@ -147,12 +147,13 @@ public:
         auto registry = env->findProxy("Pothos/BlockRegistry");
         _snooper = registry.callProxy("/blocks/stream_snooper");
 
-
+        //register calls in this topology
         this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumInputs));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setDisplayRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumFFTBins));
 
         //connect to internal display block
         this->connect(this, "setTitle", _display, "setTitle");
-        this->connect(this, "setDisplayRate", _display, "setDisplayRate");
         this->connect(this, "setSampleRate", _display, "setSampleRate");
         this->connect(this, "setCenterFrequency", _display, "setCenterFrequency");
         this->connect(this, "setNumFFTBins", _display, "setNumFFTBins");
@@ -174,15 +175,15 @@ public:
 
     Pothos::Object opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
     {
-        //calls that go to the snooper
-        if (name == "setDisplayRate") _snooper.callVoid("setTriggerRate", inputArgs[0].convert<double>());
-        if (name == "setNumFFTBins") _snooper.callVoid("setChunkSize", inputArgs[0].convert<size_t>());
-
         //calls that go to the topology
-        if (name == "setNumInputs") return Pothos::Topology::opaqueCallMethod(name, inputArgs, numArgs);
+        try
+        {
+            return Pothos::Topology::opaqueCallMethod(name, inputArgs, numArgs);
+        }
+        catch (const Pothos::BlockCallNotFound &){}
 
         //forward everything else to display
-        else return _display->opaqueCallMethod(name, inputArgs, numArgs);
+        return _display->opaqueCallMethod(name, inputArgs, numArgs);
     }
 
     void setNumInputs(const size_t numInputs)
@@ -194,6 +195,17 @@ public:
             this->connect(this, i, _snooper, i);
             this->connect(_snooper, i, _display, i);
         }
+    }
+
+    void setDisplayRate(const double rate)
+    {
+        _snooper.callVoid("setTriggerRate", rate);
+    }
+
+    void setNumFFTBins(const size_t num)
+    {
+        _snooper.callVoid("setChunkSize", num);
+        _display->setNumFFTBins(num);
     }
 
 private:
