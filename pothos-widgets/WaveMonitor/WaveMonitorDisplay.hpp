@@ -93,7 +93,7 @@ private:
     QwtPlotGrid *_plotGrid;
     QwtPlotZoomer *_zoomer;
     double _sampleRate;
-    double _timeSpan;
+    double _sampleRateWoAxisUnits;
     size_t _numPoints;
     std::string _rateLabelId;
 

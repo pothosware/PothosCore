@@ -17,7 +17,7 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
     _plotGrid(new QwtPlotGrid()),
     _zoomer(new MyPlotPicker(_mainPlot->canvas())),
     _sampleRate(1.0),
-    _timeSpan(1.0),
+    _sampleRateWoAxisUnits(1.0),
     _numPoints(1024),
     _rateLabelId("rxRate"),
     _nextColorIndex(0)
@@ -115,26 +115,29 @@ void WaveMonitorDisplay::setYAxisTitle(const QString &title)
 void WaveMonitorDisplay::handleUpdateAxis(void)
 {
     QString timeAxisTitle("secs");
-    _timeSpan = _numPoints/_sampleRate;
-    if (_timeSpan <= 100e-9)
+    double factor = 1.0;
+
+    double timeSpan = _numPoints/_sampleRate;
+    if (timeSpan <= 100e-9)
     {
-        _timeSpan *= 1e9;
+        factor = 1e9;
         timeAxisTitle = "nsecs";
     }
-    else if (_timeSpan <= 100e-6)
+    else if (timeSpan <= 100e-6)
     {
-        _timeSpan *= 1e6;
+        factor = 1e6;
         timeAxisTitle = "usecs";
     }
-    else if (_timeSpan <= 100e-3)
+    else if (timeSpan <= 100e-3)
     {
-        _timeSpan *= 1e3;
+        factor = 1e3;
         timeAxisTitle = "msecs";
     }
     _mainPlot->setAxisTitle(QwtPlot::xBottom, timeAxisTitle);
 
     _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
-    _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
+    _sampleRateWoAxisUnits = _sampleRate/factor;
+    _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _numPoints/_sampleRateWoAxisUnits);
     _mainPlot->updateAxes(); //update after axis changes
     _zoomer->setZoomBase(); //record current axis settings
     this->handleZoomed(_zoomer->zoomBase()); //reload
