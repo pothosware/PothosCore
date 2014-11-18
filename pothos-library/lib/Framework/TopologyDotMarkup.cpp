@@ -81,7 +81,9 @@ std::string Pothos::Topology::toDotMarkup(const bool flat)
             td->setAttribute("border", "1");
             td->setAttribute("bgcolor", "azure");
             tr->appendChild(td);
-            td->appendChild(xmlDoc->createTextNode(block.call<std::string>("getName")));
+            auto name = block.call<std::string>("getName");
+            if (name.empty()) name = "Empty Name";
+            td->appendChild(xmlDoc->createTextNode(name));
         }
         if (not outputInfo.empty()) nodeTr->appendChild(portInfoToElem(xmlDoc, outputInfo, "out"));
 
