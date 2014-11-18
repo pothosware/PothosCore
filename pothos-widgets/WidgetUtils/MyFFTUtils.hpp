@@ -67,14 +67,15 @@ inline std::valarray<float> fftPowerSpectrum(CArray &fftBins, const std::vector<
     //take fft
     fft(fftBins);
 
+    //window and fft gain adjustment
+    const float gain_dB = 20*std::log10(fftBins.size()) + 20*std::log10(windowPower);
+
     //power calculation
     std::valarray<float> powerBins(fftBins.size());
     for (size_t i = 0; i < fftBins.size(); i++)
     {
-        powerBins[i] = std::max(std::norm(fftBins[i]), 1e-20f);
-        powerBins[i] = 10*std::log10(powerBins[i]);
-        powerBins[i] -= 20*std::log10(fftBins.size());
-        powerBins[i] -= 20*std::log10(windowPower);
+        const float norm = std::max(std::norm(fftBins[i]), 1e-20f);
+        powerBins[i] = 10*std::log10(norm) - gain_dB;
     }
 
     //bin reorder
