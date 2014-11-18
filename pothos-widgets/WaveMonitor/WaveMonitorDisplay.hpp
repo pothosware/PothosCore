@@ -69,7 +69,6 @@ public:
         _rateLabelId = id;
     }
 
-    void activate(void);
     void work(void);
 
     //allow for standard resize controls with the default size policy

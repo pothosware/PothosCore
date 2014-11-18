@@ -11,15 +11,6 @@
 #include <iostream>
 
 /***********************************************************************
- * initialization functions
- **********************************************************************/
-void WaveMonitorDisplay::activate(void)
-{
-    //install legend for multiple channels
-    if (this->inputs().size() > 1) QMetaObject::invokeMethod(this, "installLegend", Qt::QueuedConnection);
-}
-
-/***********************************************************************
  * work functions
  **********************************************************************/
 void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, const std::valarray<float> &samps, const std::vector<Pothos::Label> &labels)
@@ -29,6 +20,9 @@ void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, co
     {
         points[i] = QPointF((i*_timeSpan)/(samps.size()-1), samps[i]);
     }
+
+    //install legend for multiple channels
+    if (_curves.empty() and this->inputs().size() > 1) this->installLegend();
 
     //create curve if it doesnt exist
     auto &curve = _curves[index][whichCurve];
@@ -42,7 +36,8 @@ void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, co
         {
             _curves[index][0]->setTitle(QString("Re%1").arg(index));
             _curves[index][1]->setTitle(QString("Im%1").arg(index));
-            this->installLegend(); //legend not installed with single input? well its complex...
+            //legend not installed with single input? well its complex...
+            if (this->inputs().size() == 1) this->installLegend();
             _mainPlot->updateChecked(_curves[index][0].get());
             _mainPlot->updateChecked(_curves[index][1].get());
         }
