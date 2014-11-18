@@ -115,16 +115,19 @@ public:
     bool handleTrigger(Pothos::InputPort *inPort)
     {
         auto &packet = _accumulationBuffs[inPort->index()];
+        const auto initialOffset = packet.payload.elements();
 
         //append the new buffer
-        const auto initial_offset = packet.payload.elements();
-        packet.payload.append(inPort->buffer());
+        auto inBuff = inPort->buffer();
+        const auto bytesPerEvent = _chunkSize*inBuff.dtype.size();
+        inBuff.length = std::min(inBuff.length, bytesPerEvent - packet.payload.length);
+        packet.payload.append(inBuff);
 
         //append new labels
         for (auto label : inPort->labels())
         {
             label.index /= packet.payload.dtype.size(); //bytes to elements
-            label.index += initial_offset;
+            label.index += initialOffset;
             if (label.index >= packet.payload.elements()) break;
             packet.labels.push_back(label);
         }
