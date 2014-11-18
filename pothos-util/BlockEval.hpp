@@ -27,6 +27,11 @@ public:
         return val;
     }
 
+    void setProperty(const std::string &key, const Pothos::Object &val)
+    {
+        _properties[key] = val;
+    }
+
     void eval(const std::string &id, const Poco::JSON::Object::Ptr &blockDesc);
 
     void handleCall(const Poco::JSON::Object::Ptr &callObj);

@@ -297,7 +297,8 @@ bool BlockEval::hasCriticalChange(void) const
     if (blockDesc->isArray("args")) for (auto arg : *blockDesc->getArray("args"))
     {
         const auto propKey = arg.extract<std::string>();
-        if (didPropKeyHaveChange(QString::fromStdString(propKey))) return true;
+        if (propKey == "remoteEnv") {}
+        else if (didPropKeyHaveChange(QString::fromStdString(propKey))) return true;
     }
     if (blockDesc->isArray("calls")) for (auto call : *blockDesc->getArray("calls"))
     {
@@ -344,7 +345,16 @@ bool BlockEval::updateAllProperties(void)
 {
     if (not _blockEval) try
     {
-        auto evalEnv = _newEnvironmentEval->getEval();
+        Pothos::Proxy evalEnv;
+        if (_newBlockInfo.isGraphWidget)
+        {
+            auto env = Pothos::ProxyEnvironment::make("managed");
+            evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("make");
+        }
+        else
+        {
+            evalEnv = _newEnvironmentEval->getEval();
+        }
         auto BlockEval = evalEnv.getEnvironment()->findProxy("Pothos/Util/BlockEval");
         _blockEval = BlockEval.callProxy("new", evalEnv);
         _lastThreadPoolEval.reset();
@@ -388,6 +398,7 @@ void BlockEval::blockEvalInGUIContext(void)
 {
     try
     {
+        _blockEval.callProxy("setProperty", "remoteEnv", _newEnvironmentEval->getEval().getEnvironment());
         _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
     }
     catch (const Pothos::Exception &ex)

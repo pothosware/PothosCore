@@ -6,7 +6,8 @@ POTHOS_MODULE_UTIL(
     SOURCES
         WaveMonitor.cpp
         WaveMonitorWork.cpp
-    DOC_SOURCES WaveMonitor.hpp
+        WaveMonitorDisplay.cpp
+    DOC_SOURCES WaveMonitor.cpp
     LIBRARIES ${Qt5_LIBRARIES}
     DESTINATION widgets
 )

@@ -1,175 +1,150 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "WaveMonitor.hpp"
-#include "MyPlotStyler.hpp"
-#include "MyPlotPicker.hpp"
-#include "MyPlotUtils.hpp"
-#include <QResizeEvent>
-#include <qwt_plot.h>
-#include <qwt_plot_grid.h>
-#include <qwt_legend.h>
-#include <QHBoxLayout>
+#include "WaveMonitorDisplay.hpp"
+#include <Pothos/Framework.hpp>
+#include <Pothos/Proxy.hpp>
 #include <iostream>
 
-WaveMonitor::WaveMonitor(void):
-    _mainPlot(new MyQwtPlot(this)),
-    _plotGrid(new QwtPlotGrid()),
-    _zoomer(new MyPlotPicker(_mainPlot->canvas())),
-    _displayRate(1.0),
-    _sampleRate(1.0),
-    _timeSpan(1.0),
-    _numPoints(1024),
-    _rateLabelId("rxRate"),
-    _nextColorIndex(0)
+/***********************************************************************
+ * |PothosDoc Wave Monitor
+ *
+ * The wave monitor plot displays a live two dimensional plot of input elements vs time.
+ *
+ * |category /Widgets
+ * |keywords time plot wave scope
+ *
+ * |param numInputs[Num Inputs] The number of input ports.
+ * |default 1
+ * |widget SpinBox(minimum=1)
+ * |preview disable
+ *
+ * |param title The title of the plot
+ * |default "Amplitude vs Time"
+ * |widget StringEntry()
+ *
+ * |param displayRate[Display Rate] How often the plotter updates.
+ * |default 10.0
+ * |units updates/sec
+ *
+ * |param sampleRate[Sample Rate] The rate of the input elements.
+ * |default 1e6
+ * |units samples/sec
+ *
+ * |param numPoints[Num Points] The number of points per plot capture.
+ * |default 1024
+ *
+ * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
+ * |option [Show] true
+ * |option [Hide] false
+ * |default true
+ * |preview disable
+ *
+ * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
+ * |option [Show] true
+ * |option [Hide] false
+ * |default true
+ * |preview disable
+ *
+ * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
+ * |default ""
+ * |widget StringEntry()
+ * |preview disable
+ *
+ * |param rateLabelId[Rate Label ID] Labels with this ID can be used to set the sample rate.
+ * To ignore sample rate labels, set this parameter to an empty string.
+ * |default "rxRate"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Labels
+ *
+ * |mode graphWidget
+ * |factory /widgets/wave_monitor(remoteEnv)
+ * |initializer setNumInputs(numInputs)
+ * |setter setTitle(title)
+ * |setter setDisplayRate(displayRate)
+ * |setter setSampleRate(sampleRate)
+ * |setter setNumPoints(numPoints)
+ * |setter enableXAxis(enableXAxis)
+ * |setter enableYAxis(enableYAxis)
+ * |setter setYAxisTitle(yAxisTitle)
+ * |setter setRateLabelId(rateLabelId)
+ **********************************************************************/
+class WaveMonitor : public Pothos::Topology
 {
-    //setup block
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, widget));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumInputs));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setTitle));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setDisplayRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setSampleRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumPoints));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, numInputs));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, title));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, displayRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, sampleRate));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, numPoints));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, enableXAxis));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, enableYAxis));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setYAxisTitle));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setRateLabelId));
-    this->setupInput(0);
-
-    //layout
-    auto layout = new QHBoxLayout(this);
-    layout->setSpacing(0);
-    layout->setContentsMargins(QMargins());
-    layout->addWidget(_mainPlot);
-
-    //setup plotter
+public:
+    static Topology *make(const Pothos::ProxyEnvironment::Sptr &remoteEnv)
     {
-        _mainPlot->setCanvasBackground(MyPlotCanvasBg());
-        new MyPlotPicker(_mainPlot->canvas());
-        _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
-        _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
-        connect(_zoomer, SIGNAL(zoomed(const QRectF &)), this, SLOT(handleZoomed(const QRectF &)));
+        return new WaveMonitor(remoteEnv);
     }
 
-    //setup grid
+    WaveMonitor(const Pothos::ProxyEnvironment::Sptr &remoteEnv)
     {
-        _plotGrid->attach(_mainPlot);
-        _plotGrid->setPen(MyPlotGridPen());
+        _display.reset(new WaveMonitorDisplay());
+
+        auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
+        _snooper = registry.callProxy("/blocks/stream_snooper");
+
+        //register calls in this topology
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumInputs));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setDisplayRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumPoints));
+
+        //connect to internal display block
+        this->connect(this, "setTitle", _display, "setTitle");
+        this->connect(this, "setSampleRate", _display, "setSampleRate");
+        this->connect(this, "setNumPoints", _display, "setNumPoints");
+        this->connect(this, "enableXAxis", _display, "enableXAxis");
+        this->connect(this, "enableYAxis", _display, "enableYAxis");
+        this->connect(this, "setYAxisTitle", _display, "setYAxisTitle");
+
+        //connect to the internal snooper block
+        this->connect(this, "setDisplayRate", _snooper, "setTriggerRate");
+        this->connect(this, "setNumPoints", _snooper, "setChunkSize");
     }
 
-    qRegisterMetaType<std::vector<Pothos::Label>>("std::vector<Pothos::Label>");
-}
-
-WaveMonitor::~WaveMonitor(void)
-{
-    return;
-}
-
-void WaveMonitor::setNumInputs(const size_t numInputs)
-{
-    for (size_t i = this->inputs().size(); i < numInputs; i++)
+    Pothos::Object opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
     {
-        this->setupInput(i, this->input(0)->dtype());
+        //calls that go to the topology
+        try
+        {
+            return Pothos::Topology::opaqueCallMethod(name, inputArgs, numArgs);
+        }
+        catch (const Pothos::BlockCallNotFound &){}
+
+        //forward everything else to display
+        return _display->opaqueCallMethod(name, inputArgs, numArgs);
     }
-}
 
-void WaveMonitor::setTitle(const QString &title)
-{
-    QMetaObject::invokeMethod(_mainPlot, "setTitle", Qt::QueuedConnection, Q_ARG(QwtText, MyPlotTitle(title)));
-}
-
-void WaveMonitor::setDisplayRate(const double displayRate)
-{
-    _displayRate = displayRate;
-}
-
-void WaveMonitor::setSampleRate(const double sampleRate)
-{
-    _sampleRate = sampleRate;
-    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
-}
-
-void WaveMonitor::setNumPoints(const size_t numPoints)
-{
-    _numPoints = numPoints;
-    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
-}
-
-QString WaveMonitor::title(void) const
-{
-    return _mainPlot->title().text();
-}
-
-void WaveMonitor::enableXAxis(const bool enb)
-{
-    _mainPlot->enableAxis(QwtPlot::xBottom, enb);
-}
-
-void WaveMonitor::enableYAxis(const bool enb)
-{
-    _mainPlot->enableAxis(QwtPlot::yLeft, enb);
-}
-
-void WaveMonitor::setYAxisTitle(const QString &title)
-{
-    QMetaObject::invokeMethod(_mainPlot, "setAxisTitle", Qt::QueuedConnection, Q_ARG(int, QwtPlot::yLeft), Q_ARG(QwtText, MyPlotAxisTitle(title)));
-}
-
-void WaveMonitor::handleUpdateAxis(void)
-{
-    QString timeAxisTitle("secs");
-    _timeSpan = _numPoints/_sampleRate;
-    if (_timeSpan <= 100e-9)
+    void setNumInputs(const size_t numInputs)
     {
-        _timeSpan *= 1e9;
-        timeAxisTitle = "nsecs";
+        _display->setName(this->getName()+"Display");
+        _snooper.callVoid("setName", this->getName()+"Snooper");
+
+        _display->setNumInputs(numInputs);
+        _snooper.callVoid("setNumPorts", numInputs);
+        for (size_t i = 0; i < numInputs; i++)
+        {
+            this->connect(this, i, _snooper, i);
+            this->connect(_snooper, i, _display, i);
+        }
     }
-    else if (_timeSpan <= 100e-6)
+
+    void setDisplayRate(const double rate)
     {
-        _timeSpan *= 1e6;
-        timeAxisTitle = "usecs";
+        _snooper.callVoid("setTriggerRate", rate);
     }
-    else if (_timeSpan <= 100e-3)
+
+    void setNumPoints(const size_t num)
     {
-        _timeSpan *= 1e3;
-        timeAxisTitle = "msecs";
+        _snooper.callVoid("setChunkSize", num);
+        _display->setNumPoints(num);
     }
-    _mainPlot->setAxisTitle(QwtPlot::xBottom, timeAxisTitle);
 
-    _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
-    _mainPlot->setAxisScale(QwtPlot::xBottom, 0, _timeSpan);
-    _mainPlot->updateAxes(); //update after axis changes
-    _zoomer->setZoomBase(); //record current axis settings
-    this->handleZoomed(_zoomer->zoomBase()); //reload
-}
-
-void WaveMonitor::handleZoomed(const QRectF &rect)
-{
-    //when zoomed all the way out, return to autoscale
-    if (rect == _zoomer->zoomBase())
-    {
-        _mainPlot->setAxisAutoScale(QwtPlot::yLeft);
-        _mainPlot->updateAxes(); //update after axis changes
-    }
-}
-
-void WaveMonitor::installLegend(void)
-{
-    auto legend = new QwtLegend(_mainPlot);
-    legend->setDefaultItemMode(QwtLegendData::Checkable);
-    connect(legend, SIGNAL(checked(const QVariant &, bool, int)), this, SLOT(handleLegendChecked(const QVariant &, bool, int)));
-    _mainPlot->insertLegend(legend);
-}
-
-void WaveMonitor::handleLegendChecked(const QVariant &itemInfo, bool on, int)
-{
-    _mainPlot->infoToItem(itemInfo)->setVisible(on);
-}
+private:
+    Pothos::Proxy _snooper;
+    std::shared_ptr<WaveMonitorDisplay> _display;
+};
 
 /***********************************************************************
  * registration
