@@ -59,6 +59,8 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
         _plotGrid->setPen(MyPlotGridPen());
     }
 
+    //register types passed to gui thread from work
+    qRegisterMetaType<Pothos::BufferChunk>("Pothos::BufferChunk");
     qRegisterMetaType<std::vector<Pothos::Label>>("std::vector<Pothos::Label>");
 }
 

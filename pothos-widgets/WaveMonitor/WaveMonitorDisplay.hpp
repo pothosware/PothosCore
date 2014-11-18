@@ -6,7 +6,6 @@
 #include <Pothos/Framework.hpp>
 #include <QWidget>
 #include <memory>
-#include <valarray>
 #include <map>
 #include <vector>
 
@@ -84,7 +83,7 @@ public:
 private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);
-    void handleSamples(const int index, const int curve, const std::valarray<float> &samps, const std::vector<Pothos::Label> &labels);
+    void handleSamples(const int index, const int curve, const Pothos::BufferChunk &buff, const std::vector<Pothos::Label> &labels);
     void handleUpdateAxis(void);
     void handleZoomed(const QRectF &rect);
 

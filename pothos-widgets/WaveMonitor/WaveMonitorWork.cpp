@@ -13,10 +13,11 @@
 /***********************************************************************
  * work functions
  **********************************************************************/
-void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, const std::valarray<float> &samps, const std::vector<Pothos::Label> &labels)
+void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, const Pothos::BufferChunk &buff, const std::vector<Pothos::Label> &labels)
 {
-    QVector<QPointF> points(samps.size());
-    for (size_t i = 0; i < samps.size(); i++)
+    const auto samps = buff.as<const float *>();
+    QVector<QPointF> points(buff.elements());
+    for (int i = 0; i < points.size(); i++)
     {
         points[i] = QPointF(i/_sampleRateWoAxisUnits, samps[i]);
     }
@@ -51,7 +52,6 @@ void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, co
     for (const auto &label : labels)
     {
         auto marker = new QwtPlotMarker();
-        if (label.index >= samps.size()) break;
         marker->setLabel(MyMarkerLabel(QString::fromStdString(label.id)));
         marker->setLabelAlignment(Qt::AlignHCenter);
         marker->setXValue(label.index/_sampleRateWoAxisUnits);
@@ -101,13 +101,13 @@ void WaveMonitorDisplay::work(void)
 
             QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
                 Q_ARG(int, inPort->index()), Q_ARG(int, 0),
-                Q_ARG(std::valarray<float>, std::valarray<float>(floatBuffs[0].as<const float *>(), floatBuffs[0].elements())),
+                Q_ARG(Pothos::BufferChunk, floatBuffs[0]),
                 Q_ARG(std::vector<Pothos::Label>, packet.labels));
 
             const bool hasIm = floatBuffs.size() > 1;
             if (hasIm) QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
                 Q_ARG(int, inPort->index()), Q_ARG(int, 1),
-                Q_ARG(std::valarray<float>, std::valarray<float>(floatBuffs[1].as<const float *>(), floatBuffs[1].elements())),
+                Q_ARG(Pothos::BufferChunk, floatBuffs[1]),
                 Q_ARG(std::vector<Pothos::Label>, std::vector<Pothos::Label>()));
         }
     }
