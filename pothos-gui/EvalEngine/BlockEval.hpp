@@ -67,6 +67,12 @@ public:
      */
     bool isInfoMatch(const BlockInfo &info) const;
 
+    //! Does this eval represent a graph widget?
+    bool isGraphWidget(void) const
+    {
+        return _newBlockInfo.isGraphWidget;
+    }
+
     /*!
      * Is the block eval in a usable state?
      * Environment active, no errors, ports queried...

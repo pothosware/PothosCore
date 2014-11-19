@@ -10,6 +10,7 @@
 #include <Poco/JSON/Object.h>
 #include <memory>
 #include <map>
+#include <set>
 
 class EnvironmentEval;
 class ThreadPoolEval;
@@ -17,6 +18,7 @@ class TopologyEval;
 class BlockEval;
 class GraphBlock;
 class QTimer;
+class EvalEngineGuiBlockDeleter;
 
 typedef std::map<size_t, BlockInfo> BlockInfos;
 typedef std::map<QString, Poco::JSON::Object::Ptr> ZoneInfos;
@@ -83,4 +85,8 @@ private:
     std::map<QString, std::shared_ptr<ThreadPoolEval>> _threadPoolEvals;
     std::map<size_t, std::shared_ptr<BlockEval>> _blockEvals;
     std::shared_ptr<TopologyEval> _topologyEval;
+
+    void handleOrphanedGuiBlocks(void);
+    std::set<std::shared_ptr<void>> _guiBlocks;
+    std::shared_ptr<EvalEngineGuiBlockDeleter> _guiBlockDeleter;
 };

@@ -9,6 +9,7 @@
 #include "TopologyEval.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include <Pothos/Framework/Topology.hpp>
+#include <QApplication>
 #include <QThread>
 #include <QTimer>
 #include <QAbstractEventDispatcher>
@@ -16,9 +17,33 @@
 
 static const int MONITOR_INTERVAL_MS = 1000;
 
+/***********************************************************************
+ * Gui block deleter is a mini-object that resides in the GUI thread
+ * to handle the deletion of graphical blocks in the GUI context.
+ * The EvalEngineImpl sends this object unique/orphaned ProxyHandles
+ * to go out of scope within the slot handler for this object.
+ **********************************************************************/
+class EvalEngineGuiBlockDeleter : public QObject
+{
+    Q_OBJECT
+public:
+    EvalEngineGuiBlockDeleter(void)
+    {
+        qRegisterMetaType<std::shared_ptr<void>>("std::shared_ptr<void>");
+        this->moveToThread(QApplication::instance()->thread());
+    }
+
+public slots:
+    void handleGuiBlockErase(std::shared_ptr<void>){}
+};
+
+/***********************************************************************
+ * Eval engine implementation
+ **********************************************************************/
 EvalEngineImpl::EvalEngineImpl(void):
     _requireEval(false),
-    _monitorTimer(new QTimer(this))
+    _monitorTimer(new QTimer(this)),
+    _guiBlockDeleter(new EvalEngineGuiBlockDeleter())
 {
     qRegisterMetaType<BlockInfo>("BlockInfo");
     qRegisterMetaType<BlockInfos>("BlockInfos");
@@ -202,7 +227,12 @@ void EvalEngineImpl::evaluate(void)
     //2) update all thread pools in case there were changes
     for (auto &pair : _threadPoolEvals) pair.second->update();
     //3) update all the blocks in case there were changes
-    for (auto &pair : _blockEvals) pair.second->update();
+    for (auto &pair : _blockEvals)
+    {
+        auto &blockEval = pair.second;
+        blockEval->update();
+        if (blockEval->isGraphWidget()) _guiBlocks.insert(blockEval->getProxyBlock().getHandle());
+    }
     //4) update topology when present (activation mode)
     if (_topologyEval)
     {
@@ -220,6 +250,8 @@ void EvalEngineImpl::evaluate(void)
             QMetaObject::invokeMethod(this, "handleMonitorTimeout", Qt::QueuedConnection);
         }
     }
+
+    this->handleOrphanedGuiBlocks();
 }
 
 void EvalEngineImpl::submitCleanup(void)
@@ -238,3 +270,18 @@ void EvalEngineImpl::submitCleanup(void)
     //stop the monitor
     _monitorTimer->stop();
 }
+
+void EvalEngineImpl::handleOrphanedGuiBlocks(void)
+{
+    for (auto it = _guiBlocks.begin(); it != _guiBlocks.end(); ++it)
+    {
+        if (not it->unique()) continue;
+        auto handle = *it;
+        _guiBlocks.erase(it);
+        it = _guiBlocks.begin();
+        QMetaObject::invokeMethod(_guiBlockDeleter.get(), "handleGuiBlockErase",
+            Qt::QueuedConnection, Q_ARG(std::shared_ptr<void>, handle));
+    }
+}
+
+#include "EvalEngineImpl.moc"
