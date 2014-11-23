@@ -89,6 +89,13 @@ public:
     {
         for (auto inPort : this->inputs())
         {
+            //forward messages
+            if (inPort->hasMessage())
+            {
+                const auto msg = inPort->popMessage();
+                this->output(inPort->index())->postMessage(msg);
+            }
+
             //always consume all available input
             if (inPort->elements() == 0) continue;
             inPort->consume(inPort->elements());
