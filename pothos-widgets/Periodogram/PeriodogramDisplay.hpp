@@ -107,7 +107,7 @@ public:
     void setAverageFactor(const double factor)
     {
         if (factor > 1.0 or factor < 0.0) throw Pothos::RangeException(
-            "Periodigram::setAverageFactor("+std::to_string(factor)+")",
+            "Periodogram::setAverageFactor("+std::to_string(factor)+")",
             "factor must be in [1.0, 0.0]");
         _averageFactor = factor;
     }
