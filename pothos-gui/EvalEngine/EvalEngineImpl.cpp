@@ -29,12 +29,16 @@ class EvalEngineGuiBlockDeleter : public QObject
 public:
     EvalEngineGuiBlockDeleter(void)
     {
-        qRegisterMetaType<std::shared_ptr<void>>("std::shared_ptr<void>");
+        qRegisterMetaType<std::shared_ptr<void> *>("std::shared_ptr<void> *");
         this->moveToThread(QApplication::instance()->thread());
     }
 
 public slots:
-    void handleGuiBlockErase(std::shared_ptr<void>){}
+    void handleGuiBlockErase(std::shared_ptr<void> *handle)
+    {
+        assert(handle->unique());
+        delete handle;
+    }
 };
 
 /***********************************************************************
@@ -273,14 +277,15 @@ void EvalEngineImpl::submitCleanup(void)
 
 void EvalEngineImpl::handleOrphanedGuiBlocks(void)
 {
-    for (auto it = _guiBlocks.begin(); it != _guiBlocks.end(); ++it)
+    for (auto it = _guiBlocks.begin(); it != _guiBlocks.end();)
     {
-        if (not it->unique()) continue;
-        auto handle = *it;
-        _guiBlocks.erase(it);
-        it = _guiBlocks.begin();
+        auto thisIt = it++; //increment before erase
+        if (not thisIt->unique()) continue;
+        auto handle = new std::shared_ptr<void>(*thisIt);
+        _guiBlocks.erase(thisIt);
+        assert(handle->unique());
         QMetaObject::invokeMethod(_guiBlockDeleter.get(), "handleGuiBlockErase",
-            Qt::QueuedConnection, Q_ARG(std::shared_ptr<void>, handle));
+            Qt::QueuedConnection, Q_ARG(std::shared_ptr<void> *, handle));
     }
 }
 
