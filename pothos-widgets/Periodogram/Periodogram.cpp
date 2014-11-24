@@ -18,10 +18,6 @@
  * |widget SpinBox(minimum=1)
  * |preview disable
  *
- * |param title The title of the plot
- * |default "Power vs Frequency"
- * |widget StringEntry()
- *
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0
  * |units updates/sec
@@ -81,22 +77,30 @@
  * |preview disable
  * |widget DoubleSpinBox(minimum=0.0, maximum=1.0, step=0.05, decimals=3)
  *
+ * |param title The title of the plot
+ * |default "Power vs Frequency"
+ * |widget StringEntry()
+ * |tab Plot
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
+ * |tab Plot
  *
  * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
+ * |tab Plot
  *
  * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
  * |default "dB"
  * |widget StringEntry()
  * |preview disable
+ * |tab Plot
  *
  * |param freqLabelId[Freq Label ID] Labels with this ID can be used to set the center frequency.
  * To ignore frequency labels, set this parameter to an empty string.
@@ -115,7 +119,6 @@
  * |mode graphWidget
  * |factory /widgets/periodogram(remoteEnv)
  * |initializer setNumInputs(numInputs)
- * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setCenterFrequency(centerFreq)
@@ -125,6 +128,7 @@
  * |setter setDynamicRange(dynRange)
  * |setter setAutoScale(autoScale)
  * |setter setAverageFactor(averaging)
+ * |setter setTitle(title)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)

@@ -84,8 +84,8 @@ void ConstellationDisplay::handleUpdateAxis(void)
     if (_xRange.size() == 2) _mainPlot->setAxisScale(QwtPlot::xBottom, _xRange[0], _xRange[1]);
     if (_yRange.size() == 2) _mainPlot->setAxisScale(QwtPlot::yLeft, _yRange[0], _yRange[1]);
 
-    _mainPlot->setAxisTitle(QwtPlot::xBottom, QString("In-Phase"));
-    _mainPlot->setAxisTitle(QwtPlot::yLeft, QString("Quadrature"));
+    _mainPlot->setAxisTitle(QwtPlot::xBottom, MyPlotAxisTitle("In-Phase"));
+    _mainPlot->setAxisTitle(QwtPlot::yLeft, MyPlotAxisTitle("Quadrature"));
 
     _mainPlot->updateAxes(); //update after axis changes
     _zoomer->setZoomBase(); //record current axis settings

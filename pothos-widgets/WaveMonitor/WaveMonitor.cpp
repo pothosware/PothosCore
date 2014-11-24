@@ -19,10 +19,6 @@
  * |widget SpinBox(minimum=1)
  * |preview disable
  *
- * |param title The title of the plot
- * |default "Amplitude vs Time"
- * |widget StringEntry()
- *
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0
  * |units updates/sec
@@ -34,22 +30,30 @@
  * |param numPoints[Num Points] The number of points per plot capture.
  * |default 1024
  *
+ * |param title The title of the plot
+ * |default "Amplitude vs Time"
+ * |widget StringEntry()
+ * |tab Plot
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
+ * |tab Plot
  *
  * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
+ * |tab Plot
  *
  * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
  * |default ""
  * |widget StringEntry()
  * |preview disable
+ * |tab Plot
  *
  * |param rateLabelId[Rate Label ID] Labels with this ID can be used to set the sample rate.
  * To ignore sample rate labels, set this parameter to an empty string.
@@ -61,10 +65,10 @@
  * |mode graphWidget
  * |factory /widgets/wave_monitor(remoteEnv)
  * |initializer setNumInputs(numInputs)
- * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumPoints(numPoints)
+ * |setter setTitle(title)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)

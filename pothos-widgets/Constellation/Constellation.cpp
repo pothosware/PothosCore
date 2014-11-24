@@ -13,10 +13,6 @@
  * |category /Widgets
  * |keywords plot constellation scatter
  *
- * |param title The title of the plot
- * |default "Constellation"
- * |widget StringEntry()
- *
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0
  * |units updates/sec
@@ -40,26 +36,33 @@
  * |default [-1.5, 1.5]
  * |preview disable
  *
+ * |param title The title of the plot
+ * |default "Constellation"
+ * |widget StringEntry()
+ * |tab Plot
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
+ * |tab Plot
  *
  * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
+ * |tab Plot
  *
  * |mode graphWidget
  * |factory /widgets/constellation(remoteEnv)
- * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setNumPoints(numPoints)
  * |setter setAutoScale(autoScale)
  * |setter setXRange(xRange)
  * |setter setYRange(yRange)
+ * |setter setTitle(title)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  **********************************************************************/

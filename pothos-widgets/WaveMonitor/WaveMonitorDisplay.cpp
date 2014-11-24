@@ -135,7 +135,7 @@ void WaveMonitorDisplay::handleUpdateAxis(void)
         factor = 1e3;
         timeAxisTitle = "msecs";
     }
-    _mainPlot->setAxisTitle(QwtPlot::xBottom, timeAxisTitle);
+    _mainPlot->setAxisTitle(QwtPlot::xBottom, MyPlotAxisTitle(timeAxisTitle));
 
     _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
     _sampleRateWoAxisUnits = _sampleRate/factor;

@@ -13,10 +13,6 @@
  * |category /Widgets
  * |keywords frequency plot fft dft spectrum spectral
  *
- * |param title The title of the plot
- * |default "Spectrogram"
- * |widget StringEntry()
- *
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0
  * |units updates/sec
@@ -66,17 +62,24 @@
  * |widget DoubleSpinBox(minimum=10, maximum=150, step=10, decimals=1)
  * |preview disable
  *
+ * |param title The title of the plot
+ * |default "Spectrogram"
+ * |widget StringEntry()
+ * |tab Plot
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
+ * |tab Plot
  *
  * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
+ * |tab Plot
  *
  * |param freqLabelId[Freq Label ID] Labels with this ID can be used to set the center frequency.
  * To ignore frequency labels, set this parameter to an empty string.
@@ -94,7 +97,6 @@
  *
  * |mode graphWidget
  * |factory /widgets/spectrogram(remoteEnv)
- * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setCenterFrequency(centerFreq)
@@ -103,6 +105,7 @@
  * |setter setTimeSpan(timeSpan)
  * |setter setReferenceLevel(refLevel)
  * |setter setDynamicRange(dynRange)
+ * |setter setTitle(title)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setFreqLabelId(freqLabelId)

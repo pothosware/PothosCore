@@ -159,7 +159,7 @@ void PeriodogramDisplay::handleUpdateAxis(void)
         factor = 1e3;
         axisTitle = "kHz";
     }
-    _mainPlot->setAxisTitle(QwtPlot::xBottom, axisTitle);
+    _mainPlot->setAxisTitle(QwtPlot::xBottom, MyPlotAxisTitle(axisTitle));
 
     _zoomer->setAxis(QwtPlot::xBottom, QwtPlot::yLeft);
     _sampleRateWoAxisUnits = _sampleRate/factor;
