@@ -47,6 +47,9 @@ ConstellationDisplay::ConstellationDisplay(void):
         _plotGrid->attach(_mainPlot);
         _plotGrid->setPen(MyPlotGridPen());
     }
+
+    //register types passed to gui thread from work
+    qRegisterMetaType<Pothos::BufferChunk>("Pothos::BufferChunk");
 }
 
 ConstellationDisplay::~ConstellationDisplay(void)
