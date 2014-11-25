@@ -100,6 +100,7 @@ void ConstellationDisplay::handleZoomed(const QRectF &rect)
     //when zoomed all the way out, return to autoscale
     if (rect == _zoomer->zoomBase() and _autoScale)
     {
+        _mainPlot->setAxisAutoScale(QwtPlot::xBottom);
         _mainPlot->setAxisAutoScale(QwtPlot::yLeft);
     }
 }
