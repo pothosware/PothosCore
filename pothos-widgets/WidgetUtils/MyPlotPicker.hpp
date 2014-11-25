@@ -22,6 +22,7 @@ public:
 protected:
     QwtText trackerTextF(const QPointF &pos) const;
     void widgetMouseDoubleClickEvent(QMouseEvent *);
+    bool accept(QPolygon &pa) const;
 
 private:
     QwtRasterData *_raster;
