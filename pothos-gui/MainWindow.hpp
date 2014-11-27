@@ -76,7 +76,7 @@ private:
     QAction *_findAction;
     QAction *_showGraphConnectionPointsAction;
     QAction *_showGraphBoundingBoxesAction;
-    QAction *_showGraphFlattenedViewAction;
+    QAction *_showRenderedGraphViewAction;
     QAction *_activateTopologyAction;
     QAction *_showPortNamesAction;
     QAction *_showColorsDialogAction;

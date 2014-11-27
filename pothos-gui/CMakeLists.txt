@@ -110,7 +110,7 @@ set(SOURCES
     GraphEditor/GraphEditor.cpp
     GraphEditor/GraphEditorSerialization.cpp
     GraphEditor/GraphEditorDeserialization.cpp
-    GraphEditor/GraphEditorFlattenedDialog.cpp
+    GraphEditor/GraphEditorRenderedDialog.cpp
     GraphEditor/GraphDraw.cpp
     GraphEditor/GraphDrawSelection.cpp
     GraphEditor/GraphActionsDock.cpp

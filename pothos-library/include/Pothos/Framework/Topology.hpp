@@ -144,10 +144,21 @@ public:
      * The markup can represent the connections as specified by the user,
      * or if flat is true, the complete flattened topology with
      * network blocks for crossing process/computer boundaries.
-     * \param flat true to show the flattened topology with network iogress
+     *
+     * Example configuration string {"mode" : "flat", "port" : "all"}
+     *
+     * Mode options:
+     *  - "flat" Flattened topology no hierarchies.
+     *  - "top" Top level blocks and hierarchies.
+     *
+     * Port options:
+     *  - "all" Show all available IO ports.
+     *  - "connected" Show connected ports only.
+     *
+     * \param config a JSON object string with configuration parameters
      * \return the dot markup as a string
      */
-    std::string toDotMarkup(const bool flat = true);
+    std::string toDotMarkup(const std::string &config = "");
 
     /*!
      * Call a method on a derived instance with opaque input and return types.

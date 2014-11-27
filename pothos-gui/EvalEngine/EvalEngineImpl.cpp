@@ -133,13 +133,13 @@ void EvalEngineImpl::submitZoneInfo(const ZoneInfos &info)
     this->evaluate();
 }
 
-std::string EvalEngineImpl::getTopologyDotMarkup(const bool arg)
+std::string EvalEngineImpl::getTopologyDotMarkup(const std::string &config)
 {
     //have to do this in case this call compressed an eval-worthy event
     this->evaluate();
 
     if (not _topologyEval) return "";
-    return _topologyEval->getTopology()->toDotMarkup(arg);
+    return _topologyEval->getTopology()->toDotMarkup(config);
 }
 
 void EvalEngineImpl::handleMonitorTimeout(void)

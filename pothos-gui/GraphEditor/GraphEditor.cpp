@@ -77,7 +77,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["reeval"], SIGNAL(triggered(void)), this, SLOT(handleReeval(void)));
     connect(getMenuMap()["setAffinityZone"], SIGNAL(zoneClicked(const QString &)), this, SLOT(handleAffinityZoneClicked(const QString &)));
     connect(getObjectMap()["affinityZonesDock"], SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
-    connect(getActionMap()["showGraphFlattenedView"], SIGNAL(triggered(void)), this, SLOT(handleShowFlattenedDialog(void)));
+    connect(getActionMap()["showRenderedGraphView"], SIGNAL(triggered(void)), this, SLOT(handleShowRenderedGraphDialog(void)));
     connect(getActionMap()["activateTopology"], SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
     connect(getActionMap()["showPortNames"], SIGNAL(changed(void)), this, SLOT(handleShowPortNames(void)));
     connect(getActionMap()["increment"], SIGNAL(triggered(void)), this, SLOT(handleBlockIncrement(void)));
