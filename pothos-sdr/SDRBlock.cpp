@@ -130,16 +130,25 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerProbe("getSensors");
 }
 
-SDRBlock::~SDRBlock(void)
-{
-    if (_stream != nullptr) _device->closeStream(_stream);
-    if (_device != nullptr) SoapySDR::Device::unmake(_device);
-}
-
 static std::mutex &getMutex(void)
 {
     static Poco::SingletonHolder<std::mutex> sh;
     return *sh.get();
+}
+
+SDRBlock::~SDRBlock(void)
+{
+    //close the stream, the stream should be stopped by deactivate
+    //but this actually cleans up and frees the stream object
+    if (_stream != nullptr) _device->closeStream(_stream);
+
+    //if for some reason we didn't complete the future
+    //we have to wait on it here and catch all errors
+    try {_deviceFuture.get();} catch (...){}
+
+    //now with the mutex locked, the device object can be released
+    std::unique_lock<std::mutex> lock(getMutex());
+    if (_device != nullptr) SoapySDR::Device::unmake(_device);
 }
 
 static SoapySDR::Device *makeDevice(const std::map<std::string, std::string> &deviceArgs)
