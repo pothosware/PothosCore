@@ -218,9 +218,13 @@ bool BlockEval::evaluationProcedure(void)
     }
 
     //set the thread pool
+    //Note: Do not set the thread pool for graphical blocks!
+    //There are no configurable thread pool settings for the gui environment.
+    //However, it would be useful to set the thread pool for split hierarchical widgets.
+    //Currently this is not possible as there is no way to pass the remote thread pool.
     if (evalSuccess and not (_newThreadPool == _lastThreadPool))
     {
-        try
+        if (not this->isGraphWidget()) try
         {
             if (_newThreadPool) this->getProxyBlock().callVoid("setThreadPool", _newThreadPool);
             _lastThreadPool = _newThreadPool;
