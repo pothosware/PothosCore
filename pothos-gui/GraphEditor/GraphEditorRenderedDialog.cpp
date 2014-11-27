@@ -14,7 +14,7 @@
 #include <QComboBox>
 #include <QDialog>
 #include <QFile>
-#include <QImage>
+#include <QPixmap>
 #include <QLabel>
 #include <QScrollArea>
 #include <QTabWidget>
@@ -29,7 +29,7 @@
 
 struct ImageResult
 {
-    QImage image;
+    QPixmap pixmap;
     std::string errorMsg;
 };
 
@@ -76,7 +76,7 @@ static ImageResult dotMarkupToImage(const std::string &markup)
     }
 
     //create the image from file
-    result.image = QImage(QString::fromStdString(tempFile), "png");
+    result.pixmap = QPixmap(QString::fromStdString(tempFile), "png");
     return result;
 }
 
@@ -117,7 +117,10 @@ public:
         connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleWatcherDone(void)));
 
         //initialize
-        QMetaObject::invokeMethod(this, "handleChange", Qt::QueuedConnection, Q_ARG(int, 0));
+        QPixmap pixmap(parent->size());
+        pixmap.fill(Qt::white);
+        installNewView(pixmap);
+        this->handleChange(0);
     }
 
 private slots:
@@ -138,7 +141,7 @@ private slots:
         auto imageResult = _watcher->result();
         if (imageResult.errorMsg.empty())
         {
-            installNewView(imageResult.image);
+            installNewView(imageResult.pixmap);
         }
         else
         {
@@ -147,7 +150,7 @@ private slots:
         }
     }
 
-    void installNewView(const QImage &image)
+    void installNewView(const QPixmap &pixmap)
     {
         delete _currentView; //delete the previous view
         _currentView = new QWidget(this);
@@ -157,7 +160,7 @@ private slots:
         auto label = new QLabel(scroll);
         scroll->setWidget(label);
         scroll->setWidgetResizable(true);
-        label->setPixmap(QPixmap::fromImage(image));
+        label->setPixmap(pixmap);
         _topLayout->addWidget(_currentView, 1);
     }
 
