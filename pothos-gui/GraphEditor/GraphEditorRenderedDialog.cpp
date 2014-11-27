@@ -22,11 +22,25 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
+#include <QFuture>
+#include <QFutureWatcher>
+#include <QtConcurrent/QtConcurrent>
 #include <sstream>
 
-static QImage dotMarkupToImage(const std::string &markup)
+struct ImageResult
 {
-    if (markup.empty()) throw Pothos::Exception("PothosGui.GraphEditor.RenderedGraphDialog()", "empty markup - is the topology active?");
+    QImage image;
+    std::string errorMsg;
+};
+
+static ImageResult dotMarkupToImage(const std::string &markup)
+{
+    ImageResult result;
+    if (markup.empty())
+    {
+        result.errorMsg = "empty markup - is the topology active?";
+        return result;
+    }
 
     //temp file
     auto tempFile = Poco::TemporaryFile::tempName();
@@ -57,11 +71,13 @@ static QImage dotMarkupToImage(const std::string &markup)
         Poco::PipeInputStream es(errPipe);
         std::string errMsg;
         es >> errMsg;
-        throw Pothos::Exception("PothosGui.GraphEditor.RenderedGraphDialog()", "png failed: " + errMsg);
+        result.errorMsg = "png failed: " + errMsg;
+        return result;
     }
 
     //create the image from file
-    return QImage(QString::fromStdString(tempFile), "png");
+    result.image = QImage(QString::fromStdString(tempFile), "png");
+    return result;
 }
 
 class RenderedGraphDialog : public QDialog
@@ -74,6 +90,7 @@ public:
         _topLayout(new QVBoxLayout(this)),
         _modeOptions(new QComboBox(this)),
         _portOptions(new QComboBox(this)),
+        _watcher(new QFutureWatcher<ImageResult>(this)),
         _currentView(nullptr)
     {
         //create layouts
@@ -97,6 +114,7 @@ public:
         //connect widget changed events
         connect(_modeOptions, SIGNAL(currentIndexChanged(int)), this, SLOT(handleChange(int)));
         connect(_portOptions, SIGNAL(currentIndexChanged(int)), this, SLOT(handleChange(int)));
+        connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleWatcherDone(void)));
 
         //initialize
         QMetaObject::invokeMethod(this, "handleChange", Qt::QueuedConnection, Q_ARG(int, 0));
@@ -112,25 +130,26 @@ private slots:
         configObj->stringify(ss);
 
         const auto markup = _evalEngine->getTopologyDotMarkup(ss.str());
+        _watcher->setFuture(QtConcurrent::run(std::bind(&dotMarkupToImage, markup)));
+    }
 
-        //delete the previous view
-        delete _currentView;
-        _currentView = nullptr;
-
-        //try to generate the new view
-        POTHOS_EXCEPTION_TRY
+    void handleWatcherDone(void)
+    {
+        auto imageResult = _watcher->result();
+        if (imageResult.errorMsg.empty())
         {
-            installNewView(dotMarkupToImage(markup));
+            installNewView(imageResult.image);
         }
-        POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
+        else
         {
-            QMessageBox msgBox(QMessageBox::Critical, tr("Topology render error"), QString::fromStdString(ex.message()));
+            QMessageBox msgBox(QMessageBox::Critical, tr("Topology render error"), QString::fromStdString(imageResult.errorMsg));
             msgBox.exec();
         }
     }
 
     void installNewView(const QImage &image)
     {
+        delete _currentView; //delete the previous view
         _currentView = new QWidget(this);
         auto layout = new QVBoxLayout(_currentView);
         auto scroll = new QScrollArea(_currentView);
@@ -147,6 +166,7 @@ private:
     QVBoxLayout *_topLayout;
     QComboBox *_modeOptions;
     QComboBox *_portOptions;
+    QFutureWatcher<ImageResult> *_watcher;
     QWidget *_currentView;
 };
 
