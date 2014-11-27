@@ -14,7 +14,7 @@ public:
     MySpectrogramRasterData(void):
         _numCols(1)
     {
-        return;
+        this->setNumRows(1);
     }
 
     //! translate a plot coordinate into a raster value
