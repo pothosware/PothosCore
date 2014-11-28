@@ -261,12 +261,13 @@ void Pothos::Topology::commit(void)
 
     //Remove disconnections from the cache if present
     //by only saving in the curretly in-use flows.
-    std::unordered_map<Flow, std::pair<Flow, Flow>> newNetgressCache;
+    std::unordered_map<Port, std::pair<Pothos::Proxy, Pothos::Proxy>> newNetgressCache;
     for (const auto &flow : squashedFlows)
     {
-        auto it = _impl->flowToNetgressCache.find(flow);
-        if (it == _impl->flowToNetgressCache.end()) continue;
+        const auto port = envTagPort(flow.src, flow.dst);
+        auto it = _impl->srcToNetgressCache.find(port);
+        if (it == _impl->srcToNetgressCache.end()) continue;
         newNetgressCache[it->first] = it->second;
     }
-    _impl->flowToNetgressCache = newNetgressCache;
+    _impl->srcToNetgressCache = newNetgressCache;
 }

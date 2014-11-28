@@ -10,7 +10,7 @@
 /***********************************************************************
  * helpers to create network iogress flows
  **********************************************************************/
-std::pair<Flow, Flow> Pothos::Topology::Impl::createNetworkFlow(const Flow &flow)
+std::pair<Pothos::Proxy, Pothos::Proxy> createNetworkFlow(const Flow &flow)
 {
     //default behaviour: the sink binds, the source connects
     auto bindEnv = flow.src.obj.getEnvironment();
@@ -39,18 +39,11 @@ std::pair<Flow, Flow> Pothos::Topology::Impl::createNetworkFlow(const Flow &flow
     auto connectUri = Poco::format("tcp://%s:%s", bindIp, connectPort);
     netConn = connEnv->findProxy("Pothos/BlockRegistry").callProxy(netConnPath, connectUri, "CONNECT");
 
-    //create the flows
-    netSink.get().callVoid("setName", "NetTo: "+flow.dst.obj.call<std::string>("getName")+"["+flow.dst.name+"]");
-    Flow srcFlow;
-    srcFlow.src = flow.src;
-    srcFlow.dst = makePort(netSink, "0");
-
-    netSource.get().callVoid("setName", "NetFrom: "+flow.src.obj.call<std::string>("getName")+"["+flow.src.name+"]");
-    Flow dstFlow;
-    dstFlow.src = makePort(netSource, "0");
-    dstFlow.dst = flow.dst;
-
-    return std::make_pair(srcFlow, dstFlow);
+    //return the pair of network blocks
+    const auto name = flow.src.obj.call<std::string>("getName")+"["+flow.src.name+"]";
+    netSink.get().callVoid("setName", "NetTo: "+name);
+    netSource.get().callVoid("setName", "NetFrom: "+name);
+    return std::make_pair(netSource, netSink);
 }
 
 /***********************************************************************
@@ -60,8 +53,8 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<F
 {
     std::vector<Flow> networkAwareFlows;
 
-    std::vector<std::pair<Flow, std::shared_future<std::pair<Flow, Flow>>>> flowToNetFlowsFuture;
-
+    //locate all of the source endpoints
+    std::unordered_map<Port, std::vector<Flow>> srcToFlows;
     for (const auto &flow : flatFlows)
     {
         //same process, keep this flow as-is
@@ -70,31 +63,44 @@ std::vector<Flow> Pothos::Topology::Impl::createNetworkFlows(const std::vector<F
             networkAwareFlows.push_back(flow);
             continue;
         }
-
-        //no cache entry? make a future to create new network blocks
-        if (this->flowToNetgressCache.count(flow) == 0)
-        {
-            flowToNetFlowsFuture.push_back(
-                std::make_pair(flow, std::async(std::launch::async,
-                &Pothos::Topology::Impl::createNetworkFlow, this, flow)));
-        }
-
-        //lookup the network iogress flows in the cache
-        else
-        {
-            const auto &netFlows = this->flowToNetgressCache.at(flow);
-            networkAwareFlows.push_back(netFlows.first);
-            networkAwareFlows.push_back(netFlows.second);
-        }
+        srcToFlows[envTagPort(flow.src, flow.dst)].push_back(flow);
+    }
+    //look in the cache or create network iogress for every source endpoint
+    std::unordered_map<Port, std::shared_future<std::pair<Pothos::Proxy, Pothos::Proxy>>> srcToFutures;
+    for (const auto &pair : srcToFlows)
+    {
+        assert(not pair.second.empty());
+        if (this->srcToNetgressCache.count(pair.first) != 0) continue;
+        srcToFutures[pair.first] = std::async(std::launch::async, &createNetworkFlow, pair.second.at(0));
     }
 
-    //wait on netflow futures to complete and add to the cache
-    for (const auto &pair : flowToNetFlowsFuture)
+    //load all futures into the cache
+    for (const auto &pair : srcToFutures)
     {
-        const auto netFlows = pair.second.get();
-        flowToNetgressCache[pair.first] = netFlows;
-        networkAwareFlows.push_back(netFlows.first);
-        networkAwareFlows.push_back(netFlows.second);
+        this->srcToNetgressCache[pair.first] = pair.second.get();
+    }
+
+    //append network flows from the cache
+    for (const auto &pair : srcToFlows)
+    {
+        assert(not pair.second.empty());
+        const auto &netBlocks = this->srcToNetgressCache.at(pair.first);
+
+        //append the source to netSink flow
+        Flow srcFlow;
+        srcFlow.src = pair.second.at(0).src;
+        srcFlow.dst = makePort(netBlocks.second, "0");
+        networkAwareFlows.push_back(srcFlow);
+
+        //append the netSource to dest flows
+        for (const auto &flow : pair.second)
+        {
+            assert(flow.src == srcFlow.src);
+            Flow dstFlow;
+            dstFlow.src = makePort(netBlocks.first, "0");
+            dstFlow.dst = flow.dst;
+            networkAwareFlows.push_back(dstFlow);
+        }
     }
 
     return networkAwareFlows;
