@@ -148,8 +148,8 @@ void GraphEditorTabs::handleSaveAs(void)
                         tr("Save As"),
                         lastPath,
                         tr("Pothos Topologies (*.pth)"));
+    if (filePath.isEmpty()) return;
     if (not filePath.endsWith(".pth")) filePath += ".pth";
-    if(filePath.isEmpty()) return;
     getSettings().setValue("GraphEditorTabs/lastFile", filePath);
     editor->setCurrentFilePath(filePath);
     editor->save();
