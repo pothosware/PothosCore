@@ -9,6 +9,17 @@
 #include <vector>
 #include <string>
 
+/*!
+ * Utility to make a port that is unique to its destination environment.
+ * This port can be used as a key for caching the network iogress blocks.
+ */
+static inline Port envTagPort(const Port &port, const Port &other)
+{
+    Port envTagged = port;
+    envTagged.name += "->" + other.obj.getEnvironment()->getUniquePid();
+    return envTagged;
+}
+
 /***********************************************************************
  * implementation guts
  **********************************************************************/
@@ -19,10 +30,9 @@ struct Pothos::Topology::Impl
     ThreadPool threadPool;
     std::vector<Flow> flows;
     std::vector<Flow> activeFlatFlows;
-    std::unordered_map<Flow, std::pair<Flow, Flow>> flowToNetgressCache;
+    std::unordered_map<Port, std::pair<Pothos::Proxy, Pothos::Proxy>> srcToNetgressCache;
     std::vector<Flow> squashFlows(const std::vector<Flow> &);
     std::vector<Flow> createNetworkFlows(const std::vector<Flow> &);
-    std::pair<Flow, Flow> createNetworkFlow(const Flow &flow);
     std::vector<Flow> rectifyDomainFlows(const std::vector<Flow> &);
     std::vector<std::string> inputPortNames;
     std::vector<std::string> outputPortNames;

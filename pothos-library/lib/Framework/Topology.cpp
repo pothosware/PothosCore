@@ -37,7 +37,7 @@ Pothos::Topology::~Topology(void)
         this->disconnectAll();
         this->commit();
         assert(this->_impl->activeFlatFlows.empty());
-        assert(this->_impl->flowToNetgressCache.empty());
+        assert(this->_impl->srcToNetgressCache.empty());
     }
     catch (const Pothos::Exception &ex)
     {
