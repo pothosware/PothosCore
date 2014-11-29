@@ -13,6 +13,10 @@
  * |category /Widgets
  * |keywords frequency plot fft dft spectrum spectral
  *
+ * |param title The title of the plot
+ * |default "Spectrogram"
+ * |widget StringEntry()
+ *
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0
  * |units updates/sec
@@ -48,12 +52,15 @@
  * |param timeSpan[Time Span] How many seconds of data to display in the plot.
  * |default 10.0
  * |units seconds
+ * |preview disable
+ * |tab Axis
  *
  * |param refLevel[Reference Level] The maximum displayable power level.
  * |default 0.0
  * |units dBxx
  * |widget DoubleSpinBox(minimum=-150, maximum=150, step=10, decimals=1)
  * |preview disable
+ * |tab Axis
  *
  * |param dynRange[Dynamic Range] The ratio of largest to smallest displayable power level.
  * The vertical axis will display values from the ref level to ref level - dynamic range.
@@ -61,25 +68,21 @@
  * |units dB
  * |widget DoubleSpinBox(minimum=10, maximum=150, step=10, decimals=1)
  * |preview disable
- *
- * |param title The title of the plot
- * |default "Spectrogram"
- * |widget StringEntry()
- * |tab Plot
+ * |tab Axis
  *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
- * |tab Plot
+ * |tab Axis
  *
  * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
- * |tab Plot
+ * |tab Axis
  *
  * |param freqLabelId[Freq Label ID] Labels with this ID can be used to set the center frequency.
  * To ignore frequency labels, set this parameter to an empty string.
@@ -97,6 +100,7 @@
  *
  * |mode graphWidget
  * |factory /widgets/spectrogram(remoteEnv)
+ * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setCenterFrequency(centerFreq)
@@ -105,7 +109,6 @@
  * |setter setTimeSpan(timeSpan)
  * |setter setReferenceLevel(refLevel)
  * |setter setDynamicRange(dynRange)
- * |setter setTitle(title)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setFreqLabelId(freqLabelId)

@@ -13,6 +13,10 @@
  * |category /Widgets
  * |keywords frequency plot fft dft spectrum spectral
  *
+ * |param title The title of the plot
+ * |default "Power vs Frequency"
+ * |widget StringEntry()
+ *
  * |param numInputs[Num Inputs] The number of input ports.
  * |default 1
  * |widget SpinBox(minimum=1)
@@ -50,11 +54,19 @@
  * |option [Flat-top] "flattop"
  * |widget ComboBox(editable=true)
  *
+ * |param autoScale[Auto-Scale] Enable automatic scaling for the vertical axis.
+ * |default false
+ * |option [Auto scale] true
+ * |option [Use limits] false
+ * |preview disable
+ * |tab Axis
+ *
  * |param refLevel[Reference Level] The maximum displayable power level.
  * |default 0.0
  * |units dBxx
  * |widget DoubleSpinBox(minimum=-150, maximum=150, step=10, decimals=1)
  * |preview disable
+ * |tab Axis
  *
  * |param dynRange[Dynamic Range] The ratio of largest to smallest displayable power level.
  * The vertical axis will display values from the ref level to ref level - dynamic range.
@@ -62,12 +74,7 @@
  * |units dB
  * |widget DoubleSpinBox(minimum=10, maximum=150, step=10, decimals=1)
  * |preview disable
- *
- * |param autoScale[Auto-Scale] Enable automatic scaling for the vertical axis.
- * |default false
- * |option [Auto scale] true
- * |option [Use limits] false
- * |preview disable
+ * |tab Axis
  *
  * |param averaging[Averaging] Averaging factor for moving average over FFT bins.
  * A factor of 0.0 means no averaging.
@@ -77,30 +84,25 @@
  * |preview disable
  * |widget DoubleSpinBox(minimum=0.0, maximum=1.0, step=0.05, decimals=3)
  *
- * |param title The title of the plot
- * |default "Power vs Frequency"
- * |widget StringEntry()
- * |tab Plot
- *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
- * |tab Plot
+ * |tab Axis
  *
  * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
  * |option [Show] true
  * |option [Hide] false
  * |default true
  * |preview disable
- * |tab Plot
+ * |tab Axis
  *
  * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
  * |default "dB"
  * |widget StringEntry()
  * |preview disable
- * |tab Plot
+ * |tab Axis
  *
  * |param freqLabelId[Freq Label ID] Labels with this ID can be used to set the center frequency.
  * To ignore frequency labels, set this parameter to an empty string.
@@ -119,16 +121,16 @@
  * |mode graphWidget
  * |factory /widgets/periodogram(remoteEnv)
  * |initializer setNumInputs(numInputs)
+ * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setCenterFrequency(centerFreq)
  * |setter setNumFFTBins(numBins)
  * |setter setWindowType(window)
+ * |setter setAutoScale(autoScale)
  * |setter setReferenceLevel(refLevel)
  * |setter setDynamicRange(dynRange)
- * |setter setAutoScale(autoScale)
  * |setter setAverageFactor(averaging)
- * |setter setTitle(title)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
