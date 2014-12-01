@@ -27,5 +27,13 @@ endif()
 ########################################################################
 include_directories(${PORTAUDIO_INCLUDE_DIRS})
 add_definitions(${PORTAUDIO_DEFINITIONS})
-
-#TODO
+POTHOS_MODULE_UTIL(
+    TARGET AudioSupport
+    SOURCES
+        AudioSource.cpp
+        AudioSink.cpp
+        AudioInfo.cpp
+    LIBRARIES ${PORTAUDIO_LIBRARIES}
+    DESTINATION audio
+    ENABLE_DOCS
+)
