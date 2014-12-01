@@ -42,18 +42,26 @@
  * |default "float32"
  * |preview disable
  *
- * |param numChan [Num Channels] The number of audio channels.
+ * |param numChans [Num Channels] The number of audio channels.
  * This parameter controls the number of samples per stream element.
  * |widget SpinBox(minimum=1)
  * |default 1
  *
- * |factory /audio/source(deviceName, sampRate, dtype, numChan)
+ * |param chanMode [Channel Mode] The channel mode.
+ * One port with interleaved channels or one port per channel?
+ * |option [Interleaved channels] "INTERLEAVED"
+ * |option [One port per channel] "PORTPERCHAN"
+ * |default "INTERLEAVED"
+ * |preview disable
+ *
+ * |factory /audio/source(deviceName, sampRate, dtype, numChans, chanMode)
  **********************************************************************/
 class AudioSource : public Pothos::Block
 {
 public:
-    AudioSource(const std::string &deviceName, const double sampRate, const Pothos::DType &dtype, const size_t numChannels):
+    AudioSource(const std::string &deviceName, const double sampRate, const Pothos::DType &dtype, const size_t numChans, const std::string &chanMode):
         _stream(nullptr),
+        _interleaved(chanMode == "INTERLEAVED"),
         _sendLabel(false)
     {
         PaError err = Pa_Initialize();
@@ -74,12 +82,13 @@ public:
         //stream params
         PaStreamParameters streamParams;
         streamParams.device = deviceIndex;
-        streamParams.channelCount = numChannels;
+        streamParams.channelCount = numChans;
         if (dtype == Pothos::DType("float32")) streamParams.sampleFormat = paFloat32;
         if (dtype == Pothos::DType("int32")) streamParams.sampleFormat = paInt32;
         if (dtype == Pothos::DType("int16")) streamParams.sampleFormat = paInt16;
         if (dtype == Pothos::DType("int8")) streamParams.sampleFormat = paInt8;
         if (dtype == Pothos::DType("uint8")) streamParams.sampleFormat = paUInt8;
+        if (not _interleaved) streamParams.sampleFormat |= paNonInterleaved;
         streamParams.suggestedLatency = (deviceInfo->defaultLowInputLatency + deviceInfo->defaultHighInputLatency)/2;
         streamParams.hostApiSpecificStreamInfo = nullptr;
 
@@ -105,7 +114,9 @@ public:
             throw Pothos::Exception("AudioSource()", "Pa_OpenStream: " + std::string(Pa_GetErrorText(err)));
         }
 
-        this->setupOutput(0, Pothos::DType(dtype.name(), numChannels));
+        //setup ports
+        if (_interleaved) this->setupOutput(0, Pothos::DType(dtype.name(), numChans));
+        else for (size_t i = 0; i < numChans; i++) this->setupOutput(i, dtype);
     }
 
     ~AudioSource(void)
@@ -123,9 +134,9 @@ public:
         }
     }
 
-    static Block *make(const std::string &deviceName, const double sampRate, const Pothos::DType &dtype, const size_t numChannels)
+    static Block *make(const std::string &deviceName, const double sampRate, const Pothos::DType &dtype, const size_t numChans, const std::string &chanMode)
     {
-        return new AudioSource(deviceName, sampRate, dtype, numChannels);
+        return new AudioSource(deviceName, sampRate, dtype, numChans, chanMode);
     }
 
     void activate(void)
@@ -149,15 +160,13 @@ public:
 
     void work(void)
     {
-        auto outPort = this->output(0);
-
         //calculate the number of frames
         int numFrames = Pa_GetStreamReadAvailable(_stream);
         if (numFrames < 0)
         {
             throw Pothos::Exception("AudioSource.work()", "Pa_GetStreamReadAvailable: " + std::string(Pa_GetErrorText(numFrames)));
         }
-        numFrames = std::min<int>(numFrames, outPort->elements());
+        numFrames = std::min<int>(numFrames, this->workInfo().minOutElements);
 
         //handle do-nothing case with minimal sleep
         if (numFrames == 0)
@@ -166,9 +175,13 @@ public:
             return this->yield();
         }
 
+        //get the buffer
+        void *buffer = nullptr;
+        if (_interleaved) buffer = this->workInfo().outputPointers[0];
+        else buffer = (void *)this->workInfo().outputPointers.data();
+
         //peform read from the device
-        if (outPort->elements() == 0) return;
-        PaError err = Pa_ReadStream(_stream, outPort->buffer().as<void *>(), numFrames);
+        PaError err = Pa_ReadStream(_stream, buffer, numFrames);
         if (err != paNoError)
         {
             throw Pothos::Exception("AudioSource.work()", "Pa_ReadStream: " + std::string(Pa_GetErrorText(err)));
@@ -178,15 +191,17 @@ public:
         {
             _sendLabel = false;
             const auto rate = Pa_GetStreamInfo(_stream)->sampleRate;
-            outPort->postLabel(Pothos::Label("rxRate", rate, 0));
+            Pothos::Label label("rxRate", rate, 0);
+            for (auto port : this->outputs()) port->postLabel(label);
         }
 
-        //produce buffer
-        outPort->produce(numFrames);
+        //produce buffer (all modes)
+        for (auto port : this->outputs()) port->produce(numFrames);
     }
 
 private:
     PaStream *_stream;
+    bool _interleaved;
     bool _sendLabel;
 };
 

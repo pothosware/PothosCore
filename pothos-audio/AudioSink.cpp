@@ -37,18 +37,26 @@
  * |default "float32"
  * |preview disable
  *
- * |param numChan [Num Channels] The number of audio channels.
+ * |param numChans [Num Channels] The number of audio channels.
  * This parameter controls the number of samples per stream element.
  * |widget SpinBox(minimum=1)
  * |default 1
  *
- * |factory /audio/sink(deviceName, sampRate, dtype, numChan)
+ * |param chanMode [Channel Mode] The channel mode.
+ * One port with interleaved channels or one port per channel?
+ * |option [Interleaved channels] "INTERLEAVED"
+ * |option [One port per channel] "PORTPERCHAN"
+ * |default "INTERLEAVED"
+ * |preview disable
+ *
+ * |factory /audio/sink(deviceName, sampRate, dtype, numChans, chanMode)
  **********************************************************************/
 class AudioSink : public Pothos::Block
 {
 public:
-    AudioSink(const std::string &deviceName, const double sampRate, const Pothos::DType &dtype, const size_t numChannels):
-        _stream(nullptr)
+    AudioSink(const std::string &deviceName, const double sampRate, const Pothos::DType &dtype, const size_t numChans, const std::string &chanMode):
+        _stream(nullptr),
+        _interleaved(chanMode == "INTERLEAVED")
     {
         PaError err = Pa_Initialize();
         if (err != paNoError)
@@ -68,12 +76,13 @@ public:
         //stream params
         PaStreamParameters streamParams;
         streamParams.device = deviceIndex;
-        streamParams.channelCount = numChannels;
+        streamParams.channelCount = numChans;
         if (dtype == Pothos::DType("float32")) streamParams.sampleFormat = paFloat32;
         if (dtype == Pothos::DType("int32")) streamParams.sampleFormat = paInt32;
         if (dtype == Pothos::DType("int16")) streamParams.sampleFormat = paInt16;
         if (dtype == Pothos::DType("int8")) streamParams.sampleFormat = paInt8;
         if (dtype == Pothos::DType("uint8")) streamParams.sampleFormat = paUInt8;
+        if (not _interleaved) streamParams.sampleFormat |= paNonInterleaved;
         streamParams.suggestedLatency = (deviceInfo->defaultLowOutputLatency + deviceInfo->defaultHighOutputLatency)/2;
         streamParams.hostApiSpecificStreamInfo = nullptr;
 
@@ -99,7 +108,9 @@ public:
             throw Pothos::Exception("AudioSink()", "Pa_OpenStream: " + std::string(Pa_GetErrorText(err)));
         }
 
-        this->setupInput(0, Pothos::DType(dtype.name(), numChannels));
+        //setup ports
+        if (_interleaved) this->setupInput(0, Pothos::DType(dtype.name(), numChans));
+        else for (size_t i = 0; i < numChans; i++) this->setupInput(i, dtype);
     }
 
     ~AudioSink(void)
@@ -117,9 +128,9 @@ public:
         }
     }
 
-    static Block *make(const std::string &deviceName, const double sampRate, const Pothos::DType &dtype, const size_t numChannels)
+    static Block *make(const std::string &deviceName, const double sampRate, const Pothos::DType &dtype, const size_t numChans, const std::string &chanMode)
     {
-        return new AudioSink(deviceName, sampRate, dtype, numChannels);
+        return new AudioSink(deviceName, sampRate, dtype, numChans, chanMode);
     }
 
     void activate(void)
@@ -142,15 +153,13 @@ public:
 
     void work(void)
     {
-        auto inPort = this->input(0);
-
         //calculate the number of frames
         int numFrames = Pa_GetStreamWriteAvailable(_stream);
         if (numFrames < 0)
         {
             throw Pothos::Exception("AudioSink.work()", "Pa_GetStreamWriteAvailable: " + std::string(Pa_GetErrorText(numFrames)));
         }
-        numFrames = std::min<int>(numFrames, inPort->elements());
+        numFrames = std::min<int>(numFrames, this->workInfo().minInElements);
 
         //handle do-nothing case with minimal sleep
         if (numFrames == 0)
@@ -159,19 +168,25 @@ public:
             return this->yield();
         }
 
+        //get the buffer
+        const void *buffer = nullptr;
+        if (_interleaved) buffer = this->workInfo().inputPointers[0];
+        else buffer = (const void *)this->workInfo().inputPointers.data();
+
         //peform write to the device
-        PaError err = Pa_WriteStream(_stream, inPort->buffer().as<const void *>(), numFrames);
+        PaError err = Pa_WriteStream(_stream, buffer, numFrames);
         if (err != paNoError)
         {
             throw Pothos::Exception("AudioSink.work()", "Pa_WriteStream: " + std::string(Pa_GetErrorText(err)));
         }
 
-        //consume buffer
-        inPort->consume(numFrames);
+        //consume buffer (all modes)
+        for (auto port : this->inputs()) port->consume(numFrames);
     }
 
 private:
     PaStream *_stream;
+    bool _interleaved;
 };
 
 static Pothos::BlockRegistry registerAudioSink(
