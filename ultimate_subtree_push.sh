@@ -13,6 +13,7 @@ pothos-java
 pothos-blocks
 pothos-serialization
 pothos-sdr
+pothos-audio
 "
 
 for PREFIX in $COMPONENTS; do
