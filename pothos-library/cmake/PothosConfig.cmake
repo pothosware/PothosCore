@@ -156,12 +156,12 @@ list(APPEND Pothos_INCLUDE_DIRS ${POTHOS_INCLUDE_DIR})
 ########################################################################
 foreach(lib Foundation JSON XML Util Net)
     find_library(
-        POCO_LIBRARY_${lib} Poco${lib} Poco${lib}d
+        POCO_${lib}_LIBRARY Poco${lib} Poco${lib}d
         PATHS ${POTHOS_ROOT}/lib${LIB_SUFFIX}
         NO_DEFAULT_PATH
     )
-    if(NOT POCO_LIBRARY_${lib})
-        message(FATAL_ERROR "cannot find POCO_LIBRARY_${lib} library in ${POTHOS_ROOT}/lib${LIB_SUFFIX}")
+    if(NOT POCO_${lib}_LIBRARY)
+        message(FATAL_ERROR "cannot find POCO_${lib}_LIBRARY library in ${POTHOS_ROOT}/lib${LIB_SUFFIX}")
     endif()
-    list(APPEND Pothos_LIBRARIES ${POCO_LIBRARY_${lib}})
+    list(APPEND Pothos_LIBRARIES ${POCO_${lib}_LIBRARY})
 endforeach(lib)
