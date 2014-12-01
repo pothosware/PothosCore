@@ -10,6 +10,11 @@
  *
  * The audio source forwards an audio input device to an output sample stream.
  *
+ * The audio source will post a sample rate stream label named "rxRate"
+ * on the first call to work() after activate() has been called.
+ * Downstream blocks like the plotter widgets can consume this label
+ * and use it to set internal parameters like the axis scaling.
+ *
  * |category /Audio
  * |category /Sinks
  * |keywords audio sound stereo mono
@@ -48,7 +53,8 @@ class AudioSource : public Pothos::Block
 {
 public:
     AudioSource(const std::string &deviceName, const double sampRate, const Pothos::DType &dtype, const size_t numChannels):
-        _stream(nullptr)
+        _stream(nullptr),
+        _sendLabel(false)
     {
         PaError err = Pa_Initialize();
         if (err != paNoError)
@@ -129,6 +135,7 @@ public:
         {
             throw Pothos::Exception("AudioSource.activate()", "Pa_StartStream: " + std::string(Pa_GetErrorText(err)));
         }
+        _sendLabel = true;
     }
 
     void deactivate(void)
@@ -167,12 +174,20 @@ public:
             throw Pothos::Exception("AudioSource.work()", "Pa_ReadStream: " + std::string(Pa_GetErrorText(err)));
         }
 
+        if (_sendLabel)
+        {
+            _sendLabel = false;
+            const auto rate = Pa_GetStreamInfo(_stream)->sampleRate;
+            outPort->postLabel(Pothos::Label("rxRate", rate, 0));
+        }
+
         //produce buffer
         outPort->produce(numFrames);
     }
 
 private:
     PaStream *_stream;
+    bool _sendLabel;
 };
 
 static Pothos::BlockRegistry registerAudioSource(
