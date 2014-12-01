@@ -26,7 +26,7 @@
  * in which we accept new edit events before submitting changes.
  * So just leave this as a small number for the time-being.
  */
-static const long UPDATE_TIMER_MS = 10;
+static const long UPDATE_TIMER_MS = 500;
 
 BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     QWidget(parent),
@@ -57,7 +57,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     {
         _idOriginal = _block->getId();
         _formLayout->addRow(_idLabel, _idLineEdit);
-        connect(_idLineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        connect(_idLineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
         connect(_idLineEdit, SIGNAL(returnPressed(void)), this, SLOT(handleCommit(void)));
     }
 
@@ -88,7 +88,8 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
 
         //create editable widget
         auto editWidget = new BlockPropertyEditWidget(paramDesc, this);
-        connect(editWidget, SIGNAL(valueChanged(void)), this, SLOT(handleEditWidgetChanged(void)));
+        connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
+        connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleEntryChanged(void)));
         connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
         _propIdToEditWidget[propKey] = editWidget;
 
@@ -112,7 +113,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         assert(dock != nullptr);
         _affinityZoneBox = dock->makeComboBox(this);
         _formLayout->addRow(_affinityZoneLabel, _affinityZoneBox);
-        connect(_affinityZoneBox, SIGNAL(activated(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        connect(_affinityZoneBox, SIGNAL(activated(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
     }
 
     //errors
@@ -239,7 +240,7 @@ void BlockPropertiesPanel::handleBlockDestroyed(QObject *)
     this->deleteLater();
 }
 
-void BlockPropertiesPanel::handleEditWidgetChanged(void)
+void BlockPropertiesPanel::handleChange(const bool immediate)
 {
     if (_ignoreChanges) return;
 
@@ -258,7 +259,10 @@ void BlockPropertiesPanel::handleEditWidgetChanged(void)
     }
 
     this->updateAllForms(); //quick update for labels
-    _updateTimer->start(UPDATE_TIMER_MS); //schedule new eval
+
+    //schedule an eval, either immediate or delayed
+    if (immediate) this->handleUpdateTimerExpired();
+    else _updateTimer->start(UPDATE_TIMER_MS);
 }
 
 void BlockPropertiesPanel::handleUpdateTimerExpired(void)
@@ -291,7 +295,12 @@ void BlockPropertiesPanel::handleCancel(void)
 
 void BlockPropertiesPanel::handleCommit(void)
 {
-    _updateTimer->stop();
+    //process the timer event immediately
+    if (_updateTimer->isActive())
+    {
+        _updateTimer->stop();
+        this->handleUpdateTimerExpired();
+    }
 
     //were there changes?
     std::vector<QString> propertiesModified;

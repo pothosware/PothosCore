@@ -27,12 +27,29 @@ signals:
     //! The commit action was triggered
     void commitRequested(void);
 
-    //! Emitted when the editor changes value
-    void valueChanged(void);
+    //! Emitted when a widget button or the like changes
+    void widgetChanged(void);
+
+    //! Emitted when a text-like editor changes value
+    void entryChanged(void);
 
 private slots:
-    void handleEditWidgetChanged(const QString &);
-    void handleEditWidgetChanged(void);
+    void handleEntryChanged(const QString &)
+    {
+        emit this->entryChanged();
+    }
+    void handleEntryChanged(void)
+    {
+        emit this->entryChanged();
+    }
+    void handleWidgetChanged(const QString &)
+    {
+        emit this->widgetChanged();
+    }
+    void handleWidgetChanged(void)
+    {
+        emit this->widgetChanged();
+    }
 
 private:
     QWidget *_edit;

@@ -101,6 +101,7 @@ public:
 
 signals:
     void textEdited(void);
+    void valueChanged(void);
     void returnPressed(void);
 
 private slots:
@@ -111,7 +112,7 @@ private slots:
         if (_mode == "save") filePath = QFileDialog::getSaveFileName(this);
         if (filePath.isEmpty()) return;
         this->setValue(filePath);
-        emit this->textEdited();
+        emit this->valueChanged();
     }
 
 private:
@@ -148,8 +149,8 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
                 QString::fromStdString(option->getValue<std::string>("name")),
                 QString::fromStdString(option->getValue<std::string>("value")));
         }
-        connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
-        connect(comboBox, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
+        connect(comboBox, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
         _edit = comboBox;
     }
     else if (widgetType == "DTypeChooser")
@@ -170,8 +171,8 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
                 if (widgetKwargs->has(keyPrefix+"uint")) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
             }
         }
-        connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
-        connect(comboBox, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
+        connect(comboBox, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
         _edit = comboBox;
     }
     else if (widgetType == "SpinBox")
@@ -179,8 +180,8 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
         auto spinBox = new QSpinBox(this);
         spinBox->setMinimum(widgetKwargs->optValue<int>("minimum", std::numeric_limits<int>::min()));
         spinBox->setMaximum(widgetKwargs->optValue<int>("maximum", std::numeric_limits<int>::max()));
-        connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
-        connect(spinBox, SIGNAL(valueChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleWidgetChanged(void)));
+        connect(spinBox, SIGNAL(valueChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
         _edit = spinBox;
     }
     else if (widgetType == "DoubleSpinBox")
@@ -190,14 +191,14 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
         spinBox->setMaximum(widgetKwargs->optValue<double>("maximum", +1e12));
         spinBox->setSingleStep(widgetKwargs->optValue<double>("step", 0.01));
         spinBox->setDecimals(widgetKwargs->optValue<int>("decimals", 2));
-        connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleEditWidgetChanged(void)));
-        connect(spinBox, SIGNAL(valueChanged(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        connect(spinBox, SIGNAL(editingFinished(void)), this, SLOT(handleWidgetChanged(void)));
+        connect(spinBox, SIGNAL(valueChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
         _edit = spinBox;
     }
     else if (widgetType == "StringEntry")
     {
         auto entry = new StringEntry(this);
-        connect(entry, SIGNAL(textEdited(void)), this, SLOT(handleEditWidgetChanged(void)));
+        connect(entry, SIGNAL(textEdited(void)), this, SLOT(handleEntryChanged(void)));
         connect(entry, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
         _edit = entry;
     }
@@ -205,7 +206,8 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
     {
         const auto mode = widgetKwargs->optValue<std::string>("mode", "save");
         auto entry = new FileEntry(QString::fromStdString(mode), this);
-        connect(entry, SIGNAL(textEdited(void)), this, SLOT(handleEditWidgetChanged(void)));
+        connect(entry, SIGNAL(textEdited(void)), this, SLOT(handleEntryChanged(void)));
+        connect(entry, SIGNAL(valueChanged(void)), this, SLOT(handleWidgetChanged(void)));
         connect(entry, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
         _edit = entry;
     }
@@ -218,7 +220,7 @@ BlockPropertyEditWidget::BlockPropertyEditWidget(const Poco::JSON::Object::Ptr &
                 widgetType, paramDesc->getValue<std::string>("name"));
         }
         auto lineEdit = new QLineEdit(this);
-        connect(lineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
+        connect(lineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
         connect(lineEdit, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
         _edit = lineEdit;
     }
@@ -300,16 +302,6 @@ void BlockPropertyEditWidget::setColors(const std::string &typeStr)
         .arg(typeColor.name())
         .arg((typeColor.lightnessF() > 0.5)?"black":"white")
     );
-}
-
-void BlockPropertyEditWidget::handleEditWidgetChanged(const QString &)
-{
-    emit this->valueChanged();
-}
-
-void BlockPropertyEditWidget::handleEditWidgetChanged(void)
-{
-    emit this->valueChanged();
 }
 
 #include "BlockPropertyEditWidget.moc"
