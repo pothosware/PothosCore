@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "AudioHelper.hpp"
 #include <Pothos/Framework.hpp>
 #include <Poco/Logger.h>
 #include <portaudio.h>
@@ -9,12 +10,15 @@
  * |PothosDoc Audio Sink
  *
  * The audio sink forwards an input sample stream into an audio output device.
+ * In interleaved mode, the samples are interleaved from one input port,
+ * In the port-per-channel mode, each audio channel uses a separate port.
  *
  * |category /Audio
  * |category /Sinks
- * |keywords audio sound stereo mono
+ * |keywords audio sound stereo mono speaker
  *
  * |param deviceName[Device Name] The name of an audio device on the system,
+ * the integer index of an audio device on the system,
  * or an empty string to use the default input device.
  * |widget StringEntry()
  * |default ""
@@ -65,13 +69,10 @@ public:
         }
 
         //determine which device
-        PaDeviceIndex deviceIndex = Pa_GetDefaultOutputDevice();
-        for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
-        {
-            if (Pa_GetDeviceInfo(i)->name == deviceName) deviceIndex = i;
-        }
+        const auto deviceIndex = getDeviceMatch("AudioSink", deviceName, Pa_GetDefaultOutputDevice());
         const auto deviceInfo = Pa_GetDeviceInfo(deviceIndex);
-        poco_information_f1(Poco::Logger::get("AudioSink"), "Using %s", std::string(deviceInfo->name));
+        poco_information_f2(Poco::Logger::get("AudioSink"), "Using %s through %s",
+            std::string(deviceInfo->name), std::string(Pa_GetHostApiInfo(deviceInfo->hostApi)->name));
 
         //stream params
         PaStreamParameters streamParams;
@@ -106,6 +107,10 @@ public:
         if (err != paNoError)
         {
             throw Pothos::Exception("AudioSink()", "Pa_OpenStream: " + std::string(Pa_GetErrorText(err)));
+        }
+        if (Pa_GetSampleSize(streamParams.sampleFormat) != int(dtype.size()))
+        {
+            throw Pothos::Exception("AudioSink()", "Pa_GetSampleSize mismatch");
         }
 
         //setup ports

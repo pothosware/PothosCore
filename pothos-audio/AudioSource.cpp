@@ -1,6 +1,7 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "AudioHelper.hpp"
 #include <Pothos/Framework.hpp>
 #include <Poco/Logger.h>
 #include <portaudio.h>
@@ -9,6 +10,8 @@
  * |PothosDoc Audio Source
  *
  * The audio source forwards an audio input device to an output sample stream.
+ * In interleaved mode, the samples are interleaved into one output port,
+ * In the port-per-channel mode, each audio channel uses a separate port.
  *
  * The audio source will post a sample rate stream label named "rxRate"
  * on the first call to work() after activate() has been called.
@@ -17,9 +20,10 @@
  *
  * |category /Audio
  * |category /Sinks
- * |keywords audio sound stereo mono
+ * |keywords audio sound stereo mono microphone
  *
  * |param deviceName[Device Name] The name of an audio device on the system,
+ * the integer index of an audio device on the system,
  * or an empty string to use the default output device.
  * |widget StringEntry()
  * |default ""
@@ -71,13 +75,10 @@ public:
         }
 
         //determine which device
-        PaDeviceIndex deviceIndex = Pa_GetDefaultInputDevice();
-        for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
-        {
-            if (Pa_GetDeviceInfo(i)->name == deviceName) deviceIndex = i;
-        }
+        const auto deviceIndex = getDeviceMatch("AudioSource", deviceName, Pa_GetDefaultInputDevice());
         const auto deviceInfo = Pa_GetDeviceInfo(deviceIndex);
-        poco_information_f1(Poco::Logger::get("AudioSource"), "Using %s", std::string(deviceInfo->name));
+        poco_information_f2(Poco::Logger::get("AudioSource"), "Using %s through %s",
+            std::string(deviceInfo->name), std::string(Pa_GetHostApiInfo(deviceInfo->hostApi)->name));
 
         //stream params
         PaStreamParameters streamParams;
@@ -112,6 +113,10 @@ public:
         if (err != paNoError)
         {
             throw Pothos::Exception("AudioSource()", "Pa_OpenStream: " + std::string(Pa_GetErrorText(err)));
+        }
+        if (Pa_GetSampleSize(streamParams.sampleFormat) != int(dtype.size()))
+        {
+            throw Pothos::Exception("AudioSource()", "Pa_GetSampleSize mismatch");
         }
 
         //setup ports
