@@ -74,7 +74,7 @@ public:
         if (dtype == Pothos::DType("int16")) streamParams.sampleFormat = paInt16;
         if (dtype == Pothos::DType("int8")) streamParams.sampleFormat = paInt8;
         if (dtype == Pothos::DType("uint8")) streamParams.sampleFormat = paUInt8;
-        streamParams.suggestedLatency = (deviceInfo->defaultLowOutputLatency + deviceInfo->defaultHighOutputLatency)/2;
+        streamParams.suggestedLatency = (deviceInfo->defaultLowInputLatency + deviceInfo->defaultHighInputLatency)/2;
         streamParams.hostApiSpecificStreamInfo = nullptr;
 
         //try stream
@@ -143,12 +143,32 @@ public:
     void work(void)
     {
         auto outPort = this->output(0);
+
+        //calculate the number of frames
+        int numFrames = Pa_GetStreamReadAvailable(_stream);
+        if (numFrames < 0)
+        {
+            throw Pothos::Exception("AudioSource.work()", "Pa_GetStreamReadAvailable: " + std::string(Pa_GetErrorText(numFrames)));
+        }
+        numFrames = std::min<int>(numFrames, outPort->elements());
+
+        //handle do-nothing case with minimal sleep
+        if (numFrames == 0)
+        {
+            Pa_Sleep(this->workInfo().maxTimeoutNs/1000000);
+            return this->yield();
+        }
+
+        //peform read from the device
         if (outPort->elements() == 0) return;
-        PaError err = Pa_ReadStream(_stream, outPort->buffer().as<void *>(), outPort->elements());
+        PaError err = Pa_ReadStream(_stream, outPort->buffer().as<void *>(), numFrames);
         if (err != paNoError)
         {
             throw Pothos::Exception("AudioSource.work()", "Pa_ReadStream: " + std::string(Pa_GetErrorText(err)));
         }
+
+        //produce buffer
+        outPort->produce(numFrames);
     }
 
 private:

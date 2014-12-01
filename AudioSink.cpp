@@ -143,12 +143,31 @@ public:
     void work(void)
     {
         auto inPort = this->input(0);
-        if (inPort->elements() == 0) return;
-        PaError err = Pa_WriteStream(_stream, inPort->buffer().as<const void *>(), inPort->elements());
+
+        //calculate the number of frames
+        int numFrames = Pa_GetStreamWriteAvailable(_stream);
+        if (numFrames < 0)
+        {
+            throw Pothos::Exception("AudioSink.work()", "Pa_GetStreamWriteAvailable: " + std::string(Pa_GetErrorText(numFrames)));
+        }
+        numFrames = std::min<int>(numFrames, inPort->elements());
+
+        //handle do-nothing case with minimal sleep
+        if (numFrames == 0)
+        {
+            Pa_Sleep(this->workInfo().maxTimeoutNs/1000000);
+            return this->yield();
+        }
+
+        //peform write to the device
+        PaError err = Pa_WriteStream(_stream, inPort->buffer().as<const void *>(), numFrames);
         if (err != paNoError)
         {
             throw Pothos::Exception("AudioSink.work()", "Pa_WriteStream: " + std::string(Pa_GetErrorText(err)));
         }
+
+        //consume buffer
+        inPort->consume(numFrames);
     }
 
 private:
