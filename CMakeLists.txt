@@ -115,6 +115,7 @@ add_subdirectory(pothos-java)
 add_subdirectory(pothos-util)
 add_subdirectory(pothos-opencl)
 add_subdirectory(pothos-sdr)
+add_subdirectory(pothos-audio)
 
 #########################################################################
 # uninstall target
