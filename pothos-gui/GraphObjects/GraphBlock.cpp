@@ -8,6 +8,7 @@
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "ColorUtils/ColorUtils.hpp"
 #include <Pothos/Exception.hpp>
+#include <QGraphicsScene>
 #include <QAction>
 #include <QPainter>
 #include <QPen>
@@ -497,6 +498,9 @@ void GraphBlock::render(QPainter &painter)
         for (int i = 0; i < _inputPorts.size(); i++) _impl->inputPortColors[i] = typeStrToColor(this->getInputPortTypeStr(_inputPorts.at(i)));
         for (int i = 0; i < _outputPorts.size(); i++) _impl->outputPortColors[i] = typeStrToColor(this->getOutputPortTypeStr(_outputPorts.at(i)));
         this->renderStaticText();
+
+        //connection endpoints may have moved - flag the scene for re-draw
+        this->scene()->update();
     }
 
     //setup rotations and translations
