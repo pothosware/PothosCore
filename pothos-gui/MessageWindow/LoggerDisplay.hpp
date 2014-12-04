@@ -9,6 +9,7 @@
 
 class LoggerChannel;
 class QTextEdit;
+class QTimer;
 
 class LoggerDisplay : public QStackedWidget
 {
@@ -18,9 +19,12 @@ public:
     ~LoggerDisplay(void);
 
 private slots:
-    void handleLogMessage(const Poco::Message &msg);
+    void handleCheckMsgs(void);
 
 private:
+    void handleLogMessage(const Poco::Message &msg);
+
     Poco::AutoPtr<LoggerChannel> _channel;
     QTextEdit *_text;
+    QTimer *_timer;
 };

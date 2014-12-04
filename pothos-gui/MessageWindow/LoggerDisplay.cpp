@@ -5,27 +5,48 @@
 #include "MessageWindow/LoggerChannel.hpp"
 #include <QTextEdit>
 #include <QScrollBar>
+#include <QTimer>
 #include <Poco/DateTimeFormatter.h>
 #include <iostream>
+
+static const long CHECK_MSGS_TIMEOUT_MS = 100;
+static const size_t MAX_MSGS_PER_TIMEOUT = 3;
 
 LoggerDisplay::LoggerDisplay(QWidget *parent):
     QStackedWidget(parent),
     _channel(new LoggerChannel(nullptr)),
-    _text(new QTextEdit(this))
+    _text(new QTextEdit(this)),
+    _timer(new QTimer(this))
 {
     this->addWidget(_text);
     _text->setReadOnly(true);
 
-    qRegisterMetaType<Poco::Message>("Poco::Message");
-    connect(
-        _channel, SIGNAL(receivedLogMessage(const Poco::Message &)),
-        this, SLOT(handleLogMessage(const Poco::Message &)),
-        Qt::QueuedConnection);
+    connect(_timer, SIGNAL(timeout(void)), this, SLOT(handleCheckMsgs(void)));
+    _timer->start(CHECK_MSGS_TIMEOUT_MS);
 }
 
 LoggerDisplay::~LoggerDisplay(void)
 {
     _channel->disconnect();
+}
+
+void LoggerDisplay::handleCheckMsgs(void)
+{
+    const bool autoScroll = _text->verticalScrollBar()->value()+50 > _text->verticalScrollBar()->maximum();
+
+    size_t numMsgs = 0;
+    Poco::Message msg;
+    while (_channel->pop(msg))
+    {
+        if (numMsgs++ < MAX_MSGS_PER_TIMEOUT) this->handleLogMessage(msg);
+    }
+
+    if (numMsgs != 0 and autoScroll)
+    {
+        auto c =  _text->textCursor();
+        c.movePosition(QTextCursor::End);
+        _text->setTextCursor(c);
+    }
 }
 
 void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
@@ -52,14 +73,5 @@ void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
         QString::fromStdString(msg.getSource()),
         body);
 
-    const bool autoScroll = _text->verticalScrollBar()->value()+50 > _text->verticalScrollBar()->maximum();
-
     _text->insertHtml(line);
-
-    if (autoScroll)
-    {
-        auto c =  _text->textCursor();
-        c.movePosition(QTextCursor::End);
-        _text->setTextCursor(c);
-    }
 }

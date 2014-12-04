@@ -8,6 +8,8 @@
 #include <Poco/Message.h>
 #include <Poco/Logger.h>
 #include <Poco/AutoPtr.h>
+#include <queue>
+#include <mutex>
 
 namespace Poco
 {
@@ -24,16 +26,14 @@ public:
 
     void disconnect(void);
 
-    void log(const Poco::Message &msg)
-    {
-        emit receivedLogMessage(msg);
-    }
+    void log(const Poco::Message &msg);
 
-signals:
-    void receivedLogMessage(const Poco::Message &);
+    bool pop(Poco::Message &msg);
 
 private:
     Poco::Logger &_logger;
     const int _oldLevel;
     Poco::AutoPtr<Poco::SplitterChannel> _splitter;
+    std::queue<Poco::Message> _queue;
+    std::mutex _mutex;
 };
