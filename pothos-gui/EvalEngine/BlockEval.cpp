@@ -29,7 +29,8 @@ static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo
     return array;
 }
 
-BlockEval::BlockEval(void)
+BlockEval::BlockEval(void):
+    _queryPortDesc(false)
 {
     qRegisterMetaType<BlockStatus>("BlockStatus");
     this->moveToThread(QApplication::instance()->thread());
@@ -185,6 +186,9 @@ bool BlockEval::evaluationProcedure(void)
             this->reportError("eval", ex);
             evalSuccess = false;
         }
+
+        //port info must be required after re-eval
+        _queryPortDesc = true;
     }
     else evalSuccess = false;
 
@@ -195,11 +199,12 @@ bool BlockEval::evaluationProcedure(void)
     }
 
     //load its port info
-    if (evalSuccess) try
+    if (evalSuccess and _queryPortDesc) try
     {
         auto proxyBlock = this->getProxyBlock();
         _lastBlockStatus.inPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo"));
         _lastBlockStatus.outPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo"));
+        _queryPortDesc = false;
     }
 
     //parser errors report
@@ -283,7 +288,8 @@ void BlockEval::postStatusToBlock(const BlockStatus &status)
     }
     if (status.inPortDesc and status.outPortDesc)
     {
-        block->setPortDesc(status.inPortDesc, status.outPortDesc);
+        block->setInputPortDesc(status.inPortDesc);
+        block->setOutputPortDesc(status.outPortDesc);
     }
     block->setGraphWidget(status.widget);
 

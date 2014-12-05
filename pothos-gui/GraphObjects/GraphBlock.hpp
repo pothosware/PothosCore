@@ -22,11 +22,16 @@ public:
     bool isEnabled(void) const;
     void setEnabled(const bool enb);
 
+    //! set the block description from JSON object
     void setBlockDesc(const Poco::JSON::Object::Ptr &);
     const Poco::JSON::Object::Ptr &getBlockDesc(void) const;
     std::string getBlockDescPath(void) const;
 
-    void setPortDesc(const Poco::JSON::Array::Ptr &, const Poco::JSON::Array::Ptr &);
+    //! set the input ports description from JSON array
+    void setInputPortDesc(const Poco::JSON::Array::Ptr &);
+
+    //! set the output ports description from JSON array
+    void setOutputPortDesc(const Poco::JSON::Array::Ptr &);
 
     //! Does this graph block represent a display widget
     bool isGraphWidget(void) const;
@@ -115,9 +120,6 @@ signals:
     void triggerEvalEvent(void);
 
 private:
-    void initPropertiesFromDesc(void);
-    void initInputsFromDesc(void);
-    void initOutputsFromDesc(void);
     void renderStaticText(void);
     struct Impl;
     std::shared_ptr<Impl> _impl;

@@ -36,13 +36,6 @@ void GraphBlock::setEnabled(const bool enb)
     _impl->changed = true;
 }
 
-void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
-{
-    _impl->blockDesc = blockDesc;
-    assert(_impl->blockDesc);
-    this->initPropertiesFromDesc();
-}
-
 std::string GraphBlock::getBlockDescPath(void) const
 {
     return _impl->blockDesc->getValue<std::string>("path");
@@ -52,15 +45,6 @@ const Poco::JSON::Object::Ptr &GraphBlock::getBlockDesc(void) const
 {
     assert(_impl);
     return _impl->blockDesc;
-}
-
-void GraphBlock::setPortDesc(const Poco::JSON::Array::Ptr &in, const Poco::JSON::Array::Ptr &out)
-{
-    assert(_impl);
-    _impl->inputDesc = in;
-    _impl->outputDesc = out;
-    this->initInputsFromDesc();
-    this->initOutputsFromDesc();
 }
 
 bool GraphBlock::isGraphWidget(void) const
@@ -718,10 +702,8 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     }
 
     //load port description and init from it -- in the case eval fails
-    if (obj->isArray("inputDesc")) _impl->inputDesc = obj->getArray("inputDesc");
-    if (obj->isArray("outputDesc")) _impl->outputDesc = obj->getArray("outputDesc");
-    this->initInputsFromDesc();
-    this->initOutputsFromDesc();
+    if (obj->isArray("inputDesc")) this->setInputPortDesc(obj->getArray("inputDesc"));
+    if (obj->isArray("outputDesc")) this->setOutputPortDesc(obj->getArray("outputDesc"));
 
     GraphObject::deserialize(obj);
 }

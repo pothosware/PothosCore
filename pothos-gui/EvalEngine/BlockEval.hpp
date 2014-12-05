@@ -176,4 +176,5 @@ private:
     //remote block evaluator
     Pothos::Proxy _blockEval;
     Pothos::Proxy _proxyBlock;
+    bool _queryPortDesc;
 };

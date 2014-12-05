@@ -11,10 +11,11 @@
 /***********************************************************************
  * initialize the block's properties
  **********************************************************************/
-void GraphBlock::initPropertiesFromDesc(void)
+void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
 {
-    const auto &blockDesc = _impl->blockDesc;
     assert(blockDesc);
+    if (_impl->blockDesc == blockDesc) return;
+    _impl->blockDesc = blockDesc;
 
     //extract the name or title from the description
     const auto name = blockDesc->getValue<std::string>("name");
@@ -65,10 +66,11 @@ void GraphBlock::initPropertiesFromDesc(void)
 /***********************************************************************
  * initialize the block's input ports
  **********************************************************************/
-void GraphBlock::initInputsFromDesc(void)
+void GraphBlock::setInputPortDesc(const Poco::JSON::Array::Ptr &inputDesc)
 {
-    const auto &inputDesc = _impl->inputDesc;
     if (not inputDesc) return;
+    if (_impl->inputDesc == inputDesc) return;
+    _impl->inputDesc = inputDesc;
 
     //reload the port descriptions, clear the old first
     _inputPorts.clear();
@@ -88,10 +90,11 @@ void GraphBlock::initInputsFromDesc(void)
 /***********************************************************************
  * initialize the block's output ports
  **********************************************************************/
-void GraphBlock::initOutputsFromDesc(void)
+void GraphBlock::setOutputPortDesc(const Poco::JSON::Array::Ptr &outputDesc)
 {
-    const auto &outputDesc = _impl->outputDesc;
     if (not outputDesc) return;
+    if (_impl->outputDesc == outputDesc) return;
+    _impl->outputDesc = outputDesc;
 
     //reload the port descriptions, clear the old first
     _outputPorts.clear();
