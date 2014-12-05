@@ -75,12 +75,14 @@ QWidget *GraphBlock::getGraphWidget(void) const
 
 void GraphBlock::setGraphWidget(QWidget *widget)
 {
+    if (_impl->graphWidget == widget) return;
     _impl->graphWidget = widget;
     _impl->changed = true;
 }
 
 void GraphBlock::setTitle(const QString &title)
 {
+    if (_impl->title == title) return;
     _impl->title = title;
     _impl->changed = true;
 }
@@ -92,6 +94,7 @@ QString GraphBlock::getTitle(void) const
 
 void GraphBlock::clearBlockErrorMsgs(void)
 {
+    if (_impl->blockErrorMsgs.empty()) return;
     _impl->blockErrorMsgs.clear();
     _impl->changed = true;
 }
@@ -170,6 +173,7 @@ QString GraphBlock::getPropertyValue(const QString &key) const
 
 void GraphBlock::setPropertyValue(const QString &key, const QString &value)
 {
+    if (_impl->propertiesValues[key] == value) return;
     _impl->propertiesValues[key] = value;
     _impl->changed = true;
 }
@@ -183,6 +187,7 @@ QString GraphBlock::getPropertyName(const QString &key) const
 
 void GraphBlock::setPropertyName(const QString &key, const QString &name)
 {
+    if (_impl->propertiesNames[key] == name) return;
     _impl->propertiesNames[key] = name;
     _impl->changed = true;
 }
@@ -218,12 +223,14 @@ bool GraphBlock::getPropertyPreview(const QString &key) const
 
 void GraphBlock::setPropertyPreviewMode(const QString &key, const QString &value)
 {
+    if (_impl->propertiesPreview[key] == value) return;
     _impl->propertiesPreview[key] = value;
     _impl->changed = true;
 }
 
 void GraphBlock::setPropertyErrorMsg(const QString &key, const QString &msg)
 {
+    if (_impl->propertiesErrorMsg[key] == msg) return;
     _impl->propertiesErrorMsg[key] = msg;
     _impl->changed = true;
 }
@@ -235,6 +242,7 @@ const QString &GraphBlock::getPropertyErrorMsg(const QString &key) const
 
 void GraphBlock::setPropertyTypeStr(const QString &key, const std::string &type)
 {
+    if (_impl->propertiesTypeStr[key] == type) return;
     _impl->propertiesTypeStr[key] = type;
     _impl->changed = true;
 }
@@ -290,7 +298,9 @@ const QStringList &GraphBlock::getSignalPorts(void) const
 
 void GraphBlock::setInputPortTypeStr(const QString &key, const std::string &type)
 {
+    if (_impl->inputPortTypeStr[key] == type) return;
     _impl->inputPortTypeStr[key] = type;
+    _impl->changed = true;
 }
 
 const std::string &GraphBlock::getInputPortTypeStr(const QString &key) const
@@ -300,7 +310,9 @@ const std::string &GraphBlock::getInputPortTypeStr(const QString &key) const
 
 void GraphBlock::setOutputPortTypeStr(const QString &key, const std::string &type)
 {
+    if (_impl->outputPortTypeStr[key] == type) return;
     _impl->outputPortTypeStr[key] = type;
+    _impl->changed = true;
 }
 
 const std::string &GraphBlock::getOutputPortTypeStr(const QString &key) const
@@ -315,8 +327,9 @@ const QString &GraphBlock::getAffinityZone(void) const
 
 void GraphBlock::setAffinityZone(const QString &zone)
 {
-    _impl->changed = true;
+    if (_impl->affinityZone == zone) return;
     _impl->affinityZone = zone;
+    _impl->changed = true;
 }
 
 QPainterPath GraphBlock::shape(void) const
