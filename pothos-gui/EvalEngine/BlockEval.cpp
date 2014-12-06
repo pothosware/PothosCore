@@ -396,12 +396,12 @@ bool BlockEval::updateAllProperties(void)
 
 void BlockEval::reportError(const std::string &action, const Pothos::Exception &ex)
 {
-    poco_error_f2(Poco::Logger::get("PothosGui.BlockEval."+action),
-        "%s(...) - %s", _newBlockInfo.id.toStdString(), ex.displayText());
+    //poco_error_f2(Poco::Logger::get("PothosGui.BlockEval."+action),
+    //    "%s(...) - %s", _newBlockInfo.id.toStdString(), ex.message());
     _lastBlockStatus.blockErrorMsgs.push_back(tr("%1::%2(...) - %3")
         .arg(_newBlockInfo.id)
         .arg(QString::fromStdString(action))
-        .arg(QString::fromStdString(ex.displayText())));
+        .arg(QString::fromStdString(ex.message())));
 }
 
 bool BlockEval::blockEvalInGUIContext(void)
