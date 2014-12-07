@@ -23,7 +23,7 @@ static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo
         portInfo->set("name", info.name);
         portInfo->set("isSigSlot", info.isSigSlot);
         portInfo->set("size", info.dtype.size());
-        portInfo->set("dtype", info.dtype.toString());
+        portInfo->set("dtype", info.dtype.toMarkup());
         array->add(portInfo);
     }
     return array;

@@ -128,10 +128,16 @@ ColorMap::ColorMap(void)
 QColor typeStrToColor(const std::string &typeStr_)
 {
     auto typeStr = typeStr_;
-    if (typeStr.empty()) return "white"; //not specified
+    if (typeStr.empty()) return Qt::white; //not specified
 
     //try to pass it through DType to get a "nice" name
-    try { typeStr = Pothos::DType(typeStr).toString(); }
+    try
+    {
+        Pothos::DType dtype(typeStr);
+        //use a darker color for multiple dimensions of primitive types
+        if (dtype.dimension() > 1) return typeStrToColor(dtype.name()).darker(120);
+        typeStr = dtype.toMarkup();
+    }
     catch (const Pothos::DTypeUnknownError &){}
 
     //check the cache
