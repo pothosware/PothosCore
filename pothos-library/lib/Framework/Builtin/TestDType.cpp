@@ -104,5 +104,9 @@ POTHOS_TEST_BLOCK("/framework/tests", test_dtype_dimensions)
     POTHOS_TEST_EQUAL(Pothos::DType("custom, 21").size(), 21);
     POTHOS_TEST_EQUAL(Pothos::DType("unspecified, 21").size(), 21);
     POTHOS_TEST_EQUAL(Pothos::DType(", 21").size(), 21);
+
+    //check parsing of toMarkup
+    POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType("int").toMarkup()) == Pothos::DType("int"));
+    POTHOS_TEST_TRUE(Pothos::DType(Pothos::DType("int, 42").toMarkup()) == Pothos::DType("int, 42"));
 }
 

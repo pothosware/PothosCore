@@ -235,6 +235,16 @@ std::string Pothos::DType::toString(void) const
     return out;
 }
 
+std::string Pothos::DType::toMarkup(void) const
+{
+    std::string out = this->name();
+    if (this->dimension() != 1 or this->isCustom())
+    {
+        out += ", " + std::to_string(this->dimension());
+    }
+    return out;
+}
+
 bool Pothos::DType::isCustom(void) const
 {
     return (_elemType & Custom) != 0;

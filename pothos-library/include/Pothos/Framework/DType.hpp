@@ -53,6 +53,10 @@ public:
      * Create a DType from only a markup string.
      * The markup name is a type alias (like float32),
      * with optional comma separated dimensionality.
+     *
+     *  - Example markup: "float32"
+     *  - Example markup: "uint8, 2"
+     *
      * \throw DTypeUnknownError when the name is not known
      * \param markup the name identfier of a known DType
      */
@@ -95,6 +99,12 @@ public:
 
     //! Create a printable string representation
     std::string toString(void) const;
+
+    /*!
+     * Create a markup string which can be parsed by the constructor.
+     * \return the markup string with data type and optional dimensionality
+     */
+    std::string toMarkup(void) const;
 
     /*!
      * Does this dtype specify a non-empty type?
