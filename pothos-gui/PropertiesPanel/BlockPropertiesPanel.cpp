@@ -37,7 +37,10 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     _affinityZoneBox(nullptr),
     _blockErrorLabel(new QLabel(this)),
     _updateTimer(new QTimer(this)),
+    _infoTabs(new QTabWidget(this)),
+    _blockInfoDesc(nullptr),
     _jsonBlockDesc(nullptr),
+    _evalTypesDesc(nullptr),
     _formLayout(nullptr),
     _block(block)
 {
@@ -143,9 +146,8 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     */
 
     //block level description
-    auto docTabs = new QTabWidget(this);
-    connect(docTabs, SIGNAL(currentChanged(int)), this, SLOT(handleDocTabChanged(int)));
-    _formLayout->addRow(docTabs);
+    connect(_infoTabs, SIGNAL(currentChanged(int)), this, SLOT(handleDocTabChanged(int)));
+    _formLayout->addRow(_infoTabs);
     {
         QString output;
         output += QString("<h1>%1</h1>").arg(QString::fromStdString(blockDesc->get("name").convert<std::string>()));
@@ -193,16 +195,29 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
             output += "</ul>";
         }
 
-        auto text = new QLabel(output, docTabs);
-        text->setStyleSheet("QLabel{background:white;margin:1px;}");
-        text->setWordWrap(true);
-        docTabs->addTab(text, tr("Documentation"));
+        _blockInfoDesc = new QLabel(output, _infoTabs);
+        _blockInfoDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
+        _blockInfoDesc->setWordWrap(true);
+        _blockInfoDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+        _infoTabs->addTab(_blockInfoDesc, tr("Documentation"));
     }
 
     //block desc JSON (filled in by event handler)
     {
-        _jsonBlockDesc = new QLabel(docTabs);
-        docTabs->addTab(_jsonBlockDesc, tr("JSON description"));
+        _jsonBlockDesc = new QLabel(_infoTabs);
+        _infoTabs->addTab(_jsonBlockDesc, tr("JSON description"));
+        _jsonBlockDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
+        _jsonBlockDesc->setWordWrap(true);
+        _jsonBlockDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    }
+
+    //evaluated types (filled in by event handler)
+    {
+        _evalTypesDesc = new QLabel(_infoTabs);
+        _infoTabs->addTab(_evalTypesDesc, tr("Evaluated types"));
+        _evalTypesDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
+        _evalTypesDesc->setWordWrap(true);
+        _evalTypesDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
     }
 
     //update timer
@@ -332,12 +347,58 @@ void BlockPropertiesPanel::handleCommit(void)
 void BlockPropertiesPanel::handleDocTabChanged(int index)
 {
     if (_jsonBlockDesc == nullptr) return;
+    if (_evalTypesDesc == nullptr) return;
     _jsonBlockDesc->setText("");
-    if (index != 1) return;
-    std::stringstream ss; _block->getBlockDesc()->stringify(ss, 4);
-    _jsonBlockDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
-    _jsonBlockDesc->setWordWrap(true);
-    _jsonBlockDesc->setText(QString::fromStdString(ss.str()));
+    _evalTypesDesc->setText("");
+
+    if (_infoTabs->widget(index) == _jsonBlockDesc)
+    {
+        std::stringstream ss;
+        _block->getBlockDesc()->stringify(ss, 4);
+        _jsonBlockDesc->setText(QString::fromStdString(ss.str()));
+    }
+
+    if (_infoTabs->widget(index) == _evalTypesDesc)
+    {
+        QString output;
+        if (not _block->getProperties().empty())
+        {
+            output += QString("<h2>%1</h2>").arg(tr("Properties"));
+            output += "<ul>";
+            for (const auto &propKey : _block->getProperties())
+            {
+                const auto typeStr = _block->getPropertyTypeStr(propKey);
+                if (not typeStr.empty()) output += QString("<li><b>%1</b> - %2</li>")
+                    .arg(propKey).arg(QString::fromStdString(typeStr).toHtmlEscaped());
+            }
+            output += "</ul>";
+        }
+        if (not _block->getInputPorts().empty())
+        {
+            output += QString("<h2>%1</h2>").arg(tr("Inputs"));
+            output += "<ul>";
+            for (const auto &portKey : _block->getInputPorts())
+            {
+                const auto typeStr = _block->getInputPortTypeStr(portKey);
+                if (not typeStr.empty()) output += QString("<li><b>%1</b> - %2</li>")
+                    .arg(portKey).arg(QString::fromStdString(typeStr).toHtmlEscaped());
+            }
+            output += "</ul>";
+        }
+        if (not _block->getOutputPorts().empty())
+        {
+            output += QString("<h2>%1</h2>").arg(tr("Outputs"));
+            output += "<ul>";
+            for (const auto &portKey : _block->getOutputPorts())
+            {
+                const auto typeStr = _block->getOutputPortTypeStr(portKey);
+                if (not typeStr.empty()) output += QString("<li><b>%1</b> - %2</li>")
+                    .arg(portKey).arg(QString::fromStdString(typeStr).toHtmlEscaped());
+            }
+            output += "</ul>";
+        }
+        _evalTypesDesc->setText(output);
+    }
 }
 
 void BlockPropertiesPanel::updateAllForms(void)
@@ -380,7 +441,11 @@ void BlockPropertiesPanel::updateAllForms(void)
             .arg(errorList));
     }
 
+    //update properties
     for (const auto &key : _block->getProperties()) this->updatePropForms(key);
+
+    //update info tabs
+    this->handleDocTabChanged(_infoTabs->currentIndex());
 }
 
 void BlockPropertiesPanel::updatePropForms(const QString &propKey)

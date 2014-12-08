@@ -16,6 +16,7 @@ class QLineEdit;
 class QTimer;
 class QComboBox;
 class QFormLayout;
+class QTabWidget;
 class BlockPropertyEditWidget;
 
 class BlockPropertiesPanel : public QWidget
@@ -92,7 +93,10 @@ private:
 
     QLabel *_blockErrorLabel;
     QTimer *_updateTimer;
+    QTabWidget *_infoTabs;
+    QLabel *_blockInfoDesc;
     QLabel *_jsonBlockDesc;
+    QLabel *_evalTypesDesc;
     QFormLayout *_formLayout;
     std::map<std::string, QFormLayout *> _paramLayouts;
     QPointer<GraphBlock> _block;
