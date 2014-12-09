@@ -59,7 +59,12 @@ public:
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
 
 private slots:
+
+    //! The block or breaker was deleted, delete this connection
     void handleEndPointDestroyed(QObject *obj);
+
+    //! After some possible changing event, recheck the endpoints
+    void handleEndPointEventRecheck(void);
 
 private:
     struct Impl;

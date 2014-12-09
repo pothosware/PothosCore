@@ -67,7 +67,16 @@ void GraphConnection::setupEndpoint(const GraphConnectionEndpoint &ep)
     case GRAPH_CONN_OUTPUT:
     case GRAPH_CONN_SIGNAL: _impl->outputEp = ep; break;
     }
+
+    //connected deleted signal so the connection deletes with the endpoint's parent object
     connect(ep.getObj(), SIGNAL(destroyed(QObject *)), this, SLOT(handleEndPointDestroyed(QObject *)));
+
+    //connect eval signal to check if the endpoint exists and delete this connection
+    if (dynamic_cast<GraphBlock *>(ep.getObj().data()) != nullptr)
+    {
+        connect(ep.getObj(), SIGNAL(evalDoneEvent(void)), this, SLOT(handleEndPointEventRecheck(void)));
+    }
+
     _impl->changed = true;
 }
 
@@ -177,6 +186,24 @@ void GraphConnection::handleEndPointDestroyed(QObject *)
     //an endpoint was destroyed, schedule for deletion
     //however, the top level code should handle this deletion
     this->flagForDelete();
+}
+
+void GraphConnection::handleEndPointEventRecheck(void)
+{
+    bool foundOutput = false;
+    for (const auto &key : this->getOutputEndpoint().getObj()->getConnectableKeys())
+    {
+        if (key == this->getOutputEndpoint().getKey()) foundOutput = true;
+    }
+
+    bool foundInput = false;
+    for (const auto &key : this->getInputEndpoint().getObj()->getConnectableKeys())
+    {
+        if (key == this->getInputEndpoint().getKey()) foundInput = true;
+    }
+
+    //the endpoint is missing
+    if (not foundOutput or not foundInput) this->flagForDelete();
 }
 
 QPainterPath GraphConnection::shape(void) const
