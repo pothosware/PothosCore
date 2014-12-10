@@ -4,9 +4,11 @@
 #include "PothosGuiUtils.hpp" //get object map
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "BlockPropertiesPanel.hpp"
-#include "BlockPropertyEditWidget.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphObjects/GraphBlock.hpp"
+#include "ColorUtils/ColorUtils.hpp"
+#include <Pothos/Plugin.hpp>
+#include <Poco/Logger.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -90,7 +92,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         auto paramDesc = _block->getParamDesc(propKey);
 
         //create editable widget
-        auto editWidget = new BlockPropertyEditWidget(paramDesc, this);
+        auto editWidget = this->makePropertyEditWidget(paramDesc);
         connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
         connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleEntryChanged(void)));
         connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
@@ -268,7 +270,9 @@ void BlockPropertiesPanel::handleChange(const bool immediate)
     //dump all values from edit widgets into the block's property values
     for (const auto &propKey : _block->getProperties())
     {
-        auto newValue = _propIdToEditWidget[propKey]->value();
+        QString newValue;
+        auto editWidget = _propIdToEditWidget[propKey];
+        QMetaObject::invokeMethod(editWidget, "value", Qt::DirectConnection, Q_RETURN_ARG(QString, newValue));
         newValue.replace("\n", ""); //cannot handle multi-line values
         _block->setPropertyValue(propKey, newValue);
     }
@@ -472,6 +476,30 @@ void BlockPropertiesPanel::updatePropForms(const QString &propKey)
     errorLabel->setWordWrap(true);
 
     //set the editor's value and type string colors
-    editWidget->setValue(_block->getPropertyValue(propKey));
-    editWidget->setColors(_block->getPropertyTypeStr(propKey));
+    QMetaObject::invokeMethod(editWidget, "setValue", Qt::DirectConnection, Q_ARG(QString, _block->getPropertyValue(propKey)));
+    const auto typeColor = typeStrToColor(_block->getPropertyTypeStr(propKey));
+    editWidget->setStyleSheet(QString("#BlockPropertiesEditWidget{background:%1;color:%2;}")
+        .arg(typeColor.name()).arg((typeColor.lightnessF() > 0.5)?"black":"white"));
+}
+
+QWidget *BlockPropertiesPanel::makePropertyEditWidget(const Poco::JSON::Object::Ptr &paramDesc)
+{
+    //extract widget type
+    auto widgetType = paramDesc->optValue<std::string>("widgetType", "LineEdit");
+    if (paramDesc->isArray("options")) widgetType = "ComboBox";
+    if (widgetType.empty()) widgetType = "LineEdit";
+
+    //check if the widget type exists in the plugin tree
+    if (not Pothos::PluginRegistry::exists(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType)))
+    {
+        poco_error_f1(Poco::Logger::get("PothosGui.BlockPropertiesPanel"), "widget type %s does not exist", widgetType);
+        widgetType = "LineEdit";
+    }
+
+    //lookup the plugin to get the entry widget factory
+    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType));
+    const auto &factory = plugin.getObject().extract<Pothos::Callable>();
+    auto editWidget = factory.call<QWidget *>(paramDesc, static_cast<QWidget *>(this));
+    editWidget->setObjectName("BlockPropertiesEditWidget"); //style-sheet id name
+    return editWidget;
 }

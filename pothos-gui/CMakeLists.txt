@@ -81,7 +81,6 @@ set(SOURCES
     PropertiesPanel/PropertiesPanelDock.cpp
     PropertiesPanel/ConnectionPropertiesPanel.cpp
     PropertiesPanel/BlockPropertiesPanel.cpp
-    PropertiesPanel/BlockPropertyEditWidget.cpp
     PropertiesPanel/BreakerPropertiesPanel.cpp
 
     MessageWindow/MessageWindowDock.cpp
@@ -145,3 +144,8 @@ install(
     DESTINATION share/Pothos
     COMPONENT pothos_gui
 )
+
+########################################################################
+# Edit widgets module
+########################################################################
+add_subdirectory(EditWidgets)

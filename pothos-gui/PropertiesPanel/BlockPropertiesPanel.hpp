@@ -17,7 +17,6 @@ class QTimer;
 class QComboBox;
 class QFormLayout;
 class QTabWidget;
-class BlockPropertyEditWidget;
 
 class BlockPropertiesPanel : public QWidget
 {
@@ -61,7 +60,7 @@ private:
     std::map<QString, QString> _propIdToOriginal;
     std::map<QString, QLabel *> _propIdToFormLabel;
     std::map<QString, QLabel *> _propIdToErrorLabel;
-    std::map<QString, BlockPropertyEditWidget *> _propIdToEditWidget;
+    std::map<QString, QWidget *> _propIdToEditWidget;
 
     /*!
      * Actual handler for changes.
@@ -80,6 +79,11 @@ private:
      * Label string formatting, color of the box, tooltip...
      */
     void updatePropForms(const QString &propKey);
+
+    /*!
+     * Call into the factory to make a new properties edit widget
+     */
+    QWidget *makePropertyEditWidget(const Poco::JSON::Object::Ptr &paramDesc);
 
     bool _ignoreChanges;
 
