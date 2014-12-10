@@ -3,6 +3,7 @@
 
 #include <Pothos/Plugin.hpp>
 #include <Poco/JSON/Object.h>
+#include <QAbstractItemView>
 #include <QComboBox>
 
 /***********************************************************************
@@ -17,6 +18,7 @@ public:
     {
         connect(this, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
         connect(this, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
+        this->view()->setObjectName("BlockPropertiesEditWidget"); //to pick up eval color style
     }
 
 public slots:
