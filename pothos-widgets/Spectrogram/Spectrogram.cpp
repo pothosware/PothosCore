@@ -16,6 +16,7 @@
  * |param title The title of the plot
  * |default "Spectrogram"
  * |widget StringEntry()
+ * |preview valid
  *
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0

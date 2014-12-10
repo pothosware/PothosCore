@@ -17,6 +17,7 @@
  * |param title The title of the plot
  * |default "Amplitude vs Time"
  * |widget StringEntry()
+ * |preview valid
  *
  * |param numInputs[Num Inputs] The number of input ports.
  * |default 1
