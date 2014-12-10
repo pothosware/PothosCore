@@ -475,8 +475,14 @@ void BlockPropertiesPanel::updatePropForms(const QString &propKey)
     errorLabel->setText(QString("<span style='color:red;'><p><i>%1</i></p></span>").arg(errorMsg.toHtmlEscaped()));
     errorLabel->setWordWrap(true);
 
-    //set the editor's value and type string colors
-    QMetaObject::invokeMethod(editWidget, "setValue", Qt::DirectConnection, Q_ARG(QString, _block->getPropertyValue(propKey)));
+    //set the editor's value if changed
+    QString oldValue; QMetaObject::invokeMethod(editWidget, "value", Qt::DirectConnection, Q_RETURN_ARG(QString, oldValue));
+    if (_block->getPropertyValue(propKey) != oldValue)
+    {
+        QMetaObject::invokeMethod(editWidget, "setValue", Qt::DirectConnection, Q_ARG(QString, _block->getPropertyValue(propKey)));
+    }
+
+    //set the editor's stylesheet colors
     const auto typeColor = typeStrToColor(_block->getPropertyTypeStr(propKey));
     editWidget->setStyleSheet(QString("#BlockPropertiesEditWidget{background:%1;color:%2;}")
         .arg(typeColor.name()).arg((typeColor.lightnessF() > 0.5)?"black":"white"));
