@@ -18,7 +18,7 @@ namespace Pothos {
 namespace Util {
 
 /*!
- * RingDeque is a template deque using an underlying vector.
+ * RingDeque is a templated deque using an underlying vector.
  * The API of RingDeque is very similar to the std::deque<T>.
  * RingDeque is here because I wanted the efficiency of
  * boost::circular_buffer without the boost requirement.

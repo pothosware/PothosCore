@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
-#include <Pothos/Util/RingDeque.hpp>
+#include <Pothos/Util/OrderedQueue.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
-#include <vector>
 #include <cassert>
 
 /***********************************************************************
@@ -18,7 +17,6 @@ public:
     CircularBufferManager(void):
         _frontAddress(0),
         _bufferSize(0),
-        _indexToAck(0),
         _bytesToPop(0)
     {
         return;
@@ -35,11 +33,9 @@ public:
         //init the state variables
         _frontAddress = _circBuff.getAddress();
         _bufferSize = args.bufferSize;
-        _indexToAck = 0;
 
         //size internal containers
-        _readyBuffs.set_capacity(args.numBuffers);
-        _pushedBuffers.resize(args.numBuffers);
+        _readyBuffs = Pothos::Util::OrderedQueue<Pothos::ManagedBuffer>(args.numBuffers);
 
         //allocate buffer token objects
         for (size_t i = 0; i < args.numBuffers; i++)
@@ -69,7 +65,7 @@ public:
             return;
         }
 
-        _readyBuffs.pop_front();
+        _readyBuffs.pop();
 
         //increment front address and adjust for aliasing
         assert(_bufferSize >= _bytesToPop);
@@ -84,23 +80,11 @@ public:
 
     void push(const Pothos::ManagedBuffer &buff)
     {
-        //store the buffer into its position
-        assert(buff.getSlabIndex() < _pushedBuffers.size());
-        _pushedBuffers[buff.getSlabIndex()] = buff;
+        assert(buff.getSlabIndex() < _readyBuffs.capacity());
+        _readyBuffs.push(buff, buff.getSlabIndex());
 
-        //look for pushed buffers -- but in order
-        while (_pushedBuffers[_indexToAck])
-        {
-            if (_readyBuffs.empty()) this->setCircFrontBuffer(_pushedBuffers[_indexToAck]);
-
-            //move the buffer into the queue
-            assert(not _readyBuffs.full());
-            _readyBuffs.push_back(_pushedBuffers[_indexToAck]);
-            _pushedBuffers[_indexToAck].reset();
-
-            //increment for the next pushed buffer
-            if (++_indexToAck == _pushedBuffers.size()) _indexToAck = 0;
-        }
+        //prepare the next buffer in the queue
+        if (not _readyBuffs.empty()) this->setCircFrontBuffer(_readyBuffs.front());
     }
 
 private:
@@ -114,11 +98,9 @@ private:
 
     size_t _frontAddress;
     size_t _bufferSize;
-    size_t _indexToAck;
     size_t _bytesToPop;
     Pothos::SharedBuffer _circBuff;
-    std::vector<Pothos::ManagedBuffer> _pushedBuffers;
-    Pothos::Util::RingDeque<Pothos::ManagedBuffer> _readyBuffs;
+    Pothos::Util::OrderedQueue<Pothos::ManagedBuffer> _readyBuffs;
 };
 
 /***********************************************************************
