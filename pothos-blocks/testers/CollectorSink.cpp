@@ -86,6 +86,7 @@ void CollectorSink::verifyTestPlan(const Poco::JSON::Object::Ptr &expected) cons
 
     if (expected->has("expectedValues"))
     {
+        if (_buffer.length == 0) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()", "collector buffer is empty");
         if (not (_buffer.dtype == this->input(0)->dtype())) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
             Poco::format("Buffer type mismatch: expected %s -> actual %s", this->input(0)->dtype().toString(), _buffer.dtype.toString()));
 
