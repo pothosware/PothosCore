@@ -100,7 +100,7 @@ void SystemInfoTree::handleWatcherDone(void)
     //adjust value column before arbitrary values from device info
     this->resizeColumnToContents(1);
 
-    for (size_t i = 0; i < info.deviceInfo->size(); i++)
+    if (info.deviceInfo) for (size_t i = 0; i < info.deviceInfo->size(); i++)
     {
         this->loadJsonObject(this, "", info.deviceInfo->getObject(i), true/*expand*/);
     }
