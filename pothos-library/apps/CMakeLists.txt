@@ -11,6 +11,7 @@ list(APPEND SOURCES
     PothosUtil.cpp
     PothosUtilSelfTests.cpp
     PothosUtilPrintTree.cpp
+    PothosUtilDeviceInfo.cpp
     PothosUtilProxyServer.cpp
     PothosUtilLoadModule.cpp
     PothosUtilDocParse.cpp

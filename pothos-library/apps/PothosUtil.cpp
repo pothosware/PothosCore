@@ -44,6 +44,11 @@ protected:
             .repeatable(false)
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printSystemInfo)));
 
+        options.addOption(Poco::Util::Option("device-info", "", "display device information")
+            .required(false)
+            .repeatable(false)
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printDeviceInfo)));
+
         options.addOption(Poco::Util::Option("print-tree", "", "display plugin tree")
             .required(false)
             .repeatable(false)
