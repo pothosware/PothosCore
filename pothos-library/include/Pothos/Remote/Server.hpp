@@ -33,9 +33,10 @@ public:
      * A host address of 0.0.0.0 will bind the server to all interfaces.
      * An unspecified port means that an available port will be automatically chosen.
      * \param uri a formatted string which tells the server what kind of service to run
+     * \param closePipes true to close stdout/err pipes (keep open for syslog forwarding)
      * \return a handle that when deleted, will cause the server/process to exit
      */
-    RemoteServer(const std::string &uri);
+    RemoteServer(const std::string &uri, const bool closePipes = true);
 
     //! Get the server's bind URI
     const std::string &getUri(void) const;
@@ -52,6 +53,16 @@ public:
 
     //! Get the actual port that the server is running on
     std::string getActualPort(void) const;
+
+    /*!
+     * Start syslog forwarding to the given address.
+     * Spawn threads to read the stdout/err pipes from
+     * the server process and forward to a syslog channel.
+     * Only use when the server is created with closePipes false.
+     * \param addr the log destination in host:port format
+     * \param source the repoted source of the log messages
+     */
+    void startSyslogForwarding(const std::string &addr, const std::string &source);
 
 private:
     struct Impl;
