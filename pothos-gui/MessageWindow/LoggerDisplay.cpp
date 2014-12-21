@@ -38,7 +38,8 @@ void LoggerDisplay::handleCheckMsgs(void)
     Poco::Message msg;
     while (_channel->pop(msg))
     {
-        if (numMsgs++ < MAX_MSGS_PER_TIMEOUT) this->handleLogMessage(msg);
+        this->handleLogMessage(msg);
+        if (++numMsgs == MAX_MSGS_PER_TIMEOUT) break;
     }
 
     if (numMsgs != 0 and autoScroll)
