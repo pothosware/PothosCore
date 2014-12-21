@@ -84,7 +84,7 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
 
     //connect to the remote host and spawn a server
     auto serverEnv = Pothos::RemoteClient(hostUri).makeEnvironment("managed");
-    auto serverHandle = serverEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://0.0.0.0");
+    auto serverHandle = serverEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://0.0.0.0", false/*noclose*/);
 
     //construct the uri for the new server
     auto actualPort = serverHandle.call<std::string>("getActualPort");
@@ -102,6 +102,7 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
     env->findProxy("Pothos/System/Logger").callVoid("startSyslogForwarding", serverAddr);
     const auto logSource = (not _zoneName.isEmpty())? _zoneName.toStdString() : newHostUri.getHost();
     env->findProxy("Pothos/System/Logger").callVoid("forwardStdIoToLogging", logSource);
+    serverHandle.callVoid("startSyslogForwarding", serverAddr, logSource);
 
     return env;
 }
