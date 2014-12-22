@@ -1,0 +1,11 @@
+This this the changelog file for the Pothos C++ library.
+
+Release 0.2.0 (pending)
+==========================
+
+-TODO
+
+Release 0.1.0 (pending)
+==========================
+
+This is the first public release of the Pothos C++ library.
