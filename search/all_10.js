@@ -34,7 +34,7 @@ var searchData=
   ['remoteclient',['RemoteClient',['../classPothos_1_1RemoteClient.html',1,'Pothos']]],
   ['remotehandler',['RemoteHandler',['../classPothos_1_1RemoteHandler.html',1,'Pothos']]],
   ['remotehandler',['RemoteHandler',['../classPothos_1_1RemoteHandler.html#a7dab8dc4b7dd267c543ec42b18f598ac',1,'Pothos::RemoteHandler::RemoteHandler(void)'],['../classPothos_1_1RemoteHandler.html#aa32dc5fd3934ac9208447f3dea1d1d2a',1,'Pothos::RemoteHandler::RemoteHandler(const std::string &amp;peerAddr)']]],
-  ['remoteserver',['RemoteServer',['../classPothos_1_1RemoteServer.html#aa914e2a4da6ef76a2d36c0e615f8b89f',1,'Pothos::RemoteServer::RemoteServer(void)'],['../classPothos_1_1RemoteServer.html#a99c727fa50d3c6e540dfb3ed2cafd9fe',1,'Pothos::RemoteServer::RemoteServer(const std::string &amp;uri)']]],
+  ['remoteserver',['RemoteServer',['../classPothos_1_1RemoteServer.html#aa914e2a4da6ef76a2d36c0e615f8b89f',1,'Pothos::RemoteServer::RemoteServer(void)'],['../classPothos_1_1RemoteServer.html#abf17a2e75a1a1e7fb465b18bc8fab28e',1,'Pothos::RemoteServer::RemoteServer(const std::string &amp;uri, const bool closePipes=true)']]],
   ['remoteserver',['RemoteServer',['../classPothos_1_1RemoteServer.html',1,'Pothos']]],
   ['remove',['remove',['../classPothos_1_1PluginRegistry.html#ab8d8fc9cd73227b068cad922de07af32',1,'Pothos::PluginRegistry']]],
   ['removelabel',['removeLabel',['../classPothos_1_1InputPort.html#ad16d52f7ef51cbaf0e3db2a2c6d3c6ed',1,'Pothos::InputPort']]],

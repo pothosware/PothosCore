@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -136,8 +136,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a801fa568e4ae9624ea775e5c0c4132ed"><td class="memTemplParams" colspan="2">template&lt;typename SrcType , typename SrcPortType , typename DstType , typename DstPortType &gt; </td></tr>
 <tr class="memitem:a801fa568e4ae9624ea775e5c0c4132ed"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1Topology.html#a801fa568e4ae9624ea775e5c0c4132ed">disconnect</a> (SrcType &amp;&amp;src, const SrcPortType &amp;srcPort, DstType &amp;&amp;dst, const DstPortType &amp;dstPort)</td></tr>
 <tr class="separator:a801fa568e4ae9624ea775e5c0c4132ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b2ba41ac3388f22168995870c724c85"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Topology.html#a5b2ba41ac3388f22168995870c724c85">disconnectAll</a> (void)</td></tr>
-<tr class="separator:a5b2ba41ac3388f22168995870c724c85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12b2ab753c737414d0d5c69e0ef13b14"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Topology.html#a12b2ab753c737414d0d5c69e0ef13b14">disconnectAll</a> (const bool recursive=false)</td></tr>
+<tr class="separator:a12b2ab753c737414d0d5c69e0ef13b14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee2281ef7121cfc1bb2b1039598a2d7c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Topology.html#aee2281ef7121cfc1bb2b1039598a2d7c">_connect</a> (const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;src, const std::string &amp;srcPort, const <a class="el" href="classPothos_1_1Object.html">Object</a> &amp;dst, const std::string &amp;dstPort)</td></tr>
 <tr class="memdesc:aee2281ef7121cfc1bb2b1039598a2d7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a connection between a source port and a destination port.  <a href="#aee2281ef7121cfc1bb2b1039598a2d7c">More...</a><br/></td></tr>
 <tr class="separator:aee2281ef7121cfc1bb2b1039598a2d7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,8 +146,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a3818780963413169a5d6d3f20f98106c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c044340b108fd341e639681d471a817"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Topology.html#a2c044340b108fd341e639681d471a817">registerCallable</a> (const std::string &amp;name, const <a class="el" href="classPothos_1_1Callable.html">Callable</a> &amp;<a class="el" href="classPothos_1_1CallInterface.html#ac2488fe3b3437b6d90853117bb4fdbe9">call</a>)</td></tr>
 <tr class="separator:a2c044340b108fd341e639681d471a817"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aab3ca87621d55595d9a777ed89d7710a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Topology.html#aab3ca87621d55595d9a777ed89d7710a">toDotMarkup</a> (const bool flat=true)</td></tr>
-<tr class="separator:aab3ca87621d55595d9a777ed89d7710a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a340c0853d2d8e6a4820a6daa03e8cff2"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Topology.html#a340c0853d2d8e6a4820a6daa03e8cff2">toDotMarkup</a> (const std::string &amp;config=&quot;&quot;)</td></tr>
+<tr class="separator:a340c0853d2d8e6a4820a6daa03e8cff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a33fa7752700f2d917a698a68ab2719a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1Object.html">Object</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Topology.html#a33fa7752700f2d917a698a68ab2719a5">opaqueCallMethod</a> (const std::string &amp;name, const <a class="el" href="classPothos_1_1Object.html">Object</a> *inputArgs, const size_t numArgs) const </td></tr>
 <tr class="separator:a33fa7752700f2d917a698a68ab2719a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classPothos_1_1Connectable"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classPothos_1_1Connectable')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classPothos_1_1Connectable.html">Pothos::Connectable</a></td></tr>
@@ -790,20 +790,26 @@ template&lt;typename SrcType , typename SrcPortType , typename DstType , typenam
 
 </div>
 </div>
-<a class="anchor" id="a5b2ba41ac3388f22168995870c724c85"></a>
+<a class="anchor" id="a12b2ab753c737414d0d5c69e0ef13b14"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void Pothos::Topology::disconnectAll </td>
           <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>recursive</em> = <code>false</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Disconnect all data flows inside this topology. This call is recursive and will disconnect all on the other sub-topologies in this data flow. No changes to the data flow occur until <a class="el" href="classPothos_1_1Topology.html#a6d9054593fda4e56f7cca4a15f7bc121">commit()</a>. </p>
+<p>Disconnect all data flows inside this topology. This call can be recursive and will disconnect all on the other sub-topologies within this data flow. No changes to the data flow occur until <a class="el" href="classPothos_1_1Topology.html#a6d9054593fda4e56f7cca4a15f7bc121">commit()</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">recursive</td><td>true to recurse through sub-topologies </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1075,23 +1081,34 @@ template&lt;typename SrcType , typename SrcPortType , typename DstType , typenam
 
 </div>
 </div>
-<a class="anchor" id="aab3ca87621d55595d9a777ed89d7710a"></a>
+<a class="anchor" id="a340c0853d2d8e6a4820a6daa03e8cff2"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">std::string Pothos::Topology::toDotMarkup </td>
           <td>(</td>
-          <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>flat</em> = <code>true</code></td><td>)</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>config</em> = <code>&quot;&quot;</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Convert the topology to a string containing dot markup. This markup can be passed into the dot tool to create a visual graph. The markup can represent the connections as specified by the user, or if flat is true, the complete flattened topology with network blocks for crossing process/computer boundaries. </p>
+<p>Convert the topology to a string containing dot markup. This markup can be passed into the dot tool to create a visual graph. The markup can represent the connections as specified by the user, or if flat is true, the complete flattened topology with network blocks for crossing process/computer boundaries.</p>
+<p>Example configuration string {"mode" : "flat", "port" : "all"}</p>
+<p>Mode options:</p>
+<ul>
+<li>"flat" Flattened topology no hierarchies.</li>
+<li>"top" Top level blocks and hierarchies.</li>
+</ul>
+<p>Port options:</p>
+<ul>
+<li>"all" Show all available IO ports.</li>
+<li>"connected" Show connected ports only.</li>
+</ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">flat</td><td>true to show the flattened topology with network iogress </td></tr>
+    <tr><td class="paramname">config</td><td>a JSON object string with configuration parameters </td></tr>
   </table>
   </dd>
 </dl>
@@ -1154,7 +1171,7 @@ template&lt;typename SrcType , typename SrcPortType , typename DstType , typenam
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Oct 15 2014 14:53:54 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 22 2014 16:50:07 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

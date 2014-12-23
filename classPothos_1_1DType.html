@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -129,6 +129,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a04448ac265dd4ed39378803718ff73b9"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#a04448ac265dd4ed39378803718ff73b9">toString</a> (void) const </td></tr>
 <tr class="memdesc:a04448ac265dd4ed39378803718ff73b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a printable string representation.  <a href="#a04448ac265dd4ed39378803718ff73b9">More...</a><br/></td></tr>
 <tr class="separator:a04448ac265dd4ed39378803718ff73b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a775f90cde1d20f4f5e27895b8a4b45c7"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#a775f90cde1d20f4f5e27895b8a4b45c7">toMarkup</a> (void) const </td></tr>
+<tr class="separator:a775f90cde1d20f4f5e27895b8a4b45c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a87a9df3615757d7f76cda2d631bcc2bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#a87a9df3615757d7f76cda2d631bcc2bf">operator bool</a> (void) const </td></tr>
 <tr class="separator:a87a9df3615757d7f76cda2d631bcc2bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04779e29232a992bf428c15983e6ac11"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#a04779e29232a992bf428c15983e6ac11">isCustom</a> (void) const </td></tr>
@@ -231,7 +233,11 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Create a <a class="el" href="classPothos_1_1DType.html">DType</a> from only a markup string. The markup name is a type alias (like float32), with optional comma separated dimensionality. </p>
+<p>Create a <a class="el" href="classPothos_1_1DType.html">DType</a> from only a markup string. The markup name is a type alias (like float32), with optional comma separated dimensionality.</p>
+<ul>
+<li>Example markup: "float32"</li>
+<li>Example markup: "uint8, 2"</li>
+</ul>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">DTypeUnknownError</td><td>when the name is not known </td></tr>
@@ -595,6 +601,24 @@ template&lt;class Archive &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a775f90cde1d20f4f5e27895b8a4b45c7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string Pothos::DType::toMarkup </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Create a markup string which can be parsed by the constructor. </p>
+<dl class="section return"><dt>Returns</dt><dd>the markup string with data type and optional dimensionality </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a04448ac265dd4ed39378803718ff73b9"></a>
 <div class="memitem">
 <div class="memproto">
@@ -619,7 +643,7 @@ template&lt;class Archive &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Oct 15 2014 14:53:54 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 22 2014 16:50:07 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -25,7 +25,7 @@ var searchData=
   ['sources',['sources',['../classPothos_1_1Util_1_1CompilerArgs.html#ab3e1a69ab3eca00ac9b6ebe7ca260481',1,'Pothos::Util::CompilerArgs']]],
   ['sptr',['Sptr',['../classPothos_1_1BufferManager.html#a416a19df56db34331b3acd0b0367e44c',1,'Pothos::BufferManager::Sptr()'],['../classPothos_1_1ProxyEnvironment.html#a89988a1d095522e7dd597c5ac145e265',1,'Pothos::ProxyEnvironment::Sptr()'],['../classPothos_1_1Util_1_1Compiler.html#a31db0cca7e8a8097e60b5643dd88481a',1,'Pothos::Util::Compiler::Sptr()']]],
   ['start',['start',['../structPothos_1_1TimeAccumulator.html#a38201b1f79e8e45f1d1cb08e623c5e71',1,'Pothos::TimeAccumulator']]],
-  ['startsyslogforwarding',['startSyslogForwarding',['../classPothos_1_1System_1_1Logger.html#a2b9f4cc7c0c75c36bc6df531a94eacf1',1,'Pothos::System::Logger']]],
+  ['startsyslogforwarding',['startSyslogForwarding',['../classPothos_1_1System_1_1Logger.html#a2b9f4cc7c0c75c36bc6df531a94eacf1',1,'Pothos::System::Logger::startSyslogForwarding()'],['../classPothos_1_1RemoteServer.html#a24a12e50ae0315c3b014b6ba905915cf',1,'Pothos::RemoteServer::startSyslogForwarding()']]],
   ['startsysloglistener',['startSyslogListener',['../classPothos_1_1System_1_1Logger.html#addb5ed4b85b03676308bc5ef91941fa2',1,'Pothos::System::Logger']]],
   ['static_2ehpp',['Static.hpp',['../Static_8hpp.html',1,'']]],
   ['stopsysloglistener',['stopSyslogListener',['../classPothos_1_1System_1_1Logger.html#acb29960374c190f6cca6e18d0ba37d76',1,'Pothos::System::Logger']]],

@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -112,8 +112,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa914e2a4da6ef76a2d36c0e615f8b89f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteServer.html#aa914e2a4da6ef76a2d36c0e615f8b89f">RemoteServer</a> (void)</td></tr>
 <tr class="memdesc:aa914e2a4da6ef76a2d36c0e615f8b89f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make an empty handle.  <a href="#aa914e2a4da6ef76a2d36c0e615f8b89f">More...</a><br/></td></tr>
 <tr class="separator:aa914e2a4da6ef76a2d36c0e615f8b89f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99c727fa50d3c6e540dfb3ed2cafd9fe"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteServer.html#a99c727fa50d3c6e540dfb3ed2cafd9fe">RemoteServer</a> (const std::string &amp;uri)</td></tr>
-<tr class="separator:a99c727fa50d3c6e540dfb3ed2cafd9fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf17a2e75a1a1e7fb465b18bc8fab28e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteServer.html#abf17a2e75a1a1e7fb465b18bc8fab28e">RemoteServer</a> (const std::string &amp;uri, const bool closePipes=true)</td></tr>
+<tr class="separator:abf17a2e75a1a1e7fb465b18bc8fab28e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae82719d7422b4061edeeddce67d495b"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteServer.html#aae82719d7422b4061edeeddce67d495b">getUri</a> (void) const </td></tr>
 <tr class="memdesc:aae82719d7422b4061edeeddce67d495b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the server's bind URI.  <a href="#aae82719d7422b4061edeeddce67d495b">More...</a><br/></td></tr>
 <tr class="separator:aae82719d7422b4061edeeddce67d495b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -123,6 +123,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a72470f3697122e60410c3ce8f39ced67"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteServer.html#a72470f3697122e60410c3ce8f39ced67">getActualPort</a> (void) const </td></tr>
 <tr class="memdesc:a72470f3697122e60410c3ce8f39ced67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the actual port that the server is running on.  <a href="#a72470f3697122e60410c3ce8f39ced67">More...</a><br/></td></tr>
 <tr class="separator:a72470f3697122e60410c3ce8f39ced67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24a12e50ae0315c3b014b6ba905915cf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1RemoteServer.html#a24a12e50ae0315c3b014b6ba905915cf">startSyslogForwarding</a> (const std::string &amp;addr, const std::string &amp;source)</td></tr>
+<tr class="separator:a24a12e50ae0315c3b014b6ba905915cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classPothos_1_1Util_1_1RefHolder"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classPothos_1_1Util_1_1RefHolder')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classPothos_1_1Util_1_1RefHolder.html">Pothos::Util::RefHolder</a></td></tr>
 <tr class="memitem:a7491c8e2a416a12bc42eac8c6cf49246 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Util_1_1RefHolder.html#a7491c8e2a416a12bc42eac8c6cf49246">~RefHolder</a> (void)</td></tr>
 <tr class="memdesc:a7491c8e2a416a12bc42eac8c6cf49246 inherit pub_methods_classPothos_1_1Util_1_1RefHolder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual destructor for derived classes.  <a href="#a7491c8e2a416a12bc42eac8c6cf49246">More...</a><br/></td></tr>
@@ -160,7 +162,7 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a99c727fa50d3c6e540dfb3ed2cafd9fe"></a>
+<a class="anchor" id="abf17a2e75a1a1e7fb465b18bc8fab28e"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -168,8 +170,18 @@ Static Public Member Functions</h2></td></tr>
           <td class="memname">Pothos::RemoteServer::RemoteServer </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>uri</em></td><td>)</td>
+          <td class="paramname"><em>uri</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>closePipes</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -177,6 +189,7 @@ Static Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">uri</td><td>a formatted string which tells the server what kind of service to run </td></tr>
+    <tr><td class="paramname">closePipes</td><td>true to close stdout/err pipes (keep open for syslog forwarding) </td></tr>
   </table>
   </dd>
 </dl>
@@ -264,13 +277,47 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a24a12e50ae0315c3b014b6ba905915cf"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Pothos::RemoteServer::startSyslogForwarding </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>addr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>source</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Start syslog forwarding to the given address. Spawn threads to read the stdout/err pipes from the server process and forward to a syslog channel. Only use when the server is created with closePipes false. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>the log destination in host:port format </td></tr>
+    <tr><td class="paramname">source</td><td>the repoted source of the log messages </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/Pothos/Remote/<a class="el" href="Server_8hpp_source.html">Server.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Oct 15 2014 14:53:54 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 22 2014 16:50:07 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
