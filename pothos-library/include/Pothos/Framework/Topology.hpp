@@ -37,6 +37,12 @@ public:
      */
     static std::shared_ptr<Topology> make(void);
 
+    /*!
+     * Create a topology from a JSON description.
+     * \param json a JSON string or file path
+     */
+    static std::shared_ptr<Topology> make(const std::string &json);
+
     //! Create a new empty topology
     Topology(void);
 
