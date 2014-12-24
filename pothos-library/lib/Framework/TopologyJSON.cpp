@@ -41,7 +41,8 @@ static std::vector<Pothos::Proxy> evalArgsArray(
     std::vector<Pothos::Proxy> args;
     if (argsArray) for (size_t i = offset; i < argsArray->size(); i++)
     {
-        const auto arg = argsArray->getElement<std::string>(i);
+        auto arg = argsArray->get(i).toString();
+        if (argsArray->get(i).isString()) arg = "\""+arg+"\"";
         const auto obj = evaluator.call<Pothos::Object>("eval", arg);
         args.push_back(evaluator.getEnvironment()->convertObjectToProxy(obj));
     }
@@ -132,9 +133,9 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
 
         //extract connection arg fields
         const auto srcId = connArgs->getElement<std::string>(0);
-        const auto srcPort = connArgs->getElement<std::string>(1);
+        const auto srcPort = connArgs->get(1).toString();
         const auto dstId = connArgs->getElement<std::string>(2);
-        const auto dstPort = connArgs->getElement<std::string>(3);
+        const auto dstPort = connArgs->get(3).toString();
 
         //check that the block IDs exist
         if (blocks.count(srcId) == 0) throw Pothos::DataFormatException(

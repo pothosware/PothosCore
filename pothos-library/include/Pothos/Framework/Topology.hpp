@@ -47,10 +47,10 @@ public:
      *         {
      *             "id" : "id0",
      *             "path" : "/blocks/foo",
-     *             "args" : ["1", "\"hello\""],
+     *             "args" : [1, "hello"],
      *             "calls" : [
-     *                 ["setFoo", "true"],
-     *                 ["updateBaz", "3.14"]
+     *                 ["setFoo", true],
+     *                 ["updateBaz", 3.14]
      *             ]
      *         },
      *         {
@@ -58,7 +58,7 @@ public:
      *             "path" : "/blocks/bar",
      *             "args" : [],
      *             "calls" : [
-     *                 ["setBar", "\"OK\""],
+     *                 ["setBar", "OK"],
      *             ]
      *         }
      *     },
