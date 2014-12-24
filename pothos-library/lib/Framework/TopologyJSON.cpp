@@ -8,40 +8,8 @@
 #include <Poco/JSON/Parser.h>
 #include <Poco/File.h>
 #include <fstream>
+#include <iostream>
 #include <map>
-
-/***********************************************************************
- * Example JSON markup
- **********************************************************************/
-/*
-{
-    "blocks" : [
-        {
-            "id" : "id0",
-            "path" : "/blocks/foo",
-            "args" : ["1", "\"hello\""],
-            "calls" : [
-                ["setFoo", "true"],
-                ["updateBaz", "3.14"]
-            ]
-        },
-        {
-            "id" : "id1",
-            "path" : "/blocks/bar",
-            "args" : [],
-            "calls" : [
-                ["setBar", "\"OK\""],
-            ]
-        }
-    },
-    "connections", [
-        ["self", "inputX", "id0", "in0"],
-        ["id0", "out0", "id1", "in0"],
-        ["id1", "out0", "self", "outputY"],
-    ]
-
-}
-//*/
 
 /***********************************************************************
  * String/file parser - make JSON object from string
@@ -71,10 +39,11 @@ static std::vector<Pothos::Proxy> evalArgsArray(
     const size_t offset = 0)
 {
     std::vector<Pothos::Proxy> args;
-    for (size_t i = offset; i < argsArray->size(); i++)
+    if (argsArray) for (size_t i = offset; i < argsArray->size(); i++)
     {
         const auto arg = argsArray->getElement<std::string>(i);
-        args.push_back(evaluator.callProxy("eval", arg));
+        const auto obj = evaluator.call<Pothos::Object>("eval", arg);
+        args.push_back(evaluator.getEnvironment()->convertObjectToProxy(obj));
     }
     return args;
 }
@@ -104,12 +73,12 @@ static Pothos::Proxy makeBlock(
     //make the calls
     Poco::JSON::Array::Ptr callsArray;
     if (blockObj->isArray("calls")) callsArray = blockObj->getArray("calls");
-    for (size_t i = 0; i < callsArray->size(); i++)
+    if (callsArray) for (size_t i = 0; i < callsArray->size(); i++)
     {
         const auto callArray = callsArray->getArray(i);
         auto name = callArray->getElement<std::string>(0);
         const auto callArgs = evalArgsArray(evaluator, callArray, 1/*offset*/);
-        registry.getHandle()->call(name, callArgs.data(), callArgs.size());
+        block.getHandle()->call(name, callArgs.data(), callArgs.size());
     }
 
     return block;
@@ -124,7 +93,7 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
     const auto topObj = parseJSONStr(json);
 
     //create the proxy environment (local) and the registry
-    auto env = Pothos::ProxyEnvironment::make("mananged");
+    auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
     auto evaluator = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("make");
 
@@ -139,7 +108,7 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
     //create the blocks
     Poco::JSON::Array::Ptr blockArray;
     if (topObj->isArray("blocks")) blockArray = topObj->getArray("blocks");
-    for (size_t i = 0; i < blockArray->size(); i++)
+    if (blockArray) for (size_t i = 0; i < blockArray->size(); i++)
     {
         if (not blockArray->isObject(i)) throw Pothos::DataFormatException(
             "Pothos::Topology::make()", "blocks["+std::to_string(i)+"] must be an object");
@@ -153,7 +122,7 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
     //create the topology and connect the blocks
     Poco::JSON::Array::Ptr connArray;
     if (topObj->isArray("connections")) connArray = topObj->getArray("connections");
-    for (size_t i = 0; i < connArray->size(); i++)
+    if (connArray) for (size_t i = 0; i < connArray->size(); i++)
     {
         if (not connArray->isArray(i)) throw Pothos::DataFormatException(
             "Pothos::Topology::make()", "connections["+std::to_string(i)+"] must be an array");

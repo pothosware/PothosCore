@@ -39,6 +39,36 @@ public:
 
     /*!
      * Create a topology from a JSON description.
+     *
+     * Example JSON markup for a topology description:
+     * \code {.json}
+     * {
+     *     "blocks" : [
+     *         {
+     *             "id" : "id0",
+     *             "path" : "/blocks/foo",
+     *             "args" : ["1", "\"hello\""],
+     *             "calls" : [
+     *                 ["setFoo", "true"],
+     *                 ["updateBaz", "3.14"]
+     *             ]
+     *         },
+     *         {
+     *             "id" : "id1",
+     *             "path" : "/blocks/bar",
+     *             "args" : [],
+     *             "calls" : [
+     *                 ["setBar", "\"OK\""],
+     *             ]
+     *         }
+     *     },
+     *     "connections", [
+     *         ["self", "inputX", "id0", "in0"],
+     *         ["id0", "out0", "id1", "in0"],
+     *         ["id1", "out0", "self", "outputY"],
+     *     ]
+     * }
+     * \endcode
      * \param json a JSON string or file path
      */
     static std::shared_ptr<Topology> make(const std::string &json);
