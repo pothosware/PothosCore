@@ -63,13 +63,56 @@ static Poco::JSON::Object::Ptr parseJSONStr(const std::string &json)
 }
 
 /***********************************************************************
+ * evaluate an args array (calls and constructors)
+ **********************************************************************/
+static std::vector<Pothos::Proxy> evalArgsArray(
+    const Pothos::Proxy &evaluator,
+    const Poco::JSON::Array::Ptr &argsArray,
+    const size_t offset = 0)
+{
+    std::vector<Pothos::Proxy> args;
+    for (size_t i = offset; i < argsArray->size(); i++)
+    {
+        const auto arg = argsArray->getElement<std::string>(i);
+        args.push_back(evaluator.callProxy("eval", arg));
+    }
+    return args;
+}
+
+/***********************************************************************
  * block factory - make blocks from JSON object
  **********************************************************************/
-static Pothos::Proxy makeBlock(const Pothos::Proxy &registry, const Poco::JSON::Object::Ptr &blockObj)
+static Pothos::Proxy makeBlock(
+    const Pothos::Proxy &registry,
+    const Pothos::Proxy &evaluator,
+    const Poco::JSON::Object::Ptr &blockObj)
 {
     const auto id = blockObj->getValue<std::string>("id");
+
+    if (not blockObj->has("path")) throw Pothos::DataFormatException(
+        "Pothos::Topology::make()", "blocks["+id+"] missing 'path' field");
     const auto path = blockObj->getValue<std::string>("path");
-    //auto block = registry.makeProxy(path
+
+    //load up the constructor args
+    Poco::JSON::Array::Ptr argsArray;
+    if (blockObj->isArray("args")) argsArray = blockObj->getArray("args");
+    const auto ctorArgs = evalArgsArray(evaluator, argsArray);
+
+    //create the block
+    auto block = registry.getHandle()->call(path, ctorArgs.data(), ctorArgs.size());
+
+    //make the calls
+    Poco::JSON::Array::Ptr callsArray;
+    if (blockObj->isArray("calls")) callsArray = blockObj->getArray("calls");
+    for (size_t i = 0; i < callsArray->size(); i++)
+    {
+        const auto callArray = callsArray->getArray(i);
+        auto name = callArray->getElement<std::string>(0);
+        const auto callArgs = evalArgsArray(evaluator, callArray, 1/*offset*/);
+        registry.getHandle()->call(name, callArgs.data(), callArgs.size());
+    }
+
+    return block;
 }
 
 /***********************************************************************
@@ -83,6 +126,7 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
     //create the proxy environment (local) and the registry
     auto env = Pothos::ProxyEnvironment::make("mananged");
     auto registry = env->findProxy("Pothos/BlockRegistry");
+    auto evaluator = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("make");
 
     //create the topology and add it to the blocks
     //the IDs 'self', 'this', and '' can be used
@@ -103,7 +147,7 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
         if (not blockObj->has("id")) throw Pothos::DataFormatException(
             "Pothos::Topology::make()", "blocks["+std::to_string(i)+"] missing 'id' field");
         const auto id = blockObj->getValue<std::string>("id");
-        blocks[id] = makeBlock(registry, blockObj);
+        blocks[id] = makeBlock(registry, evaluator, blockObj);
     }
 
     //create the topology and connect the blocks
