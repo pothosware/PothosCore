@@ -3,7 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.2.0 (pending)
 ==========================
 
--TODO
+- Added JSON Topology feature
 
 Release 0.1.0 (pending)
 ==========================

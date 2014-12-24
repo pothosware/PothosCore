@@ -1,0 +1,11 @@
+This this the changelog file for the Pothos Blocks toolkit.
+
+Release 0.2.0 (pending)
+==========================
+
+- Added unit test for JSON Topology feature
+
+Release 0.1.0 (pending)
+==========================
+
+This is the first public release of the Pothos Blocks toolkit.

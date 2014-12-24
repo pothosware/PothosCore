@@ -6,6 +6,7 @@ POTHOS_MODULE_UTIL(
     SOURCES
         TestUnitTestBlocks.cpp
         TestProxyTopology.cpp
+        TestJSONTopology.cpp
         TestSetThreadPool.cpp
         FeederSource.cpp
         CollectorSink.cpp

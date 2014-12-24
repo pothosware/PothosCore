@@ -66,6 +66,12 @@ protected:
             .argument("modulePath")
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::loadModule)));
 
+        options.addOption(Poco::Util::Option("run-topology", "", "run a topology from a JSON description")
+            .required(false)
+            .repeatable(false)
+            .argument("JSONPath")
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::runTopology)));
+
         options.addOption(Poco::Util::Option("self-tests", "", "run all plugin self tests")
             .required(false)
             .repeatable(false)

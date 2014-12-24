@@ -18,6 +18,7 @@ public:
     void selfTestOne(const std::string &, const std::string &);
     void proxyServer(const std::string &, const std::string &);
     void loadModule(const std::string &, const std::string &);
+    void runTopology(const std::string &, const std::string &);
     void docParse(const std::vector<std::string> &);
 };
 
