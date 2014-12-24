@@ -1,0 +1,16 @@
+This this the changelog file for the Pothos Audio toolkit.
+
+Release 0.2.0 (pending)
+==========================
+
+- TODO
+
+Release 0.1.1 (pending)
+==========================
+
+- Pa_Read/WriteStream replace exceptions with logging in work
+
+Release 0.1.0 (2014-12-21)
+==========================
+
+This is the first public release of the Pothos Audio toolkit.
