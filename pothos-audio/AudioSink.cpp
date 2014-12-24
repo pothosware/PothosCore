@@ -182,7 +182,7 @@ public:
         PaError err = Pa_WriteStream(_stream, buffer, numFrames);
         if (err != paNoError)
         {
-            throw Pothos::Exception("AudioSink.work()", "Pa_WriteStream: " + std::string(Pa_GetErrorText(err)));
+            poco_error(Poco::Logger::get("AudioSink"), "Pa_WriteStream: " + std::string(Pa_GetErrorText(err)));
         }
 
         //consume buffer (all modes)

@@ -189,7 +189,7 @@ public:
         PaError err = Pa_ReadStream(_stream, buffer, numFrames);
         if (err != paNoError)
         {
-            throw Pothos::Exception("AudioSource.work()", "Pa_ReadStream: " + std::string(Pa_GetErrorText(err)));
+            poco_error(Poco::Logger::get("AudioSource"), "Pa_ReadStream: " + std::string(Pa_GetErrorText(err)));
         }
 
         if (_sendLabel)
