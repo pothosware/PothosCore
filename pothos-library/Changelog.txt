@@ -5,7 +5,7 @@ Release 0.2.0 (pending)
 
 - Added JSON Topology feature
 
-Release 0.1.0 (pending)
+Release 0.1.0 (2014-12-21)
 ==========================
 
 This is the first public release of the Pothos C++ library.
