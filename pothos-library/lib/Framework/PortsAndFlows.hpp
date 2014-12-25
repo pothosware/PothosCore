@@ -24,11 +24,8 @@ inline bool operator==(const Port &lhs, const Port &rhs)
 {
     assert(not lhs.uid.empty());
     assert(not rhs.uid.empty());
-    /*
-    if (not lhs.obj and not rhs.obj) return true; //both null
-    if (not lhs.obj) return false;
-    if (not rhs.obj) return false;
-    */
+    //obj is ignored (its optional so topologies can reference themselves)
+    //uid and port name is the only valuable point of comparison
     if (lhs.uid != rhs.uid) return false;
     if (lhs.name != rhs.name) return false;
     return true;

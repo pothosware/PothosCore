@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
-#include <iostream>
 #include <future>
 
 /***********************************************************************
@@ -109,71 +108,6 @@ static std::vector<Flow> resolveFlows(const Pothos::Proxy &obj)
 }
 
 /***********************************************************************
- * complete pass-through flows
- **********************************************************************/
-static std::vector<Flow> completePassThroughFlows(const std::string &myUID, const std::vector<Flow> &flows)
-{
-    std::cout << "call completeFlows:: do flow list:" << std::endl;
-    for (const auto &flow : flows)
-    {
-        std::cout << "\t" << flow.toString() << std::endl;
-        //std::cout << "\t\t" << flow.src.uid << std::endl;
-        //std::cout << "\t\t" << flow.dst.uid << std::endl;
-    }
-    std::cout<< std::endl;
-
-    std::vector<Flow> completeFlows;
-    for (auto &flow : flows)
-    {
-        if (flow.src.obj and flow.dst.obj) completeFlows.push_back(flow);
-
-        //find all complete flow matches from a lower level pass-through flow
-        if (not flow.src.obj and not flow.dst.obj)
-        {
-            bool gotNewFlow = false;
-            std::cout << "  NOT complete " << flow.toString() << std::endl;
-            for (auto &flowTail : flows)
-            {
-                if (not flowTail.dst.obj) continue;
-                for (auto &flowHead : flows)
-                {
-                    if (not flowHead.src.obj) continue;
-                    if (flow.src == flowTail.src and flow.dst == flowHead.dst)
-                    {
-                        Flow newFlow;
-                        newFlow.src = flowHead.src;
-                        newFlow.dst = flowTail.dst;
-                        completeFlows.push_back(newFlow);
-                        std::cout << "  NEW FLOW " << newFlow.toString() << std::endl;
-                        gotNewFlow = true;
-                    }
-                }
-            }
-            if (not gotNewFlow) completeFlows.push_back(flow);
-        }
-    }
-
-
-    std::vector<Flow> completeFlows2;
-    for (auto &flow : completeFlows)
-    {
-        if (flow.src.obj and flow.dst.obj) completeFlows2.push_back(flow);
-        else if (not flow.src.obj and not flow.dst.obj) completeFlows2.push_back(flow);
-    }
-    
-    std::cout << "FILTERED flow list: " << myUID << std::endl;
-    for (const auto &flow : completeFlows2)
-    {
-        std::cout << "\t" << flow.toString() << std::endl;
-        //std::cout << "\t\t" << flow.src.uid << std::endl;
-        //std::cout << "\t\t" << flow.dst.uid << std::endl;
-    }
-    std::cout<< std::endl;
-    
-    return completeFlows2;
-}
-
-/***********************************************************************
  * topology squash implementation
  **********************************************************************/
 std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &flows)
@@ -228,9 +162,6 @@ std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &f
         const auto flows = futureFlow.get();
         flatFlows.insert(flatFlows.end(), flows.begin(), flows.end());
     }
-
-    //complete pass-through flows when possible
-    flatFlows = completePassThroughFlows(this->self->uid(), flatFlows);
 
     //insert flows that pass through this topology in -> out
     //the outer topology will squash the pass-through flows

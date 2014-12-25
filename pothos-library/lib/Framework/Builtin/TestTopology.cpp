@@ -3,6 +3,7 @@
 
 #include <Pothos/Testing.hpp>
 #include <Pothos/Framework.hpp>
+#include <iostream>
 
 /***********************************************************************
  * Helper blocks to test the rendered flow of the topology
@@ -143,9 +144,127 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_uneven_passthrough)
 }
 
 /***********************************************************************
- * Test pass-through topology + multiple pass-through, multiple layers
+ * Test pass-through topology
+ * Multiple sources sharing a pass-through
+ * The sources are at different layers
  **********************************************************************/
-POTHOS_TEST_BLOCK("/framework/tests/topology", test_multi_passthrough)
+POTHOS_TEST_BLOCK("/framework/tests/topology", test_multisrc_passthrough)
+{
+    //create the pass through topology
+    auto passer = Pothos::Topology::make();
+    passer->setName("Passer");
+    passer->connect(passer, "passIn", passer, "passOut");
+
+    //create and connect the nest topology
+    auto nester = Pothos::Topology::make();
+    nester->setName("Nester");
+    nester->connect(nester, "nestIn", passer, "passIn");
+    nester->connect(passer, "passOut", nester, "nestOut");
+    auto pingInner = std::shared_ptr<Ping>(new Ping("Inner"));
+    nester->connect(pingInner, "out0", passer, "passIn");
+
+    //create ping pong blocks
+    auto pingOuter = std::shared_ptr<Ping>(new Ping("Outer"));
+    auto pong = std::shared_ptr<Pong>(new Pong());
+
+    //connect all the blocks
+    POTHOS_TEST_CHECKPOINT();
+    Pothos::Topology topology;
+    topology.connect(pingOuter, "out0", nester, "nestIn");
+    topology.connect(nester, "nestOut", pong, "in0");
+    POTHOS_TEST_CHECKPOINT();
+    topology.commit();
+
+    //check that the message flowed
+    POTHOS_TEST_TRUE(topology.waitInactive());
+    POTHOS_TEST_EQUAL(pong->triggered, 2);
+}
+
+
+/***********************************************************************
+ * Test pass-through topology
+ * Multiple destinations sharing a pass-through
+ * The destinations are at different layers
+ **********************************************************************/
+POTHOS_TEST_BLOCK("/framework/tests/topology", test_multidst_passthrough)
+{
+    //create the pass through topology
+    auto passer = Pothos::Topology::make();
+    passer->setName("Passer");
+    passer->connect(passer, "passIn", passer, "passOut");
+
+    //create and connect the nest topology
+    auto nester = Pothos::Topology::make();
+    nester->setName("Nester");
+    nester->connect(nester, "nestIn", passer, "passIn");
+    nester->connect(passer, "passOut", nester, "nestOut");
+    auto pongInner = std::shared_ptr<Pong>(new Pong("Inner"));
+    nester->connect(passer, "passOut", pongInner, "in0");
+
+    //create ping pong blocks
+    auto ping = std::shared_ptr<Ping>(new Ping());
+    auto pongOuter = std::shared_ptr<Pong>(new Pong("Outer"));
+
+    //connect all the blocks
+    POTHOS_TEST_CHECKPOINT();
+    Pothos::Topology topology;
+    topology.connect(ping, "out0", nester, "nestIn");
+    topology.connect(nester, "nestOut", pongOuter, "in0");
+    POTHOS_TEST_CHECKPOINT();
+    topology.commit();
+
+    //check that the message flowed
+    POTHOS_TEST_TRUE(topology.waitInactive());
+    POTHOS_TEST_EQUAL(pongInner->triggered, 1);
+    POTHOS_TEST_EQUAL(pongOuter->triggered, 1);
+}
+
+/***********************************************************************
+ * Test pass-through topology
+ * Multiple destinations and sources sharing a pass-through
+ * The destinations and sources are at different layers
+ **********************************************************************/
+POTHOS_TEST_BLOCK("/framework/tests/topology", test_shared_passthrough)
+{
+    //create the pass through topology
+    auto passer = Pothos::Topology::make();
+    passer->setName("Passer");
+    passer->connect(passer, "passIn", passer, "passOut");
+
+    //create and connect the nest topology
+    auto nester = Pothos::Topology::make();
+    nester->setName("Nester");
+    nester->connect(nester, "nestIn", passer, "passIn");
+    nester->connect(passer, "passOut", nester, "nestOut");
+    auto pingInner = std::shared_ptr<Ping>(new Ping("Inner"));
+    auto pongInner = std::shared_ptr<Pong>(new Pong("Inner"));
+    nester->connect(pingInner, "out0", passer, "passIn");
+    nester->connect(passer, "passOut", pongInner, "in0");
+
+    //create ping pong blocks
+    auto pingOuter = std::shared_ptr<Ping>(new Ping("Outer"));
+    auto pongOuter = std::shared_ptr<Pong>(new Pong("Outer"));
+
+    //connect all the blocks
+    POTHOS_TEST_CHECKPOINT();
+    Pothos::Topology topology;
+    topology.connect(pingOuter, "out0", nester, "nestIn");
+    topology.connect(nester, "nestOut", pongOuter, "in0");
+    POTHOS_TEST_CHECKPOINT();
+    topology.commit();
+
+    //check that the message flowed
+    POTHOS_TEST_TRUE(topology.waitInactive());
+    POTHOS_TEST_EQUAL(pongInner->triggered, 2);
+    POTHOS_TEST_EQUAL(pongOuter->triggered, 2);
+}
+
+/***********************************************************************
+ * Test pass-through topology
+ * Multiple destinations and sources with independent pass-throughs
+ * The destinations and sources are at different layers
+ **********************************************************************/
+POTHOS_TEST_BLOCK("/framework/tests/topology", test_independent_passthrough)
 {
     //create the pass through topology
     auto passer = Pothos::Topology::make();
