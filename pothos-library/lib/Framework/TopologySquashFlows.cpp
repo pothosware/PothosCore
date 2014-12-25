@@ -38,6 +38,7 @@ static Port proxyToPort(const Pothos::Proxy &portProxy)
     port.name = portProxy.call<std::string>("get:name");
     port.obj = portProxy.callProxy("get:obj");
     port.uid = portProxy.call<std::string>("get:uid");
+    port.objName = portProxy.call<std::string>("get:objName");
     return port;
 }
 
@@ -110,19 +111,27 @@ static std::vector<Flow> resolveFlows(const Pothos::Proxy &obj)
 /***********************************************************************
  * complete pass-through flows
  **********************************************************************/
-static std::vector<Flow> completeFlows(const std::vector<Flow> &flows)
+static std::vector<Flow> completePassThroughFlows(const std::string &myUID, const std::vector<Flow> &flows)
 {
+    std::cout << "call completeFlows:: do flow list:" << std::endl;
+    for (const auto &flow : flows)
+    {
+        std::cout << "\t" << flow.toString() << std::endl;
+        //std::cout << "\t\t" << flow.src.uid << std::endl;
+        //std::cout << "\t\t" << flow.dst.uid << std::endl;
+    }
+    std::cout<< std::endl;
+
     std::vector<Flow> completeFlows;
     for (auto &flow : flows)
     {
-        //its a complete flow
-        if (flow.src.obj and flow.dst.obj)
-        {
-            completeFlows.push_back(flow);
-        }
+        if (flow.src.obj and flow.dst.obj) completeFlows.push_back(flow);
+
         //find all complete flow matches from a lower level pass-through flow
         if (not flow.src.obj and not flow.dst.obj)
         {
+            bool gotNewFlow = false;
+            std::cout << "  NOT complete " << flow.toString() << std::endl;
             for (auto &flowTail : flows)
             {
                 if (not flowTail.dst.obj) continue;
@@ -135,12 +144,33 @@ static std::vector<Flow> completeFlows(const std::vector<Flow> &flows)
                         newFlow.src = flowHead.src;
                         newFlow.dst = flowTail.dst;
                         completeFlows.push_back(newFlow);
+                        std::cout << "  NEW FLOW " << newFlow.toString() << std::endl;
+                        gotNewFlow = true;
                     }
                 }
             }
+            if (not gotNewFlow) completeFlows.push_back(flow);
         }
     }
-    return completeFlows;
+
+
+    std::vector<Flow> completeFlows2;
+    for (auto &flow : completeFlows)
+    {
+        if (flow.src.obj and flow.dst.obj) completeFlows2.push_back(flow);
+        else if (not flow.src.obj and not flow.dst.obj) completeFlows2.push_back(flow);
+    }
+    
+    std::cout << "FILTERED flow list: " << myUID << std::endl;
+    for (const auto &flow : completeFlows2)
+    {
+        std::cout << "\t" << flow.toString() << std::endl;
+        //std::cout << "\t\t" << flow.src.uid << std::endl;
+        //std::cout << "\t\t" << flow.dst.uid << std::endl;
+    }
+    std::cout<< std::endl;
+    
+    return completeFlows2;
 }
 
 /***********************************************************************
@@ -199,22 +229,21 @@ std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &f
         flatFlows.insert(flatFlows.end(), flows.begin(), flows.end());
     }
 
-    //squash pass-through blocks
-    //complete flows can only contain flows between real blocks
-    flatFlows = completeFlows(flatFlows);
+    //complete pass-through flows when possible
+    flatFlows = completePassThroughFlows(this->self->uid(), flatFlows);
 
-    //only store the actual blocks
-    for (auto &flow : flatFlows)
-    {
-        flow.src.obj = getInternalBlock(flow.src.obj);
-        flow.dst.obj = getInternalBlock(flow.dst.obj);
-    }
-
-    //collect flows that pass through this topology in -> out
+    //insert flows that pass through this topology in -> out
     //the outer topology will squash the pass-through flows
     for (const auto &flow : flows)
     {
         if (not flow.src.obj and not flow.dst.obj) flatFlows.push_back(flow);
+    }
+
+    //only store the actual blocks
+    for (auto &flow : flatFlows)
+    {
+        if (flow.src.obj) flow.src.obj = getInternalBlock(flow.src.obj);
+        if (flow.dst.obj) flow.dst.obj = getInternalBlock(flow.dst.obj);
     }
 
     return flatFlows;

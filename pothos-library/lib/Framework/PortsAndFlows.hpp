@@ -13,10 +13,10 @@ struct Port
     Pothos::Proxy obj; //!< object reference
     std::string name; //!< name of the port
     std::string uid; //!< sort on this key
+    std::string objName; //!< name of the obj
     std::string toString(void) const
     {
-        if (not obj) return "self["+name+"]";
-        return obj.call<std::string>("getName")+"["+name+"]";
+        return objName + "["+name+"]";
     }
 };
 
@@ -24,9 +24,11 @@ inline bool operator==(const Port &lhs, const Port &rhs)
 {
     assert(not lhs.uid.empty());
     assert(not rhs.uid.empty());
+    /*
     if (not lhs.obj and not rhs.obj) return true; //both null
     if (not lhs.obj) return false;
     if (not rhs.obj) return false;
+    */
     if (lhs.uid != rhs.uid) return false;
     if (lhs.name != rhs.name) return false;
     return true;

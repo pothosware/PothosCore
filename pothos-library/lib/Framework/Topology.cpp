@@ -55,6 +55,7 @@ Port Pothos::Topology::Impl::makePort(const Pothos::Proxy &obj, const std::strin
     Port p;
     p.name = name;
     p.uid = obj.call<std::string>("uid");
+    p.objName = obj.call<std::string>("getName");
     //dont store copies of self
     if (p.uid != self->uid()) p.obj = obj;
     return p;
@@ -328,6 +329,7 @@ static auto managedPort = Pothos::ManagedClass()
     .registerField(POTHOS_FCN_TUPLE(Port, obj))
     .registerField(POTHOS_FCN_TUPLE(Port, name))
     .registerField(POTHOS_FCN_TUPLE(Port, uid))
+    .registerField(POTHOS_FCN_TUPLE(Port, objName))
     .commit("Pothos/Topology/Port");
 
 static size_t portVectorSize(const std::vector<Port> &vec)

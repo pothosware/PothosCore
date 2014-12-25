@@ -134,6 +134,7 @@ list(APPEND POTHOS_SOURCES
     Framework/Builtin/TestWorker.cpp
     Framework/Builtin/TestLabel.cpp
     Framework/Builtin/TestThreadPool.cpp
+    Framework/Builtin/TestTopology.cpp
 
     Plugin/Path.cpp
     Plugin/Plugin.cpp
