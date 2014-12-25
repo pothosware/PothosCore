@@ -173,8 +173,8 @@ std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &f
     //only store the actual blocks
     for (auto &flow : flatFlows)
     {
-        if (flow.src.obj) flow.src.obj = getInternalBlock(flow.src.obj);
-        if (flow.dst.obj) flow.dst.obj = getInternalBlock(flow.dst.obj);
+        flow.src.obj = getInternalBlock(flow.src.obj);
+        flow.dst.obj = getInternalBlock(flow.dst.obj);
     }
 
     return flatFlows;

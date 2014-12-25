@@ -6,7 +6,6 @@
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Poco/Format.h>
-#include <unordered_set>
 #include <iostream>
 #include <future>
 
@@ -134,13 +133,10 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
 static std::vector<Flow> completePassThroughFlows(const std::vector<Flow> &flows)
 {
     std::vector<Flow> outFlows;
-    std::unordered_set<Flow> removedFlows;
     //std::cout << "completePassThroughFlows:" << std::endl;
     //for (const auto &flow : flows) std::cout << "  " << flow.toString() << std::endl;
 
-    //try to complete pass-through flows
-    //completed flows get added to outFlows,
-    //and their component flows added to removedFlows
+    //try to complete pass-through flows and add it to the out flow list
     for (auto &flow : flows)
     {
         if (flow.src.obj or flow.dst.obj) continue;
@@ -158,23 +154,15 @@ static std::vector<Flow> completePassThroughFlows(const std::vector<Flow> &flows
                     newFlow.dst = flowTail.dst;
                     outFlows.push_back(newFlow);
                     //std::cout << "NEW " << newFlow.toString() << std::endl;
-
-                    //mark the component flows for removal
-                    removedFlows.insert(flow);
-                    removedFlows.insert(flowHead);
-                    removedFlows.insert(flowTail);
                 }
             }
         }
     }
 
-    //add all non-removed flows to the output flow
+    //add all already completed flows to the output flow
     for (auto &flow : flows)
     {
-        if (removedFlows.find(flow) == removedFlows.end())
-        {
-            outFlows.push_back(flow);
-        }
+        if (flow.src.obj and flow.dst.obj)  outFlows.push_back(flow);
     }
 
     return outFlows;
