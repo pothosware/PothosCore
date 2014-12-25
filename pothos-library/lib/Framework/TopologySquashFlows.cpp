@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
+#include <iostream>
 #include <future>
 
 /***********************************************************************
@@ -16,13 +17,15 @@ std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std:
     {
         //recurse through sub topology flows
         std::vector<Port> subPorts;
-        if (isSource and flow.dst.name == portName and not flow.dst.obj and flow.src.obj)
+        if (isSource and flow.dst.name == portName and not flow.dst.obj)
         {
-            subPorts = resolvePorts(flow.src, isSource);
+            if (flow.src.obj) subPorts = resolvePorts(flow.src, isSource);
+            else ports.push_back(flow.src);
         }
-        if (not isSource and flow.src.name == portName and not flow.src.obj and flow.dst.obj)
+        if (not isSource and flow.src.name == portName and not flow.src.obj)
         {
-            subPorts = resolvePorts(flow.dst, isSource);
+            if (flow.dst.obj) subPorts = resolvePorts(flow.dst, isSource);
+            else ports.push_back(flow.dst);
         }
         ports.insert(ports.end(), subPorts.begin(), subPorts.end());
     }
@@ -105,6 +108,42 @@ static std::vector<Flow> resolveFlows(const Pothos::Proxy &obj)
 }
 
 /***********************************************************************
+ * complete pass-through flows
+ **********************************************************************/
+static std::vector<Flow> completeFlows(const std::vector<Flow> &flows)
+{
+    std::vector<Flow> completeFlows;
+    for (auto &flow : flows)
+    {
+        //its a complete flow
+        if (flow.src.obj and flow.dst.obj)
+        {
+            completeFlows.push_back(flow);
+        }
+        //find all complete flow matches from a lower level pass-through flow
+        if (not flow.src.obj and not flow.dst.obj)
+        {
+            for (auto &flowTail : flows)
+            {
+                if (not flowTail.dst.obj) continue;
+                for (auto &flowHead : flows)
+                {
+                    if (not flowHead.src.obj) continue;
+                    if (flow.src == flowTail.src and flow.dst == flowHead.dst)
+                    {
+                        Flow newFlow;
+                        newFlow.src = flowHead.src;
+                        newFlow.dst = flowTail.dst;
+                        completeFlows.push_back(newFlow);
+                    }
+                }
+            }
+        }
+    }
+    return completeFlows;
+}
+
+/***********************************************************************
  * topology squash implementation
  **********************************************************************/
 std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &flows)
@@ -160,11 +199,22 @@ std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &f
         flatFlows.insert(flatFlows.end(), flows.begin(), flows.end());
     }
 
+    //squash pass-through blocks
+    //complete flows can only contain flows between real blocks
+    flatFlows = completeFlows(flatFlows);
+
     //only store the actual blocks
     for (auto &flow : flatFlows)
     {
         flow.src.obj = getInternalBlock(flow.src.obj);
         flow.dst.obj = getInternalBlock(flow.dst.obj);
+    }
+
+    //collect flows that pass through this topology in -> out
+    //the outer topology will squash the pass-through flows
+    for (const auto &flow : flows)
+    {
+        if (not flow.src.obj and not flow.dst.obj) flatFlows.push_back(flow);
     }
 
     return flatFlows;
