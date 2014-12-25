@@ -16,11 +16,11 @@ std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std:
     {
         //recurse through sub topology flows
         std::vector<Port> subPorts;
-        if (isSource and flow.dst.name == portName and not flow.dst.obj)
+        if (isSource and flow.dst.name == portName and not flow.dst.obj and flow.src.obj)
         {
             subPorts = resolvePorts(flow.src, isSource);
         }
-        if (not isSource and flow.src.name == portName and not flow.src.obj)
+        if (not isSource and flow.src.name == portName and not flow.src.obj and flow.dst.obj)
         {
             subPorts = resolvePorts(flow.dst, isSource);
         }

@@ -131,7 +131,7 @@ void Pothos::Topology::_connect(
     }
 
     //store port info for connections to the hierachy
-    if (not flow.src.obj)
+    if (not flow.src.obj and flow.dst.obj)
     {
         _impl->inputPortNames.push_back(srcName);
         for (const auto &info : getConnectable(dst).call<std::vector<PortInfo>>("inputPortInfo"))
@@ -143,7 +143,7 @@ void Pothos::Topology::_connect(
             }
         }
     }
-    if (not flow.dst.obj)
+    if (not flow.dst.obj and flow.src.obj)
     {
         _impl->outputPortNames.push_back(dstName);
         for (const auto &info : getConnectable(src).call<std::vector<PortInfo>>("outputPortInfo"))
@@ -154,6 +154,14 @@ void Pothos::Topology::_connect(
                 _impl->outputPortInfo[dstName].name = dstName;
             }
         }
+    }
+    if (not flow.src.obj and not flow.dst.obj)
+    {
+        _impl->inputPortNames.push_back(srcName);
+        _impl->inputPortInfo[srcName].name = srcName;
+
+        _impl->outputPortNames.push_back(dstName);
+        _impl->outputPortInfo[dstName].name = dstName;
     }
 
     const auto it = std::find(_impl->flows.begin(), _impl->flows.end(), flow);
