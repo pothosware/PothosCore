@@ -18,11 +18,13 @@ std::vector<Port> resolvePortsFromTopology(const Pothos::Topology &t, const std:
         std::vector<Port> subPorts;
         if (isSource and flow.dst.name == portName and not flow.dst.obj)
         {
-            subPorts = resolvePorts(flow.src, isSource);
+            if (flow.src.obj) subPorts = resolvePorts(flow.src, isSource);
+            else ports.push_back(flow.src);
         }
         if (not isSource and flow.src.name == portName and not flow.src.obj)
         {
-            subPorts = resolvePorts(flow.dst, isSource);
+            if (flow.dst.obj) subPorts = resolvePorts(flow.dst, isSource);
+            else ports.push_back(flow.dst);
         }
         ports.insert(ports.end(), subPorts.begin(), subPorts.end());
     }
@@ -35,6 +37,7 @@ static Port proxyToPort(const Pothos::Proxy &portProxy)
     port.name = portProxy.call<std::string>("get:name");
     port.obj = portProxy.callProxy("get:obj");
     port.uid = portProxy.call<std::string>("get:uid");
+    port.objName = portProxy.call<std::string>("get:objName");
     return port;
 }
 
@@ -158,6 +161,13 @@ std::vector<Flow> Pothos::Topology::Impl::squashFlows(const std::vector<Flow> &f
     {
         const auto flows = futureFlow.get();
         flatFlows.insert(flatFlows.end(), flows.begin(), flows.end());
+    }
+
+    //insert flows that pass through this topology in -> out
+    //the outer topology will squash the pass-through flows
+    for (const auto &flow : flows)
+    {
+        if (not flow.src.obj and not flow.dst.obj) flatFlows.push_back(flow);
     }
 
     //only store the actual blocks

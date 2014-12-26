@@ -55,6 +55,7 @@ Port Pothos::Topology::Impl::makePort(const Pothos::Proxy &obj, const std::strin
     Port p;
     p.name = name;
     p.uid = obj.call<std::string>("uid");
+    p.objName = obj.call<std::string>("getName");
     //dont store copies of self
     if (p.uid != self->uid()) p.obj = obj;
     return p;
@@ -131,7 +132,7 @@ void Pothos::Topology::_connect(
     }
 
     //store port info for connections to the hierachy
-    if (not flow.src.obj)
+    if (not flow.src.obj and flow.dst.obj)
     {
         _impl->inputPortNames.push_back(srcName);
         for (const auto &info : getConnectable(dst).call<std::vector<PortInfo>>("inputPortInfo"))
@@ -143,7 +144,7 @@ void Pothos::Topology::_connect(
             }
         }
     }
-    if (not flow.dst.obj)
+    if (not flow.dst.obj and flow.src.obj)
     {
         _impl->outputPortNames.push_back(dstName);
         for (const auto &info : getConnectable(src).call<std::vector<PortInfo>>("outputPortInfo"))
@@ -154,6 +155,14 @@ void Pothos::Topology::_connect(
                 _impl->outputPortInfo[dstName].name = dstName;
             }
         }
+    }
+    if (not flow.src.obj and not flow.dst.obj)
+    {
+        _impl->inputPortNames.push_back(srcName);
+        _impl->inputPortInfo[srcName].name = srcName;
+
+        _impl->outputPortNames.push_back(dstName);
+        _impl->outputPortInfo[dstName].name = dstName;
     }
 
     const auto it = std::find(_impl->flows.begin(), _impl->flows.end(), flow);
@@ -320,6 +329,7 @@ static auto managedPort = Pothos::ManagedClass()
     .registerField(POTHOS_FCN_TUPLE(Port, obj))
     .registerField(POTHOS_FCN_TUPLE(Port, name))
     .registerField(POTHOS_FCN_TUPLE(Port, uid))
+    .registerField(POTHOS_FCN_TUPLE(Port, objName))
     .commit("Pothos/Topology/Port");
 
 static size_t portVectorSize(const std::vector<Port> &vec)

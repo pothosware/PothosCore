@@ -128,6 +128,47 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
 }
 
 /***********************************************************************
+ * complete pass-through flows
+ **********************************************************************/
+static std::vector<Flow> completePassThroughFlows(const std::vector<Flow> &flows)
+{
+    std::vector<Flow> outFlows;
+    //std::cout << "completePassThroughFlows:" << std::endl;
+    //for (const auto &flow : flows) std::cout << "  " << flow.toString() << std::endl;
+
+    //try to complete pass-through flows and add it to the out flow list
+    for (auto &flow : flows)
+    {
+        if (flow.src.obj or flow.dst.obj) continue;
+        for (auto &flowTail : flows)
+        {
+            if (not flowTail.dst.obj) continue;
+            for (auto &flowHead : flows)
+            {
+                if (not flowHead.src.obj) continue;
+                if (flow.src == flowTail.src and flow.dst == flowHead.dst)
+                {
+                    //create the new completed flow
+                    Flow newFlow;
+                    newFlow.src = flowHead.src;
+                    newFlow.dst = flowTail.dst;
+                    outFlows.push_back(newFlow);
+                    //std::cout << "NEW " << newFlow.toString() << std::endl;
+                }
+            }
+        }
+    }
+
+    //add all already completed flows to the output flow
+    for (auto &flow : flows)
+    {
+        if (flow.src.obj and flow.dst.obj)  outFlows.push_back(flow);
+    }
+
+    return outFlows;
+}
+
+/***********************************************************************
  * Sub Topology commit on flattened flows
  **********************************************************************/
 void topologySubCommit(Pothos::Topology &topology)
@@ -201,11 +242,14 @@ static void subCommitFutureTask(const Pothos::Proxy &proxy)
 
 void Pothos::Topology::commit(void)
 {
-    //1) flatten the topology
+    //0) flatten the topology
     auto squashedFlows = _impl->squashFlows(_impl->flows);
 
+    //1) complete the pass-through flows
+    auto completeFlows = completePassThroughFlows(squashedFlows);
+
     //2) create network iogress blocks when needed
-    auto flatFlows = _impl->createNetworkFlows(squashedFlows);
+    auto flatFlows = _impl->createNetworkFlows(completeFlows);
 
     //3) deal with domain crossing
     flatFlows = _impl->rectifyDomainFlows(flatFlows);
@@ -262,7 +306,7 @@ void Pothos::Topology::commit(void)
     //Remove disconnections from the cache if present
     //by only saving in the curretly in-use flows.
     std::unordered_map<Port, std::pair<Pothos::Proxy, Pothos::Proxy>> newNetgressCache;
-    for (const auto &flow : squashedFlows)
+    for (const auto &flow : completeFlows)
     {
         const auto port = envTagPort(flow.src, flow.dst);
         auto it = _impl->srcToNetgressCache.find(port);

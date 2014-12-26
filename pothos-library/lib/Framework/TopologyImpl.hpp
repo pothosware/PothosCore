@@ -84,6 +84,7 @@ inline Pothos::Proxy getProxy(const Pothos::Object &o)
  **********************************************************************/
 inline Pothos::Proxy getInternalBlock(const Pothos::Proxy &block)
 {
+    if (not block) return block;
     Pothos::Proxy internal;
     try
     {
