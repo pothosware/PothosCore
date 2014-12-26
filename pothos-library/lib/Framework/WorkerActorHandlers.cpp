@@ -7,17 +7,7 @@
 #include <algorithm> //sort
 #include <cassert>
 
-static void bufferManagerPushExternal(
-    std::shared_ptr<Theron::Framework> framework,
-    const Theron::Address &addr,
-    const Pothos::ManagedBuffer &buff
-)
-{
-    BufferReturnMessage message;
-    message.buff = buff;
-    framework->Send(message, Theron::Address::Null(), addr);
-}
-
+/*
 void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, TokenizedAsyncMessage> &message, const Theron::Address)
 {
     assert(message.id != nullptr);
@@ -86,18 +76,17 @@ void Pothos::WorkerActor::handleBufferPortMessage(const PortMessage<InputPort *,
     handleInputBuffer(input, message.contents);
     this->notify();
 }
+*/
 
-void Pothos::WorkerActor::handleBufferManagerMessage(const PortMessage<std::string, BufferManagerMessage> &message, const Theron::Address from)
+void Pothos::WorkerActor::setOutputBufferManager(const std::string &name, const Pothos::BufferManager::Sptr &manager)
 {
-    auto mgr = message.contents.manager;
-    if (mgr) mgr->setCallback(std::bind(&bufferManagerPushExternal,
-        std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer()), this->GetAddress(), std::placeholders::_1));
-    outputs.at(message.id)->_impl->bufferManager = mgr;
+    WorkerActorLock<WorkerActor> lock(this);
 
-    if (from != Theron::Address::Null()) this->Send(std::string(""), from);
-    this->notify();
+    outputs.at(name)->_impl->bufferManagerSetup(manager);
+
+    this->bump();
 }
-
+/*
 void Pothos::WorkerActor::handleBufferReturnMessage(const BufferReturnMessage &message, const Theron::Address)
 {
     auto mgr = message.buff.getBufferManager();
@@ -108,133 +97,115 @@ void Pothos::WorkerActor::handleBufferReturnMessage(const BufferReturnMessage &m
     }
     else this->bump();
 }
+*/
 
-void Pothos::WorkerActor::handleSubscriberPortMessage(const PortMessage<std::string, PortSubscriberMessage> &message, const Theron::Address from)
+void Pothos::WorkerActor::subscribePort(
+    const std::string &action,
+    const std::string &myPortName,
+    Pothos::Block *subscriberPortBlock,
+    const std::string &subscriberPortName)
 {
-    try
+    WorkerActorLock<WorkerActor> lock(this);
+
+    //create the message
+    PortSubscriber port;
+    if (action.find("INPUT") != std::string::npos) port.inputPort = subscriberPortBlock->input(subscriberPortName);
+    if (action.find("OUTPUT") != std::string::npos) port.outputPort = subscriberPortBlock->output(subscriberPortName);
+    port.block = subscriberPortBlock;
+
+    //extract the list of subscribers
+    std::vector<PortSubscriber> *subscribers = nullptr;
+    if (action.find("INPUT") != std::string::npos)
     {
-        //extract the list of subscribers
-        std::vector<PortSubscriber> *subscribers = nullptr;
-        if (message.contents.action.find("INPUT") != std::string::npos)
-        {
-            assert(message.contents.port.inputPort != nullptr);
-            auto &port = getOutput(message.id, __FUNCTION__);
-            subscribers = &port._impl->subscribers;
-        }
-        if (message.contents.action.find("OUTPUT") != std::string::npos)
-        {
-            assert(message.contents.port.outputPort != nullptr);
-            auto &port = getInput(message.id, __FUNCTION__);
-            subscribers = &port._impl->subscribers;
-        }
-        assert(subscribers != nullptr);
-
-        //locate the subscriber in the list
-        auto sub = message.contents.port;
-        auto it = std::find(subscribers->begin(), subscribers->end(), sub);
-        const bool found = it != subscribers->end();
-
-        //subscriber is an input, add to the outputs subscribers list
-        if (message.contents.action == "SUBINPUT")
-        {
-            if (found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
-                Poco::format("input %s subscription exsists in output port %s", message.contents.port.inputPort->name(), message.id));
-            subscribers->push_back(sub);
-        }
-
-        //subscriber is an output, add to the input subscribers list
-        if (message.contents.action == "SUBOUTPUT")
-        {
-            if (found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
-                Poco::format("output %s subscription exsists in input port %s", message.contents.port.outputPort->name(), message.id));
-            subscribers->push_back(sub);
-        }
-
-        //unsubscriber is an input, remove from the outputs subscribers list
-        if (message.contents.action == "UNSUBINPUT")
-        {
-            if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
-                Poco::format("input %s subscription missing from output port %s", message.contents.port.inputPort->name(), message.id));
-            subscribers->erase(it);
-        }
-
-        //unsubscriber is an output, remove from the inputs subscribers list
-        if (message.contents.action == "UNSUBOUTPUT")
-        {
-            if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
-                Poco::format("output %s subscription missing from input port %s", message.contents.port.outputPort->name(), message.id));
-            subscribers->erase(it);
-        }
-
-        this->updatePorts();
-
-        if (from != Theron::Address::Null()) this->Send(std::string(""), from);
+        assert(port.inputPort != nullptr);
+        auto &port = getOutput(myPortName, __FUNCTION__);
+        subscribers = &port._impl->subscribers;
     }
-    catch (const Pothos::Exception &ex)
+    if (action.find("OUTPUT") != std::string::npos)
     {
-        if (from != Theron::Address::Null()) this->Send(ex.displayText(), from);
+        assert(port.outputPort != nullptr);
+        auto &port = getInput(myPortName, __FUNCTION__);
+        subscribers = &port._impl->subscribers;
     }
+    assert(subscribers != nullptr);
+
+    //locate the subscriber in the list
+    auto sub = port;
+    auto it = std::find(subscribers->begin(), subscribers->end(), sub);
+    const bool found = it != subscribers->end();
+
+    //subscriber is an input, add to the outputs subscribers list
+    if (action == "SUBINPUT")
+    {
+        if (found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+action+")",
+            Poco::format("input %s subscription exsists in output port %s", port.inputPort->name(), myPortName));
+        subscribers->push_back(sub);
+    }
+
+    //subscriber is an output, add to the input subscribers list
+    if (action == "SUBOUTPUT")
+    {
+        if (found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+action+")",
+            Poco::format("output %s subscription exsists in input port %s", port.outputPort->name(), myPortName));
+        subscribers->push_back(sub);
+    }
+
+    //unsubscriber is an input, remove from the outputs subscribers list
+    if (action == "UNSUBINPUT")
+    {
+        if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+action+")",
+            Poco::format("input %s subscription missing from output port %s", port.inputPort->name(), myPortName));
+        subscribers->erase(it);
+    }
+
+    //unsubscriber is an output, remove from the inputs subscribers list
+    if (action == "UNSUBOUTPUT")
+    {
+        if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+action+")",
+            Poco::format("output %s subscription missing from input port %s", port.outputPort->name(), myPortName));
+        subscribers->erase(it);
+    }
+
+    this->updatePorts();
+
     this->bump();
 }
-
+/*
 void Pothos::WorkerActor::handleBumpWorkMessage(const BumpWorkMessage &, const Theron::Address)
 {
     this->notify();
 }
+*/
 
-void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &, const Theron::Address from)
+void Pothos::WorkerActor::setActiveStateOn(void)
 {
-    //setup the buffer return callback on the manager
-    for (auto &entry : this->outputs)
-    {
-        auto &port = *entry.second;
-
-        //setup token manager for async messages
-        BufferManagerArgs tokenMgrArgs;
-        tokenMgrArgs.numBuffers = 16;
-        tokenMgrArgs.bufferSize = 0;
-        auto &tokenMgr = port._impl->tokenManager;
-        if (tokenMgr) continue;
-        tokenMgr = BufferManager::make("generic", tokenMgrArgs);
-        tokenMgr->setCallback(std::bind(&bufferManagerPushExternal,
-            std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer()), this->GetAddress(), std::placeholders::_1));
-    }
+    WorkerActorLock<WorkerActor> lock(this);
 
     POTHOS_EXCEPTION_TRY
     {
         this->activeState = true;
         this->block->activate();
-        this->Send(std::string(""), from);
     }
     POTHOS_EXCEPTION_CATCH(const Exception &ex)
     {
         this->activeState = false;
-        this->Send(ex.displayText(), from);
+        throw ex;
     }
+
     this->bump();
 }
 
-void Pothos::WorkerActor::handleDeactivateWorkMessage(const DeactivateWorkMessage &, const Theron::Address from)
+void Pothos::WorkerActor::setActiveStateOff(void)
 {
+    WorkerActorLock<WorkerActor> lock(this);
+
     //not activated? just return
-    if (not this->activeState)
-    {
-        this->Send(std::string(""), from);
-        return;
-    }
+    if (not this->activeState) return;
 
-    POTHOS_EXCEPTION_TRY
-    {
-        this->activeState = false;
-        this->block->deactivate();
-        this->Send(std::string(""), from);
-    }
-    POTHOS_EXCEPTION_CATCH(const Exception &ex)
-    {
-        this->Send(ex.displayText(), from);
-    }
+    this->activeState = false;
+    this->block->deactivate();
 }
-
+/*
 void Pothos::WorkerActor::handleShutdownActorMessage(const ShutdownActorMessage &message, const Theron::Address from)
 {
     this->outputs.clear();
@@ -272,3 +243,4 @@ void Pothos::WorkerActor::handleOpaqueCallMessage(const OpaqueCallMessage &messa
     this->Send(result, from);
     this->bump();
 }
+*/

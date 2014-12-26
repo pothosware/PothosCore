@@ -26,23 +26,23 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         if ( //handle read before wite port if specified
             port._impl->readBeforeWritePort != nullptr and
             port.dtype().size() == port._impl->readBeforeWritePort->dtype().size() and
-            (port._buffer = port._impl->readBeforeWritePort->_impl->bufferAccumulator.front()).useCount() == 2 //2 -> unique + this assignment
+            (port._buffer = port._impl->readBeforeWritePort->_impl->bufferAccumulatorFront).useCount() == 3 //3 -> accumulator + port + this assignment
         ) port._impl->_bufferFromManager = false;
-        else if (not port._impl->bufferManager or port._impl->bufferManager->empty())
+        else if (port._impl->bufferManagerEmpty())
         {
             port._buffer = BufferChunk::null();
             port._impl->_bufferFromManager = false;
         }
         else
         {
-            port._buffer = port._impl->bufferManager->front();
+            port._buffer = port._impl->bufferManagerFront();
             port._impl->_bufferFromManager = true;
         }
         port._buffer.dtype = port.dtype(); //always copy from port's dtype setting
         assert(not port._impl->_bufferFromManager or port._buffer == port._impl->bufferManager->front());
         port._elements = port._buffer.elements();
         if (port._elements == 0 and not port.isSignal()) allOutputsReady = false;
-        if (not port._impl->tokenManager or port._impl->tokenManager->empty()) allOutputsReady = false;
+        if (port._impl->tokenManagerEmpty()) allOutputsReady = false;
         port._pendingElements = 0;
         if (port.index() != -1)
         {
@@ -61,11 +61,11 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         auto &port = *entry.second;
         //perform minimum reserve accumulator require to recover from possible element fragmentation
         const size_t requireElems = std::max<size_t>(1, port._reserveElements);
-        port._impl->bufferAccumulator.require(requireElems*port.dtype().size());
-        port._buffer = port._impl->bufferAccumulator.front();
+        port._impl->bufferAccumulatorRequire(requireElems*port.dtype().size());
+        port._buffer = port._impl->bufferAccumulatorFront;
         port._elements = port._buffer.get().length/port.dtype().size();
         if (port._elements < port._reserveElements) allInputsReady = false;
-        if (not port._impl->asyncMessages.empty()) hasInputMessage = true;
+        if (not port._impl->asyncMessagesEmpty()) hasInputMessage = true;
         port._pendingElements = 0;
         port._labelIter = port._impl->inlineMessages;
         if (port.index() != -1)
@@ -132,12 +132,12 @@ void Pothos::WorkerActor::postWorkTasks(void)
         //pop the consumed bytes from the accumulator
         if (bytes != 0)
         {
-            if (bytes > port._impl->bufferAccumulator.getTotalBytesAvailable())
+            if (bytes > port._impl->bufferAccumulatorTotalBytes())
             {
                 poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %d bytes, %d available",
-                    block->getName(), port.name(), int(bytes), int(port._impl->bufferAccumulator.getTotalBytesAvailable()));
+                    block->getName(), port.name(), int(bytes), int(port._impl->bufferAccumulatorTotalBytes()));
             }
-            else port._impl->bufferAccumulator.pop(bytes);
+            else port._impl->bufferAccumulatorPop(bytes);
         }
 
         //move consumed elements into total
@@ -177,7 +177,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
                     poco_error_f4(Poco::Logger::get("Pothos.Block.produce"), "%s[%s] overproduced %d bytes, %d available",
                         block->getName(), port.name(), int(buffer.length), int(buffer.getBuffer().getLength()));
                 }
-                else port._impl->bufferManager->pop(buffer.length);
+                else port._impl->bufferManagerPop(buffer.length);
             }
             port.postBuffer(buffer);
             port._buffer = BufferChunk::null(); //clear reference
@@ -231,9 +231,8 @@ void Pothos::WorkerActor::postWorkTasks(void)
 
 static auto managedWorkerActor = Pothos::ManagedClass()
     .registerClass<Pothos::WorkerActor>()
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendActivateMessage))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendDeactivateMessage))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, sendPortSubscriberMessage))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, setActiveState))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, subscribePort))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getInputBufferMode))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getOutputBufferMode))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getBufferManager))

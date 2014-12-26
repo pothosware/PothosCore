@@ -25,15 +25,13 @@ Pothos::InputPort::~InputPort(void)
 bool Pothos::InputPort::hasMessage(void) const
 {
     assert(_impl);
-    return not _impl->asyncMessages.empty();
+    return not _impl->asyncMessagesEmpty();
 }
 
 Pothos::Object Pothos::InputPort::popMessage(void)
 {
     assert(_impl);
-    if (_impl->asyncMessages.empty()) return Pothos::Object();
-    auto msg = _impl->asyncMessages.front().async;
-    _impl->asyncMessages.pop_front();
+    auto msg = _impl->asyncMessagesPop();
     _totalMessages++;
     _impl->actor->workBump = true;
     return msg;
@@ -87,9 +85,9 @@ void Pothos::InputPort::pushMessage(const Object &message)
 void Pothos::InputPort::clear(void)
 {
     assert(_impl);
-    _impl->bufferAccumulator = BufferAccumulator();
-    _impl->inlineMessages.clear();
-    _impl->asyncMessages.clear();
+    _impl->bufferAccumulatorClear();
+    _impl->inlineMessagesClear();
+    _impl->asyncMessagesClear();
 }
 
 #include <Pothos/Managed.hpp>
