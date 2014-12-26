@@ -7,6 +7,7 @@
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/BufferAccumulator.hpp>
 #include <Pothos/Util/RingDeque.hpp>
+#include <Pothos/Util/SpinLock.hpp>
 #include <vector>
 
 class Pothos::InputPortImpl
@@ -21,4 +22,7 @@ public:
     std::vector<PortSubscriber> subscribers;
     WorkerActor *actor;
     bool isSlot;
+    Util::SpinLock asyncMessagesLock;
+    Util::SpinLock inlineMessagesLock;
+    Util::SpinLock bufferAccumulatorLock;
 };

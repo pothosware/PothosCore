@@ -13,6 +13,10 @@
 #include <Theron/Receiver.h>
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
+#include <atomic>
+#include <mutex>
+#include <thread>
+#include <condition_variable>
 #include <iostream>
 
 int portNameToIndex(const std::string &name);
@@ -84,7 +88,88 @@ public:
         this->RegisterHandler(this, &WorkerActor::handleRequestPortInfoMessage);
         this->RegisterHandler(this, &WorkerActor::handleRequestWorkerStatsMessage);
         this->RegisterHandler(this, &WorkerActor::handleOpaqueCallMessage);
+
+        _condVarsWaiting = 0;
+        _acquisitionCount = 0;
+        _changeFlagged = false;
+        _processDone = false;
+        _processThread = std::thread(std::bind(&Pothos::WorkerActor::processOne, this));
     }
+
+    ~WorkerActor(void)
+    {
+        _processDone = true;
+        this->flagChange();
+        _processThread.join();
+    }
+
+    //////////////////////////////////// new threading impl ////////////////////////////////////
+
+    std::atomic<size_t> _condVarsWaiting;
+    std::atomic<size_t> _acquisitionCount;
+    std::atomic<bool> _changeFlagged;
+    std::mutex _acquisitionMutex;
+    std::condition_variable _acquisitionCondVar;
+    bool _processDone;
+    std::thread _processThread;
+
+    /*!
+     * Acquire the call context for this actor.
+     * If another thread has called acquire,
+     * this call will block waiting for release.
+     */
+    void acquireContext(void)
+    {
+        _acquisitionCount++;
+        while (_acquisitionCount != 1)
+        {
+            _condVarsWaiting++;
+            std::unique_lock<std::mutex> lock(_acquisitionMutex);
+            _acquisitionCondVar.wait(lock);
+            _condVarsWaiting--;
+        }
+    }
+
+    /*!
+     * Release the call context for this actor.
+     * Every call to acquire must be matched.
+     */
+    void releaseContext(void)
+    {
+        _acquisitionCount--;
+        if (_condVarsWaiting != 0)
+        {
+            _acquisitionCondVar.notify_one();
+        }
+    }
+
+    /*!
+     * Indicate an event or resource change.
+     */
+    void flagChange(void)
+    {
+        _changeFlagged = true;
+        if (_condVarsWaiting != 0)
+        {
+            _acquisitionCondVar.notify_one();
+        }
+    }
+
+    /*!
+     * Perform the main processing action.
+     */
+    void processOne(void)
+    {
+        this->acquireContext();
+        if (_changeFlagged.exchange(false))
+        {
+            //work here
+        }
+        this->releaseContext();
+    }
+
+
+
 
     inline void bump(void)
     {

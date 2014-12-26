@@ -6,6 +6,7 @@
 #include <Pothos/Framework/OutputPort.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
 #include <Pothos/Util/RingDeque.hpp>
+#include <Pothos/Util/SpinLock.hpp>
 #include <vector>
 
 class Pothos::OutputPortImpl
@@ -25,4 +26,6 @@ public:
     bool isSignal;
     InputPort *readBeforeWritePort;
     bool _bufferFromManager;
+    Util::SpinLock bufferManagerLock;
+    Util::SpinLock tokenManagerLock;
 };
