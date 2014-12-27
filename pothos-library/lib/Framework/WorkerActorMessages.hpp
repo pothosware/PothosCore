@@ -38,6 +38,9 @@ struct LabeledBuffersMessage
 
 struct TokenizedAsyncMessage
 {
+    TokenizedAsyncMessage(void){}
+    TokenizedAsyncMessage(const Pothos::Object &msg):
+        async(msg){}
     Pothos::BufferChunk token;
     Pothos::Object async;
 };

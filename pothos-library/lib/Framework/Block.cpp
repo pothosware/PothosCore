@@ -48,13 +48,10 @@ Pothos::Block::Block(void):
 
 Pothos::Block::~Block(void)
 {
-    //Send a shutdown message and wait for response:
-    //This allows the actor to finish with messages ahead of the shutdown message.
-    Theron::Receiver receiver;
-    ShutdownActorMessage message;
-    _actor->GetFramework().Send(message, receiver.GetAddress(), _actor->GetAddress());
-    receiver.Wait();
-    _actor.reset();
+    WorkerActorLock<WorkerActor> lock(_actor.get());
+    _actor->outputs.clear();
+    _actor->inputs.clear();
+    _actor->updatePorts();
 }
 
 void Pothos::Block::work(void)
@@ -86,9 +83,10 @@ void Pothos::Block::propagateLabels(const InputPort *input)
 
 Pothos::WorkStats Pothos::Block::workStats(void) const
 {
-    InfoReceiver<WorkStats> receiver;
-    _actor->GetFramework().Send(RequestWorkerStatsMessage(), receiver.GetAddress(), _actor->GetAddress());
-    return receiver.WaitInfo();
+    WorkerActorLock<WorkerActor> lock(_actor.get());
+
+    _actor->workStats.timeStatsQuery = std::chrono::high_resolution_clock::now();
+    return _actor->workStats;
 }
 
 bool Pothos::Block::isActive(void) const
@@ -224,17 +222,9 @@ Pothos::Object Pothos::Block::opaqueCallMethod(const std::string &name, const Po
         throw Pothos::BlockCallNotFound("Pothos::Block::call("+name+")", "method does not exist in registry");
     }
 
-    OpaqueCallMessage message;
-    message.name = name;
-    message.inputArgs = inputArgs;
-    message.numArgs = numArgs;
+    WorkerActorLock<WorkerActor> lock(_actor.get());
 
-    InfoReceiver<OpaqueCallResultMessage> receiver;
-    _actor->GetFramework().Send(message, receiver.GetAddress(), _actor->GetAddress());
-
-    OpaqueCallResultMessage result = receiver.WaitInfo();
-    if (result.error) result.error->rethrow();
-    return result.obj;
+    return const_cast<Block *>(this)->opaqueCallHandler(name, inputArgs, numArgs);
 }
 
 void Pothos::Block::yield(void)

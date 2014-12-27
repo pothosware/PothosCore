@@ -184,30 +184,24 @@ void Pothos::WorkerActor::postWorkTasks(void)
         }
 
         //send the outgoing labels with buffers
-        auto &postedLabels = port._impl->postedLabels;
-        if (not postedLabels.empty())
+        for (const auto &subscriber : port._impl->subscribers)
         {
-            std::sort(postedLabels.begin(), postedLabels.end());
-            LabeledBuffersMessage message;
-            std::swap(message.labels, postedLabels);
-            while (not port._impl->postedBuffers.empty())
-            {
-                auto &buffer = port._impl->postedBuffers.front();
-                elemsDequeued += buffer.elements();
-                bytesDequeued += buffer.length;
-                message.buffers.push_back(buffer);
-                port._impl->postedBuffers.pop_front();
-            }
-            this->sendOutputPortMessage(port._impl->subscribers, message);
+            subscriber.inputPort->_impl->bufferLabelPush(
+                *subscriber.inputPort,
+                port._impl->postedLabels,
+                port._impl->postedBuffers);
+            subscriber.block->_actor->bump();
         }
 
-        //send the external buffers in the queue
+        //clear posted labels
+        port._impl->postedLabels.clear();
+
+        //clear posted buffers and save stats
         while (not port._impl->postedBuffers.empty())
         {
             auto &buffer = port._impl->postedBuffers.front();
             elemsDequeued += buffer.elements();
             bytesDequeued += buffer.length;
-            this->sendOutputPortMessage(port._impl->subscribers, buffer);
             port._impl->postedBuffers.pop_front();
         }
 

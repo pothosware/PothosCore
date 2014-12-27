@@ -171,6 +171,7 @@ private:
     {} // non construction-copyable
     InputPort &operator=(const InputPort &){return *this;} // non copyable
     friend class WorkerActor;
+    friend class OutputPort;
 };
 
 } //namespace Pothos

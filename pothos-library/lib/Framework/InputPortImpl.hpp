@@ -42,6 +42,12 @@ public:
     size_t bufferAccumulatorTotalBytes(void);
     void bufferAccumulatorClear(void);
 
+    /////// combined label association push /////////
+    void bufferLabelPush(
+        const InputPort &port,
+        const std::vector<Label> &postedLabels,
+        const Util::RingDeque<BufferChunk> &postedBuffers);
+
 private:
     /////// async message storage /////////
     Util::SpinLock _asyncMessagesLock;
@@ -135,5 +141,35 @@ inline void Pothos::InputPortImpl::bufferAccumulatorClear(void)
 {
     std::unique_lock<Util::SpinLock> lock(_bufferAccumulatorLock);
     _bufferAccumulator = BufferAccumulator();
+    bufferAccumulatorFront = _bufferAccumulator.front();
+}
+
+inline void Pothos::InputPortImpl::bufferLabelPush(
+    const Pothos::InputPort &input,
+    const std::vector<Pothos::Label> &postedLabels,
+    const Pothos::Util::RingDeque<Pothos::BufferChunk> &postedBuffers)
+{
+    std::unique_lock<Util::SpinLock> lock1(_inlineMessagesLock);
+    std::unique_lock<Util::SpinLock> lock2(_bufferAccumulatorLock);
+
+    const size_t requiredLabelSize = _inputInlineMessages.size() + postedLabels.size();
+    if (_inputInlineMessages.capacity() < requiredLabelSize) _inputInlineMessages.set_capacity(requiredLabelSize);
+
+    //insert labels (in order) and adjust for the current offset
+    for (const auto &byteOffsetLabel : postedLabels)
+    {
+        auto label = byteOffsetLabel;
+        auto elemSize = input.dtype().size();
+        label.index += _bufferAccumulator.getTotalBytesAvailable(); //increment by enqueued bytes
+        label.index /= elemSize; //convert from bytes to elements
+        _inputInlineMessages.push_back(label);
+    }
+
+    //push all buffers into the accumulator
+    for (size_t i = 0; i < postedBuffers.size(); i++)
+    {
+        _bufferAccumulator.push(postedBuffers[i]);
+    }
+
     bufferAccumulatorFront = _bufferAccumulator.front();
 }

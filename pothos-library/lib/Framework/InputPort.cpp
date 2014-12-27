@@ -67,19 +67,19 @@ bool Pothos::InputPort::isSlot(void) const
 void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
 {
     assert(_impl);
-    _impl->actor->GetFramework().Send(makePortMessage(this, buffer), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+    _impl->bufferAccumulatorPush(buffer);
 }
 
 void Pothos::InputPort::pushLabel(const Label &label)
 {
     assert(_impl);
-    _impl->actor->GetFramework().Send(makePortMessage(this, label), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+    _impl->inlineMessagesPush(label);
 }
 
 void Pothos::InputPort::pushMessage(const Object &message)
 {
     assert(_impl);
-    _impl->actor->GetFramework().Send(makePortMessage(this, message), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+    _impl->asyncMessagesPush(message);
 }
 
 void Pothos::InputPort::clear(void)

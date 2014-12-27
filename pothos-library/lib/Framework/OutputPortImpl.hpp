@@ -76,17 +76,6 @@ inline void Pothos::OutputPortImpl::bufferManagerPop(const size_t numBytes)
     return _bufferManager->pop(numBytes);
 }
 
-inline void Pothos::OutputPortImpl::bufferManagerPush(Pothos::OutputPortImpl *self, const Pothos::ManagedBuffer &buff)
-{
-    auto mgr = buff.getBufferManager();
-    if (mgr)
-    {
-        std::unique_lock<Util::SpinLock> lock(self->_bufferManagerLock);
-        mgr->push(buff);
-        //TODO bump
-    }
-}
-
 inline void Pothos::OutputPortImpl::tokenManagerInit(void)
 {
     BufferManagerArgs tokenMgrArgs;
@@ -117,15 +106,4 @@ inline void Pothos::OutputPortImpl::tokenManagerPop(const size_t numBytes)
 {
     std::unique_lock<Util::SpinLock> lock(_tokenManagerLock);
     return _tokenManager->pop(numBytes);
-}
-
-inline void Pothos::OutputPortImpl::tokenManagerPush(Pothos::OutputPortImpl *self, const Pothos::ManagedBuffer &buff)
-{
-    auto mgr = buff.getBufferManager();
-    if (mgr)
-    {
-        std::unique_lock<Util::SpinLock> lock(self->_tokenManagerLock);
-        mgr->push(buff);
-        //TODO bump
-    }
 }

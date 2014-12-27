@@ -21,48 +21,6 @@
 
 int portNameToIndex(const std::string &name);
 
-/***********************************************************************
- * Helpful Theron::Receiver derived class for a specific value
- **********************************************************************/
-template <typename InfoType>
-class InfoReceiver : public Theron::Receiver
-{
-public:
-    static std::shared_ptr<InfoReceiver<InfoType>> make(void)
-    {
-        return std::shared_ptr<InfoReceiver<InfoType>>(new InfoReceiver());
-    }
-
-    InfoReceiver(void)
-    {
-        this->RegisterHandler(this, &InfoReceiver::handle);
-    }
-
-    void handle(const InfoType &message, const Theron::Address)
-    {
-        this->_infos.push_back(message);
-    }
-
-    const InfoType &Info(void) const
-    {
-        return _infos.back();
-    }
-
-    const InfoType &WaitInfo(void)
-    {
-        this->Wait();
-        return this->Info();
-    }
-
-    const std::vector<InfoType> &infos(void)
-    {
-        return _infos;
-    }
-
-private:
-    std::vector<InfoType> _infos;
-};
-
 template <typename T>
 struct WorkerActorLock
 {
@@ -81,31 +39,14 @@ struct WorkerActorLock
 /***********************************************************************
  * Actor definition
  **********************************************************************/
-class Pothos::WorkerActor : public Theron::Actor
+class Pothos::WorkerActor
 {
 public:
     WorkerActor(Block *block):
-        Theron::Actor(*std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer())),
         block(block),
         workBump(false),
         activeState(false)
     {
-        /*
-        this->RegisterHandler(this, &WorkerActor::handleAsyncPortMessage);
-        this->RegisterHandler(this, &WorkerActor::handleLabelsPortMessage);
-        this->RegisterHandler(this, &WorkerActor::handleBufferPortMessage);
-        this->RegisterHandler(this, &WorkerActor::handleBufferManagerMessage);
-        this->RegisterHandler(this, &WorkerActor::handleBufferReturnMessage);
-        this->RegisterHandler(this, &WorkerActor::handleSubscriberPortMessage);
-        this->RegisterHandler(this, &WorkerActor::handleBumpWorkMessage);
-        this->RegisterHandler(this, &WorkerActor::handleActivateWorkMessage);
-        this->RegisterHandler(this, &WorkerActor::handleDeactivateWorkMessage);
-        this->RegisterHandler(this, &WorkerActor::handleShutdownActorMessage);
-        this->RegisterHandler(this, &WorkerActor::handleRequestPortInfoMessage);
-        this->RegisterHandler(this, &WorkerActor::handleRequestWorkerStatsMessage);
-        this->RegisterHandler(this, &WorkerActor::handleOpaqueCallMessage);
-        */
-
         _condVarsWaiting = 0;
         _acquisitionCount = 0;
         _changeFlagged = false;
@@ -166,6 +107,7 @@ public:
         {
             _acquisitionCondVar.notify_one();
         }
+        this->flagChange();
     }
 
     /*!
@@ -185,65 +127,30 @@ public:
      */
     void processOne(void)
     {
-        this->acquireContext();
-        if (_changeFlagged.exchange(false))
+        while (not _changeFlagged.exchange(false))
         {
-            this->notify();
+            _condVarsWaiting++;
+            std::unique_lock<std::mutex> lock(_acquisitionMutex);
+            _acquisitionCondVar.wait(lock);
+            _condVarsWaiting--;
         }
-        this->releaseContext();
+
+        this->acquireContext();
+
+        //does work
+        this->notify();
+
+        //release
+        _acquisitionCount--;
+        if (_condVarsWaiting != 0)
+        {
+            _acquisitionCondVar.notify_one();
+        }
     }
-
-
-
 
     inline void bump(void)
     {
-        //only bump when we know there is nothing available in the queue
-        /*
-        if (this->GetNumQueuedMessages() == 1)
-        {
-            this->GetFramework().Send(BumpWorkMessage(), this->GetAddress(), this->GetAddress());
-        }
-        */
         this->flagChange();
-    }
-
-    ///////////////////// message handlers ///////////////////////
-    //void handleAsyncPortMessage(const PortMessage<InputPort *, TokenizedAsyncMessage> &message, const Theron::Address from);
-    //void handleLabelsPortMessage(const PortMessage<InputPort *, LabeledBuffersMessage> &message, const Theron::Address from);
-    //void handleBufferPortMessage(const PortMessage<InputPort *, BufferChunk> &message, const Theron::Address from);
-    //void handleBufferManagerMessage(const PortMessage<std::string, BufferManagerMessage> &message, const Theron::Address from);
-    //void handleBufferReturnMessage(const BufferReturnMessage &message, const Theron::Address from);
-    //void handleSubscriberPortMessage(const PortMessage<std::string, PortSubscriberMessage> &message, const Theron::Address from);
-    //void handleBumpWorkMessage(const BumpWorkMessage &message, const Theron::Address from);
-    //void handleActivateWorkMessage(const ActivateWorkMessage &message, const Theron::Address from);
-    //void handleDeactivateWorkMessage(const DeactivateWorkMessage &message, const Theron::Address from);
-    //void handleShutdownActorMessage(const ShutdownActorMessage &message, const Theron::Address from);
-    //void handleRequestPortInfoMessage(const RequestPortInfoMessage &message, const Theron::Address from);
-    //void handleRequestWorkerStatsMessage(const RequestWorkerStatsMessage &message, const Theron::Address from);
-    //void handleOpaqueCallMessage(const OpaqueCallMessage &message, const Theron::Address from);
-    //void handleInputBuffer(InputPort &input, const BufferChunk &buffer);
-
-    ///////////////////// send port messages ///////////////////////
-    template <typename PortSubscribersType, typename MessageType>
-    inline void sendInputPortMessage(const PortSubscribersType &subs, const MessageType &contents) const
-    {
-        assert(this != nullptr);
-        for (const auto &s : subs)
-        {
-            assert(s.outputPort != nullptr);
-            this->GetFramework().Send(makePortMessage(s.outputPort, contents), this->GetAddress(), s.block->_actor->GetAddress());
-        }
-    }
-    template <typename PortSubscribersType, typename MessageType>
-    inline void sendOutputPortMessage(const PortSubscribersType &subs, const MessageType &contents) const
-    {
-        assert(this != nullptr);
-        for (const auto &s : subs)
-        {
-            assert(s.inputPort != nullptr);
-            this->GetFramework().Send(makePortMessage(s.inputPort, contents), this->GetAddress(), s.block->_actor->GetAddress());
-        }
     }
 
     ///////////////////// WorkerActor storage ///////////////////////
@@ -306,43 +213,6 @@ public:
         const std::string &myPortName,
         Block *subscriberPortBlock,
         const std::string &subscriberPortName);
-    /*
-    std::shared_ptr<InfoReceiver<std::string>> sendActivateMessage(void)
-    {
-        auto receiver = InfoReceiver<std::string>::make();
-        this->GetFramework().Send(ActivateWorkMessage(), receiver->GetAddress(), this->GetAddress());
-        return receiver;
-    }
-
-    std::shared_ptr<InfoReceiver<std::string>> sendDeactivateMessage(void)
-    {
-        auto receiver = InfoReceiver<std::string>::make();
-        this->GetFramework().Send(DeactivateWorkMessage(), receiver->GetAddress(), this->GetAddress());
-        return receiver;
-    }
-
-    std::shared_ptr<InfoReceiver<std::string>> sendPortSubscriberMessage(
-        const std::string &action,
-        const std::string &myPortName,
-        Block *subscriberPortBlock,
-        const std::string &subscriberPortName
-    )
-    {
-        //create a new receiver to handle async reply
-        auto receiver = InfoReceiver<std::string>::make();
-
-        //create the message
-        PortSubscriberMessage message;
-        message.action = action;
-        if (action.find("INPUT") != std::string::npos) message.port.inputPort = subscriberPortBlock->input(subscriberPortName);
-        if (action.find("OUTPUT") != std::string::npos) message.port.outputPort = subscriberPortBlock->output(subscriberPortName);
-        message.port.block = subscriberPortBlock;
-
-        //send it to the actor
-        this->GetFramework().Send(makePortMessage(myPortName, message), receiver->GetAddress(), this->GetAddress());
-        return receiver;
-    }
-    */
 
     std::string getInputBufferMode(const std::string &name, const std::string &domain)
     {
@@ -379,28 +249,11 @@ public:
     }
 
     void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager);
-    /*
-    std::shared_ptr<InfoReceiver<std::string>> setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
-    {
-        //create a new receiver to handle async reply
-        auto receiver = InfoReceiver<std::string>::make();
-
-        //create the message
-        BufferManagerMessage message;
-        message.manager = manager;
-        assert(manager);
-
-        //send it to the actor
-        this->GetFramework().Send(makePortMessage(name, message), receiver->GetAddress(), this->GetAddress());
-        return receiver;
-    }
-    */
 
     ///////////////////// work helper methods ///////////////////////
     inline void notify(void)
     {
-        //only call when we handle the only message in the actor's queue
-        if (not activeState or this->GetNumQueuedMessages() > 1) return;
+        if (not activeState) return;
 
         //prework
         {

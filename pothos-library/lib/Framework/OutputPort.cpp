@@ -4,6 +4,28 @@
 #include "Framework/OutputPortImpl.hpp"
 #include "Framework/WorkerActor.hpp"
 
+void Pothos::OutputPortImpl::bufferManagerPush(Pothos::OutputPortImpl *self, const Pothos::ManagedBuffer &buff)
+{
+    auto mgr = buff.getBufferManager();
+    if (mgr)
+    {
+        std::unique_lock<Util::SpinLock> lock(self->_bufferManagerLock);
+        mgr->push(buff);
+        self->actor->bump();
+    }
+}
+
+void Pothos::OutputPortImpl::tokenManagerPush(Pothos::OutputPortImpl *self, const Pothos::ManagedBuffer &buff)
+{
+    auto mgr = buff.getBufferManager();
+    if (mgr)
+    {
+        std::unique_lock<Util::SpinLock> lock(self->_tokenManagerLock);
+        mgr->push(buff);
+        self->actor->bump();
+    }
+}
+
 Pothos::OutputPort::OutputPort(OutputPortImpl *impl):
     _impl(impl),
     _index(-1),
@@ -44,7 +66,11 @@ void Pothos::OutputPort::_postMessage(const Object &async)
     TokenizedAsyncMessage message;
     message.token = _impl->tokenManagerPop();
     message.async = async;
-    _impl->actor->sendOutputPortMessage(_impl->subscribers, message);
+    for (const auto &subscriber : _impl->subscribers)
+    {
+        subscriber.inputPort->_impl->asyncMessagesPush(message);
+        subscriber.block->_actor->bump();
+    }
     _totalMessages++;
     _impl->actor->workBump = true;
 }
