@@ -91,6 +91,7 @@ void Pothos::InputPort::clear(void)
     _impl->bufferAccumulatorClear();
     _impl->inlineMessagesClear();
     _impl->asyncMessagesClear();
+    _impl->slotCallsClear();
 }
 
 #include <Pothos/Managed.hpp>

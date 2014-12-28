@@ -4,7 +4,6 @@
 #pragma once
 #include "Framework/InputPortImpl.hpp"
 #include "Framework/OutputPortImpl.hpp"
-#include "Framework/WorkerActorMessages.hpp"
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object/Containers.hpp>
@@ -80,11 +79,19 @@ public:
      */
     void acquireContext(void)
     {
+        std::unique_lock<std::mutex> lock(_acquisitionMutex);
+        _acquisitionCount++;
+        while (_acquisitionCount != 1)
+        {
+            _acquisitionCondVar.wait(lock);
+        }
+        /*
         _acquisitionCount++;
         while (_acquisitionLock.test_and_set(std::memory_order_acquire))
         {
             this->waitContext();
         }
+        */
     }
 
     /*!
@@ -93,9 +100,22 @@ public:
      */
     void releaseContext(void)
     {
+        this->releaseContextNoFlag();
+        this->flagChange();
+        /*
         _acquisitionLock.clear(std::memory_order_release);
         this->wakeContext();
         this->flagChange();
+        */
+    }
+
+    void releaseContextNoFlag(void)
+    {
+        {
+            std::unique_lock<std::mutex> lock(_acquisitionMutex);
+            _acquisitionCount--;
+        }
+        _acquisitionCondVar.notify_one();
     }
 
     /*!
@@ -103,30 +123,18 @@ public:
      */
     void flagChange(void)
     {
+        {
+            std::unique_lock<std::mutex> lock(_acquisitionMutex);
+            _changeFlagged = true;
+        }
+        _acquisitionCondVar.notify_one();
+        /*
         _changeFlagged = true;
         if (_condVarsWaiting != 0)
         {
             _acquisitionCondVar.notify_one();
         }
-    }
-
-    void waitContext(void)
-    {
-        std::this_thread::yield();
-        /*
-        _condVarsWaiting++;
-        std::unique_lock<std::mutex> lock(_acquisitionMutex);
-        _acquisitionCondVar.wait(lock);
-        _condVarsWaiting--;
         */
-    }
-
-    void wakeContext(void)
-    {
-        if (_condVarsWaiting != 0)
-        {
-            _acquisitionCondVar.notify_one();
-        }
     }
 
     /*!
@@ -134,6 +142,25 @@ public:
      */
     void processOne(void)
     {
+        {
+            std::unique_lock<std::mutex> lock(_acquisitionMutex);
+            while (not _changeFlagged or _acquisitionCount != 0)
+            {
+                _acquisitionCondVar.wait(lock);
+            }
+            _changeFlagged = false;
+        }
+
+        if (_processDone) return;
+
+        this->acquireContext();
+
+        //does work
+        this->notify();
+
+        this->releaseContextNoFlag();
+
+        /*
         //std::cout << "block " << block->getName() << std::endl;
         //while (not _changeFlagged.exchange(false))
         {
@@ -152,6 +179,7 @@ public:
         //release
         _acquisitionLock.clear(std::memory_order_release);
         this->wakeContext();
+        */
     }
 
     void processLoop(void)
@@ -210,11 +238,6 @@ public:
     InputPort &getInput(const size_t index, const char *fcn);
 
     ///////////////////// topology helper methods ///////////////////////
-    void setActiveState(const bool state)
-    {
-        if (state) this->setActiveStateOn();
-        else this->setActiveStateOff();
-    }
     void setActiveStateOn(void);
     void setActiveStateOff(void);
     void subscribePort(

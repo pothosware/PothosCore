@@ -63,12 +63,17 @@ void Pothos::OutputPort::_postMessage(const Object &async)
 {
     assert(_impl);
     assert(_impl->actor != nullptr);
-    TokenizedAsyncMessage message;
-    message.token = _impl->tokenManagerPop();
-    message.async = async;
+    const auto token = _impl->tokenManagerPop();
     for (const auto &subscriber : _impl->subscribers)
     {
-        subscriber.inputPort->_impl->asyncMessagesPush(message);
+        if (subscriber.inputPort->_impl->isSlot and async.type() == typeid(ObjectVector))
+        {
+            subscriber.inputPort->_impl->slotCallsPush(async.extract<ObjectVector>(), token);
+        }
+        else
+        {
+            subscriber.inputPort->_impl->asyncMessagesPush(async, token);
+        }
         subscriber.block->_actor->flagChange();
     }
     _totalMessages++;

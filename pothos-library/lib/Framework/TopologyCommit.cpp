@@ -187,7 +187,7 @@ static std::vector<Flow> completePassThroughFlows(const std::vector<Flow> &flows
  **********************************************************************/
 static void setActiveState(const Pothos::Proxy &block, const bool state)
 {
-    block.callProxy("get:_actor").callVoid("setActiveState", state);
+    block.callProxy("get:_actor").callVoid(state?"setActiveStateOn":"setActiveStateOff");
 }
 
 void topologySubCommit(Pothos::Topology &topology)

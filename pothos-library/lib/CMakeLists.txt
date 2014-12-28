@@ -112,7 +112,6 @@ list(APPEND POTHOS_SOURCES
     Framework/WorkStats.cpp
     Framework/WorkerActor.cpp
     Framework/WorkerActorPortAllocation.cpp
-    Framework/WorkerActorHandlers.cpp
     Framework/ThreadPool.cpp
     Framework/SharedBuffer.cpp
     Framework/ManagedBuffer.cpp

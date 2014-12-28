@@ -3,11 +3,11 @@
 
 #pragma once
 #include "Framework/PortSubscriber.hpp"
-#include "Framework/WorkerActorMessages.hpp"
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/BufferAccumulator.hpp>
 #include <Pothos/Util/RingDeque.hpp>
 #include <Pothos/Util/SpinLock.hpp>
+#include <Pothos/Object/Containers.hpp>
 #include <mutex> //unique_lock
 #include <vector>
 
@@ -23,10 +23,16 @@ public:
     bool isSlot;
 
     /////// async message interface /////////
-    void asyncMessagesPush(const TokenizedAsyncMessage &message);
+    void asyncMessagesPush(const Object &message, const BufferChunk &token = BufferChunk::null());
     bool asyncMessagesEmpty(void);
-    Pothos::Object asyncMessagesPop(void);
+    Object asyncMessagesPop(void);
     void asyncMessagesClear(void);
+
+    /////// slot call interface /////////
+    void slotCallsPush(const ObjectVector &args, const BufferChunk &token);
+    bool slotCallsEmpty(void);
+    ObjectVector slotCallsPop(void);
+    void slotCallsClear(void);
 
     /////// inline message interface /////////
     std::vector<Label> inlineMessages;
@@ -51,7 +57,11 @@ public:
 private:
     /////// async message storage /////////
     Util::SpinLock _asyncMessagesLock;
-    Util::RingDeque<TokenizedAsyncMessage> _asyncMessages;
+    Util::RingDeque<std::pair<Object, BufferChunk>> _asyncMessages;
+
+    /////// slot call storage /////////
+    Util::SpinLock _slotCallsLock;
+    Util::RingDeque<std::pair<ObjectVector, BufferChunk>> _slotCalls;
 
     /////// inline message storage /////////
     Util::SpinLock _inlineMessagesLock;
@@ -62,11 +72,11 @@ private:
     BufferAccumulator _bufferAccumulator;
 };
 
-inline void Pothos::InputPortImpl::asyncMessagesPush(const TokenizedAsyncMessage &message)
+inline void Pothos::InputPortImpl::asyncMessagesPush(const Pothos::Object &message, const Pothos::BufferChunk &token)
 {
     std::unique_lock<Util::SpinLock> lock(_asyncMessagesLock);
     if (_asyncMessages.full()) _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
-    _asyncMessages.push_back(message);
+    _asyncMessages.push_back(std::make_pair(message, token));
 }
 
 inline bool Pothos::InputPortImpl::asyncMessagesEmpty(void)
@@ -79,7 +89,7 @@ inline Pothos::Object Pothos::InputPortImpl::asyncMessagesPop(void)
 {
     std::unique_lock<Util::SpinLock> lock(_asyncMessagesLock);
     if (_asyncMessages.empty()) return Pothos::Object();
-    auto msg = _asyncMessages.front().async;
+    auto msg = _asyncMessages.front().first;
     _asyncMessages.pop_front();
     return msg;
 }
@@ -88,6 +98,34 @@ inline void Pothos::InputPortImpl::asyncMessagesClear(void)
 {
     std::unique_lock<Util::SpinLock> lock(_asyncMessagesLock);
     _asyncMessages.clear();
+}
+
+inline void Pothos::InputPortImpl::slotCallsPush(const Pothos::ObjectVector &args, const Pothos::BufferChunk &token)
+{
+    std::unique_lock<Util::SpinLock> lock(_slotCallsLock);
+    if (_slotCalls.full()) _slotCalls.set_capacity(_slotCalls.capacity()*2);
+    _slotCalls.push_back(std::make_pair(args, token));
+}
+
+inline bool Pothos::InputPortImpl::slotCallsEmpty(void)
+{
+    std::unique_lock<Util::SpinLock> lock(_slotCallsLock);
+    return _slotCalls.empty();
+}
+
+inline Pothos::ObjectVector Pothos::InputPortImpl::slotCallsPop(void)
+{
+    std::unique_lock<Util::SpinLock> lock(_slotCallsLock);
+    if (_slotCalls.empty()) return Pothos::ObjectVector();
+    auto args = _slotCalls.front().first;
+    _slotCalls.pop_front();
+    return args;
+}
+
+inline void Pothos::InputPortImpl::slotCallsClear(void)
+{
+    std::unique_lock<Util::SpinLock> lock(_slotCallsLock);
+    _slotCalls.clear();
 }
 
 inline void Pothos::InputPortImpl::inlineMessagesPush(const Pothos::Label &label)
