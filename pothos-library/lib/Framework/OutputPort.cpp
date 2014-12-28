@@ -46,6 +46,7 @@ void Pothos::OutputPort::_postMessage(const Object &async)
     {
         message.token = _impl->tokenManager->front();
         _impl->tokenManager->pop(0);
+        assert(message.token.unique());
     }
     message.async = async;
     _impl->actor->sendOutputPortMessage(_impl->subscribers, message);
