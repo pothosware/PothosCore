@@ -100,7 +100,11 @@ inline void Pothos::InputPortImpl::inlineMessagesPush(const Pothos::Label &label
 inline void Pothos::InputPortImpl::inlineMessagesMerge(void)
 {
     std::unique_lock<Util::SpinLock> lock(_inlineMessagesLock);
-    //TODO
+    while (not _inputInlineMessages.empty())
+    {
+        inlineMessages.push_back(_inputInlineMessages.front());
+        _inputInlineMessages.pop_front();
+    }
 }
 
 inline void Pothos::InputPortImpl::inlineMessagesClear(void)
@@ -152,6 +156,7 @@ inline void Pothos::InputPortImpl::bufferLabelPush(
     std::unique_lock<Util::SpinLock> lock1(_inlineMessagesLock);
     std::unique_lock<Util::SpinLock> lock2(_bufferAccumulatorLock);
 
+    const size_t currentBytes = _bufferAccumulator.getTotalBytesAvailable();
     const size_t requiredLabelSize = _inputInlineMessages.size() + postedLabels.size();
     if (_inputInlineMessages.capacity() < requiredLabelSize) _inputInlineMessages.set_capacity(requiredLabelSize);
 
@@ -160,7 +165,7 @@ inline void Pothos::InputPortImpl::bufferLabelPush(
     {
         auto label = byteOffsetLabel;
         auto elemSize = input.dtype().size();
-        label.index += _bufferAccumulator.getTotalBytesAvailable(); //increment by enqueued bytes
+        label.index += currentBytes; //increment by enqueued bytes
         label.index /= elemSize; //convert from bytes to elements
         _inputInlineMessages.push_back(label);
     }

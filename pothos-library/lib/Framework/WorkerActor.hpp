@@ -43,6 +43,7 @@ class Pothos::WorkerActor
 {
 public:
     WorkerActor(Block *block):
+        _acquisitionLock(ATOMIC_FLAG_INIT),
         block(block),
         workBump(false),
         activeState(false)
@@ -52,14 +53,6 @@ public:
         _changeFlagged = false;
         _processDone = false;
         _processThread = std::thread(std::bind(&Pothos::WorkerActor::processLoop, this));
-    }
-
-    void processLoop(void)
-    {
-        while (not _processDone)
-        {
-            this->processOne();
-        }
     }
 
     ~WorkerActor(void)
@@ -72,6 +65,7 @@ public:
     //////////////////////////////////// new threading impl ////////////////////////////////////
 
     std::atomic<size_t> _condVarsWaiting;
+    std::atomic_flag _acquisitionLock;
     std::atomic<size_t> _acquisitionCount;
     std::atomic<bool> _changeFlagged;
     std::mutex _acquisitionMutex;
@@ -87,12 +81,9 @@ public:
     void acquireContext(void)
     {
         _acquisitionCount++;
-        while (_acquisitionCount != 1)
+        while (_acquisitionLock.test_and_set(std::memory_order_acquire))
         {
-            _condVarsWaiting++;
-            std::unique_lock<std::mutex> lock(_acquisitionMutex);
-            _acquisitionCondVar.wait(lock);
-            _condVarsWaiting--;
+            this->waitContext();
         }
     }
 
@@ -102,11 +93,8 @@ public:
      */
     void releaseContext(void)
     {
-        _acquisitionCount--;
-        if (_condVarsWaiting != 0)
-        {
-            _acquisitionCondVar.notify_one();
-        }
+        _acquisitionLock.clear(std::memory_order_release);
+        this->wakeContext();
         this->flagChange();
     }
 
@@ -122,35 +110,56 @@ public:
         }
     }
 
-    /*!
-     * Perform the main processing action.
-     */
-    void processOne(void)
+    void waitContext(void)
     {
-        while (not _changeFlagged.exchange(false))
-        {
-            _condVarsWaiting++;
-            std::unique_lock<std::mutex> lock(_acquisitionMutex);
-            _acquisitionCondVar.wait(lock);
-            _condVarsWaiting--;
-        }
+        std::this_thread::yield();
+        /*
+        _condVarsWaiting++;
+        std::unique_lock<std::mutex> lock(_acquisitionMutex);
+        _acquisitionCondVar.wait(lock);
+        _condVarsWaiting--;
+        */
+    }
 
-        this->acquireContext();
-
-        //does work
-        this->notify();
-
-        //release
-        _acquisitionCount--;
+    void wakeContext(void)
+    {
         if (_condVarsWaiting != 0)
         {
             _acquisitionCondVar.notify_one();
         }
     }
 
-    inline void bump(void)
+    /*!
+     * Perform the main processing action.
+     */
+    void processOne(void)
     {
-        this->flagChange();
+        //std::cout << "block " << block->getName() << std::endl;
+        //while (not _changeFlagged.exchange(false))
+        {
+        //    this->waitContext();
+        }
+
+        _acquisitionCount++;
+        while (_acquisitionLock.test_and_set(std::memory_order_acquire))
+        {
+            this->waitContext();
+        }
+
+        //does work
+        this->notify();
+
+        //release
+        _acquisitionLock.clear(std::memory_order_release);
+        this->wakeContext();
+    }
+
+    void processLoop(void)
+    {
+        while (not _processDone)
+        {
+            this->processOne();
+        }
     }
 
     ///////////////////// WorkerActor storage ///////////////////////
@@ -248,7 +257,11 @@ public:
         return m;
     }
 
-    void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager);
+    void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
+    {
+        WorkerActorLock<WorkerActor> lock(this);
+        outputs.at(name)->_impl->bufferManagerSetup(manager);
+    }
 
     ///////////////////// work helper methods ///////////////////////
     inline void notify(void)

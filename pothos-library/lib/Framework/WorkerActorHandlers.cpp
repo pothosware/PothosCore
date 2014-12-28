@@ -6,15 +6,6 @@
 #include <Poco/Logger.h>
 #include <cassert>
 
-void Pothos::WorkerActor::setOutputBufferManager(const std::string &name, const Pothos::BufferManager::Sptr &manager)
-{
-    WorkerActorLock<WorkerActor> lock(this);
-
-    outputs.at(name)->_impl->bufferManagerSetup(manager);
-
-    this->bump();
-}
-
 void Pothos::WorkerActor::subscribePort(
     const std::string &action,
     const std::string &myPortName,
@@ -83,8 +74,6 @@ void Pothos::WorkerActor::subscribePort(
     }
 
     this->updatePorts();
-
-    this->bump();
 }
 
 void Pothos::WorkerActor::setActiveStateOn(void)
@@ -101,8 +90,6 @@ void Pothos::WorkerActor::setActiveStateOn(void)
         this->activeState = false;
         throw ex;
     }
-
-    this->bump();
 }
 
 void Pothos::WorkerActor::setActiveStateOff(void)

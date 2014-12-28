@@ -68,18 +68,21 @@ void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
 {
     assert(_impl);
     _impl->bufferAccumulatorPush(buffer);
+    _impl->actor->flagChange();
 }
 
 void Pothos::InputPort::pushLabel(const Label &label)
 {
     assert(_impl);
     _impl->inlineMessagesPush(label);
+    _impl->actor->flagChange();
 }
 
 void Pothos::InputPort::pushMessage(const Object &message)
 {
     assert(_impl);
     _impl->asyncMessagesPush(message);
+    _impl->actor->flagChange();
 }
 
 void Pothos::InputPort::clear(void)

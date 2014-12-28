@@ -39,7 +39,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
             port._impl->_bufferFromManager = true;
         }
         port._buffer.dtype = port.dtype(); //always copy from port's dtype setting
-        assert(not port._impl->_bufferFromManager or port._buffer == port._impl->bufferManager->front());
+        assert(not port._impl->_bufferFromManager or port._buffer == port._impl->bufferManagerFront());
         port._elements = port._buffer.elements();
         if (port._elements == 0 and not port.isSignal()) allOutputsReady = false;
         if (port._impl->tokenManagerEmpty()) allOutputsReady = false;
@@ -59,6 +59,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     for (auto &entry : this->inputs)
     {
         auto &port = *entry.second;
+        port._impl->inlineMessagesMerge();
         //perform minimum reserve accumulator require to recover from possible element fragmentation
         const size_t requireElems = std::max<size_t>(1, port._reserveElements);
         port._impl->bufferAccumulatorRequire(requireElems*port.dtype().size());
@@ -190,7 +191,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
                 *subscriber.inputPort,
                 port._impl->postedLabels,
                 port._impl->postedBuffers);
-            subscriber.block->_actor->bump();
+            subscriber.block->_actor->flagChange();
         }
 
         //clear posted labels
@@ -218,7 +219,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     if (hadProduction) this->workStats.timeLastProduced = std::chrono::high_resolution_clock::now();
 
     //postwork bump logic
-    if (this->workBump or hadConsumption or hadProduction) this->bump();
+    if (this->workBump or hadConsumption or hadProduction) this->flagChange();
 }
 
 #include <Pothos/Managed.hpp>

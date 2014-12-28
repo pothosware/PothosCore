@@ -11,7 +11,7 @@ void Pothos::OutputPortImpl::bufferManagerPush(Pothos::OutputPortImpl *self, con
     {
         std::unique_lock<Util::SpinLock> lock(self->_bufferManagerLock);
         mgr->push(buff);
-        self->actor->bump();
+        self->actor->flagChange();
     }
 }
 
@@ -22,7 +22,7 @@ void Pothos::OutputPortImpl::tokenManagerPush(Pothos::OutputPortImpl *self, cons
     {
         std::unique_lock<Util::SpinLock> lock(self->_tokenManagerLock);
         mgr->push(buff);
-        self->actor->bump();
+        self->actor->flagChange();
     }
 }
 
@@ -69,7 +69,7 @@ void Pothos::OutputPort::_postMessage(const Object &async)
     for (const auto &subscriber : _impl->subscribers)
     {
         subscriber.inputPort->_impl->asyncMessagesPush(message);
-        subscriber.block->_actor->bump();
+        subscriber.block->_actor->flagChange();
     }
     _totalMessages++;
     _impl->actor->workBump = true;
