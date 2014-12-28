@@ -42,7 +42,8 @@ public:
         assert(not _readyBuffs.empty());
 
         //re-use the buffer for small consumes
-        if (this->front().length >= numBytes*2)
+        //length 0 buffers are always popped
+        if (this->front().length != 0 and this->front().length >= numBytes*2)
         {
             auto buff = this->front();
             buff.address += numBytes;
