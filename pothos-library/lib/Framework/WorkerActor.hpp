@@ -31,6 +31,7 @@ struct WorkerActorLock
     ~WorkerActorLock(void)
     {
         _actor->releaseContext();
+        _actor->flagChange();
     }
     T *_actor;
 };
@@ -42,7 +43,6 @@ class Pothos::WorkerActor
 {
 public:
     WorkerActor(Block *block):
-        _acquisitionLock(ATOMIC_FLAG_INIT),
         block(block),
         workBump(false),
         activeState(false)
@@ -54,22 +54,24 @@ public:
         _processThread = std::thread(std::bind(&Pothos::WorkerActor::processLoop, this));
     }
 
-    ~WorkerActor(void)
+    void shutdown(void)
     {
         _processDone = true;
         this->flagChange();
         _processThread.join();
+        this->outputs.clear();
+        this->inputs.clear();
+        this->updatePorts();
     }
 
     //////////////////////////////////// new threading impl ////////////////////////////////////
 
     std::atomic<size_t> _condVarsWaiting;
-    std::atomic_flag _acquisitionLock;
     std::atomic<size_t> _acquisitionCount;
     std::atomic<bool> _changeFlagged;
     std::mutex _acquisitionMutex;
     std::condition_variable _acquisitionCondVar;
-    bool _processDone;
+    std::atomic<bool> _processDone;
     std::thread _processThread;
 
     /*!
@@ -85,13 +87,6 @@ public:
         {
             _acquisitionCondVar.wait(lock);
         }
-        /*
-        _acquisitionCount++;
-        while (_acquisitionLock.test_and_set(std::memory_order_acquire))
-        {
-            this->waitContext();
-        }
-        */
     }
 
     /*!
@@ -100,22 +95,8 @@ public:
      */
     void releaseContext(void)
     {
-        this->releaseContextNoFlag();
-        this->flagChange();
-        /*
-        _acquisitionLock.clear(std::memory_order_release);
-        this->wakeContext();
-        this->flagChange();
-        */
-    }
-
-    void releaseContextNoFlag(void)
-    {
-        {
-            std::unique_lock<std::mutex> lock(_acquisitionMutex);
-            _acquisitionCount--;
-        }
-        _acquisitionCondVar.notify_one();
+        std::unique_lock<std::mutex> lock(_acquisitionMutex);
+        _acquisitionCount--;
     }
 
     /*!
@@ -123,70 +104,49 @@ public:
      */
     void flagChange(void)
     {
-        {
-            std::unique_lock<std::mutex> lock(_acquisitionMutex);
-            _changeFlagged = true;
-        }
-        _acquisitionCondVar.notify_one();
-        /*
+        std::unique_lock<std::mutex> lock(_acquisitionMutex);
         _changeFlagged = true;
-        if (_condVarsWaiting != 0)
+        this->notifyWaiters();
+    }
+
+    /*!
+     * Wake up one thread waiting on the condition variable.
+     */
+    void notifyWaiters(void)
+    {
+        _acquisitionCondVar.notify_all();
+    }
+
+    /*!
+     * Block in this call waiting for the change flag.
+     */
+    void waitForChange(void)
+    {
+        std::unique_lock<std::mutex> lock(_acquisitionMutex);
+        while (not _changeFlagged or _acquisitionCount != 0)
         {
-            _acquisitionCondVar.notify_one();
+            _acquisitionCondVar.wait(lock);
         }
-        */
+        _changeFlagged = false;
     }
 
     /*!
      * Perform the main processing action.
      */
-    void processOne(void)
-    {
-        {
-            std::unique_lock<std::mutex> lock(_acquisitionMutex);
-            while (not _changeFlagged or _acquisitionCount != 0)
-            {
-                _acquisitionCondVar.wait(lock);
-            }
-            _changeFlagged = false;
-        }
-
-        if (_processDone) return;
-
-        this->acquireContext();
-
-        //does work
-        this->notify();
-
-        this->releaseContextNoFlag();
-
-        /*
-        //std::cout << "block " << block->getName() << std::endl;
-        //while (not _changeFlagged.exchange(false))
-        {
-        //    this->waitContext();
-        }
-
-        _acquisitionCount++;
-        while (_acquisitionLock.test_and_set(std::memory_order_acquire))
-        {
-            this->waitContext();
-        }
-
-        //does work
-        this->notify();
-
-        //release
-        _acquisitionLock.clear(std::memory_order_release);
-        this->wakeContext();
-        */
-    }
-
     void processLoop(void)
     {
         while (not _processDone)
         {
-            this->processOne();
+            this->waitForChange();
+            if (_processDone) return;
+
+            this->acquireContext();
+
+            this->workTask();
+
+            this->releaseContext();
+
+            this->notifyWaiters();
         }
     }
 
@@ -287,7 +247,7 @@ public:
     }
 
     ///////////////////// work helper methods ///////////////////////
-    inline void notify(void)
+    inline void workTask(void)
     {
         if (not activeState) return;
 

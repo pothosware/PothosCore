@@ -48,10 +48,7 @@ Pothos::Block::Block(void):
 
 Pothos::Block::~Block(void)
 {
-    WorkerActorLock<WorkerActor> lock(_actor.get());
-    _actor->outputs.clear();
-    _actor->inputs.clear();
-    _actor->updatePorts();
+    _actor->shutdown();
 }
 
 void Pothos::Block::work(void)
