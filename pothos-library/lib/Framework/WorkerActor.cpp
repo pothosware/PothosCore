@@ -124,7 +124,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         if ( //handle read before wite port if specified
             port._impl->readBeforeWritePort != nullptr and
             port.dtype().size() == port._impl->readBeforeWritePort->dtype().size() and
-            (port._buffer = port._impl->readBeforeWritePort->_impl->bufferAccumulatorFront).useCount() == 3 //3 -> accumulator + port + this assignment
+            (port._buffer = port._impl->readBeforeWritePort->_impl->bufferAccumulatorFront()).useCount() == 2 //2 -> accumulator + this assignment
         ) port._impl->_bufferFromManager = false;
         else if (port._impl->bufferManagerEmpty())
         {
@@ -157,7 +157,6 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     for (auto &entry : this->inputs)
     {
         auto &port = *entry.second;
-        port._impl->inlineMessagesMerge();
         if (not port._impl->slotCallsEmpty())
         {
             POTHOS_EXCEPTION_TRY
@@ -173,8 +172,8 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         //perform minimum reserve accumulator require to recover from possible element fragmentation
         const size_t requireElems = std::max<size_t>(1, port._reserveElements);
         port._impl->bufferAccumulatorRequire(requireElems*port.dtype().size());
-        port._buffer = port._impl->bufferAccumulatorFront;
-        port._elements = port._buffer.get().length/port.dtype().size();
+        port._buffer = port._impl->bufferAccumulatorFront();
+        port._elements = port._buffer.length/port.dtype().size();
         if (port._elements < port._reserveElements) allInputsReady = false;
         if (not port._impl->asyncMessagesEmpty()) hasInputMessage = true;
         port._pendingElements = 0;
@@ -182,7 +181,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         if (port.index() != -1)
         {
             assert(block->_workInfo.inputPointers.size() > size_t(port.index()));
-            block->_workInfo.inputPointers[port.index()] = port._buffer.get().as<const void *>();
+            block->_workInfo.inputPointers[port.index()] = port._buffer.as<const void *>();
             block->_workInfo.minInElements = std::min(block->_workInfo.minInElements, port._elements);
         }
         block->_workInfo.minAllInElements = std::min(block->_workInfo.minAllInElements, port._elements);
@@ -248,8 +247,9 @@ void Pothos::WorkerActor::postWorkTasks(void)
                 poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %d bytes, %d available",
                     block->getName(), port.name(), int(bytes), int(port._impl->bufferAccumulatorTotalBytes()));
             }
-            else port._impl->bufferAccumulatorPop(bytes);
+            else port._impl->bufferAccumulatorPop(bytes, port._pendingElements);
         }
+        port._buffer = BufferChunk::null(); //clear reference
 
         //move consumed elements into total
         port._totalElements += port._pendingElements;
@@ -291,29 +291,32 @@ void Pothos::WorkerActor::postWorkTasks(void)
                 else port._impl->bufferManagerPop(buffer.length);
             }
             port.postBuffer(buffer);
-            port._buffer = BufferChunk::null(); //clear reference
         }
+        port._buffer = BufferChunk::null(); //clear reference
+
+        //sort the posted labels in case the user posted out of order
+        auto &postedLabels = port._impl->postedLabels;
+        auto &postedBuffers = port._impl->postedBuffers;
+        if (not postedLabels.empty()) std::sort(postedLabels.begin(), postedLabels.end());
 
         //send the outgoing labels with buffers
         for (const auto &subscriber : port._impl->subscribers)
         {
             subscriber.inputPort->_impl->bufferLabelPush(
-                *subscriber.inputPort,
-                port._impl->postedLabels,
-                port._impl->postedBuffers);
+                *subscriber.inputPort, postedLabels, postedBuffers);
             subscriber.block->_actor->flagChange();
         }
 
         //clear posted labels
-        port._impl->postedLabels.clear();
+        postedLabels.clear();
 
         //clear posted buffers and save stats
-        while (not port._impl->postedBuffers.empty())
+        while (not postedBuffers.empty())
         {
-            auto &buffer = port._impl->postedBuffers.front();
+            auto &buffer = postedBuffers.front();
             elemsDequeued += buffer.elements();
             bytesDequeued += buffer.length;
-            port._impl->postedBuffers.pop_front();
+            postedBuffers.pop_front();
         }
 
         //add produced bytes into total

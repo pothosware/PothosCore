@@ -67,7 +67,7 @@ bool Pothos::InputPort::isSlot(void) const
 void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
 {
     assert(_impl);
-    _impl->bufferAccumulatorPush(buffer);
+    _impl->bufferAccumulatorPush(*this, buffer);
     _impl->actor->flagChange();
 }
 
