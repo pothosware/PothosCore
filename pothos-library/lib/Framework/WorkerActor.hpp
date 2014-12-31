@@ -181,21 +181,23 @@ public:
     InputPort &getInput(const size_t index, const char *fcn);
 
     ///////////////////// topology helper methods ///////////////////////
-    std::shared_ptr<InfoReceiver<std::string>> sendActivateMessage(void)
+    void setActiveStateOn(void)
     {
-        auto receiver = InfoReceiver<std::string>::make();
-        this->GetFramework().Send(ActivateWorkMessage(), receiver->GetAddress(), this->GetAddress());
-        return receiver;
+        InfoReceiver<std::string> receiver;
+        this->GetFramework().Send(ActivateWorkMessage(), receiver.GetAddress(), this->GetAddress());
+        auto result = receiver.WaitInfo();
+        if (not result.empty()) throw Pothos::Exception(result);
     }
 
-    std::shared_ptr<InfoReceiver<std::string>> sendDeactivateMessage(void)
+    void setActiveStateOff(void)
     {
-        auto receiver = InfoReceiver<std::string>::make();
-        this->GetFramework().Send(DeactivateWorkMessage(), receiver->GetAddress(), this->GetAddress());
-        return receiver;
+        InfoReceiver<std::string> receiver;
+        this->GetFramework().Send(DeactivateWorkMessage(), receiver.GetAddress(), this->GetAddress());
+        auto result = receiver.WaitInfo();
+        if (not result.empty()) throw Pothos::Exception(result);
     }
 
-    std::shared_ptr<InfoReceiver<std::string>> sendPortSubscriberMessage(
+    void subscribePort(
         const std::string &action,
         const std::string &myPortName,
         Block *subscriberPortBlock,
@@ -203,7 +205,7 @@ public:
     )
     {
         //create a new receiver to handle async reply
-        auto receiver = InfoReceiver<std::string>::make();
+        InfoReceiver<std::string> receiver;
 
         //create the message
         PortSubscriberMessage message;
@@ -213,8 +215,9 @@ public:
         message.port.block = subscriberPortBlock;
 
         //send it to the actor
-        this->GetFramework().Send(makePortMessage(myPortName, message), receiver->GetAddress(), this->GetAddress());
-        return receiver;
+        this->GetFramework().Send(makePortMessage(myPortName, message), receiver.GetAddress(), this->GetAddress());
+        auto result = receiver.WaitInfo();
+        if (not result.empty()) throw Pothos::Exception(result);
     }
 
     std::string getInputBufferMode(const std::string &name, const std::string &domain)
@@ -251,10 +254,10 @@ public:
         return m;
     }
 
-    std::shared_ptr<InfoReceiver<std::string>> setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
+    void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
     {
         //create a new receiver to handle async reply
-        auto receiver = InfoReceiver<std::string>::make();
+        InfoReceiver<std::string> receiver;
 
         //create the message
         BufferManagerMessage message;
@@ -262,8 +265,9 @@ public:
         assert(manager);
 
         //send it to the actor
-        this->GetFramework().Send(makePortMessage(name, message), receiver->GetAddress(), this->GetAddress());
-        return receiver;
+        this->GetFramework().Send(makePortMessage(name, message), receiver.GetAddress(), this->GetAddress());
+        auto result = receiver.WaitInfo();
+        if (not result.empty()) throw Pothos::Exception(result);
     }
 
     ///////////////////// work helper methods ///////////////////////

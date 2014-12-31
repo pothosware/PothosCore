@@ -2,22 +2,19 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
-#include "Framework/WorkerActor.hpp"
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Poco/Format.h>
 #include <iostream>
 #include <future>
 
-typedef std::shared_ptr<InfoReceiver<std::string>> StrInfoReceiver;
-
 struct FutureInfo
 {
-    FutureInfo(const std::string &what, const Pothos::Proxy &block, const StrInfoReceiver &result):
+    FutureInfo(const std::string &what, const Pothos::Proxy &block, const std::shared_future<void> &result):
         what(what), block(block), result(result){}
     std::string what;
     Pothos::Proxy block;
-    StrInfoReceiver result;
+    std::shared_future<void> result;
 };
 
 std::string collectFutureInfoErrors(const std::vector<FutureInfo> infoFutures)
@@ -25,8 +22,14 @@ std::string collectFutureInfoErrors(const std::vector<FutureInfo> infoFutures)
     std::string errors;
     for (auto future : infoFutures)
     {
-        const auto &msg = future.result->WaitInfo();
-        if (not msg.empty()) errors.append(future.block.call<std::string>("getName")+"."+future.what+": "+msg+"\n");
+        POTHOS_EXCEPTION_TRY
+        {
+            future.result.get();
+        }
+        POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
+        {
+            errors.append(future.block.call<std::string>("getName")+"."+future.what+": "+ex.message()+"\n");
+        }
     }
     return errors;
 }
@@ -34,6 +37,11 @@ std::string collectFutureInfoErrors(const std::vector<FutureInfo> infoFutures)
 /***********************************************************************
  * helpers to deal with buffer managers
  **********************************************************************/
+static void setOutputBufferManager(const Port &src, const Pothos::Proxy &manager)
+{
+    src.obj.callProxy("get:_actor").callVoid("setOutputBufferManager", src.name, manager);
+}
+
 static void installBufferManagers(const std::vector<Flow> &flatFlows)
 {
     //map of a source port to all destination ports
@@ -92,7 +100,7 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
             manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
         }
 
-        auto result = src.obj.callProxy("get:_actor").call<StrInfoReceiver>("setOutputBufferManager", src.name, manager);
+        std::shared_future<void> result(std::async(std::launch::async, setOutputBufferManager, src, manager));
         infoFutures.push_back(FutureInfo(Poco::format("setOutputBufferManager(%s)", src.name), src.obj, result));
     }
 
@@ -104,6 +112,12 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
 /***********************************************************************
  * Helpers to implement port subscription
  **********************************************************************/
+static void subscribePort(const Port &pri, const Port &sec, const std::string &action)
+{
+    auto actor = pri.obj.callProxy("get:_actor");
+    actor.callVoid("subscribePort", action, pri.name, sec.obj.callProxy("getPointer"), sec.name);
+}
+
 static void updateFlows(const std::vector<Flow> &flows, const std::string &action)
 {
     const bool isInputAction = action.find("INPUT") != std::string::npos;
@@ -117,9 +131,8 @@ static void updateFlows(const std::vector<Flow> &flows, const std::string &actio
         const auto &pri = isInputAction?flow.src:flow.dst;
         const auto &sec = isInputAction?flow.dst:flow.src;
 
-        auto actor = pri.obj.callProxy("get:_actor");
-        auto result = actor.call<StrInfoReceiver>("sendPortSubscriberMessage", action, pri.name, sec.obj.callProxy("getPointer"), sec.name);
-        infoFutures.push_back(FutureInfo(Poco::format("sendPortSubscriberMessage(%s)", action), pri.obj, result));
+        std::shared_future<void> result(std::async(std::launch::async, subscribePort, pri, sec, action));
+        infoFutures.push_back(FutureInfo(Poco::format("subscribePort(%s)", action), pri.obj, result));
     }
 
     //check all subscribe message results
@@ -171,6 +184,11 @@ static std::vector<Flow> completePassThroughFlows(const std::vector<Flow> &flows
 /***********************************************************************
  * Sub Topology commit on flattened flows
  **********************************************************************/
+static void setActiveState(const Pothos::Proxy &block, const bool state)
+{
+    block.callProxy("get:_actor").callVoid(state?"setActiveStateOn":"setActiveStateOff");
+}
+
 void topologySubCommit(Pothos::Topology &topology)
 {
     auto &_impl = topology._impl;
@@ -213,8 +231,8 @@ void topologySubCommit(Pothos::Topology &topology)
     //send activate to all new blocks not already in active flows
     for (auto block : getObjSetFromFlowList(newFlows, activeFlatFlows))
     {
-        auto result = block.callProxy("get:_actor").call<StrInfoReceiver>("sendActivateMessage");
-        infoFutures.push_back(FutureInfo("sendActivateMessage()", block, result));
+        std::shared_future<void> result(std::async(std::launch::async, setActiveState, block, true));
+        infoFutures.push_back(FutureInfo("activate()", block, result));
     }
 
     //update current flows
@@ -223,8 +241,8 @@ void topologySubCommit(Pothos::Topology &topology)
     //send deactivate to all old blocks not in current active flows
     for (auto block : getObjSetFromFlowList(oldFlows, _impl->activeFlatFlows))
     {
-        auto result = block.callProxy("get:_actor").call<StrInfoReceiver>("sendDeactivateMessage");
-        infoFutures.push_back(FutureInfo("sendDeactivateMessage()", block, result));
+        std::shared_future<void> result(std::async(std::launch::async, setActiveState, block, false));
+        infoFutures.push_back(FutureInfo("deactivate()", block, result));
     }
 
     //check all de/activate message results
