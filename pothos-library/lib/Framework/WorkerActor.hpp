@@ -31,7 +31,6 @@ struct WorkerActorLock
     ~WorkerActorLock(void)
     {
         _actor->releaseContext();
-        _actor->flagChange();
     }
     T *_actor;
 };
@@ -51,13 +50,16 @@ public:
         _acquisitionCount = 0;
         _changeFlagged = false;
         _processDone = false;
+        _acquirePrio = 0;
         _processThread = std::thread(std::bind(&Pothos::WorkerActor::processLoop, this));
     }
 
     void shutdown(void)
     {
-        _processDone = true;
-        this->flagChange();
+        {
+            WorkerActorLock<WorkerActor> lock(this);
+            _processDone = true;
+        }
         _processThread.join();
         this->outputs.clear();
         this->inputs.clear();
@@ -66,12 +68,15 @@ public:
 
     //////////////////////////////////// new threading impl ////////////////////////////////////
 
-    std::atomic<size_t> _condVarsWaiting;
-    std::atomic<size_t> _acquisitionCount;
-    std::atomic<bool> _changeFlagged;
+    size_t _condVarsWaiting, _acquisitionCount, _acquirePrio;
+    bool _changeFlagged, _processDone;
+
+    //std::atomic<size_t> _condVarsWaiting;
+    //std::atomic<size_t> _acquisitionCount;
+    //std::atomic<bool> _changeFlagged;
     std::mutex _acquisitionMutex;
     std::condition_variable _acquisitionCondVar;
-    std::atomic<bool> _processDone;
+    //std::atomic<bool> _processDone;
     std::thread _processThread;
 
     /*!
@@ -82,21 +87,37 @@ public:
     void acquireContext(void)
     {
         std::unique_lock<std::mutex> lock(_acquisitionMutex);
-        _acquisitionCount++;
-        while (_acquisitionCount != 1)
+        _acquirePrio++;
+        while (_acquisitionCount != 0)
         {
             _acquisitionCondVar.wait(lock);
+            //_acquisitionCondVar.wait_for(lock, std::chrono::milliseconds(1));
         }
+        _acquisitionCount++;
     }
 
     /*!
      * Release the call context for this actor.
      * Every call to acquire must be matched.
      */
+    void releaseEventContext(void)
+    {
+        {
+            std::unique_lock<std::mutex> lock(_acquisitionMutex);
+            _acquisitionCount--;
+        }
+        this->notifyWaiters();
+    }
+
     void releaseContext(void)
     {
-        std::unique_lock<std::mutex> lock(_acquisitionMutex);
-        _acquisitionCount--;
+        {
+            std::unique_lock<std::mutex> lock(_acquisitionMutex);
+            _acquisitionCount--;
+            _acquirePrio--;
+            _changeFlagged = true;
+        }
+        this->notifyWaiters();
     }
 
     /*!
@@ -104,8 +125,10 @@ public:
      */
     void flagChange(void)
     {
-        std::unique_lock<std::mutex> lock(_acquisitionMutex);
-        _changeFlagged = true;
+        {
+            std::unique_lock<std::mutex> lock(_acquisitionMutex);
+            _changeFlagged = true;
+        }
         this->notifyWaiters();
     }
 
@@ -120,14 +143,16 @@ public:
     /*!
      * Block in this call waiting for the change flag.
      */
-    void waitForChange(void)
+    void acquireEventContext(void)
     {
         std::unique_lock<std::mutex> lock(_acquisitionMutex);
-        while (not _changeFlagged or _acquisitionCount != 0)
+        while (not _changeFlagged or _acquisitionCount != 0 or _acquirePrio > 0)
         {
             _acquisitionCondVar.wait(lock);
+            //_acquisitionCondVar.wait_for(lock, std::chrono::milliseconds(1));
         }
         _changeFlagged = false;
+        _acquisitionCount++;
     }
 
     /*!
@@ -137,16 +162,11 @@ public:
     {
         while (not _processDone)
         {
-            this->waitForChange();
-            if (_processDone) return;
-
-            this->acquireContext();
+            this->acquireEventContext();
 
             this->workTask();
 
-            this->releaseContext();
-
-            this->notifyWaiters();
+            this->releaseEventContext();
         }
     }
 
