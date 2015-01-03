@@ -212,12 +212,6 @@ void topologySubCommit(Pothos::Topology &topology)
     //add new data acceptors
     updateFlows(newFlows, "SUBINPUT");
 
-    //add new data providers
-    updateFlows(newFlows, "SUBOUTPUT");
-
-    //remove old data providers
-    updateFlows(oldFlows, "UNSUBOUTPUT");
-
     //remove old data acceptors
     updateFlows(oldFlows, "UNSUBINPUT");
 

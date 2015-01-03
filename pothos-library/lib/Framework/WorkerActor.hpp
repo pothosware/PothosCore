@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-#include "Framework/InputPortImpl.hpp"
-#include "Framework/OutputPortImpl.hpp"
+#include "Framework/PortSubscriber.hpp"
 #include "Framework/WorkerActorMessages.hpp"
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
@@ -113,23 +112,13 @@ public:
 
     ///////////////////// send port messages ///////////////////////
     template <typename PortSubscribersType, typename MessageType>
-    inline void sendInputPortMessage(const PortSubscribersType &subs, const MessageType &contents) const
-    {
-        assert(this != nullptr);
-        for (const auto &s : subs)
-        {
-            assert(s.outputPort != nullptr);
-            this->GetFramework().Send(makePortMessage(s.outputPort, contents), this->GetAddress(), s.block->_actor->GetAddress());
-        }
-    }
-    template <typename PortSubscribersType, typename MessageType>
     inline void sendOutputPortMessage(const PortSubscribersType &subs, const MessageType &contents) const
     {
         assert(this != nullptr);
         for (const auto &s : subs)
         {
-            assert(s.inputPort != nullptr);
-            this->GetFramework().Send(makePortMessage(s.inputPort, contents), this->GetAddress(), s.block->_actor->GetAddress());
+            assert(s != nullptr);
+            this->GetFramework().Send(makePortMessage(s, contents), this->GetAddress(), s->_actor->GetAddress());
         }
     }
 
@@ -150,8 +139,8 @@ public:
         std::swap(this->workStats, oldActor->workStats);
         std::swap(this->inputs, oldActor->inputs);
         std::swap(this->outputs, oldActor->outputs);
-        for (auto &port : this->inputs) port.second->_impl->actor = this;
-        for (auto &port : this->outputs) port.second->_impl->actor = this;
+        for (auto &port : this->inputs) port.second->_actor = this;
+        for (auto &port : this->outputs) port.second->_actor = this;
     }
 
     ///////////////////// port setup methods ///////////////////////
@@ -159,12 +148,12 @@ public:
     void allocateOutput(const std::string &name, const DType &dtype, const std::string &domain);
     void allocateSignal(const std::string &name);
     void allocateSlot(const std::string &name);
-    template <typename ImplType, typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+    template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
     void allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain);
 
     void autoAllocateInput(const std::string &name);
     void autoAllocateOutput(const std::string &name);
-    template <typename ImplType, typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+    template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
     void autoAllocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name);
 
     /*!

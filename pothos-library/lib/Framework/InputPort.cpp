@@ -1,54 +1,47 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Framework/InputPortImpl.hpp"
+#include <Pothos/Framework/InputPort.hpp>
 #include "Framework/WorkerActor.hpp"
 
-Pothos::InputPort::InputPort(InputPortImpl *impl):
-    _impl(impl),
+Pothos::InputPort::InputPort(void):
+    _actor(nullptr),
     _index(-1),
     _buffer(BufferChunk::null()),
     _elements(0),
     _totalElements(0),
     _totalMessages(0),
     _pendingElements(0),
-    _reserveElements(0)
+    _reserveElements(0),
+    _isSlot(false)
 {
     return;
 }
 
 Pothos::InputPort::~InputPort(void)
 {
-    delete _impl;
-}
-
-bool Pothos::InputPort::hasMessage(void) const
-{
-    assert(_impl);
-    return not _impl->asyncMessages.empty();
+    return;
 }
 
 Pothos::Object Pothos::InputPort::popMessage(void)
 {
-    assert(_impl);
-    if (_impl->asyncMessages.empty()) return Pothos::Object();
-    auto msg = _impl->asyncMessages.front().async;
-    _impl->asyncMessages.pop_front();
+    if (_asyncMessages.empty()) return Pothos::Object();
+    auto msg = _asyncMessages.front().first;
+    _asyncMessages.pop_front();
     _totalMessages++;
-    _impl->actor->workBump = true;
+    _actor->workBump = true;
     return msg;
 }
 
 void Pothos::InputPort::removeLabel(const Label &label)
 {
-    assert(_impl);
-    for (auto it = _impl->inlineMessages.begin(); it != _impl->inlineMessages.end(); it++)
+    for (auto it = _inlineMessages.begin(); it != _inlineMessages.end(); it++)
     {
         if (*it == label)
         {
-            _impl->inlineMessages.erase(it);
-            _labelIter = _impl->inlineMessages;
-            _impl->actor->workBump = true;
+            _inlineMessages.erase(it);
+            _labelIter = _inlineMessages;
+            _actor->workBump = true;
             return;
         }
     }
@@ -57,39 +50,29 @@ void Pothos::InputPort::removeLabel(const Label &label)
 void Pothos::InputPort::setReserve(const size_t numElements)
 {
     _reserveElements = numElements;
-    _impl->actor->workBump = true;
-}
-
-bool Pothos::InputPort::isSlot(void) const
-{
-    assert(_impl);
-    return _impl->isSlot;
+    _actor->workBump = true;
 }
 
 void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
 {
-    assert(_impl);
-    _impl->actor->GetFramework().Send(makePortMessage(this, buffer), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+    _actor->GetFramework().Send(makePortMessage(this, buffer), _actor->GetAddress(), _actor->GetAddress());
 }
 
 void Pothos::InputPort::pushLabel(const Label &label)
 {
-    assert(_impl);
-    _impl->actor->GetFramework().Send(makePortMessage(this, label), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+    _actor->GetFramework().Send(makePortMessage(this, label), _actor->GetAddress(), _actor->GetAddress());
 }
 
 void Pothos::InputPort::pushMessage(const Object &message)
 {
-    assert(_impl);
-    _impl->actor->GetFramework().Send(makePortMessage(this, message), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+    _actor->GetFramework().Send(makePortMessage(this, message), _actor->GetAddress(), _actor->GetAddress());
 }
 
 void Pothos::InputPort::clear(void)
 {
-    assert(_impl);
-    _impl->bufferAccumulator = BufferAccumulator();
-    _impl->inlineMessages.clear();
-    _impl->asyncMessages.clear();
+    _bufferAccumulator = BufferAccumulator();
+    _inlineMessages.clear();
+    _asyncMessages.clear();
 }
 
 #include <Pothos/Managed.hpp>

@@ -15,11 +15,12 @@
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Framework/WorkStats.hpp>
+#include <Pothos/Framework/BufferAccumulator.hpp>
+#include <Pothos/Util/RingDeque.hpp>
 #include <string>
 
 namespace Pothos {
 
-class InputPortImpl;
 class WorkerActor;
 
 /*!
@@ -154,7 +155,7 @@ public:
     void clear(void);
 
 private:
-    InputPortImpl *_impl;
+    WorkerActor *_actor;
     int _index;
     std::string _name;
     DType _dtype;
@@ -167,7 +168,12 @@ private:
     size_t _pendingElements;
     size_t _reserveElements;
     PortStats _portStats;
-    InputPort(InputPortImpl *);
+    Util::RingDeque<std::pair<Pothos::Object, Pothos::BufferChunk>> _asyncMessages;
+    std::vector<Label> _inlineMessages;
+    BufferAccumulator _bufferAccumulator;
+    bool _isSlot;
+
+    InputPort(void);
     InputPort(const InputPort &):
         _buffer(BufferChunk::null())
     {} // non construction-copyable
@@ -225,4 +231,14 @@ inline const Pothos::LabelIteratorRange &Pothos::InputPort::labels(void) const
 inline void Pothos::InputPort::consume(const size_t numElements)
 {
     _pendingElements += numElements;
+}
+
+inline bool Pothos::InputPort::hasMessage(void) const
+{
+    return not _asyncMessages.empty();
+}
+
+inline bool Pothos::InputPort::isSlot(void) const
+{
+    return _isSlot;
 }

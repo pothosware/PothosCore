@@ -1,82 +1,69 @@
 // Copyright (c) 2014-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Framework/OutputPortImpl.hpp"
+#include <Pothos/Framework/OutputPort.hpp>
 #include "Framework/WorkerActor.hpp"
 
-Pothos::OutputPort::OutputPort(OutputPortImpl *impl):
-    _impl(impl),
+Pothos::OutputPort::OutputPort(void):
+    _actor(nullptr),
     _index(-1),
     _elements(0),
     _totalElements(0),
     _totalMessages(0),
-    _pendingElements(0)
+    _pendingElements(0),
+    _isSignal(false),
+    _readBeforeWritePort(nullptr),
+    _bufferFromManager(false)
 {
     return;
 }
 
 Pothos::OutputPort::~OutputPort(void)
 {
-    delete _impl;
+    return;
 }
 
 void Pothos::OutputPort::popBuffer(const size_t numBytes)
 {
-    assert(_impl);
-    _impl->bufferManager->pop(numBytes);
-    _impl->actor->workBump = true;
+    _bufferManager->pop(numBytes);
+    _actor->workBump = true;
 }
 
 void Pothos::OutputPort::postLabel(const Label &label)
 {
-    assert(_impl);
-    assert(_impl->actor != nullptr);
+    assert(_actor != nullptr);
     auto byteOffsetLabel = label;
     byteOffsetLabel.index *= this->dtype().size();
-    _impl->postedLabels.push_back(byteOffsetLabel);
-    _impl->actor->workBump = true;
+    _postedLabels.push_back(byteOffsetLabel);
+    _actor->workBump = true;
 }
 
 void Pothos::OutputPort::_postMessage(const Object &async)
 {
-    assert(_impl);
-    assert(_impl->actor != nullptr);
+    assert(_actor != nullptr);
     TokenizedAsyncMessage message;
-    if (_impl->tokenManager and not _impl->tokenManager->empty())
+    if (_tokenManager and not _tokenManager->empty())
     {
-        message.token = _impl->tokenManager->front();
-        _impl->tokenManager->pop(0);
+        message.token = _tokenManager->front();
+        _tokenManager->pop(0);
         assert(message.token.unique());
     }
     message.async = async;
-    _impl->actor->sendOutputPortMessage(_impl->subscribers, message);
+    _actor->sendOutputPortMessage(_subscribers, message);
     _totalMessages++;
-    _impl->actor->workBump = true;
+    _actor->workBump = true;
 }
 
 void Pothos::OutputPort::postBuffer(const BufferChunk &buffer)
 {
-    assert(_impl);
-    auto &queue = _impl->postedBuffers;
+    auto &queue = _postedBuffers;
     if (queue.full()) queue.set_capacity(queue.size()*2);
     queue.push_back(buffer);
 
     //unspecified buffer dtype? copy it from the port
     if (not buffer.dtype) queue.back().dtype = this->dtype();
 
-    _impl->actor->workBump = true;
-}
-
-bool Pothos::OutputPort::isSignal(void) const
-{
-    assert(_impl);
-    return _impl->isSignal;
-}
-
-void Pothos::OutputPort::setReadBeforeWrite(InputPort *port)
-{
-    assert(_impl);
-    _impl->readBeforeWritePort = port;
+    _actor->workBump = true;
 }
 
 #include <Pothos/Managed.hpp>

@@ -23,7 +23,7 @@ void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, 
     assert(message.id != nullptr);
     auto &input = *message.id;
     auto &async = message.contents.async;
-    if (input._impl->isSlot and async.type() == typeid(ObjectVector))
+    if (input._isSlot and async.type() == typeid(ObjectVector))
     {
         POTHOS_EXCEPTION_TRY
         {
@@ -36,8 +36,8 @@ void Pothos::WorkerActor::handleAsyncPortMessage(const PortMessage<InputPort *, 
         }
         return this->bump();
     }
-    if (input._impl->asyncMessages.full()) input._impl->asyncMessages.set_capacity(input._impl->asyncMessages.capacity()*2);
-    input._impl->asyncMessages.push_back(message.contents);
+    if (input._asyncMessages.full()) input._asyncMessages.set_capacity(input._asyncMessages.capacity()*2);
+    input._asyncMessages.push_back(std::make_pair(message.contents.async, message.contents.token));
     this->notify();
 }
 
@@ -49,7 +49,7 @@ void Pothos::WorkerActor::handleInputBuffer(InputPort &input, const BufferChunk 
     {
         //unspecified buffer dtype? copy it from the port
         if (not buffer.dtype) buffer.dtype = input.dtype();
-        input._impl->bufferAccumulator.push(buffer);
+        input._bufferAccumulator.push(buffer);
     }
     else
     {
@@ -68,9 +68,9 @@ void Pothos::WorkerActor::handleLabelsPortMessage(const PortMessage<InputPort *,
     {
         auto label = byteOffsetLabel;
         auto elemSize = input.dtype().size();
-        label.index += input._impl->bufferAccumulator.getTotalBytesAvailable(); //increment by enqueued bytes
+        label.index += input._bufferAccumulator.getTotalBytesAvailable(); //increment by enqueued bytes
         label.index /= elemSize; //convert from bytes to elements
-        input._impl->inlineMessages.push_back(label);
+        input._inlineMessages.push_back(label);
     }
 
     //push all buffers into the accumulator
@@ -92,7 +92,7 @@ void Pothos::WorkerActor::handleBufferManagerMessage(const PortMessage<std::stri
     auto mgr = message.contents.manager;
     if (mgr) mgr->setCallback(std::bind(&bufferManagerPushExternal,
         std::static_pointer_cast<Theron::Framework>(block->_threadPool.getContainer()), this->GetAddress(), std::placeholders::_1));
-    outputs.at(message.id)->_impl->bufferManager = mgr;
+    outputs.at(message.id)->_bufferManager = mgr;
 
     if (from != Theron::Address::Null()) this->Send(std::string(""), from);
     this->notify();
@@ -114,23 +114,17 @@ void Pothos::WorkerActor::handleSubscriberPortMessage(const PortMessage<std::str
     try
     {
         //extract the list of subscribers
-        std::vector<PortSubscriber> *subscribers = nullptr;
+        std::vector<InputPort *> *subscribers = nullptr;
         if (message.contents.action.find("INPUT") != std::string::npos)
         {
             assert(message.contents.port.inputPort != nullptr);
             auto &port = getOutput(message.id, __FUNCTION__);
-            subscribers = &port._impl->subscribers;
-        }
-        if (message.contents.action.find("OUTPUT") != std::string::npos)
-        {
-            assert(message.contents.port.outputPort != nullptr);
-            auto &port = getInput(message.id, __FUNCTION__);
-            subscribers = &port._impl->subscribers;
+            subscribers = &port._subscribers;
         }
         assert(subscribers != nullptr);
 
         //locate the subscriber in the list
-        auto sub = message.contents.port;
+        auto sub = message.contents.port.inputPort;
         auto it = std::find(subscribers->begin(), subscribers->end(), sub);
         const bool found = it != subscribers->end();
 
@@ -142,27 +136,11 @@ void Pothos::WorkerActor::handleSubscriberPortMessage(const PortMessage<std::str
             subscribers->push_back(sub);
         }
 
-        //subscriber is an output, add to the input subscribers list
-        if (message.contents.action == "SUBOUTPUT")
-        {
-            if (found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
-                Poco::format("output %s subscription exsists in input port %s", message.contents.port.outputPort->name(), message.id));
-            subscribers->push_back(sub);
-        }
-
         //unsubscriber is an input, remove from the outputs subscribers list
         if (message.contents.action == "UNSUBINPUT")
         {
             if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
                 Poco::format("input %s subscription missing from output port %s", message.contents.port.inputPort->name(), message.id));
-            subscribers->erase(it);
-        }
-
-        //unsubscriber is an output, remove from the inputs subscribers list
-        if (message.contents.action == "UNSUBOUTPUT")
-        {
-            if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+message.contents.action+")",
-                Poco::format("output %s subscription missing from input port %s", message.contents.port.outputPort->name(), message.id));
             subscribers->erase(it);
         }
 
@@ -193,7 +171,7 @@ void Pothos::WorkerActor::handleActivateWorkMessage(const ActivateWorkMessage &,
         BufferManagerArgs tokenMgrArgs;
         tokenMgrArgs.numBuffers = 16;
         tokenMgrArgs.bufferSize = 0;
-        auto &tokenMgr = port._impl->tokenManager;
+        auto &tokenMgr = port._tokenManager;
         if (tokenMgr) continue;
         tokenMgr = BufferManager::make("generic", tokenMgrArgs);
         tokenMgr->setCallback(std::bind(&bufferManagerPushExternal,

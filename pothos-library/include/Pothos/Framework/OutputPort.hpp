@@ -15,11 +15,12 @@
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Framework/WorkStats.hpp>
+#include <Pothos/Framework/BufferManager.hpp>
+#include <Pothos/Util/RingDeque.hpp>
 #include <string>
 
 namespace Pothos {
 
-class OutputPortImpl;
 class WorkerActor;
 class InputPort;
 
@@ -144,7 +145,7 @@ public:
     void setReadBeforeWrite(InputPort *port);
 
 private:
-    OutputPortImpl *_impl;
+    WorkerActor *_actor;
     int _index;
     std::string _name;
     DType _dtype;
@@ -155,7 +156,16 @@ private:
     unsigned long long _totalMessages;
     size_t _pendingElements;
     PortStats _portStats;
-    OutputPort(OutputPortImpl *);
+    BufferManager::Sptr _bufferManager;
+    BufferManager::Sptr _tokenManager; //used for message backpressure
+    std::vector<Label> _postedLabels;
+    Util::RingDeque<BufferChunk> _postedBuffers;
+    std::vector<InputPort *> _subscribers;
+    bool _isSignal;
+    InputPort *_readBeforeWritePort;
+    bool _bufferFromManager;
+
+    OutputPort(void);
     OutputPort(const OutputPort &){} // non construction-copyable
     OutputPort &operator=(const OutputPort &){return *this;} // non copyable
     friend class WorkerActor;
@@ -207,6 +217,16 @@ inline unsigned long long Pothos::OutputPort::totalMessages(void) const
 inline void Pothos::OutputPort::produce(const size_t numElements)
 {
     _pendingElements += numElements;
+}
+
+inline bool Pothos::OutputPort::isSignal(void) const
+{
+    return _isSignal;
+}
+
+inline void Pothos::OutputPort::setReadBeforeWrite(InputPort *port)
+{
+    _readBeforeWritePort = port;
 }
 
 template <typename ValueType>
