@@ -14,6 +14,7 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
+#include <Pothos/Framework/WorkStats.hpp>
 #include <string>
 
 namespace Pothos {
@@ -165,6 +166,7 @@ private:
     LabelIteratorRange _labelIter;
     size_t _pendingElements;
     size_t _reserveElements;
+    PortStats _portStats;
     InputPort(InputPortImpl *);
     InputPort(const InputPort &):
         _buffer(BufferChunk::null())

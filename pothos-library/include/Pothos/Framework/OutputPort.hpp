@@ -14,6 +14,7 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
+#include <Pothos/Framework/WorkStats.hpp>
 #include <string>
 
 namespace Pothos {
@@ -153,6 +154,7 @@ private:
     unsigned long long _totalElements;
     unsigned long long _totalMessages;
     size_t _pendingElements;
+    PortStats _portStats;
     OutputPort(OutputPortImpl *);
     OutputPort(const OutputPort &){} // non construction-copyable
     OutputPort &operator=(const OutputPort &){return *this;} // non copyable
