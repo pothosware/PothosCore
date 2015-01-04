@@ -219,7 +219,10 @@ public:
     void setActiveStateOn(void);
     void setActiveStateOff(void);
     void subscribePort(
-        const std::string &action,
+        const std::string &myPortName,
+        Block *subscriberPortBlock,
+        const std::string &subscriberPortName);
+    void unsubscribePort(
         const std::string &myPortName,
         Block *subscriberPortBlock,
         const std::string &subscriberPortName);

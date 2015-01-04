@@ -115,24 +115,19 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
 static void subscribePort(const Port &pri, const Port &sec, const std::string &action)
 {
     auto actor = pri.obj.callProxy("get:_actor");
-    actor.callVoid("subscribePort", action, pri.name, sec.obj.callProxy("getPointer"), sec.name);
+    actor.callVoid(action, pri.name, sec.obj.callProxy("getPointer"), sec.name);
 }
 
 static void updateFlows(const std::vector<Flow> &flows, const std::string &action)
 {
-    const bool isInputAction = action.find("INPUT") != std::string::npos;
-
     //result list is used to ack all subscribe messages
     std::vector<FutureInfo> infoFutures;
 
     //add new data acceptors
     for (const auto &flow : flows)
     {
-        const auto &pri = isInputAction?flow.src:flow.dst;
-        const auto &sec = isInputAction?flow.dst:flow.src;
-
-        std::shared_future<void> result(std::async(std::launch::async, subscribePort, pri, sec, action));
-        infoFutures.push_back(FutureInfo(Poco::format("subscribePort(%s)", action), pri.obj, result));
+        std::shared_future<void> result(std::async(std::launch::async, subscribePort, flow.src, flow.dst, action));
+        infoFutures.push_back(FutureInfo(action, flow.src.obj, result));
     }
 
     //check all subscribe message results
@@ -210,10 +205,10 @@ void topologySubCommit(Pothos::Topology &topology)
     }
 
     //add new data acceptors
-    updateFlows(newFlows, "SUBINPUT");
+    updateFlows(newFlows, "subscribePort");
 
     //remove old data acceptors
-    updateFlows(oldFlows, "UNSUBINPUT");
+    updateFlows(oldFlows, "unsubscribePort");
 
     //install buffer managers on sources for all new flows
     //Sometimes this will replace previous buffer managers.

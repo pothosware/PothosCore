@@ -6,8 +6,10 @@
 #include <Poco/Logger.h>
 #include <cassert>
 
+/***********************************************************************
+ * port subscribe/unsubscribe
+ **********************************************************************/
 void Pothos::WorkerActor::subscribePort(
-    const std::string &action,
     const std::string &myPortName,
     Pothos::Block *subscriberPortBlock,
     const std::string &subscriberPortName)
@@ -15,52 +17,45 @@ void Pothos::WorkerActor::subscribePort(
     WorkerActorLock<WorkerActor> lock(this);
 
     auto inputPort = subscriberPortBlock->input(subscriberPortName);
-    //create the message
-    //PortSubscriber port;
-    //if (action.find("INPUT") != std::string::npos) port.inputPort = subscriberPortBlock->input(subscriberPortName);
-    //if (action.find("OUTPUT") != std::string::npos) port.outputPort = subscriberPortBlock->output(subscriberPortName);
-    //port.block = subscriberPortBlock;
-
-    //extract the list of subscribers
-    std::vector<InputPort *> *subscribers = nullptr;
-    //if (action.find("INPUT") != std::string::npos)
-    {
-        //assert(port.inputPort != nullptr);
-        auto &port = getOutput(myPortName, __FUNCTION__);
-        subscribers = &port._subscribers;
-    }
-    //if (action.find("OUTPUT") != std::string::npos)
-    {
-        //assert(port.outputPort != nullptr);
-        //auto &port = getInput(myPortName, __FUNCTION__);
-        //subscribers = &port._subscribers;
-    }
-    assert(subscribers != nullptr);
+    auto &subscribers = getOutput(myPortName, __FUNCTION__)._subscribers;
 
     //locate the subscriber in the list
-    auto sub = inputPort;
-    auto it = std::find(subscribers->begin(), subscribers->end(), sub);
-    const bool found = it != subscribers->end();
+    auto it = std::find(subscribers.begin(), subscribers.end(), inputPort);
+    const bool found = it != subscribers.end();
 
-    //subscriber is an input, add to the outputs subscribers list
-    if (action == "SUBINPUT")
-    {
-        if (found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+action+")",
-            Poco::format("input %s subscription exsists in output port %s", inputPort->name(), myPortName));
-        subscribers->push_back(sub);
-    }
-
-    //unsubscriber is an input, remove from the outputs subscribers list
-    if (action == "UNSUBINPUT")
-    {
-        if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+action+")",
-            Poco::format("input %s subscription missing from output port %s", inputPort->name(), myPortName));
-        subscribers->erase(it);
-    }
+    //add to the outputs subscribers list
+    if (found) throw PortAccessError("Pothos::WorkerActor::subscribePort()",
+        Poco::format("input %s subscription exists in output port %s", inputPort->name(), myPortName));
+    subscribers.push_back(inputPort);
 
     this->updatePorts();
 }
 
+void Pothos::WorkerActor::unsubscribePort(
+    const std::string &myPortName,
+    Pothos::Block *subscriberPortBlock,
+    const std::string &subscriberPortName)
+{
+    WorkerActorLock<WorkerActor> lock(this);
+
+    auto inputPort = subscriberPortBlock->input(subscriberPortName);
+    auto &subscribers = getOutput(myPortName, __FUNCTION__)._subscribers;
+
+    //locate the subscriber in the list
+    auto it = std::find(subscribers.begin(), subscribers.end(), inputPort);
+    const bool found = it != subscribers.end();
+
+    //remove from the outputs subscribers list
+    if (not found) throw PortAccessError("Pothos::WorkerActor::unsubscribePort()",
+        Poco::format("input %s subscription missing from output port %s", inputPort->name(), myPortName));
+    subscribers.erase(it);
+
+    this->updatePorts();
+}
+
+/***********************************************************************
+ * activate/deactivate
+ **********************************************************************/
 void Pothos::WorkerActor::setActiveStateOn(void)
 {
     WorkerActorLock<WorkerActor> lock(this);
@@ -326,6 +321,7 @@ static auto managedWorkerActor = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, setActiveStateOn))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, setActiveStateOff))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, subscribePort))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, unsubscribePort))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getInputBufferMode))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getOutputBufferMode))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getBufferManager))
