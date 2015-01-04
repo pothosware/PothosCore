@@ -14,30 +14,31 @@ void Pothos::WorkerActor::subscribePort(
 {
     WorkerActorLock<WorkerActor> lock(this);
 
+    auto inputPort = subscriberPortBlock->input(subscriberPortName);
     //create the message
-    PortSubscriber port;
-    if (action.find("INPUT") != std::string::npos) port.inputPort = subscriberPortBlock->input(subscriberPortName);
-    if (action.find("OUTPUT") != std::string::npos) port.outputPort = subscriberPortBlock->output(subscriberPortName);
-    port.block = subscriberPortBlock;
+    //PortSubscriber port;
+    //if (action.find("INPUT") != std::string::npos) port.inputPort = subscriberPortBlock->input(subscriberPortName);
+    //if (action.find("OUTPUT") != std::string::npos) port.outputPort = subscriberPortBlock->output(subscriberPortName);
+    //port.block = subscriberPortBlock;
 
     //extract the list of subscribers
-    std::vector<PortSubscriber> *subscribers = nullptr;
-    if (action.find("INPUT") != std::string::npos)
+    std::vector<InputPort *> *subscribers = nullptr;
+    //if (action.find("INPUT") != std::string::npos)
     {
-        assert(port.inputPort != nullptr);
+        //assert(port.inputPort != nullptr);
         auto &port = getOutput(myPortName, __FUNCTION__);
-        subscribers = &port._impl->subscribers;
+        subscribers = &port._subscribers;
     }
-    if (action.find("OUTPUT") != std::string::npos)
+    //if (action.find("OUTPUT") != std::string::npos)
     {
-        assert(port.outputPort != nullptr);
-        auto &port = getInput(myPortName, __FUNCTION__);
-        subscribers = &port._impl->subscribers;
+        //assert(port.outputPort != nullptr);
+        //auto &port = getInput(myPortName, __FUNCTION__);
+        //subscribers = &port._subscribers;
     }
     assert(subscribers != nullptr);
 
     //locate the subscriber in the list
-    auto sub = port;
+    auto sub = inputPort;
     auto it = std::find(subscribers->begin(), subscribers->end(), sub);
     const bool found = it != subscribers->end();
 
@@ -45,15 +46,7 @@ void Pothos::WorkerActor::subscribePort(
     if (action == "SUBINPUT")
     {
         if (found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+action+")",
-            Poco::format("input %s subscription exsists in output port %s", port.inputPort->name(), myPortName));
-        subscribers->push_back(sub);
-    }
-
-    //subscriber is an output, add to the input subscribers list
-    if (action == "SUBOUTPUT")
-    {
-        if (found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+action+")",
-            Poco::format("output %s subscription exsists in input port %s", port.outputPort->name(), myPortName));
+            Poco::format("input %s subscription exsists in output port %s", inputPort->name(), myPortName));
         subscribers->push_back(sub);
     }
 
@@ -61,15 +54,7 @@ void Pothos::WorkerActor::subscribePort(
     if (action == "UNSUBINPUT")
     {
         if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+action+")",
-            Poco::format("input %s subscription missing from output port %s", port.inputPort->name(), myPortName));
-        subscribers->erase(it);
-    }
-
-    //unsubscriber is an output, remove from the inputs subscribers list
-    if (action == "UNSUBOUTPUT")
-    {
-        if (not found) throw PortAccessError("Pothos::WorkerActor::handleSubscriberPortMessage("+action+")",
-            Poco::format("output %s subscription missing from input port %s", port.outputPort->name(), myPortName));
+            Poco::format("input %s subscription missing from output port %s", inputPort->name(), myPortName));
         subscribers->erase(it);
     }
 
@@ -122,25 +107,25 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     {
         auto &port = *entry.second;
         if ( //handle read before wite port if specified
-            port._impl->readBeforeWritePort != nullptr and
-            port.dtype().size() == port._impl->readBeforeWritePort->dtype().size() and
-            (port._buffer = port._impl->readBeforeWritePort->_impl->bufferAccumulatorFront()).useCount() == 2 //2 -> accumulator + this assignment
-        ) port._impl->_bufferFromManager = false;
-        else if (port._impl->bufferManagerEmpty())
+            port._readBeforeWritePort != nullptr and
+            port.dtype().size() == port._readBeforeWritePort->dtype().size() and
+            (port._buffer = port._readBeforeWritePort->bufferAccumulatorFront()).useCount() == 2 //2 -> accumulator + this assignment
+        ) port._bufferFromManager = false;
+        else if (port.bufferManagerEmpty())
         {
             port._buffer = BufferChunk::null();
-            port._impl->_bufferFromManager = false;
+            port._bufferFromManager = false;
         }
         else
         {
-            port._buffer = port._impl->bufferManagerFront();
-            port._impl->_bufferFromManager = true;
+            port._buffer = port.bufferManagerFront();
+            port._bufferFromManager = true;
         }
         port._buffer.dtype = port.dtype(); //always copy from port's dtype setting
-        assert(not port._impl->_bufferFromManager or port._buffer == port._impl->bufferManagerFront());
+        assert(not port._bufferFromManager or port._buffer == port.bufferManagerFront());
         port._elements = port._buffer.elements();
         if (port._elements == 0 and not port.isSignal()) allOutputsReady = false;
-        if (port._impl->tokenManagerEmpty()) allOutputsReady = false;
+        if (port.tokenManagerEmpty()) allOutputsReady = false;
         port._pendingElements = 0;
         if (port.index() != -1)
         {
@@ -157,11 +142,11 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     for (auto &entry : this->inputs)
     {
         auto &port = *entry.second;
-        if (not port._impl->slotCallsEmpty())
+        if (not port.slotCallsEmpty())
         {
             POTHOS_EXCEPTION_TRY
             {
-                const auto args =  port._impl->slotCallsPop();
+                const auto args =  port.slotCallsPop().extract<ObjectVector>();
                 block->opaqueCallHandler(port.name(), args.data(), args.size());
             }
             POTHOS_EXCEPTION_CATCH(const Exception &ex)
@@ -171,13 +156,13 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         }
         //perform minimum reserve accumulator require to recover from possible element fragmentation
         const size_t requireElems = std::max<size_t>(1, port._reserveElements);
-        port._impl->bufferAccumulatorRequire(requireElems*port.dtype().size());
-        port._buffer = port._impl->bufferAccumulatorFront();
+        port.bufferAccumulatorRequire(requireElems*port.dtype().size());
+        port._buffer = port.bufferAccumulatorFront();
         port._elements = port._buffer.length/port.dtype().size();
         if (port._elements < port._reserveElements) allInputsReady = false;
-        if (not port._impl->asyncMessagesEmpty()) hasInputMessage = true;
+        if (not port.asyncMessagesEmpty()) hasInputMessage = true;
         port._pendingElements = 0;
-        port._labelIter = port._impl->inlineMessages;
+        port._labelIter = port._inlineMessages;
         if (port.index() != -1)
         {
             assert(block->_workInfo.inputPointers.size() > size_t(port.index()));
@@ -216,7 +201,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
 
         //propagate labels and delete old
         size_t numLabels = 0;
-        auto &allLabels = port._impl->inlineMessages;
+        auto &allLabels = port._inlineMessages;
         for (size_t i = 0; i < allLabels.size(); i++)
         {
             if (allLabels[i].index < port._pendingElements) numLabels++;
@@ -242,12 +227,12 @@ void Pothos::WorkerActor::postWorkTasks(void)
         //pop the consumed bytes from the accumulator
         if (bytes != 0)
         {
-            if (bytes > port._impl->bufferAccumulatorTotalBytes())
+            if (bytes > port.bufferAccumulatorTotalBytes())
             {
                 poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %d bytes, %d available",
-                    block->getName(), port.name(), int(bytes), int(port._impl->bufferAccumulatorTotalBytes()));
+                    block->getName(), port.name(), int(bytes), int(port.bufferAccumulatorTotalBytes()));
             }
-            else port._impl->bufferAccumulatorPop(bytes, port._pendingElements);
+            else port.bufferAccumulatorPop(bytes, port._pendingElements);
         }
         port._buffer = BufferChunk::null(); //clear reference
 
@@ -281,30 +266,29 @@ void Pothos::WorkerActor::postWorkTasks(void)
         {
             auto &buffer = port._buffer;
             buffer.length = pendingBytes;
-            if (port._impl->_bufferFromManager)
+            if (port._bufferFromManager)
             {
                 if (buffer.length > buffer.getBuffer().getLength())
                 {
                     poco_error_f4(Poco::Logger::get("Pothos.Block.produce"), "%s[%s] overproduced %d bytes, %d available",
                         block->getName(), port.name(), int(buffer.length), int(buffer.getBuffer().getLength()));
                 }
-                else port._impl->bufferManagerPop(buffer.length);
+                else port.bufferManagerPop(buffer.length);
             }
             port.postBuffer(buffer);
         }
         port._buffer = BufferChunk::null(); //clear reference
 
         //sort the posted labels in case the user posted out of order
-        auto &postedLabels = port._impl->postedLabels;
-        auto &postedBuffers = port._impl->postedBuffers;
+        auto &postedLabels = port._postedLabels;
+        auto &postedBuffers = port._postedBuffers;
         if (not postedLabels.empty()) std::sort(postedLabels.begin(), postedLabels.end());
 
         //send the outgoing labels with buffers
-        for (const auto &subscriber : port._impl->subscribers)
+        for (const auto &subscriber : port._subscribers)
         {
-            subscriber.inputPort->_impl->bufferLabelPush(
-                *subscriber.inputPort, postedLabels, postedBuffers);
-            subscriber.block->_actor->flagChange();
+            subscriber->bufferLabelPush(postedLabels, postedBuffers);
+            subscriber->_actor->flagChange();
         }
 
         //clear posted labels

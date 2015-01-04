@@ -14,11 +14,14 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
+#include <Pothos/Framework/WorkStats.hpp>
+#include <Pothos/Framework/BufferManager.hpp>
+#include <Pothos/Util/RingDeque.hpp>
+#include <Pothos/Util/SpinLock.hpp>
 #include <string>
 
 namespace Pothos {
 
-class OutputPortImpl;
 class WorkerActor;
 class InputPort;
 
@@ -143,7 +146,7 @@ public:
     void setReadBeforeWrite(InputPort *port);
 
 private:
-    OutputPortImpl *_impl;
+    WorkerActor *_actor;
     int _index;
     std::string _name;
     DType _dtype;
@@ -153,10 +156,39 @@ private:
     unsigned long long _totalElements;
     unsigned long long _totalMessages;
     size_t _pendingElements;
-    OutputPort(OutputPortImpl *);
+    PortStats _portStats;
+
+    Util::SpinLock _bufferManagerLock;
+    BufferManager::Sptr _bufferManager;
+
+    Util::SpinLock _tokenManagerLock;
+    BufferManager::Sptr _tokenManager; //used for message backpressure
+
+    /////// buffer manager /////////
+    void bufferManagerSetup(const BufferManager::Sptr &manager);
+    bool bufferManagerEmpty(void);
+    BufferChunk bufferManagerFront(void);
+    void bufferManagerPop(const size_t numBytes);
+    void bufferManagerPush(Pothos::Util::SpinLock *mutex, const ManagedBuffer &buff);
+
+    /////// token manager /////////
+    void tokenManagerInit(void);
+    bool tokenManagerEmpty(void);
+    BufferChunk tokenManagerPop(void);
+    void tokenManagerPop(const size_t numBytes);
+
+    std::vector<Label> _postedLabels;
+    Util::RingDeque<BufferChunk> _postedBuffers;
+    std::vector<InputPort *> _subscribers;
+    bool _isSignal;
+    InputPort *_readBeforeWritePort;
+    bool _bufferFromManager;
+
+    OutputPort(void);
     OutputPort(const OutputPort &){} // non construction-copyable
     OutputPort &operator=(const OutputPort &){return *this;} // non copyable
     friend class WorkerActor;
+    friend class InputPort;
     void _postMessage(const Object &message);
 };
 
@@ -205,6 +237,16 @@ inline unsigned long long Pothos::OutputPort::totalMessages(void) const
 inline void Pothos::OutputPort::produce(const size_t numElements)
 {
     _pendingElements += numElements;
+}
+
+inline bool Pothos::OutputPort::isSignal(void) const
+{
+    return _isSignal;
+}
+
+inline void Pothos::OutputPort::setReadBeforeWrite(InputPort *port)
+{
+    _readBeforeWritePort = port;
 }
 
 template <typename ValueType>

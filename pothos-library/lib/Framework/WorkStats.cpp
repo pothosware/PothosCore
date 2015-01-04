@@ -1,7 +1,15 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/WorkStats.hpp>
+
+Pothos::PortStats::PortStats(void):
+    totalElements(0),
+    totalMessages(0),
+    totalLabels(0)
+{
+    return;
+}
 
 Pothos::WorkStats::WorkStats(void):
     totalTimeWork(0),
@@ -51,6 +59,21 @@ void load(Archive & ar, std::chrono::high_resolution_clock::time_point &t, const
 
 POTHOS_SERIALIZATION_SPLIT_FREE(std::chrono::high_resolution_clock::duration)
 POTHOS_SERIALIZATION_SPLIT_FREE(std::chrono::high_resolution_clock::time_point)
+
+namespace Pothos { namespace serialization {
+template <class Archive>
+void serialize(Archive &ar, Pothos::PortStats &t, const unsigned int)
+{
+    ar & t.timeLastBuffer;
+    ar & t.timeLastMessage;
+    ar & t.timeLastLabel;
+    ar & t.totalElements;
+    ar & t.totalMessages;
+    ar & t.totalLabels;
+}
+}}
+
+POTHOS_OBJECT_SERIALIZE(Pothos::PortStats)
 
 namespace Pothos { namespace serialization {
 template <class Archive>

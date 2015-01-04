@@ -14,12 +14,16 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
+#include <Pothos/Framework/WorkStats.hpp>
+#include <Pothos/Framework/BufferAccumulator.hpp>
+#include <Pothos/Util/RingDeque.hpp>
+#include <Pothos/Util/SpinLock.hpp>
 #include <string>
 
 namespace Pothos {
 
-class InputPortImpl;
 class WorkerActor;
+class OutputPort;
 
 /*!
  * InputPort provides methods to interact with a worker's input ports.
@@ -74,7 +78,7 @@ public:
     unsigned long long totalMessages(void) const;
 
     //! Does the specified input port have an asynchronous message available?
-    bool hasMessage(void) const;
+    bool hasMessage(void);
 
     /*!
      * Get an iterator to all input labels for the specified port.
@@ -153,7 +157,7 @@ public:
     void clear(void);
 
 private:
-    InputPortImpl *_impl;
+    WorkerActor *_actor;
     int _index;
     std::string _name;
     DType _dtype;
@@ -165,7 +169,53 @@ private:
     LabelIteratorRange _labelIter;
     size_t _pendingElements;
     size_t _reserveElements;
-    InputPort(InputPortImpl *);
+    PortStats _portStats;
+
+    Util::SpinLock _asyncMessagesLock;
+    Util::RingDeque<std::pair<Object, BufferChunk>> _asyncMessages;
+
+    Util::SpinLock _slotCallsLock;
+    Util::RingDeque<std::pair<Object, BufferChunk>> _slotCalls;
+
+    std::vector<Label> _inlineMessages; //user api structure
+    Util::RingDeque<Label> _inputInlineMessages; //shared structure
+
+    Util::SpinLock _bufferAccumulatorLock;
+    BufferAccumulator _bufferAccumulator;
+
+    bool _isSlot;
+
+    /////// async message interface /////////
+    void asyncMessagesPush(const Object &message, const BufferChunk &token = BufferChunk::null());
+    bool asyncMessagesEmpty(void);
+    Object asyncMessagesPop(void);
+    void asyncMessagesClear(void);
+
+    /////// slot call interface /////////
+    void slotCallsPush(const Object &args, const BufferChunk &token);
+    bool slotCallsEmpty(void);
+    Object slotCallsPop(void);
+    void slotCallsClear(void);
+
+    /////// inline message interface /////////
+    void inlineMessagesPush(const Label &label);
+    void inlineMessagesClear(void);
+
+    /////// input buffer interface /////////
+    BufferChunk bufferAccumulatorFront(void);
+    void bufferAccumulatorPush(const BufferChunk &buffer);
+    void bufferAccumulatorPushNoLock(const BufferChunk &buffer);
+    void bufferAccumulatorPop(const size_t numBytes, const size_t numElems);
+    void bufferAccumulatorRequire(const size_t numBytes);
+    size_t bufferAccumulatorTotalBytes(void);
+    void bufferAccumulatorClear(void);
+
+    /////// combined label association push /////////
+    void bufferLabelPush(
+        const std::vector<Label> &postedLabels,
+        const Util::RingDeque<BufferChunk> &postedBuffers);
+
+    InputPort(void);
     InputPort(const InputPort &){} // non construction-copyable
     InputPort &operator=(const InputPort &){return *this;} // non copyable
     friend class WorkerActor;
@@ -222,4 +272,14 @@ inline const Pothos::LabelIteratorRange &Pothos::InputPort::labels(void) const
 inline void Pothos::InputPort::consume(const size_t numElements)
 {
     _pendingElements += numElements;
+}
+
+inline bool Pothos::InputPort::hasMessage(void)
+{
+    return not this->asyncMessagesEmpty();
+}
+
+inline bool Pothos::InputPort::isSlot(void) const
+{
+    return _isSlot;
 }

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-#include "Framework/InputPortImpl.hpp"
-#include "Framework/OutputPortImpl.hpp"
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object/Containers.hpp>
@@ -187,8 +185,8 @@ public:
         std::swap(this->workStats, oldActor->workStats);
         std::swap(this->inputs, oldActor->inputs);
         std::swap(this->outputs, oldActor->outputs);
-        for (auto &port : this->inputs) port.second->_impl->actor = this;
-        for (auto &port : this->outputs) port.second->_impl->actor = this;
+        for (auto &port : this->inputs) port.second->_actor = this;
+        for (auto &port : this->outputs) port.second->_actor = this;
     }
 
     ///////////////////// port setup methods ///////////////////////
@@ -196,12 +194,12 @@ public:
     void allocateOutput(const std::string &name, const DType &dtype, const std::string &domain);
     void allocateSignal(const std::string &name);
     void allocateSlot(const std::string &name);
-    template <typename ImplType, typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+    template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
     void allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain);
 
     void autoAllocateInput(const std::string &name);
     void autoAllocateOutput(const std::string &name);
-    template <typename ImplType, typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+    template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
     void autoAllocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name);
 
     /*!
@@ -263,7 +261,7 @@ public:
     void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
     {
         WorkerActorLock<WorkerActor> lock(this);
-        outputs.at(name)->_impl->bufferManagerSetup(manager);
+        outputs.at(name)->bufferManagerSetup(manager);
     }
 
     ///////////////////// work helper methods ///////////////////////

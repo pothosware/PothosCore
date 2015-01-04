@@ -23,6 +23,7 @@ POTHOS_MODULE_UTIL(
         SporadicLabeler.cpp
         FiniteRelease.cpp
         StreamSnooper.cpp
+        InfiniteSource.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )

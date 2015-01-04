@@ -6,6 +6,11 @@ Release 0.2.0 (pending)
 - Topology factory from JSON description
 - Topology supports pass-through flows
 
+Release 0.1.1 (pending)
+==========================
+
+- Fixed usage of managed buffers for message back-pressure
+
 Release 0.1.0 (2014-12-21)
 ==========================
 
