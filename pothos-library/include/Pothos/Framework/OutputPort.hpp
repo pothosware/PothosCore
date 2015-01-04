@@ -14,7 +14,6 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
-#include <Pothos/Framework/WorkStats.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
 #include <Pothos/Util/RingDeque.hpp>
 #include <Pothos/Util/SpinLock.hpp>
@@ -147,16 +146,31 @@ public:
 
 private:
     WorkerActor *_actor;
+
+    //port configuration
+    bool _isSignal;
     int _index;
     std::string _name;
     DType _dtype;
+
+    //state set in pre-work
     std::string _domain;
     BufferChunk _buffer;
     size_t _elements;
+
+    //port stats
     unsigned long long _totalElements;
+    unsigned long long _totalBuffers;
+    unsigned long long _totalLabels;
     unsigned long long _totalMessages;
+
+    //state changes from work
     size_t _pendingElements;
-    PortStats _portStats;
+    std::vector<Label> _postedLabels;
+    Util::RingDeque<BufferChunk> _postedBuffers;
+
+    //counts work actions which we will use to establish activity
+    size_t _workEvents;
 
     Util::SpinLock _bufferManagerLock;
     BufferManager::Sptr _bufferManager;
@@ -177,10 +191,7 @@ private:
     BufferChunk tokenManagerPop(void);
     void tokenManagerPop(const size_t numBytes);
 
-    std::vector<Label> _postedLabels;
-    Util::RingDeque<BufferChunk> _postedBuffers;
     std::vector<InputPort *> _subscribers;
-    bool _isSignal;
     InputPort *_readBeforeWritePort;
     bool _bufferFromManager;
 

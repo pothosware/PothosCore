@@ -6,29 +6,13 @@
 #include <Poco/String.h>
 
 /***********************************************************************
- * Reusable threadpool
+ * threadpool calls
  **********************************************************************/
-static std::shared_ptr<Theron::Framework> getGlobalFramework(void)
-{
-    static std::weak_ptr<Theron::Framework> weakFramework;
-    std::shared_ptr<Theron::Framework> framework = weakFramework.lock();
-    if (not framework) framework.reset(new Theron::Framework());
-    weakFramework = framework;
-    return framework;
-}
-
 void Pothos::Block::setThreadPool(const ThreadPool &threadPool)
 {
     if (_threadPool == threadPool) return; //no change
 
-    auto oldThreadPool = _threadPool;
-    auto oldActor = _actor;
-
-    _threadPool = threadPool;
-    _actor.reset(new WorkerActor(this));
-    _actor->swap(oldActor.get());
-
-    oldActor.reset();
+    //TODO
 }
 
 const Pothos::ThreadPool &Pothos::Block::getThreadPool(void) const
@@ -226,7 +210,7 @@ Pothos::Object Pothos::Block::opaqueCallMethod(const std::string &name, const Po
 
 void Pothos::Block::yield(void)
 {
-    _actor->workBump = true;
+    _actor->flagChangeNoWake();
 }
 
 std::shared_ptr<Pothos::BufferManager> Pothos::Block::getInputBufferManager(const std::string &, const std::string &)

@@ -6,13 +6,16 @@
 
 Pothos::InputPort::InputPort(void):
     _actor(nullptr),
+    _isSlot(false),
     _index(-1),
     _elements(0),
     _totalElements(0),
+    _totalBuffers(0),
+    _totalLabels(0),
     _totalMessages(0),
     _pendingElements(0),
     _reserveElements(0),
-    _isSlot(false)
+    _workEvents(0)
 {
     return;
 }
@@ -24,23 +27,21 @@ Pothos::InputPort::~InputPort(void)
 
 Pothos::Object Pothos::InputPort::popMessage(void)
 {
-    assert(_actor != nullptr);
     auto msg = this->asyncMessagesPop();
     _totalMessages++;
-    _actor->workBump = true;
+    _workEvents++;
     return msg;
 }
 
 void Pothos::InputPort::removeLabel(const Label &label)
 {
-    assert(_actor != nullptr);
     for (auto it = _inlineMessages.begin(); it != _inlineMessages.end(); it++)
     {
         if (*it == label)
         {
             _inlineMessages.erase(it);
             _labelIter = _inlineMessages;
-            _actor->workBump = true;
+            _workEvents++;
             return;
         }
     }
@@ -48,9 +49,8 @@ void Pothos::InputPort::removeLabel(const Label &label)
 
 void Pothos::InputPort::setReserve(const size_t numElements)
 {
-    assert(_actor != nullptr);
     _reserveElements = numElements;
-    _actor->workBump = true;
+    _workEvents++;
 }
 
 void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
@@ -143,6 +143,7 @@ void Pothos::InputPort::inlineMessagesPush(const Pothos::Label &label)
     std::unique_lock<Util::SpinLock> lock(_bufferAccumulatorLock);
     if (_inputInlineMessages.full()) _inputInlineMessages.set_capacity(_inputInlineMessages.capacity()*2);
     _inputInlineMessages.push_back(label);
+    _totalLabels++;
 }
 
 void Pothos::InputPort::inlineMessagesClear(void)
@@ -167,6 +168,7 @@ void Pothos::InputPort::bufferAccumulatorPush(const BufferChunk &buffer)
 {
     std::unique_lock<Util::SpinLock> lock(_bufferAccumulatorLock);
     this->bufferAccumulatorPushNoLock(buffer);
+    _totalBuffers++;
 }
 
 void Pothos::InputPort::bufferAccumulatorPushNoLock(const BufferChunk &buffer_)
@@ -196,6 +198,8 @@ void Pothos::InputPort::bufferAccumulatorPop(const size_t numBytes, const size_t
     {
         _inputInlineMessages[i].index -= numElems;
     }
+
+    _workEvents++;
 }
 
 void Pothos::InputPort::bufferAccumulatorRequire(const size_t numBytes)
@@ -234,6 +238,7 @@ void Pothos::InputPort::bufferLabelPush(
         label.index += currentBytes; //increment by enqueued bytes
         label.index /= elemSize; //convert from bytes to elements
         _inputInlineMessages.push_back(label);
+        _totalLabels++;
     }
 
     //push all buffers into the accumulator

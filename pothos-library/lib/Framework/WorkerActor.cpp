@@ -88,7 +88,6 @@ void Pothos::WorkerActor::setActiveStateOff(void)
  **********************************************************************/
 bool Pothos::WorkerActor::preWorkTasks(void)
 {
-    this->workBump = false;
     const size_t BIG = (1 << 30);
 
     bool allOutputsReady = true;
@@ -101,6 +100,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     for (auto &entry : this->outputs)
     {
         auto &port = *entry.second;
+        port._workEvents = 0;
         if ( //handle read before wite port if specified
             port._readBeforeWritePort != nullptr and
             port.dtype().size() == port._readBeforeWritePort->dtype().size() and
@@ -137,6 +137,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     for (auto &entry : this->inputs)
     {
         auto &port = *entry.second;
+        port._workEvents = 0;
         if (not port.slotCallsEmpty())
         {
             POTHOS_EXCEPTION_TRY
@@ -184,6 +185,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
 {
     ///////////////////// input handling ////////////////////////
 
+    size_t inputWorkEvents = 0;
     unsigned long long bytesConsumed = 0;
     unsigned long long msgsConsumed = 0;
 
@@ -233,18 +235,23 @@ void Pothos::WorkerActor::postWorkTasks(void)
 
         //move consumed elements into total
         port._totalElements += port._pendingElements;
+        inputWorkEvents += port._workEvents;
     }
 
     //update consumption stats, bytes are incremental, messages cumulative
     this->workStats.bytesConsumed += bytesConsumed;
     msgsConsumed -= this->workStats.msgsConsumed;
     this->workStats.msgsConsumed += msgsConsumed;
-    const bool hadConsumption = (bytesConsumed !=0 or msgsConsumed != 0);
-    if (hadConsumption) this->workStats.timeLastConsumed = std::chrono::high_resolution_clock::now();
+    if (inputWorkEvents != 0)
+    {
+        this->flagChangeNoWake();
+        this->workStats.timeLastConsumed = std::chrono::high_resolution_clock::now();
+    }
 
     ///////////////////// output handling ////////////////////////
     //Note: output buffer production must come after propagateLabels()
 
+    size_t outputWorkEvents = 0;
     unsigned long long bytesProduced = 0;
     unsigned long long msgsProduced = 0;
 
@@ -301,17 +308,18 @@ void Pothos::WorkerActor::postWorkTasks(void)
         //add produced bytes into total
         port._totalElements += elemsDequeued;
         bytesProduced += bytesDequeued;
+        outputWorkEvents += port._workEvents;
     }
 
     //update production stats, bytes are incremental, messages cumulative
     this->workStats.bytesProduced += bytesProduced;
     msgsProduced -= this->workStats.msgsProduced;
     this->workStats.msgsProduced += msgsProduced;
-    const bool hadProduction = (bytesProduced != 0 or msgsProduced != 0);
-    if (hadProduction) this->workStats.timeLastProduced = std::chrono::high_resolution_clock::now();
-
-    //postwork bump logic
-    if (this->workBump or hadConsumption or hadProduction) this->flagChange();
+    if (outputWorkEvents != 0)
+    {
+        this->flagChangeNoWake();
+        this->workStats.timeLastProduced = std::chrono::high_resolution_clock::now();
+    }
 }
 
 #include <Pothos/Managed.hpp>

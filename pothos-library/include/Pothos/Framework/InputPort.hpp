@@ -14,7 +14,6 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
-#include <Pothos/Framework/WorkStats.hpp>
 #include <Pothos/Framework/BufferAccumulator.hpp>
 #include <Pothos/Util/RingDeque.hpp>
 #include <Pothos/Util/SpinLock.hpp>
@@ -158,18 +157,31 @@ public:
 
 private:
     WorkerActor *_actor;
+
+    //port configuration
+    bool _isSlot;
     int _index;
     std::string _name;
     DType _dtype;
     std::string _domain;
+
+    //state set in pre-work
     BufferChunk _buffer;
     size_t _elements;
-    unsigned long long _totalElements;
-    unsigned long long _totalMessages;
     LabelIteratorRange _labelIter;
+
+    //port stats
+    unsigned long long _totalElements;
+    unsigned long long _totalBuffers;
+    unsigned long long _totalLabels;
+    unsigned long long _totalMessages;
+
+    //state changes from work
     size_t _pendingElements;
     size_t _reserveElements;
-    PortStats _portStats;
+
+    //counts work actions which we will use to establish activity
+    size_t _workEvents;
 
     Util::SpinLock _asyncMessagesLock;
     Util::RingDeque<std::pair<Object, BufferChunk>> _asyncMessages;
@@ -182,8 +194,6 @@ private:
 
     Util::SpinLock _bufferAccumulatorLock;
     BufferAccumulator _bufferAccumulator;
-
-    bool _isSlot;
 
     /////// async message interface /////////
     void asyncMessagesPush(const Object &message, const BufferChunk &token = BufferChunk::null());

@@ -41,7 +41,6 @@ class Pothos::WorkerActor
 public:
     WorkerActor(Block *block):
         block(block),
-        workBump(false),
         activeState(false)
     {
         _condVarsWaiting = 0;
@@ -130,6 +129,13 @@ public:
         this->notifyWaiters();
     }
 
+    //! flag change from inside context
+    void flagChangeNoWake(void)
+    {
+        std::unique_lock<std::mutex> lock(_acquisitionMutex);
+        _changeFlagged = true;
+    }
+
     /*!
      * Wake up one thread waiting on the condition variable.
      */
@@ -170,24 +176,10 @@ public:
 
     ///////////////////// WorkerActor storage ///////////////////////
     Block *block;
-    bool workBump;
     bool activeState;
     WorkStats workStats;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
-
-    //swap method that moves the internal state from another actor
-    void swap(WorkerActor *oldActor)
-    {
-        std::swap(this->block, oldActor->block);
-        std::swap(this->workBump, oldActor->workBump);
-        std::swap(this->activeState, oldActor->activeState);
-        std::swap(this->workStats, oldActor->workStats);
-        std::swap(this->inputs, oldActor->inputs);
-        std::swap(this->outputs, oldActor->outputs);
-        for (auto &port : this->inputs) port.second->_actor = this;
-        for (auto &port : this->outputs) port.second->_actor = this;
-    }
 
     ///////////////////// port setup methods ///////////////////////
     void allocateInput(const std::string &name, const DType &dtype, const std::string &domain);
