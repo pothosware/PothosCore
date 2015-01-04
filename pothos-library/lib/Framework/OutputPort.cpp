@@ -132,7 +132,6 @@ Pothos::BufferChunk Pothos::OutputPort::tokenManagerPop(void)
     if (_tokenManager->empty()) return Pothos::BufferChunk();
     auto tok = _tokenManager->front();
     _tokenManager->pop(0);
-    assert(tok.unique());
     return tok;
 }
 
