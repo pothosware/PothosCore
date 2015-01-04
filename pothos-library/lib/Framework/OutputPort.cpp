@@ -3,6 +3,7 @@
 
 #include <Pothos/Framework/OutputPortImpl.hpp>
 #include "Framework/WorkerActor.hpp"
+#include <Pothos/Object/Containers.hpp>
 
 Pothos::OutputPort::OutputPort(void):
     _actor(nullptr),

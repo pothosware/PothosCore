@@ -8,7 +8,7 @@
 /***********************************************************************
  * misc helper methods
  **********************************************************************/
-int portNameToIndex(const std::string &name)
+static int portNameToIndex(const std::string &name)
 {
     unsigned value = -1;
     if (Poco::NumberParser::tryParseUnsigned(name, value)) return int(value);

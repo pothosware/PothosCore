@@ -4,9 +4,53 @@
 #include "Framework/WorkerActor.hpp"
 #include <Pothos/Framework/InputPortImpl.hpp>
 #include <Pothos/Framework/OutputPortImpl.hpp>
+#include <Pothos/Object/Containers.hpp>
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
 #include <cassert>
+
+/***********************************************************************
+ * buffer manager helpers
+ **********************************************************************/
+std::string Pothos::WorkerActor::getInputBufferMode(const std::string &name, const std::string &domain)
+{
+    try
+    {
+        if (block->getInputBufferManager(name, domain)) return "CUSTOM";
+    }
+    catch (const PortDomainError &)
+    {
+        return "ERROR";
+    }
+    return "ABDICATE";
+}
+
+std::string Pothos::WorkerActor::getOutputBufferMode(const std::string &name, const std::string &domain)
+{
+    try
+    {
+        if (block->getOutputBufferManager(name, domain)) return "CUSTOM";
+    }
+    catch (const PortDomainError &)
+    {
+        return "ERROR";
+    }
+    return "ABDICATE";
+}
+
+Pothos::BufferManager::Sptr Pothos::WorkerActor::getBufferManager(const std::string &name, const std::string &domain, const bool isInput)
+{
+    auto m = isInput? block->getInputBufferManager(name, domain) : block->getOutputBufferManager(name, domain);
+    if (not m) m = BufferManager::make("generic", BufferManagerArgs());
+    else if (not m->isInitialized()) m->init(BufferManagerArgs()); //TODO pass this in from somewhere
+    return m;
+}
+
+void Pothos::WorkerActor::setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
+{
+    WorkerActorLock<WorkerActor> lock(this);
+    outputs.at(name)->bufferManagerSetup(manager);
+}
 
 /***********************************************************************
  * port subscribe/unsubscribe
@@ -19,7 +63,7 @@ void Pothos::WorkerActor::subscribePort(
     WorkerActorLock<WorkerActor> lock(this);
 
     auto inputPort = subscriberPortBlock->input(subscriberPortName);
-    auto &subscribers = getOutput(myPortName, __FUNCTION__)._subscribers;
+    auto &subscribers = this->outputs.at(myPortName)->_subscribers;
 
     //locate the subscriber in the list
     auto it = std::find(subscribers.begin(), subscribers.end(), inputPort);
@@ -41,7 +85,7 @@ void Pothos::WorkerActor::unsubscribePort(
     WorkerActorLock<WorkerActor> lock(this);
 
     auto inputPort = subscriberPortBlock->input(subscriberPortName);
-    auto &subscribers = getOutput(myPortName, __FUNCTION__)._subscribers;
+    auto &subscribers = this->outputs.at(myPortName)->_subscribers;
 
     //locate the subscriber in the list
     auto it = std::find(subscribers.begin(), subscribers.end(), inputPort);
@@ -83,6 +127,40 @@ void Pothos::WorkerActor::setActiveStateOff(void)
 
     this->activeState = false;
     this->block->deactivate();
+}
+
+/***********************************************************************
+ * work task dispatcher
+ **********************************************************************/
+void Pothos::WorkerActor::workTask(void)
+{
+    if (not activeState) return;
+
+    //prework
+    {
+        TimeAccumulator preWorkTime(workStats.totalTimePreWork);
+        if (not this->preWorkTasks()) return;
+    }
+
+    //work
+    POTHOS_EXCEPTION_TRY
+    {
+        workStats.numWorkCalls++;
+        TimeAccumulator preWorkTime(workStats.totalTimeWork);
+        block->work();
+    }
+    POTHOS_EXCEPTION_CATCH(const Exception &ex)
+    {
+        poco_error_f2(Poco::Logger::get("Pothos.Block.work"), "%s: %s", block->getName(), ex.displayText());
+    }
+
+    //postwork
+    {
+        TimeAccumulator preWorkTime(workStats.totalTimePostWork);
+        this->postWorkTasks();
+    }
+
+    workStats.timeLastWork = std::chrono::high_resolution_clock::now();
 }
 
 /***********************************************************************

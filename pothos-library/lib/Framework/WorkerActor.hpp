@@ -4,10 +4,6 @@
 #pragma once
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
-#include <Pothos/Object/Containers.hpp>
-#include <Theron/Actor.h>
-#include <Theron/Framework.h>
-#include <Theron/Receiver.h>
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
 #include <atomic>
@@ -15,8 +11,6 @@
 #include <thread>
 #include <condition_variable>
 #include <iostream>
-
-int portNameToIndex(const std::string &name);
 
 template <typename T>
 struct WorkerActorLock
@@ -194,18 +188,8 @@ public:
     template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
     void autoAllocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name);
 
-    /*!
-     * updatePorts() called after making changes to ports.
-     * Reallocate and fill the indexed and named port structures.
-     * Delete unsubscribed automatic ports.
-     */
+    //! call after making changes to ports
     void updatePorts(void);
-
-    ///////////////////// convenience getters ///////////////////////
-    OutputPort &getOutput(const std::string &name, const char *fcn);
-    InputPort &getInput(const std::string &name, const char *fcn);
-    OutputPort &getOutput(const size_t index, const char *fcn);
-    InputPort &getInput(const size_t index, const char *fcn);
 
     ///////////////////// topology helper methods ///////////////////////
     void setActiveStateOn(void);
@@ -218,113 +202,13 @@ public:
         const std::string &myPortName,
         Block *subscriberPortBlock,
         const std::string &subscriberPortName);
-
-    std::string getInputBufferMode(const std::string &name, const std::string &domain)
-    {
-        try
-        {
-            if (block->getInputBufferManager(name, domain)) return "CUSTOM";
-        }
-        catch (const PortDomainError &)
-        {
-            return "ERROR";
-        }
-        return "ABDICATE";
-    }
-
-    std::string getOutputBufferMode(const std::string &name, const std::string &domain)
-    {
-        try
-        {
-            if (block->getOutputBufferManager(name, domain)) return "CUSTOM";
-        }
-        catch (const PortDomainError &)
-        {
-            return "ERROR";
-        }
-        return "ABDICATE";
-    }
-
-    BufferManager::Sptr getBufferManager(const std::string &name, const std::string &domain, const bool isInput)
-    {
-        auto m = isInput? block->getInputBufferManager(name, domain) : block->getOutputBufferManager(name, domain);
-        if (not m) m = BufferManager::make("generic", BufferManagerArgs());
-        else if (not m->isInitialized()) m->init(BufferManagerArgs()); //TODO pass this in from somewhere
-        return m;
-    }
-
-    void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
-    {
-        WorkerActorLock<WorkerActor> lock(this);
-        outputs.at(name)->bufferManagerSetup(manager);
-    }
+    std::string getInputBufferMode(const std::string &name, const std::string &domain);
+    std::string getOutputBufferMode(const std::string &name, const std::string &domain);
+    BufferManager::Sptr getBufferManager(const std::string &name, const std::string &domain, const bool isInput);
+    void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager);
 
     ///////////////////// work helper methods ///////////////////////
-    inline void workTask(void)
-    {
-        if (not activeState) return;
-
-        //prework
-        {
-            TimeAccumulator preWorkTime(workStats.totalTimePreWork);
-            if (not this->preWorkTasks()) return;
-        }
-
-        //work
-        POTHOS_EXCEPTION_TRY
-        {
-            workStats.numWorkCalls++;
-            TimeAccumulator preWorkTime(workStats.totalTimeWork);
-            block->work();
-        }
-        POTHOS_EXCEPTION_CATCH(const Exception &ex)
-        {
-            poco_error_f2(Poco::Logger::get("Pothos.Block.work"), "%s: %s", block->getName(), ex.displayText());
-        }
-
-        //postwork
-        {
-            TimeAccumulator preWorkTime(workStats.totalTimePostWork);
-            this->postWorkTasks();
-        }
-
-        workStats.timeLastWork = std::chrono::high_resolution_clock::now();
-    }
+    void workTask(void);
     bool preWorkTasks(void);
     void postWorkTasks(void);
 };
-
-/***********************************************************************
- * Inline port getter methods with nice exceptions
- **********************************************************************/
-inline Pothos::OutputPort &Pothos::WorkerActor::getOutput(const std::string &name, const char *fcn)
-{
-    auto it = outputs.find(name);
-    if (it == outputs.end()) throw PortAccessError(
-        Poco::format("%s(%s)", std::string(fcn), name), "output port name out of range");
-    return *it->second;
-}
-
-inline Pothos::InputPort &Pothos::WorkerActor::getInput(const std::string &name, const char *fcn)
-{
-    auto it = inputs.find(name);
-    if (it == inputs.end()) throw PortAccessError(
-        Poco::format("%s(%s)", std::string(fcn), name), "input port name out of range");
-    return *it->second;
-}
-
-inline Pothos::OutputPort &Pothos::WorkerActor::getOutput(const size_t index, const char *fcn)
-{
-    auto &indexedOutputs = block->_indexedOutputs;
-    if (index >= indexedOutputs.size()) throw PortAccessError(
-        Poco::format("%s(%d)", std::string(fcn), int(index)), "output port index out of range");
-    return *indexedOutputs[index];
-}
-
-inline Pothos::InputPort &Pothos::WorkerActor::getInput(const size_t index, const char *fcn)
-{
-    auto &indexedInputs = block->_indexedInputs;
-    if (index >= indexedInputs.size()) throw PortAccessError(
-        Poco::format("%s(%d)", std::string(fcn), int(index)), "input port index out of range");
-    return *indexedInputs[index];
-}
