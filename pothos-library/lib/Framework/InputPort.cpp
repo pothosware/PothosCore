@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/InputPort.hpp>
@@ -24,6 +24,7 @@ Pothos::InputPort::~InputPort(void)
 
 Pothos::Object Pothos::InputPort::popMessage(void)
 {
+    assert(_actor != nullptr);
     auto msg = this->asyncMessagesPop();
     _totalMessages++;
     _actor->workBump = true;
@@ -32,6 +33,7 @@ Pothos::Object Pothos::InputPort::popMessage(void)
 
 void Pothos::InputPort::removeLabel(const Label &label)
 {
+    assert(_actor != nullptr);
     for (auto it = _inlineMessages.begin(); it != _inlineMessages.end(); it++)
     {
         if (*it == label)
@@ -46,24 +48,28 @@ void Pothos::InputPort::removeLabel(const Label &label)
 
 void Pothos::InputPort::setReserve(const size_t numElements)
 {
+    assert(_actor != nullptr);
     _reserveElements = numElements;
     _actor->workBump = true;
 }
 
 void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
 {
+    assert(_actor != nullptr);
     this->bufferAccumulatorPush(buffer);
     _actor->flagChange();
 }
 
 void Pothos::InputPort::pushLabel(const Label &label)
 {
+    assert(_actor != nullptr);
     this->inlineMessagesPush(label);
     _actor->flagChange();
 }
 
 void Pothos::InputPort::pushMessage(const Object &message)
 {
+    assert(_actor != nullptr);
     this->asyncMessagesPush(message);
     _actor->flagChange();
 }
@@ -120,7 +126,7 @@ bool Pothos::InputPort::slotCallsEmpty(void)
 Pothos::Object Pothos::InputPort::slotCallsPop(void)
 {
     std::unique_lock<Util::SpinLock> lock(_slotCallsLock);
-    if (_slotCalls.empty()) return Pothos::Object();
+    assert(not _slotCalls.empty());
     auto args = _slotCalls.front().first;
     _slotCalls.pop_front();
     return args;

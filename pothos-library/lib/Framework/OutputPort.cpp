@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/OutputPort.hpp>
@@ -25,6 +25,7 @@ Pothos::OutputPort::~OutputPort(void)
 
 void Pothos::OutputPort::popBuffer(const size_t numBytes)
 {
+    assert(_actor != nullptr);
     this->bufferManagerPop(numBytes);
     _actor->workBump = true;
 }
@@ -60,6 +61,7 @@ void Pothos::OutputPort::_postMessage(const Object &async)
 
 void Pothos::OutputPort::postBuffer(const BufferChunk &buffer)
 {
+    assert(_actor != nullptr);
     auto &queue = _postedBuffers;
     if (queue.full()) queue.set_capacity(queue.size()*2);
     queue.push_back(buffer);
@@ -77,6 +79,7 @@ void Pothos::OutputPort::bufferManagerPush(Pothos::Util::SpinLock *mutex, const 
     {
         std::unique_lock<Pothos::Util::SpinLock> lock(*mutex);
         mgr->push(buff);
+        assert(_actor != nullptr);
         _actor->flagChange();
     }
 }
@@ -129,6 +132,7 @@ Pothos::BufferChunk Pothos::OutputPort::tokenManagerPop(void)
     if (_tokenManager->empty()) return Pothos::BufferChunk();
     auto tok = _tokenManager->front();
     _tokenManager->pop(0);
+    assert(tok.unique());
     return tok;
 }
 
