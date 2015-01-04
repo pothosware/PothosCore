@@ -70,6 +70,20 @@ public:
     unsigned long long totalElements(void) const;
 
     /*!
+     * Get the total number of buffers produced from this port.
+     * This value will increment immediately after postBuffer().
+     * This call will also increment after every work execution
+     * where elements are produced using the produce() method.
+     */
+    unsigned long long totalBuffers(void) const;
+
+    /*!
+     * Get the total number of labels produced from this port.
+     * This value will increment immediately after postLabel().
+     */
+    unsigned long long totalLabels(void) const;
+
+    /*!
      * Get the total number of messages posted to this port.
      * The value returned by this method will be incremented
      * immediately upon calling postMessage().
@@ -204,64 +218,3 @@ private:
 };
 
 } //namespace Pothos
-
-inline int Pothos::OutputPort::index(void) const
-{
-    return _index;
-}
-
-inline const std::string &Pothos::OutputPort::name(void) const
-{
-    return _name;
-}
-
-inline const Pothos::DType &Pothos::OutputPort::dtype(void) const
-{
-    return _dtype;
-}
-
-inline const std::string &Pothos::OutputPort::domain(void) const
-{
-    return _domain;
-}
-
-inline const Pothos::BufferChunk &Pothos::OutputPort::buffer(void) const
-{
-    return _buffer;
-}
-
-inline size_t Pothos::OutputPort::elements(void) const
-{
-    return _elements;
-}
-
-inline unsigned long long Pothos::OutputPort::totalElements(void) const
-{
-    return _totalElements;
-}
-
-inline unsigned long long Pothos::OutputPort::totalMessages(void) const
-{
-    return _totalMessages;
-}
-
-inline void Pothos::OutputPort::produce(const size_t numElements)
-{
-    _pendingElements += numElements;
-}
-
-inline bool Pothos::OutputPort::isSignal(void) const
-{
-    return _isSignal;
-}
-
-inline void Pothos::OutputPort::setReadBeforeWrite(InputPort *port)
-{
-    _readBeforeWritePort = port;
-}
-
-template <typename ValueType>
-void Pothos::OutputPort::postMessage(ValueType &&message)
-{
-    Pothos::OutputPort::_postMessage(Pothos::Object(std::forward<ValueType>(message)));
-}

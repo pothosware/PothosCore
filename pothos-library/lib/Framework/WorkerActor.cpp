@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
+#include <Pothos/Framework/InputPortImpl.hpp>
+#include <Pothos/Framework/OutputPortImpl.hpp>
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
 #include <cassert>
@@ -219,17 +221,13 @@ void Pothos::WorkerActor::postWorkTasks(void)
             }
 
             allLabels.erase(allLabels.begin(), allLabels.begin()+numLabels);
+            port._totalLabels += numLabels;
         }
 
         //pop the consumed bytes from the accumulator
         if (bytes != 0)
         {
-            if (bytes > port.bufferAccumulatorTotalBytes())
-            {
-                poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %d bytes, %d available",
-                    block->getName(), port.name(), int(bytes), int(port.bufferAccumulatorTotalBytes()));
-            }
-            else port.bufferAccumulatorPop(bytes, port._pendingElements);
+            port.bufferAccumulatorPop(bytes);
         }
         port._buffer = BufferChunk::null(); //clear reference
 

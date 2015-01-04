@@ -3,6 +3,7 @@
 
 #include "Framework/WorkerActor.hpp"
 #include <Pothos/Object/Containers.hpp>
+#include <Pothos/Framework/OutputPortImpl.hpp>
 #include <Poco/String.h>
 
 /***********************************************************************
@@ -24,7 +25,6 @@ const Pothos::ThreadPool &Pothos::Block::getThreadPool(void) const
  * Block member implementation
  **********************************************************************/
 Pothos::Block::Block(void):
-    //_threadPool(ThreadPool(getGlobalFramework())),
     _actor(new WorkerActor(this))
 {
     return;

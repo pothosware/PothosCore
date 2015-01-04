@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include <Pothos/Framework/OutputPort.hpp>
+#include <Pothos/Framework/OutputPortImpl.hpp>
 #include "Framework/WorkerActor.hpp"
 
 Pothos::OutputPort::OutputPort(void):
@@ -26,21 +26,6 @@ Pothos::OutputPort::~OutputPort(void)
     return;
 }
 
-void Pothos::OutputPort::popBuffer(const size_t numBytes)
-{
-    this->bufferManagerPop(numBytes);
-    _workEvents++;
-}
-
-void Pothos::OutputPort::postLabel(const Label &label)
-{
-    auto byteOffsetLabel = label;
-    byteOffsetLabel.index *= this->dtype().size();
-    _postedLabels.push_back(byteOffsetLabel);
-    _totalLabels++;
-    _workEvents++;
-}
-
 void Pothos::OutputPort::_postMessage(const Object &async)
 {
     const auto token = this->tokenManagerPop();
@@ -57,19 +42,6 @@ void Pothos::OutputPort::_postMessage(const Object &async)
         subscriber->_actor->flagChange();
     }
     _totalMessages++;
-    _workEvents++;
-}
-
-void Pothos::OutputPort::postBuffer(const BufferChunk &buffer)
-{
-    auto &queue = _postedBuffers;
-    if (queue.full()) queue.set_capacity(queue.size()*2);
-    queue.push_back(buffer);
-
-    //unspecified buffer dtype? copy it from the port
-    if (not buffer.dtype) queue.back().dtype = this->dtype();
-
-    _totalBuffers++;
     _workEvents++;
 }
 
@@ -93,24 +65,6 @@ void Pothos::OutputPort::bufferManagerSetup(const Pothos::BufferManager::Sptr &m
         &Pothos::OutputPort::bufferManagerPush, this, &_bufferManagerLock, std::placeholders::_1));
 }
 
-bool Pothos::OutputPort::bufferManagerEmpty(void)
-{
-    std::unique_lock<Util::SpinLock> lock(_bufferManagerLock);
-    return not _bufferManager or _bufferManager->empty();
-}
-
-Pothos::BufferChunk Pothos::OutputPort::bufferManagerFront(void)
-{
-    std::unique_lock<Util::SpinLock> lock(_bufferManagerLock);
-    return _bufferManager->front();
-}
-
-void Pothos::OutputPort::bufferManagerPop(const size_t numBytes)
-{
-    std::unique_lock<Util::SpinLock> lock(_bufferManagerLock);
-    return _bufferManager->pop(numBytes);
-}
-
 void Pothos::OutputPort::tokenManagerInit(void)
 {
     BufferManagerArgs tokenMgrArgs;
@@ -119,27 +73,6 @@ void Pothos::OutputPort::tokenManagerInit(void)
     _tokenManager = BufferManager::make("generic", tokenMgrArgs);
     _tokenManager->setCallback(std::bind(
         &Pothos::OutputPort::bufferManagerPush, this, &_tokenManagerLock, std::placeholders::_1));
-}
-
-bool Pothos::OutputPort::tokenManagerEmpty(void)
-{
-    std::unique_lock<Util::SpinLock> lock(_tokenManagerLock);
-    return _tokenManager->empty();
-}
-
-Pothos::BufferChunk Pothos::OutputPort::tokenManagerPop(void)
-{
-    std::unique_lock<Util::SpinLock> lock(_tokenManagerLock);
-    if (_tokenManager->empty()) return Pothos::BufferChunk();
-    auto tok = _tokenManager->front();
-    _tokenManager->pop(0);
-    return tok;
-}
-
-void Pothos::OutputPort::tokenManagerPop(const size_t numBytes)
-{
-    std::unique_lock<Util::SpinLock> lock(_tokenManagerLock);
-    return _tokenManager->pop(numBytes);
 }
 
 #include <Pothos/Managed.hpp>

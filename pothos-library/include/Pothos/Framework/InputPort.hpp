@@ -70,6 +70,20 @@ public:
     unsigned long long totalElements(void) const;
 
     /*!
+     * Get the total number of buffers posted to this port.
+     * Note that this call tracks incoming buffer count,
+     * and not total buffer consumption (which is harder).
+     */
+    unsigned long long totalBuffers(void) const;
+
+    /*!
+     * Get the total number of labels consumed from this port.
+     * This count updates immediately upon calling removeLabel(),
+     * and after after execution of work() and propagateLabels().
+     */
+    unsigned long long totalLabels(void) const;
+
+    /*!
      * Get the total number of messages popped from this port.
      * The value returned by this method will be incremented
      * immediately upon calling popMessage().
@@ -215,9 +229,8 @@ private:
     BufferChunk bufferAccumulatorFront(void);
     void bufferAccumulatorPush(const BufferChunk &buffer);
     void bufferAccumulatorPushNoLock(const BufferChunk &buffer);
-    void bufferAccumulatorPop(const size_t numBytes, const size_t numElems);
+    void bufferAccumulatorPop(const size_t numBytes);
     void bufferAccumulatorRequire(const size_t numBytes);
-    size_t bufferAccumulatorTotalBytes(void);
     void bufferAccumulatorClear(void);
 
     /////// combined label association push /////////
@@ -233,63 +246,3 @@ private:
 };
 
 } //namespace Pothos
-
-inline int Pothos::InputPort::index(void) const
-{
-    return _index;
-}
-
-inline const std::string &Pothos::InputPort::name(void) const
-{
-    return _name;
-}
-
-inline const Pothos::DType &Pothos::InputPort::dtype(void) const
-{
-    return _dtype;
-}
-
-inline const std::string &Pothos::InputPort::domain(void) const
-{
-    return _domain;
-}
-
-inline const Pothos::BufferChunk &Pothos::InputPort::buffer(void) const
-{
-    return _buffer;
-}
-
-inline size_t Pothos::InputPort::elements(void) const
-{
-    return _elements;
-}
-
-inline unsigned long long Pothos::InputPort::totalElements(void) const
-{
-    return _totalElements;
-}
-
-inline unsigned long long Pothos::InputPort::totalMessages(void) const
-{
-    return _totalMessages;
-}
-
-inline const Pothos::LabelIteratorRange &Pothos::InputPort::labels(void) const
-{
-    return _labelIter;
-}
-
-inline void Pothos::InputPort::consume(const size_t numElements)
-{
-    _pendingElements += numElements;
-}
-
-inline bool Pothos::InputPort::hasMessage(void)
-{
-    return not this->asyncMessagesEmpty();
-}
-
-inline bool Pothos::InputPort::isSlot(void) const
-{
-    return _isSlot;
-}
