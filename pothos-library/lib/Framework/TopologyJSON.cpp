@@ -16,9 +16,14 @@
  **********************************************************************/
 static Poco::JSON::Object::Ptr parseJSONStr(const std::string &json)
 {
+    //determine markup string or file path
+    bool isPath = false;
+    try {isPath = Poco::File(json).exists();}
+    catch (...){}
+
     //parse the json string/file to a JSON object
     Poco::JSON::Parser p;
-    if (Poco::File(json).exists())
+    if (isPath)
     {
         std::ifstream ifs(json);
         p.parse(ifs);
