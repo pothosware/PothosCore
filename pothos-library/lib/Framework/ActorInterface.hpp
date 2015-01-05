@@ -16,8 +16,9 @@ class ActorInterface
 public:
 
     ActorInterface(void):
-        _waitModeEnabled(false),
-        _changeFlagged(false)
+        _waitModeEnabled(true),
+        _changeFlagged(false),
+        _externalAcquired(0)
     {
         return;
     }
@@ -69,6 +70,7 @@ public:
 private:
     bool _waitModeEnabled;
     std::atomic<bool> _changeFlagged;
+    std::atomic<size_t> _externalAcquired;
     std::mutex _mutex;
     std::condition_variable _cond;
 };
@@ -95,11 +97,13 @@ private:
 
 inline void ActorInterface::externalCallAcquire(void)
 {
+    _externalAcquired++;
     _mutex.lock();
 }
 
 inline void ActorInterface::externalCallRelease(void)
 {
+    _externalAcquired--;
     _changeFlagged = true;
     _mutex.unlock();
     _cond.notify_one();
@@ -107,6 +111,14 @@ inline void ActorInterface::externalCallRelease(void)
 
 inline bool ActorInterface::workerThreadAcquire(void)
 {
+    //external context requested or in progress
+    //block in here on a mutex lock and bail out
+    if (_externalAcquired != 0)
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        return false;
+    }
+
     //fast-check for already flagged case
     if (_changeFlagged.exchange(false))
     {
@@ -123,9 +135,10 @@ inline bool ActorInterface::workerThreadAcquire(void)
             if (_cond.wait_for(lock, std::chrono::milliseconds(1)) == std::cv_status::timeout) return false;
         }
         lock.release();
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 inline void ActorInterface::workerThreadRelease(void)
@@ -135,10 +148,22 @@ inline void ActorInterface::workerThreadRelease(void)
 
 inline void ActorInterface::flagExternalChange(void)
 {
+    //asynchronous indication
     _changeFlagged = true;
+
+    //the logic below is only used with cv waits
     if (not _waitModeEnabled) return;
+
+    //if lock fails, the worker context is busy
     if (not _mutex.try_lock()) return;
+
+    //synchronous indication
+    _changeFlagged = true;
+
+    //unlock before notify
     _mutex.unlock();
+
+    //notify the waiting cv
     _cond.notify_one();
 }
 

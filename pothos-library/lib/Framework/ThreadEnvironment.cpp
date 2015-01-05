@@ -79,6 +79,9 @@ void ThreadEnvironment::unregisterTask(void *handle)
         }
         assert(_threadPool.size() <= _args.numThreads);
     }
+
+    //FIXME we cant safely exit in pool mode until all configs are updated
+    //TODO...
 }
 
 void ThreadEnvironment::poolProcessLoop(size_t index)
