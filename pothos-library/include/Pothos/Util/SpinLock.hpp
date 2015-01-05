@@ -4,7 +4,7 @@
 /// A simple C++11 spin lock implementation.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -28,10 +28,9 @@ class POTHOS_API SpinLock
 public:
 
     //! Create a new unlocked spin lock
-    SpinLock(void):
-        _lock(ATOMIC_FLAG_INIT)
+    SpinLock(void)
     {
-        return;
+        this->unlock();
     }
 
     //! Lock the spin lock, block if already locked
