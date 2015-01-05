@@ -37,25 +37,8 @@ Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
     const auto &config = _newZoneConfig;
 
     //load the args
-    Pothos::ThreadPoolArgs args;
-    if (config->has("numThreads"))
-    {
-        args.numThreads = config->getValue<int>("numThreads");
-    }
-    if (config->has("priority"))
-    {
-        args.priority = config->getValue<double>("priority");
-    }
-    if (config->has("affinityMode") and config->has("affinityMask"))
-    {
-        args.affinityMode = config->getValue<std::string>("affinityMode");
-        auto mask = config->getArray("affinityMask");
-        for (size_t i = 0; i < mask->size(); i++) args.affinity.push_back(mask->getElement<int>(i));
-    }
-    if (config->has("yieldMode"))
-    {
-        args.yieldMode = config->getValue<std::string>("yieldMode");
-    }
+    std::stringstream ss; config->stringify(ss);
+    Pothos::ThreadPoolArgs args(ss.str());
 
     //create the thread pool
     return env->findProxy("Pothos/ThreadPool").callProxy("new", args);
