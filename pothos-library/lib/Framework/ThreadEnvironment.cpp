@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/ThreadEnvironment.hpp"
-#include <iostream>
+#include <cassert>
 
 ThreadEnvironment::ThreadEnvironment(const size_t numThreads):
     _numThreads(numThreads)
@@ -12,27 +12,31 @@ ThreadEnvironment::ThreadEnvironment(const size_t numThreads):
 
 ThreadEnvironment::~ThreadEnvironment(void)
 {
-    while (not _actorToTask.empty())
+    //tear-down all tasks if not done by caller
+    while (not _handleToTask.empty())
     {
-        this->unregisterActor(_actorToTask.begin()->first);
+        this->unregisterTask(_handleToTask.begin()->first);
     }
 }
 
-void ThreadEnvironment::registerActor(void *actor, ThreadEnvironment::Task task)
+void ThreadEnvironment::registerTask(void *handle, ThreadEnvironment::Task task)
 {
     std::unique_lock<std::mutex> lock(_registrationMutex);
 
+    //register the new task and bump the signature to notify threads
     {
-        std::unique_lock<std::mutex> lock0(_actorUpdateMutex);
-        _actorToTask[actor] = task;
+        std::unique_lock<std::mutex> lock0(_handleUpdateMutex);
+        _handleToTask[handle] = task;
     }
-
     _configurationSignature++;
 
+    //single task mode: spawn a new thread for this task
     if (_numThreads == 0)
     {
-        _actorToThread[actor] = std::thread(std::bind(&ThreadEnvironment::singleProcessLoop, this, actor));
+        _handleToThread[handle] = std::thread(std::bind(&ThreadEnvironment::singleProcessLoop, this, handle));
     }
+
+    //pool mode: start a thread if the pool size is too small
     else
     {
         if (_threadPool.size() < _numThreads)
@@ -40,32 +44,37 @@ void ThreadEnvironment::registerActor(void *actor, ThreadEnvironment::Task task)
             size_t index = _threadPool.size();
             _threadPool.push_back(std::thread(std::bind(&ThreadEnvironment::poolProcessLoop, this, index)));
         }
+        assert(_threadPool.size() <= _numThreads);
     }
 }
 
-void ThreadEnvironment::unregisterActor(void *actor)
+void ThreadEnvironment::unregisterTask(void *handle)
 {
     std::unique_lock<std::mutex> lock(_registrationMutex);
 
+    //unregister the new task and bump the signature to notify threads
     {
-        std::unique_lock<std::mutex> lock0(_actorUpdateMutex);
-        _actorToTask.erase(actor);
+        std::unique_lock<std::mutex> lock0(_handleUpdateMutex);
+        _handleToTask.erase(handle);
     }
-
     _configurationSignature++;
 
+    //single task mode: stop the explicit task for this handle
     if (_numThreads == 0)
     {
-        _actorToThread[actor].join();
-        _actorToThread.erase(actor);
+        _handleToThread[handle].join();
+        _handleToThread.erase(handle);
     }
+
+    //pool mode: stop a thread if the pool size is too large
     else
     {
-        if (_threadPool.size() > _actorToTask.size())
+        if (_threadPool.size() > _handleToTask.size())
         {
             _threadPool.back().join();
-            _threadPool.resize(_actorToTask.size());
+            _threadPool.resize(_handleToTask.size());
         }
+        assert(_threadPool.size() <= _numThreads);
     }
 }
 
@@ -80,8 +89,8 @@ void ThreadEnvironment::poolProcessLoop(size_t index)
         //check for a configuration change and update the local state
         if (_configurationSignature != localSignature)
         {
-            std::unique_lock<std::mutex> lock(_actorUpdateMutex);
-            localTasks = _actorToTask;
+            std::unique_lock<std::mutex> lock(_handleUpdateMutex);
+            localTasks = _handleToTask;
             it = localTasks.end();
             localSignature = _configurationSignature;
         }
@@ -96,7 +105,7 @@ void ThreadEnvironment::poolProcessLoop(size_t index)
     }
 }
 
-void ThreadEnvironment::singleProcessLoop(void *actor)
+void ThreadEnvironment::singleProcessLoop(void *handle)
 {
     size_t localSignature = 0;
     std::map<void *, Task> localTasks;
@@ -107,13 +116,13 @@ void ThreadEnvironment::singleProcessLoop(void *actor)
         //check for a configuration change and update the local state
         if (_configurationSignature != localSignature)
         {
-            std::unique_lock<std::mutex> lock(_actorUpdateMutex);
-            localTasks = _actorToTask;
-            it = localTasks.find(actor);
+            std::unique_lock<std::mutex> lock(_handleUpdateMutex);
+            localTasks = _handleToTask;
+            it = localTasks.find(handle);
             localSignature = _configurationSignature;
         }
 
-        //actor mode, actor not in tasks
+        //handle mode, handle not in tasks
         if (it == localTasks.end()) return;
 
         //perform the task

@@ -3,7 +3,6 @@
 
 #pragma once
 #include "Framework/ActorInterface.hpp"
-#include "Framework/ThreadEnvironment.hpp"
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Poco/Format.h>
@@ -39,9 +38,6 @@ public:
             this->workerThreadRelease();
         }
     }
-
-    //! a reference to the executing thread pool
-    std::shared_ptr<ThreadEnvironment> threads;
 
     ///////////////////// WorkerActor storage ///////////////////////
     Block *block;

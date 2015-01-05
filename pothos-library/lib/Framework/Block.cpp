@@ -1,7 +1,8 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
+#include "Framework/ThreadEnvironment.hpp"
 #include <Pothos/Object/Containers.hpp>
 #include <Pothos/Framework/OutputPortImpl.hpp>
 #include <Poco/String.h>
@@ -9,11 +10,26 @@
 /***********************************************************************
  * threadpool calls
  **********************************************************************/
-void Pothos::Block::setThreadPool(const ThreadPool &threadPool)
+void Pothos::Block::setThreadPool(const ThreadPool &newThreadPool)
 {
-    if (_threadPool == threadPool) return; //no change
+    if (_threadPool == newThreadPool) return; //no change
 
-    //TODO
+    //unregister if the old thread pool is valid
+    if (_threadPool)
+    {
+        auto threads = std::static_pointer_cast<ThreadEnvironment>(_threadPool.getContainer());
+        threads->unregisterTask(this);
+    }
+
+    //register if the new thread pool is valid
+    if (newThreadPool)
+    {
+        auto threads = std::static_pointer_cast<ThreadEnvironment>(newThreadPool.getContainer());
+        threads->registerTask(this, std::bind(&Pothos::WorkerActor::processTask, _actor.get(), std::placeholders::_1));
+    }
+
+    //and save the reference to the new pool
+    _threadPool = newThreadPool;
 }
 
 const Pothos::ThreadPool &Pothos::Block::getThreadPool(void) const
@@ -27,14 +43,14 @@ const Pothos::ThreadPool &Pothos::Block::getThreadPool(void) const
 Pothos::Block::Block(void):
     _actor(new WorkerActor(this))
 {
-    //TODO need to get default ThreadEnvironment
-    _actor->threads.reset(new ThreadEnvironment(0));
-    _actor->threads->registerActor(_actor.get(), std::bind(&Pothos::WorkerActor::processTask, _actor.get(), std::placeholders::_1));
+    //set the default thread pool (registers)
+    this->setThreadPool(ThreadPool(ThreadPoolArgs()));
 }
 
 Pothos::Block::~Block(void)
 {
-    _actor->threads->unregisterActor(_actor.get());
+    //clear the thread pool (unregisters)
+    this->setThreadPool(ThreadPool());
 }
 
 void Pothos::Block::work(void)

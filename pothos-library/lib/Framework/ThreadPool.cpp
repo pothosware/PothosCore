@@ -1,11 +1,10 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/ThreadPool.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Poco/Environment.h>
-#include <Theron/Actor.h>
-#include <Theron/Framework.h>
+#include "Framework/ThreadEnvironment.hpp"
 
 Pothos::ThreadPoolArgs::ThreadPoolArgs(void):
     numThreads(0),
@@ -31,43 +30,45 @@ Pothos::ThreadPool::ThreadPool(const std::shared_ptr<void> &impl):
 {
     return;
 }
-
+/*
 static uint32_t toMask(const Pothos::ThreadPoolArgs &args)
 {
     uint32_t mask = 0;
     for (auto i : args.affinity) mask |= (1 << i);
     return mask;
 }
+*/
 
-Pothos::ThreadPool::ThreadPool(const ThreadPoolArgs &args)
+Pothos::ThreadPool::ThreadPool(const ThreadPoolArgs &args):
+    _impl(new ThreadEnvironment(args.numThreads))
 {
-    //create params for the number of threads
-    Theron::Framework::Parameters params(args.numThreads, 0);
-    if (args.numThreads == 0) params.mThreadCount = Poco::Environment::processorCount()+1;
+    ////create params for the number of threads
+    //Theron::Framework::Parameters params(args.numThreads, 0);
+    //if (args.numThreads == 0) params.mThreadCount = Poco::Environment::processorCount()+1;
 
-    //setup affinity masks
-    if (args.affinityMode.empty()){/* no changes to default masks */}
-    else if (args.affinityMode == "ALL"){/* no changes to default masks */}
-    else if (args.affinityMode == "CPU") params.mProcessorMask = toMask(args);
-    else if (args.affinityMode == "NUMA") params.mNodeMask = toMask(args);
-    else throw ThreadPoolError("Pothos::ThreadPool()", "unknown affinityMode " + args.affinityMode);
+    ////setup affinity masks
+    //if (args.affinityMode.empty()){/* no changes to default masks */}
+    //else if (args.affinityMode == "ALL"){/* no changes to default masks */}
+    //else if (args.affinityMode == "CPU") params.mProcessorMask = toMask(args);
+    //else if (args.affinityMode == "NUMA") params.mNodeMask = toMask(args);
+    //else throw ThreadPoolError("Pothos::ThreadPool()", "unknown affinityMode " + args.affinityMode);
 
-    //when setting via numa nodes, use the full mask
-    if (args.affinityMode == "NUMA") params.mProcessorMask = ~0;
+    ////when setting via numa nodes, use the full mask
+    //if (args.affinityMode == "NUMA") params.mProcessorMask = ~0;
 
-    //setup yield strategy
-    if (args.yieldMode.empty()) params.mYieldStrategy = Theron::YIELD_STRATEGY_CONDITION;
-    else if (args.yieldMode == "CONDITION") params.mYieldStrategy = Theron::YIELD_STRATEGY_CONDITION;
-    else if (args.yieldMode == "HYBRID") params.mYieldStrategy = Theron::YIELD_STRATEGY_HYBRID;
-    else if (args.yieldMode == "SPIN") params.mYieldStrategy = Theron::YIELD_STRATEGY_SPIN;
-    else throw ThreadPoolError("Pothos::ThreadPool()", "unknown yieldMode " + args.yieldMode);
+    ////setup yield strategy
+    //if (args.yieldMode.empty()) params.mYieldStrategy = Theron::YIELD_STRATEGY_CONDITION;
+    //else if (args.yieldMode == "CONDITION") params.mYieldStrategy = Theron::YIELD_STRATEGY_CONDITION;
+    //else if (args.yieldMode == "HYBRID") params.mYieldStrategy = Theron::YIELD_STRATEGY_HYBRID;
+    //else if (args.yieldMode == "SPIN") params.mYieldStrategy = Theron::YIELD_STRATEGY_SPIN;
+    //else throw ThreadPoolError("Pothos::ThreadPool()", "unknown yieldMode " + args.yieldMode);
 
-    //thread priority
-    if (args.priority > +1.0 or args.priority < -1.0) throw ThreadPoolError("Pothos::ThreadPool()", "priority out of range " + std::to_string(args.priority));
-    params.mThreadPriority = float(args.priority);
+    ////thread priority
+    //if (args.priority > +1.0 or args.priority < -1.0) throw ThreadPoolError("Pothos::ThreadPool()", "priority out of range " + std::to_string(args.priority));
+    //params.mThreadPriority = float(args.priority);
 
-    std::shared_ptr<Theron::Framework> framework(new Theron::Framework(params));
-    _impl = framework;
+    //std::shared_ptr<Theron::Framework> framework(new Theron::Framework(params));
+    //_impl = framework;
 }
 
 Pothos::ThreadPool::operator bool(void) const

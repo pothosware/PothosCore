@@ -20,50 +20,50 @@ public:
     typedef std::function<void(int)> Task;
 
     /*!
-     * Register an actor with this thread environment.
-     * \param actor a unique handle representing the actor pointer
-     * \param task a function pointer to the actor worker task
+     * Register a task with this thread environment.
+     * \param handle a unique handle representing the caller
+     * \param task a function pointer to the handle worker task
      */
-    void registerActor(void *actor, Task task);
+    void registerTask(void *handle, Task task);
 
     /*!
-     * Unregister the actor from the thread environment.
-     * \param actor a unique handle representing the actor pointer
+     * Unregister the task from the thread environment.
+     * \param handle the unique handle used to register
      */
-    void unregisterActor(void *actor);
+    void unregisterTask(void *handle);
 
 private:
     /*!
      * Process loop used in thread pool mode:
      * The index specifies the thread index.
      * If the index is out of range given
-     * the number of actors, the thread exits.
+     * the number of handles, the thread exits.
      */
     void poolProcessLoop(size_t index);
 
     /*!
-     * Process loop used in thread per actor mode.
-     * If the actor is removed, the thread exists.
+     * Process loop used in thread per task mode.
+     * If the handle is removed, the thread exists.
      */
-    void singleProcessLoop(void *actor);
+    void singleProcessLoop(void *handle);
 
-    //the maximum number of threads or 0 for thread per actor mode
+    //the maximum number of threads or 0 for thread per handle mode
     size_t _numThreads;
 
-    //map of actor handles to tasks
-    std::map<void *, Task> _actorToTask;
+    //map of handle handles to tasks
+    std::map<void *, Task> _handleToTask;
 
-    //configuration signature (changed when actor list changed)
+    //configuration signature (changed when handle list changed)
     std::atomic<size_t> _configurationSignature;
 
-    //mutex for protecting actor registration
+    //mutex for protecting handle registration
     std::mutex _registrationMutex;
 
-    //mutex for protecting actor updates to the thread pool
-    std::mutex _actorUpdateMutex;
+    //mutex for protecting handle updates to the thread pool
+    std::mutex _handleUpdateMutex;
 
-    //actor to thread map (used in actor per thread mode)
-    std::map<void *, std::thread> _actorToThread;
+    //handle to thread map (used in handle per thread mode)
+    std::map<void *, std::thread> _handleToThread;
 
     //per-thread process loop done flags (used in thread pool mode)
     std::vector<std::thread> _threadPool;
