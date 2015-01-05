@@ -30,7 +30,7 @@ public:
      * Perform the main processing task once.
      * Give the context back to the worker thread.
      */
-    void processTask(int)
+    void processTask(void)
     {
         if (this->workerThreadAcquire())
         {

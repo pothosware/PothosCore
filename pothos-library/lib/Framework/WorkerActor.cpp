@@ -177,7 +177,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     //////////////// output state calculation ///////////////////
     block->_workInfo.minOutElements = BIG;
     block->_workInfo.minAllOutElements = BIG;
-    for (auto &entry : this->outputs)
+    for (const auto &entry : this->outputs)
     {
         auto &port = *entry.second;
         port._workEvents = 0;
@@ -223,7 +223,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     //////////////// input state calculation ///////////////////
     block->_workInfo.minInElements = BIG;
     block->_workInfo.minAllInElements = BIG;
-    for (auto &entry : this->inputs)
+    for (const auto &entry : this->inputs)
     {
         auto &port = *entry.second;
         port._workEvents = 0;
@@ -278,7 +278,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     unsigned long long bytesConsumed = 0;
     unsigned long long msgsConsumed = 0;
 
-    for (auto &entry : this->inputs)
+    for (const auto &entry : this->inputs)
     {
         auto &port = *entry.second;
         const size_t bytes = port._pendingElements*port.dtype().size();
@@ -340,7 +340,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     unsigned long long bytesProduced = 0;
     unsigned long long msgsProduced = 0;
 
-    for (auto &entry : this->outputs)
+    for (const auto &entry : this->outputs)
     {
         auto &port = *entry.second;
         msgsProduced += port._totalMessages;

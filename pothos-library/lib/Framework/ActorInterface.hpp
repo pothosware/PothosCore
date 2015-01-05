@@ -16,6 +16,7 @@ class ActorInterface
 public:
 
     ActorInterface(void):
+        _waitModeEnabled(false),
         _changeFlagged(false)
     {
         _internalAcquired.clear(std::memory_order_release);
@@ -59,7 +60,14 @@ public:
      */
     void flagInternalChange(void);
 
+    //! Enable or disable use of condition variables
+    void enableWaitMode(const bool enb)
+    {
+        _waitModeEnabled = enb;
+    }
+
 private:
+    bool _waitModeEnabled;
     std::atomic<bool> _changeFlagged;
     std::atomic_flag _internalAcquired;
     std::mutex _mutex;
@@ -103,12 +111,24 @@ inline bool ActorInterface::workerThreadAcquire(void)
     //when used in pool mode, this call returns ASAP when another thread is working
     if (not _internalAcquired.test_and_set(std::memory_order_acquire)) return false;
 
-    std::unique_lock<std::mutex> lock(_mutex);
-    while (not _changeFlagged.exchange(false))
+    //fast-check for already flagged case
+    if (_changeFlagged.exchange(false))
     {
-        if (_cond.wait_for(lock, std::chrono::milliseconds(1)) == std::cv_status::timeout) return false;
+        _mutex.lock();
+        return true;
     }
-    lock.release();
+
+    //wait mode enabled -- lock and wait on condition variable
+    if (_waitModeEnabled)
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        while (not _changeFlagged.exchange(false))
+        {
+            if (_cond.wait_for(lock, std::chrono::milliseconds(1)) == std::cv_status::timeout) return false;
+        }
+        lock.release();
+    }
+
     return true;
 }
 
@@ -121,6 +141,7 @@ inline void ActorInterface::workerThreadRelease(void)
 inline void ActorInterface::flagExternalChange(void)
 {
     _changeFlagged = true;
+    if (not _waitModeEnabled) return;
     if (not _mutex.try_lock()) return;
     _mutex.unlock();
     _cond.notify_one();

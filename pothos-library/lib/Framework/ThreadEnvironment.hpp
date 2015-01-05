@@ -18,7 +18,7 @@ public:
 
     ~ThreadEnvironment(void);
 
-    typedef std::function<void(int)> Task;
+    typedef std::function<void(void)> Task;
 
     /*!
      * Register a task with this thread environment.
@@ -32,6 +32,12 @@ public:
      * \param handle the unique handle used to register
      */
     void unregisterTask(void *handle);
+
+    //! Query the thread pool construction args
+    const Pothos::ThreadPoolArgs &getArgs(void) const
+    {
+        return _args;
+    }
 
 private:
     /*!

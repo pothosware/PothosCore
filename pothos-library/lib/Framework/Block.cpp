@@ -25,7 +25,11 @@ void Pothos::Block::setThreadPool(const ThreadPool &newThreadPool)
     if (newThreadPool)
     {
         auto threads = std::static_pointer_cast<ThreadEnvironment>(newThreadPool.getContainer());
-        threads->registerTask(this, std::bind(&Pothos::WorkerActor::processTask, _actor.get(), std::placeholders::_1));
+        threads->registerTask(this, std::bind(&Pothos::WorkerActor::processTask, _actor.get()));
+
+        //configure the actor interface based on thread pool args
+        //all we support for now is the default (wait) or spin mode
+        _actor->enableWaitMode(threads->getArgs().yieldMode != "SPIN");
     }
 
     //and save the reference to the new pool

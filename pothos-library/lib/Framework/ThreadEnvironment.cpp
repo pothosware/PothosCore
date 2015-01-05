@@ -102,7 +102,7 @@ void ThreadEnvironment::poolProcessLoop(size_t index)
 
         //perform a task and increment
         if (it == localTasks.end()) it = localTasks.begin();
-        it->second(0);
+        it->second();
         it++;
     }
 }
@@ -129,7 +129,7 @@ void ThreadEnvironment::singleProcessLoop(void *handle)
         if (it == localTasks.end()) return;
 
         //perform the task
-        it->second(0);
+        it->second();
     }
 }
 
