@@ -27,12 +27,14 @@ const Pothos::ThreadPool &Pothos::Block::getThreadPool(void) const
 Pothos::Block::Block(void):
     _actor(new WorkerActor(this))
 {
-    return;
+    //TODO need to get default ThreadEnvironment
+    _actor->threads.reset(new ThreadEnvironment(0));
+    _actor->threads->registerActor(_actor.get(), std::bind(&Pothos::WorkerActor::processTask, _actor.get(), std::placeholders::_1));
 }
 
 Pothos::Block::~Block(void)
 {
-    _actor->shutdown();
+    _actor->threads->unregisterActor(_actor.get());
 }
 
 void Pothos::Block::work(void)
@@ -64,7 +66,7 @@ void Pothos::Block::propagateLabels(const InputPort *input)
 
 Pothos::WorkStats Pothos::Block::workStats(void) const
 {
-    WorkerActorLock<WorkerActor> lock(_actor.get());
+    ActorInterfaceLock lock(_actor.get());
 
     _actor->workStats.timeStatsQuery = std::chrono::high_resolution_clock::now();
     return _actor->workStats;
@@ -203,14 +205,14 @@ Pothos::Object Pothos::Block::opaqueCallMethod(const std::string &name, const Po
         throw Pothos::BlockCallNotFound("Pothos::Block::call("+name+")", "method does not exist in registry");
     }
 
-    WorkerActorLock<WorkerActor> lock(_actor.get());
+    ActorInterfaceLock lock(_actor.get());
 
     return const_cast<Block *>(this)->opaqueCallHandler(name, inputArgs, numArgs);
 }
 
 void Pothos::Block::yield(void)
 {
-    _actor->flagChangeNoWake();
+    _actor->flagInternalChange();
 }
 
 std::shared_ptr<Pothos::BufferManager> Pothos::Block::getInputBufferManager(const std::string &, const std::string &)

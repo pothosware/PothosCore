@@ -48,7 +48,7 @@ Pothos::BufferManager::Sptr Pothos::WorkerActor::getBufferManager(const std::str
 
 void Pothos::WorkerActor::setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager)
 {
-    WorkerActorLock<WorkerActor> lock(this);
+    ActorInterfaceLock lock(this);
     outputs.at(name)->bufferManagerSetup(manager);
 }
 
@@ -60,7 +60,7 @@ void Pothos::WorkerActor::subscribePort(
     Pothos::Block *subscriberPortBlock,
     const std::string &subscriberPortName)
 {
-    WorkerActorLock<WorkerActor> lock(this);
+    ActorInterfaceLock lock(this);
 
     auto inputPort = subscriberPortBlock->input(subscriberPortName);
     auto &subscribers = this->outputs.at(myPortName)->_subscribers;
@@ -82,7 +82,7 @@ void Pothos::WorkerActor::unsubscribePort(
     Pothos::Block *subscriberPortBlock,
     const std::string &subscriberPortName)
 {
-    WorkerActorLock<WorkerActor> lock(this);
+    ActorInterfaceLock lock(this);
 
     auto inputPort = subscriberPortBlock->input(subscriberPortName);
     auto &subscribers = this->outputs.at(myPortName)->_subscribers;
@@ -104,7 +104,7 @@ void Pothos::WorkerActor::unsubscribePort(
  **********************************************************************/
 void Pothos::WorkerActor::setActiveStateOn(void)
 {
-    WorkerActorLock<WorkerActor> lock(this);
+    ActorInterfaceLock lock(this);
 
     POTHOS_EXCEPTION_TRY
     {
@@ -120,7 +120,7 @@ void Pothos::WorkerActor::setActiveStateOn(void)
 
 void Pothos::WorkerActor::setActiveStateOff(void)
 {
-    WorkerActorLock<WorkerActor> lock(this);
+    ActorInterfaceLock lock(this);
 
     //not activated? just return
     if (not this->activeState) return;
@@ -329,7 +329,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     this->workStats.msgsConsumed += msgsConsumed;
     if (inputWorkEvents != 0)
     {
-        this->flagChangeNoWake();
+        this->flagInternalChange();
         this->workStats.timeLastConsumed = std::chrono::high_resolution_clock::now();
     }
 
@@ -402,7 +402,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     this->workStats.msgsProduced += msgsProduced;
     if (outputWorkEvents != 0)
     {
-        this->flagChangeNoWake();
+        this->flagInternalChange();
         this->workStats.timeLastProduced = std::chrono::high_resolution_clock::now();
     }
 }

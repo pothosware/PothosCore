@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include "Framework/ActorInterface.hpp"
+#include "Framework/ThreadEnvironment.hpp"
 #include <Pothos/Framework/BlockImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Poco/Format.h>
@@ -12,161 +14,37 @@
 #include <condition_variable>
 #include <iostream>
 
-template <typename T>
-struct WorkerActorLock
-{
-    WorkerActorLock(T *actor):
-        _actor(actor)
-    {
-        _actor->acquireContext();
-    }
-    ~WorkerActorLock(void)
-    {
-        _actor->releaseContext();
-    }
-    T *_actor;
-};
-
 /***********************************************************************
  * Actor definition
  **********************************************************************/
-class Pothos::WorkerActor
+class Pothos::WorkerActor : public ActorInterface
 {
 public:
     WorkerActor(Block *block):
         block(block),
         activeState(false)
     {
-        _condVarsWaiting = 0;
-        _acquisitionCount = 0;
-        _changeFlagged = false;
-        _processDone = false;
-        _acquirePrio = 0;
-        _processThread = std::thread(std::bind(&Pothos::WorkerActor::processLoop, this));
-    }
-
-    void shutdown(void)
-    {
-        {
-            WorkerActorLock<WorkerActor> lock(this);
-            _processDone = true;
-        }
-        _processThread.join();
-        this->outputs.clear();
-        this->inputs.clear();
-        this->updatePorts();
-    }
-
-    //////////////////////////////////// new threading impl ////////////////////////////////////
-
-    size_t _condVarsWaiting, _acquisitionCount, _acquirePrio;
-    bool _changeFlagged, _processDone;
-
-    //std::atomic<size_t> _condVarsWaiting;
-    //std::atomic<size_t> _acquisitionCount;
-    //std::atomic<bool> _changeFlagged;
-    std::mutex _acquisitionMutex;
-    std::condition_variable _acquisitionCondVar;
-    //std::atomic<bool> _processDone;
-    std::thread _processThread;
-
-    /*!
-     * Acquire the call context for this actor.
-     * If another thread has called acquire,
-     * this call will block waiting for release.
-     */
-    void acquireContext(void)
-    {
-        std::unique_lock<std::mutex> lock(_acquisitionMutex);
-        _acquirePrio++;
-        while (_acquisitionCount != 0)
-        {
-            _acquisitionCondVar.wait(lock);
-            //_acquisitionCondVar.wait_for(lock, std::chrono::milliseconds(1));
-        }
-        _acquisitionCount++;
+        return;
     }
 
     /*!
-     * Release the call context for this actor.
-     * Every call to acquire must be matched.
+     * Perform the main processing task once.
+     * Give the context back to the worker thread.
      */
-    void releaseEventContext(void)
+    void processTask(int)
     {
+        if (this->workerThreadAcquire())
         {
-            std::unique_lock<std::mutex> lock(_acquisitionMutex);
-            _acquisitionCount--;
-        }
-        this->notifyWaiters();
-    }
-
-    void releaseContext(void)
-    {
-        {
-            std::unique_lock<std::mutex> lock(_acquisitionMutex);
-            _acquisitionCount--;
-            _acquirePrio--;
-            _changeFlagged = true;
-        }
-        this->notifyWaiters();
-    }
-
-    /*!
-     * Indicate an event or resource change.
-     */
-    void flagChange(void)
-    {
-        {
-            std::unique_lock<std::mutex> lock(_acquisitionMutex);
-            _changeFlagged = true;
-        }
-        this->notifyWaiters();
-    }
-
-    //! flag change from inside context
-    void flagChangeNoWake(void)
-    {
-        std::unique_lock<std::mutex> lock(_acquisitionMutex);
-        _changeFlagged = true;
-    }
-
-    /*!
-     * Wake up one thread waiting on the condition variable.
-     */
-    void notifyWaiters(void)
-    {
-        _acquisitionCondVar.notify_all();
-    }
-
-    /*!
-     * Block in this call waiting for the change flag.
-     */
-    void acquireEventContext(void)
-    {
-        std::unique_lock<std::mutex> lock(_acquisitionMutex);
-        while (not _changeFlagged or _acquisitionCount != 0 or _acquirePrio > 0)
-        {
-            _acquisitionCondVar.wait(lock);
-            //_acquisitionCondVar.wait_for(lock, std::chrono::milliseconds(1));
-        }
-        _changeFlagged = false;
-        _acquisitionCount++;
-    }
-
-    /*!
-     * Perform the main processing action.
-     */
-    void processLoop(void)
-    {
-        while (not _processDone)
-        {
-            this->acquireEventContext();
-
             this->workTask();
-
-            this->releaseEventContext();
+            this->workerThreadRelease();
         }
     }
+
+    //! a reference to the executing thread pool
+    std::shared_ptr<ThreadEnvironment> threads;
+
+    //TODO remove this
+    void flagChange(void) {this->flagExternalChange();}
 
     ///////////////////// WorkerActor storage ///////////////////////
     Block *block;
