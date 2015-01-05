@@ -11,6 +11,28 @@
 #include <vector>
 #include <map>
 
+/*!
+ * Storage container for a worker task and an atomic flag.
+ * The flag is used for exclusive access in pool mode.
+ */
+struct TaskData
+{
+    typedef std::function<void(void)> Task;
+
+    TaskData(const Task task):
+        task(task)
+    {
+        flag.clear(std::memory_order_release);
+    }
+
+    Task task;
+    std::atomic_flag flag;
+};
+
+/*!
+ * ThreadEnvironment is the implementation details for ThreadPool.
+ * It manages groups of threads, configuration, task dispatching.
+ */
 class ThreadEnvironment
 {
 public:
@@ -18,14 +40,12 @@ public:
 
     ~ThreadEnvironment(void);
 
-    typedef std::function<void(void)> Task;
-
     /*!
      * Register a task with this thread environment.
      * \param handle a unique handle representing the caller
      * \param task a function pointer to the handle worker task
      */
-    void registerTask(void *handle, Task task);
+    void registerTask(void *handle, TaskData::Task task);
 
     /*!
      * Unregister the task from the thread environment.
@@ -73,7 +93,7 @@ private:
     Pothos::ThreadPoolArgs _args;
 
     //map of handle handles to tasks
-    std::map<void *, Task> _handleToTask;
+    std::map<void *, TaskData *> _handleToTask;
 
     //configuration signature (changed when handle list changed)
     std::atomic<size_t> _configurationSignature;

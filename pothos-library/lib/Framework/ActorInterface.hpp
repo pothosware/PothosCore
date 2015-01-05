@@ -19,7 +19,7 @@ public:
         _waitModeEnabled(false),
         _changeFlagged(false)
     {
-        _internalAcquired.clear(std::memory_order_release);
+        return;
     }
 
     virtual ~ActorInterface(void)
@@ -69,7 +69,6 @@ public:
 private:
     bool _waitModeEnabled;
     std::atomic<bool> _changeFlagged;
-    std::atomic_flag _internalAcquired;
     std::mutex _mutex;
     std::condition_variable _cond;
 };
@@ -108,9 +107,6 @@ inline void ActorInterface::externalCallRelease(void)
 
 inline bool ActorInterface::workerThreadAcquire(void)
 {
-    //when used in pool mode, this call returns ASAP when another thread is working
-    if (not _internalAcquired.test_and_set(std::memory_order_acquire)) return false;
-
     //fast-check for already flagged case
     if (_changeFlagged.exchange(false))
     {
@@ -135,7 +131,6 @@ inline bool ActorInterface::workerThreadAcquire(void)
 inline void ActorInterface::workerThreadRelease(void)
 {
     _mutex.unlock();
-    _internalAcquired.clear(std::memory_order_release);
 }
 
 inline void ActorInterface::flagExternalChange(void)

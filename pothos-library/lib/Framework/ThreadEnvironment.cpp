@@ -20,14 +20,14 @@ ThreadEnvironment::~ThreadEnvironment(void)
     }
 }
 
-void ThreadEnvironment::registerTask(void *handle, ThreadEnvironment::Task task)
+void ThreadEnvironment::registerTask(void *handle, TaskData::Task task)
 {
     std::lock_guard<std::mutex> lock(_registrationMutex);
 
     //register the new task and bump the signature to notify threads
     {
         std::lock_guard<std::mutex> lock0(_handleUpdateMutex);
-        _handleToTask[handle] = task;
+        _handleToTask[handle] = new TaskData(task);
     }
     _configurationSignature++;
 
@@ -56,6 +56,7 @@ void ThreadEnvironment::unregisterTask(void *handle)
     //unregister the new task and bump the signature to notify threads
     {
         std::lock_guard<std::mutex> lock0(_handleUpdateMutex);
+        delete _handleToTask.at(handle);
         _handleToTask.erase(handle);
     }
     _configurationSignature++;
@@ -83,7 +84,7 @@ void ThreadEnvironment::poolProcessLoop(size_t index)
 {
     this->applyThreadConfig();
     size_t localSignature = 0;
-    std::map<void *, Task> localTasks;
+    std::map<void *, TaskData *> localTasks;
     auto it = localTasks.end();
 
     while (true)
@@ -102,7 +103,11 @@ void ThreadEnvironment::poolProcessLoop(size_t index)
 
         //perform a task and increment
         if (it == localTasks.end()) it = localTasks.begin();
-        it->second();
+        if (it->second->flag.test_and_set(std::memory_order_acquire))
+        {
+            it->second->task();
+            it->second->flag.clear(std::memory_order_release);
+        }
         it++;
     }
 }
@@ -111,7 +116,7 @@ void ThreadEnvironment::singleProcessLoop(void *handle)
 {
     this->applyThreadConfig();
     size_t localSignature = 0;
-    std::map<void *, Task> localTasks;
+    std::map<void *, TaskData *> localTasks;
     auto it = localTasks.end();
 
     while (true)
@@ -129,7 +134,7 @@ void ThreadEnvironment::singleProcessLoop(void *handle)
         if (it == localTasks.end()) return;
 
         //perform the task
-        it->second();
+        it->second->task();
     }
 }
 
