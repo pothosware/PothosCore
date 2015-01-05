@@ -16,14 +16,15 @@ class ActorInterface
 public:
 
     ActorInterface(void):
-        _changeFlagged(false),
-        _externalAcquired(0),
-        _contextAcquired(0)
+        _changeFlagged(false)
     {
         _internalAcquired.clear(std::memory_order_release);
     }
 
-    ~ActorInterface(void){}
+    virtual ~ActorInterface(void)
+    {
+        return;
+    }
 
     /*!
      * External callers from outside of the thread context
@@ -59,14 +60,8 @@ public:
     void flagInternalChange(void);
 
 private:
-
-    //! called in release/flag to wake up waiters
-    void notifyWaiters(void);
-
     std::atomic<bool> _changeFlagged;
-    std::atomic<size_t> _externalAcquired;
     std::atomic_flag _internalAcquired;
-    std::atomic<size_t> _contextAcquired;
     std::mutex _mutex;
     std::condition_variable _cond;
 };
@@ -93,25 +88,14 @@ private:
 
 inline void ActorInterface::externalCallAcquire(void)
 {
-    std::unique_lock<std::mutex> lock(_mutex);
-    _externalAcquired++;
-    while (_contextAcquired != 0)
-    {
-        _cond.wait(lock);
-        //_cond.wait_for(lock, std::chrono::milliseconds(1));
-    }
-    _contextAcquired++;
+    _mutex.lock();
 }
 
 inline void ActorInterface::externalCallRelease(void)
 {
-    {
-        std::lock_guard<std::mutex> lock(_mutex);
-        _contextAcquired--;
-        _externalAcquired--;
-        _changeFlagged = true;
-    }
-    this->notifyWaiters();
+    _changeFlagged = true;
+    _mutex.unlock();
+    _cond.notify_one();
 }
 
 inline bool ActorInterface::workerThreadAcquire(void)
@@ -120,41 +104,29 @@ inline bool ActorInterface::workerThreadAcquire(void)
     if (not _internalAcquired.test_and_set(std::memory_order_acquire)) return false;
 
     std::unique_lock<std::mutex> lock(_mutex);
-    while (not _changeFlagged or _contextAcquired != 0 or _externalAcquired > 0)
+    while (not _changeFlagged.exchange(false))
     {
-        //_cond.wait(lock);
         if (_cond.wait_for(lock, std::chrono::milliseconds(1)) == std::cv_status::timeout) return false;
     }
-    _changeFlagged = false;
-    _contextAcquired++;
+    lock.release();
     return true;
 }
 
 inline void ActorInterface::workerThreadRelease(void)
 {
-    {
-        std::lock_guard<std::mutex> lock(_mutex);
-        _contextAcquired--;
-    }
-    this->notifyWaiters();
+    _mutex.unlock();
     _internalAcquired.clear(std::memory_order_release);
 }
 
 inline void ActorInterface::flagExternalChange(void)
 {
-    {
-        std::lock_guard<std::mutex> lock(_mutex);
-        _changeFlagged = true;
-    }
-    this->notifyWaiters();
+    _changeFlagged = true;
+    if (not _mutex.try_lock()) return;
+    _mutex.unlock();
+    _cond.notify_one();
 }
 
 inline void ActorInterface::flagInternalChange(void)
 {
     _changeFlagged = true;
-}
-
-inline void ActorInterface::notifyWaiters(void)
-{
-    _cond.notify_all();
 }
