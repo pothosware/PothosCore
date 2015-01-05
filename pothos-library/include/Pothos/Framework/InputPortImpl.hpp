@@ -147,7 +147,7 @@ inline void Pothos::InputPort::inlineMessagesClear(void)
     _inlineMessages.clear();
 }
 
-inline Pothos::BufferChunk Pothos::InputPort::bufferAccumulatorFront(void)
+inline void Pothos::InputPort::bufferAccumulatorFront(Pothos::BufferChunk &buff)
 {
     std::unique_lock<Util::SpinLock> lock(_bufferAccumulatorLock);
     while (not _inputInlineMessages.empty())
@@ -157,7 +157,7 @@ inline Pothos::BufferChunk Pothos::InputPort::bufferAccumulatorFront(void)
         label.index /= this->dtype().size(); //convert from bytes to elements
         _inlineMessages.push_back(label);
     }
-    return _bufferAccumulator.front();
+    buff = _bufferAccumulator.front();
 }
 
 inline void Pothos::InputPort::bufferAccumulatorPush(const BufferChunk &buffer)

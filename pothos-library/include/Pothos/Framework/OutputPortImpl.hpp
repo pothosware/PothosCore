@@ -117,10 +117,10 @@ inline bool Pothos::OutputPort::bufferManagerEmpty(void)
     return not _bufferManager or _bufferManager->empty();
 }
 
-inline Pothos::BufferChunk Pothos::OutputPort::bufferManagerFront(void)
+inline void Pothos::OutputPort::bufferManagerFront(Pothos::BufferChunk &buff)
 {
     std::unique_lock<Util::SpinLock> lock(_bufferManagerLock);
-    return _bufferManager->front();
+    buff = _bufferManager->front();
 }
 
 inline void Pothos::OutputPort::bufferManagerPop(const size_t numBytes)

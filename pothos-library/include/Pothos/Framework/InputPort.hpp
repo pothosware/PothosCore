@@ -226,7 +226,7 @@ private:
     void inlineMessagesClear(void);
 
     /////// input buffer interface /////////
-    BufferChunk bufferAccumulatorFront(void);
+    void bufferAccumulatorFront(BufferChunk &);
     void bufferAccumulatorPush(const BufferChunk &buffer);
     void bufferAccumulatorPushNoLock(const BufferChunk &buffer);
     void bufferAccumulatorPop(const size_t numBytes);

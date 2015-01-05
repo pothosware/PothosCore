@@ -195,7 +195,7 @@ private:
     /////// buffer manager /////////
     void bufferManagerSetup(const BufferManager::Sptr &manager);
     bool bufferManagerEmpty(void);
-    BufferChunk bufferManagerFront(void);
+    void bufferManagerFront(BufferChunk &);
     void bufferManagerPop(const size_t numBytes);
     void bufferManagerPush(Pothos::Util::SpinLock *mutex, const ManagedBuffer &buff);
 

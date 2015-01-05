@@ -181,11 +181,21 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     {
         auto &port = *entry.second;
         port._workEvents = 0;
-        if ( //handle read before wite port if specified
-            port._readBeforeWritePort != nullptr and
-            port.dtype().size() == port._readBeforeWritePort->dtype().size() and
-            (port._buffer = port._readBeforeWritePort->bufferAccumulatorFront()).useCount() == 2 //2 -> accumulator + this assignment
-        ) port._bufferFromManager = false;
+
+        //is it ok to use the read-before-write optimization?
+        const auto tryRBW = port._readBeforeWritePort != nullptr and
+        port.dtype().size() == port._readBeforeWritePort->dtype().size();
+        if (tryRBW)
+        {
+            port._readBeforeWritePort->_buffer = BufferChunk::null();
+            port._readBeforeWritePort->bufferAccumulatorFront(port._buffer);
+        }
+
+        //now determine the buffer provided to this port
+        if (tryRBW and port._buffer.useCount() == 2) //2 -> accumulator + this port
+        {
+            port._bufferFromManager = false;
+        }
         else if (port.bufferManagerEmpty())
         {
             port._buffer = BufferChunk::null();
@@ -193,11 +203,10 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         }
         else
         {
-            port._buffer = port.bufferManagerFront();
+            port.bufferManagerFront(port._buffer);
             port._bufferFromManager = true;
         }
         port._buffer.dtype = port.dtype(); //always copy from port's dtype setting
-        assert(not port._bufferFromManager or port._buffer == port.bufferManagerFront());
         port._elements = port._buffer.elements();
         if (port._elements == 0 and not port.isSignal()) allOutputsReady = false;
         if (port.tokenManagerEmpty()) allOutputsReady = false;
@@ -233,7 +242,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         //perform minimum reserve accumulator require to recover from possible element fragmentation
         const size_t requireElems = std::max<size_t>(1, port._reserveElements);
         port.bufferAccumulatorRequire(requireElems*port.dtype().size());
-        port._buffer = port.bufferAccumulatorFront();
+        port.bufferAccumulatorFront(port._buffer);
         port._elements = port._buffer.length/port.dtype().size();
         if (port._elements < port._reserveElements) allInputsReady = false;
         if (not port.asyncMessagesEmpty()) hasInputMessage = true;
