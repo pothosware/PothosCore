@@ -7,6 +7,7 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/File.h>
+#include <sstream>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -98,6 +99,20 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
     auto registry = env->findProxy("Pothos/BlockRegistry");
     auto evaluator = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("make");
 
+    //create thread pools
+    std::map<std::string, Pothos::Proxy> threadPools;
+    Poco::JSON::Object::Ptr threadPoolObj;
+    if (topObj->isObject("threadPools")) threadPoolObj = topObj->getObject("threadPools");
+    std::vector<std::string> threadPoolNames;
+    if (threadPoolObj) threadPoolObj->getNames(threadPoolNames);
+    for (const auto &name : threadPoolNames)
+    {
+        std::stringstream ss;
+        threadPoolObj->getObject(name)->stringify(ss);
+        Pothos::ThreadPoolArgs args(ss.str());
+        threadPools[name] = env->findProxy("Pothos/ThreadPool").callProxy("new", args);
+    }
+
     //create the topology and add it to the blocks
     //the IDs 'self', 'this', and '' can be used
     std::map<std::string, Pothos::Proxy> blocks;
@@ -118,6 +133,13 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
             "Pothos::Topology::make()", "blocks["+std::to_string(i)+"] missing 'id' field");
         const auto id = blockObj->getValue<std::string>("id");
         blocks[id] = makeBlock(registry, evaluator, blockObj);
+
+        //set the thread pool
+        const auto threadPoolName = blockObj->optValue<std::string>("threadPool", "default");
+        auto threadPoolIt = threadPools.find(threadPoolName);
+        if (threadPoolIt != threadPools.end()) blocks[id].callVoid("setThreadPool", threadPoolIt->second);
+        else if (threadPoolName != "default") throw Pothos::DataFormatException(
+            "Pothos::Topology::make()", "blocks["+id+"] unknown threadPool = " + threadPoolName);
     }
 
     //create the topology and connect the blocks

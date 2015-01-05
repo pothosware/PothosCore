@@ -4,6 +4,9 @@
 #include <Pothos/Framework/ThreadPool.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include "Framework/ThreadEnvironment.hpp"
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Array.h>
+#include <Poco/JSON/Parser.h>
 
 Pothos::ThreadPoolArgs::ThreadPoolArgs(void):
     numThreads(0),
@@ -17,6 +20,30 @@ Pothos::ThreadPoolArgs::ThreadPoolArgs(const size_t numThreads):
     priority(0.0)
 {
     return;
+}
+
+Pothos::ThreadPoolArgs::ThreadPoolArgs(const std::string &json):
+    numThreads(0),
+    priority(0.0)
+{
+    //parse to JSON object
+    Poco::JSON::Parser p;
+    p.parse(json);
+    auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+
+    //parse out the optional fields
+    this->numThreads = topObj->optValue<int>("numThreads", 0);
+    this->priority = topObj->optValue<double>("priority", 0.0);
+    this->affinityMode = topObj->optValue<std::string>("affinityMode", "");
+    this->yieldMode = topObj->optValue<std::string>("yieldMode", "");
+
+    //parse out the affinity list
+    Poco::JSON::Array::Ptr affinityArray;
+    if (topObj->isArray("affinity")) affinityArray = topObj->getArray("affinity");
+    if (affinityArray) for (size_t i = 0; i < affinityArray->size(); i++)
+    {
+        this->affinity.push_back(affinityArray->getElement<int>(i));
+    }
 }
 
 Pothos::ThreadPool::ThreadPool(void)
@@ -76,6 +103,7 @@ bool Pothos::operator==(const ThreadPool &lhs, const ThreadPool &rhs)
 static auto managedThreadPoolArgs = Pothos::ManagedClass()
     .registerConstructor<Pothos::ThreadPoolArgs>()
     .registerConstructor<Pothos::ThreadPoolArgs, const size_t>()
+    .registerConstructor<Pothos::ThreadPoolArgs, const std::string &>()
     .registerField(POTHOS_FCN_TUPLE(Pothos::ThreadPoolArgs, numThreads))
     .registerField(POTHOS_FCN_TUPLE(Pothos::ThreadPoolArgs, priority))
     .registerField(POTHOS_FCN_TUPLE(Pothos::ThreadPoolArgs, affinityMode))
