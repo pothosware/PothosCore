@@ -52,11 +52,12 @@ void ThreadEnvironment::registerTask(void *handle, TaskData::Task task)
 void ThreadEnvironment::unregisterTask(void *handle)
 {
     std::lock_guard<std::mutex> lock(_registrationMutex);
+    std::shared_ptr<TaskData> data; //late delete on exit
 
     //unregister the new task and bump the signature to notify threads
     {
         std::lock_guard<std::mutex> lock0(_handleUpdateMutex);
-        delete _handleToTask.at(handle);
+        data.reset(_handleToTask.at(handle));
         _handleToTask.erase(handle);
     }
     _configurationSignature++;
