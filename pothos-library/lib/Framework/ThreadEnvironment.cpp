@@ -104,7 +104,7 @@ void ThreadEnvironment::poolProcessLoop(size_t index)
 
         //perform a task and increment
         if (it == localTasks.end()) it = localTasks.begin();
-        if (it->second->flag.test_and_set(std::memory_order_acquire))
+        if (not it->second->flag.test_and_set(std::memory_order_acquire))
         {
             it->second->task();
             it->second->flag.clear(std::memory_order_release);
