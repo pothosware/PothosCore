@@ -16,17 +16,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Pothos_INCLUDE_DIRS})
 
 ########################################################################
-# Theron dependency
-########################################################################
-set(THERON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../theron)
-include(${CMAKE_CURRENT_SOURCE_DIR}/TheronSetup.cmake)
-include_directories(${THERON_INCLUDE_DIRS})
-link_directories(${THERON_LIBRARY_DIRS})
-list(APPEND Pothos_LIBRARIES ${THERON_LIBRARIES})
-add_definitions(${THERON_DEFINES})
-list(APPEND POTHOS_SOURCES ${THERON_SOURCES})
-
-########################################################################
 # NUMA info support
 ########################################################################
 find_library(
@@ -96,7 +85,6 @@ list(APPEND POTHOS_SOURCES
     Object/Hash.cpp
     Object/Compare.cpp
     Object/Convert.cpp
-    Object/Allocator.cpp
     Object/Serialize.cpp
     Object/Exception.cpp
 
