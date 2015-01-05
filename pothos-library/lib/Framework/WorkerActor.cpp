@@ -375,7 +375,6 @@ void Pothos::WorkerActor::postWorkTasks(void)
         for (const auto &subscriber : port._subscribers)
         {
             subscriber->bufferLabelPush(postedLabels, postedBuffers);
-            subscriber->_actor->flagChange();
         }
 
         //clear posted labels

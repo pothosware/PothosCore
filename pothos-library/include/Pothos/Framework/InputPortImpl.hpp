@@ -111,13 +111,6 @@ inline void Pothos::InputPort::setReserve(const size_t numElements)
     _workEvents++;
 }
 
-inline void Pothos::InputPort::asyncMessagesPush(const Pothos::Object &message, const Pothos::BufferChunk &token)
-{
-    std::unique_lock<Util::SpinLock> lock(_asyncMessagesLock);
-    if (_asyncMessages.full()) _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
-    _asyncMessages.push_back(std::make_pair(message, token));
-}
-
 inline bool Pothos::InputPort::asyncMessagesEmpty(void)
 {
     std::unique_lock<Util::SpinLock> lock(_asyncMessagesLock);

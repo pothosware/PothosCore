@@ -29,21 +29,21 @@ void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
 {
     assert(_actor != nullptr);
     this->bufferAccumulatorPush(buffer);
-    _actor->flagChange();
+    _actor->flagExternalChange();
 }
 
 void Pothos::InputPort::pushLabel(const Label &label)
 {
     assert(_actor != nullptr);
     this->inlineMessagesPush(label);
-    _actor->flagChange();
+    _actor->flagExternalChange();
 }
 
 void Pothos::InputPort::pushMessage(const Object &message)
 {
     assert(_actor != nullptr);
     this->asyncMessagesPush(message);
-    _actor->flagChange();
+    _actor->flagExternalChange();
 }
 
 void Pothos::InputPort::clear(void)
@@ -54,6 +54,15 @@ void Pothos::InputPort::clear(void)
     this->slotCallsClear();
 }
 
+void Pothos::InputPort::asyncMessagesPush(const Pothos::Object &message, const Pothos::BufferChunk &token)
+{
+    assert(_actor != nullptr);
+    std::unique_lock<Util::SpinLock> lock(_asyncMessagesLock);
+    if (_asyncMessages.full()) _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
+    _asyncMessages.push_back(std::make_pair(message, token));
+    _actor->flagExternalChange();
+}
+
 void Pothos::InputPort::asyncMessagesClear(void)
 {
     std::unique_lock<Util::SpinLock> lock(_asyncMessagesLock);
@@ -62,9 +71,11 @@ void Pothos::InputPort::asyncMessagesClear(void)
 
 void Pothos::InputPort::slotCallsPush(const Pothos::Object &args, const Pothos::BufferChunk &token)
 {
+    assert(_actor != nullptr);
     std::unique_lock<Util::SpinLock> lock(_slotCallsLock);
     if (_slotCalls.full()) _slotCalls.set_capacity(_slotCalls.capacity()*2);
     _slotCalls.push_back(std::make_pair(args, token));
+    _actor->flagExternalChange();
 }
 
 bool Pothos::InputPort::slotCallsEmpty(void)
@@ -131,6 +142,7 @@ void Pothos::InputPort::bufferLabelPush(
     const std::vector<Pothos::Label> &postedLabels,
     const Pothos::Util::RingDeque<Pothos::BufferChunk> &postedBuffers)
 {
+    assert(_actor != nullptr);
     std::unique_lock<Util::SpinLock> lock(_bufferAccumulatorLock);
 
     const size_t currentBytes = _bufferAccumulator.getTotalBytesAvailable();
@@ -150,6 +162,8 @@ void Pothos::InputPort::bufferLabelPush(
     {
         this->bufferAccumulatorPushNoLock(postedBuffers[i]);
     }
+
+    _actor->flagExternalChange();
 }
 
 #include <Pothos/Managed.hpp>

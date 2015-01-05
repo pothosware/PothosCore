@@ -43,9 +43,6 @@ public:
     //! a reference to the executing thread pool
     std::shared_ptr<ThreadEnvironment> threads;
 
-    //TODO remove this
-    void flagChange(void) {this->flagExternalChange();}
-
     ///////////////////// WorkerActor storage ///////////////////////
     Block *block;
     bool activeState;

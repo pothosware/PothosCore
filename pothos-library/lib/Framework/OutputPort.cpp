@@ -40,7 +40,6 @@ void Pothos::OutputPort::_postMessage(const Object &async)
         {
             subscriber->asyncMessagesPush(async, token);
         }
-        subscriber->_actor->flagChange();
     }
     _totalMessages++;
     _workEvents++;
@@ -54,7 +53,7 @@ void Pothos::OutputPort::bufferManagerPush(Pothos::Util::SpinLock *mutex, const 
         std::unique_lock<Pothos::Util::SpinLock> lock(*mutex);
         mgr->push(buff);
         assert(_actor != nullptr);
-        _actor->flagChange();
+        _actor->flagExternalChange();
     }
 }
 
