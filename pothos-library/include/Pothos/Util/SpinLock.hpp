@@ -21,7 +21,7 @@ namespace Util {
  * There are no embedded back-off or sleep conditions in this lock,
  * therefore only use this lock to protect very brief code sections.
  *
- * This lock can be used with std::unique_lock<Pothos::Util::SpinLock>
+ * This lock can be used with std::lock_guard<Pothos::Util::SpinLock>
  */
 class POTHOS_API SpinLock
 {

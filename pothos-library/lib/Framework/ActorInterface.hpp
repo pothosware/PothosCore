@@ -20,7 +20,7 @@ public:
         _externalAcquired(0),
         _contextAcquired(0)
     {
-        return;
+        _internalAcquired.clear(std::memory_order_release);
     }
 
     ~ActorInterface(void){}
@@ -65,6 +65,7 @@ private:
 
     std::atomic<bool> _changeFlagged;
     std::atomic<size_t> _externalAcquired;
+    std::atomic_flag _internalAcquired;
     std::atomic<size_t> _contextAcquired;
     std::mutex _mutex;
     std::condition_variable _cond;
@@ -105,7 +106,7 @@ inline void ActorInterface::externalCallAcquire(void)
 inline void ActorInterface::externalCallRelease(void)
 {
     {
-        std::unique_lock<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         _contextAcquired--;
         _externalAcquired--;
         _changeFlagged = true;
@@ -115,7 +116,8 @@ inline void ActorInterface::externalCallRelease(void)
 
 inline bool ActorInterface::workerThreadAcquire(void)
 {
-    //TODO return ASAP when worker context already acquired (needed for pool mode)
+    //when used in pool mode, this call returns ASAP when another thread is working
+    if (not _internalAcquired.test_and_set(std::memory_order_acquire)) return false;
 
     std::unique_lock<std::mutex> lock(_mutex);
     while (not _changeFlagged or _contextAcquired != 0 or _externalAcquired > 0)
@@ -131,16 +133,17 @@ inline bool ActorInterface::workerThreadAcquire(void)
 inline void ActorInterface::workerThreadRelease(void)
 {
     {
-        std::unique_lock<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         _contextAcquired--;
     }
     this->notifyWaiters();
+    _internalAcquired.clear(std::memory_order_release);
 }
 
 inline void ActorInterface::flagExternalChange(void)
 {
     {
-        std::unique_lock<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         _changeFlagged = true;
     }
     this->notifyWaiters();

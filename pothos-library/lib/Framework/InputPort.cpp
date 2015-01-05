@@ -57,7 +57,7 @@ void Pothos::InputPort::clear(void)
 void Pothos::InputPort::asyncMessagesPush(const Pothos::Object &message, const Pothos::BufferChunk &token)
 {
     assert(_actor != nullptr);
-    std::unique_lock<Util::SpinLock> lock(_asyncMessagesLock);
+    std::lock_guard<Util::SpinLock> lock(_asyncMessagesLock);
     if (_asyncMessages.full()) _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
     _asyncMessages.push_back(std::make_pair(message, token));
     _actor->flagExternalChange();
@@ -65,14 +65,14 @@ void Pothos::InputPort::asyncMessagesPush(const Pothos::Object &message, const P
 
 void Pothos::InputPort::asyncMessagesClear(void)
 {
-    std::unique_lock<Util::SpinLock> lock(_asyncMessagesLock);
+    std::lock_guard<Util::SpinLock> lock(_asyncMessagesLock);
     _asyncMessages.clear();
 }
 
 void Pothos::InputPort::slotCallsPush(const Pothos::Object &args, const Pothos::BufferChunk &token)
 {
     assert(_actor != nullptr);
-    std::unique_lock<Util::SpinLock> lock(_slotCallsLock);
+    std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
     if (_slotCalls.full()) _slotCalls.set_capacity(_slotCalls.capacity()*2);
     _slotCalls.push_back(std::make_pair(args, token));
     _actor->flagExternalChange();
@@ -80,13 +80,13 @@ void Pothos::InputPort::slotCallsPush(const Pothos::Object &args, const Pothos::
 
 bool Pothos::InputPort::slotCallsEmpty(void)
 {
-    std::unique_lock<Util::SpinLock> lock(_slotCallsLock);
+    std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
     return _slotCalls.empty();
 }
 
 Pothos::Object Pothos::InputPort::slotCallsPop(void)
 {
-    std::unique_lock<Util::SpinLock> lock(_slotCallsLock);
+    std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
     assert(not _slotCalls.empty());
     auto args = _slotCalls.front().first;
     _slotCalls.pop_front();
@@ -95,7 +95,7 @@ Pothos::Object Pothos::InputPort::slotCallsPop(void)
 
 void Pothos::InputPort::slotCallsClear(void)
 {
-    std::unique_lock<Util::SpinLock> lock(_slotCallsLock);
+    std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
     _slotCalls.clear();
 }
 
@@ -118,7 +118,7 @@ void Pothos::InputPort::bufferAccumulatorPushNoLock(const BufferChunk &buffer_)
 
 void Pothos::InputPort::bufferAccumulatorPop(const size_t numBytes)
 {
-    std::unique_lock<Util::SpinLock> lock(_bufferAccumulatorLock);
+    std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
 
     if (numBytes > _bufferAccumulator.getTotalBytesAvailable())
     {
@@ -143,7 +143,7 @@ void Pothos::InputPort::bufferLabelPush(
     const Pothos::Util::RingDeque<Pothos::BufferChunk> &postedBuffers)
 {
     assert(_actor != nullptr);
-    std::unique_lock<Util::SpinLock> lock(_bufferAccumulatorLock);
+    std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
 
     const size_t currentBytes = _bufferAccumulator.getTotalBytesAvailable();
     const size_t requiredLabelSize = _inputInlineMessages.size() + postedLabels.size();

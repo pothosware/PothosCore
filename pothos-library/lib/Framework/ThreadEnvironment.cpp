@@ -22,11 +22,11 @@ ThreadEnvironment::~ThreadEnvironment(void)
 
 void ThreadEnvironment::registerTask(void *handle, ThreadEnvironment::Task task)
 {
-    std::unique_lock<std::mutex> lock(_registrationMutex);
+    std::lock_guard<std::mutex> lock(_registrationMutex);
 
     //register the new task and bump the signature to notify threads
     {
-        std::unique_lock<std::mutex> lock0(_handleUpdateMutex);
+        std::lock_guard<std::mutex> lock0(_handleUpdateMutex);
         _handleToTask[handle] = task;
     }
     _configurationSignature++;
@@ -51,11 +51,11 @@ void ThreadEnvironment::registerTask(void *handle, ThreadEnvironment::Task task)
 
 void ThreadEnvironment::unregisterTask(void *handle)
 {
-    std::unique_lock<std::mutex> lock(_registrationMutex);
+    std::lock_guard<std::mutex> lock(_registrationMutex);
 
     //unregister the new task and bump the signature to notify threads
     {
-        std::unique_lock<std::mutex> lock0(_handleUpdateMutex);
+        std::lock_guard<std::mutex> lock0(_handleUpdateMutex);
         _handleToTask.erase(handle);
     }
     _configurationSignature++;
@@ -91,7 +91,7 @@ void ThreadEnvironment::poolProcessLoop(size_t index)
         //check for a configuration change and update the local state
         if (_configurationSignature != localSignature)
         {
-            std::unique_lock<std::mutex> lock(_handleUpdateMutex);
+            std::lock_guard<std::mutex> lock(_handleUpdateMutex);
             localTasks = _handleToTask;
             it = localTasks.end();
             localSignature = _configurationSignature;
@@ -119,7 +119,7 @@ void ThreadEnvironment::singleProcessLoop(void *handle)
         //check for a configuration change and update the local state
         if (_configurationSignature != localSignature)
         {
-            std::unique_lock<std::mutex> lock(_handleUpdateMutex);
+            std::lock_guard<std::mutex> lock(_handleUpdateMutex);
             localTasks = _handleToTask;
             it = localTasks.find(handle);
             localSignature = _configurationSignature;
