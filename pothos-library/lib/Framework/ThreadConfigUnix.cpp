@@ -9,7 +9,7 @@
 #include <numa.h>
 #endif
 
-static std::string setPriority(const double prio)
+std::string ThreadEnvironment::setPriority(const double prio)
 {
     //no negative priorities supported on this OS
     if (prio <= 0.0) return "";
@@ -30,7 +30,7 @@ static std::string setPriority(const double prio)
     return "";
 }
 
-static std::string setCPUAffinity(const std::vector<size_t> &affinity)
+std::string ThreadEnvironment::setCPUAffinity(const std::vector<size_t> &affinity)
 {
     //create cpu bit set
     cpu_set_t *cpusetp = CPU_ALLOC(Poco::Environment::processorCount());
@@ -50,7 +50,7 @@ static std::string setCPUAffinity(const std::vector<size_t> &affinity)
     return errorMsg;
 }
 
-static std::string setNUMAAffinity(const std::vector<size_t> &affinity)
+std::string ThreadEnvironment::setNodeAffinity(const std::vector<size_t> &affinity)
 {
     #if defined(LIBNUMA_API_VERSION) && (LIBNUMA_API_VERSION > 1)
 
@@ -68,42 +68,4 @@ static std::string setNUMAAffinity(const std::vector<size_t> &affinity)
     #else
     return "numa_bind() not available";
     #endif
-}
-
-void ThreadEnvironment::applyThreadConfig(void)
-{
-    //set priority -- log message only on first failure
-    {
-        const auto errorMsg = setPriority(_args.priority);
-        static bool showErrorMsg = true;
-        if (not errorMsg.empty() and showErrorMsg)
-        {
-            showErrorMsg = false;
-            poco_error_f1(Poco::Logger::get("Pothos.ThreadPool"), "Failed to set thread priority %s", errorMsg);
-        }
-    }
-
-    //set CPU affinity -- log message only on first failure
-    if (_args.affinityMode == "CPU")
-    {
-        const auto errorMsg = setCPUAffinity(_args.affinity);
-        static bool showErrorMsg = true;
-        if (not errorMsg.empty() and showErrorMsg)
-        {
-            showErrorMsg = false;
-            poco_error_f1(Poco::Logger::get("Pothos.ThreadPool"), "Failed to set CPU affinity %s", errorMsg);
-        }
-    }
-
-    //set NUMA affinity -- log message only on first failure
-    if (_args.affinityMode == "NUMA")
-    {
-        const auto errorMsg = setNUMAAffinity(_args.affinity);
-        static bool showErrorMsg = true;
-        if (not errorMsg.empty() and showErrorMsg)
-        {
-            showErrorMsg = false;
-            poco_error_f1(Poco::Logger::get("Pothos.ThreadPool"), "Failed to set NUMA affinity %s", errorMsg);
-        }
-    }
 }

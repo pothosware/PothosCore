@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/ThreadEnvironment.hpp"
+#include <Poco/Logger.h>
 #include <cassert>
 
 ThreadEnvironment::ThreadEnvironment(const Pothos::ThreadPoolArgs &args):
@@ -129,5 +130,43 @@ void ThreadEnvironment::singleProcessLoop(void *handle)
 
         //perform the task
         it->second(0);
+    }
+}
+
+void ThreadEnvironment::applyThreadConfig(void)
+{
+    //set priority -- log message only on first failure
+    {
+        const auto errorMsg = ThreadEnvironment::setPriority(_args.priority);
+        static bool showErrorMsg = true;
+        if (not errorMsg.empty() and showErrorMsg)
+        {
+            showErrorMsg = false;
+            poco_error_f1(Poco::Logger::get("Pothos.ThreadPool"), "Failed to set thread priority %s", errorMsg);
+        }
+    }
+
+    //set CPU affinity -- log message only on first failure
+    if (_args.affinityMode == "CPU")
+    {
+        const auto errorMsg = ThreadEnvironment::setCPUAffinity(_args.affinity);
+        static bool showErrorMsg = true;
+        if (not errorMsg.empty() and showErrorMsg)
+        {
+            showErrorMsg = false;
+            poco_error_f1(Poco::Logger::get("Pothos.ThreadPool"), "Failed to set CPU affinity %s", errorMsg);
+        }
+    }
+
+    //set NUMA affinity -- log message only on first failure
+    if (_args.affinityMode == "NUMA")
+    {
+        const auto errorMsg = ThreadEnvironment::setNodeAffinity(_args.affinity);
+        static bool showErrorMsg = true;
+        if (not errorMsg.empty() and showErrorMsg)
+        {
+            showErrorMsg = false;
+            poco_error_f1(Poco::Logger::get("Pothos.ThreadPool"), "Failed to set NUMA affinity %s", errorMsg);
+        }
     }
 }

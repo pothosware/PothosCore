@@ -54,6 +54,15 @@ private:
      */
     void applyThreadConfig(void);
 
+    //! Set thread prio - return error message
+    static std::string setPriority(const double prio);
+
+    //! Set CPU affinity - return error message
+    static std::string setCPUAffinity(const std::vector<size_t> &affinity);
+
+    //! Set NUMA affinity - return error message
+    static std::string setNodeAffinity(const std::vector<size_t> &affinity);
+
     //the maximum number of threads or 0 for thread per handle mode
     Pothos::ThreadPoolArgs _args;
 
