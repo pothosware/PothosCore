@@ -4,8 +4,8 @@
 #include "Framework/ThreadEnvironment.hpp"
 #include <cassert>
 
-ThreadEnvironment::ThreadEnvironment(const size_t numThreads):
-    _numThreads(numThreads)
+ThreadEnvironment::ThreadEnvironment(const Pothos::ThreadPoolArgs &args):
+    _args(args)
 {
     return;
 }
@@ -31,7 +31,7 @@ void ThreadEnvironment::registerTask(void *handle, ThreadEnvironment::Task task)
     _configurationSignature++;
 
     //single task mode: spawn a new thread for this task
-    if (_numThreads == 0)
+    if (_args.numThreads == 0)
     {
         _handleToThread[handle] = std::thread(std::bind(&ThreadEnvironment::singleProcessLoop, this, handle));
     }
@@ -39,12 +39,12 @@ void ThreadEnvironment::registerTask(void *handle, ThreadEnvironment::Task task)
     //pool mode: start a thread if the pool size is too small
     else
     {
-        if (_threadPool.size() < _numThreads)
+        if (_threadPool.size() < _args.numThreads)
         {
             size_t index = _threadPool.size();
             _threadPool.push_back(std::thread(std::bind(&ThreadEnvironment::poolProcessLoop, this, index)));
         }
-        assert(_threadPool.size() <= _numThreads);
+        assert(_threadPool.size() <= _args.numThreads);
     }
 }
 
@@ -60,7 +60,7 @@ void ThreadEnvironment::unregisterTask(void *handle)
     _configurationSignature++;
 
     //single task mode: stop the explicit task for this handle
-    if (_numThreads == 0)
+    if (_args.numThreads == 0)
     {
         _handleToThread[handle].join();
         _handleToThread.erase(handle);
@@ -74,12 +74,13 @@ void ThreadEnvironment::unregisterTask(void *handle)
             _threadPool.back().join();
             _threadPool.resize(_handleToTask.size());
         }
-        assert(_threadPool.size() <= _numThreads);
+        assert(_threadPool.size() <= _args.numThreads);
     }
 }
 
 void ThreadEnvironment::poolProcessLoop(size_t index)
 {
+    this->applyThreadConfig();
     size_t localSignature = 0;
     std::map<void *, Task> localTasks;
     auto it = localTasks.end();
@@ -107,6 +108,7 @@ void ThreadEnvironment::poolProcessLoop(size_t index)
 
 void ThreadEnvironment::singleProcessLoop(void *handle)
 {
+    this->applyThreadConfig();
     size_t localSignature = 0;
     std::map<void *, Task> localTasks;
     auto it = localTasks.end();

@@ -3,6 +3,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Framework/ThreadPool.hpp>
 #include <mutex>
 #include <functional>
 #include <atomic>
@@ -13,7 +14,7 @@
 class ThreadEnvironment
 {
 public:
-    ThreadEnvironment(const size_t numThreads);
+    ThreadEnvironment(const Pothos::ThreadPoolArgs &args);
 
     ~ThreadEnvironment(void);
 
@@ -47,8 +48,14 @@ private:
      */
     void singleProcessLoop(void *handle);
 
+    /*!
+     * Apply priority and affinity to the caller.
+     * This call uses the thread config in _args.
+     */
+    void applyThreadConfig(void);
+
     //the maximum number of threads or 0 for thread per handle mode
-    size_t _numThreads;
+    Pothos::ThreadPoolArgs _args;
 
     //map of handle handles to tasks
     std::map<void *, Task> _handleToTask;

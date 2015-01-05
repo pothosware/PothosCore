@@ -115,6 +115,8 @@ inline void ActorInterface::externalCallRelease(void)
 
 inline bool ActorInterface::workerThreadAcquire(void)
 {
+    //TODO return ASAP when worker context already acquired (needed for pool mode)
+
     std::unique_lock<std::mutex> lock(_mutex);
     while (not _changeFlagged or _contextAcquired != 0 or _externalAcquired > 0)
     {

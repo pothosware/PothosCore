@@ -36,13 +36,34 @@ find_library(
 )
 
 if(NUMA_LIBRARIES)
+    add_definitions(-DHAVE_LIBNUMA)
     list(APPEND POTHOS_SOURCES System/NumaInfoLinux.cpp)
+    list(APPEND Pothos_LIBRARIES ${NUMA_LIBRARIES})
 elseif(WIN32)
     list(APPEND POTHOS_SOURCES System/NumaInfoWindows.cpp)
 elseif(APPLE)
     list(APPEND POTHOS_SOURCES System/NumaInfoOSX.cpp)
 else()
     list(APPEND POTHOS_SOURCES System/NumaInfoOther.cpp)
+endif()
+
+########################################################################
+# Thread config support
+########################################################################
+find_library(
+    RT_LIBRARIES
+    NAMES rt
+    PATHS /usr/lib /usr/lib64
+)
+
+if (RT_LIBRARIES)
+    list(APPEND Pothos_LIBRARIES ${RT_LIBRARIES})
+endif()
+
+if(WIN32)
+    list(APPEND POTHOS_SOURCES Framework/ThreadConfigWindows.cpp)
+elseif(UNIX)
+    list(APPEND POTHOS_SOURCES Framework/ThreadConfigUnix.cpp)
 endif()
 
 ########################################################################
