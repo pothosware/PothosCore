@@ -18,6 +18,10 @@ void Pothos::Block::setThreadPool(const ThreadPool &newThreadPool)
     if (_threadPool)
     {
         auto threads = std::static_pointer_cast<ThreadEnvironment>(_threadPool.getContainer());
+        {
+            ActorInterfaceLock lock(_actor.get());
+            _actor->enableWaitMode(false); //disable waits
+        }
         threads->unregisterTask(this);
     }
 

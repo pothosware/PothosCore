@@ -132,7 +132,7 @@ inline bool ActorInterface::workerThreadAcquire(void)
         std::unique_lock<std::mutex> lock(_mutex);
         while (not _changeFlagged.exchange(false))
         {
-            if (_cond.wait_for(lock, std::chrono::milliseconds(1)) == std::cv_status::timeout) return false;
+            _cond.wait(lock);
         }
         lock.release();
         return true;
