@@ -229,15 +229,16 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
     const auto blocks = getObjSetFromFlowList(_impl->activeFlatFlows);
 
     //loop until exit time
-    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::nanoseconds((long long)(timeout*1e9));
+    const auto entryTime = std::chrono::high_resolution_clock::now();
+    const auto exitTime = entryTime + std::chrono::nanoseconds((long long)(timeout*1e9));
     do
     {
         //check each worker for idle time from the stats
         for (auto block : blocks)
         {
             const auto stats = block.call<WorkStats>("workStats");
-            const auto consumptionIdle = stats.timeStatsQuery - stats.timeLastConsumed;
-            const auto productionIdle = stats.timeStatsQuery - stats.timeLastProduced;
+            const auto consumptionIdle = stats.timeStatsQuery - std::max(entryTime, stats.timeLastConsumed);
+            const auto productionIdle = stats.timeStatsQuery - std::max(entryTime, stats.timeLastProduced);
             const auto workerIdleDuration = std::min(consumptionIdle, productionIdle);
             if (workerIdleDuration < idleDurationNs) goto pollSleep;
         }
