@@ -7,7 +7,8 @@
 #include <cassert>
 
 ThreadEnvironment::ThreadEnvironment(const Pothos::ThreadPoolArgs &args):
-    _args(args)
+    _args(args),
+    _configurationSignature(0)
 {
     return;
 }
