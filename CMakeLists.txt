@@ -107,6 +107,11 @@ add_subdirectory(pothos-library)
 #########################################################################
 ## Build in-tree modules
 #########################################################################
+
+#ensure that local headers get precedent over installed headers
+include_directories(pothos-library/include)
+include_directories(${POCO_INCLUDE_DIRS})
+
 add_subdirectory(pothos-gui)
 add_subdirectory(pothos-widgets)
 add_subdirectory(pothos-blocks)
