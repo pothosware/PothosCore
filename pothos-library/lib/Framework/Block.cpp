@@ -18,10 +18,6 @@ void Pothos::Block::setThreadPool(const ThreadPool &newThreadPool)
     if (_threadPool)
     {
         auto threads = std::static_pointer_cast<ThreadEnvironment>(_threadPool.getContainer());
-        {
-            ActorInterfaceLock lock(_actor.get());
-            _actor->enableWaitMode(false); //disable waits
-        }
         threads->unregisterTask(this);
     }
 
@@ -29,7 +25,9 @@ void Pothos::Block::setThreadPool(const ThreadPool &newThreadPool)
     if (newThreadPool)
     {
         auto threads = std::static_pointer_cast<ThreadEnvironment>(newThreadPool.getContainer());
-        threads->registerTask(this, std::bind(&Pothos::WorkerActor::processTask, _actor.get()));
+        threads->registerTask(this,
+            std::bind(&Pothos::WorkerActor::processTask, _actor.get()),
+            std::bind(&Pothos::WorkerActor::flagExternalChange, _actor.get()));
 
         //configure the actor interface based on thread pool args
         //all we support for now is the default (wait) or spin mode

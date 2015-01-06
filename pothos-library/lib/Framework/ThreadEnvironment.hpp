@@ -4,6 +4,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>
+#include <memory>
 #include <mutex>
 #include <functional>
 #include <atomic>
@@ -19,13 +20,15 @@ struct TaskData
 {
     typedef std::function<void(void)> Task;
 
-    TaskData(const Task task):
-        task(task)
+    TaskData(const Task task, const Task wake):
+        task(task),
+        wake(wake)
     {
         flag.clear(std::memory_order_release);
     }
 
     Task task;
+    Task wake;
     std::atomic_flag flag;
 };
 
@@ -44,8 +47,9 @@ public:
      * Register a task with this thread environment.
      * \param handle a unique handle representing the caller
      * \param task a function pointer to the handle worker task
+     * \param wake a function pointer to wake a worker task
      */
-    void registerTask(void *handle, TaskData::Task task);
+    void registerTask(void *handle, TaskData::Task task, TaskData::Task wake);
 
     /*!
      * Unregister the task from the thread environment.
@@ -93,7 +97,7 @@ private:
     Pothos::ThreadPoolArgs _args;
 
     //map of handle handles to tasks
-    std::map<void *, TaskData *> _handleToTask;
+    std::map<void *, std::shared_ptr<TaskData>> _handleToTask;
 
     //configuration signature (changed when handle list changed)
     std::atomic<size_t> _configurationSignature;

@@ -3,6 +3,7 @@
 
 #include "Framework/ThreadEnvironment.hpp"
 #include <Poco/Logger.h>
+#include <iostream>
 #include <cassert>
 
 ThreadEnvironment::ThreadEnvironment(const Pothos::ThreadPoolArgs &args):
@@ -20,14 +21,14 @@ ThreadEnvironment::~ThreadEnvironment(void)
     }
 }
 
-void ThreadEnvironment::registerTask(void *handle, TaskData::Task task)
+void ThreadEnvironment::registerTask(void *handle, TaskData::Task task, TaskData::Task wake)
 {
     std::lock_guard<std::mutex> lock(_registrationMutex);
 
     //register the new task and bump the signature to notify threads
     {
         std::lock_guard<std::mutex> lock0(_handleUpdateMutex);
-        _handleToTask[handle] = new TaskData(task);
+        _handleToTask[handle].reset(new TaskData(task, wake));
     }
     _configurationSignature++;
 
@@ -52,15 +53,19 @@ void ThreadEnvironment::registerTask(void *handle, TaskData::Task task)
 void ThreadEnvironment::unregisterTask(void *handle)
 {
     std::lock_guard<std::mutex> lock(_registrationMutex);
-    std::shared_ptr<TaskData> data; //late delete on exit
+    std::shared_ptr<TaskData> data;
 
     //unregister the new task and bump the signature to notify threads
     {
         std::lock_guard<std::mutex> lock0(_handleUpdateMutex);
-        data.reset(_handleToTask.at(handle));
+        std::swap(data, _handleToTask[handle]);
         _handleToTask.erase(handle);
     }
     _configurationSignature++;
+
+    //wake every known task to accept the new config state
+    data->wake();
+    for (const auto &pair : _handleToTask) pair.second->wake();
 
     //single task mode: stop the explicit task for this handle
     if (_args.numThreads == 0)
@@ -80,15 +85,15 @@ void ThreadEnvironment::unregisterTask(void *handle)
         assert(_threadPool.size() <= _args.numThreads);
     }
 
-    //FIXME we cant safely exit in pool mode until all configs are updated
-    //TODO...
+    //wait for all threads to relinquish the old configuration
+    while (not data.unique()) std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
 void ThreadEnvironment::poolProcessLoop(size_t index)
 {
     this->applyThreadConfig();
     size_t localSignature = 0;
-    std::map<void *, TaskData *> localTasks;
+    std::map<void *, std::shared_ptr<TaskData>> localTasks;
     auto it = localTasks.end();
 
     while (true)
@@ -120,7 +125,7 @@ void ThreadEnvironment::singleProcessLoop(void *handle)
 {
     this->applyThreadConfig();
     size_t localSignature = 0;
-    std::map<void *, TaskData *> localTasks;
+    std::map<void *, std::shared_ptr<TaskData>> localTasks;
     auto it = localTasks.end();
 
     while (true)
