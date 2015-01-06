@@ -1,34 +1,41 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
+#include "Framework/ThreadEnvironment.hpp"
 #include <Pothos/Object/Containers.hpp>
+#include <Pothos/Framework/OutputPortImpl.hpp>
 #include <Poco/String.h>
 
 /***********************************************************************
- * Reusable threadpool
+ * threadpool calls
  **********************************************************************/
-static std::shared_ptr<Theron::Framework> getGlobalFramework(void)
+void Pothos::Block::setThreadPool(const ThreadPool &newThreadPool)
 {
-    static std::weak_ptr<Theron::Framework> weakFramework;
-    std::shared_ptr<Theron::Framework> framework = weakFramework.lock();
-    if (not framework) framework.reset(new Theron::Framework());
-    weakFramework = framework;
-    return framework;
-}
+    if (_threadPool == newThreadPool) return; //no change
 
-void Pothos::Block::setThreadPool(const ThreadPool &threadPool)
-{
-    if (_threadPool == threadPool) return; //no change
+    //unregister if the old thread pool is valid
+    if (_threadPool)
+    {
+        auto threads = std::static_pointer_cast<ThreadEnvironment>(_threadPool.getContainer());
+        threads->unregisterTask(this);
+    }
 
-    auto oldThreadPool = _threadPool;
-    auto oldActor = _actor;
+    //register if the new thread pool is valid
+    if (newThreadPool)
+    {
+        auto threads = std::static_pointer_cast<ThreadEnvironment>(newThreadPool.getContainer());
+        threads->registerTask(this,
+            std::bind(&Pothos::WorkerActor::processTask, _actor.get()),
+            std::bind(&Pothos::WorkerActor::flagExternalChange, _actor.get()));
 
-    _threadPool = threadPool;
-    _actor.reset(new WorkerActor(this));
-    _actor->swap(oldActor.get());
+        //configure the actor interface based on thread pool args
+        //all we support for now is the default (wait) or spin mode
+        _actor->enableWaitMode(threads->getArgs().yieldMode != "SPIN");
+    }
 
-    oldActor.reset();
+    //and save the reference to the new pool
+    _threadPool = newThreadPool;
 }
 
 const Pothos::ThreadPool &Pothos::Block::getThreadPool(void) const
@@ -40,21 +47,16 @@ const Pothos::ThreadPool &Pothos::Block::getThreadPool(void) const
  * Block member implementation
  **********************************************************************/
 Pothos::Block::Block(void):
-    _threadPool(ThreadPool(getGlobalFramework())),
     _actor(new WorkerActor(this))
 {
-    return;
+    //set the default thread pool (registers)
+    this->setThreadPool(ThreadPool(ThreadPoolArgs()));
 }
 
 Pothos::Block::~Block(void)
 {
-    //Send a shutdown message and wait for response:
-    //This allows the actor to finish with messages ahead of the shutdown message.
-    Theron::Receiver receiver;
-    ShutdownActorMessage message;
-    _actor->GetFramework().Send(message, receiver.GetAddress(), _actor->GetAddress());
-    receiver.Wait();
-    _actor.reset();
+    //clear the thread pool (unregisters)
+    this->setThreadPool(ThreadPool());
 }
 
 void Pothos::Block::work(void)
@@ -86,9 +88,10 @@ void Pothos::Block::propagateLabels(const InputPort *input)
 
 Pothos::WorkStats Pothos::Block::workStats(void) const
 {
-    InfoReceiver<WorkStats> receiver;
-    _actor->GetFramework().Send(RequestWorkerStatsMessage(), receiver.GetAddress(), _actor->GetAddress());
-    return receiver.WaitInfo();
+    ActorInterfaceLock lock(_actor.get());
+
+    _actor->workStats.timeStatsQuery = std::chrono::high_resolution_clock::now();
+    return _actor->workStats;
 }
 
 bool Pothos::Block::isActive(void) const
@@ -224,22 +227,14 @@ Pothos::Object Pothos::Block::opaqueCallMethod(const std::string &name, const Po
         throw Pothos::BlockCallNotFound("Pothos::Block::call("+name+")", "method does not exist in registry");
     }
 
-    OpaqueCallMessage message;
-    message.name = name;
-    message.inputArgs = inputArgs;
-    message.numArgs = numArgs;
+    ActorInterfaceLock lock(_actor.get());
 
-    InfoReceiver<OpaqueCallResultMessage> receiver;
-    _actor->GetFramework().Send(message, receiver.GetAddress(), _actor->GetAddress());
-
-    OpaqueCallResultMessage result = receiver.WaitInfo();
-    if (result.error) result.error->rethrow();
-    return result.obj;
+    return const_cast<Block *>(this)->opaqueCallHandler(name, inputArgs, numArgs);
 }
 
 void Pothos::Block::yield(void)
 {
-    _actor->workBump = true;
+    _actor->flagInternalChange();
 }
 
 std::shared_ptr<Pothos::BufferManager> Pothos::Block::getInputBufferManager(const std::string &, const std::string &)

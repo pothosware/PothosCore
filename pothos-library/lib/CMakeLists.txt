@@ -16,17 +16,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Pothos_INCLUDE_DIRS})
 
 ########################################################################
-# Theron dependency
-########################################################################
-set(THERON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../theron)
-include(${CMAKE_CURRENT_SOURCE_DIR}/TheronSetup.cmake)
-include_directories(${THERON_INCLUDE_DIRS})
-link_directories(${THERON_LIBRARY_DIRS})
-list(APPEND Pothos_LIBRARIES ${THERON_LIBRARIES})
-add_definitions(${THERON_DEFINES})
-list(APPEND POTHOS_SOURCES ${THERON_SOURCES})
-
-########################################################################
 # NUMA info support
 ########################################################################
 find_library(
@@ -36,13 +25,34 @@ find_library(
 )
 
 if(NUMA_LIBRARIES)
+    add_definitions(-DHAVE_LIBNUMA)
     list(APPEND POTHOS_SOURCES System/NumaInfoLinux.cpp)
+    list(APPEND Pothos_LIBRARIES ${NUMA_LIBRARIES})
 elseif(WIN32)
     list(APPEND POTHOS_SOURCES System/NumaInfoWindows.cpp)
 elseif(APPLE)
     list(APPEND POTHOS_SOURCES System/NumaInfoOSX.cpp)
 else()
     list(APPEND POTHOS_SOURCES System/NumaInfoOther.cpp)
+endif()
+
+########################################################################
+# Thread config support
+########################################################################
+find_library(
+    RT_LIBRARIES
+    NAMES rt
+    PATHS /usr/lib /usr/lib64
+)
+
+if (RT_LIBRARIES)
+    list(APPEND Pothos_LIBRARIES ${RT_LIBRARIES})
+endif()
+
+if(WIN32)
+    list(APPEND POTHOS_SOURCES Framework/ThreadConfigWindows.cpp)
+elseif(UNIX)
+    list(APPEND POTHOS_SOURCES Framework/ThreadConfigUnix.cpp)
 endif()
 
 ########################################################################
@@ -75,7 +85,6 @@ list(APPEND POTHOS_SOURCES
     Object/Hash.cpp
     Object/Compare.cpp
     Object/Convert.cpp
-    Object/Allocator.cpp
     Object/Serialize.cpp
     Object/Exception.cpp
 
@@ -112,8 +121,8 @@ list(APPEND POTHOS_SOURCES
     Framework/WorkStats.cpp
     Framework/WorkerActor.cpp
     Framework/WorkerActorPortAllocation.cpp
-    Framework/WorkerActorHandlers.cpp
     Framework/ThreadPool.cpp
+    Framework/ThreadEnvironment.cpp
     Framework/SharedBuffer.cpp
     Framework/ManagedBuffer.cpp
     Framework/BufferChunk.cpp

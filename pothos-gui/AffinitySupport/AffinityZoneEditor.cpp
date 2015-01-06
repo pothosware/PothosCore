@@ -175,10 +175,10 @@ void AffinityZoneEditor::loadFromConfig(const Poco::JSON::Object::Ptr &config)
     {
         _prioritySpin->setValue(int(config->getValue<double>("priority")*100));
     }
-    if (config->has("affinityMode") and config->has("affinityMask"))
+    if (config->has("affinityMode") and config->has("affinity"))
     {
         auto mode = config->getValue<std::string>("affinityMode");
-        auto mask = config->getArray("affinityMask");
+        auto mask = config->getArray("affinity");
         std::vector<size_t> selection;
         for (size_t i = 0; i < mask->size(); i++) selection.push_back(mask->getElement<int>(i));
         _cpuSelection->setup(mode, selection);
@@ -203,9 +203,9 @@ Poco::JSON::Object::Ptr AffinityZoneEditor::getCurrentConfig(void) const
     config->set("priority", _prioritySpin->value()/100.0);
     assert(_cpuSelection != nullptr);
     config->set("affinityMode", _cpuSelection->mode());
-    Poco::JSON::Array::Ptr affinityMask = new Poco::JSON::Array();
-    for (auto num : _cpuSelection->selection()) affinityMask->add(num);
-    config->set("affinityMask", affinityMask);
+    Poco::JSON::Array::Ptr affinity = new Poco::JSON::Array();
+    for (auto num : _cpuSelection->selection()) affinity->add(num);
+    config->set("affinity", affinity);
     config->set("yieldMode", _yieldModeBox->itemData(_yieldModeBox->currentIndex()).toString().toStdString());
     return config;
 }

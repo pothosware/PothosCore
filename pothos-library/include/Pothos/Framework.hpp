@@ -15,7 +15,9 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/InputPort.hpp>
+#include <Pothos/Framework/InputPortImpl.hpp>
 #include <Pothos/Framework/OutputPort.hpp>
+#include <Pothos/Framework/OutputPortImpl.hpp>
 #include <Pothos/Framework/Connectable.hpp>
 #include <Pothos/Framework/ConnectableImpl.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>

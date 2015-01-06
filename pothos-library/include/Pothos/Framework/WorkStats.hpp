@@ -4,7 +4,7 @@
 /// This file contains the interface for work statistics.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -14,18 +14,19 @@
 
 namespace Pothos {
 
-/*
-struct PortStats
+/*!
+ * Statistics about an individual port.
+ */
+struct POTHOS_API PortStats
 {
     PortStats(void);
-    unsigned long long timeLastBuffer;
-    unsigned long long timeLastMessage;
-    unsigned long long timeLastLabel;
+    std::chrono::high_resolution_clock::time_point timeLastBuffer;
+    std::chrono::high_resolution_clock::time_point timeLastMessage;
+    std::chrono::high_resolution_clock::time_point timeLastLabel;
     unsigned long long totalElements;
     unsigned long long totalMessages;
     unsigned long long totalLabels;
 };
-*/
 
 /*!
  * Statistics about a block's processing function.

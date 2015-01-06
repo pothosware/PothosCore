@@ -17,7 +17,7 @@
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
-#if THERON_NUMA
+#if HAVE_LIBNUMA
 #include <numa.h>
 #endif
 
@@ -63,7 +63,7 @@ public:
         _mem(nullptr),
         _len(numBytes)
     {
-        #if THERON_NUMA
+        #if HAVE_LIBNUMA
         if (numa_available() == -1) return;
         _mem = numa_alloc_onnode(numBytes, nodeAffinity);
         #endif
@@ -71,7 +71,7 @@ public:
 
     ~GenericBufferContainerNuma(void)
     {
-        #if THERON_NUMA
+        #if HAVE_LIBNUMA
         if (_mem != nullptr) numa_free(_mem, _len);
         #endif
     }

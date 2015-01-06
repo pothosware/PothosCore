@@ -4,7 +4,7 @@
 /// This file provides an interface for a worker's output port.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -14,11 +14,13 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
+#include <Pothos/Framework/BufferManager.hpp>
+#include <Pothos/Util/RingDeque.hpp>
+#include <Pothos/Util/SpinLock.hpp>
 #include <string>
 
 namespace Pothos {
 
-class OutputPortImpl;
 class WorkerActor;
 class InputPort;
 
@@ -66,6 +68,20 @@ public:
      * until after execution of work() and propagateLabels().
      */
     unsigned long long totalElements(void) const;
+
+    /*!
+     * Get the total number of buffers produced from this port.
+     * This value will increment immediately after postBuffer().
+     * This call will also increment after every work execution
+     * where elements are produced using the produce() method.
+     */
+    unsigned long long totalBuffers(void) const;
+
+    /*!
+     * Get the total number of labels produced from this port.
+     * This value will increment immediately after postLabel().
+     */
+    unsigned long long totalLabels(void) const;
 
     /*!
      * Get the total number of messages posted to this port.
@@ -143,72 +159,62 @@ public:
     void setReadBeforeWrite(InputPort *port);
 
 private:
-    OutputPortImpl *_impl;
+    WorkerActor *_actor;
+
+    //port configuration
+    bool _isSignal;
     int _index;
     std::string _name;
     DType _dtype;
+
+    //state set in pre-work
     std::string _domain;
     BufferChunk _buffer;
     size_t _elements;
+
+    //port stats
     unsigned long long _totalElements;
+    unsigned long long _totalBuffers;
+    unsigned long long _totalLabels;
     unsigned long long _totalMessages;
+
+    //state changes from work
     size_t _pendingElements;
-    OutputPort(OutputPortImpl *);
+    std::vector<Label> _postedLabels;
+    Util::RingDeque<BufferChunk> _postedBuffers;
+
+    //counts work actions which we will use to establish activity
+    size_t _workEvents;
+
+    Util::SpinLock _bufferManagerLock;
+    BufferManager::Sptr _bufferManager;
+
+    Util::SpinLock _tokenManagerLock;
+    BufferManager::Sptr _tokenManager; //used for message backpressure
+
+    /////// buffer manager /////////
+    void bufferManagerSetup(const BufferManager::Sptr &manager);
+    bool bufferManagerEmpty(void);
+    void bufferManagerFront(BufferChunk &);
+    void bufferManagerPop(const size_t numBytes);
+    void bufferManagerPush(Pothos::Util::SpinLock *mutex, const ManagedBuffer &buff);
+
+    /////// token manager /////////
+    void tokenManagerInit(void);
+    bool tokenManagerEmpty(void);
+    BufferChunk tokenManagerPop(void);
+    void tokenManagerPop(const size_t numBytes);
+
+    std::vector<InputPort *> _subscribers;
+    InputPort *_readBeforeWritePort;
+    bool _bufferFromManager;
+
+    OutputPort(void);
     OutputPort(const OutputPort &){} // non construction-copyable
     OutputPort &operator=(const OutputPort &){return *this;} // non copyable
     friend class WorkerActor;
+    friend class InputPort;
     void _postMessage(const Object &message);
 };
 
 } //namespace Pothos
-
-inline int Pothos::OutputPort::index(void) const
-{
-    return _index;
-}
-
-inline const std::string &Pothos::OutputPort::name(void) const
-{
-    return _name;
-}
-
-inline const Pothos::DType &Pothos::OutputPort::dtype(void) const
-{
-    return _dtype;
-}
-
-inline const std::string &Pothos::OutputPort::domain(void) const
-{
-    return _domain;
-}
-
-inline const Pothos::BufferChunk &Pothos::OutputPort::buffer(void) const
-{
-    return _buffer;
-}
-
-inline size_t Pothos::OutputPort::elements(void) const
-{
-    return _elements;
-}
-
-inline unsigned long long Pothos::OutputPort::totalElements(void) const
-{
-    return _totalElements;
-}
-
-inline unsigned long long Pothos::OutputPort::totalMessages(void) const
-{
-    return _totalMessages;
-}
-
-inline void Pothos::OutputPort::produce(const size_t numElements)
-{
-    _pendingElements += numElements;
-}
-
-template <typename ValueType>
-void Pothos::OutputPort::postMessage(ValueType &&message)
-{
-    Pothos::OutputPort::_postMessage(Pothos::Object(std::forward<ValueType>(message)));
-}

@@ -4,7 +4,7 @@
 /// Support for configuring and managing threading in the framework.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -29,6 +29,24 @@ public:
 
     //! Create a ThreadPoolArgs given a specific number of threads
     ThreadPoolArgs(const size_t numThreads);
+
+    /*!
+     * Create a ThreadPoolArgs from a JSON description.
+     * All fields are optional and have defined defaults.
+     *
+     * Example JSON markup for a ThreadPoolArgs description:
+     * \code {.json}
+     * {
+     *     "numThreads" : 2,
+     *     "priority" : 0.5,
+     *     "affinityMode" : "CPU",
+     *     "affinity" : [0, 2, 4, 6],
+     *     "yieldMode" : "SPIN"
+     * }
+     * \endcode
+     * \param json a JSON object markup string
+     */
+    ThreadPoolArgs(const std::string &json);
 
     /*!
      * The number of threads to create in this pool.

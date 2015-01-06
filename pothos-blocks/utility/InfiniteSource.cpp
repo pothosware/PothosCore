@@ -102,7 +102,9 @@ public:
         //print a short summary of the production
         auto outputPort = this->output(0);
         if (_enableBuffers) std::cout << this->getName() << " total bytes " << outputPort->totalElements() << std::endl;
-        if (_enableMessages) std::cout << this->getName() << " total msgs " << outputPort->totalMessages() << std::endl;
+        if (_enableBuffers) std::cout << this->getName() << " total buffers " << outputPort->totalBuffers() << std::endl;
+        if (_enableLabels) std::cout << this->getName() << " total labels " << outputPort->totalLabels() << std::endl;
+        if (_enableMessages) std::cout << this->getName() << " total messages " << outputPort->totalMessages() << std::endl;
     }
 
     void work(void)

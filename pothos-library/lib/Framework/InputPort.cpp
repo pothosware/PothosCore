@@ -1,95 +1,169 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Framework/InputPortImpl.hpp"
+#include <Pothos/Framework/InputPortImpl.hpp>
 #include "Framework/WorkerActor.hpp"
 
-Pothos::InputPort::InputPort(InputPortImpl *impl):
-    _impl(impl),
+Pothos::InputPort::InputPort(void):
+    _actor(nullptr),
+    _isSlot(false),
     _index(-1),
-    _buffer(BufferChunk::null()),
     _elements(0),
     _totalElements(0),
+    _totalBuffers(0),
+    _totalLabels(0),
     _totalMessages(0),
     _pendingElements(0),
-    _reserveElements(0)
+    _reserveElements(0),
+    _workEvents(0)
 {
     return;
 }
 
 Pothos::InputPort::~InputPort(void)
 {
-    delete _impl;
-}
-
-bool Pothos::InputPort::hasMessage(void) const
-{
-    assert(_impl);
-    return not _impl->asyncMessages.empty();
-}
-
-Pothos::Object Pothos::InputPort::popMessage(void)
-{
-    assert(_impl);
-    if (_impl->asyncMessages.empty()) return Pothos::Object();
-    auto msg = _impl->asyncMessages.front().async;
-    _impl->asyncMessages.pop_front();
-    _totalMessages++;
-    _impl->actor->workBump = true;
-    return msg;
-}
-
-void Pothos::InputPort::removeLabel(const Label &label)
-{
-    assert(_impl);
-    for (auto it = _impl->inlineMessages.begin(); it != _impl->inlineMessages.end(); it++)
-    {
-        if (*it == label)
-        {
-            _impl->inlineMessages.erase(it);
-            _labelIter = _impl->inlineMessages;
-            _impl->actor->workBump = true;
-            return;
-        }
-    }
-}
-
-void Pothos::InputPort::setReserve(const size_t numElements)
-{
-    _reserveElements = numElements;
-    _impl->actor->workBump = true;
-}
-
-bool Pothos::InputPort::isSlot(void) const
-{
-    assert(_impl);
-    return _impl->isSlot;
+    return;
 }
 
 void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
 {
-    assert(_impl);
-    _impl->actor->GetFramework().Send(makePortMessage(this, buffer), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+    assert(_actor != nullptr);
+    this->bufferAccumulatorPush(buffer);
+    _actor->flagExternalChange();
 }
 
 void Pothos::InputPort::pushLabel(const Label &label)
 {
-    assert(_impl);
-    _impl->actor->GetFramework().Send(makePortMessage(this, label), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+    assert(_actor != nullptr);
+    this->inlineMessagesPush(label);
+    _actor->flagExternalChange();
 }
 
 void Pothos::InputPort::pushMessage(const Object &message)
 {
-    assert(_impl);
-    _impl->actor->GetFramework().Send(makePortMessage(this, message), _impl->actor->GetAddress(), _impl->actor->GetAddress());
+    assert(_actor != nullptr);
+    this->asyncMessagesPush(message);
+    _actor->flagExternalChange();
 }
 
 void Pothos::InputPort::clear(void)
 {
-    assert(_impl);
-    _impl->bufferAccumulator = BufferAccumulator();
-    _impl->inlineMessages.clear();
-    _impl->asyncMessages.clear();
+    this->bufferAccumulatorClear();
+    this->inlineMessagesClear();
+    this->asyncMessagesClear();
+    this->slotCallsClear();
+}
+
+void Pothos::InputPort::asyncMessagesPush(const Pothos::Object &message, const Pothos::BufferChunk &token)
+{
+    assert(_actor != nullptr);
+    std::lock_guard<Util::SpinLock> lock(_asyncMessagesLock);
+    if (_asyncMessages.full()) _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
+    _asyncMessages.push_back(std::make_pair(message, token));
+    _actor->flagExternalChange();
+}
+
+void Pothos::InputPort::asyncMessagesClear(void)
+{
+    std::lock_guard<Util::SpinLock> lock(_asyncMessagesLock);
+    _asyncMessages.clear();
+}
+
+void Pothos::InputPort::slotCallsPush(const Pothos::Object &args, const Pothos::BufferChunk &token)
+{
+    assert(_actor != nullptr);
+    std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
+    if (_slotCalls.full()) _slotCalls.set_capacity(_slotCalls.capacity()*2);
+    _slotCalls.push_back(std::make_pair(args, token));
+    _actor->flagExternalChange();
+}
+
+bool Pothos::InputPort::slotCallsEmpty(void)
+{
+    std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
+    return _slotCalls.empty();
+}
+
+Pothos::Object Pothos::InputPort::slotCallsPop(void)
+{
+    std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
+    assert(not _slotCalls.empty());
+    auto args = _slotCalls.front().first;
+    _slotCalls.pop_front();
+    return args;
+}
+
+void Pothos::InputPort::slotCallsClear(void)
+{
+    std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
+    _slotCalls.clear();
+}
+
+void Pothos::InputPort::bufferAccumulatorPushNoLock(const BufferChunk &buffer_)
+{
+    auto buffer = buffer_;
+    if (not buffer.dtype or not this->dtype() or //unspecified
+        (this->dtype().size() == buffer.dtype.size())) //size match
+    {
+        //unspecified buffer dtype? copy it from the port
+        if (not buffer.dtype) buffer.dtype = this->dtype();
+        _bufferAccumulator.push(buffer);
+    }
+    else
+    {
+        poco_error_f4(Poco::Logger::get("Pothos.Block.inputBuffer"), "%s[%s] dropped '%s', expected '%s'",
+            _actor->block->getName(), this->name(), buffer.dtype.toString(), this->dtype().toString());
+    }
+}
+
+void Pothos::InputPort::bufferAccumulatorPop(const size_t numBytes)
+{
+    std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
+
+    if (numBytes > _bufferAccumulator.getTotalBytesAvailable())
+    {
+        poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %d bytes, %d available",
+            _actor->block->getName(), this->name(), int(numBytes), int(_bufferAccumulator.getTotalBytesAvailable()));
+        return;
+    }
+
+    _bufferAccumulator.pop(numBytes);
+
+    //adjust enqueued inline messages for new offset
+    for (size_t i = 0; i < _inputInlineMessages.size(); i++)
+    {
+        _inputInlineMessages[i].index -= numBytes;
+    }
+
+    _workEvents++;
+}
+
+void Pothos::InputPort::bufferLabelPush(
+    const std::vector<Pothos::Label> &postedLabels,
+    const Pothos::Util::RingDeque<Pothos::BufferChunk> &postedBuffers)
+{
+    assert(_actor != nullptr);
+    std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
+
+    const size_t currentBytes = _bufferAccumulator.getTotalBytesAvailable();
+    const size_t requiredLabelSize = _inputInlineMessages.size() + postedLabels.size();
+    if (_inputInlineMessages.capacity() < requiredLabelSize) _inputInlineMessages.set_capacity(requiredLabelSize);
+
+    //insert labels (in order) and adjust for the current offset
+    for (const auto &byteOffsetLabel : postedLabels)
+    {
+        auto label = byteOffsetLabel;
+        label.index += currentBytes; //increment by enqueued bytes
+        _inputInlineMessages.push_back(label);
+    }
+
+    //push all buffers into the accumulator
+    for (size_t i = 0; i < postedBuffers.size(); i++)
+    {
+        this->bufferAccumulatorPushNoLock(postedBuffers[i]);
+    }
+
+    _actor->flagExternalChange();
 }
 
 #include <Pothos/Managed.hpp>

@@ -4,7 +4,7 @@
 /// This file provides an interface for a worker's input port.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -14,12 +14,15 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
+#include <Pothos/Framework/BufferAccumulator.hpp>
+#include <Pothos/Util/RingDeque.hpp>
+#include <Pothos/Util/SpinLock.hpp>
 #include <string>
 
 namespace Pothos {
 
-class InputPortImpl;
 class WorkerActor;
+class OutputPort;
 
 /*!
  * InputPort provides methods to interact with a worker's input ports.
@@ -67,6 +70,20 @@ public:
     unsigned long long totalElements(void) const;
 
     /*!
+     * Get the total number of buffers posted to this port.
+     * Note that this call tracks incoming buffer count,
+     * and not total buffer consumption (which is harder).
+     */
+    unsigned long long totalBuffers(void) const;
+
+    /*!
+     * Get the total number of labels consumed from this port.
+     * This count updates immediately upon calling removeLabel(),
+     * and after after execution of work() and propagateLabels().
+     */
+    unsigned long long totalLabels(void) const;
+
+    /*!
      * Get the total number of messages popped from this port.
      * The value returned by this method will be incremented
      * immediately upon calling popMessage().
@@ -74,7 +91,7 @@ public:
     unsigned long long totalMessages(void) const;
 
     //! Does the specified input port have an asynchronous message available?
-    bool hasMessage(void) const;
+    bool hasMessage(void);
 
     /*!
      * Get an iterator to all input labels for the specified port.
@@ -153,74 +170,79 @@ public:
     void clear(void);
 
 private:
-    InputPortImpl *_impl;
+    WorkerActor *_actor;
+
+    //port configuration
+    bool _isSlot;
     int _index;
     std::string _name;
     DType _dtype;
     std::string _domain;
-    std::reference_wrapper<const BufferChunk> _buffer;
+
+    //state set in pre-work
+    BufferChunk _buffer;
     size_t _elements;
-    unsigned long long _totalElements;
-    unsigned long long _totalMessages;
     LabelIteratorRange _labelIter;
+
+    //port stats
+    unsigned long long _totalElements;
+    unsigned long long _totalBuffers;
+    unsigned long long _totalLabels;
+    unsigned long long _totalMessages;
+
+    //state changes from work
     size_t _pendingElements;
     size_t _reserveElements;
-    InputPort(InputPortImpl *);
-    InputPort(const InputPort &):
-        _buffer(BufferChunk::null())
-    {} // non construction-copyable
+
+    //counts work actions which we will use to establish activity
+    size_t _workEvents;
+
+    Util::SpinLock _asyncMessagesLock;
+    Util::RingDeque<std::pair<Object, BufferChunk>> _asyncMessages;
+
+    Util::SpinLock _slotCallsLock;
+    Util::RingDeque<std::pair<Object, BufferChunk>> _slotCalls;
+
+    std::vector<Label> _inlineMessages; //user api structure
+    Util::RingDeque<Label> _inputInlineMessages; //shared structure
+
+    Util::SpinLock _bufferAccumulatorLock;
+    BufferAccumulator _bufferAccumulator;
+
+    /////// async message interface /////////
+    void asyncMessagesPush(const Object &message, const BufferChunk &token = BufferChunk::null());
+    bool asyncMessagesEmpty(void);
+    Object asyncMessagesPop(void);
+    void asyncMessagesClear(void);
+
+    /////// slot call interface /////////
+    void slotCallsPush(const Object &args, const BufferChunk &token);
+    bool slotCallsEmpty(void);
+    Object slotCallsPop(void);
+    void slotCallsClear(void);
+
+    /////// inline message interface /////////
+    void inlineMessagesPush(const Label &label);
+    void inlineMessagesClear(void);
+
+    /////// input buffer interface /////////
+    void bufferAccumulatorFront(BufferChunk &);
+    void bufferAccumulatorPush(const BufferChunk &buffer);
+    void bufferAccumulatorPushNoLock(const BufferChunk &buffer);
+    void bufferAccumulatorPop(const size_t numBytes);
+    void bufferAccumulatorRequire(const size_t numBytes);
+    void bufferAccumulatorClear(void);
+
+    /////// combined label association push /////////
+    void bufferLabelPush(
+        const std::vector<Label> &postedLabels,
+        const Util::RingDeque<BufferChunk> &postedBuffers);
+
+    InputPort(void);
+    InputPort(const InputPort &){} // non construction-copyable
     InputPort &operator=(const InputPort &){return *this;} // non copyable
     friend class WorkerActor;
+    friend class OutputPort;
 };
 
 } //namespace Pothos
-
-inline int Pothos::InputPort::index(void) const
-{
-    return _index;
-}
-
-inline const std::string &Pothos::InputPort::name(void) const
-{
-    return _name;
-}
-
-inline const Pothos::DType &Pothos::InputPort::dtype(void) const
-{
-    return _dtype;
-}
-
-inline const std::string &Pothos::InputPort::domain(void) const
-{
-    return _domain;
-}
-
-inline const Pothos::BufferChunk &Pothos::InputPort::buffer(void) const
-{
-    return _buffer;
-}
-
-inline size_t Pothos::InputPort::elements(void) const
-{
-    return _elements;
-}
-
-inline unsigned long long Pothos::InputPort::totalElements(void) const
-{
-    return _totalElements;
-}
-
-inline unsigned long long Pothos::InputPort::totalMessages(void) const
-{
-    return _totalMessages;
-}
-
-inline const Pothos::LabelIteratorRange &Pothos::InputPort::labels(void) const
-{
-    return _labelIter;
-}
-
-inline void Pothos::InputPort::consume(const size_t numElements)
-{
-    _pendingElements += numElements;
-}

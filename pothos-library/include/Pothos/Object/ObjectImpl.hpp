@@ -4,7 +4,7 @@
 /// Template implementation details for Object.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -66,10 +66,6 @@ struct POTHOS_API ObjectContainer
     ObjectContainer(void);
 
     virtual ~ObjectContainer(void);
-
-    void *operator new(const size_t size);
-
-    void operator delete(void *memory, const size_t size);
 
     virtual const std::type_info &type(void) const = 0;
     virtual const std::type_info &rawType(void) const = 0;

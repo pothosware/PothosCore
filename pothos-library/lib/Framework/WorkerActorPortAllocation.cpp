@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
@@ -8,7 +8,7 @@
 /***********************************************************************
  * misc helper methods
  **********************************************************************/
-int portNameToIndex(const std::string &name)
+static int portNameToIndex(const std::string &name)
 {
     unsigned value = -1;
     if (Poco::NumberParser::tryParseUnsigned(name, value)) return int(value);
@@ -18,13 +18,13 @@ int portNameToIndex(const std::string &name)
 /***********************************************************************
  * Port allocation templated implementation
  **********************************************************************/
-template <typename ImplType, typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
 void Pothos::WorkerActor::allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain)
 {
     auto &port = ports[name];
     typedef typename PortsType::mapped_type::element_type T;
-    port.reset(new T(new ImplType()));
-    port->_impl->actor = this;
+    port.reset(new T());
+    port->_actor = this;
     port->_dtype = dtype;
     port->_domain = domain;
     port->_name = name;
@@ -48,7 +48,7 @@ void Pothos::WorkerActor::allocatePort(PortsType &ports, NamedPortsType &namedPo
     this->updatePorts();
 }
 
-template <typename ImplType, typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
 void Pothos::WorkerActor::autoAllocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name)
 {
     const int index = portNameToIndex(name);
@@ -59,7 +59,7 @@ void Pothos::WorkerActor::autoAllocatePort(PortsType &ports, NamedPortsType &nam
     for (int i = index-1; i >= 0; i--)
     {
         if (ports.count(std::to_string(i)) == 0) continue;
-        this->allocatePort<ImplType>(ports, namedPorts, indexedPorts, portNames, name, indexedPorts[i]->dtype(), indexedPorts[i]->domain());
+        this->allocatePort(ports, namedPorts, indexedPorts, portNames, name, indexedPorts[i]->dtype(), indexedPorts[i]->domain());
         break;
     }
 
@@ -71,34 +71,34 @@ void Pothos::WorkerActor::autoAllocatePort(PortsType &ports, NamedPortsType &nam
  **********************************************************************/
 void Pothos::WorkerActor::allocateInput(const std::string &name, const DType &dtype, const std::string &domain)
 {
-    this->allocatePort<InputPortImpl>(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames, name, dtype, domain);
+    this->allocatePort(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames, name, dtype, domain);
 }
 
 void Pothos::WorkerActor::allocateOutput(const std::string &name, const DType &dtype, const std::string &domain)
 {
-    this->allocatePort<OutputPortImpl>(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames, name, dtype, domain);
+    this->allocatePort(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames, name, dtype, domain);
 }
 
 void Pothos::WorkerActor::allocateSignal(const std::string &name)
 {
     this->allocateOutput(name, "", "");
-    this->outputs[name]->_impl->isSignal = true;
+    this->outputs[name]->_isSignal = true;
 }
 
 void Pothos::WorkerActor::allocateSlot(const std::string &name)
 {
     this->allocateInput(name, "", "");
-    this->inputs[name]->_impl->isSlot = true;
+    this->inputs[name]->_isSlot = true;
 }
 
 void Pothos::WorkerActor::autoAllocateInput(const std::string &name)
 {
-    this->autoAllocatePort<InputPortImpl>(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames, name);
+    this->autoAllocatePort(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames, name);
 }
 
 void Pothos::WorkerActor::autoAllocateOutput(const std::string &name)
 {
-    this->autoAllocatePort<OutputPortImpl>(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames, name);
+    this->autoAllocatePort(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames, name);
 }
 
 void Pothos::WorkerActor::updatePorts(void)

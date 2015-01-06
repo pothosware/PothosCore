@@ -4,7 +4,7 @@
 /// This file contains the interface for creating a topology of blocks.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -40,9 +40,21 @@ public:
     /*!
      * Create a topology from a JSON description.
      *
+     * The "threadPools" field is an optional JSON object
+     * where each entry contains thread pool arguments which are
+     * documented by the ThreadPoolArgs JSON markup constructor.
+     * A block can be associated to a particular thread pool
+     * using the optional "threadPool" key and a pool name.
+     * The special thread pool named "default" will apply
+     * to all blocks that do not specify the "threadPool" key.
+     *
      * Example JSON markup for a topology description:
      * \code {.json}
      * {
+     *     "threadPools" : {
+     *         "default" : {"priority" : 0.5},
+     *         "myPool0" : {"yieldMode" : "SPIN"}
+     *     },
      *     "blocks" : [
      *         {
      *             "id" : "id0",
@@ -56,6 +68,7 @@ public:
      *         {
      *             "id" : "id1",
      *             "path" : "/blocks/bar",
+     *             "threadPool" : "myPool0",
      *             "args" : [],
      *             "calls" : [
      *                 ["setBar", "OK"],
