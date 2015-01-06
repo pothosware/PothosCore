@@ -105,8 +105,8 @@ inline void ActorInterface::externalCallRelease(void)
 {
     _externalAcquired--;
     _changeFlagged = true;
-    _mutex.unlock();
     _cond.notify_one();
+    _mutex.unlock();
 }
 
 inline bool ActorInterface::workerThreadAcquire(void)
@@ -160,11 +160,11 @@ inline void ActorInterface::flagExternalChange(void)
     //synchronous indication
     _changeFlagged = true;
 
-    //unlock before notify
-    _mutex.unlock();
-
     //notify the waiting cv
     _cond.notify_one();
+
+    //unlock after notify
+    _mutex.unlock();
 }
 
 inline void ActorInterface::flagInternalChange(void)
