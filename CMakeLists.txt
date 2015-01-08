@@ -26,14 +26,14 @@ endif()
 set(BUILD_POCO TRUE) #always build -- want version 1.5
 
 if(BUILD_POCO)
-    set(ENABLE_MONGODB OFF)
-    set(ENABLE_PDF OFF)
-    set(ENABLE_NETSSL OFF)
-    set(ENABLE_CRYPTO OFF)
-    set(ENABLE_DATA OFF)
-    set(ENABLE_SEVENZIP OFF)
-    set(ENABLE_ZIP OFF)
-    set(ENABLE_APACHECONNECTOR OFF)
+    set(ENABLE_MONGODB OFF CACHE INTERNAL "")
+    set(ENABLE_PDF OFF CACHE INTERNAL "")
+    set(ENABLE_NETSSL OFF CACHE INTERNAL "")
+    set(ENABLE_CRYPTO OFF CACHE INTERNAL "")
+    set(ENABLE_DATA OFF CACHE INTERNAL "")
+    set(ENABLE_SEVENZIP OFF CACHE INTERNAL "")
+    set(ENABLE_ZIP OFF CACHE INTERNAL "")
+    set(ENABLE_APACHECONNECTOR OFF CACHE INTERNAL "")
 
     # Include the Pothos library config into the top level.
     # This brings in LIB_SUFFIX and RPATH settings for Poco.
