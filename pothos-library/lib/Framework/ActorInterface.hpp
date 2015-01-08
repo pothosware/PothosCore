@@ -17,10 +17,9 @@ public:
 
     ActorInterface(void):
         _waitModeEnabled(true),
-        _changeFlagged(false),
         _externalAcquired(0)
     {
-        return;
+        _changeFlagged.test_and_set();
     }
 
     virtual ~ActorInterface(void)
@@ -69,7 +68,7 @@ public:
 
 private:
     bool _waitModeEnabled;
-    std::atomic<bool> _changeFlagged;
+    std::atomic_flag _changeFlagged;
     std::atomic<size_t> _externalAcquired;
     std::mutex _mutex;
     std::condition_variable _cond;
@@ -104,7 +103,7 @@ inline void ActorInterface::externalCallAcquire(void)
 inline void ActorInterface::externalCallRelease(void)
 {
     _externalAcquired--;
-    _changeFlagged = true;
+    _changeFlagged.clear();
     _cond.notify_one();
     _mutex.unlock();
 }
@@ -113,14 +112,14 @@ inline bool ActorInterface::workerThreadAcquire(void)
 {
     //external context requested or in progress
     //block in here on a mutex lock and bail out
-    if (_externalAcquired != 0)
+    if (_externalAcquired.load(std::memory_order_acquire) != 0)
     {
         std::lock_guard<std::mutex> lock(_mutex);
         return false;
     }
 
     //fast-check for already flagged case
-    if (_changeFlagged.exchange(false))
+    if (not _changeFlagged.test_and_set(std::memory_order_acquire))
     {
         _mutex.lock();
         return true;
@@ -130,7 +129,7 @@ inline bool ActorInterface::workerThreadAcquire(void)
     if (_waitModeEnabled)
     {
         std::unique_lock<std::mutex> lock(_mutex);
-        while (not _changeFlagged.exchange(false))
+        while (_changeFlagged.test_and_set(std::memory_order_acquire))
         {
             _cond.wait(lock);
         }
@@ -149,16 +148,13 @@ inline void ActorInterface::workerThreadRelease(void)
 inline void ActorInterface::flagExternalChange(void)
 {
     //asynchronous indication
-    _changeFlagged = true;
+    _changeFlagged.clear(std::memory_order_release);
 
     //the logic below is only used with cv waits
     if (not _waitModeEnabled) return;
 
     //if lock fails, the worker context is busy
     if (not _mutex.try_lock()) return;
-
-    //synchronous indication
-    _changeFlagged = true;
 
     //notify the waiting cv
     _cond.notify_one();
@@ -169,5 +165,5 @@ inline void ActorInterface::flagExternalChange(void)
 
 inline void ActorInterface::flagInternalChange(void)
 {
-    _changeFlagged = true;
+    _changeFlagged.clear(std::memory_order_release);
 }
