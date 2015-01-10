@@ -330,6 +330,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     if (inputWorkEvents != 0)
     {
         this->flagInternalChange();
+        this->activityIndicator.fetch_add(1, std::memory_order_relaxed);
         this->workStats.timeLastConsumed = std::chrono::high_resolution_clock::now();
     }
 
@@ -402,6 +403,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
     if (outputWorkEvents != 0)
     {
         this->flagInternalChange();
+        this->activityIndicator.fetch_add(1, std::memory_order_relaxed);
         this->workStats.timeLastProduced = std::chrono::high_resolution_clock::now();
     }
 }
@@ -420,4 +422,5 @@ static auto managedWorkerActor = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, setOutputBufferManager))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, autoAllocateInput))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, autoAllocateOutput))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, queryActivityIndicator))
     .commit("Pothos/WorkerActor");

@@ -8,9 +8,6 @@
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
 #include <atomic>
-#include <mutex>
-#include <thread>
-#include <condition_variable>
 #include <iostream>
 
 /***********************************************************************
@@ -21,7 +18,8 @@ class Pothos::WorkerActor : public ActorInterface
 public:
     WorkerActor(Block *block):
         block(block),
-        activeState(false)
+        activeState(false),
+        activityIndicator(0)
     {
         return;
     }
@@ -39,10 +37,22 @@ public:
         }
     }
 
+    /*!
+     * The activity indicator changes when work() produces or consumes.
+     * Its value is used by the Topology's waitInactive() implementation.
+     * While technically a counter, the value has no intrinsic meaning.
+     * The Topology needs to be able to detect that activity occurred.
+     */
+    int queryActivityIndicator(void) const
+    {
+        return this->activityIndicator;
+    }
+
     ///////////////////// WorkerActor storage ///////////////////////
     Block *block;
     bool activeState;
     WorkStats workStats;
+    std::atomic<int> activityIndicator;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
 

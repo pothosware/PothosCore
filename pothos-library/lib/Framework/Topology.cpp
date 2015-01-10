@@ -237,18 +237,26 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
     //get a list of blocks to poll for idle time
     const auto blocks = getObjSetFromFlowList(_impl->activeFlatFlows);
 
+    //track block activity indicators and activity time stamps
+    std::vector<std::chrono::high_resolution_clock::time_point> lastActivityTime(blocks.size());
+    std::vector<int> lastActivityIndicator(blocks.size(), 0);
+
     //loop until exit time
     const auto entryTime = std::chrono::high_resolution_clock::now();
     const auto exitTime = entryTime + std::chrono::nanoseconds((long long)(timeout*1e9));
     do
     {
         //check each worker for idle time from the stats
-        for (auto block : blocks)
+        for (size_t i = 0; i < blocks.size(); i++)
         {
-            const auto stats = block.call<WorkStats>("workStats");
-            const auto consumptionIdle = stats.timeStatsQuery - std::max(entryTime, stats.timeLastConsumed);
-            const auto productionIdle = stats.timeStatsQuery - std::max(entryTime, stats.timeLastProduced);
-            const auto workerIdleDuration = std::min(consumptionIdle, productionIdle);
+            const auto &block = blocks[i];
+            const auto activityIndicator = block.callProxy("get:_actor").call<int>("queryActivityIndicator");
+            if (lastActivityIndicator[i] != activityIndicator)
+            {
+                lastActivityTime[i] = std::chrono::high_resolution_clock::now();
+                lastActivityIndicator[i] = activityIndicator;
+            }
+            const auto workerIdleDuration = std::chrono::high_resolution_clock::now() - std::max(entryTime, lastActivityTime[i]);
             if (workerIdleDuration < idleDurationNs) goto pollSleep;
         }
 
