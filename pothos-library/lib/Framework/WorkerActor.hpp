@@ -8,6 +8,7 @@
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
 #include <atomic>
+#include <set>
 #include <iostream>
 
 /***********************************************************************
@@ -62,13 +63,18 @@ public:
     void allocateSignal(const std::string &name);
     void allocateSlot(const std::string &name);
     template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
-    void allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain);
+    void allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames,
+        const std::string &name, const DType &dtype, const std::string &domain, const bool automatic = false);
 
     void autoAllocateInput(const std::string &name);
     void autoAllocateOutput(const std::string &name);
     template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
     void autoAllocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name);
-    //TODO std::set<void *> automaticPorts; //set of automatically allocated ports
+
+    template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+    void autoDeletePorts(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames);
+    std::set<void *> automaticPorts; //set of automatically allocated ports
+    void autoDeletePorts(void);
 
     //! call after making changes to ports
     void updatePorts(void);

@@ -75,6 +75,7 @@ void Pothos::WorkerActor::subscribeInput(const std::string &action, const std::s
         if (not found) throw PortAccessError("Pothos::WorkerActor::unsubscribePort()",
             Poco::format("input %s subscription missing from output port %s", inputPort->name(), myPortName));
         subscribers.erase(it);
+        this->autoDeletePorts();
     }
 
     this->updatePorts();
@@ -100,6 +101,7 @@ void Pothos::WorkerActor::subscribeOutput(const std::string &action, const std::
         if (not found) throw PortAccessError("Pothos::WorkerActor::unsubscribePort()",
             Poco::format("output %s subscription missing from input port %s", outputPort->name(), myPortName));
         subscribers.erase(it);
+        this->autoDeletePorts();
     }
 
     this->updatePorts();

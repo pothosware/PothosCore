@@ -19,7 +19,8 @@ static int portNameToIndex(const std::string &name)
  * Port allocation templated implementation
  **********************************************************************/
 template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
-void Pothos::WorkerActor::allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain)
+void Pothos::WorkerActor::allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames,
+    const std::string &name, const DType &dtype, const std::string &domain, const bool automatic)
 {
     auto &port = ports[name];
     typedef typename PortsType::mapped_type::element_type T;
@@ -44,6 +45,9 @@ void Pothos::WorkerActor::allocatePort(PortsType &ports, NamedPortsType &namedPo
         indexedPorts[index] = port.get();
     }
 
+    //record automatically created ports
+    if (automatic) this->automaticPorts.insert(port.get());
+
     //resizes work info indexable pointers
     this->updatePorts();
 }
@@ -59,11 +63,9 @@ void Pothos::WorkerActor::autoAllocatePort(PortsType &ports, NamedPortsType &nam
     for (int i = index-1; i >= 0; i--)
     {
         if (ports.count(std::to_string(i)) == 0) continue;
-        this->allocatePort(ports, namedPorts, indexedPorts, portNames, name, indexedPorts[i]->dtype(), indexedPorts[i]->domain());
+        this->allocatePort(ports, namedPorts, indexedPorts, portNames, name, indexedPorts[i]->dtype(), indexedPorts[i]->domain(), true/*auto*/);
         break;
     }
-
-    //TODO mark this port automatic so it can be deleted when unsubscribed
 }
 
 /***********************************************************************
@@ -103,8 +105,63 @@ void Pothos::WorkerActor::autoAllocateOutput(const std::string &name)
 
 void Pothos::WorkerActor::updatePorts(void)
 {
+    //resize the work info pointer arrays
     block->_workInfo.inputPointers.resize(block->_indexedInputs.size());
     block->_workInfo.outputPointers.resize(block->_indexedOutputs.size());
+}
 
-    //TODO autodelete ports when automatic and unsubscribed
+/***********************************************************************
+ * Port deletion implementation
+ **********************************************************************/
+template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+void Pothos::WorkerActor::autoDeletePorts(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames)
+{
+    auto it = ports.begin();
+    while (it != ports.end())
+    {
+        //stash iterator and increment for next
+        auto thisIt = it; it++;
+
+        auto &port = *thisIt->second;
+        if (not port._subscribers.empty()) continue;
+
+        //remove from the auto ports list
+        {
+            auto idx = this->automaticPorts.find(&port);
+            if (idx == this->automaticPorts.end()) continue;
+            this->automaticPorts.erase(idx);
+        }
+
+        //remove it from indexed ports and strip null ports
+        if (port.index() >= 0 and port.index() < indexedPorts.size())
+        {
+            indexedPorts[port.index()] = nullptr;
+        }
+        while (not indexedPorts.empty() and indexedPorts.back() == nullptr)
+        {
+            indexedPorts.resize(indexedPorts.size()-1);
+        }
+
+        //named port removal
+        if (namedPorts.count(port.name()) != 0)
+        {
+            namedPorts.erase(port.name());
+        }
+
+        //port names removal
+        {
+            auto idx = std::find(portNames.begin(), portNames.end(), port.name());
+            if (idx != portNames.end()) portNames.erase(idx);
+        }
+
+        //remove from ports itself
+        ports.erase(thisIt);
+    }
+}
+
+void Pothos::WorkerActor::autoDeletePorts(void)
+{
+    //autodelete ports when automatic and unsubscribed
+    this->autoDeletePorts(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames);
+    this->autoDeletePorts(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames);
 }
