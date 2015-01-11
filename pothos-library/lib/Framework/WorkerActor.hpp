@@ -8,6 +8,7 @@
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
 #include <atomic>
+#include <set>
 #include <iostream>
 
 /***********************************************************************
@@ -62,12 +63,19 @@ public:
     void allocateSignal(const std::string &name);
     void allocateSlot(const std::string &name);
     template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
-    void allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name, const DType &dtype, const std::string &domain);
+    void allocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames,
+        const std::string &name, const DType &dtype, const std::string &domain, const bool automatic = false);
 
     void autoAllocateInput(const std::string &name);
     void autoAllocateOutput(const std::string &name);
     template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
     void autoAllocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name);
+
+    template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
+    void autoDeletePort(const std::string &name, PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames);
+    std::set<void *> automaticPorts; //set of automatically allocated ports
+    void autoDeleteInput(const std::string &name);
+    void autoDeleteOutput(const std::string &name);
 
     //! call after making changes to ports
     void updatePorts(void);
@@ -75,14 +83,8 @@ public:
     ///////////////////// topology helper methods ///////////////////////
     void setActiveStateOn(void);
     void setActiveStateOff(void);
-    void subscribePort(
-        const std::string &myPortName,
-        Block *subscriberPortBlock,
-        const std::string &subscriberPortName);
-    void unsubscribePort(
-        const std::string &myPortName,
-        Block *subscriberPortBlock,
-        const std::string &subscriberPortName);
+    void subscribeInput(const std::string &action, const std::string &myPortName, InputPort *subscriberPort);
+    void subscribeOutput(const std::string &action, const std::string &myPortName, OutputPort *subscriberPort);
     std::string getInputBufferMode(const std::string &name, const std::string &domain);
     std::string getOutputBufferMode(const std::string &name, const std::string &domain);
     BufferManager::Sptr getBufferManager(const std::string &name, const std::string &domain, const bool isInput);
