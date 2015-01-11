@@ -202,6 +202,10 @@ void Pothos::Topology::_disconnect(
     if (it == _impl->flows.end()) throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()",
         Poco::format("this flow does not exist in the topology(%s)", flow.toString()));
 
+    //perform auto-deletion, on a block this may or may not delete, on a topology this throws
+    try{getConnectable(src).callProxy("get:_actor").call<std::string>("autoDeleteOutput", srcName);}catch(const Exception &){}
+    try{getConnectable(dst).callProxy("get:_actor").call<std::string>("autoDeleteInput", dstName);}catch(const Exception &){}
+
     _impl->flows.erase(it);
 }
 
@@ -222,6 +226,13 @@ void Pothos::Topology::disconnectAll(const bool recursive)
             flow.dst.obj.callVoid("disconnectAll");
         }
         catch (const Pothos::Exception &){}
+    }
+
+    //perform auto-deletion, on a block this may or may not delete, on a topology this throws
+    for (const auto &flow : _impl->flows)
+    {
+        if (flow.src.obj) try{getInternalBlock(flow.src.obj).callProxy("get:_actor").call<std::string>("autoDeleteOutput", flow.src.name);}catch(const Exception &){}
+        if (flow.dst.obj) try{getInternalBlock(flow.dst.obj).callProxy("get:_actor").call<std::string>("autoDeleteInput", flow.dst.name);}catch(const Exception &){}
     }
 
     //clear our own local flows

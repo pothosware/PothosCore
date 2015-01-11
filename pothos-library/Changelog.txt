@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.2.0 (pending)
 ==========================
 
+- Fixed automatic port deletion upon disconnection
 - Threading overhaul and performance improvements
 - Topology factory from JSON description
 - Topology supports pass-through flows

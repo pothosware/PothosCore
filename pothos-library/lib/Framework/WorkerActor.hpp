@@ -72,9 +72,10 @@ public:
     void autoAllocatePort(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames, const std::string &name);
 
     template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
-    void autoDeletePorts(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames);
+    void autoDeletePort(const std::string &name, PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames);
     std::set<void *> automaticPorts; //set of automatically allocated ports
-    void autoDeletePorts(void);
+    void autoDeleteInput(const std::string &name);
+    void autoDeleteOutput(const std::string &name);
 
     //! call after making changes to ports
     void updatePorts(void);

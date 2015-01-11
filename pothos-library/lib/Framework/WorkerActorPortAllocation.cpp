@@ -114,54 +114,53 @@ void Pothos::WorkerActor::updatePorts(void)
  * Port deletion implementation
  **********************************************************************/
 template <typename PortsType, typename NamedPortsType, typename IndexedPortsType, typename PortNamesType>
-void Pothos::WorkerActor::autoDeletePorts(PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames)
+void Pothos::WorkerActor::autoDeletePort(const std::string &name, PortsType &ports, NamedPortsType &namedPorts, IndexedPortsType &indexedPorts, PortNamesType &portNames)
 {
-    auto it = ports.begin();
-    while (it != ports.end())
+    auto it = ports.find(name);
+    if (it == ports.end()) return;
+
+    auto &port = *it->second;
+    if (not port._subscribers.empty()) return;
+
+    //remove from the auto ports list
     {
-        //stash iterator and increment for next
-        auto thisIt = it; it++;
-
-        auto &port = *thisIt->second;
-        if (not port._subscribers.empty()) continue;
-
-        //remove from the auto ports list
-        {
-            auto idx = this->automaticPorts.find(&port);
-            if (idx == this->automaticPorts.end()) continue;
-            this->automaticPorts.erase(idx);
-        }
-
-        //remove it from indexed ports and strip null ports
-        if (port.index() >= 0 and port.index() < indexedPorts.size())
-        {
-            indexedPorts[port.index()] = nullptr;
-        }
-        while (not indexedPorts.empty() and indexedPorts.back() == nullptr)
-        {
-            indexedPorts.resize(indexedPorts.size()-1);
-        }
-
-        //named port removal
-        if (namedPorts.count(port.name()) != 0)
-        {
-            namedPorts.erase(port.name());
-        }
-
-        //port names removal
-        {
-            auto idx = std::find(portNames.begin(), portNames.end(), port.name());
-            if (idx != portNames.end()) portNames.erase(idx);
-        }
-
-        //remove from ports itself
-        ports.erase(thisIt);
+        auto idx = this->automaticPorts.find(&port);
+        if (idx == this->automaticPorts.end()) return;
+        this->automaticPorts.erase(idx);
     }
+
+    //remove it from indexed ports and strip null ports
+    if (port.index() >= 0 and port.index() < indexedPorts.size())
+    {
+        indexedPorts[port.index()] = nullptr;
+    }
+    while (not indexedPorts.empty() and indexedPorts.back() == nullptr)
+    {
+        indexedPorts.resize(indexedPorts.size()-1);
+    }
+
+    //named port removal
+    if (namedPorts.count(port.name()) != 0)
+    {
+        namedPorts.erase(port.name());
+    }
+
+    //port names removal
+    {
+        auto idx = std::find(portNames.begin(), portNames.end(), port.name());
+        if (idx != portNames.end()) portNames.erase(idx);
+    }
+
+    //remove from ports itself
+    ports.erase(it);
 }
 
-void Pothos::WorkerActor::autoDeletePorts(void)
+void Pothos::WorkerActor::autoDeleteInput(const std::string &name)
 {
-    //autodelete ports when automatic and unsubscribed
-    this->autoDeletePorts(this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames);
-    this->autoDeletePorts(this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames);
+    this->autoDeletePort(name, this->inputs, block->_namedInputs, block->_indexedInputs, block->_inputPortNames);
+}
+
+void Pothos::WorkerActor::autoDeleteOutput(const std::string &name)
+{
+    this->autoDeletePort(name, this->outputs, block->_namedOutputs, block->_indexedOutputs, block->_outputPortNames);
 }
