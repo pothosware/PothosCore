@@ -112,10 +112,16 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
 /***********************************************************************
  * Helpers to implement port subscription
  **********************************************************************/
-static void subscribePort(const Port &pri, const Port &sec, const std::string &action)
+static void subscribePort(const Port &src, const Port &dst, const std::string &action)
 {
-    auto actor = pri.obj.callProxy("get:_actor");
-    actor.callVoid(action, pri.name, sec.obj.callProxy("getPointer"), sec.name);
+    {
+        auto actor = src.obj.callProxy("get:_actor");
+        actor.callVoid("subscribeInput", action, src.name, dst.obj.callProxy("input", dst.name));
+    }
+    {
+        auto actor = dst.obj.callProxy("get:_actor");
+        actor.callVoid("subscribeOutput", action, dst.name, src.obj.callProxy("output", src.name));
+    }
 }
 
 static void updateFlows(const std::vector<Flow> &flows, const std::string &action)
@@ -205,10 +211,10 @@ void topologySubCommit(Pothos::Topology &topology)
     }
 
     //add new data acceptors
-    updateFlows(newFlows, "subscribePort");
+    updateFlows(newFlows, "add");
 
     //remove old data acceptors
-    updateFlows(oldFlows, "unsubscribePort");
+    updateFlows(oldFlows, "remove");
 
     //install buffer managers on sources for all new flows
     //Sometimes this will replace previous buffer managers.

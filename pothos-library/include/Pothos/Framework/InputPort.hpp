@@ -209,6 +209,8 @@ private:
     Util::SpinLock _bufferAccumulatorLock;
     BufferAccumulator _bufferAccumulator;
 
+    std::vector<OutputPort *> _subscribers;
+
     /////// async message interface /////////
     void asyncMessagesPush(const Object &message, const BufferChunk &token = BufferChunk::null());
     bool asyncMessagesEmpty(void);
