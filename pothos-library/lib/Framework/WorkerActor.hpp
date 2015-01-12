@@ -29,13 +29,15 @@ public:
      * Perform the main processing task once.
      * Give the context back to the worker thread.
      */
-    void processTask(void)
+    bool processTask(const bool waitEnabled)
     {
-        if (this->workerThreadAcquire())
+        if (this->workerThreadAcquire(waitEnabled))
         {
             this->workTask();
             this->workerThreadRelease();
+            return true;
         }
+        return false;
     }
 
     /*!
