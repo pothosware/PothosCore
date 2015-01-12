@@ -91,11 +91,20 @@ void ThreadEnvironment::unregisterTask(void *handle)
     while (not data.unique()) std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
+/*!
+ * Call wake on all tasks that are busy:
+ * Busy tasks will fail the test and set and may be in a CV wait state.
+ * Do not call wake on the caller task since that would have no effect.
+ * \param tasks a map of all tasks from the caller task
+ * \param self the caller task itself to avoid self-wake
+ */
 template <typename TasksType>
-void wakeAllBusyTasks(const TasksType &tasks)
+void wakeAllBusyTasks(const TasksType &tasks, void *self)
 {
     for (const auto &task : tasks)
     {
+        if (task.first == self) continue;
+
         //if we fail to get the lock, a thread may be waiting
         if (task.second->flag.test_and_set(std::memory_order_acquire))
         {
@@ -108,6 +117,24 @@ void wakeAllBusyTasks(const TasksType &tasks)
         }
     }
 }
+
+/*!
+ * Thread pool wait and wake-up mechanics:
+ * The goal is to ensure that when wait mode is enabled,
+ * threads are not allowed to wait in a task when another
+ * task is immediately capable of performing useful work.
+ *
+ * Threads are given a chance to wait in a task only after
+ * failing to acquire N times, where N is the number of tasks.
+ * Once a task is successfully acquired and completed,
+ * or once the attempted acquisition with "wait" returns,
+ * the failure count reset and the mechanism begins again.
+ *
+ * After a thread successfully acquires the task context,
+ * it must wake up all other potentially waiting threads.
+ * This ensures that threads will be available to process
+ * new tasks that are capable of performing useful work.
+ */
 
 void ThreadEnvironment::poolProcessLoop(size_t index)
 {
@@ -140,13 +167,14 @@ void ThreadEnvironment::poolProcessLoop(size_t index)
             if (it->second->task(waitOnce))
             {
                 //the task was successfully executed, wake all other potential blockers
-                if (_waitModeEnabled) wakeAllBusyTasks(localTasks);
+                if (_waitModeEnabled) wakeAllBusyTasks(localTasks, it->first);
                 failAcquireCount = 0; //reset fail count
             }
             else failAcquireCount++;
             if (waitOnce) failAcquireCount = 0; //reset fail count
             it->second->flag.clear(std::memory_order_release);
         }
+        else failAcquireCount++;
         it++;
     }
 }
