@@ -124,7 +124,7 @@ static Poco::AutoPtr<Poco::Net::RemoteSyslogListener> listener;
 
 std::string Pothos::System::Logger::startSyslogListener(void)
 {
-    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
+    std::lock_guard<std::mutex> lock(getSetupLoggerMutex());
 
     if (not listener)
     {
@@ -146,7 +146,7 @@ std::string Pothos::System::Logger::startSyslogListener(void)
 
 void Pothos::System::Logger::stopSyslogListener(void)
 {
-    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
+    std::lock_guard<std::mutex> lock(getSetupLoggerMutex());
     if (not listener) return;
     listener->close();
     listener = nullptr;
@@ -154,7 +154,7 @@ void Pothos::System::Logger::stopSyslogListener(void)
 
 void Pothos::System::Logger::startSyslogForwarding(const std::string &addr)
 {
-    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
+    std::lock_guard<std::mutex> lock(getSetupLoggerMutex());
     Poco::AutoPtr<Poco::Channel> channel(new Poco::Net::RemoteSyslogChannel(addr, ""/*empty name*/));
     Poco::Logger::get("").setChannel(channel);
     Poco::Logger::get("").setLevel("trace"); //lowest level -> forward everything
@@ -162,7 +162,7 @@ void Pothos::System::Logger::startSyslogForwarding(const std::string &addr)
 
 void Pothos::System::Logger::forwardStdIoToLogging(const std::string &source)
 {
-    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
+    std::lock_guard<std::mutex> lock(getSetupLoggerMutex());
     static std::shared_ptr<InterceptStream> clogRedirected;
     clogRedirected.reset(new InterceptStream(std::clog, source));
     static std::shared_ptr<InterceptStream> coutRedirected;
@@ -203,7 +203,7 @@ static void __setupDefaultLogging(void)
 
 void Pothos::System::Logger::setupDefaultLogging(void)
 {
-    std::unique_lock<std::mutex> lock(getSetupLoggerMutex());
+    std::lock_guard<std::mutex> lock(getSetupLoggerMutex());
     __setupDefaultLogging();
 }
 
