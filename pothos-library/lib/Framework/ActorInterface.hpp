@@ -38,9 +38,10 @@ public:
 
     /*!
      * Acquire exclusive access to the actor context.
-     * \return true when acquired, false for timeout
+     * \param waitEnabled true to enable CV waiting
+     * \return true when acquired, false otherwise
      */
-    bool workerThreadAcquire(void);
+    bool workerThreadAcquire(const bool waitEnabled);
 
     //! Release exclusive access to the actor context.
     void workerThreadRelease(void);
@@ -59,6 +60,11 @@ public:
      * the worker thread is assumed to be active or making this call.
      */
     void flagInternalChange(void);
+
+    /*!
+     * Wake up a potentially sleeping thread without flagging a change.
+     */
+    void wakeNoChange(void);
 
     //! Enable or disable use of condition variables
     void enableWaitMode(const bool enb)
@@ -108,7 +114,7 @@ inline void ActorInterface::externalCallRelease(void)
     _mutex.unlock();
 }
 
-inline bool ActorInterface::workerThreadAcquire(void)
+inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
 {
     //external context requested or in progress
     //block in here on a mutex lock and bail out
@@ -126,12 +132,16 @@ inline bool ActorInterface::workerThreadAcquire(void)
     }
 
     //wait mode enabled -- lock and wait on condition variable
-    if (_waitModeEnabled)
+    if (waitEnabled)
     {
         std::unique_lock<std::mutex> lock(_mutex);
-        while (_changeFlagged.test_and_set(std::memory_order_acquire))
+        if (_changeFlagged.test_and_set(std::memory_order_acquire))
         {
             _cond.wait(lock);
+        }
+        if (_changeFlagged.test_and_set(std::memory_order_acquire))
+        {
+            return false;
         }
         lock.release();
         return true;
@@ -150,9 +160,12 @@ inline void ActorInterface::flagExternalChange(void)
     //asynchronous indication
     _changeFlagged.clear(std::memory_order_release);
 
-    //the logic below is only used with cv waits
-    if (not _waitModeEnabled) return;
+    //wake a blocked thread to process the change
+    if (_waitModeEnabled) this->wakeNoChange();
+}
 
+inline void ActorInterface::wakeNoChange(void)
+{
     //if lock fails, the worker context is busy
     if (not _mutex.try_lock()) return;
 

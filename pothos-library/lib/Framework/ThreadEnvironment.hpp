@@ -18,9 +18,10 @@
  */
 struct TaskData
 {
-    typedef std::function<void(void)> Task;
+    typedef std::function<bool(bool)> Task;
+    typedef std::function<void(void)> Wake;
 
-    TaskData(const Task task, const Task wake):
+    TaskData(const Task task, const Wake wake):
         task(task),
         wake(wake)
     {
@@ -28,7 +29,7 @@ struct TaskData
     }
 
     Task task;
-    Task wake;
+    Wake wake;
     std::atomic_flag flag;
 };
 
@@ -49,7 +50,7 @@ public:
      * \param task a function pointer to the handle worker task
      * \param wake a function pointer to wake a worker task
      */
-    void registerTask(void *handle, TaskData::Task task, TaskData::Task wake);
+    void registerTask(void *handle, TaskData::Task task, TaskData::Wake wake);
 
     /*!
      * Unregister the task from the thread environment.
@@ -61,6 +62,14 @@ public:
     const Pothos::ThreadPoolArgs &getArgs(void) const
     {
         return _args;
+    }
+
+    /*!
+     * Is waiting allowed within an task?
+     */
+    bool isWaitingEnabled(void) const
+    {
+        return _waitModeEnabled;
     }
 
 private:
@@ -93,8 +102,11 @@ private:
     //! Set NUMA affinity - return error message
     static std::string setNodeAffinity(const std::vector<size_t> &affinity);
 
-    //the maximum number of threads or 0 for thread per handle mode
+    //the thread pool configuration arguments
     Pothos::ThreadPoolArgs _args;
+
+    //whether or not waiting is allowed based on args
+    bool _waitModeEnabled;
 
     //map of handle handles to tasks
     std::map<void *, std::shared_ptr<TaskData>> _handleToTask;
