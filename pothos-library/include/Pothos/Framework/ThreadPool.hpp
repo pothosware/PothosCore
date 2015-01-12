@@ -50,7 +50,8 @@ public:
 
     /*!
      * The number of threads to create in this pool.
-     * The default value is 0, indicating automatic.
+     * The default value is 0, indicating the thread-per-block mechanic.
+     * Positive values for numThreads indicate the thread-pool mechanic.
      */
     size_t numThreads;
 
@@ -97,6 +98,17 @@ public:
  * Not only can users configure the number of threads,
  * but there are a variety of other settings such as affinity,
  * real-time priority, and internal threading mechanisms.
+ *
+ * The thread pool can operate in two major modes:
+ *
+ *  - When numThreads is specified to be zero,
+ *    the thread pool is in thread-per-block mode.
+ *    Each block that is associated with this thread pool gets its own
+ *    dedicated thread spawned explicitly for its execution alone.
+ *
+ *  - Positive values for numThreads indicate pool-mode where a
+ *    fixed number of threads operate on the blocks in a round-robin fashion.
+ *    The thread pool will never spawn more threads than there are blocks.
  */
 class POTHOS_API ThreadPool
 {
