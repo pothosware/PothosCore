@@ -3,6 +3,8 @@
 
 #include "PothosUtil.hpp"
 #include <Pothos/Framework.hpp>
+#include <Poco/Path.h>
+#include <fstream>
 #include <thread>
 #include <iostream>
 
@@ -10,8 +12,12 @@ void PothosUtilBase::runTopology(const std::string &, const std::string &path)
 {
     Pothos::init();
 
+    //read the complete file into a string
+    std::ifstream ifs(Poco::Path::expand(path));
+    const std::string json((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+
     std::cout << ">>> Create Topology: " << path << std::endl;
-    auto topology = Pothos::Topology::make(path);
+    auto topology = Pothos::Topology::make(json);
 
     if (this->config().has("runDuration"))
     {
