@@ -118,7 +118,6 @@ list(APPEND POTHOS_SOURCES
     Framework/TopologyDotMarkup.cpp
     Framework/TopologyJSON.cpp
     Framework/WorkInfo.cpp
-    Framework/WorkStats.cpp
     Framework/WorkerActor.cpp
     Framework/WorkerActorPortAllocation.cpp
     Framework/ThreadPool.cpp

@@ -4,7 +4,7 @@
 /// This file contains the interface for creating custom Blocks.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -12,7 +12,6 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/Connectable.hpp>
 #include <Pothos/Framework/WorkInfo.hpp>
-#include <Pothos/Framework/WorkStats.hpp>
 #include <Pothos/Framework/InputPort.hpp>
 #include <Pothos/Framework/OutputPort.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>
@@ -208,11 +207,6 @@ public:
      * The info is valid during calls to work() and propagateLabels().
      */
     const WorkInfo &workInfo(void) const;
-
-    /*!
-     * Query performance statistics about this block's processing.
-     */
-    WorkStats workStats(void) const;
 
     /*!
      * Is the block in an active state?

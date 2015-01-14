@@ -9,6 +9,22 @@
 #include <Poco/Logger.h>
 #include <cassert>
 
+//! Helper routine to deal with automatically accumulating time durations
+struct TimeAccumulator
+{
+    inline TimeAccumulator(std::chrono::high_resolution_clock::duration &t):
+        t(t), start(std::chrono::high_resolution_clock::now())
+    {
+        return;
+    }
+    inline ~TimeAccumulator(void)
+    {
+        t += std::chrono::high_resolution_clock::now() - start;
+    }
+    std::chrono::high_resolution_clock::duration &t;
+    const std::chrono::high_resolution_clock::time_point start;
+};
+
 /***********************************************************************
  * buffer manager helpers
  **********************************************************************/
@@ -141,18 +157,20 @@ void Pothos::WorkerActor::setActiveStateOff(void)
 void Pothos::WorkerActor::workTask(void)
 {
     if (not activeState) return;
+    this->numTaskCalls++;
+    TimeAccumulator taskTime(this->totalTimeTask);
 
     //prework
     {
-        TimeAccumulator preWorkTime(workStats.totalTimePreWork);
+        TimeAccumulator preWorkTime(this->totalTimePreWork);
         if (not this->preWorkTasks()) return;
     }
 
     //work
     POTHOS_EXCEPTION_TRY
     {
-        workStats.numWorkCalls++;
-        TimeAccumulator preWorkTime(workStats.totalTimeWork);
+        this->numWorkCalls++;
+        TimeAccumulator workTime(this->totalTimeWork);
         block->work();
     }
     POTHOS_EXCEPTION_CATCH(const Exception &ex)
@@ -162,11 +180,11 @@ void Pothos::WorkerActor::workTask(void)
 
     //postwork
     {
-        TimeAccumulator preWorkTime(workStats.totalTimePostWork);
+        TimeAccumulator preWorkTime(this->totalTimePostWork);
         this->postWorkTasks();
     }
 
-    workStats.timeLastWork = std::chrono::high_resolution_clock::now();
+    this->timeLastWork = std::chrono::high_resolution_clock::now();
 }
 
 /***********************************************************************
@@ -281,15 +299,11 @@ void Pothos::WorkerActor::postWorkTasks(void)
     ///////////////////// input handling ////////////////////////
 
     size_t inputWorkEvents = 0;
-    unsigned long long bytesConsumed = 0;
-    unsigned long long msgsConsumed = 0;
 
     for (const auto &entry : this->inputs)
     {
         auto &port = *entry.second;
         const size_t bytes = port._pendingElements*port.dtype().size();
-        bytesConsumed += bytes;
-        msgsConsumed += port._totalMessages;
 
         //propagate labels and delete old
         size_t numLabels = 0;
@@ -329,28 +343,22 @@ void Pothos::WorkerActor::postWorkTasks(void)
         inputWorkEvents += port._workEvents;
     }
 
-    //update consumption stats, bytes are incremental, messages cumulative
-    this->workStats.bytesConsumed += bytesConsumed;
-    msgsConsumed -= this->workStats.msgsConsumed;
-    this->workStats.msgsConsumed += msgsConsumed;
+    //react to consumption events
     if (inputWorkEvents != 0)
     {
         this->flagInternalChange();
         this->activityIndicator.fetch_add(1, std::memory_order_relaxed);
-        this->workStats.timeLastConsumed = std::chrono::high_resolution_clock::now();
+        this->timeLastConsumed = std::chrono::high_resolution_clock::now();
     }
 
     ///////////////////// output handling ////////////////////////
     //Note: output buffer production must come after propagateLabels()
 
     size_t outputWorkEvents = 0;
-    unsigned long long bytesProduced = 0;
-    unsigned long long msgsProduced = 0;
 
     for (const auto &entry : this->outputs)
     {
         auto &port = *entry.second;
-        msgsProduced += port._totalMessages;
         size_t elemsDequeued = 0;
         size_t bytesDequeued = 0;
 
@@ -398,20 +406,46 @@ void Pothos::WorkerActor::postWorkTasks(void)
 
         //add produced bytes into total
         port._totalElements += elemsDequeued;
-        bytesProduced += bytesDequeued;
         outputWorkEvents += port._workEvents;
     }
 
-    //update production stats, bytes are incremental, messages cumulative
-    this->workStats.bytesProduced += bytesProduced;
-    msgsProduced -= this->workStats.msgsProduced;
-    this->workStats.msgsProduced += msgsProduced;
+    //react to production events
     if (outputWorkEvents != 0)
     {
         this->flagInternalChange();
         this->activityIndicator.fetch_add(1, std::memory_order_relaxed);
-        this->workStats.timeLastProduced = std::chrono::high_resolution_clock::now();
+        this->timeLastProduced = std::chrono::high_resolution_clock::now();
     }
+}
+
+Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
+{
+    ActorInterfaceLock lock(this);
+    Poco::JSON::Object::Ptr stats(new Poco::JSON::Object());
+
+    //load the work stats
+    stats->set("name", block->getName());
+    stats->set("numTaskCalls", this->numTaskCalls);
+    stats->set("numWorkCalls", this->numWorkCalls);
+    //TODO more...
+
+    //load the input port stats
+    Poco::JSON::Array::Ptr inputStats(new Poco::JSON::Array());
+    for (const auto &name : block->inputPortNames())
+    {
+        
+    }
+    stats->set("inputs", inputStats);
+
+    //load the output port stats
+    Poco::JSON::Array::Ptr outputStats(new Poco::JSON::Array());
+    for (const auto &name : block->outputPortNames())
+    {
+        
+    }
+    stats->set("outputs", outputStats);
+
+    return stats;
 }
 
 #include <Pothos/Managed.hpp>
@@ -431,4 +465,5 @@ static auto managedWorkerActor = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, autoDeleteInput))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, autoDeleteOutput))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, queryActivityIndicator))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, queryWorkStats))
     .commit("Pothos/WorkerActor");

@@ -7,6 +7,8 @@
 #include <Pothos/Framework/Exception.hpp>
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Array.h>
 #include <atomic>
 #include <set>
 #include <iostream>
@@ -20,7 +22,9 @@ public:
     WorkerActor(Block *block):
         block(block),
         activeState(false),
-        activityIndicator(0)
+        activityIndicator(0),
+        numTaskCalls(0),
+        numWorkCalls(0)
     {
         return;
     }
@@ -51,13 +55,31 @@ public:
         return this->activityIndicator;
     }
 
+    /*!
+     * Query the work stats as a JSON object.
+     * This call blocks the work thread context.
+     * This call is made by the top level topology
+     * to amalgamate stats from all blocks in the design.
+     */
+    Poco::JSON::Object::Ptr queryWorkStats(void);
+
     ///////////////////// WorkerActor storage ///////////////////////
     Block *block;
     bool activeState;
-    WorkStats workStats;
     std::atomic<int> activityIndicator;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
+
+    ///////////////////// work stats collection ///////////////////////
+    unsigned long long numTaskCalls;
+    unsigned long long numWorkCalls;
+    std::chrono::high_resolution_clock::duration totalTimeTask;
+    std::chrono::high_resolution_clock::duration totalTimeWork;
+    std::chrono::high_resolution_clock::duration totalTimePreWork;
+    std::chrono::high_resolution_clock::duration totalTimePostWork;
+    std::chrono::high_resolution_clock::time_point timeLastConsumed;
+    std::chrono::high_resolution_clock::time_point timeLastProduced;
+    std::chrono::high_resolution_clock::time_point timeLastWork;
 
     ///////////////////// port setup methods ///////////////////////
     void allocateInput(const std::string &name, const DType &dtype, const std::string &domain);
