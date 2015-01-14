@@ -188,6 +188,35 @@ public:
     void registerCallable(const std::string &name, const Callable &call);
 
     /*!
+     * Query performance statistics for all blocks in the topology.
+     *
+     * Example JSON markup for stats reporting:
+     * (The actual stats markup has many more fields.)
+     * \code {.json}
+     * {
+     *     "unique_id_of_blockA" : {
+     *         "blockName" : "blockA",
+     *         "numWorkCalls" : 12345,
+     *         "outputStats" : [
+     *              {"portName" : "0", totalElements : 42},
+     *         ]
+     *     },
+     *     "unique_id_of_blockB" : {
+     *         "blockName" : "blockB",
+     *         "numWorkCalls" : 6789,
+     *         "inputStats" : [
+     *              {"portName" : "0", totalElements : 0},
+     *              {"portName" : "1", totalElements : 100}
+     *         ]
+     *     }
+     * }
+     * \endcode
+     *
+     * \return a JSON formatted object string
+     */
+    std::string queryJSONStats(void);
+
+    /*!
      * Convert the topology to a string containing dot markup.
      * This markup can be passed into the dot tool to create a visual graph.
      * The markup can represent the connections as specified by the user,

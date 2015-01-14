@@ -455,7 +455,7 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
         portStats->set("portName", name);
         inputStats->add(portStats);
     }
-    stats->set("inputs", inputStats);
+    stats->set("inputStats", inputStats);
 
     //load the output port stats
     Poco::JSON::Array::Ptr outputStats(new Poco::JSON::Array());
@@ -472,7 +472,7 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
         portStats->set("portName", name);
         inputStats->add(portStats);
     }
-    stats->set("outputs", outputStats);
+    stats->set("outputStats", outputStats);
 
     return stats;
 }
