@@ -424,16 +424,36 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
     Poco::JSON::Object::Ptr stats(new Poco::JSON::Object());
 
     //load the work stats
-    stats->set("name", block->getName());
+    stats->set("blockName", block->getName());
     stats->set("numTaskCalls", this->numTaskCalls);
     stats->set("numWorkCalls", this->numWorkCalls);
-    //TODO more...
+    stats->set("totalTimeTask", this->totalTimeTask.count());
+    stats->set("totalTimeWork", this->totalTimeWork.count());
+    stats->set("totalTimePreWork", this->totalTimePreWork.count());
+    stats->set("totalTimePostWork", this->totalTimePostWork.count());
+    stats->set("timeLastConsumed", this->timeLastConsumed.time_since_epoch().count());
+    stats->set("timeLastProduced", this->timeLastProduced.time_since_epoch().count());
+    stats->set("timeLastWork", this->timeLastWork.time_since_epoch().count());
+    stats->set("timeStatsQuery", std::chrono::high_resolution_clock::now().time_since_epoch().count());
+
+    //resolution period ratio tells the consumer how to interpret the tick counts
+    stats->set("tickRatioNum", std::chrono::high_resolution_clock::period::num);
+    stats->set("tickRatioDen", std::chrono::high_resolution_clock::period::den);
 
     //load the input port stats
     Poco::JSON::Array::Ptr inputStats(new Poco::JSON::Array());
     for (const auto &name : block->inputPortNames())
     {
-        
+        const auto &port = *this->inputs.at(name);
+        Poco::JSON::Object::Ptr portStats(new Poco::JSON::Object());
+        portStats->set("totalElements", port.totalElements());
+        portStats->set("totalBuffers", port.totalBuffers());
+        portStats->set("totalLabels", port.totalLabels());
+        portStats->set("totalMessages", port.totalMessages());
+        portStats->set("dtypeSize", port.dtype().size());
+        portStats->set("dtypeMarkup", port.dtype().toMarkup());
+        portStats->set("portName", name);
+        inputStats->add(portStats);
     }
     stats->set("inputs", inputStats);
 
@@ -441,7 +461,16 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
     Poco::JSON::Array::Ptr outputStats(new Poco::JSON::Array());
     for (const auto &name : block->outputPortNames())
     {
-        
+        const auto &port = *this->outputs.at(name);
+        Poco::JSON::Object::Ptr portStats(new Poco::JSON::Object());
+        portStats->set("totalElements", port.totalElements());
+        portStats->set("totalBuffers", port.totalBuffers());
+        portStats->set("totalLabels", port.totalLabels());
+        portStats->set("totalMessages", port.totalMessages());
+        portStats->set("dtypeSize", port.dtype().size());
+        portStats->set("dtypeMarkup", port.dtype().toMarkup());
+        portStats->set("portName", name);
+        inputStats->add(portStats);
     }
     stats->set("outputs", outputStats);
 
