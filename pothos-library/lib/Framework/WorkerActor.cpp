@@ -425,54 +425,56 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
 
     //load the work stats
     stats->set("blockName", block->getName());
-    stats->set("numTaskCalls", this->numTaskCalls);
-    stats->set("numWorkCalls", this->numWorkCalls);
-    stats->set("totalTimeTask", this->totalTimeTask.count());
-    stats->set("totalTimeWork", this->totalTimeWork.count());
-    stats->set("totalTimePreWork", this->totalTimePreWork.count());
-    stats->set("totalTimePostWork", this->totalTimePostWork.count());
-    stats->set("timeLastConsumed", this->timeLastConsumed.time_since_epoch().count());
-    stats->set("timeLastProduced", this->timeLastProduced.time_since_epoch().count());
-    stats->set("timeLastWork", this->timeLastWork.time_since_epoch().count());
-    stats->set("timeStatsQuery", std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    stats->set("numTaskCalls", Poco::UInt64(this->numTaskCalls));
+    stats->set("numWorkCalls", Poco::UInt64(this->numWorkCalls));
+    stats->set("totalTimeTask", Poco::UInt64(this->totalTimeTask.count()));
+    stats->set("totalTimeWork", Poco::UInt64(this->totalTimeWork.count()));
+    stats->set("totalTimePreWork", Poco::UInt64(this->totalTimePreWork.count()));
+    stats->set("totalTimePostWork", Poco::UInt64(this->totalTimePostWork.count()));
+    stats->set("timeLastConsumed", Poco::UInt64(this->timeLastConsumed.time_since_epoch().count()));
+    stats->set("timeLastProduced", Poco::UInt64(this->timeLastProduced.time_since_epoch().count()));
+    stats->set("timeLastWork", Poco::UInt64(this->timeLastWork.time_since_epoch().count()));
+    stats->set("timeStatsQuery", Poco::UInt64(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
 
     //resolution period ratio tells the consumer how to interpret the tick counts
-    stats->set("tickRatioNum", std::chrono::high_resolution_clock::period::num);
-    stats->set("tickRatioDen", std::chrono::high_resolution_clock::period::den);
+    stats->set("tickRatioNum", Poco::UInt64(std::chrono::high_resolution_clock::period::num));
+    stats->set("tickRatioDen", Poco::UInt64(std::chrono::high_resolution_clock::period::den));
 
     //load the input port stats
     Poco::JSON::Array::Ptr inputStats(new Poco::JSON::Array());
     for (const auto &name : block->inputPortNames())
     {
         const auto &port = *this->inputs.at(name);
+        if (port.isSlot()) continue;
         Poco::JSON::Object::Ptr portStats(new Poco::JSON::Object());
-        portStats->set("totalElements", port.totalElements());
-        portStats->set("totalBuffers", port.totalBuffers());
-        portStats->set("totalLabels", port.totalLabels());
-        portStats->set("totalMessages", port.totalMessages());
-        portStats->set("dtypeSize", port.dtype().size());
+        portStats->set("totalElements", Poco::UInt64(port.totalElements()));
+        portStats->set("totalBuffers", Poco::UInt64(port.totalBuffers()));
+        portStats->set("totalLabels", Poco::UInt64(port.totalLabels()));
+        portStats->set("totalMessages", Poco::UInt64(port.totalMessages()));
+        portStats->set("dtypeSize", Poco::UInt64(port.dtype().size()));
         portStats->set("dtypeMarkup", port.dtype().toMarkup());
         portStats->set("portName", name);
         inputStats->add(portStats);
     }
-    stats->set("inputStats", inputStats);
+    if (inputStats->size() > 0) stats->set("inputStats", inputStats);
 
     //load the output port stats
     Poco::JSON::Array::Ptr outputStats(new Poco::JSON::Array());
     for (const auto &name : block->outputPortNames())
     {
         const auto &port = *this->outputs.at(name);
+        if (port.isSignal()) continue;
         Poco::JSON::Object::Ptr portStats(new Poco::JSON::Object());
-        portStats->set("totalElements", port.totalElements());
-        portStats->set("totalBuffers", port.totalBuffers());
-        portStats->set("totalLabels", port.totalLabels());
-        portStats->set("totalMessages", port.totalMessages());
-        portStats->set("dtypeSize", port.dtype().size());
+        portStats->set("totalElements", Poco::UInt64(port.totalElements()));
+        portStats->set("totalBuffers", Poco::UInt64(port.totalBuffers()));
+        portStats->set("totalLabels", Poco::UInt64(port.totalLabels()));
+        portStats->set("totalMessages", Poco::UInt64(port.totalMessages()));
+        portStats->set("dtypeSize", Poco::UInt64(port.dtype().size()));
         portStats->set("dtypeMarkup", port.dtype().toMarkup());
         portStats->set("portName", name);
-        inputStats->add(portStats);
+        outputStats->add(portStats);
     }
-    stats->set("outputStats", outputStats);
+    if (outputStats->size() > 0) stats->set("outputStats", outputStats);
 
     return stats;
 }

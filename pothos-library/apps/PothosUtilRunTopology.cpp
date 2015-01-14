@@ -16,9 +16,11 @@ void PothosUtilBase::runTopology(const std::string &, const std::string &path)
     std::ifstream ifs(Poco::Path::expand(path));
     const std::string json((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 
+    //create the topology from the JSON string
     std::cout << ">>> Create Topology: " << path << std::endl;
     auto topology = Pothos::Topology::make(json);
 
+    //commit the topology and wait for specified time for CTRL+C
     if (this->config().has("runDuration"))
     {
         const auto runDuration = this->config().getDouble("runDuration");
@@ -31,5 +33,14 @@ void PothosUtilBase::runTopology(const std::string &, const std::string &path)
         std::cout << ">>> Running topology, press CTRL+C to exit" << std::endl;
         topology->commit();
         this->waitForTerminationRequest();
+    }
+
+    //dump the stats to file if specified
+    if (this->config().has("outputFile"))
+    {
+        const auto statsFile = this->config().getString("outputFile");
+        std::cout << ">>> Dumping stats: " << statsFile << std::endl;
+        std::ofstream ofs(Poco::Path::expand(statsFile));
+        ofs << topology->queryJSONStats() << std::endl;
     }
 }

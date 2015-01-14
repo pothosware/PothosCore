@@ -208,6 +208,6 @@ std::string Pothos::Topology::queryJSONStats(void)
     }
 
     //return the string-formatted result
-    std::stringstream ss; stats->stringify(ss);
+    std::stringstream ss; stats->stringify(ss, 4);
     return ss.str();
 }
