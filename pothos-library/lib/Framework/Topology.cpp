@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -339,6 +339,7 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod("connect", &Pothos::Topology::_connect)
     .registerMethod("disconnect", &Pothos::Topology::_disconnect)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, toDotMarkup))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, queryJSONStats))
     .commit("Pothos/Topology");
 
 /***********************************************************************

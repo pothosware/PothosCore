@@ -86,14 +86,6 @@ void Pothos::Block::propagateLabels(const InputPort *input)
     }
 }
 
-Pothos::WorkStats Pothos::Block::workStats(void) const
-{
-    ActorInterfaceLock lock(_actor.get());
-
-    _actor->workStats.timeStatsQuery = std::chrono::high_resolution_clock::now();
-    return _actor->workStats;
-}
-
 bool Pothos::Block::isActive(void) const
 {
     return _actor->activeState;
@@ -288,7 +280,6 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod("getPointer", &getPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workStats))
 
     //all of the setups with default args set
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setThreadPool))

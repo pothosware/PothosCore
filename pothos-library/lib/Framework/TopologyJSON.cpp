@@ -1,7 +1,8 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/TopologyImpl.hpp>
+#include "Framework/TopologyImpl.hpp"
 #include <Pothos/Proxy.hpp>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
@@ -10,6 +11,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <future>
 #include <map>
 
 /***********************************************************************
@@ -175,4 +177,37 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
     }
 
     return topology;
+}
+
+/***********************************************************************
+ * create JSON stats object
+ **********************************************************************/
+static std::pair<std::string, Poco::JSON::Object::Ptr> queryWorkStats(const Pothos::Proxy &block)
+{
+    auto actor = block.callProxy("get:_actor");
+    auto workStats = actor.call<Poco::JSON::Object::Ptr>("queryWorkStats");
+    return std::make_pair(block.call<std::string>("uid"), workStats);
+}
+
+std::string Pothos::Topology::queryJSONStats(void)
+{
+    Poco::JSON::Object::Ptr stats(new Poco::JSON::Object());
+
+    //query each block's work stats and key it with the UID
+    std::vector<std::shared_future<std::pair<std::string, Poco::JSON::Object::Ptr>>> results;
+    for (const auto &block : getObjSetFromFlowList(_impl->flows))
+    {
+        results.push_back(std::async(std::launch::async, queryWorkStats, block));
+    }
+
+    //wait on the futures and record to the object
+    for (const auto &result : results)
+    {
+        const auto workStats = result.get();
+        stats->set(workStats.first, workStats.second);
+    }
+
+    //return the string-formatted result
+    std::stringstream ss; stats->stringify(ss, 4);
+    return ss.str();
 }
