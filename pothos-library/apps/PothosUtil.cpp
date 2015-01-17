@@ -16,7 +16,8 @@ class PothosUtil : public PothosUtilBase
 public:
     PothosUtil(int argc):
         _helpRequested(argc <= 1),
-        _docParseRequested(false)
+        _docParseRequested(false),
+        _runTopologyRequested(false)
     {
         this->setUnixOptions(true); //always unix style --option
 
@@ -69,8 +70,8 @@ protected:
         options.addOption(Poco::Util::Option("run-topology", "", "run a topology from a JSON description")
             .required(false)
             .repeatable(false)
-            .argument("JSONPath")
-            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::runTopology)));
+            .argument("inputFile")
+            .binding("inputFile"));
 
         options.addOption(Poco::Util::Option("run-duration", "", "run the topology for the duration in seconds")
             .required(false)
@@ -123,6 +124,7 @@ protected:
         ServerApplication::handleOption(name, value);
         if (name == "help") _helpRequested = true;
         if (name == "doc-parse") _docParseRequested = true;
+        if (name == "run-topology") _runTopologyRequested = true;
         if (name == "help") this->stopOptionsProcessing();
     }
 
@@ -156,19 +158,17 @@ protected:
 
     int main(const std::vector<std::string> &args)
     {
-        if (_helpRequested) this->displayHelp();
-        else if (_docParseRequested)
+        try
         {
-            try
-            {
-                this->docParse(args);
-            }
-            catch(const Pothos::Exception &ex)
-            {
-                std::cerr << ex.displayText() << std::endl;
-                std::cout << std::endl;
-                throw ex;
-            }
+            if (_helpRequested) this->displayHelp();
+            else if (_docParseRequested) this->docParse(args);
+            else if (_runTopologyRequested) this->runTopology();
+        }
+        catch(const Pothos::Exception &ex)
+        {
+            std::cerr << ex.displayText() << std::endl;
+            std::cout << std::endl;
+            throw ex;
         }
         return Poco::Util::Application::EXIT_OK;
     }
@@ -176,6 +176,7 @@ protected:
 private:
     bool _helpRequested;
     bool _docParseRequested;
+    bool _runTopologyRequested;
 };
 
 int main(int argc, char *argv[])

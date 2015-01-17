@@ -8,11 +8,12 @@
 #include <thread>
 #include <iostream>
 
-void PothosUtilBase::runTopology(const std::string &, const std::string &path)
+void PothosUtilBase::runTopology(void)
 {
     Pothos::init();
 
     //read the complete file into a string
+    const auto path = this->config().getString("inputFile");
     std::ifstream ifs(Poco::Path::expand(path));
     const std::string json((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 

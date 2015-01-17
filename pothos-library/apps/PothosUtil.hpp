@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef __INCLUDED_POTHOS_UTIL_HPP__
@@ -18,7 +18,7 @@ public:
     void selfTestOne(const std::string &, const std::string &);
     void proxyServer(const std::string &, const std::string &);
     void loadModule(const std::string &, const std::string &);
-    void runTopology(const std::string &, const std::string &);
+    void runTopology(void);
     void docParse(const std::vector<std::string> &);
 };
 
