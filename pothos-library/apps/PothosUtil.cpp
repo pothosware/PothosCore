@@ -17,6 +17,7 @@ public:
     PothosUtil(int argc):
         _helpRequested(argc <= 1),
         _docParseRequested(false),
+        _deviceInfoRequested(false),
         _runTopologyRequested(false)
     {
         this->setUnixOptions(true); //always unix style --option
@@ -48,11 +49,13 @@ protected:
         options.addOption(Poco::Util::Option("device-info", "", "display device information")
             .required(false)
             .repeatable(false)
-            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printDeviceInfo)));
+            .argument("deviceType", false/*optional*/)
+            .binding("deviceType"));
 
         options.addOption(Poco::Util::Option("print-tree", "", "display plugin tree")
             .required(false)
             .repeatable(false)
+            .argument("pluginPath", false/*optional*/)
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printTree)));
 
         options.addOption(Poco::Util::Option("proxy-server", "", "run the proxy server, tcp://bindHost:bindPort")
@@ -82,12 +85,7 @@ protected:
         options.addOption(Poco::Util::Option("self-tests", "", "run all plugin self tests")
             .required(false)
             .repeatable(false)
-            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::selfTests)));
-
-        options.addOption(Poco::Util::Option("self-tests-at", "", "run all plugin self tests given a subtree")
-            .required(false)
-            .repeatable(false)
-            .argument("pluginPath")
+            .argument("pluginPath", false/*optional*/)
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::selfTests)));
 
         options.addOption(Poco::Util::Option("self-test1", "", "run a particular plugin self test")
@@ -124,6 +122,7 @@ protected:
         ServerApplication::handleOption(name, value);
         if (name == "help") _helpRequested = true;
         if (name == "doc-parse") _docParseRequested = true;
+        if (name == "device-info") _deviceInfoRequested = true;
         if (name == "run-topology") _runTopologyRequested = true;
         if (name == "help") this->stopOptionsProcessing();
     }
@@ -162,6 +161,7 @@ protected:
         {
             if (_helpRequested) this->displayHelp();
             else if (_docParseRequested) this->docParse(args);
+            else if (_deviceInfoRequested) this->printDeviceInfo();
             else if (_runTopologyRequested) this->runTopology();
         }
         catch(const Pothos::Exception &ex)
@@ -176,6 +176,7 @@ protected:
 private:
     bool _helpRequested;
     bool _docParseRequested;
+    bool _deviceInfoRequested;
     bool _runTopologyRequested;
 };
 

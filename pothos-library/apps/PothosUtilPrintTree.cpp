@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2013 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -22,9 +22,9 @@ static void printPluginTreeR(const Pothos::PluginPath &path)
     }
 }
 
-void PothosUtilBase::printTree(const std::string &, const std::string &)
+void PothosUtilBase::printTree(const std::string &, const std::string &pluginPath)
 {
     Pothos::init();
-    printPluginTreeR("/");
+    printPluginTreeR(pluginPath.empty()?"/":pluginPath);
     std::cout << std::endl;
 }
