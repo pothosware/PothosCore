@@ -52,11 +52,11 @@ protected:
             .argument("deviceType", false/*optional*/)
             .binding("deviceType"));
 
-        options.addOption(Poco::Util::Option("print-tree", "", "display plugin tree")
+        options.addOption(Poco::Util::Option("plugin-tree", "", "display plugin tree")
             .required(false)
             .repeatable(false)
             .argument("pluginPath", false/*optional*/)
-            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printTree)));
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printPluginTree)));
 
         options.addOption(Poco::Util::Option("proxy-server", "", "run the proxy server, tcp://bindHost:bindPort")
             .required(false)

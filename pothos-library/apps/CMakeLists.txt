@@ -10,7 +10,7 @@ include_directories(${Pothos_INCLUDE_DIRS})
 list(APPEND SOURCES
     PothosUtil.cpp
     PothosUtilSelfTests.cpp
-    PothosUtilPrintTree.cpp
+    PothosUtilPluginTree.cpp
     PothosUtilDeviceInfo.cpp
     PothosUtilProxyServer.cpp
     PothosUtilLoadModule.cpp

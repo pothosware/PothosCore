@@ -13,7 +13,7 @@ class PothosUtilBase : public Poco::Util::ServerApplication
 public:
     virtual ~PothosUtilBase(void){}
     void printDeviceInfo(void);
-    void printTree(const std::string &, const std::string &);
+    void printPluginTree(const std::string &, const std::string &);
     void selfTests(const std::string &, const std::string &);
     void selfTestOne(const std::string &, const std::string &);
     void proxyServer(const std::string &, const std::string &);
