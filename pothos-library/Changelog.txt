@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.2.0 (pending)
 ==========================
 
+- Topology waitInactive() support for infinite timeout
 - PothosUtil --print-tree renamed to --plugin-tree
 - PothosUtil --self-tests-at combined with --self-tests
 - Fixed automatic port deletion upon disconnection

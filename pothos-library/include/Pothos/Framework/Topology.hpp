@@ -126,6 +126,7 @@ public:
      * This call blocks until all flows become inactive for at least idleDuration seconds.
      * This call is intended primarily for unit testing purposes to allow the topology
      * to propagate test data through the entire flow from sources to sinks.
+     * Use a timeout value of 0.0 to wait forever for topology to become idle.
      * \param idleDuration the maximum number of seconds that flows may idle
      * \param timeout the maximum number of seconds to wait in this call
      * \return true if the flow graph became inactive before the timeout

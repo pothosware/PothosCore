@@ -277,7 +277,7 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
         //idle time not reached on any workers, therefore sleep
         pollSleep: std::this_thread::sleep_for(pollSleepTime);
     }
-    while (std::chrono::high_resolution_clock::now() < exitTime);
+    while (std::chrono::high_resolution_clock::now() < exitTime or timeout == 0.0);
 
     return false; //timeout
 }
