@@ -37,6 +37,12 @@ std::istream &Pothos::Object::deserialize(std::istream &is)
     {
         throw ObjectSerializeError("Pothos::Object::deserialize()", ex.what());
     }
+    //text archive doesn't bounds check and can cause std::bad_alloc
+    //for example if the istream is bad after the remove server dies
+    catch(const std::exception &ex)
+    {
+        throw ObjectSerializeError("Pothos::Object::deserialize()", ex.what());
+    }
 
     return is;
 }
