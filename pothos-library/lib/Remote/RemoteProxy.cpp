@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "RemoteProxy.hpp"
@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <thread>
+#include <cstdint>
 
 Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs &reqArgs_)
 {
@@ -18,7 +19,8 @@ Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs
     }
 
     //add the thread ID to the args
-    const auto tid = std::hash<std::thread::id>()(std::this_thread::get_id());
+    //tid must be a fixed size type so it doesn't get truncated through serialization
+    const auto tid = uint32_t(std::hash<std::thread::id>()(std::this_thread::get_id()));
     auto reqArgs = reqArgs_;
     reqArgs["tid"] = Pothos::Object(tid);
 
