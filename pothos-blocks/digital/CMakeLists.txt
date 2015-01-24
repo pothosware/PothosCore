@@ -16,6 +16,7 @@ POTHOS_MODULE_UTIL(
         TestDifferentialCoding.cpp
         DifferentialEncoder.cpp
         DifferentialDecoder.cpp
+        PreambleCorrelator.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
