@@ -173,6 +173,9 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
     oss << "#include <Pothos/Framework.hpp>" << std::endl;
     oss << "#include <Pothos/Util/EvalInterface.hpp>" << std::endl;
     oss << "#include <Poco/ClassLibrary.h>" << std::endl;
+    oss << "#include <complex>" << std::endl;
+    oss << "#include <cmath>" << std::endl;
+    oss << "static const auto j = std::complex<double>(0, 1);" << std::endl;
     oss << "using namespace Pothos;" << std::endl;
     oss << "struct Eval_" << symName << " : Pothos::Util::EvalInterface" << std::endl;
     oss << "{" << std::endl;
