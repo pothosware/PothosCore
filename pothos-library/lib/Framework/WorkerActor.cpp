@@ -398,6 +398,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
         //clear posted buffers and save stats
         while (not postedBuffers.empty())
         {
+            port._workEvents++;
             auto &buffer = postedBuffers.front();
             elemsDequeued += buffer.elements();
             bytesDequeued += buffer.length;
