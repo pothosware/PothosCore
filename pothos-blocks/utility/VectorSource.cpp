@@ -71,6 +71,7 @@ public:
 
         //reset flag so we can output again
         _once = false;
+        _pending = Pothos::BufferChunk();
     }
 
     void setMode(const std::string &mode)
@@ -83,6 +84,7 @@ public:
     void activate(void)
     {
         _once = false;
+        _pending = Pothos::BufferChunk();
     }
 
     void work(void)
@@ -93,36 +95,26 @@ public:
         auto outPort = this->output(0);
         auto outBuff = outPort->buffer();
 
-        //copy in the user-specified elements
-        //The reason we simply don't just post the entire buffer
-        //is to use the output buffer resources as back-pressure,
-        //in case the user want to use this block in a live stream.
-        const auto numElems = std::min(_elems.elements(), outPort->elements());
-        outBuff.length = numElems*outPort->dtype().size();
-        std::memcpy(outBuff.as<void *>(), _elems.as<const void *>(), outBuff.length);
+        //begin the pending buffer again
+        if (_pending.length == 0) _pending = _elems;
 
-        //rather than produce, we pop and post because of the additional optimization below
-        {
-            outPort->popBuffer(outBuff.length);
-            outPort->postBuffer(outBuff);
-        }
+        //copy into the output buffer
+        const auto numElems = std::min(_pending.elements(), outPort->elements());
+        const auto numBytes = numElems*outPort->dtype().size();
+        std::memcpy(outBuff.as<void *>(), _pending.as<const void *>(), numBytes);
+        outPort->produce(numElems);
 
-        //was the user-specified elements so large that we couldn't copy it all?
-        //in this case just post the remainder of the internal buffer.
-        if (numElems < _elems.elements())
-        {
-            auto subBuff = _elems;
-            const auto bytesOff = (_elems.elements() - numElems)*outPort->dtype().size();
-            subBuff.address += bytesOff;
-            subBuff.length -= bytesOff;
-            outPort->postBuffer(subBuff);
-        }
+        //consume from the pending buffer
+        _pending.address += numBytes;
+        _pending.length -= numBytes;
 
-        _once = true;
+        //completed the pending buffer
+        if (_pending.length == 0) _once = true;
     }
 
 private:
     Pothos::BufferChunk _elems;
+    Pothos::BufferChunk _pending;
     bool _repeat;
     bool _once;
 };
