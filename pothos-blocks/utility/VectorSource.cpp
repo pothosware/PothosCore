@@ -5,7 +5,6 @@
 #include <vector>
 #include <complex>
 #include <cstring> //memcpy
-#include <thread>
 
 /***********************************************************************
  * |PothosDoc Vector Source
@@ -87,13 +86,8 @@ public:
 
     void work(void)
     {
-        //not repeat mode and we already did work once?
-        //just wait the maximum timeout so we dont steal the CPU
-        if (not _repeat and _once)
-        {
-            std::this_thread::sleep_for(std::chrono::nanoseconds(this->workInfo().maxTimeoutNs));
-            return this->yield();
-        }
+        //not repeat mode and we already did work once:
+        if (not _repeat and _once) return;
 
         auto outPort = this->output(0);
         auto outBuff = outPort->buffer();
