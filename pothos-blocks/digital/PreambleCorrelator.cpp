@@ -45,7 +45,7 @@ public:
     PreambleCorrelator(void)
     {
         this->setupInput(0, typeid(unsigned char));
-        this->setupOutput(0, typeid(unsigned char));
+        this->setupOutput(0, typeid(unsigned char), this->uid()); //unique domain because of buffer forwarding
         //this->setupOutput(1, typeid(int));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, setPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, getPreamble));
