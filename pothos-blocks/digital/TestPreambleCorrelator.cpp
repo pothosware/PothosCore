@@ -46,5 +46,5 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_preamble_correlator)
     //check for the preamble label
     auto labels = collector.call<std::vector<Pothos::Label>>("getLabels");
     POTHOS_TEST_EQUAL(labels.size(), 1);
-    for (auto label : labels) POTHOS_TEST_EQUAL(label.index, preambleIndex);
+    for (auto label : labels) POTHOS_TEST_EQUAL(label.index, preambleIndex + preamble.size());
 }
