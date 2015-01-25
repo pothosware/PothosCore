@@ -11,6 +11,8 @@ POTHOS_MODULE_UTIL(
         SymbolMapper.cpp
         SymbolSlicer.cpp
         TestSymbolMapperSlicer.cpp
+        BytesToSymbols.cpp
+        TestBytesToSymbols.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
