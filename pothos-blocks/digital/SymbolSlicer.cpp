@@ -9,7 +9,7 @@
 #include <cfloat> //FLT_MAX
 
 /***********************************************************************
- * |PothosDoc SymbolSlicer
+ * |PothosDoc Symbol Slicer
  *
  * Slice an incoming stream of complex symbols into binary symbols using Euclidean distance.
  * The output is the symbol index of the closest symbol in the map.

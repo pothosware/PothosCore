@@ -9,7 +9,7 @@
 #include <cmath> //log2
 
 /***********************************************************************
- * |PothosDoc SymbolMapper
+ * |PothosDoc Symbol Mapper
  *
  * Map an unpacked stream of bits to complex symbols.
  *
