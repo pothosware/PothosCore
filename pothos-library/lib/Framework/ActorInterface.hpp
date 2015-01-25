@@ -140,7 +140,9 @@ inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
             lock.release();
             return true;
         }
-        _cond.wait(lock);
+        //dont want to do a timed wait, but there is a condition in flag external
+        //that has a race with going to sleep in the cv when flagged for change
+        _cond.wait_for(lock, std::chrono::milliseconds(1));
         if (not _changeFlagged.test_and_set(std::memory_order_acquire))
         {
             lock.release();
