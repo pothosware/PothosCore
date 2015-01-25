@@ -13,6 +13,7 @@
  * The primary use of this block is to test and debug other blocks.
  *
  * |category /Utility
+ * |category /Sources
  * |keywords test
  *
  * |param dtype[Data Type] The output data type.
