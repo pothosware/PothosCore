@@ -53,7 +53,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_mapper_slicer_complex)
     auto slicer = registry.callProxy("/blocks/symbol_slicer", Pothos::DType(typeid(std::complex<float>)));
     auto collector = registry.callProxy("/blocks/collector_sink", Pothos::DType(typeid(unsigned char)));
 
-    std::vector<std::complex<float> > map{{-1.0,1.0}, {-1.0,0.0}, {1.0,0.0}, {1.0,1.0}};
+    std::vector<std::complex<float> > map{{-1.0,-1.0}, {-1.0,1.0}, {1.0,-1.0}, {1.0,1.0}};
     mapper.callProxy("setMap", map);
     slicer.callProxy("setMap", map);
 
