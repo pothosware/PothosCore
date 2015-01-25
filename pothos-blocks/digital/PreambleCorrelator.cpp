@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -8,7 +8,7 @@
 #include <iostream>
 
 /***********************************************************************
- * |PothosDoc PreambleCorrelator
+ * |PothosDoc Preamble Correlator
  *
  * The PreambleCorrelator searches an input unpacked bit stream from port 0
  * for a matching pattern and outputs the same bit stream with a tag
@@ -17,7 +17,7 @@
  * http://en.wikipedia.org/wiki/Hamming_distance
  *
  * |category /Digital
- * |keywords XXX
+ * |keywords bit preamble correlate
  *
  * |param preamble The unpacked vector of bits representing preamble to match.
  * |default [1]
@@ -45,7 +45,7 @@ public:
     PreambleCorrelator(void)
     {
         this->setupInput(0, typeid(unsigned char));
-        this->setupOutput(0, typeid(unsigned char));
+        this->setupOutput(0, typeid(unsigned char), this->uid()); //unique domain because of buffer forwarding
         //this->setupOutput(1, typeid(int));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, setPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, getPreamble));
@@ -89,6 +89,12 @@ public:
         return _label;
     }
 
+    //! always use a circular buffer to avoid discontinuity over sliding window
+    Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &)
+    {
+        return Pothos::BufferManager::make("circular");
+    }
+
     void work(void)
     {
         auto inputPort = this->input(0);
@@ -108,7 +114,7 @@ public:
         if (buffer.length != 0)
         {
             outputPort->postBuffer(buffer);
-            inputPort->consume(inputPort->elements());
+            inputPort->consume(N);
         }
 
         // Calculate Hamming distance
@@ -122,12 +128,12 @@ public:
             for (size_t i = 0; i < _preamble.size(); i++)
             {
                 // A bit is set, so increment the distance
-                dist += _preamble[i] ^ in[n+i];    // XOR
+                dist += _preamble[i] ^ in[n+i];
             }
             // Emit a label if within the distance threshold
             if (dist <= _threshold)
             {
-                outputPort->postLabel(Pothos::Label(_label, Pothos::Object(), n));
+                outputPort->postLabel(Pothos::Label(_label, Pothos::Object(), n + _preamble.size()));
             }
 
             //distance[n] = dist;
