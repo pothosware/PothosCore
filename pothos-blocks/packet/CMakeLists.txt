@@ -7,6 +7,7 @@ POTHOS_MODULE_UTIL(
         PacketToStream.cpp
         StreamToPacket.cpp
         TestPacketBlocks.cpp
+        LabelDeframer.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
