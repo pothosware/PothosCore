@@ -9,6 +9,7 @@ POTHOS_MODULE_UTIL(
     TARGET DigitalBlocks
     SOURCES
         SymbolMapper.cpp
+        SymbolSlicer.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
