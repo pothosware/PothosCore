@@ -81,10 +81,12 @@ public:
     void push(const Pothos::ManagedBuffer &buff)
     {
         assert(buff.getSlabIndex() < _readyBuffs.capacity());
+
+        const bool wasEmpty = _readyBuffs.empty();
         _readyBuffs.push(buff, buff.getSlabIndex());
 
         //prepare the next buffer in the queue
-        if (not _readyBuffs.empty()) this->setCircFrontBuffer(_readyBuffs.front());
+        if (not _readyBuffs.empty() and wasEmpty) this->setCircFrontBuffer(_readyBuffs.front());
     }
 
 private:
