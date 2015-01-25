@@ -98,12 +98,13 @@ public:
     void work(void)
     {
         auto inputPort = this->input(0);
+        inputPort->setReserve(_preamble.size()+1);
         auto outputPort = this->output(0);
         //auto outputDistance = this->output(1);
         const auto &workInfo = this->workInfo();
         const int minElements = workInfo.minElements;
 
-        if (minElements < (int) _preamble.size()) return;
+        if (minElements <= (int) _preamble.size()) return;
 
         auto buffer = inputPort->buffer();
         if (buffer.length < (size_t) _preamble.size()) return;
