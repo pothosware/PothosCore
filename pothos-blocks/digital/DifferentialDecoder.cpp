@@ -10,7 +10,7 @@
  *
  * |category /Digital
  *
- * |param symbols 
+ * |param symbols Number of possible symbols encoded in a byte. 
  * |default 2
  * |option 2
  * |option 4
