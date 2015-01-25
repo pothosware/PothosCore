@@ -24,6 +24,7 @@ POTHOS_MODULE_UTIL(
         FiniteRelease.cpp
         StreamSnooper.cpp
         InfiniteSource.cpp
+        VectorSource.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
