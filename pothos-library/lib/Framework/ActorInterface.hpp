@@ -135,16 +135,18 @@ inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
     if (waitEnabled)
     {
         std::unique_lock<std::mutex> lock(_mutex);
-        if (_changeFlagged.test_and_set(std::memory_order_acquire))
+        if (not _changeFlagged.test_and_set(std::memory_order_acquire))
         {
-            _cond.wait(lock);
+            lock.release();
+            return true;
         }
-        if (_changeFlagged.test_and_set(std::memory_order_acquire))
+        _cond.wait(lock);
+        if (not _changeFlagged.test_and_set(std::memory_order_acquire))
         {
-            return false;
+            lock.release();
+            return true;
         }
-        lock.release();
-        return true;
+        return false;
     }
 
     return false;
