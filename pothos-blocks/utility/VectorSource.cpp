@@ -59,7 +59,15 @@ public:
         std::memcpy(newElems.as<void *>(), elems.data(), elems.size()*sizeof(std::complex<double>));
 
         //use buffer chunk convert to store in output port format
-        _elems = newElems.convert(this->output(0)->dtype());
+        if (this->output(0)->dtype().isComplex())
+        {
+            _elems = newElems.convert(this->output(0)->dtype());
+        }
+        //when its not complex, just take the real part
+        else
+        {
+            _elems = newElems.convertComplex(this->output(0)->dtype()).first;
+        }
 
         //reset flag so we can output again
         _once = false;
@@ -95,7 +103,8 @@ public:
         //is to use the output buffer resources as back-pressure,
         //in case the user want to use this block in a live stream.
         const auto numElems = std::min(_elems.elements(), outPort->elements());
-        std::memcpy(outBuff.as<void *>(), _elems.as<const void *>(), numElems*outPort->dtype().size());
+        outBuff.length = numElems*outPort->dtype().size();
+        std::memcpy(outBuff.as<void *>(), _elems.as<const void *>(), outBuff.length);
 
         //rather than produce, we pop and post because of the additional optimization below
         {
