@@ -4,7 +4,7 @@
 #include <Pothos/Framework.hpp>
 
 /***********************************************************************
- * |PothosDoc DifferentialEncoder
+ * |PothosDoc Differential Encoder
  *
  * Implements the encoding part of: http://en.wikipedia.org/wiki/Differential_coding
  *

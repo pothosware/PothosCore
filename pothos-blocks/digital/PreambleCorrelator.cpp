@@ -8,7 +8,7 @@
 #include <iostream>
 
 /***********************************************************************
- * |PothosDoc PreambleCorrelator
+ * |PothosDoc Preamble Correlator
  *
  * The PreambleCorrelator searches an input unpacked bit stream from port 0
  * for a matching pattern and outputs the same bit stream with a tag
