@@ -7,7 +7,7 @@
 #include <cstring>
 
 /***********************************************************************
- * |PothosDoc LabelDeframer
+ * |PothosDoc Label Deframer
  *
  * Extracts packets from a data stream based on a match label.
  *
@@ -17,9 +17,10 @@
  * |default 1
  *
  * |param frameStartLabel The label that signifies the beginning of the frame
- * |default "Match!"
+ * |default "Matched!"
+ * |widget StringEntry()
  *
- * |factory /blocks/labelframer()
+ * |factory /blocks/labeldeframer()
  * |setter setPacketLength(packetLength)
  * |setter setFrameStartLabel(frameStartLabel)
  **********************************************************************/
@@ -37,6 +38,7 @@ public:
         this->setupInput(0, typeid(unsigned char));
         this->setupOutput(0, typeid(unsigned char));
         this->registerCall(this, POTHOS_FCN_TUPLE(LabelDeframer, setPacketLength));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LabelDeframer, setFrameStartLabel));
     }
 
     void setFrameStartLabel(const std::string &label)
@@ -61,16 +63,11 @@ public:
         auto inBytes = inBuff.as<const uint8_t*>();
         auto inLen = inBuff.elements();
         auto lastOldPacket = fillingPackets.rbegin();
-        for (auto i = inputPort->labels().begin(), end = inputPort->labels().end(); i != end;)
+        for (auto &label : inputPort->labels())
         {
-            auto &label = *i;
-    
             // Skip any label that doesn't yet appear in the data buffer
             if(label.index >= inLen)
-            {
-                i++;
                 continue;
-            }
 
             // If the packet is not a start-of-frame packet, yet it is within the packet's data boundaries, 
             // append that label to the packet message, with correction about the label position
@@ -79,16 +76,23 @@ public:
                 for(auto i = fillingPackets.begin(), end = fillingPackets.end(); i != end; i++)
                 {
                     PacketSlot &slot = *i;
-                    if(slot.startIndex == -1) // If the the packet was appended in the previous iterations of the work function
+                    if(!slot.freshPacket) // If the the packet was appended in the previous iterations of the work function
                     {
                         if(label.index < (packetLength - slot.fillLevel))
                         {
-                            slot.labels.push_back(label);
-                            slot.labels.back().index += slot.fillLevel;
+                            slot.packet.labels.push_back(label);
+                            slot.packet.labels.back().index += slot.fillLevel;
                         }
                     } 
+                    else // otherwise(if the packet was appended during this work iteration)
+                    {
+                        if(label.index >= slot.startIndex && label.index < slot.startIndex + packetLength)
+                        {
+                            slot.packet.labels.push_back(label);
+                            slot.packet.labels.back().index -= slot.startIndex;
+                        }
+                    }
                 }
-                i = inputPort->labels().erase(i);
                 continue;
             }
     
@@ -97,34 +101,40 @@ public:
 
             fillingPackets.push_back(PacketSlot()); 
             PacketSlot &slot = fillingPackets.back(); 
-            slot.packet.payload = Pothos::BufferChunk(packetLength);
+            slot.packet.payload = Pothos::BufferChunk("uint8", packetLength);
              
-            auto availableData = inLen - dataStartIndex;
+            size_t availableData = inLen - dataStartIndex;
             availableData = std::min(availableData, packetLength);
             std::memcpy(slot.packet.payload.as<uint8_t*>(), inBytes + dataStartIndex, availableData);
             slot.fillLevel = availableData; 
             slot.startIndex = dataStartIndex;
-
-            i = inputPort->labels().erase(i);
+            slot.freshPacket = true;
         }
 
-        for(auto i = lastOldPacket, rend = fillingPackets.rend(); i != rend;)
-        {
-            PacketSlot &slot = *i;
 
-            int newFillLevel = slot.fillLevel + inLen;
+        for(auto &slot : fillingPackets)
+        {
+            if(slot.freshPacket) continue;
+
+            size_t newFillLevel = slot.fillLevel + inLen;
             newFillLevel = std::min(newFillLevel, packetLength);
 
             if(newFillLevel != slot.fillLevel)
                 std::memcpy(slot.packet.payload.as<uint8_t*>() + slot.fillLevel, inBytes, newFillLevel - slot.fillLevel);
 
+
             slot.fillLevel = newFillLevel;
-            if(newFillLevel == packetLength)
+        }
+
+        for(auto i = fillingPackets.begin(), end = fillingPackets.end(); i != end;)
+        {
+            PacketSlot &slot = *i;
+            slot.freshPacket = false;
+
+            if(slot.fillLevel == packetLength)
             {
                 outputPort->postMessage(slot.packet);
-                PacketList::iterator toErase = i.base();
-                i++;
-                fillingPackets.erase(toErase);
+                i = fillingPackets.erase(i);
             }
             else
                 i++;
@@ -139,13 +149,14 @@ protected:
     struct PacketSlot
     {
         Pothos::Packet packet;
-        int32_t startIndex;
-        int32_t fillLevel;
+        bool freshPacket;
+        size_t startIndex;
+        size_t fillLevel;
     };
 
+    size_t packetLength;
     typedef std::list<PacketSlot> PacketList;
     PacketList fillingPackets;
-    int packetLength;
     std::string frameStartLabel;
 };
 
