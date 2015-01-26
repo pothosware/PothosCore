@@ -17,6 +17,7 @@
 #include <QColor>
 #include <QAction>
 #include <QChildEvent>
+#include <QScrollBar>
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -116,10 +117,23 @@ void GraphDraw::dropEvent(QDropEvent *event)
 
 void GraphDraw::setZoomScale(const qreal zoom)
 {
+    //stash the old coordinate
+    auto mousePos = this->mapFromGlobal(QCursor::pos());
+    const auto p0 = this->mapToScene(mousePos);
+
+    //perform the zoom
     _zoomScale = zoom;
     this->setTransform(QTransform()); //clear
     this->scale(this->zoomScale(), this->zoomScale());
     this->render();
+
+    //calculate the scroll movement
+    const auto p1 = this->mapToScene(mousePos);
+    if (this->rect().contains(mousePos))
+    {
+        this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value()-p1.x()+p0.x());
+        this->verticalScrollBar()->setValue(this->verticalScrollBar()->value()-p1.y()+p0.y());
+    }
 }
 
 void GraphDraw::showEvent(QShowEvent *event)
