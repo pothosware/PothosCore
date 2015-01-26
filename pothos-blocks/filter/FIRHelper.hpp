@@ -148,12 +148,6 @@ static inline std::vector<std::complex<double>> designCBSF(const size_t numTaps,
     return _toComplexTaps(designHPF(numTaps, Fs, (Fu-Fl)/2, w), Fs, Fl, Fu);
 }
 
-static double sinc(double x)
-{
-    if(x == 0.0) return 1.0;
-    else return sin(M_PI*x)/(M_PI*x);
-}
-
 static inline std::vector<double> designRRC(const size_t numTaps, const double Fs, const double Fl, double beta)
 {
     double sps = Fs / Fl;
