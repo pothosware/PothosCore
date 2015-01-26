@@ -41,10 +41,13 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Poco/Logger.h>
 #include <vector>
 #include <complex>
 #include <cmath>
+#include <cfloat>
 #include <cstdlib>
+#include <iostream>
 
 //! Low pass: sample rate, cutoff frequency, window
 static inline std::vector<double> designLPF(const size_t numTaps, const double Fs, const double Fx, const std::vector<double> &w)
@@ -143,4 +146,59 @@ static inline std::vector<std::complex<double>> designCBPF(const size_t numTaps,
 static inline std::vector<std::complex<double>> designCBSF(const size_t numTaps, const double Fs, const double Fl, const double Fu, const std::vector<double> &w)
 {
     return _toComplexTaps(designHPF(numTaps, Fs, (Fu-Fl)/2, w), Fs, Fl, Fu);
+}
+
+static double sinc(double x)
+{
+    if(x == 0.0) return 1.0;
+    else return sin(M_PI*x)/(M_PI*x);
+}
+
+static inline std::vector<double> designRRC(const size_t numTaps, const double Fs, const double Fl, double beta)
+{
+    //h = sinc(t).*cos(pi*beta*t)./(1-4*beta*beta*(t.^2))
+    //t goes from -1/(sps/4) to 1/(sps/4)
+    //or 0 to 1/(sps/4) and mirror the taps
+    double sps = Fs / Fl;
+    double sum = 0;
+    std::vector<double> taps(numTaps);
+    if(numTaps % 2 == 0)
+    {
+        poco_warning(Poco::Logger::get("designRRC"), "RRC filter should have odd number of taps");
+    }
+
+    if(beta <= 0)
+    {
+        poco_warning(Poco::Logger::get("designRRC"), "RRC filter beta should be >0");
+        beta = FLT_MIN;
+    }
+
+    double nt = numTaps-1;
+    double spstwo = 2*sps;
+    for(size_t n = 0; n < numTaps; n++)
+    {
+        double t = (-nt+2*nt*(n/nt))/spstwo;
+        if(std::abs(t)<=DBL_MIN) taps[n] = -1.0/(M_PI*spstwo)*(M_PI*(beta-1)-4.0*beta);
+        else if(std::abs(std::abs(4.0*beta*t)-1.0) < sqrt(DBL_MIN))
+            taps[n] = 1 / (2.0*M_PI*spstwo)
+                    * (M_PI*(beta+1)*sin(M_PI*(beta+1)/(4.0*beta))
+                    - 4.0*beta*sin(M_PI*(beta-1)/(4.0*beta))
+                    + M_PI*(beta-1)*cos(M_PI*(beta-1)/(4.0*beta)));
+        else
+            taps[n] = -4.0*beta/spstwo
+                     * (cos((1+beta)*M_PI*t) + sin((1-beta)*M_PI*t) / (4.0*beta*t))
+                     / (M_PI * (pow(4.0*beta*t,2) - 1));
+        sum += taps[n]*taps[n];
+    }
+    std::cout << std::endl;
+    for(size_t n = 0; n < numTaps; n++)
+    {
+        taps[n] /= sqrt(sum);
+    }
+
+    for(size_t n = 0; n < numTaps; n++)
+    {
+        std::cout << taps[n] << ", ";
+    }
+    return taps;
 }

@@ -26,6 +26,7 @@
  * |option [Band Stop] "BAND_STOP"
  * |option [Complex Band Pass] "COMPLEX_BAND_PASS"
  * |option [Complex Band Stop] "COMPLEX_BAND_STOP"
+ * |option [Root Raised Cosine] "ROOT_RAISED_COSINE"
  *
  * |param window[Window Type] The window function controls passband ripple.
  * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
@@ -38,13 +39,14 @@
  * |option [Flat-top] "flattop"
  * |widget ComboBox(editable=true)
  *
- * |param sampRate[Sample Rate] The rate of samples per second.
+ * |param sampRate[Sample Rate] The sample rate, in samples per second.
  * The transition frequencies must be within the Nyqist frequency of the sampling rate.
  * |default 1e6
  * |units Sps
  *
  * |param freqLower[Lower Freq] The lower transition frequency.
  * For low and high pass filters, this is the only transition frequency.
+ * For root raised cosine and Gaussian filters, this is the symbol rate.
  * |default 1000
  * |units Hz
  *
@@ -57,6 +59,9 @@
  * |default 51
  * |widget SpinBox(minimum=1)
  *
+ * |param beta[Beta] For the root raised cosine filter, this is the excess bandwidth factor. For the Gaussian filter, this is BT, the bandwidth-time product.
+ * |default 0.5
+ *
  * |factory /blocks/fir_designer()
  * |setter setFilterType(type)
  * |setter setWindowType(window)
@@ -64,6 +69,7 @@
  * |setter setFrequencyLower(freqLower)
  * |setter setFrequencyUpper(freqUpper)
  * |setter setNumTaps(numTaps)
+ * |setter setBeta(beta)
  **********************************************************************/
 class FIRDesigner : public Pothos::Block
 {
@@ -79,6 +85,7 @@ public:
         _sampRate(1.0),
         _freqLower(0.1),
         _freqUpper(0.2),
+        _beta(0.5),
         _numTaps(50)
     {
         auto env = Pothos::ProxyEnvironment::make("managed");
@@ -95,6 +102,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, frequencyUpper));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setNumTaps));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, numTaps));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setBeta));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, beta));
         this->registerSignal("tapsChanged");
         this->recalculate();
     }
@@ -167,6 +176,17 @@ public:
         return _numTaps;
     }
 
+    void setBeta(const double beta)
+    {
+        _beta = beta;
+        this->recalculate();
+    }
+
+    double beta(void) const
+    {
+        return _beta;
+    }
+
     void activate(void)
     {
         this->recalculate();
@@ -181,6 +201,7 @@ private:
     double _sampRate;
     double _freqLower;
     double _freqUpper;
+    double _beta;
     size_t _numTaps;
     Pothos::Proxy _window;
 };
@@ -194,9 +215,13 @@ void FIRDesigner::recalculate(void)
     if (_sampRate <= 0) Pothos::Exception("FIRDesigner()", "sample rate must be positive");
     if (_freqLower <= 0) Pothos::Exception("FIRDesigner()", "lower frequency must be positive");
     if (_freqLower >= _sampRate/2) Pothos::Exception("FIRDesigner()", "lower frequency Nyquist fail");
-    if (_freqUpper <= 0) Pothos::Exception("FIRDesigner()", "upper frequency must be positive");
-    if (_freqUpper >= _sampRate/2) Pothos::Exception("FIRDesigner()", "upper frequency Nyquist fail");
-    if (_freqUpper <= _freqLower) Pothos::Exception("FIRDesigner()", "upper frequency <= lower frequency");
+    if (   _filterType == "HIGH_PASS" || _filterType == "BAND_PASS" || _filterType == "BAND_STOP"
+        || _filterType == "COMPLEX_BAND_PASS" || _filterType == "COMPLEX_BAND_STOP")
+    {
+        if (_freqUpper <= 0) Pothos::Exception("FIRDesigner()", "upper frequency must be positive");
+        if (_freqUpper >= _sampRate/2) Pothos::Exception("FIRDesigner()", "upper frequency Nyquist fail");
+        if (_freqUpper <= _freqLower) Pothos::Exception("FIRDesigner()", "upper frequency <= lower frequency");
+    }
 
     //generate the window
     _window.callVoid("setType", _windowType);
@@ -212,6 +237,7 @@ void FIRDesigner::recalculate(void)
     else if (_filterType == "BAND_STOP") taps = designBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
     else if (_filterType == "COMPLEX_BAND_PASS") complexTaps = designCBPF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
     else if (_filterType == "COMPLEX_BAND_STOP") complexTaps = designCBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
+    else if (_filterType == "ROOT_RAISED_COSINE") taps = designRRC(_numTaps, _sampRate, _freqLower, _beta);
     else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
 
     //emit the taps
