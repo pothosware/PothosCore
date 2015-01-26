@@ -148,6 +148,7 @@ inline void Pothos::InputPort::bufferAccumulatorFront(Pothos::BufferChunk &buff)
         auto label = _inputInlineMessages.front();
         _inputInlineMessages.pop_front();
         label.index /= this->dtype().size(); //convert from bytes to elements
+        label.width /= this->dtype().size(); //convert from bytes to elements
         _inlineMessages.push_back(label);
     }
     buff = _bufferAccumulator.front();

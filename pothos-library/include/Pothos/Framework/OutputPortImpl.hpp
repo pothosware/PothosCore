@@ -106,6 +106,7 @@ inline void Pothos::OutputPort::postLabel(const Label &label)
 {
     auto byteOffsetLabel = label;
     byteOffsetLabel.index *= this->dtype().size();
+    byteOffsetLabel.width *= this->dtype().size();
     _postedLabels.push_back(byteOffsetLabel);
     _totalLabels++;
     _workEvents++;
