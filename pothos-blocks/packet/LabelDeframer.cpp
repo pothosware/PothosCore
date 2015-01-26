@@ -62,7 +62,6 @@ public:
 
         auto inBytes = inBuff.as<const uint8_t*>();
         auto inLen = inBuff.elements();
-        auto lastOldPacket = fillingPackets.rbegin();
         for (auto &label : inputPort->labels())
         {
             // Skip any label that doesn't yet appear in the data buffer
