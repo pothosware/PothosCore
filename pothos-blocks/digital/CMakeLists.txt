@@ -21,6 +21,8 @@ POTHOS_MODULE_UTIL(
         TestSymbolBitConversions.cpp
         PreambleCorrelator.cpp
         TestPreambleCorrelator.cpp
+        Scrambler.cpp
+        Descrambler.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
