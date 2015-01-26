@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "SDRBlock.hpp"
@@ -40,7 +40,8 @@ public:
                 }
                 else //time on the next packet
                 {
-                    numElems = label.index-1;
+                    //truncate to not include this time label
+                    numElems = label.index;
                     break;
                 }
             }
@@ -48,7 +49,7 @@ public:
             if (label.id == "txEnd")
             {
                 flags |= SOAPY_SDR_END_BURST;
-                numElems = label.index-1;
+                numElems = label.index+1;
                 break;
             }
         }
