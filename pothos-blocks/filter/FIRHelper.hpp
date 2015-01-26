@@ -46,7 +46,8 @@
 #include <cmath>
 #include <cstdlib>
 
-static inline std::vector<double> designLPF(const size_t numTaps, const double Fs, const double Fx)
+//! Low pass: sample rate, cutoff frequency, window
+static inline std::vector<double> designLPF(const size_t numTaps, const double Fs, const double Fx, const std::vector<double> &w)
 {
     std::vector<double> taps(numTaps);
     const auto lambda = M_PI * Fx / (Fs/2);
@@ -58,10 +59,12 @@ static inline std::vector<double> designLPF(const size_t numTaps, const double F
         else taps[n] = sin( mm * lambda ) / (mm * M_PI);
     }
 
+    for (size_t n = 0; n < w.size(); n++) taps[n] *= w[n];
     return taps;
 }
 
-static inline std::vector<double> designHPF(const size_t numTaps, const double Fs, const double Fx)
+//! High pass: sample rate, cutoff frequency, window
+static inline std::vector<double> designHPF(const size_t numTaps, const double Fs, const double Fx, const std::vector<double> &w)
 {
     std::vector<double> taps(numTaps);
     const auto lambda = M_PI * Fx / (Fs/2);
@@ -73,10 +76,12 @@ static inline std::vector<double> designHPF(const size_t numTaps, const double F
         else taps[n] = -sin( mm * lambda ) / (mm * M_PI);
     }
 
+    for (size_t n = 0; n < w.size(); n++) taps[n] *= w[n];
     return taps;
 }
 
-static inline std::vector<double> designBPF(const size_t numTaps, const double Fs, const double Fl, const double Fu)
+//! Band pass: sample rate, lower frequency, upper frequency, window
+static inline std::vector<double> designBPF(const size_t numTaps, const double Fs, const double Fl, const double Fu, const std::vector<double> &w)
 {
     std::vector<double> taps(numTaps);
     const auto lambda = M_PI * Fl / (Fs/2);
@@ -90,10 +95,12 @@ static inline std::vector<double> designBPF(const size_t numTaps, const double F
                              sin( mm * lambda )   ) / (mm * M_PI);
     }
 
+    for (size_t n = 0; n < w.size(); n++) taps[n] *= w[n];
     return taps;
 }
 
-static inline std::vector<double> designBSF(const size_t numTaps, const double Fs, const double Fl, const double Fu)
+//! Band stop: sample rate, lower frequency, upper frequency, window
+static inline std::vector<double> designBSF(const size_t numTaps, const double Fs, const double Fl, const double Fu, const std::vector<double> &w)
 {
     std::vector<double> taps(numTaps);
     const auto lambda = M_PI * Fl / (Fs/2);
@@ -107,6 +114,33 @@ static inline std::vector<double> designBSF(const size_t numTaps, const double F
                              sin( mm * lambda )   ) / (mm * M_PI);
     }
 
+    for (size_t n = 0; n < w.size(); n++) taps[n] *= w[n];
     return taps;
 }
 
+//! Helper function to shift the taps around the center frequency
+static inline std::vector<std::complex<double>> _toComplexTaps(const std::vector<double> &taps, const double Fs, const double Fl, const double Fu)
+{
+    std::vector<std::complex<double>> complexTaps(taps.size());
+    const auto center = (Fl+Fu)/2;
+    const auto lambda = M_PI * center / (Fs/2);
+
+    for (size_t n = 0; n < taps.size(); n++)
+    {
+        complexTaps[n] = std::polar(taps[n], n*lambda);
+    }
+
+    return complexTaps;
+}
+
+//! Complex band pass: sample rate, lower frequency, upper frequency, window
+static inline std::vector<std::complex<double>> designCBPF(const size_t numTaps, const double Fs, const double Fl, const double Fu, const std::vector<double> &w)
+{
+    return _toComplexTaps(designLPF(numTaps, Fs, (Fu-Fl)/2, w), Fs, Fl, Fu);
+}
+
+//! Complex band stop: sample rate, lower frequency, upper frequency, window
+static inline std::vector<std::complex<double>> designCBSF(const size_t numTaps, const double Fs, const double Fl, const double Fu, const std::vector<double> &w)
+{
+    return _toComplexTaps(designHPF(numTaps, Fs, (Fu-Fl)/2, w), Fs, Fl, Fu);
+}

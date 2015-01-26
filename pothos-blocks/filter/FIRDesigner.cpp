@@ -189,46 +189,34 @@ void FIRDesigner::recalculate(void)
 {
     if (not this->isActive()) return;
 
-    //generate the filter
-    std::vector<double> taps;
-    if (_filterType == "LOW_PASS") taps = designLPF(_numTaps, _sampRate, _freqLower);
-    else if (_filterType == "HIGH_PASS") taps = designHPF(_numTaps, _sampRate, _freqLower);
-    else if (_filterType == "BAND_PASS") taps = designBPF(_numTaps, _sampRate, _freqLower, _freqUpper);
-    else if (_filterType == "BAND_STOP") taps = designBSF(_numTaps, _sampRate, _freqLower, _freqUpper);
-    else if (_filterType == "COMPLEX_BAND_PASS") taps = designLPF(_numTaps, _sampRate, (_freqUpper-_freqLower)/2);
-    else if (_filterType == "COMPLEX_BAND_STOP") taps = designHPF(_numTaps, _sampRate, (_freqUpper-_freqLower)/2);
-    else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
-
     //check for error
-    //const auto error_flag = filt->get_error_flag();
-    //if (error_flag != 0) throw Pothos::Exception("FIRDesigner()", "bad input: error="+std::to_string(error_flag));
+    if (_numTaps == 0) Pothos::Exception("FIRDesigner()", "num taps must be positive");
+    if (_sampRate <= 0) Pothos::Exception("FIRDesigner()", "sample rate must be positive");
+    if (_freqLower <= 0) Pothos::Exception("FIRDesigner()", "lower frequency must be positive");
+    if (_freqLower >= _sampRate/2) Pothos::Exception("FIRDesigner()", "lower frequency Nyquist fail");
+    if (_freqUpper <= 0) Pothos::Exception("FIRDesigner()", "upper frequency must be positive");
+    if (_freqUpper >= _sampRate/2) Pothos::Exception("FIRDesigner()", "upper frequency Nyquist fail");
+    if (_freqUpper <= _freqLower) Pothos::Exception("FIRDesigner()", "upper frequency <= lower frequency");
 
-    //apply window
+    //generate the window
     _window.callVoid("setType", _windowType);
     _window.callVoid("setSize", _numTaps);
-    auto w = _window.call<std::vector<double>>("window");
-    for (size_t n = 0; n < w.size(); n++) taps[n] *= w[n];
+    auto window = _window.call<std::vector<double>>("window");
 
-    //handle complex taps -- shift to center freq
-    if (_filterType.find("COMPLEX") != std::string::npos)
-    {
-        std::vector<std::complex<double>> complexTaps(_numTaps);
-        const auto center = (_freqLower+_freqUpper)/2;
-        const auto lambda = M_PI * center / (_sampRate/2);
+    //generate the filter taps
+    std::vector<double> taps;
+    std::vector<std::complex<double>> complexTaps;
+    if (_filterType == "LOW_PASS") taps = designLPF(_numTaps, _sampRate, _freqLower, window);
+    else if (_filterType == "HIGH_PASS") taps = designHPF(_numTaps, _sampRate, _freqLower, window);
+    else if (_filterType == "BAND_PASS") taps = designBPF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
+    else if (_filterType == "BAND_STOP") taps = designBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
+    else if (_filterType == "COMPLEX_BAND_PASS") complexTaps = designCBPF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
+    else if (_filterType == "COMPLEX_BAND_STOP") complexTaps = designCBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
+    else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
 
-        for (size_t n = 0; n < _numTaps; n++)
-        {
-            complexTaps[n] = std::polar(taps[n], n*lambda);
-        }
-
-        this->callVoid("tapsChanged", complexTaps);
-    }
-
-    //otherwise emit real taps
-    else
-    {
-        this->callVoid("tapsChanged", taps);
-    }
+    //emit the taps
+    if (not complexTaps.empty()) this->callVoid("tapsChanged", complexTaps);
+    if (not taps.empty()) this->callVoid("tapsChanged", taps);
 }
 
 static Pothos::BlockRegistry registerFIRDesigner(
