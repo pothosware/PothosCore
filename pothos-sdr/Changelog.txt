@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos SDR toolkit.
 
+Release 0.2.0 (pending)
+==========================
+
+- Make use of the label width for the SDR Sink end of burst
+
 Release 0.1.1 (pending)
 ==========================
 

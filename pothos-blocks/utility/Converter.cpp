@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -67,10 +67,9 @@ public:
         auto outputPort = this->output(0);
         for (const auto &label : port->labels())
         {
-            auto outLabel = label;
-            outLabel.index *= port->buffer().dtype.size();
-            outLabel.index /= outputPort->dtype().size();
-            outputPort->postLabel(outLabel);
+            outputPort->postLabel(label.toAdjusted(
+                port->buffer().dtype.size(),
+                outputPort->dtype().size()));
         }
     }
 };

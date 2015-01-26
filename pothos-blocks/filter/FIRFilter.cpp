@@ -141,6 +141,15 @@ public:
         outPort->produce(N*L);
     }
 
+    void propagateLabels(const Pothos::InputPort *port)
+    {
+        auto outputPort = this->output(0);
+        for (const auto &label : port->labels())
+        {
+            outputPort->postLabel(label.toAdjusted(L, M));
+        }
+    }
+
 private:
 
     void updateInternals(void)
