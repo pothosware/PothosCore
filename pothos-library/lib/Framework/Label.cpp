@@ -1,10 +1,11 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Label.hpp>
 
 Pothos::Label::Label(void):
-    index(0)
+    index(0),
+    width(1)
 {
     return;
 }
@@ -23,6 +24,7 @@ static auto managedLabel = Pothos::ManagedClass()
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, id))
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, data))
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, index))
+    .registerField(POTHOS_FCN_TUPLE(Pothos::Label, width))
     .commit("Pothos/Label");
 
 static Pothos::LabelIteratorRange::const_iterator labelIterRangeAt(const Pothos::LabelIteratorRange &iter, const size_t index)

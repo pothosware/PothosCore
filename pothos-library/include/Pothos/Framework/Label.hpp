@@ -4,7 +4,7 @@
 /// Label and associated classes for decorating a stream of elements.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -28,7 +28,7 @@ public:
 
     //! Create a label with specified data of ValueType and index
     template <typename ValueType>
-    Label(const std::string &id, ValueType &&data, const unsigned long long index);
+    Label(const std::string &id, ValueType &&data, const unsigned long long index, const size_t width = 1);
 
     /*!
      * The identifier describes the label's type, meaning, or purpose.
@@ -50,6 +50,13 @@ public:
      */
     unsigned long long index;
 
+    /*!
+     * The width specifies the number of elements to which this label applies.
+     * Width applies to every element from [index to index+width-1] inclusive.
+     * The default value of width is 1, and it may not take the value zero.
+     */
+    size_t width;
+
     //! support for sorting Labels by index
     bool operator<(const Label &other) const;
 
@@ -58,7 +65,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 };
 
-//! Are these two labels equivalent? index and data must be equal
+//! Are these two labels equivalent? all fields must be equal
 inline bool operator==(const Label &rhs, const Label &lhs);
 
 /*!
@@ -97,17 +104,22 @@ private:
 } //namespace Pothos
 
 template <typename ValueType>
-Pothos::Label::Label(const std::string &id, ValueType &&data, const unsigned long long index):
+Pothos::Label::Label(const std::string &id, ValueType &&data, const unsigned long long index, const size_t width):
     id(id),
     data(Object(std::forward<ValueType>(data))),
-    index(index)
+    index(index),
+    width(width)
 {
     return;
 }
 
 inline bool Pothos::operator==(const Label &rhs, const Label &lhs)
 {
-    return rhs.index == lhs.index and rhs.data == lhs.data;
+    return
+        rhs.index == lhs.index and
+        rhs.width == lhs.width and
+        rhs.id == lhs.id and
+        rhs.data == lhs.data;
 }
 
 inline bool Pothos::Label::operator<(const Label &other) const
