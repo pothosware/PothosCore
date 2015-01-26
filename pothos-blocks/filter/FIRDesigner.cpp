@@ -1,9 +1,9 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "FIRHelper.hpp"
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
-#include <fir_filter/filt.h>
 #include <complex>
 #include <iostream>
 
@@ -190,22 +190,18 @@ void FIRDesigner::recalculate(void)
     if (not this->isActive()) return;
 
     //generate the filter
-    std::shared_ptr<Filter> filt;
-    if (_filterType == "LOW_PASS") filt.reset(new Filter(LPF, _numTaps, _sampRate, _freqLower));
-    else if (_filterType == "HIGH_PASS") filt.reset(new Filter(HPF, _numTaps, _sampRate, _freqLower));
-    else if (_filterType == "BAND_PASS") filt.reset(new Filter(BPF, _numTaps, _sampRate, _freqLower, _freqUpper));
-    else if (_filterType == "BAND_STOP") filt.reset(new Filter(BSF, _numTaps, _sampRate, _freqLower, _freqUpper));
-    else if (_filterType == "COMPLEX_BAND_PASS") filt.reset(new Filter(LPF, _numTaps, _sampRate, (_freqUpper-_freqLower)/2));
-    else if (_filterType == "COMPLEX_BAND_STOP") filt.reset(new Filter(HPF, _numTaps, _sampRate, (_freqUpper-_freqLower)/2));
+    std::vector<double> taps;
+    if (_filterType == "LOW_PASS") taps = designLPF(_numTaps, _sampRate, _freqLower);
+    else if (_filterType == "HIGH_PASS") taps = designHPF(_numTaps, _sampRate, _freqLower);
+    else if (_filterType == "BAND_PASS") taps = designBPF(_numTaps, _sampRate, _freqLower, _freqUpper);
+    else if (_filterType == "BAND_STOP") taps = designBSF(_numTaps, _sampRate, _freqLower, _freqUpper);
+    else if (_filterType == "COMPLEX_BAND_PASS") taps = designLPF(_numTaps, _sampRate, (_freqUpper-_freqLower)/2);
+    else if (_filterType == "COMPLEX_BAND_STOP") taps = designHPF(_numTaps, _sampRate, (_freqUpper-_freqLower)/2);
     else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
 
     //check for error
-    const auto error_flag = filt->get_error_flag();
-    if (error_flag != 0) throw Pothos::Exception("FIRDesigner()", "bad input: error="+std::to_string(error_flag));
-
-    //copy the taps into buffer
-    std::vector<double> taps(_numTaps);
-    filt->get_taps(taps.data());
+    //const auto error_flag = filt->get_error_flag();
+    //if (error_flag != 0) throw Pothos::Exception("FIRDesigner()", "bad input: error="+std::to_string(error_flag));
 
     //apply window
     _window.callVoid("setType", _windowType);
