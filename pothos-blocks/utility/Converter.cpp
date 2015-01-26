@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -65,11 +65,16 @@ public:
     void propagateLabels(const Pothos::InputPort *port)
     {
         auto outputPort = this->output(0);
+        const auto buffSize = port->buffer().dtype.size();
+        const auto portSize = outputPort->dtype().size();
         for (const auto &label : port->labels())
         {
             auto outLabel = label;
-            outLabel.index *= port->buffer().dtype.size();
-            outLabel.index /= outputPort->dtype().size();
+            //convert label and width from input elements to bytes to output elements
+            outLabel.index *= buffSize;
+            outLabel.index /= portSize;
+            outLabel.width *= buffSize;
+            outLabel.width /= portSize;
             outputPort->postLabel(outLabel);
         }
     }

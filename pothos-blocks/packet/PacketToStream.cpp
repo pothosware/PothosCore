@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -59,6 +59,7 @@ public:
         for (auto label : packet.labels)
         {
             label.index *= packet.payload.dtype.size(); //elements to bytes
+            label.width *= packet.payload.dtype.size(); //elements to bytes
             outputPort->postLabel(label);
         }
 

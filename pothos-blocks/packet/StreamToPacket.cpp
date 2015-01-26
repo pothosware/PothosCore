@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -89,6 +89,7 @@ public:
         {
             auto label = *inputPort->labels().begin();
             label.index /= packet.payload.dtype.size(); //bytes to elements
+            label.width /= packet.payload.dtype.size(); //bytes to elements
             if (label.index >= packet.payload.elements()) break;
             packet.labels.push_back(label);
             inputPort->removeLabel(*inputPort->labels().begin());
