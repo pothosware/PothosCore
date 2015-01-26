@@ -72,17 +72,62 @@ public:
 
         //get input buffer
         auto inBuff = inputPort->buffer();
-        if (inBuff.length == 0) return;
+        if (inBuff.length != 0)
+        {        
 
-        //setup output buffer
-        auto outBuff = outputPort->buffer();
-        uint32_t symLen = std::min(inBuff.elements() / bitsPerSymbol, outBuff.elements());
+            //setup output buffer
+            auto outBuff = outputPort->buffer();
+            uint32_t symLen = std::min(inBuff.elements() / bitsPerSymbol, outBuff.elements());
 
-        auto inBytes = inBuff.as<const uint8_t*>();
-        auto outBytes = outBuff.as<uint8_t*>();
+            auto inBytes = inBuff.as<const uint8_t*>();
+            auto outBytes = outBuff.as<uint8_t*>();
+
+            uint8_t sampleBit = 0x1;
+            if(!msbFirst) sampleBit = 1 << (bitsPerSymbol - 1);
+            for(uint32_t i = 0; i < symLen; i++)
+            {
+                uint8_t symbol = 0;
+                uint8_t mask = symbolsMask;
+                while(mask)
+                {
+                    mask = mask >> 1;   
+                    if(msbFirst)
+                        symbol = symbol << 1; 
+                    else
+                        symbol = symbol >> 1;
+
+                    symbol |= (*inBytes++ != 0) ? sampleBit : 0; 
+                }
+                *outBytes++ = symbol;
+            }
+
+            //produce/consume
+            inputPort->consume(symLen * bitsPerSymbol);
+            outputPort->produce(symLen);
+        }
+
+        // Below code handles message based conversion
+
+        if (not inputPort->hasMessage()) return;
+        auto msg = inputPort->popMessage();
+        
+        if (msg.type() != typeid(Pothos::Packet))
+        {
+            outputPort->postMessage(msg);
+            return;
+        }
+
+        const auto &packet = msg.extract<Pothos::Packet>();
+        Pothos::Packet newPacket;
+        auto symLen = packet.payload.elements() / bitsPerSymbol;
+        newPacket.payload = Pothos::BufferChunk("uint8", symLen);
+        
+        auto inBytes = packet.payload.as<const uint8_t*>();
+        auto outBytes = newPacket.payload.as<uint8_t*>();
 
         uint8_t sampleBit = 0x1;
         if(!msbFirst) sampleBit = 1 << (bitsPerSymbol - 1);
+
         for(uint32_t i = 0; i < symLen; i++)
         {
             uint8_t symbol = 0;
@@ -100,9 +145,7 @@ public:
             *outBytes++ = symbol;
         }
 
-        //produce/consume
-        inputPort->consume(symLen * bitsPerSymbol);
-        outputPort->produce(symLen);
+        outputPort->postMessage(newPacket);
     }
 
 protected:
