@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "WaveMonitorDisplay.hpp"
@@ -54,7 +54,8 @@ void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, co
         auto marker = new QwtPlotMarker();
         marker->setLabel(MyMarkerLabel(QString::fromStdString(label.id)));
         marker->setLabelAlignment(Qt::AlignHCenter);
-        marker->setXValue(label.index/_sampleRateWoAxisUnits);
+        auto index = label.index + (label.width-1)/2.0;
+        marker->setXValue(index/_sampleRateWoAxisUnits);
         marker->setYValue(samps[label.index]);
         marker->attach(_mainPlot);
         markers.emplace_back(marker);
