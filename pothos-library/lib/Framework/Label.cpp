@@ -70,6 +70,7 @@ void Pothos::Label::serialize(Archive & ar, const unsigned int)
     ar & this->id;
     ar & this->data;
     ar & this->index;
+    ar & this->width;
 }
 
 template void Pothos::Label::serialize<Pothos::archive::polymorphic_iarchive>(Pothos::archive::polymorphic_iarchive &, const unsigned int);

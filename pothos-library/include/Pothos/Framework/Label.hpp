@@ -31,6 +31,16 @@ public:
     Label(const std::string &id, ValueType &&data, const unsigned long long index, const size_t width = 1);
 
     /*!
+     * Create a new label with an adjusted index and width.
+     * Example convert bytes to elements: newLbl = lbl.toAdjusted(1, elemSize);
+     * Example convert elements to bytes: newLbl = lbl.toAdjusted(elemSize, 1);
+     * \param mult a positive multiplier (default 1)
+     * \param div a positive divider (default 1)
+     * \return a copy of this label with an adjusted position
+     */
+    Label toAdjusted(const size_t mult, const size_t div) const;
+
+    /*!
      * The identifier describes the label's type, meaning, or purpose.
      * Identifiers only have meaning in the context of the blocks
      * that are producing and consuming them. So any given pair of blocks
@@ -111,6 +121,16 @@ Pothos::Label::Label(const std::string &id, ValueType &&data, const unsigned lon
     width(width)
 {
     return;
+}
+
+inline Pothos::Label Pothos::Label::toAdjusted(const size_t mult, const size_t div) const
+{
+    Pothos::Label newLabel = *this;
+    newLabel.index *= mult;
+    newLabel.width *= mult;
+    newLabel.index /= div;
+    newLabel.width /= div;
+    return newLabel;
 }
 
 inline bool Pothos::operator==(const Label &rhs, const Label &lhs)
