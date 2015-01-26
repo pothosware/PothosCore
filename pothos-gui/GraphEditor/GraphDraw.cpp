@@ -185,8 +185,8 @@ void GraphDraw::render(void)
     for (auto obj : allObjs)
     {
         auto oldPos = obj->pos();
-        oldPos.setX(std::min(std::max(oldPos.x(), 0.0), this->sceneRect().width()));
-        oldPos.setY(std::min(std::max(oldPos.y(), 0.0), this->sceneRect().height()));
+        oldPos.setX(std::min(std::max(oldPos.x(), 0.0), this->sceneRect().width()-obj->boundingRect().width()));
+        oldPos.setY(std::min(std::max(oldPos.y(), 0.0), this->sceneRect().height()-obj->boundingRect().height()));
         obj->setPos(oldPos);
     }
 
