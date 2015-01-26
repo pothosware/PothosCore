@@ -49,7 +49,7 @@ public:
             if (label.id == "txEnd")
             {
                 flags |= SOAPY_SDR_END_BURST;
-                numElems = label.index+1;
+                numElems = std::min(label.index+label.width, numElems);
                 break;
             }
         }
