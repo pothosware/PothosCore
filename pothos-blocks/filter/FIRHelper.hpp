@@ -208,7 +208,6 @@ static inline std::vector<double> designGaussian(const size_t numTaps, const dou
     for(size_t n = 0; n < numTaps; n++)
     {
         taps[n] /= sum;
-        std::cout << taps[n] << ",";
     }
     return taps;
 }
