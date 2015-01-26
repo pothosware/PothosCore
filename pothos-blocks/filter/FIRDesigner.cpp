@@ -40,6 +40,9 @@
  * |option [Flat-top] "flattop"
  * |widget ComboBox(editable=true)
  *
+ * |param gain[Gain] The filter gain.
+ * |default 1.0
+ *
  * |param sampRate[Sample Rate] The sample rate, in samples per second.
  * The transition frequencies must be within the Nyqist frequency of the sampling rate.
  * |default 1e6
@@ -83,6 +86,7 @@ public:
     FIRDesigner(void):
         _filterType("LOW_PASS"),
         _windowType("hann"),
+        _gain(1.0),
         _sampRate(1.0),
         _freqLower(0.1),
         _freqUpper(0.2),
@@ -105,6 +109,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, numTaps));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setBeta));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, beta));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setGain));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, gain));
         this->registerSignal("tapsChanged");
         this->recalculate();
     }
@@ -188,6 +194,17 @@ public:
         return _beta;
     }
 
+    void setGain(const double gain)
+    {
+        _gain = gain;
+        this->recalculate();
+    }
+
+    double gain(void) const
+    {
+        return _gain;
+    }
+
     void activate(void)
     {
         this->recalculate();
@@ -199,6 +216,7 @@ private:
 
     std::string _filterType;
     std::string _windowType;
+    double _gain;
     double _sampRate;
     double _freqLower;
     double _freqUpper;
@@ -241,6 +259,13 @@ void FIRDesigner::recalculate(void)
     else if (_filterType == "ROOT_RAISED_COSINE") taps = designRRC(_numTaps, _sampRate, _freqLower, _beta);
     else if (_filterType == "GAUSSIAN") taps = designGaussian(_numTaps, _sampRate, _freqLower, _beta);
     else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
+
+
+    /* apply gain */
+    std::transform(complexTaps.begin(), complexTaps.end(), complexTaps.begin(),
+                   std::bind1st(std::multiplies<std::complex<double>>(),_gain));
+    std::transform(taps.begin(), taps.end(), taps.begin(),
+                   std::bind1st(std::multiplies<double>(),_gain));
 
     //emit the taps
     if (not complexTaps.empty()) this->callVoid("tapsChanged", complexTaps);
