@@ -38,9 +38,11 @@ static const size_t waveTableSize = 4096;
  *
  * |param offset A constant value added to the waveform after scaling.
  * |default 0.0
+ * |preview valid
  *
  * |param mean The mean of the distribution - applies to all distributions.
  * |default 0.0
+ * |preview valid
  *
  * |param b A value with distribution-dependent meaning:
  * <ul>

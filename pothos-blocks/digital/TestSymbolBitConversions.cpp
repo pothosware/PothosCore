@@ -8,20 +8,23 @@
 #include <Poco/JSON/Object.h>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_differentialcoding)
+POTHOS_TEST_BLOCK("/blocks/tests", test_symbolbitconversions)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
 
     //run the topology
     for(int symbols = 2; symbols != 512; symbols *= 2)
+    for(int i = 0; i < 2; i++)
     {
-        std::cout << "run the topology with " << symbols << " symbols" << std::endl;
+        std::string endianness = i == 0 ? "LSB" : "MSB";
+        std::cout << "run the topology with " << endianness << " endianness";
+        std::cout << "and " << symbols << " symbols" << std::endl;
 
         auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
         auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
-        auto encoder = registry.callProxy("/blocks/differentialencoder");
-        auto decoder = registry.callProxy("/blocks/differentialdecoder");
+        auto bytes2bits = registry.callProxy("/blocks/symbolstobits");
+        auto bits2bytes = registry.callProxy("/blocks/bitstosymbols");
 
         //create a test plan
         Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
@@ -29,13 +32,15 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_differentialcoding)
         testPlan->set("minValue", 0);
         testPlan->set("maxValue", symbols - 1);
 
-        encoder.callProxy("setSymbols", symbols);
-        decoder.callProxy("setSymbols", symbols);
+        bytes2bits.callProxy("setSymbols", symbols);
+        bits2bytes.callProxy("setSymbols", symbols);
+        bytes2bits.callProxy("setEndianness", endianness);
+        bits2bytes.callProxy("setEndianness", endianness);
 
         Pothos::Topology topology;
-        topology.connect(feeder, 0, encoder, 0);
-        topology.connect(encoder, 0, decoder, 0);
-        topology.connect(decoder, 0, collector, 0);
+        topology.connect(feeder, 0, bytes2bits, 0);
+        topology.connect(bytes2bits, 0, bits2bytes, 0);
+        topology.connect(bits2bytes, 0, collector, 0);
         topology.commit();
 
         auto expected = feeder.callProxy("feedTestPlan", testPlan);

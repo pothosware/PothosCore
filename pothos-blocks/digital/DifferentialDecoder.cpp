@@ -4,22 +4,14 @@
 #include <Pothos/Framework.hpp>
 
 /***********************************************************************
- * |PothosDoc DifferentialDecoder
+ * |PothosDoc Differential Decoder
  *
  * Implements the decoding part of: http://en.wikipedia.org/wiki/Differential_coding
  *
  * |category /Digital
  *
- * |param symbols 
+ * |param symbols Number of possible symbols encoded in a byte. 
  * |default 2
- * |option 2
- * |option 4
- * |option 8
- * |option 16
- * |option 32
- * |option 64
- * |option 128
- * |option 256
  *
  * |factory /blocks/differentialdecoder()
  * |setter setSymbols(symbols)
@@ -33,7 +25,7 @@ public:
         return new DifferentialDecoder();
     }
 
-    DifferentialDecoder(void) : lastSymRecv(0), symbolsMask(0x1)
+    DifferentialDecoder(void) : lastSymRecv(0), symbols(2)
     {
         this->setupInput(0, typeid(unsigned char));
         this->setupOutput(0, typeid(unsigned char));
@@ -42,14 +34,7 @@ public:
 
     void setSymbols(const size_t symbols)
     {
-        if(symbols ==   2) symbolsMask = 0x01;
-        if(symbols ==   4) symbolsMask = 0x03;
-        if(symbols ==   8) symbolsMask = 0x07;
-        if(symbols ==  16) symbolsMask = 0x0f;
-        if(symbols ==  32) symbolsMask = 0x1f;
-        if(symbols ==  64) symbolsMask = 0x3f;
-        if(symbols == 128) symbolsMask = 0x7f;
-        if(symbols == 256) symbolsMask = 0xff;
+        this->symbols = symbols;
     }
 
     void work(void)
@@ -73,7 +58,7 @@ public:
         {
             uint8_t last = lastRecv;
             lastRecv = *inBytes++;
-            *outBytes++ = (last ^ lastRecv) & symbolsMask; 
+            *outBytes++ = (lastRecv - last + symbols) % symbols;
         }
         lastSymRecv = lastRecv;
 
@@ -84,7 +69,7 @@ public:
 
 protected:
     uint8_t lastSymRecv;
-    uint8_t symbolsMask;
+    uint32_t symbols;
 };
 
 static Pothos::BlockRegistry registerDifferentialDecoder(

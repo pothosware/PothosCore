@@ -41,6 +41,7 @@ static const size_t waveTableSize = 4096;
  *
  * |param offset A constant value added to the waveform after scaling.
  * |default 0.0
+ * |preview valid
  *
  * |factory /blocks/waveform_source(dtype)
  * |setter setWaveform(wave)

@@ -16,6 +16,11 @@ POTHOS_MODULE_UTIL(
         TestDifferentialCoding.cpp
         DifferentialEncoder.cpp
         DifferentialDecoder.cpp
+        SymbolsToBits.cpp
+        BitsToSymbols.cpp
+        TestSymbolBitConversions.cpp
+        PreambleCorrelator.cpp
+        TestPreambleCorrelator.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
