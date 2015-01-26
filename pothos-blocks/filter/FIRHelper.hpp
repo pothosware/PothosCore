@@ -156,9 +156,6 @@ static double sinc(double x)
 
 static inline std::vector<double> designRRC(const size_t numTaps, const double Fs, const double Fl, double beta)
 {
-    //h = sinc(t).*cos(pi*beta*t)./(1-4*beta*beta*(t.^2))
-    //t goes from -1/(sps/4) to 1/(sps/4)
-    //or 0 to 1/(sps/4) and mirror the taps
     double sps = Fs / Fl;
     double sum = 0;
     std::vector<double> taps(numTaps);
