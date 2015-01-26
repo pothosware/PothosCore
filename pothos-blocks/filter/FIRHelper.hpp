@@ -188,3 +188,27 @@ static inline std::vector<double> designRRC(const size_t numTaps, const double F
 
     return taps;
 }
+
+static inline std::vector<double> designGaussian(const size_t numTaps, const double Fs, const double Fl, const double bt)
+{
+    std::vector<double> taps(numTaps);
+    double sum=0;
+    double sps = Fs/Fl;
+    double dt = 1/sps;
+    double nt = numTaps-1;
+    double alpha = sqrt(log(2)/2)/bt;
+    double t = -nt/(sps*2);
+    double sc = std::sqrt(M_PI)/alpha;
+    for(size_t n=0; n<numTaps; n++)
+    {
+        taps[n] = sc * std::exp(-std::pow(t*M_PI/alpha,2));
+        t += dt;
+        sum += taps[n];
+    }
+    for(size_t n = 0; n < numTaps; n++)
+    {
+        taps[n] /= sum;
+        std::cout << taps[n] << ",";
+    }
+    return taps;
+}
