@@ -190,15 +190,10 @@ static inline std::vector<double> designRRC(const size_t numTaps, const double F
                      / (M_PI * (pow(4.0*beta*t,2) - 1));
         sum += taps[n]*taps[n];
     }
-    std::cout << std::endl;
     for(size_t n = 0; n < numTaps; n++)
     {
         taps[n] /= sqrt(sum);
     }
 
-    for(size_t n = 0; n < numTaps; n++)
-    {
-        std::cout << taps[n] << ", ";
-    }
     return taps;
 }
