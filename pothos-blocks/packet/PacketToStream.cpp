@@ -58,9 +58,8 @@ public:
         //post output labels
         for (auto label : packet.labels)
         {
-            label.index *= packet.payload.dtype.size(); //elements to bytes
-            label.width *= packet.payload.dtype.size(); //elements to bytes
-            outputPort->postLabel(label);
+            outputPort->postLabel(label.toAdjusted(
+                packet.payload.dtype.size(), 1)); //elements to bytes
         }
 
         //post the payload

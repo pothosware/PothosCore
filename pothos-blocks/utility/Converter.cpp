@@ -65,17 +65,11 @@ public:
     void propagateLabels(const Pothos::InputPort *port)
     {
         auto outputPort = this->output(0);
-        const auto buffSize = port->buffer().dtype.size();
-        const auto portSize = outputPort->dtype().size();
         for (const auto &label : port->labels())
         {
-            auto outLabel = label;
-            //convert label and width from input elements to bytes to output elements
-            outLabel.index *= buffSize;
-            outLabel.index /= portSize;
-            outLabel.width *= buffSize;
-            outLabel.width /= portSize;
-            outputPort->postLabel(outLabel);
+            outputPort->postLabel(label.toAdjusted(
+                port->buffer().dtype.size(),
+                outputPort->dtype().size()));
         }
     }
 };

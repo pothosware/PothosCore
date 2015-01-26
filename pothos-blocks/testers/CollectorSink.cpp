@@ -120,6 +120,8 @@ void CollectorSink::verifyTestPlan(const Poco::JSON::Object::Ptr &expected) cons
             if (lbl.data.type() != typeid(std::string)) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
                 "cant handle this label type: " + lbl.data.getTypeString());
             auto actual = lbl.data.extract<std::string>();
+            if (lbl.width != 1) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
+                Poco::format("Value check for label width %d: expected %d -> actual %d", int(i), int(1), int(lbl.width)));
             if (lbl.index != index) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
                 Poco::format("Value check for label index %d: expected %d -> actual %d", int(i), int(index), int(lbl.index)));
             if (lbl.id != id) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
