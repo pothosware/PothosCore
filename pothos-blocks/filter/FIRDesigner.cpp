@@ -27,6 +27,7 @@
  * |option [Complex Band Pass] "COMPLEX_BAND_PASS"
  * |option [Complex Band Stop] "COMPLEX_BAND_STOP"
  * |option [Root Raised Cosine] "ROOT_RAISED_COSINE"
+ * |option [Gaussian] "GAUSSIAN"
  *
  * |param window[Window Type] The window function controls passband ripple.
  * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
@@ -238,6 +239,7 @@ void FIRDesigner::recalculate(void)
     else if (_filterType == "COMPLEX_BAND_PASS") complexTaps = designCBPF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
     else if (_filterType == "COMPLEX_BAND_STOP") complexTaps = designCBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
     else if (_filterType == "ROOT_RAISED_COSINE") taps = designRRC(_numTaps, _sampRate, _freqLower, _beta);
+    else if (_filterType == "GAUSSIAN") taps = designGaussian(_numTaps, _sampRate, _freqLower, _beta);
     else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
 
     //emit the taps

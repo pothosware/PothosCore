@@ -165,20 +165,21 @@ static inline std::vector<double> designRRC(const size_t numTaps, const double F
     }
 
     double nt = numTaps-1;
-    double spstwo = 2*sps;
+    double t = -nt/(sps*2);
+    double dt = 1/sps;
     for(size_t n = 0; n < numTaps; n++)
     {
-        double t = (-nt+2*nt*(n/nt))/spstwo;
-        if(std::abs(t)<=DBL_MIN) taps[n] = -1.0/(M_PI*spstwo)*(M_PI*(beta-1)-4.0*beta);
+        if(std::abs(t)<=DBL_MIN) taps[n] = -0.5/(M_PI*sps)*(M_PI*(beta-1)-4.0*beta);
         else if(std::abs(std::abs(4.0*beta*t)-1.0) < sqrt(DBL_MIN))
-            taps[n] = 1 / (2.0*M_PI*spstwo)
+            taps[n] = 1 / (4.0*M_PI*sps)
                     * (M_PI*(beta+1)*sin(M_PI*(beta+1)/(4.0*beta))
                     - 4.0*beta*sin(M_PI*(beta-1)/(4.0*beta))
                     + M_PI*(beta-1)*cos(M_PI*(beta-1)/(4.0*beta)));
         else
-            taps[n] = -4.0*beta/spstwo
+            taps[n] = -2.0*beta/sps
                      * (cos((1+beta)*M_PI*t) + sin((1-beta)*M_PI*t) / (4.0*beta*t))
                      / (M_PI * (pow(4.0*beta*t,2) - 1));
+        t += dt;
         sum += taps[n]*taps[n];
     }
     for(size_t n = 0; n < numTaps; n++)
@@ -186,5 +187,28 @@ static inline std::vector<double> designRRC(const size_t numTaps, const double F
         taps[n] /= sqrt(sum);
     }
 
+    return taps;
+}
+
+static inline std::vector<double> designGaussian(const size_t numTaps, const double Fs, const double Fl, const double bt)
+{
+    std::vector<double> taps(numTaps);
+    double sum=0;
+    double sps = Fs/Fl;
+    double dt = 1/sps;
+    double nt = numTaps-1;
+    double alpha = sqrt(log(2)/2)/bt;
+    double t = -nt/(sps*2);
+    double sc = std::sqrt(M_PI)/alpha;
+    for(size_t n=0; n<numTaps; n++)
+    {
+        taps[n] = sc * std::exp(-std::pow(t*M_PI/alpha,2));
+        t += dt;
+        sum += taps[n];
+    }
+    for(size_t n = 0; n < numTaps; n++)
+    {
+        taps[n] /= sum;
+    }
     return taps;
 }
