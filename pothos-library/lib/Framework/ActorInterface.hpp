@@ -168,6 +168,11 @@ inline void ActorInterface::flagExternalChange(void)
 
 inline void ActorInterface::wakeNoChange(void)
 {
+    //if lock fails, the worker context is busy
+    if (not _contextMutex.try_lock()) return;
+    _contextMutex.unlock();
+
+    //otherwise we need to notify the waiting cv
     std::lock_guard<std::mutex> lock(_acquireMutex);
     _cond.notify_one();
 }
