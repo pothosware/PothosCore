@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -8,6 +8,7 @@
 #include <QWidget>
 #include <memory>
 #include <map>
+#include <atomic>
 #include <vector>
 
 class MyQwtPlot;
@@ -73,4 +74,5 @@ private:
     std::vector<double> _xRange;
     std::vector<double> _yRange;
     std::shared_ptr<QwtPlotCurve> _curve;
+    std::atomic<size_t> _queueDepth;
 };
