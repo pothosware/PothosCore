@@ -76,7 +76,8 @@ private:
     bool _waitModeEnabled;
     std::atomic_flag _changeFlagged;
     std::atomic<size_t> _externalAcquired;
-    std::mutex _mutex;
+    std::mutex _contextMutex;
+    std::mutex _acquireMutex;
     std::condition_variable _cond;
 };
 
@@ -103,15 +104,14 @@ private:
 inline void ActorInterface::externalCallAcquire(void)
 {
     _externalAcquired++;
-    _mutex.lock();
+    _contextMutex.lock();
 }
 
 inline void ActorInterface::externalCallRelease(void)
 {
     _externalAcquired--;
-    _changeFlagged.clear();
-    _cond.notify_one();
-    _mutex.unlock();
+    _contextMutex.unlock();
+    this->flagExternalChange();
 }
 
 inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
@@ -120,32 +120,30 @@ inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
     //block in here on a mutex lock and bail out
     if (_externalAcquired.load(std::memory_order_acquire) != 0)
     {
-        std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_contextMutex);
         return false;
     }
 
     //fast-check for already flagged case
     if (not _changeFlagged.test_and_set(std::memory_order_acquire))
     {
-        _mutex.lock();
+        _contextMutex.lock();
         return true;
     }
 
     //wait mode enabled -- lock and wait on condition variable
     if (waitEnabled)
     {
-        std::unique_lock<std::mutex> lock(_mutex);
+        std::unique_lock<std::mutex> lock(_acquireMutex);
         if (not _changeFlagged.test_and_set(std::memory_order_acquire))
         {
-            lock.release();
+           _contextMutex.lock();
             return true;
         }
-        //dont want to do a timed wait, but there is a condition in flag external
-        //that has a race with going to sleep in the cv when flagged for change
-        _cond.wait_for(lock, std::chrono::milliseconds(1));
+        _cond.wait(lock);
         if (not _changeFlagged.test_and_set(std::memory_order_acquire))
         {
-            lock.release();
+           _contextMutex.lock();
             return true;
         }
         return false;
@@ -156,7 +154,7 @@ inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
 
 inline void ActorInterface::workerThreadRelease(void)
 {
-    _mutex.unlock();
+    _contextMutex.unlock();
 }
 
 inline void ActorInterface::flagExternalChange(void)
@@ -170,14 +168,8 @@ inline void ActorInterface::flagExternalChange(void)
 
 inline void ActorInterface::wakeNoChange(void)
 {
-    //if lock fails, the worker context is busy
-    if (not _mutex.try_lock()) return;
-
-    //notify the waiting cv
+    std::lock_guard<std::mutex> lock(_acquireMutex);
     _cond.notify_one();
-
-    //unlock after notify
-    _mutex.unlock();
 }
 
 inline void ActorInterface::flagInternalChange(void)
