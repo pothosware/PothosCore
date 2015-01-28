@@ -14,7 +14,8 @@ ConstellationDisplay::ConstellationDisplay(void):
     _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
     _zoomer(new MyPlotPicker(_mainPlot->canvas())),
-    _autoScale(false)
+    _autoScale(false),
+    _queueDepth(0)
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(ConstellationDisplay, widget));
