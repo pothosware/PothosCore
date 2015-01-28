@@ -60,10 +60,12 @@ public:
 
         this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, widget));
         this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, value));
+        this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, label));
         this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, setTitle));
         this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, setValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(DropDown, setOptions));
         this->registerSignal("valueChanged");
+        this->registerSignal("labelChanged");
 
         qRegisterMetaType<Pothos::Object>("Pothos::Object");
         qRegisterMetaType<Pothos::ObjectVector>("Pothos::ObjectVector");
@@ -99,6 +101,7 @@ public:
     void activate(void)
     {
         //emit current value when design becomes active
+        this->callVoid("labelChanged", this->label());
         this->callVoid("valueChanged", this->value());
     }
 
@@ -113,6 +116,11 @@ public:
     void setValue(const Pothos::Object &value)
     {
         QMetaObject::invokeMethod(this, "__setValue", Qt::QueuedConnection, Q_ARG(Pothos::Object, value));
+    }
+
+    QString label(void) const
+    {
+        return _comboBox->currentText();
     }
 
     void setOptions(const Pothos::ObjectVector &options)
@@ -166,6 +174,7 @@ private slots:
     void handleIndexChanged(int)
     {
         this->callVoid("valueChanged", this->value());
+        this->callVoid("labelChanged", this->label());
     }
 
 private:
