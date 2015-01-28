@@ -112,6 +112,14 @@ public:
         auto inPort = this->input(0);
         auto outPort = this->output(0);
 
+        //require the minimum number of input elements to produce at least 1 output
+        const auto inputRequire = (M + (K-1));
+        if (inPort->elements() < inputRequire)
+        {
+            inPort->setReserve(inputRequire);
+            return;
+        }
+
         //how many iterations?
         const auto N = std::min((inPort->elements()-(K-1))/M, outPort->elements()/L);
 
