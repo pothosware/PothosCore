@@ -62,10 +62,11 @@ static inline std::vector<double> designLPF(const size_t numTaps, const double F
         else taps[n] = sin( mm * lambda ) / (mm * M_PI);
     }
 
+    for (size_t n = 0; n < w.size(); n++) taps[n] *= w[n];
+
     double sum = std::accumulate(taps.begin(), taps.end(), 0.0);
-    for (size_t n = 0; n < w.size(); n++) taps[n] *= (w[n]*sum);
-    for(int i=0; i<taps.size(); i++) std::cout << taps[i] << ", ";
-    std::cout << std::endl;
+    for (size_t n = 0; n < taps.size(); n++) taps[n] /= sum;
+
     return taps;
 }
 
@@ -83,6 +84,16 @@ static inline std::vector<double> designHPF(const size_t numTaps, const double F
     }
 
     for (size_t n = 0; n < w.size(); n++) taps[n] *= w[n];
+
+    /* normalize to gain=1.0 at Fs/2 */
+    double sum = 0;
+    for( size_t n=0; n<numTaps; n++ )
+    {
+        sum += taps[n]*cos(n*M_PI);
+    }
+
+    for (size_t n = 0; n < taps.size(); n++) taps[n] /= sum;
+
     return taps;
 }
 
