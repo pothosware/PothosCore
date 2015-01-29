@@ -142,6 +142,11 @@ static inline std::vector<double> designBSF(const size_t numTaps, const double F
     }
 
     for (size_t n = 0; n < w.size(); n++) taps[n] *= w[n];
+
+    /* normalize gain at 0 */
+    double sum = std::accumulate(taps.begin(), taps.end(), 0.0);
+    for (size_t n = 0; n < taps.size(); n++) taps[n] /= sum;
+
     return taps;
 }
 
