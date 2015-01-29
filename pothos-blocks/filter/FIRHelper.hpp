@@ -113,6 +113,16 @@ static inline std::vector<double> designBPF(const size_t numTaps, const double F
     }
 
     for (size_t n = 0; n < w.size(); n++) taps[n] *= w[n];
+
+    /* normalize gain to 1.0 at center frequency */
+    double sum = 0;
+    for (size_t n = 0; n < taps.size(); n++)
+    {
+        sum += taps[n]*cos(n*M_PI*(Fu+Fl));
+    }
+
+    for (size_t n = 0; n < taps.size(); n++) taps[n] /= sum;
+
     return taps;
 }
 
