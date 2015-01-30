@@ -20,8 +20,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_differential_coding)
 
         auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
         auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
-        auto encoder = registry.callProxy("/blocks/differentialencoder");
-        auto decoder = registry.callProxy("/blocks/differentialdecoder");
+        auto encoder = registry.callProxy("/blocks/differential_encoder");
+        auto decoder = registry.callProxy("/blocks/differential_decoder");
 
         //create a test plan
         Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());

@@ -23,8 +23,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_bit_conversions)
 
         auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
         auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
-        auto bytes2bits = registry.callProxy("/blocks/symbolstobits");
-        auto bits2bytes = registry.callProxy("/blocks/bitstosymbols");
+        auto bytes2bits = registry.callProxy("/blocks/symbols_to_bits");
+        auto bits2bytes = registry.callProxy("/blocks/bits_to_symbols");
 
         //create a test plan
         Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
