@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //get object map
@@ -409,7 +409,10 @@ void BlockPropertiesPanel::updateAllForms(void)
 {
     //block id
     {
-        _idLineEdit->setText(_block->getId());
+        if (_idLineEdit->text() != _block->getId())
+        {
+            _idLineEdit->setText(_block->getId());
+        }
         _idLabel->setText(QString("<b>%1%2</b>")
             .arg(tr("ID"))
             .arg((_idOriginal != _block->getId())?"*":""));
