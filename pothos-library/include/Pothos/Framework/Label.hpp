@@ -38,7 +38,8 @@ public:
      * \param div a positive divider (default 1)
      * \return a copy of this label with an adjusted position
      */
-    Label toAdjusted(const size_t mult, const size_t div) const;
+    template <typename MultType, typename DivType>
+    Label toAdjusted(const MultType &mult, const DivType &div) const;
 
     /*!
      * The identifier describes the label's type, meaning, or purpose.
@@ -123,7 +124,8 @@ Pothos::Label::Label(const std::string &id, ValueType &&data, const unsigned lon
     return;
 }
 
-inline Pothos::Label Pothos::Label::toAdjusted(const size_t mult, const size_t div) const
+template <typename MultType, typename DivType>
+Pothos::Label Pothos::Label::toAdjusted(const MultType &mult, const DivType &div) const
 {
     Pothos::Label newLabel = *this;
     newLabel.index *= mult;
