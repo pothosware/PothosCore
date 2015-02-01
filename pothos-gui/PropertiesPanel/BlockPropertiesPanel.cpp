@@ -201,6 +201,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _blockInfoDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
         _blockInfoDesc->setWordWrap(true);
         _blockInfoDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+        _blockInfoDesc->setTextInteractionFlags(Qt::TextSelectableByMouse);
         _infoTabs->addTab(_blockInfoDesc, tr("Documentation"));
     }
 
@@ -211,6 +212,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _jsonBlockDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
         _jsonBlockDesc->setWordWrap(true);
         _jsonBlockDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+        _jsonBlockDesc->setTextInteractionFlags(Qt::TextSelectableByMouse);
     }
 
     //evaluated types (filled in by event handler)
@@ -220,6 +222,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _evalTypesDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
         _evalTypesDesc->setWordWrap(true);
         _evalTypesDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+        _evalTypesDesc->setTextInteractionFlags(Qt::TextSelectableByMouse);
     }
 
     //update timer
