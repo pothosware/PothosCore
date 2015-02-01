@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Rinat Zakirov
+// Copyright (c) 2015-2015 Rinat Zakirov
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
