@@ -100,6 +100,6 @@ private:
     //per-port data structs
     std::map<size_t, std::map<size_t, std::shared_ptr<QwtPlotCurve>>> _curves;
     std::map<size_t, std::vector<std::shared_ptr<QwtPlotMarker>>> _markers;
-    std::map<size_t, std::map<size_t, std::atomic<size_t>>> _queueDepth;
+    std::map<size_t, std::map<size_t, std::shared_ptr<std::atomic<size_t>>>> _queueDepth;
     size_t _nextColorIndex;
 };

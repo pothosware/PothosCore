@@ -15,7 +15,7 @@
  **********************************************************************/
 void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, const Pothos::BufferChunk &buff, const std::vector<Pothos::Label> &labels)
 {
-    if (_queueDepth.at(index).at(whichCurve).fetch_sub(1) != 1) return;
+    if (_queueDepth.at(index).at(whichCurve)->fetch_sub(1) != 1) return;
 
     const auto samps = buff.as<const float *>();
     QVector<QPointF> points(buff.elements());
@@ -104,14 +104,18 @@ void WaveMonitorDisplay::work(void)
                 floatBuffs[0].append(out);
             }
 
-            _queueDepth[inPort->index()][0]++;
+            //ensure that we have allocated depth counters (used to avoid displaying old data)
+            if (not _queueDepth[inPort->index()][0]) _queueDepth[inPort->index()][0].reset(new std::atomic<size_t>());
+            if (not _queueDepth[inPort->index()][1]) _queueDepth[inPort->index()][1].reset(new std::atomic<size_t>());
+
+            _queueDepth[inPort->index()][0]->fetch_add(1);
             QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
                 Q_ARG(int, inPort->index()), Q_ARG(int, 0),
                 Q_ARG(Pothos::BufferChunk, floatBuffs[0]),
                 Q_ARG(std::vector<Pothos::Label>, packet.labels));
 
             const bool hasIm = floatBuffs.size() > 1;
-            if (hasIm) _queueDepth[inPort->index()][1]++;
+            if (hasIm) _queueDepth[inPort->index()][1]->fetch_add(1);
             if (hasIm) QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
                 Q_ARG(int, inPort->index()), Q_ARG(int, 1),
                 Q_ARG(Pothos::BufferChunk, floatBuffs[1]),

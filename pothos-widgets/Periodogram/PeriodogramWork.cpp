@@ -13,7 +13,7 @@
  **********************************************************************/
 void PeriodogramDisplay::handlePowerBins(const int index, const std::valarray<float> &powerBins)
 {
-    if (_queueDepth.at(index).fetch_sub(1) != 1) return;
+    if (_queueDepth.at(index)->fetch_sub(1) != 1) return;
 
     auto &curve = _curves[index];
     if (not curve) curve.reset(new PeriodogramChannel(index, _mainPlot));
@@ -54,7 +54,8 @@ void PeriodogramDisplay::work(void)
             //power bins to points on the curve
             CArray fftBins(floatBuff.as<const std::complex<float> *>(), this->numFFTBins());
             const auto powerBins = fftPowerSpectrum(fftBins, _window.call<std::vector<double>>("window"), _window.call<double>("power"));
-            _queueDepth[inPort->index()]++;
+            if (not _queueDepth[inPort->index()]) _queueDepth[inPort->index()].reset(new std::atomic<size_t>(0));
+            _queueDepth[inPort->index()]->fetch_add(1);
             QMetaObject::invokeMethod(this, "handlePowerBins", Qt::QueuedConnection, Q_ARG(int, inPort->index()), Q_ARG(std::valarray<float>, powerBins));
         }
     }
