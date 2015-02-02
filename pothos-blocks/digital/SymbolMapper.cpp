@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <Pothos/Util/MathCompat.hpp>
 #include <cstdint>
 #include <iostream>
 #include <complex>
