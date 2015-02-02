@@ -4,7 +4,7 @@
 /// Provide math compatibility functions and definitions.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -33,6 +33,12 @@ namespace std
     long long int llround(const T x)
     {
         return (long long int)((x < T(0.0)) ? (x - T(0.5)) : (x + T(0.5)));
+    }
+
+    template <typename T>
+    T log2(const T x)
+    {
+        return std::log(x)/std::log(2.0);
     }
 }
 
