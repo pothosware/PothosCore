@@ -15,7 +15,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_preamble_correlator)
     auto correlator = registry.callProxy("/blocks/preamble_correlator");
     auto collector = registry.callProxy("/blocks/collector_sink", "unsigned char");
 
-    std::vector<unsigned char> preamble = {0, 1, 1, 1, 1, 0};
+    static const unsigned char preambleD[] = {0, 1, 1, 1, 1, 0};
+    std::vector<unsigned char> preamble(preambleD, preambleD+6);
     size_t testLength = 10 + preamble.size();
     size_t preambleIndex = 4;
 
