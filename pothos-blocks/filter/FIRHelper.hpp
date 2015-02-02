@@ -47,6 +47,7 @@
 #include <cmath>
 #include <cfloat>
 #include <cstdlib>
+#include <numeric>
 #include <iostream>
 
 //! Low pass: sample rate, cutoff frequency, window
