@@ -105,8 +105,8 @@ void WaveMonitorDisplay::work(void)
             }
 
             //ensure that we have allocated depth counters (used to avoid displaying old data)
-            if (not _queueDepth[inPort->index()][0]) _queueDepth[inPort->index()][0].reset(new std::atomic<size_t>());
-            if (not _queueDepth[inPort->index()][1]) _queueDepth[inPort->index()][1].reset(new std::atomic<size_t>());
+            if (not _queueDepth[inPort->index()][0]) _queueDepth[inPort->index()][0].reset(new std::atomic<size_t>(0));
+            if (not _queueDepth[inPort->index()][1]) _queueDepth[inPort->index()][1].reset(new std::atomic<size_t>(0));
 
             _queueDepth[inPort->index()][0]->fetch_add(1);
             QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
