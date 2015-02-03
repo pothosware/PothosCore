@@ -231,7 +231,7 @@ public:
     void setSamples( const QVector<QPointF> & );
     void setSamples( QwtSeriesData<QPointF> * );
 
-    virtual int closestPoint( const QPoint &pos, double *dist = NULL ) const;
+    int closestPoint( const QPoint &pos, double *dist = NULL ) const;
 
     double minXValue() const;
     double maxXValue() const;

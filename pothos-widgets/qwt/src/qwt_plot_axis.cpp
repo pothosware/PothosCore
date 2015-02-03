@@ -189,6 +189,7 @@ bool QwtPlot::axisAutoScale( int axisId ) const
         return d_axisData[axisId]->doAutoScale;
     else
         return false;
+
 }
 
 /*!

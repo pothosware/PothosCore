@@ -94,38 +94,7 @@ public:
 
           \sa replot(), QWidget::repaint(), QWidget::update()
          */
-        ImmediatePaint = 8,
-
-        /*!
-          \brief Render the canvas via an OpenGL buffer
-
-          In OpenGL mode the plot scene will be rendered to a temporary 
-          OpenGL buffer ( pixel buffer with Qt4, frame buffer object for Qt >= 5 ), 
-          that will be translated to a QImage afterwards. 
-          Then this image will be painted to the canvas.
-
-          This mode might be useful for "heavy" plots on platforms to achieve 
-          hardware acceleration on platforms, where the raster paint engine 
-          ( = software renderer ) ould be used otherwise.
-          But the penalty of copying out the image makes this mode less optimal for
-          "normal" plots.
-
-          On a hardware accelerated graphics system ( f.e. Qt4/X11 "native" ) 
-          using this mode does not make much sense. Unfortunately those systems have 
-          been removed from Qt5.
-
-          \note Using QwtPlotGLCanvas is an hardware accelerated alternative without 
-                suffering from the extra roundtrip of the rendered image. But this 
-                type of canvas does not have a backing store, that helps to avoid
-                replots in combination with of overlay widgets ( f.e the 
-                rubberband of a zoomer ).
-
-          \note The OpenGLBuffer mode has no effect, when "QwtOpenGL" has been disabled in 
-                qwtconfig.pri.
-
-          \sa QwtPlotGLCanvas
-         */
-        OpenGLBuffer = 16
+        ImmediatePaint = 8
     };
 
     //! Paint attributes

@@ -95,11 +95,8 @@ static inline void qwtDrawPolyline( QPainter *painter,
         painter->drawPolyline( points, pointCount );
 }
 
-static inline void qwtUnscaleFont( QPainter *painter )
+static inline QSize qwtScreenResolution()
 {
-    if ( painter->font().pixelSize() >= 0 )
-        return;
-
     static QSize screenResolution;
     if ( !screenResolution.isValid() )
     {
@@ -110,6 +107,16 @@ static inline void qwtUnscaleFont( QPainter *painter )
             screenResolution.setHeight( desktop->logicalDpiY() );
         }
     }
+
+    return screenResolution;
+}
+
+static inline void qwtUnscaleFont( QPainter *painter )
+{
+    if ( painter->font().pixelSize() >= 0 )
+        return;
+
+    const QSize screenResolution = qwtScreenResolution();
 
     const QPaintDevice *pd = painter->device();
     if ( pd->logicalDpiX() != screenResolution.width() ||
@@ -369,25 +376,41 @@ void QwtPainter::drawSimpleRichText( QPainter *painter, const QRectF &rect,
 
     painter->save();
 
-    painter->setFont( txt->defaultFont() );
-    qwtUnscaleFont( painter );
+    QRectF unscaledRect = rect;
+
+    if ( painter->font().pixelSize() < 0 )
+    {
+        const QSize res = qwtScreenResolution();
+
+        const QPaintDevice *pd = painter->device();
+        if ( pd->logicalDpiX() != res.width() ||
+            pd->logicalDpiY() != res.height() )
+        {
+            QTransform transform;
+            transform.scale( res.width() / double( pd->logicalDpiX() ),
+                res.height() / double( pd->logicalDpiY() ));
+
+            painter->setWorldTransform( transform, true );
+            unscaledRect = transform.inverted().mapRect(rect);
+        }
+    }  
 
     txt->setDefaultFont( painter->font() );
-    txt->setPageSize( QSizeF( rect.width(), QWIDGETSIZE_MAX ) );
+    txt->setPageSize( QSizeF( unscaledRect.width(), QWIDGETSIZE_MAX ) );
 
     QAbstractTextDocumentLayout* layout = txt->documentLayout();
 
     const double height = layout->documentSize().height();
-    double y = rect.y();
+    double y = unscaledRect.y();
     if ( flags & Qt::AlignBottom )
-        y += ( rect.height() - height );
+        y += ( unscaledRect.height() - height );
     else if ( flags & Qt::AlignVCenter )
-        y += ( rect.height() - height ) / 2;
+        y += ( unscaledRect.height() - height ) / 2;
 
     QAbstractTextDocumentLayout::PaintContext context;
     context.palette.setColor( QPalette::Text, painter->pen().color() );
 
-    painter->translate( rect.x(), y );
+    painter->translate( unscaledRect.x(), y );
     layout->draw( painter, context );
 
     painter->restore();

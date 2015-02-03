@@ -10,681 +10,375 @@
 #include "qwt_spline.h"
 #include "qwt_math.h"
 
-static inline QPointF qwtBezierPoint( const QPointF &p1,
-    const QPointF &cp1, const QPointF &cp2, const QPointF &p2, double t )
-{
-    const double d1 = 3.0 * t;
-    const double d2 = 3.0 * t * t;
-    const double d3 = t * t * t;
-    const double s  = 1.0 - t;
-
-    const double x = (( s * p1.x() + d1 * cp1.x() ) * s + d2 * cp2.x() ) * s + d3 * p2.x();
-    const double y = (( s * p1.y() + d1 * cp1.y() ) * s + d2 * cp2.y() ) * s + d3 * p2.y();
-
-    return QPointF( x, y );
-}
-
-#if 0
-
-static inline void qwtToCurvatures(
-    const QPointF &p1, double m1, const QPointF &p2, double m2,
-    double &cv1, double &cv2 )
-{
-    const double dx = p2.x() - p1.x();
-    const double dy = p2.y() - p1.y();
-
-    const double v = 3 * dy / dx - m1 - m2;
-    const double k = 2.0 / dx;
-
-    cv1 = k * ( v - m1 );
-    cv2 = k * ( m2 - v );
-}
-
-#endif
-
-namespace QwtSplineC1P
-{
-    class PathStore
-    {
-    public:
-        inline void init( int size )
-        {
-            Q_UNUSED(size);
-        }
-
-        inline void start( double x1, double y1 )
-        {
-            path.moveTo( x1, y1 );
-        }
-
-        inline void addCubic( double cx1, double cy1,
-            double cx2, double cy2, double x2, double y2 )
-        {
-            path.cubicTo( cx1, cy1, cx2, cy2, x2, y2 );
-        }
-
-        QPainterPath path;
-    };
-
-    class ControlPointsStore
-    {
-    public:
-        inline ControlPointsStore():
-            d_cp( NULL )
-        {
-        }
-
-        inline void init( int size )
-        {
-            controlPoints.resize( size );
-            d_cp = controlPoints.data();
-        }   
-
-        inline void start( double x1, double y1 )
-        {   
-            Q_UNUSED( x1 );
-            Q_UNUSED( y1 );
-        }
-        
-        inline void addCubic( double cx1, double cy1,
-            double cx2, double cy2, double x2, double y2 )
-        {
-            Q_UNUSED( x2 );
-            Q_UNUSED( y2 );
-
-            QLineF &l = *d_cp++;
-            l.setLine( cx1, cy1, cx2, cy2 );
-        }
-
-        QVector<QLineF> controlPoints;
-
-    private:
-        QLineF* d_cp;
-    };
-}
-
-template< class SplineStore >
-static inline SplineStore qwtSplinePathX(
-    const QwtSplineC1 *spline, const QPolygonF &points )
-{
-    SplineStore store;
-
-    const int n = points.size();
-
-    const QVector<double> m = spline->slopesX( points );
-    if ( m.size() != n )
-        return store;
-
-    const QPointF *pd = points.constData();
-    const double *md = m.constData();
-
-    store.init( m.size() - 1 );
-    store.start( pd[0].x(), pd[0].y() );
-
-    for ( int i = 0; i < n - 1; i++ )
-    {
-        const double dx3 = ( pd[i+1].x() - pd[i].x() ) / 3.0;
-
-        store.addCubic( pd[i].x() + dx3, pd[i].y() + md[i] * dx3,
-            pd[i+1].x() - dx3, pd[i+1].y() - md[i+1] * dx3,
-            pd[i+1].x(), pd[i+1].y() );
-    }
-
-    return store;
-}
-
-template< class SplineStore, class Param >
-static inline SplineStore qwtSplinePathParam( 
-    const QwtSplineC1 *spline, const QPolygonF &points, Param param )
-{
-    const int n = points.size();
-
-    QPolygonF px, py;
-
-    px += QPointF( 0.0, points[0].x() );
-    py += QPointF( 0.0, points[0].y() );
-
-    double t = 0.0;
-    for ( int i = 1; i < n; i++ )
-    {
-        t += param( points[i-1], points[i] );
-
-        px += QPointF( t, points[i].x() );
-        py += QPointF( t, points[i].y() );
-    }
-
-    const QVector<double> mx = spline->slopesX( px );
-    const QVector<double> my = spline->slopesX( py );
-
-    SplineStore store;
-    store.init( n - 1 );
-    store.start( points[0].x(), points[0].y() );
-
-    for ( int i = 1; i < n; i++ )
-    {
-        const double t3 = param( points[i-1], points[i] ) / 3.0;
-
-        const double cx1 = points[i-1].x() + mx[i-1] * t3;
-        const double cy1 = points[i-1].y() + my[i-1] * t3;
-
-        const double cx2 = points[i].x() - mx[i] * t3;
-        const double cy2 = points[i].y() - my[i] * t3;
-
-        store.addCubic( cx1, cy1, cx2, cy2, points[i].x(), points[i].y() );
-    }
-
-    return store;
-}
-
-QwtSplineParameter::QwtSplineParameter( int type ):
-    d_type( type )
-{
-}
-
-QwtSplineParameter::~QwtSplineParameter()
-{
-}
- 
-double QwtSplineParameter::value( const QPointF &p1, const QPointF &p2 ) const
-{
-    switch( d_type )
-    {
-        case ParameterX:
-        {
-            return valueX( p1, p2 );
-        }
-        case ParameterCentripetral:
-        {
-            const double dx = p1.x() - p2.x();
-            const double dy = p1.y() - p2.y();
-
-            return ::pow( dx * dx + dy * dy, 0.25 );
-        }
-        case ParameterChordal:
-        {
-            return valueChordal( p1, p2 );
-        }
-        case ParameterManhattan:
-        {
-            return valueManhattan( p1, p2 );
-        }
-        case ParameterUniform:
-        default:
-        {
-            return valueUniform( p1, p2 );
-        }
-    }
-}
-
-int QwtSplineParameter::type() const
-{
-    return d_type;
-}
-
-QwtSpline::QwtSpline():
-    d_parameter( new QwtSplineParameter( QwtSplineParameter::ParameterX ) )
-{
-}
-
-QwtSpline::~QwtSpline()
-{
-    delete d_parameter;
-}
-
-void QwtSpline::setParametrization( int type )
-{
-    delete d_parameter;
-    d_parameter = new QwtSplineParameter( type );
-}
-
-void QwtSpline::setParametrization( QwtSplineParameter *parameter )
-{
-    if ( d_parameter != parameter )
-    {
-        delete d_parameter;
-        parameter = d_parameter;
-    }
-}   
-
-const QwtSplineParameter *QwtSpline::parametrization() const
-{
-    return d_parameter;
-}
-
-QPainterPath QwtSpline::pathP( const QPolygonF &points ) const
-{
-    const int n = points.size();
-
-    QPainterPath path;
-    if ( n == 0 )
-        return path;
-
-    if ( n == 1 )
-    {
-        path.moveTo( points[0] );
-        return path;
-    }
-
-    if ( n == 2 )
-    {
-        path.addPolygon( points );
-        return path;
-    }
-
-    const QVector<QLineF> controlPoints = bezierControlPointsP( points );
-    if ( controlPoints.size() == n - 1 )
-    {
-        const QPointF *p = points.constData();
-        const QLineF *l = controlPoints.constData();
-
-        path.moveTo( p[0] );
-        for ( int i = 0; i < n - 1; i++ )
-            path.cubicTo( l[i].p1(), l[i].p2(), p[i+1] );
-    }
-
-    return path;
-}
-
-QPolygonF QwtSpline::polygonP( const QPolygonF &points, 
-    double delta, bool withNodes ) const
-{
-    if ( delta <= 0.0 )
-        return QPolygonF();
-
-    const int n = points.size();
-    if ( n <= 1 )
-        return points;
-
-    if ( n == 2 )
-    {
-        // TODO
-        return points;
-    }
-
-    QPolygonF path;
-
-    const QVector<QLineF> controlPoints = bezierControlPointsP( points );
-    if ( controlPoints.size() != n - 1 )
-        return path;
-
-    path += points.first();
-    double t = delta;
-
-    for ( int i = 0; i < n - 1; i++ )
-    {
-#if 1
-        const double l = d_parameter->value( points[i], points[i+1] );
-#endif
-
-        while ( t < l )
-        {
-            path += qwtBezierPoint( points[i], controlPoints[i].p1(),
-                controlPoints[i].p2(), points[i+1], t / l );
-
-            t += delta;
-        }
-
-        if ( withNodes )
-        {
-            if ( qFuzzyCompare( path.last().x(), points[i+1].x() ) )
-                path.last() = points[i+1];
-            else
-                path += points[i+1];
-
-            t = delta;
-        }
-        else
-        {
-            t -= l;
-        }
-    }
-
-    return path;
-}
-
-QwtSplineG1::QwtSplineG1()
-{
-}
-
-QwtSplineG1::~QwtSplineG1()
-{
-}
-
-class QwtSplineC1::PrivateData
+class QwtSpline::PrivateData
 {
 public:
-    PrivateData()
+    PrivateData():
+        splineType( QwtSpline::Natural )
     {
-        boundaryCondition.type = QwtSplineC1::ParabolicRunout;
-        boundaryCondition.value[0] = boundaryCondition.value[1] = 0.0;
     }
 
-    void setBoundaryCondition( QwtSplineC1::BoundaryCondition condition, 
-        double valueStart, double valueEnd )
-    {
-        boundaryCondition.type = condition;
-        boundaryCondition.value[0] = valueStart;
-        boundaryCondition.value[1] = valueEnd;
-    }
+    QwtSpline::SplineType splineType;
 
-    struct
-    {
-        QwtSplineC1::BoundaryCondition type;
-        double value[2];
+    // coefficient vectors
+    QVector<double> a;
+    QVector<double> b;
+    QVector<double> c;
 
-    } boundaryCondition;
+    // control points
+    QPolygonF points;
 };
 
-QwtSplineC1::QwtSplineC1()
+static int lookup( double x, const QPolygonF &values )
+{
+#if 0
+//qLowerBound/qHigherBound ???
+#endif
+    int i1;
+    const int size = values.size();
+
+    if ( x <= values[0].x() )
+        i1 = 0;
+    else if ( x >= values[size - 2].x() )
+        i1 = size - 2;
+    else
+    {
+        i1 = 0;
+        int i2 = size - 2;
+        int i3 = 0;
+
+        while ( i2 - i1 > 1 )
+        {
+            i3 = i1 + ( ( i2 - i1 ) >> 1 );
+
+            if ( values[i3].x() > x )
+                i2 = i3;
+            else
+                i1 = i3;
+        }
+    }
+    return i1;
+}
+
+//! Constructor
+QwtSpline::QwtSpline()
 {
     d_data = new PrivateData;
 }
 
-QwtSplineC1::~QwtSplineC1()
+/*!
+   Copy constructor
+   \param other Spline used for initialization
+*/
+QwtSpline::QwtSpline( const QwtSpline& other )
+{
+    d_data = new PrivateData( *other.d_data );
+}
+
+/*!
+   Assignment operator
+   \param other Spline used for initialization
+   \return *this
+*/
+QwtSpline &QwtSpline::operator=( const QwtSpline & other )
+{
+    *d_data = *other.d_data;
+    return *this;
+}
+
+//! Destructor
+QwtSpline::~QwtSpline()
 {
     delete d_data;
 }
 
-void QwtSplineC1::setBoundaryConditions( BoundaryCondition condition )
+/*!
+   Select the algorithm used for calculating the spline
+
+   \param splineType Spline type
+   \sa splineType()
+*/
+void QwtSpline::setSplineType( SplineType splineType )
 {
-    if ( condition >= Natural )
-        d_data->setBoundaryCondition( condition, 0.0, 0.0 );
+    d_data->splineType = splineType;
+}
+
+/*!
+   \return the spline type
+   \sa setSplineType()
+*/
+QwtSpline::SplineType QwtSpline::splineType() const
+{
+    return d_data->splineType;
+}
+
+/*!
+  \brief Calculate the spline coefficients
+
+  Depending on the value of \a periodic, this function
+  will determine the coefficients for a natural or a periodic
+  spline and store them internally.
+
+  \param points Points
+  \return true if successful
+  \warning The sequence of x (but not y) values has to be strictly monotone
+           increasing, which means <code>points[i].x() < points[i+1].x()</code>.
+       If this is not the case, the function will return false
+*/
+bool QwtSpline::setPoints( const QPolygonF& points )
+{
+    const int size = points.size();
+    if ( size <= 2 )
+    {
+        reset();
+        return false;
+    }
+
+    d_data->points = points;
+
+    d_data->a.resize( size - 1 );
+    d_data->b.resize( size - 1 );
+    d_data->c.resize( size - 1 );
+
+    bool ok;
+    if ( d_data->splineType == Periodic )
+        ok = buildPeriodicSpline( points );
     else
-        d_data->setBoundaryCondition( condition, boundaryValueBegin(), boundaryValueEnd()  );
+        ok = buildNaturalSpline( points );
+
+    if ( !ok )
+        reset();
+
+    return ok;
 }
 
-QwtSplineC1::BoundaryCondition QwtSplineC1::boundaryCondition() const
+/*!
+   \return Points, that have been by setPoints()
+*/
+QPolygonF QwtSpline::points() const
 {
-    return d_data->boundaryCondition.type;
+    return d_data->points;
 }
 
-void QwtSplineC1::setBoundaryValues( double valueBegin, double valueEnd )
+//! \return A coefficients
+const QVector<double> &QwtSpline::coefficientsA() const
 {
-    d_data->setBoundaryCondition( boundaryCondition(), valueBegin, valueEnd );
+    return d_data->a;
 }
 
-double QwtSplineC1::boundaryValueBegin() const
+//! \return B coefficients
+const QVector<double> &QwtSpline::coefficientsB() const
 {
-    return d_data->boundaryCondition.value[0];
+    return d_data->b;
 }
 
-double QwtSplineC1::boundaryValueEnd() const
+//! \return C coefficients
+const QVector<double> &QwtSpline::coefficientsC() const
 {
-    return d_data->boundaryCondition.value[1];
+    return d_data->c;
 }
 
-double QwtSplineC1::slopeBegin( const QPolygonF &points, double m1, double m2 ) const
+
+//! Free allocated memory and set size to 0
+void QwtSpline::reset()
 {
-    const int size = points.size();
-    if ( size < 2 )
+    d_data->a.resize( 0 );
+    d_data->b.resize( 0 );
+    d_data->c.resize( 0 );
+    d_data->points.resize( 0 );
+}
+
+//! True if valid
+bool QwtSpline::isValid() const
+{
+    return d_data->a.size() > 0;
+}
+
+/*!
+  Calculate the interpolated function value corresponding
+  to a given argument x.
+
+  \param x Coordinate
+  \return Interpolated coordinate
+*/
+double QwtSpline::value( double x ) const
+{
+    if ( d_data->a.size() == 0 )
         return 0.0;
 
-    const double boundaryValue = d_data->boundaryCondition.value[0];
+    const int i = lookup( x, d_data->points );
 
-    if ( boundaryCondition() == QwtSplineC1::Clamped )
-        return boundaryValue;
-
-    const double dx = points[1].x() - points[0].x();
-    const double dy = points[1].y() - points[0].y();
-
-    if ( boundaryCondition() == QwtSplineC1::LinearRunout )
-    {
-        const double s = dy / dx;
-        return s - boundaryValue * ( s - m1 );
-    }
-
-    const QwtSplinePolynom pnom = 
-        QwtSplinePolynom::fromSlopes( points[1], m1, points[2], m2 ); 
-
-    const double cv2 = pnom.curvature( 0.0 );
-
-    double cv1;
-    switch( boundaryCondition() )
-    {
-        case QwtSplineC1::Clamped2:
-        {
-            cv1 = boundaryValue;
-            break;
-        }
-        case QwtSplineC1::Clamped3:
-        {
-            cv1 = cv2 - 6 * boundaryValue;
-            break;
-        }
-        case QwtSplineC1::NotAKnot:
-        {
-            cv1 = cv2 - 6 * pnom.c3;
-            break;
-        }
-        case QwtSplineC1::ParabolicRunout:
-        {
-            cv1 = cv2;
-            break;
-        }
-        case QwtSplineC1::CubicRunout:
-        {
-            cv1 = 2 * cv2 - pnom.curvature( 1.0 );
-            break;
-        }
-        case QwtSplineC1::Natural:
-        default:
-            cv1 = 0.0;
-    }
-
-
-    const QwtSplinePolynom pnomBegin =
-        QwtSplinePolynom::fromCurvatures( dx, dy, cv1, cv2 );
-
-    return pnomBegin.slope( 0.0 );
+    const double delta = x - d_data->points[i].x();
+    return( ( ( ( d_data->a[i] * delta ) + d_data->b[i] )
+        * delta + d_data->c[i] ) * delta + d_data->points[i].y() );
 }
 
-double QwtSplineC1::slopeEnd( const QPolygonF &points, double m1, double m2 ) const
+/*!
+  \brief Determines the coefficients for a natural spline
+  \return true if successful
+*/
+bool QwtSpline::buildNaturalSpline( const QPolygonF &points )
 {
+    int i;
+
+    const QPointF *p = points.data();
     const int size = points.size();
-    if ( size < 2 )
-        return 0.0;
 
-    const double boundaryValue = d_data->boundaryCondition.value[1];
+    double *a = d_data->a.data();
+    double *b = d_data->b.data();
+    double *c = d_data->c.data();
 
-    if ( boundaryCondition() == QwtSplineC1::Clamped )
-        return boundaryValue;
-
-    const double dx = points[size-1].x() - points[size-2].x();
-    const double dy = points[size-1].y() - points[size-2].y();
-
-    if ( boundaryCondition() == QwtSplineC1::LinearRunout )
+    //  set up tridiagonal equation system; use coefficient
+    //  vectors as temporary buffers
+    QVector<double> h( size - 1 );
+    for ( i = 0; i < size - 1; i++ )
     {
-        const double s = dy / dx;
-        return s - boundaryValue * ( s - m1 );
+        h[i] = p[i+1].x() - p[i].x();
+        if ( h[i] <= 0 )
+            return false;
     }
 
-    const QwtSplinePolynom pnom = 
-        QwtSplinePolynom::fromSlopes( points[size-3], m1, points[size-2], m2 ); 
-
-    const double cv1 = pnom.curvature( points[size-2].x() - points[size-3].x() );
-
-    double cv2;
-    switch( boundaryCondition() )
+    QVector<double> d( size - 1 );
+    double dy1 = ( p[1].y() - p[0].y() ) / h[0];
+    for ( i = 1; i < size - 1; i++ )
     {
-        case QwtSplineC1::Clamped2:
-        {
-            cv2 = boundaryValue;
-            break;
-        }
-        case QwtSplineC1::NotAKnot:
-        {
-            cv2 = cv1 - 6 * pnom.c3;
-            break;
-        }
-        case QwtSplineC1::Clamped3:
-        {
-            cv2 = cv1 - 6 * boundaryValue;
-            break;
-        }
-        case QwtSplineC1::ParabolicRunout:
-        {
-            cv2 = cv1;
-            break;
-        }
-        case QwtSplineC1::CubicRunout:
-        {
-            cv2 = 2 * cv1 - pnom.curvature( 0.0 );
-            break;
-        }
-        case QwtSplineC1::Natural:
-        default:
-            cv2 = 0.0;
+        b[i] = c[i] = h[i];
+        a[i] = 2.0 * ( h[i-1] + h[i] );
+
+        const double dy2 = ( p[i+1].y() - p[i].y() ) / h[i];
+        d[i] = 6.0 * ( dy1 - dy2 );
+        dy1 = dy2;
     }
 
-    const QwtSplinePolynom pnomEnd = 
-        QwtSplinePolynom::fromCurvatures( dx, dy, cv1, cv2 );
+    //
+    // solve it
+    //
 
-    return pnomEnd.slope( dx );
+    // L-U Factorization
+    for ( i = 1; i < size - 2; i++ )
+    {
+        c[i] /= a[i];
+        a[i+1] -= b[i] * c[i];
+    }
+
+    // forward elimination
+    QVector<double> s( size );
+    s[1] = d[1];
+    for ( i = 2; i < size - 1; i++ )
+        s[i] = d[i] - c[i-1] * s[i-1];
+
+    // backward elimination
+    s[size - 2] = - s[size - 2] / a[size - 2];
+    for ( i = size - 3; i > 0; i-- )
+        s[i] = - ( s[i] + b[i] * s[i+1] ) / a[i];
+    s[size - 1] = s[0] = 0.0;
+
+    //
+    // Finally, determine the spline coefficients
+    //
+    for ( i = 0; i < size - 1; i++ )
+    {
+        a[i] = ( s[i+1] - s[i] ) / ( 6.0 * h[i] );
+        b[i] = 0.5 * s[i];
+        c[i] = ( p[i+1].y() - p[i].y() ) / h[i]
+            - ( s[i+1] + 2.0 * s[i] ) * h[i] / 6.0;
+    }
+
+    return true;
 }
 
-QPainterPath QwtSplineC1::pathP( const QPolygonF &points ) const
+/*!
+  \brief Determines the coefficients for a periodic spline
+  \return true if successful
+*/
+bool QwtSpline::buildPeriodicSpline( const QPolygonF &points )
 {
-    const int n = points.size();
-    if ( n <= 2 )
-        return QwtSpline::pathP( points );
+    int i;
 
-    using namespace QwtSplineC1P;
+    const QPointF *p = points.data();
+    const int size = points.size();
 
-    PathStore store;
-    switch( parametrization()->type() )
+    double *a = d_data->a.data();
+    double *b = d_data->b.data();
+    double *c = d_data->c.data();
+
+    QVector<double> d( size - 1 );
+    QVector<double> h( size - 1 );
+    QVector<double> s( size );
+
+    //
+    //  setup equation system; use coefficient
+    //  vectors as temporary buffers
+    //
+    for ( i = 0; i < size - 1; i++ )
     {
-        case QwtSplineParameter::ParameterX:
-        {
-            store = qwtSplinePathX<PathStore>( this, points );
-            break;
-        }
-        case QwtSplineParameter::ParameterUniform:
-        {
-            store = qwtSplinePathParam<PathStore>( this, points, 
-                QwtSplineParameter::paramUniform() );
-            break;
-        }
-        case QwtSplineParameter::ParameterChordal:
-        {
-            store = qwtSplinePathParam<PathStore>( this, points, 
-                QwtSplineParameter::paramChordal() );
-            break;
-        }
-        default:
-        {
-            store = qwtSplinePathParam<PathStore>( this, points, 
-                QwtSplineParameter::param( parametrization() ) );
-        }
+        h[i] = p[i+1].x() - p[i].x();
+        if ( h[i] <= 0.0 )
+            return false;
     }
 
-    return store.path;
-}
-
-QVector<QLineF> QwtSplineC1::bezierControlPointsP( const QPolygonF &points ) const
-{
-    using namespace QwtSplineC1P;
-
-    const int n = points.size();
-    if ( n <= 2 )
-        return QVector<QLineF>();
-
-    ControlPointsStore store;
-    switch( parametrization()->type() )
+    const int imax = size - 2;
+    double htmp = h[imax];
+    double dy1 = ( p[0].y() - p[imax].y() ) / htmp;
+    for ( i = 0; i <= imax; i++ )
     {
-        case QwtSplineParameter::ParameterX:
-        {
-            store = qwtSplinePathX<ControlPointsStore>( this, points );
-            break;
-        }
-        case QwtSplineParameter::ParameterUniform:
-        {
-            store = qwtSplinePathParam<ControlPointsStore>( this, points,
-                QwtSplineParameter::paramUniform() );
-            break;
-        }
-        case QwtSplineParameter::ParameterChordal:
-        {
-            store = qwtSplinePathParam<ControlPointsStore>( this, points,
-                QwtSplineParameter::paramChordal() );
-            break;
-        }
-        default:
-        {
-            store = qwtSplinePathParam<ControlPointsStore>( this, points,
-                QwtSplineParameter::param( parametrization() ) );
-        }
+        b[i] = c[i] = h[i];
+        a[i] = 2.0 * ( htmp + h[i] );
+        const double dy2 = ( p[i+1].y() - p[i].y() ) / h[i];
+        d[i] = 6.0 * ( dy1 - dy2 );
+        dy1 = dy2;
+        htmp = h[i];
     }
 
-    return store.controlPoints;
-}
+    //
+    // solve it
+    //
 
-QPolygonF QwtSplineC1::polygonX( int numPoints, const QPolygonF &points ) const
-{
-    if ( points.size() <= 2 )
-        return points;
+    // L-U Factorization
+    a[0] = qSqrt( a[0] );
+    c[0] = h[imax] / a[0];
+    double sum = 0;
 
-    QPolygonF fittedPoints;
-
-    const QVector<double> m = slopesX( points );
-    if ( m.size() != points.size() )
-        return fittedPoints;
-
-    const QPointF *p = points.constData();
-    const double *s = m.constData();
-
-    const double x1 = points.first().x();
-    const double x2 = points.last().x();
-
-    const double delta = ( x2 - x1 ) / ( numPoints - 1 );
-
-    double x0, y0;
-    QwtSplinePolynom polynom;
-
-    for ( int i = 0, j = 0; i < numPoints; i++ )
+    for ( i = 0; i < imax - 1; i++ )
     {
-        double x = x1 + i * delta;
-        if ( x > x2 )
-            x = x2;
+        b[i] /= a[i];
+        if ( i > 0 )
+            c[i] = - c[i-1] * b[i-1] / a[i];
+        a[i+1] = qSqrt( a[i+1] - qwtSqr( b[i] ) );
+        sum += qwtSqr( c[i] );
+    }
+    b[imax-1] = ( b[imax-1] - c[imax-2] * b[imax-2] ) / a[imax-1];
+    a[imax] = qSqrt( a[imax] - qwtSqr( b[imax-1] ) - sum );
 
-        if ( i == 0 || x > p[j + 1].x() )
-        {
-            while ( x > p[j + 1].x() )
-                j++;
 
-            polynom = QwtSplinePolynom::fromSlopes( p[j], s[j], p[j + 1], s[j + 1] );
+    // forward elimination
+    s[0] = d[0] / a[0];
+    sum = 0;
+    for ( i = 1; i < imax; i++ )
+    {
+        s[i] = ( d[i] - b[i-1] * s[i-1] ) / a[i];
+        sum += c[i-1] * s[i-1];
+    }
+    s[imax] = ( d[imax] - b[imax-1] * s[imax-1] - sum ) / a[imax];
 
-            x0 = p[j].x();
-            y0 = p[j].y();
-        }
 
-        const double y = y0 + polynom.value( x - x0 );
-        fittedPoints += QPointF( x, y );
+    // backward elimination
+    s[imax] = - s[imax] / a[imax];
+    s[imax-1] = -( s[imax-1] + b[imax-1] * s[imax] ) / a[imax-1];
+    for ( i = imax - 2; i >= 0; i-- )
+        s[i] = - ( s[i] + b[i] * s[i+1] + c[i] * s[imax] ) / a[i];
+
+    //
+    // Finally, determine the spline coefficients
+    //
+    s[size-1] = s[0];
+    for ( i = 0; i < size - 1; i++ )
+    {
+        a[i] = ( s[i+1] - s[i] ) / ( 6.0 * h[i] );
+        b[i] = 0.5 * s[i];
+        c[i] = ( p[i+1].y() - p[i].y() )
+            / h[i] - ( s[i+1] + 2.0 * s[i] ) * h[i] / 6.0;
     }
 
-    return fittedPoints;
-}   
-
-QVector<QwtSplinePolynom> QwtSplineC1::polynomsX( const QPolygonF &points ) const
-{
-    QVector<QwtSplinePolynom> polynoms;
-
-    const QVector<double> m = slopesX( points );
-    if ( m.size() < 2 )
-        return polynoms;
-
-    for ( int i = 1; i < m.size(); i++ )
-    {
-        polynoms += QwtSplinePolynom::fromSlopes( 
-            points[i-1], m[i-1], points[i], m[i] );
-    }
-
-    return polynoms;
-}
-
-QwtSplineC2::QwtSplineC2()
-{
-}
-
-QwtSplineC2::~QwtSplineC2()
-{
+    return true;
 }
