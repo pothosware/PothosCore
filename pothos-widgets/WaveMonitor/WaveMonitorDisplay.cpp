@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "WaveMonitorDisplay.hpp"
@@ -166,4 +166,5 @@ void WaveMonitorDisplay::installLegend(void)
 void WaveMonitorDisplay::handleLegendChecked(const QVariant &itemInfo, bool on, int)
 {
     _mainPlot->infoToItem(itemInfo)->setVisible(on);
+    _mainPlot->replot();
 }

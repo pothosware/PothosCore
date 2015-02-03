@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PeriodogramChannel.hpp"
@@ -85,6 +85,7 @@ void PeriodogramChannel::handleLegendChecked(const QVariant &itemInfo, bool on, 
         _minHoldCurve->setVisible(on);
         if (on) _minHoldBuffer.clear();
     }
+    _plot->replot();
 }
 
 void PeriodogramChannel::initBufferSize(const std::valarray<float> &powerBins, QVector<QPointF> &buff)
