@@ -331,7 +331,7 @@ struct PothosPacketSocketEndpoint::Impl
     {
         return this->send(flags, 0, 0, nullptr, 0);
     }
-    void send(const uint16_t flags, const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes);
+    void send(const uint16_t flags, const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes, const bool more = false);
     void recv(uint16_t &flags, uint16_t &type, uint64_t &index, Pothos::BufferChunk &buffer, const std::chrono::high_resolution_clock::duration &timeout);
 
     uint64_t flowControlWindowBytes(void) const
@@ -710,12 +710,12 @@ void PothosPacketSocketEndpoint::Impl::recv(uint16_t &flags, uint16_t &type, uin
 /***********************************************************************
  * perform a send operation on the connected socket
  **********************************************************************/
-void PothosPacketSocketEndpoint::send(const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes)
+void PothosPacketSocketEndpoint::send(const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes, const bool more)
 {
-    _impl->send(PothosPacketFlagPsh, type, index, buff, numBytes);
+    _impl->send(PothosPacketFlagPsh, type, index, buff, numBytes, more);
 }
 
-void PothosPacketSocketEndpoint::Impl::send(const uint16_t flags, const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes)
+void PothosPacketSocketEndpoint::Impl::send(const uint16_t flags, const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes, const bool more)
 {
     std::unique_lock<std::mutex> lock(this->sendMutex);
 
@@ -730,7 +730,7 @@ void PothosPacketSocketEndpoint::Impl::send(const uint16_t flags, const uint16_t
     header.indexWord[1] = Poco::ByteOrder::toNetwork(uint32_t(index >> 0));
 
     //send the header
-    ret = this->iface->send(&header, sizeof(header), (numBytes==0)?0:MSG_MORE);
+    ret = this->iface->send(&header, sizeof(header), more?MSG_MORE:((numBytes==0)?0:MSG_MORE));
     if (ret != int(sizeof(header)))
     {
         throw Pothos::Exception("PothosPacketSocketEndpoint::send(header)", std::to_string(ret));
@@ -741,7 +741,7 @@ void PothosPacketSocketEndpoint::Impl::send(const uint16_t flags, const uint16_t
     size_t bytesLeft = numBytes;
     while (bytesLeft != 0)
     {
-        ret = this->iface->send((const void *)(size_t(buff)+numBytes-bytesLeft), bytesLeft);
+        ret = this->iface->send((const void *)(size_t(buff)+numBytes-bytesLeft), bytesLeft, more?MSG_MORE:0);
         if (ret <= 0)
         {
             throw Pothos::Exception("PothosPacketSocketEndpoint::send(payload)", std::to_string(ret));

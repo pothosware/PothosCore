@@ -108,7 +108,7 @@ public:
         if (_lastDtype == dtype) return;
         std::ostringstream oss;
         Pothos::Object(dtype).serialize(oss);
-        _ep.send(PothosPacketTypeDType, 0, oss.str().data(), oss.str().length());
+        _ep.send(PothosPacketTypeDType, 0, oss.str().data(), oss.str().length(), true);
         _lastDtype = dtype;
     }
 
@@ -144,7 +144,7 @@ void NetworkSink::work(void)
 
             //send the packet without buffer
             std::ostringstream oss; Pothos::Object(packet).serialize(oss);
-            _ep.send(PothosPacketTypeHeader, inputPort->totalMessages(), oss.str().data(), oss.str().length());
+            _ep.send(PothosPacketTypeHeader, inputPort->totalMessages(), oss.str().data(), oss.str().length(), true);
 
             //send the dtype when changed
             this->updateDType(buffer.dtype);

@@ -64,7 +64,7 @@ public:
     /*!
      * Send data to the remote endpoint.
      */
-    void send(const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes);
+    void send(const uint16_t type, const uint64_t &index, const void *buff, const size_t numBytes, const bool more = false);
 
 private:
     struct Impl; Impl *_impl;
