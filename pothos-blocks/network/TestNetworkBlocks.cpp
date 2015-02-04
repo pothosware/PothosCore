@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -80,4 +80,43 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_network_blocks)
     network_test_harness("tcp", false);
     //network_test_harness("udt", true);
     //network_test_harness("udt", false);
+}
+
+POTHOS_TEST_BLOCK("/blocks/tests", test_network_packet_message)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto registry = env->findProxy("Pothos/BlockRegistry");
+
+    //network blocks
+    auto source = registry.callProxy("/blocks/network_source", "tcp://0.0.0.0", "BIND");
+    auto client_uri = Poco::format("tcp://localhost:%s", source.call<std::string>("getActualPort"));
+    auto sink = registry.callProxy("/blocks/network_sink", client_uri, "CONNECT");
+
+    //tester blocks
+    auto feeder = registry.callProxy("/blocks/feeder_source", "int");
+    auto collector = registry.callProxy("/blocks/collector_sink", "int");
+    auto s2p = registry.callProxy("/blocks/stream_to_packet");
+    auto p2s = registry.callProxy("/blocks/packet_to_stream");
+
+    //create a test plan
+    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+    testPlan->set("enableBuffers", true);
+    testPlan->set("enableLabels", true);
+    testPlan->set("enableMessages", true);
+    auto expected = feeder.callProxy("feedTestPlan", testPlan);
+
+    //create tester topology
+    std::cout << "Basic message test" << std::endl;
+    {
+        Pothos::Topology topology;
+        topology.connect(feeder, 0, s2p, 0);
+        topology.connect(s2p, 0, sink, 0);
+        topology.connect(source, 0, p2s, 0);
+        topology.connect(p2s, 0, collector, 0);
+        topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+    }
+
+    std::cout << "verifyTestPlan" << std::endl;
+    collector.callVoid("verifyTestPlan", expected);
 }

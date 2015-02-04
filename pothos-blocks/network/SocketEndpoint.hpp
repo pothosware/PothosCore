@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 //
 
@@ -13,6 +13,8 @@ static const uint16_t PothosPacketTypeMessage = uint16_t('M');
 static const uint16_t PothosPacketTypeLabel = uint16_t('L');
 static const uint16_t PothosPacketTypeBuffer = uint16_t('B');
 static const uint16_t PothosPacketTypeDType = uint16_t('D');
+static const uint16_t PothosPacketTypeHeader = uint16_t('H');
+static const uint16_t PothosPacketTypePayload = uint16_t('P');
 
 class PothosPacketSocketEndpoint
 {
