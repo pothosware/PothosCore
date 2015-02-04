@@ -13,7 +13,7 @@
  * |param symbols Number of possible symbols encoded in a byte. 
  * |default 2
  *
- * |factory /blocks/differentialencoder()
+ * |factory /blocks/differential_encoder()
  * |setter setSymbols(symbols)
  **********************************************************************/
 class DifferentialEncoder : public Pothos::Block
@@ -72,4 +72,4 @@ protected:
 };
 
 static Pothos::BlockRegistry registerDifferentialEncoder(
-    "/blocks/differentialencoder", &DifferentialEncoder::make);
+    "/blocks/differential_encoder", &DifferentialEncoder::make);

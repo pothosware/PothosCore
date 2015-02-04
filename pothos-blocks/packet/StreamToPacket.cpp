@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -85,17 +85,22 @@ public:
         inputPort->consume(packet.payload.length);
 
         //grab the input labels
-        while (inputPort->labels().begin() != inputPort->labels().end())
+        for (const auto &label : inputPort->labels())
         {
-            auto label = *inputPort->labels().begin();
-            label.index /= packet.payload.dtype.size(); //bytes to elements
-            if (label.index >= packet.payload.elements()) break;
-            packet.labels.push_back(label);
-            inputPort->removeLabel(*inputPort->labels().begin());
+            const auto pktLabel = label.toAdjusted(
+                1, packet.payload.dtype.size()); //bytes to elements
+            if (pktLabel.index >= packet.payload.elements()) break;
+            packet.labels.push_back(pktLabel);
         }
 
         //produce the packet
         outputPort->postMessage(packet);
+    }
+
+    void propagateLabels(const Pothos::InputPort *)
+    {
+        //labels are not propagated
+        return;
     }
 
 private:

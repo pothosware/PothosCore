@@ -9,6 +9,7 @@ set(SOURCES
     RadioGroup.cpp
     PlanarSelect.cpp
     QwtSlider.cpp
+    ChatBox.cpp
 )
 
 POTHOS_MODULE_UTIL(

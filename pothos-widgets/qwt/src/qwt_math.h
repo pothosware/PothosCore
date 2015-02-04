@@ -73,6 +73,17 @@ inline int qwtFuzzyCompare( double value1, double value2, double intervalSize )
     return 0;
 }
 
+
+inline bool qwtFuzzyGreaterOrEqual( double d1, double d2 )
+{
+    return ( d1 >= d2 ) || qFuzzyCompare( d1, d2 );
+}
+
+inline bool qwtFuzzyLessOrEqual( double d1, double d2 )
+{
+    return ( d1 <= d2 ) || qFuzzyCompare( d1, d2 );
+}
+
 //! Return the sign
 inline int qwtSign( double x )
 {
@@ -121,23 +132,6 @@ inline double qwtFastAtan2( double y, double x )
         return M_PI_2;
 
     return 0.0;
-}
-
-/* 
-   \brief Calculate a value of a cubic polynom 
-
-   \param x Value
-   \param a Cubic coefficient
-   \param b Quadratic coefficient
-   \param c Linear coefficient
-   \param d Connstant offset
-
-   \return Value of the polyonom for x
-*/
-inline double qwtCubicPolynom( double x, 
-    double a, double b, double c, double d )
-{
-    return ( ( ( a * x ) + b ) * x + c ) * x + d;
 }
 
 // Translate degrees into radians

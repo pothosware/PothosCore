@@ -1,7 +1,8 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <Pothos/Util/MathCompat.hpp>
 #include <cstdint>
 #include <iostream>
 #include <complex>
@@ -11,7 +12,8 @@
 /***********************************************************************
  * |PothosDoc Symbol Mapper
  *
- * Map an unpacked stream of bits to complex symbols.
+ * Map a stream of symbols to a user-specified value.
+ * Each input element is a byte that contains an offset into the symbol map.
  *
  * out[n] = map[in0[n]]
  *
@@ -24,7 +26,11 @@
  * |default "complex_float64"
  * |preview disable
  *
- * |param map[Symbol Map] The symbol map. This must be a power-of-two in length; e.g. 2, 4, 8...
+ * |param map[Symbol Map] The symbol map is a list of possible output values
+ * which can be anything supported by the output data type.
+ * Example: a list of integers to encode/decode the input stream,
+ * or complex constellation points for MPSK modulations.
+ * This must be a power-of-two in length; e.g. 2, 4, 8...
  * |default [-1, 1]
  *
  * |factory /blocks/symbol_mapper(dtype)

@@ -203,6 +203,7 @@ double QwtThermo::value() const
 void QwtThermo::setScaleDraw( QwtScaleDraw *scaleDraw )
 {
     setAbstractScaleDraw( scaleDraw );
+    layoutThermo( true );
 }
 
 /*!

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Rinat Zakirov
+// Copyright (c) 2015-2015 Rinat Zakirov
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -9,6 +9,7 @@
  * Converts encoding symbols into data as a bit stream.
  *
  * |category /Digital
+ * |category /Symbol
  *
  * |param symbols Number of possible symbols encoded in a byte. 
  * |default 2
@@ -26,7 +27,7 @@
  * |option [MSB First] "MSB"
  * |option [LSB First] "LSB"
  *
- * |factory /blocks/bitstosymbols()
+ * |factory /blocks/bits_to_symbols()
  * |setter setSymbols(symbols)
  * |setter setEndianness(endianness)
  **********************************************************************/
@@ -155,4 +156,4 @@ protected:
 };
 
 static Pothos::BlockRegistry registerBitsToSymbols(
-    "/blocks/bitstosymbols", &BitsToSymbols::make);
+    "/blocks/bits_to_symbols", &BitsToSymbols::make);

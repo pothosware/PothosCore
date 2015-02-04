@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2013 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Proxy/Proxy.hpp>
@@ -141,3 +141,6 @@ void load(Archive & ar, Pothos::Proxy &t, const unsigned int)
 
 POTHOS_SERIALIZATION_SPLIT_FREE(Pothos::Proxy)
 POTHOS_OBJECT_SERIALIZE(Pothos::Proxy)
+POTHOS_OBJECT_SERIALIZE(Pothos::ProxyVector)
+POTHOS_OBJECT_SERIALIZE(Pothos::ProxySet)
+POTHOS_OBJECT_SERIALIZE(Pothos::ProxyMap)

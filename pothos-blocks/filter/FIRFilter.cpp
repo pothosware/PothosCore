@@ -112,6 +112,14 @@ public:
         auto inPort = this->input(0);
         auto outPort = this->output(0);
 
+        //require the minimum number of input elements to produce at least 1 output
+        const auto inputRequire = (M + (K-1));
+        if (inPort->elements() < inputRequire)
+        {
+            inPort->setReserve(inputRequire);
+            return;
+        }
+
         //how many iterations?
         const auto N = std::min((inPort->elements()-(K-1))/M, outPort->elements()/L);
 
@@ -139,6 +147,15 @@ public:
         //K-1 elements are left in the input buffer for filter history
         inPort->consume(N*M);
         outPort->produce(N*L);
+    }
+
+    void propagateLabels(const Pothos::InputPort *port)
+    {
+        auto outputPort = this->output(0);
+        for (const auto &label : port->labels())
+        {
+            outputPort->postLabel(label.toAdjusted(L, M));
+        }
     }
 
 private:

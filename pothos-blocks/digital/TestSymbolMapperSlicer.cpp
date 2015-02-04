@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -16,7 +16,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_mapper_slicer_float)
     auto slicer = registry.callProxy("/blocks/symbol_slicer", "float");
     auto collector = registry.callProxy("/blocks/collector_sink", "unsigned char");
 
-    std::vector<float> map{-3, -1, 1, 3};
+    static const float mapD[] = {-3, -1, 1, 3};
+    std::vector<float> map(mapD, mapD+4);
     mapper.callProxy("setMap", map);
     slicer.callProxy("setMap", map);
 
@@ -53,7 +54,11 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_mapper_slicer_complex)
     auto slicer = registry.callProxy("/blocks/symbol_slicer", Pothos::DType(typeid(std::complex<float>)));
     auto collector = registry.callProxy("/blocks/collector_sink", Pothos::DType(typeid(unsigned char)));
 
-    std::vector<std::complex<float> > map{{-1.0,-1.0}, {-1.0,1.0}, {1.0,-1.0}, {1.0,1.0}};
+    std::vector<std::complex<float>> map;
+    map.emplace_back(-1.0, -1.0);
+    map.emplace_back(-1.0, 1.0);
+    map.emplace_back(1.0, -1.0);
+    map.emplace_back(1.0, 1.0);
     mapper.callProxy("setMap", map);
     slicer.callProxy("setMap", map);
 

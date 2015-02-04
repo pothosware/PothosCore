@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "SocketEndpoint.hpp"
@@ -73,6 +73,7 @@ private:
     PothosPacketSocketEndpoint _ep;
     unsigned long long _nextExpectedIndex;
     Pothos::DType _lastDtype;
+    Pothos::Packet _packetHeader;
 };
 
 void NetworkSource::work(void)
@@ -102,6 +103,23 @@ void NetworkSource::work(void)
         Pothos::Object msg;
         msg.deserialize(iss);
         outputPort->postMessage(msg);
+    }
+    else if (type == PothosPacketTypeHeader)
+    {
+        std::istringstream iss(std::string(buffer.as<char *>(), buffer.length));
+        Pothos::ObjectM msg; msg.deserialize(iss);
+        _packetHeader = msg.extract<Pothos::Packet>(); //store it, payload comes next
+    }
+    else if (type == PothosPacketTypePayload)
+    {
+        //since this is not PothosPacketTypeBuffer, recv may have allocated a new buffer
+        //only pop if this is really the buffer from the output port
+        if (buffer.address == outputPort->buffer().address) outputPort->popBuffer(buffer.length);
+
+        buffer.dtype = _lastDtype;
+        _packetHeader.payload = buffer;
+        outputPort->postMessage(_packetHeader);
+        _packetHeader = Pothos::Packet(); //clear local reference
     }
     else if (type == PothosPacketTypeLabel)
     {

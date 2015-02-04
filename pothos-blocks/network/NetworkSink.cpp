@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "SocketEndpoint.hpp"
@@ -103,6 +103,15 @@ public:
 
     void work(void);
 
+    void updateDType(const Pothos::DType &dtype)
+    {
+        if (_lastDtype == dtype) return;
+        std::ostringstream oss;
+        Pothos::Object(dtype).serialize(oss);
+        _ep.send(PothosPacketTypeDType, 0, oss.str().data(), oss.str().length(), true);
+        _lastDtype = dtype;
+    }
+
 private:
     PothosPacketSocketEndpoint _ep;
     std::thread handlerThread;
@@ -123,9 +132,34 @@ void NetworkSink::work(void)
     //serialize messages
     while (inputPort->hasMessage())
     {
-        std::ostringstream oss;
-        inputPort->popMessage().serialize(oss);
-        _ep.send(PothosPacketTypeMessage, inputPort->totalMessages(), oss.str().data(), oss.str().length());
+        const auto msg = inputPort->popMessage();
+
+        //special efficient packing for buffers in the packet
+        if (msg.type() == typeid(Pothos::Packet))
+        {
+            //extract packet and clear its payload (just send header)
+            auto packet = msg.extract<Pothos::Packet>();
+            const auto buffer = packet.payload;
+            packet.payload = Pothos::BufferChunk();
+
+            //send the packet without buffer
+            std::ostringstream oss; Pothos::Object(packet).serialize(oss);
+            _ep.send(PothosPacketTypeHeader, inputPort->totalMessages(), oss.str().data(), oss.str().length(), true);
+
+            //send the dtype when changed
+            this->updateDType(buffer.dtype);
+
+            //send the packet buffer
+            _ep.send(PothosPacketTypePayload, 0, buffer.as<const void *>(), buffer.length);
+        }
+
+        //arbitrary serialization
+        else
+        {
+            std::ostringstream oss;
+            msg.serialize(oss);
+            _ep.send(PothosPacketTypeMessage, inputPort->totalMessages(), oss.str().data(), oss.str().length());
+        }
     }
 
     //serialize labels (all labels are sent before buffers to ensure ordering at the destination)
@@ -144,13 +178,7 @@ void NetworkSink::work(void)
     if (buffer.length == 0) return;
 
     //send the dtype when changed
-    if (not (_lastDtype == buffer.dtype))
-    {
-        std::ostringstream oss;
-        Pothos::Object(buffer.dtype).serialize(oss);
-        _ep.send(PothosPacketTypeDType, 0, oss.str().data(), oss.str().length());
-        _lastDtype = buffer.dtype;
-    }
+    this->updateDType(buffer.dtype);
 
     //send a buffer
     {

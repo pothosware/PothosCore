@@ -1,0 +1,11 @@
+This this the changelog file for the Pothos OpenCL toolkit.
+
+Release 0.2.0 (pending)
+==========================
+
+- Added propagate labels to the OpenCL kernel block
+
+Release 0.1.0 (2014-12-21)
+==========================
+
+This is the first public release of the Pothos OpenCL toolkit.

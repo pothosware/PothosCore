@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -11,8 +11,8 @@
 /***********************************************************************
  * |PothosDoc Symbol Slicer
  *
- * Slice an incoming stream of complex symbols into binary symbols using Euclidean distance.
- * The output is the symbol index of the closest symbol in the map.
+ * Slice an incoming stream of elements into binary symbols using Euclidean distance.
+ * The output is the symbol index of the closest value in the map.
  *
  * This slicer is O(len(map)) and suboptimal for simple (BPSK, QPSK) constellations, but
  * has the advantage that it will work for any arbitrary constellation.
@@ -26,7 +26,8 @@
  * |default "complex_float64"
  * |preview disable
  *
- * |param map[Symbol Map] The symbol map.
+ * |param map[Symbol Map] The symbol map is a list of arbitrary slicer values
+ * which can be anything supported by the input data type.
  * |default [-1, 1]
  *
  * |factory /blocks/symbol_slicer(dtype)

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEnvironment.hpp"
@@ -24,6 +24,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <future>
 
 struct EvalEnvironment::Impl
 {
@@ -96,14 +97,20 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
     //list syntax mode
     if (inBrackets)
     {
-        auto env = Pothos::ProxyEnvironment::make("managed");
-        Pothos::ProxyVector vec;
+        std::vector<std::shared_future<Pothos::Object>> futures;
         const auto noBrackets = expr.substr(1, expr.size()-2);
         for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
         {
+            futures.push_back(std::async(std::launch::async, std::bind(&EvalEnvironment::eval, this, tok)));
+        }
+
+        auto env = Pothos::ProxyEnvironment::make("managed");
+        Pothos::ProxyVector vec;
+        for (const auto &future : futures)
+        {
             try
             {
-                vec.emplace_back(env->convertObjectToProxy(this->eval(tok)));
+                vec.emplace_back(env->convertObjectToProxy(future.get()));
             }
             catch (const Pothos::Exception &ex)
             {
@@ -116,17 +123,24 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
     //map syntax mode
     if (inBraces)
     {
-        auto env = Pothos::ProxyEnvironment::make("managed");
-        Pothos::ProxyMap map;
+        std::vector<std::shared_future<Pothos::Object>> futuresK, futuresV;
         const auto noBrackets = expr.substr(1, expr.size()-2);
         for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
         {
+            const auto keyVal = EvalEnvironment::splitExpr(tok, ':');
+            if (keyVal.size() != 2) throw Pothos::Exception("EvalEnvironment::eval("+tok+")", "not key:value");
+            futuresK.push_back(std::async(std::launch::async, std::bind(&EvalEnvironment::eval, this, keyVal[0])));
+            futuresV.push_back(std::async(std::launch::async, std::bind(&EvalEnvironment::eval, this, keyVal[1])));
+        }
+
+        auto env = Pothos::ProxyEnvironment::make("managed");
+        Pothos::ProxyMap map;
+        for (size_t i = 0; i < futuresK.size(); i++)
+        {
             try
             {
-                const auto keyVal = EvalEnvironment::splitExpr(tok, ':');
-                if (keyVal.size() != 2) throw Pothos::Exception("EvalEnvironment::eval("+tok+")", "not key:value");
-                const auto key = env->convertObjectToProxy(this->eval(keyVal[0]));
-                const auto val = env->convertObjectToProxy(this->eval(keyVal[1]));
+                const auto key = env->convertObjectToProxy(futuresK[i].get());
+                const auto val = env->convertObjectToProxy(futuresV[i].get());
                 map.emplace(key, val);
             }
             catch (const Pothos::Exception &ex)

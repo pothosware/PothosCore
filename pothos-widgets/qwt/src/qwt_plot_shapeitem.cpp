@@ -10,7 +10,7 @@
 #include "qwt_plot_shapeitem.h"
 #include "qwt_scale_map.h"
 #include "qwt_painter.h"
-#include "qwt_weeding_curve_fitter.h"
+#include "qwt_curve_fitter.h"
 #include "qwt_clipper.h"
 
 static QPainterPath qwtTransformPath( const QwtScaleMap &xMap,

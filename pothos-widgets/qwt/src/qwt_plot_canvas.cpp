@@ -18,23 +18,6 @@
 #include <qpaintengine.h>
 #include <qevent.h>
 
-#ifndef QWT_NO_OPENGL
-
-#if QT_VERSION >= 0x050000
-#define USE_FBO
-#endif
-
-#ifdef USE_FBO
-#include <QOpenGLPaintDevice>
-#include <QGLPixelBuffer>
-#include <QOpenGLFramebufferObjectFormat>
-#include <QWindow>
-#else
-#include <QGLPixelBuffer>
-#endif
-
-#endif
-
 class QwtStyleSheetRecorder: public QwtNullPaintDevice
 {
 public:
@@ -630,7 +613,8 @@ void QwtPlotCanvas::setPaintAttribute( PaintAttribute attribute, bool on )
 
             break;
         }
-        default:
+        case HackStyledBackground:
+        case ImmediatePaint:
         {
             break;
         }
@@ -748,28 +732,6 @@ void QwtPlotCanvas::paintEvent( QPaintEvent *event )
         {
             bs = QwtPainter::backingStore( this, size() );
 
-#ifndef QWT_NO_OPENGL
-            if ( testPaintAttribute( OpenGLBuffer ) )
-            {
-                QGLPixelBuffer pixelBuffer( size() );
-
-                QPainter p;
-                p.begin( &pixelBuffer );
-
-                qwtFillBackground( &p, this );
-                drawCanvas( &p, true );
-
-                if ( frameWidth() > 0 )
-                    drawBorder( &p );
-
-                p.end();
-
-                p.begin( &bs );
-                p.drawImage( 0, 0, pixelBuffer.toImage() );
-                p.end();
-            }
-            else
-#endif
             if ( testAttribute(Qt::WA_StyledBackground) )
             {
                 QPainter p( &bs );
@@ -801,64 +763,6 @@ void QwtPlotCanvas::paintEvent( QPaintEvent *event )
     }
     else
     {
-#ifndef QWT_NO_OPENGL
-        if ( testPaintAttribute( OpenGLBuffer ) )
-        {
-#ifdef USE_FBO
-            QSurfaceFormat format;
-#if 1
-            format.setMajorVersion(3);
-            format.setMinorVersion(3);
-#endif
-            format.setSamples(4);
- 
-            QWindow window;
-            window.setSurfaceType(QWindow::OpenGLSurface);
-            window.setFormat(format);
-            window.create();
- 
-            QOpenGLContext context;
-            context.setFormat(format);
-            context.makeCurrent(&window);
- 
-            QOpenGLFramebufferObjectFormat fboFormat;
-            fboFormat.setSamples(16);
-            fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
- 
-            QOpenGLFramebufferObject fbo( size() );
-            fbo.bind();
- 
-            QOpenGLPaintDevice device( size() );
-
-            QPainter p( &device );
-
-            qwtFillBackground( &p, this );
-            drawCanvas( &p, true );
-            
-            if ( frameWidth() > 0 )
-                drawBorder( &p );
-                    
-            p.end();
-
-            fbo.release();
-            painter.drawImage( 0, 0, fbo.toImage() );
-#else
-            QGLPixelBuffer pixelBuffer( size() );
-
-            QPainter p( &pixelBuffer );
-
-            qwtFillBackground( &p, this );
-            drawCanvas( &p, true );
-
-            if ( frameWidth() > 0 )
-                drawBorder( &p );
-
-            p.end();
-            painter.drawImage( 0, 0, pixelBuffer.toImage() );
-#endif
-        }
-        else
-#endif
         if ( testAttribute(Qt::WA_StyledBackground ) )
         {
             if ( testAttribute( Qt::WA_OpaquePaintEvent ) )

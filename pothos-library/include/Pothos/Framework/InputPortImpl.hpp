@@ -145,10 +145,9 @@ inline void Pothos::InputPort::bufferAccumulatorFront(Pothos::BufferChunk &buff)
     std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
     while (not _inputInlineMessages.empty())
     {
-        auto label = _inputInlineMessages.front();
+        const auto &front = _inputInlineMessages.front();
+        _inlineMessages.push_back(front.toAdjusted(1, this->dtype().size()));
         _inputInlineMessages.pop_front();
-        label.index /= this->dtype().size(); //convert from bytes to elements
-        _inlineMessages.push_back(label);
     }
     buff = _bufferAccumulator.front();
 }

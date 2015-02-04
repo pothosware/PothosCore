@@ -81,12 +81,16 @@ public:
     enum RenderHint
     {
         /*!
-           When RenderPensUnscaled is set non cosmetic pens are
-           painted unscaled - like cosmetic pens. The difference to
-           using cosmetic pens is, when the graphic is rendered
-           to a document in a scalable vector format ( PDF, SVG ):
-           the width of non cosmetic pens will be scaled by the
-           document viewer.
+           When rendering a QwtGraphic a specific scaling between 
+           the controlPointRect() and the coordinates of the target rectangle
+           is set up internally in render().
+
+           When RenderPensUnscaled is set this specific scaling is applied
+           for the control points only, but not for the pens.
+           All other painter transformations ( set up by application code )
+           are supposed to work like usual.
+
+           \sa render();
          */
         RenderPensUnscaled = 0x1
     };

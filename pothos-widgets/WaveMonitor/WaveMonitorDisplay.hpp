@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <memory>
 #include <map>
+#include <atomic>
 #include <vector>
 
 class MyQwtPlot;
@@ -99,5 +100,6 @@ private:
     //per-port data structs
     std::map<size_t, std::map<size_t, std::shared_ptr<QwtPlotCurve>>> _curves;
     std::map<size_t, std::vector<std::shared_ptr<QwtPlotMarker>>> _markers;
+    std::map<size_t, std::map<size_t, std::shared_ptr<std::atomic<size_t>>>> _queueDepth;
     size_t _nextColorIndex;
 };

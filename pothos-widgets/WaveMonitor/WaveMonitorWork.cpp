@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "WaveMonitorDisplay.hpp"
@@ -15,6 +15,8 @@
  **********************************************************************/
 void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, const Pothos::BufferChunk &buff, const std::vector<Pothos::Label> &labels)
 {
+    if (_queueDepth.at(index).at(whichCurve)->fetch_sub(1) != 1) return;
+
     const auto samps = buff.as<const float *>();
     QVector<QPointF> points(buff.elements());
     for (int i = 0; i < points.size(); i++)
@@ -54,11 +56,14 @@ void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, co
         auto marker = new QwtPlotMarker();
         marker->setLabel(MyMarkerLabel(QString::fromStdString(label.id)));
         marker->setLabelAlignment(Qt::AlignHCenter);
-        marker->setXValue(label.index/_sampleRateWoAxisUnits);
+        auto index = label.index + (label.width-1)/2.0;
+        marker->setXValue(index/_sampleRateWoAxisUnits);
         marker->setYValue(samps[label.index]);
         marker->attach(_mainPlot);
         markers.emplace_back(marker);
     }
+
+    _mainPlot->replot();
 }
 
 void WaveMonitorDisplay::work(void)
@@ -78,7 +83,7 @@ void WaveMonitorDisplay::work(void)
             }
         }
 
-        //packet-based messages have payloads to FFT
+        //packet-based messages have payloads to display
         if (msg.type() == typeid(Pothos::Packet))
         {
             const auto &packet = msg.convert<Pothos::Packet>();
@@ -99,18 +104,22 @@ void WaveMonitorDisplay::work(void)
                 floatBuffs[0].append(out);
             }
 
+            //ensure that we have allocated depth counters (used to avoid displaying old data)
+            if (not _queueDepth[inPort->index()][0]) _queueDepth[inPort->index()][0].reset(new std::atomic<size_t>(0));
+            if (not _queueDepth[inPort->index()][1]) _queueDepth[inPort->index()][1].reset(new std::atomic<size_t>(0));
+
+            _queueDepth[inPort->index()][0]->fetch_add(1);
             QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
                 Q_ARG(int, inPort->index()), Q_ARG(int, 0),
                 Q_ARG(Pothos::BufferChunk, floatBuffs[0]),
                 Q_ARG(std::vector<Pothos::Label>, packet.labels));
 
             const bool hasIm = floatBuffs.size() > 1;
+            if (hasIm) _queueDepth[inPort->index()][1]->fetch_add(1);
             if (hasIm) QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
                 Q_ARG(int, inPort->index()), Q_ARG(int, 1),
                 Q_ARG(Pothos::BufferChunk, floatBuffs[1]),
                 Q_ARG(std::vector<Pothos::Label>, std::vector<Pothos::Label>()));
         }
     }
-
-    QMetaObject::invokeMethod(_mainPlot, "replot", Qt::QueuedConnection);
 }

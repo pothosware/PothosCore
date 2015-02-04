@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ConstellationDisplay.hpp"
@@ -12,6 +12,8 @@
  **********************************************************************/
 void ConstellationDisplay::handleSamples(const Pothos::BufferChunk &buff)
 {
+    if (_queueDepth.fetch_sub(1) != 1) return;
+
     //create curve that it doesnt exist
     if (not _curve)
     {
@@ -44,6 +46,7 @@ void ConstellationDisplay::work(void)
     //packet-based messages have payloads to plot
     if (msg.type() == typeid(Pothos::Packet))
     {
+        _queueDepth++;
         const auto &buff = msg.convert<Pothos::Packet>().payload;
         auto floatBuff = buff.convert(Pothos::DType(typeid(std::complex<float>)), buff.elements());
         QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection, Q_ARG(Pothos::BufferChunk, floatBuff));

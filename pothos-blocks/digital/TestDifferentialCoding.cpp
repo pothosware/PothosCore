@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Rinat Zakirov
+// Copyright (c) 2015-2015 Rinat Zakirov
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -8,7 +8,7 @@
 #include <Poco/JSON/Object.h>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_differentialcoding)
+POTHOS_TEST_BLOCK("/blocks/tests", test_differential_coding)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -20,8 +20,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_differentialcoding)
 
         auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
         auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
-        auto encoder = registry.callProxy("/blocks/differentialencoder");
-        auto decoder = registry.callProxy("/blocks/differentialdecoder");
+        auto encoder = registry.callProxy("/blocks/differential_encoder");
+        auto decoder = registry.callProxy("/blocks/differential_decoder");
 
         //create a test plan
         Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());

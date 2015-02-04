@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferAccumulator.hpp>
@@ -211,8 +211,8 @@ void Pothos::BufferAccumulator::require(const size_t numBytes)
     while (not queue.empty())
     {
         //copy the front buffer into the new buffer
-        BufferChunk &f = queue[0];
-        const size_t copyBytes = std::min(newBuffBytes, queue.front().length);
+        auto &f = queue.front();
+        const size_t copyBytes = std::min(newBuffBytes, f.length);
         std::memcpy(
             (void *)(newBuffer.address + newBuffer.length),
             (void *)(f.address), copyBytes);

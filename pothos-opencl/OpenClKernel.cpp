@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "OpenClKernel.hpp"
@@ -147,6 +147,17 @@ public:
     }
 
     void work(void);
+
+    void propagateLabels(const Pothos::InputPort *port)
+    {
+        for (auto outputPort : this->outputs())
+        {
+            for (const auto &label : port->labels())
+            {
+                outputPort->postLabel(label.toAdjusted(_productionFactor, 1.0));
+            }
+        }
+    }
 
 private:
     std::string _myDomain;

@@ -36,7 +36,7 @@
   the symbol is fixed. 
 */
 class QWT_EXPORT QwtPlotTradingCurve: 
-    public QwtPlotSeriesItem, public QwtSeriesStore<QwtOHLCSample>
+    public QwtPlotSeriesItem, QwtSeriesStore<QwtOHLCSample>
 {
 public:
     /*!

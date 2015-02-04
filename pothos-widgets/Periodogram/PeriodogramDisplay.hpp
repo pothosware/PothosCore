@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -9,6 +9,7 @@
 #include <memory>
 #include <map>
 #include <vector>
+#include <atomic>
 #include "MyFFTUtils.hpp"
 
 class MyQwtPlot;
@@ -149,4 +150,5 @@ private:
 
     //per-port data structs
     std::map<size_t, std::shared_ptr<PeriodogramChannel>> _curves;
+    std::map<size_t, std::shared_ptr<std::atomic<size_t>>> _queueDepth;
 };

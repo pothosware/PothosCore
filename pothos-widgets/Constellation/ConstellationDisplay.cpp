@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ConstellationDisplay.hpp"
@@ -14,7 +14,8 @@ ConstellationDisplay::ConstellationDisplay(void):
     _mainPlot(new MyQwtPlot(this)),
     _plotGrid(new QwtPlotGrid()),
     _zoomer(new MyPlotPicker(_mainPlot->canvas())),
-    _autoScale(false)
+    _autoScale(false),
+    _queueDepth(0)
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(ConstellationDisplay, widget));
