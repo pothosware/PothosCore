@@ -118,6 +118,7 @@ public:
         inBuff.length = packetLength;
         packet.payload = inBuff;
         outputPort->postMessage(packet);
+        inputPort->consume(packetLength);
     }
 
 protected:
