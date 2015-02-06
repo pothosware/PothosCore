@@ -113,6 +113,7 @@ public:
         if(!frameFound)
         {
             inputPort->consume(inLen);
+            return;
         }
 
         inBuff.length = packetLength;
