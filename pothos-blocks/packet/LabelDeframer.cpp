@@ -122,6 +122,11 @@ public:
         inputPort->consume(packetLength);
     }
 
+    Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &)
+    {
+        return Pothos::BufferManager::make("circular");
+    }
+
 protected:
 
     size_t packetLength;
