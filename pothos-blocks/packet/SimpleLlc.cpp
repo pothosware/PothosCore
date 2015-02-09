@@ -241,7 +241,7 @@ private:
     
     void extractHeader(const uint8_t *byteBuf, uint8_t &port, uint16_t &nonce, uint8_t &control)
     {
-        // Data byte format: RECIPIENT_PORT NONCE_MSC NONCE_LSB CONTROL [DATA]*
+        // Data byte format: RECIPIENT_PORT NONCE_MSB NONCE_LSB CONTROL [DATA]*
         port = byteBuf[0];
         nonce = (byteBuf[1] << 8) | byteBuf[2];
         control = byteBuf[3];
@@ -263,7 +263,7 @@ private:
     
     struct PacketItem 
     {
-        uint8_t nonce;
+        uint16_t nonce;
         Pothos::Packet packet;
         std::chrono::high_resolution_clock::time_point sendTime;
         bool sent;
