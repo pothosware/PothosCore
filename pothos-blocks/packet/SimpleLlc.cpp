@@ -90,14 +90,14 @@ public:
         _resetState = resetState;
     }
     
-    void onUpdateTick()
+    void onUpdateTick(int /*dummy*/)
     {
         auto timeNow = std::chrono::high_resolution_clock::now();
         
         // While in reset state, send out reset beacons regularly
         if(_resetState)
         {
-            std::chrono::duration<double> timeSinceSent = _resetBeacon.sendTime - timeNow;
+            std::chrono::duration<double> timeSinceSent = timeNow - _resetBeacon.sendTime;
             if(timeSinceSent.count() > _resendTime)
             {
                 _resetBeacon.sendTime = timeNow;
@@ -113,7 +113,7 @@ public:
         {
             if(!item.sent) continue;
             
-            std::chrono::duration<double> timeSinceSent = item.sendTime - timeNow;
+            std::chrono::duration<double> timeSinceSent = timeNow - item.sendTime;
             // When we reach an item that has not been timed out yet, we know all the 
             // packets were queued later, therefore wouldn't be timed out either.
             if(timeSinceSent.count() < _resendTime) break;
