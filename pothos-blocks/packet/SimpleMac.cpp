@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <cstring>
 #include "MacHelper.hpp"
 
 /***********************************************************************
@@ -10,18 +11,19 @@
  * This MAC is a simple implementation of a media access control layer.
  * https://en.wikipedia.org/wiki/Media_access_control
  *
- *
- *
  * |category /Packet
  * |keywords MAC PHY packet
  *
+ * |param macId A 16-bit address of the MAC interface
+ * |default 0
+ *
  * |factory /blocks/simple_mac()
+ * |setter setMacId(macId)
  **********************************************************************/
 class SimpleMac : public Pothos::Block
 {
 public:
     SimpleMac(void):
-        _seqNo(0),
         _id(0),
         _errorCount(0)
     {
@@ -29,6 +31,7 @@ public:
         this->setupInput("macIn");
         this->setupOutput("phyOut");
         this->setupOutput("macOut");
+        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleMac, setMacId));
     }
 
     static Block *make(void)
@@ -44,26 +47,38 @@ public:
         _macOut = this->output("macOut");
     }
 
-    Pothos::BufferChunk unpack(const Pothos::Packet &pkt)
+    void setMacId(uint16_t macId)
     {
-        const auto hdr = pkt.payload.as<const MacHeader *>();
+        _id = macId;
+    }
 
-        //short packet or bad length
-        if (pkt.payload.length < hdr->bytes) return Pothos::BufferChunk();
+    Pothos::BufferChunk unpack(const Pothos::Packet &pkt, uint16_t &senderId, uint16_t &recipientId)
+    {
+        const auto byteBuf = pkt.payload.as<const uint8_t *>();
 
-        //check the id
-        if (hdr->id != _id) return Pothos::BufferChunk();
+        if (pkt.payload.length < 7) return Pothos::BufferChunk();
+
+        // Data byte format: CRC SENDER_MSB SENDER_LSB RECIPIENT_MSB RECIPIENT_LSB LENGTH_MSB LENGTH_LSB
+        int headerSize = 0;
+        uint8_t crc = byteBuf[headerSize]; headerSize += 1;
+        senderId = (byteBuf[headerSize] << 8) + byteBuf[headerSize + 1]; headerSize += 2;
+        recipientId = (byteBuf[headerSize] << 8) + byteBuf[headerSize + 1]; headerSize += 2;
+        uint16_t packetLength = (byteBuf[headerSize] << 8) + byteBuf[headerSize + 1]; headerSize += 2;
+
+        // checking for the unfinished packet
+        if (packetLength > pkt.payload.length) return Pothos::BufferChunk();
+
+        if (recipientId != _id) return Pothos::BufferChunk();
 
         //check crc
-        auto hdrCrc = hdr->crc;
-        const_cast<MacHeader *>(hdr)->crc = 0;
-        auto newCrc = Crc8(pkt.payload.as<const void *>(), hdr->bytes);
-        if (newCrc != hdrCrc) return Pothos::BufferChunk();
+        auto newCrc = Crc8(byteBuf + 1, packetLength - 1);
+        if (newCrc != crc) return Pothos::BufferChunk();
 
         //return the payload
         auto payload = pkt.payload;
-        payload.length = hdr->bytes - sizeof(MacHeader);
-        payload.address += sizeof(MacHeader);
+        payload.length = packetLength - headerSize;
+        payload.address += headerSize;
+    
         return payload;
     }
 
@@ -75,8 +90,16 @@ public:
             auto msg = _phyIn->popMessage();
             auto pktIn = msg.extract<Pothos::Packet>();
             Pothos::Packet pktOut;
-            pktOut.payload = this->unpack(pktIn);
-            if (pktOut.payload) _macOut->postMessage(pktOut);
+            uint16_t recipientId, senderId;
+            pktOut.payload = this->unpack(pktIn, recipientId, senderId);
+            if (pktOut.payload)
+            {
+                pktOut.metadata["recipient"] = Pothos::Object(recipientId);
+                pktOut.metadata["sender"] = Pothos::Object(senderId);
+                _macOut->postMessage(pktOut);
+            }
+            else
+                _errorCount++;
         }
 
         //mac input packets are protocol framed and sent to the phy out
@@ -84,11 +107,36 @@ public:
         {
             auto msg = _macIn->popMessage();
             auto pktIn = msg.extract<Pothos::Packet>();
+            auto data = pktIn.payload;
+
+            auto recipientIdIter = pktIn.metadata.find("recipient");
+            if (recipientIdIter == pktIn.metadata.end())
+            {
+                _errorCount++;
+                return;
+            }
+            auto recipientId = recipientIdIter->second.extract<uint16_t>();
+    
+            auto packetLength = data.length + 7;
+            Pothos::Packet packetOut;
+            packetOut.payload = Pothos::BufferChunk("uint8", packetLength);
+            auto byteBuf = packetOut.payload.as<uint8_t *>();
+
+            // Data byte format: CRC SENDER_MSB SENDER_LSB RECIPIENT_MSB RECIPIENT_LSB LENGTH_MSB LENGTH_LSB
+            byteBuf[1] = _id >> 8;
+            byteBuf[2] = _id & 0xFF;
+            byteBuf[3] = recipientId >> 8;
+            byteBuf[4] = recipientId & 0xFF;
+            byteBuf[5] = packetLength >> 8;
+            byteBuf[6] = packetLength & 0xFF;
+            std::memcpy(byteBuf + 7, data.as<const uint8_t*>(), data.length);
+            byteBuf[0] = Crc8(byteBuf + 1, packetLength - 1);
+
+            _phyOut->postMessage(packetOut);
         }
     }
 
 private:
-    size_t _seqNo;
     size_t _id;
     unsigned long long _errorCount;
     Pothos::OutputPort *_phyOut;

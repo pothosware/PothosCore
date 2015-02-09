@@ -271,7 +271,7 @@ private:
     
     unsigned long long _errorCount;
     uint8_t _port;
-    uint8_t _recipient;
+    uint16_t _recipient;
     uint16_t _lastNonceSent;
     uint16_t _expectedRecvNonce;
     double _resendTime;
