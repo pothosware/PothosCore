@@ -7,7 +7,7 @@
 #include <cstring>
 
 /***********************************************************************
- * |PothosDoc Label Deframer
+ * |PothosDoc Simplified Label Deframer
  *
  * Extracts packets from a data stream based on a match label.
  *
@@ -20,7 +20,7 @@
  * |default "Matched!"
  * |widget StringEntry()
  *
- * |factory /blocks/labeldeframer()
+ * |factory /blocks/label_deframer()
  * |setter setPacketLength(packetLength)
  * |setter setFrameStartLabel(frameStartLabel)
  **********************************************************************/
@@ -33,7 +33,7 @@ public:
         return new LabelDeframer();
     }
 
-    LabelDeframer(void) : packetLength(0x1), fillingPackets()
+    LabelDeframer(void) : packetLength(0x1), frameStartLabel("Matched!")
     {
         this->setupInput(0, typeid(unsigned char));
         this->setupOutput(0, typeid(unsigned char));
@@ -60,8 +60,10 @@ public:
         auto inBuff = inputPort->buffer();
         if (inBuff.length == 0) return;
 
-        auto inBytes = inBuff.as<const uint8_t*>();
-        auto inLen = inBuff.elements();
+        bool frameFound = false;
+        Pothos::Packet packet;
+
+        auto inLen = inBuff.elements() * inBuff.dtype.size();;
         for (auto &label : inputPort->labels())
         {
             // Skip any label that doesn't yet appear in the data buffer
@@ -72,92 +74,59 @@ public:
             // append that label to the packet message, with correction about the label position
             if(label.id != frameStartLabel)
             {
-                for(auto i = fillingPackets.begin(), end = fillingPackets.end(); i != end; i++)
+                if(frameFound)
                 {
-                    PacketSlot &slot = *i;
-                    if(!slot.freshPacket) // If the the packet was appended in the previous iterations of the work function
+                    if(label.index < packetLength)
                     {
-                        if(label.index < (packetLength - slot.fillLevel))
-                        {
-                            slot.packet.labels.push_back(label);
-                            slot.packet.labels.back().index += slot.fillLevel;
-                        }
-                    } 
-                    else // otherwise(if the packet was appended during this work iteration)
-                    {
-                        if(label.index >= slot.startIndex && label.index < slot.startIndex + packetLength)
-                        {
-                            slot.packet.labels.push_back(label);
-                            slot.packet.labels.back().index -= slot.startIndex;
-                        }
+                        packet.labels.push_back(label);
                     }
                 }
                 continue;
             }
     
-            // For the start-of-packet label, queue up a new packet with a buffer 
+            // Skip all of data before the start of packet if this is the first time we see the label
             auto dataStartIndex = label.index;
-
-            fillingPackets.push_back(PacketSlot()); 
-            PacketSlot &slot = fillingPackets.back(); 
-            slot.packet.payload = Pothos::BufferChunk("uint8", packetLength);
-             
-            size_t availableData = inLen - dataStartIndex;
-            availableData = std::min(availableData, packetLength);
-            std::memcpy(slot.packet.payload.as<uint8_t*>(), inBytes + dataStartIndex, availableData);
-            slot.fillLevel = availableData; 
-            slot.startIndex = dataStartIndex;
-            slot.freshPacket = true;
-        }
-
-
-        for(auto &slot : fillingPackets)
-        {
-            if(slot.freshPacket) continue;
-
-            size_t newFillLevel = slot.fillLevel + inLen;
-            newFillLevel = std::min(newFillLevel, packetLength);
-
-            if(newFillLevel != slot.fillLevel)
-                std::memcpy(slot.packet.payload.as<uint8_t*>() + slot.fillLevel, inBytes, newFillLevel - slot.fillLevel);
-
-
-            slot.fillLevel = newFillLevel;
-        }
-
-        for(auto i = fillingPackets.begin(), end = fillingPackets.end(); i != end;)
-        {
-            PacketSlot &slot = *i;
-            slot.freshPacket = false;
-
-            if(slot.fillLevel == packetLength)
+            if(dataStartIndex != 0 && !frameFound)
             {
-                outputPort->postMessage(slot.packet);
-                i = fillingPackets.erase(i);
+                inputPort->consume(dataStartIndex);                
+                inputPort->setReserve(packetLength);
+                return;
+            } 
+
+            // This case happens when the start of frame is naturally aligned with the begining of a buffer, but we didn't get enough data
+            // In that case we wait
+            if(dataStartIndex == 0 && inLen < packetLength)
+            {
+                inputPort->setReserve(packetLength);
+                return;
             }
-            else
-                i++;
+
+            if(dataStartIndex == 0)
+            {
+                frameFound = true;
+            }
+
+            // If we see multiple frame labels, skip all the other ones for now
+        }
+        
+        // Skip all of the data in case we didn't see any frame labels
+        if(!frameFound)
+        {
+            inputPort->consume(inLen);
+            return;
         }
 
-        //produce/consume
-        inputPort->consume(inLen);
+        inBuff.length = packetLength;
+        packet.payload = inBuff;
+        outputPort->postMessage(packet);
+        inputPort->consume(packetLength);
     }
 
 protected:
 
-    struct PacketSlot
-    {
-        Pothos::Packet packet;
-        bool freshPacket;
-        size_t startIndex;
-        size_t fillLevel;
-    };
-
     size_t packetLength;
-    typedef std::list<PacketSlot> PacketList;
-    PacketList fillingPackets;
     std::string frameStartLabel;
 };
 
 static Pothos::BlockRegistry registerLabelDeframer(
-    "/blocks/labeldeframer", &LabelDeframer::make);
+    "/blocks/label_deframer", &LabelDeframer::make);
