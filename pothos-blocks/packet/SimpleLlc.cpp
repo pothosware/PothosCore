@@ -38,7 +38,7 @@ class SimpleLlc : public Pothos::Block
     static const uint8_t RESET = 0x8;
 public:
     SimpleLlc(void):
-        _errorCount(0), _port(0), _recipient(0), _lastNonceSent(0), _expectedRecvNonce(0), _resendTime(1.0), _resetState(true)
+        _errorCount(0), _port(0), _recipient(0), _lastNonceSent(0xFFFF), _expectedRecvNonce(0), _resendTime(1.0), _resetState(true)
     {
         this->setupInput("macIn");
         this->setupInput("streamIn");
@@ -62,12 +62,6 @@ public:
         _streamIn = this->input("streamIn");
         _macOut = this->output("macOut");
         _streamOut = this->output("streamOut");
-        
-        // Initialize some frequently used structures
-        _resetBeacon.packet.payload = Pothos::BufferChunk("uint8", 4);
-        fillHeader(_resetBeacon.packet.payload.as<uint8_t *>(), 0, RESET | REQ_ACK);
-        _resetBeacon.packet.metadata["recipient"] = Pothos::Object(_recipient);
-        _resetBeacon.sendTime = std::chrono::high_resolution_clock::now();
     }
 
     void setRecipient(uint16_t recipient)
@@ -97,11 +91,14 @@ public:
         // While in reset state, send out reset beacons regularly
         if(_resetState)
         {
-            std::chrono::duration<double> timeSinceSent = timeNow - _resetBeacon.sendTime;
+            std::chrono::duration<double> timeSinceSent = timeNow - _resetBeaconSendTime;
             if(timeSinceSent.count() > _resendTime)
             {
-                _resetBeacon.sendTime = timeNow;
-                _macOut->postMessage(_resetBeacon.packet);
+                _resetBeaconSendTime = timeNow;
+                uint16_t nonce = 0;
+                if(!_sentPackets.empty()) nonce = _sentPackets.front().nonce;
+                
+                postControlPacket(nonce, RESET | REQ_ACK);
             } 
         }
         
@@ -280,7 +277,7 @@ private:
     double _resendTime;
     
     bool _resetState;
-    PacketItem _resetBeacon;
+    std::chrono::high_resolution_clock::time_point _resetBeaconSendTime;
     
     std::mutex _lock;
     std::list<PacketItem> _sentPackets;
