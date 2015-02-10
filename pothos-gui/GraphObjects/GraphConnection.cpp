@@ -383,6 +383,19 @@ void GraphConnection::render(QPainter &painter)
     painter.drawPath(path);
     _impl->points = points;
 
+    //draw an X for disabled
+    if (not this->isEnabled())
+    {
+        painter.save();
+        const qreal len(GraphConnectionDisabledXLen/2.0);
+        QLineF line0(QPointF(+len, +len), QPointF(-len, -len));
+        QLineF line1(QPointF(-len, +len), QPointF(+len, -len));
+        painter.translate((largestLine.p1() + largestLine.p2())/2.0);
+        painter.drawLine(line0);
+        painter.drawLine(line1);
+        painter.restore();
+    }
+
     //draw text
     if (this->isSignalOrSlot())
     {

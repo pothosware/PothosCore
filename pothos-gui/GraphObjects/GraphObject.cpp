@@ -137,7 +137,7 @@ bool GraphObject::isChanged(void) const
 
 void GraphObject::clearChanged(void)
 {
-    _impl->changed = true;
+    _impl->changed = false;
 }
 
 std::vector<GraphConnectableKey> GraphObject::getConnectableKeys(void) const
