@@ -30,13 +30,10 @@ static std::string directionToStr(const GraphConnectableDirection direction)
 
 struct GraphConnection::Impl
 {
-    Impl(void):
-        changed(true)
+    Impl(void)
     {
         return;
     }
-
-    bool changed;
 
     GraphConnectionEndpoint inputEp;
     GraphConnectionEndpoint outputEp;
@@ -77,7 +74,7 @@ void GraphConnection::setupEndpoint(const GraphConnectionEndpoint &ep)
         connect(ep.getObj(), SIGNAL(evalDoneEvent(void)), this, SLOT(handleEndPointEventRecheck(void)));
     }
 
-    _impl->changed = true;
+    this->markChanged();
 }
 
 const GraphConnectionEndpoint &GraphConnection::getOutputEndpoint(void) const
@@ -109,7 +106,7 @@ const std::vector<SigSlotPair> &GraphConnection::getSigSlotPairs(void) const
 void GraphConnection::setSigSlotPairs(const std::vector<SigSlotPair> &pairs)
 {
     _impl->sigSlotsEndpointPairs = pairs;
-    _impl->changed = true;
+    this->markChanged();
 }
 
 static void doSigSlotWarning(const QString &name, const GraphConnectionEndpoint &ep)
@@ -143,7 +140,7 @@ void GraphConnection::addSigSlotPair(const SigSlotPair &sigSlot)
     //optional remove, then add to the end of the list
     this->removeSigSlotPair(sigSlot);
     _impl->sigSlotsEndpointPairs.push_back(sigSlot);
-    _impl->changed = true;
+    this->markChanged();
 }
 
 void GraphConnection::removeSigSlotPair(const SigSlotPair &sigSlot)
@@ -151,7 +148,7 @@ void GraphConnection::removeSigSlotPair(const SigSlotPair &sigSlot)
     auto &v = _impl->sigSlotsEndpointPairs;
     auto it = std::find(v.begin(), v.end(), sigSlot);
     if (it != v.end()) v.erase(it);
-    _impl->changed = true;
+    this->markChanged();
 }
 
 std::vector<std::pair<GraphConnectionEndpoint, GraphConnectionEndpoint>> GraphConnection::getEndpointPairs(void) const
@@ -313,9 +310,9 @@ void GraphConnection::render(QPainter &painter)
     if (not _impl->inputEp.isValid()) return;
 
     //re-render the static texts upon change
-    if (_impl->changed)
+    if (this->isChanged())
     {
-        _impl->changed = false;
+        this->clearChanged();
         QString text;
         for (const auto &pair : this->getSigSlotPairs())
         {

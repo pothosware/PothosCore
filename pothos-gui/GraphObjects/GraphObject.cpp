@@ -22,13 +22,17 @@ struct GraphObject::Impl
 {
     Impl(void):
         deleteFlag(false),
-        uid(getUIDAtomic()++)
+        uid(getUIDAtomic()++),
+        enabled(true),
+        changed(true)
     {
         return;
     }
     QString id;
     bool deleteFlag;
     size_t uid;
+    bool enabled;
+    bool changed;
 };
 
 GraphObject::GraphObject(QObject *parent):
@@ -107,6 +111,33 @@ void GraphObject::rotateLeft(void)
 void GraphObject::rotateRight(void)
 {
     this->setRotation(int(this->rotation() + 90) % 360);
+}
+
+bool GraphObject::isEnabled(void) const
+{
+    return _impl->enabled;
+}
+
+void GraphObject::setEnabled(const bool enb)
+{
+    if (_impl->enabled == enb) return;
+    _impl->enabled = enb;
+    this->markChanged();
+}
+
+void GraphObject::markChanged(void)
+{
+    _impl->changed = true;
+}
+
+bool GraphObject::isChanged(void) const
+{
+    return _impl->changed;
+}
+
+void GraphObject::clearChanged(void)
+{
+    _impl->changed = true;
 }
 
 std::vector<GraphConnectableKey> GraphObject::getConnectableKeys(void) const
