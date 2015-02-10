@@ -372,7 +372,9 @@ void GraphConnection::render(QPainter &painter)
     path.lineTo(points.back());
 
     //draw the painter path
-    QColor color(isSelected()?GraphConnectionHighlightColor:GraphConnectionDefaultColor);
+    QColor color(GraphConnectionDefaultColor);
+    if (this->isSelected()) color = GraphConnectionHighlightColor;
+    else if (not this->isEnabled()) color = GraphConnectionDisabledColor;
     painter.setBrush(Qt::NoBrush);
     QPen pen(color);
     pen.setWidthF(GraphConnectionGirth);
