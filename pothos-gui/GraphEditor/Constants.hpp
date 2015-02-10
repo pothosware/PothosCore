@@ -57,10 +57,12 @@ static const qreal GraphConnectionArrowLen = 12;
 static const qreal GraphConnectionArrowAngle = 30;
 static const qreal GraphConnectionMaxCurve = 10;
 static const qreal GraphConnectionSelectPad = 5;
+static const qreal GraphConnectionDisabledXLen = 8;
 static const QString GraphConnectionLineTextColor = "#848482";
 static const QString GraphConnectionLineTextFontSize = "8pt";
 static const QString GraphConnectionDefaultColor = "#000000";
 static const QString GraphConnectionHighlightColor = "#0040FF";
+static const QString GraphConnectionDisabledColor = "#A0A0A0";
 
 static const QString GraphWidgetGripLabelFontSize = "6pt";
 static const QString GraphWidgetGripLabelColor = "#484848";

@@ -27,6 +27,7 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnecti
         {
             auto breaker = dynamic_cast<GraphBreaker *>(graphObject);
             if (breaker == nullptr) continue;
+            if (not breaker->isEnabled()) continue;
             if (breaker->getNodeName() != nodeName) continue;
             if (breaker == inputBreaker) continue;
             //follow all connections from this breaker to an input
@@ -35,6 +36,7 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnecti
             {
                 auto connection = dynamic_cast<GraphConnection *>(graphSubObject);
                 if (connection == nullptr) continue;
+                if (not connection->isEnabled()) continue;
                 if (connection->getOutputEndpoint().getObj() != breaker) continue;
                 for (const auto &epPair : connection->getEndpointPairs())
                 {
@@ -58,6 +60,7 @@ ConnectionInfos TopologyEval::getConnectionInfo(const GraphObjectList &graphObje
     {
         auto connection = dynamic_cast<GraphConnection *>(graphObject);
         if (connection == nullptr) continue;
+        if (not connection->isEnabled()) continue;
         for (const auto &epPair : connection->getEndpointPairs())
         {
             const auto &outputEp = epPair.first;

@@ -13,9 +13,7 @@
 
 struct GraphBlock::Impl
 {
-    Impl(void):
-        enabled(true),
-        changed(true)
+    Impl(void)
     {
         return;
     }
@@ -25,8 +23,6 @@ struct GraphBlock::Impl
     Poco::JSON::Array::Ptr outputDesc;
     QString affinityZone;
 
-    bool enabled;
-    bool changed;
     QStringList blockErrorMsgs;
 
     QString title;

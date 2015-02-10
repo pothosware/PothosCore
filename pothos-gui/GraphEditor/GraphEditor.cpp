@@ -739,18 +739,16 @@ void GraphEditor::handleSetEnabled(const bool enb)
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
 
-    auto objs = draw->getObjectsSelected(GRAPH_BLOCK);
+    auto objs = draw->getObjectsSelected();
     if (objs.isEmpty()) return;
 
     for (auto obj : objs)
     {
-        auto block = dynamic_cast<GraphBlock *>(obj);
-        assert(block != nullptr);
-        block->setEnabled(enb);
+        obj->setEnabled(enb);
     }
 
-    if (enb) handleStateChange(GraphState("document-import", tr("Enable %1").arg(draw->getSelectionDescription(GRAPH_BLOCK))));
-    else handleStateChange(GraphState("document-export", tr("Disable %1").arg(draw->getSelectionDescription(GRAPH_BLOCK))));
+    if (enb) handleStateChange(GraphState("document-import", tr("Enable %1").arg(draw->getSelectionDescription())));
+    else handleStateChange(GraphState("document-export", tr("Disable %1").arg(draw->getSelectionDescription())));
 }
 
 void GraphEditor::handleReeval(void)

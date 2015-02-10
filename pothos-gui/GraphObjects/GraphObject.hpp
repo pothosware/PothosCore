@@ -53,6 +53,18 @@ public:
     void rotateLeft(void);
     void rotateRight(void);
 
+    bool isEnabled(void) const;
+    void setEnabled(const bool enb);
+
+    //! Called internally or externally to indicate property changes
+    void markChanged(void);
+
+    //! Has change been marked on this object?
+    bool isChanged(void) const;
+
+    //! Clear the changed state (called after handling change)
+    void clearChanged(void);
+
     //! empty string when not pointing, otherwise connectable key
     virtual std::vector<GraphConnectableKey> getConnectableKeys(void) const;
     virtual GraphConnectableKey isPointingToConnectable(const QPointF &pos) const;

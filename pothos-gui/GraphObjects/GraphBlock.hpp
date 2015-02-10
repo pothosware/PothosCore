@@ -19,9 +19,6 @@ class GraphBlock : public GraphObject
 public:
     GraphBlock(QObject *parent);
 
-    bool isEnabled(void) const;
-    void setEnabled(const bool enb);
-
     //! set the block description from JSON object
     void setBlockDesc(const Poco::JSON::Object::Ptr &);
     const Poco::JSON::Object::Ptr &getBlockDesc(void) const;

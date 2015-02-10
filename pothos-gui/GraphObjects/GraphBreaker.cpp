@@ -124,7 +124,7 @@ void GraphBreaker::render(QPainter &painter)
     auto pen = QPen(QColor(GraphObjectDefaultPenColor));
     pen.setWidthF(GraphObjectBorderWidth);
     painter.setPen(pen);
-    painter.setBrush(QBrush(QColor(GraphObjectDefaultFillColor)));
+    painter.setBrush(QBrush(QColor(this->isEnabled()?GraphObjectDefaultFillColor:GraphBlockDisabledColor)));
 
     qreal w = _impl->titleText.size().width() + 2*GraphBreakerTitleHPad;
     qreal h = _impl->titleText.size().height() + 2*GraphBreakerTitleVPad;
