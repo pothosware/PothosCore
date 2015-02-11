@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphObject.hpp"
@@ -219,6 +219,7 @@ Poco::JSON::Object::Ptr GraphObject::serialize(void) const
     obj->set("positionY", double(this->pos().y()));
     obj->set("rotation", double(this->rotation()));
     obj->set("selected", this->isSelected());
+    obj->set("enabled", this->isEnabled());
     return obj;
 }
 
@@ -229,4 +230,5 @@ void GraphObject::deserialize(Poco::JSON::Object::Ptr obj)
     this->setPos(QPointF(obj->optValue<double>("positionX", 0.0), obj->optValue<double>("positionY", 0.0)));
     this->setRotation(obj->optValue<double>("rotation", 0.0));
     this->setSelected(obj->optValue<bool>("selected", false));
+    this->setEnabled(obj->optValue<bool>("enabled", true));
 }

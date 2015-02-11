@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //get object map
@@ -648,7 +648,6 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     auto obj = GraphObject::serialize();
     obj->set("what", std::string("Block"));
     obj->set("path", this->getBlockDescPath());
-    obj->set("enabled", this->isEnabled());
     obj->set("affinityZone", this->getAffinityZone().toStdString());
 
     Poco::JSON::Array jPropsObj;
@@ -675,8 +674,6 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     auto blockDesc = getBlockDescFromPath(path);
     if (not blockDesc) throw Pothos::Exception("GraphBlock::deserialize()", "cant find block factory with path: '"+path+"'");
     this->setBlockDesc(blockDesc);
-
-    if (obj->has("enabled")) this->setEnabled(obj->getValue<bool>("enabled"));
 
     if (obj->has("affinityZone")) this->setAffinityZone(
         QString::fromStdString(obj->getValue<std::string>("affinityZone")));
