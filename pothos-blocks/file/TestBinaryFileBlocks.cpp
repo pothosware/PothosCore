@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -20,7 +20,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_binary_file_blocks)
     std::cout << "tempFile " << tempFile.path() << std::endl;
     POTHOS_TEST_TRUE(tempFile.createFile());
 
-    auto fileSource = registry.callProxy("/blocks/binary_file_source");
+    auto fileSource = registry.callProxy("/blocks/binary_file_source", "int");
     fileSource.callVoid("setFilePath", tempFile.path());
 
     auto fileSink = registry.callProxy("/blocks/binary_file_sink");

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -29,25 +29,30 @@
  * |category /File IO
  * |keywords source binary file
  *
+ * |param dtype[Data Type] The output data type.
+ * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1,uint=1,cuint=1)
+ * |default "complex_float64"
+ * |preview disable
+ *
  * |param path[File Path] The path to the input file.
  * |default ""
  * |widget FileEntry(mode=open)
  *
- * |factory /blocks/binary_file_source()
+ * |factory /blocks/binary_file_source(dtype)
  * |setter setFilePath(path)
  **********************************************************************/
 class BinaryFileSource : public Pothos::Block
 {
 public:
-    static Block *make(void)
+    static Block *make(const Pothos::DType &dtype)
     {
-        return new BinaryFileSource();
+        return new BinaryFileSource(dtype);
     }
 
-    BinaryFileSource(void):
+    BinaryFileSource(const Pothos::DType &dtype):
         _fd(-1)
     {
-        this->setupOutput(0);
+        this->setupOutput(0, dtype);
         this->registerCall(this, POTHOS_FCN_TUPLE(BinaryFileSource, setFilePath));
     }
 
@@ -98,8 +103,8 @@ public:
 
         auto out0 = this->output(0);
         auto ptr = out0->buffer().as<void *>();
-        auto r = read(_fd, ptr, out0->elements());
-        if (r >= 0) out0->produce(size_t(r));
+        auto r = read(_fd, ptr, out0->buffer().length);
+        if (r >= 0) out0->produce(size_t(r)/out0->dtype().size());
         else
         {
             poco_error_f3(Poco::Logger::get("BinaryFileSource"), "read() returned %d -- %s(%d)", int(r), std::string(strerror(errno)), errno);

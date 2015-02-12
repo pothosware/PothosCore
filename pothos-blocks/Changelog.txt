@@ -25,6 +25,10 @@ New utility blocks:
 - Created vector source block for testing
 - Created infinite source block for benchmarks
 
+File
+
+- Added data type specification to file source
+
 Misc
 
 - Added unit test for JSON Topology feature
