@@ -137,6 +137,8 @@ struct Pothos::RemoteClient::Impl
         {
             throw RemoteClientError("Pothos::RemoteClient("+uriStr+")", ex.displayText());
         }
+
+        clientSocket.setNoDelay(true);
     }
     Poco::Net::StreamSocket clientSocket;
     Poco::Net::SocketStream socketStream;

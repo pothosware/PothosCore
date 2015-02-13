@@ -78,6 +78,7 @@ public:
 
     void run(void)
     {
+        this->socket().setNoDelay(true);
         Poco::Net::SocketStream socketStream(this->socket());
         _handler.runHandler(socketStream, socketStream);
     }
