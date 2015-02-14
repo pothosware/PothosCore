@@ -23,6 +23,7 @@
 #include <QTabWidget>
 #include <QMessageBox>
 #include <QMap>
+#include <QLocale>
 #include <Poco/Logger.h>
 #include <iostream>
 
@@ -35,6 +36,8 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
 
     this->setMinimumSize(800, 600);
     this->setWindowTitle("Pothos GUI");
+
+    this->setLocale(QLocale(QLocale::C));
 
     //initialize actions and action buttons
     this->createActions();
