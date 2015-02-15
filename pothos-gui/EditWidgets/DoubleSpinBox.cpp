@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -23,7 +23,9 @@ public:
 public slots:
     QString value(void) const
     {
-        return QDoubleSpinBox::text();
+        //extract value as a string, in C locale format, preserving decimal points
+        //this allows the QDoubleSpinBox to support the user's locale setting
+        return QString::number(QDoubleSpinBox::value(), 'f', QDoubleSpinBox::decimals());
     }
 
     void setValue(const QString &value)
