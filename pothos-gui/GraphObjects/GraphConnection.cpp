@@ -390,7 +390,7 @@ void GraphConnection::render(QPainter &painter)
         const qreal len(GraphConnectionDisabledXLen/2.0);
         QLineF line0(QPointF(+len, +len), QPointF(-len, -len));
         QLineF line1(QPointF(-len, +len), QPointF(+len, -len));
-        painter.translate((largestLine.p1() + largestLine.p2())/2.0);
+        painter.translate(path.pointAtPercent(0.5));
         painter.drawLine(line0);
         painter.drawLine(line1);
         painter.restore();
