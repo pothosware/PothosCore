@@ -45,6 +45,7 @@ static const QString GraphBlockTitleFontSize = "9pt";
 static const QString GraphBlockPropFontSize = "8pt";
 static const QString GraphBlockPortFontSize = "8pt";
 static const QString GraphBlockDisabledColor = "#A0A0A0";
+static const qreal GraphBlockDisabledAlphaBlend = 0.5;
 
 static const qreal GraphBreakerTitleVPad = 1.5;
 static const qreal GraphBreakerTitleHPad = 1.5;

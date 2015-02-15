@@ -467,6 +467,18 @@ void GraphBlock::changed(void)
     this->markChanged();
 }
 
+static QColor generateDisabledColor(const QColor c)
+{
+    const QColor d(GraphBlockDisabledColor);
+    if (not c.isValid()) return d;
+    static const qreal alpha(GraphBlockDisabledAlphaBlend);
+    return QColor(
+        c.red()*alpha + d.red()*(1-alpha),
+        c.green()*alpha + d.green()*(1-alpha),
+        c.blue()*alpha + d.blue()*(1-alpha)
+    );
+}
+
 void GraphBlock::render(QPainter &painter)
 {
     //render text
@@ -477,7 +489,8 @@ void GraphBlock::render(QPainter &painter)
 
         //update colors
         auto zoneColor = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"])->zoneToColor(this->getAffinityZone());
-        _impl->mainBlockColor = this->isEnabled()?(zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor)):GraphBlockDisabledColor;
+        _impl->mainBlockColor = zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor);
+        if (not this->isEnabled()) _impl->mainBlockColor = generateDisabledColor(zoneColor);
         _impl->inputPortColors.resize(_inputPorts.size(), GraphObjectDefaultFillColor);
         _impl->outputPortColors.resize(_outputPorts.size(), GraphObjectDefaultFillColor);
         for (int i = 0; i < _inputPorts.size(); i++) _impl->inputPortColors[i] = typeStrToColor(this->getInputPortTypeStr(_inputPorts.at(i)));
