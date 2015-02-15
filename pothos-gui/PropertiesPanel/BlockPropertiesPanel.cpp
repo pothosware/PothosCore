@@ -19,6 +19,7 @@
 #include <QLabel>
 #include <QPainter>
 #include <QTimer>
+#include <QLocale>
 #include <sstream>
 #include <cassert>
 
@@ -512,6 +513,7 @@ QWidget *BlockPropertiesPanel::makePropertyEditWidget(const Poco::JSON::Object::
     const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType));
     const auto &factory = plugin.getObject().extract<Pothos::Callable>();
     auto editWidget = factory.call<QWidget *>(paramDesc, static_cast<QWidget *>(this));
+    editWidget->setLocale(QLocale::C);
     editWidget->setObjectName("BlockPropertiesEditWidget"); //style-sheet id name
     return editWidget;
 }
