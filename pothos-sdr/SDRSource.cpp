@@ -80,6 +80,9 @@ public:
             const Pothos::Label lbl("rxEnd", true, ret-1);
             for (auto output : this->outputs()) output->postLabel(lbl);
         }
+
+        //discontinuity signaled but ok packet? post time on next call
+        if ((flags & SOAPY_SDR_END_ABRUPT) != 0) _postTime = true;
     }
 
 private:
