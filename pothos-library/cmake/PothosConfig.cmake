@@ -69,6 +69,27 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
         set(POTHOS_UTIL_EXE ${PROJECT_BINARY_DIR}/PothosUtil.bat)
     endif()
 
+    if(UNIX AND POTHOS_UTIL_EXE)
+        set(built_dll_paths "\${LD_LIBRARY_PATH}")
+        foreach(target ${Pothos_LIBRARIES})
+            get_target_property(library_location ${target} LOCATION_${CMAKE_BUILD_TYPE})
+            get_filename_component(library_location ${library_location} PATH)
+            file(TO_NATIVE_PATH ${library_location} library_location)
+            set(built_dll_paths "${library_location}:${built_dll_paths}")
+        endforeach(target)
+        file(TO_NATIVE_PATH "${POTHOS_UTIL_EXE}" POTHOS_UTIL_EXE)
+        find_program(SH_EXE sh)
+        find_program(CHMOD_EXE chmod)
+        file(WRITE ${PROJECT_BINARY_DIR}/PothosUtil.sh
+            "#!${SH_EXE}\n"
+            "export LD_LIBRARY_PATH=${built_dll_paths}\n"
+            "export DYLD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\${DYLD_LIBRARY_PATH}\n"
+            "\"${POTHOS_UTIL_EXE}\" $@\n"
+        )
+        execute_process(COMMAND ${CHMOD_EXE} +x ${PROJECT_BINARY_DIR}/PothosUtil.sh)
+        set(POTHOS_UTIL_EXE ${PROJECT_BINARY_DIR}/PothosUtil.sh)
+    endif()
+
     return()
 endif ()
 
@@ -101,6 +122,21 @@ if(MSVC)
         "\"${POTHOS_UTIL_EXE}\" %*\n"
     )
     set(POTHOS_UTIL_EXE ${PROJECT_BINARY_DIR}/PothosUtil.bat)
+endif()
+
+if(UNIX)
+    file(TO_NATIVE_PATH "${POTHOS_ROOT}/lib${LIB_SUFFIX}" lib_path)
+    file(TO_NATIVE_PATH "${POTHOS_UTIL_EXE}" POTHOS_UTIL_EXE)
+    find_program(SH_EXE sh)
+    find_program(CHMOD_EXE chmod)
+    file(WRITE ${PROJECT_BINARY_DIR}/PothosUtil.sh
+        "#!${SH_EXE}\n"
+        "export LD_LIBRARY_PATH=${lib_path}:\${LD_LIBRARY_PATH}\n"
+        "export DYLD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\${DYLD_LIBRARY_PATH}\n"
+        "\"${POTHOS_UTIL_EXE}\" $@\n"
+    )
+    execute_process(COMMAND ${CHMOD_EXE} +x ${PROJECT_BINARY_DIR}/PothosUtil.sh)
+    set(POTHOS_UTIL_EXE ${PROJECT_BINARY_DIR}/PothosUtil.sh)
 endif()
 
 set(__success_code "200")
