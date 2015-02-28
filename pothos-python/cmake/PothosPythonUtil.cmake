@@ -3,11 +3,29 @@ if(DEFINED INCLUDED_POTHOS_PYTHON_UTIL_CMAKE)
 endif()
 set(INCLUDED_POTHOS_PYTHON_UTIL_CMAKE TRUE)
 
-# where to install python modules
-set(POTHOS_PYTHON_DIR lib${LIB_SUFFIX}/Pothos/python)
-
 # the directory which contains this CMake module
 set(POTHOS_PYTHON_UTIL_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
+########################################################################
+# Find python interp
+########################################################################
+include(FindPythonInterp)
+if (NOT PYTHONINTERP_FOUND)
+    message(WARNING "Python bindings require python exe, skipping...")
+endif ()
+message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}")
+
+########################################################################
+# Determine install directory
+########################################################################
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c
+    "from distutils.sysconfig import get_python_lib; print(get_python_lib(plat_specific=True, prefix=''))"
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    OUTPUT_VARIABLE POTHOS_PYTHON_DIR
+)
+file(TO_CMAKE_PATH "${POTHOS_PYTHON_DIR}" POTHOS_PYTHON_DIR)
+message(STATUS "POTHOS_PYTHON_DIR: \${prefix}/${POTHOS_PYTHON_DIR}")
 
 ########################################################################
 ## POTHOS_PYTHON_UTIL - build and install python modules for Pothos

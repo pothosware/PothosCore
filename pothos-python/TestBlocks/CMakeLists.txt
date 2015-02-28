@@ -21,6 +21,6 @@ POTHOS_PYTHON_UTIL(
         "/python/forwarder:Forwarder"
         "/python/simple_signal_emitter:SimpleSignalEmitter"
         "/python/simple_slot_acceptor:SimpleSlotAcceptor"
-    DESTINATION TestBlocks
+    DESTINATION PothosTestBlocks
     ENABLE_DOCS
 )

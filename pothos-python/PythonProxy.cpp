@@ -1,6 +1,7 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "PythonSupport.hpp"
 #include "PythonProxy.hpp"
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Callable.hpp>
@@ -146,9 +147,8 @@ Pothos::ProxyEnvironment::Sptr makePythonProxyEnvironment(const Pothos::ProxyEnv
     auto sys = env->findProxy("sys");
     sys.callProxy("set:dont_write_bytecode", true);
 
-    Poco::Path pythonPath(Pothos::System::getPothosDevLibraryPath());
-    pythonPath.append("Pothos");
-    pythonPath.append("python");
+    Poco::Path pythonPath(Pothos::System::getRootPath());
+    pythonPath.append(POTHOS_PYTHON_DIR);
 
     auto sysPath = sys.callProxy("get:path");
     sysPath.callProxy("append", pythonPath.toString());
