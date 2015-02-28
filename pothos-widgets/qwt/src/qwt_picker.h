@@ -220,7 +220,6 @@ public:
     virtual void drawRubberBand( QPainter * ) const;
     virtual void drawTracker( QPainter * ) const;
 
-    virtual QRegion trackerMask() const;
     virtual QRegion rubberBandMask() const;
 
     virtual QwtText trackerText( const QPoint &pos ) const;

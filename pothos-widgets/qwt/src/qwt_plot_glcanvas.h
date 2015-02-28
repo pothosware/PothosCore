@@ -27,13 +27,18 @@ class QwtPlot;
   its API. When using style sheets it supports the box model - beside
   backgrounds with rounded borders.
 
-  \sa QwtPlot::setCanvas(), QwtPlotCanvas, QwtPlotCanvas::PixelBuffer
+  \sa QwtPlot::setCanvas(), QwtPlotCanvas
 
   \note You might want to use the QPaintEngine::OpenGL paint engine
         ( see QGL::setPreferredPaintEngine() ). On a Linux test system 
         QPaintEngine::OpenGL2 shows very basic problems ( wrong
         geometries of rectangles ) but also more advanced stuff
         like antialiasing doesn't work.
+
+  \note Another way to introduce OpenGL rendering to Qwt
+        is to use QGLPixelBuffer or QGLFramebufferObject. Both
+        type of buffers can be converted into a QImage and 
+        used in combination with a regular QwtPlotCanvas.
 */
 class QWT_EXPORT QwtPlotGLCanvas: public QGLWidget
 {

@@ -11,7 +11,6 @@
 HEADERS += \
     qwt.h \
     qwt_abstract_scale_draw.h \
-    qwt_bezier.h \
     qwt_clipper.h \
     qwt_color_map.h \
     qwt_compat.h \
@@ -41,10 +40,6 @@ HEADERS += \
     qwt_scale_engine.h \
     qwt_scale_map.h \
     qwt_spline.h \
-    qwt_spline_local.h \
-    qwt_spline_cubic.h \
-    qwt_spline_cardinal.h \
-    qwt_spline_polynom.h \
     qwt_symbol.h \
     qwt_system_clock.h \
     qwt_text_engine.h \
@@ -55,7 +50,6 @@ HEADERS += \
 
 SOURCES += \
     qwt_abstract_scale_draw.cpp \
-    qwt_bezier.cpp \
     qwt_clipper.cpp \
     qwt_color_map.cpp \
     qwt_column_symbol.cpp \
@@ -82,11 +76,8 @@ SOURCES += \
     qwt_scale_div.cpp \
     qwt_scale_draw.cpp \
     qwt_scale_map.cpp \
-    qwt_scale_engine.cpp \
     qwt_spline.cpp \
-    qwt_spline_local.cpp \
-    qwt_spline_cubic.cpp \
-    qwt_spline_cardinal.cpp \
+    qwt_scale_engine.cpp \
     qwt_symbol.cpp \
     qwt_system_clock.cpp \
     qwt_text_engine.cpp \
@@ -100,8 +91,6 @@ contains(QWT_CONFIG, QwtPlot) {
 
     HEADERS += \
         qwt_curve_fitter.h \
-        qwt_spline_curve_fitter.h \
-        qwt_weeding_curve_fitter.h \
         qwt_event_pattern.h \
         qwt_abstract_legend.h \
         qwt_legend.h \
@@ -149,8 +138,6 @@ contains(QWT_CONFIG, QwtPlot) {
 
     SOURCES += \
         qwt_curve_fitter.cpp \
-        qwt_spline_curve_fitter.cpp \
-        qwt_weeding_curve_fitter.cpp \
         qwt_abstract_legend.cpp \
         qwt_legend.cpp \
         qwt_legend_data.cpp \
