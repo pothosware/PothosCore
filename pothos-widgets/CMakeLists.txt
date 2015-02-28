@@ -6,6 +6,7 @@ project(PothosWidgets)
 enable_language(CXX)
 
 find_package(Pothos CONFIG REQUIRED)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 ########################################################################
 # QT5 devel setup
@@ -33,18 +34,41 @@ endforeach(comp)
 ########################################################################
 # Qwt setup
 ########################################################################
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qwt/src)
-add_definitions(-DQWT_DLL)
-file(GLOB QWT_SOURCES "qwt/src/*.cpp")
-add_library(PothosQwt SHARED ${QWT_SOURCES})
-set_target_properties(PothosQwt PROPERTIES DEFINE_SYMBOL "QWT_MAKEDLL")
-target_link_libraries(PothosQwt ${Qt5_LIBRARIES})
-install(TARGETS PothosQwt
-    LIBRARY DESTINATION lib${LIB_SUFFIX} # .so file
-    ARCHIVE DESTINATION lib${LIB_SUFFIX} # .lib file
-    RUNTIME DESTINATION bin              # .dll file
-)
-list(APPEND Qt5_LIBRARIES PothosQwt)
+find_package(Qwt)
+
+if (QWT_FOUND)
+    message(STATUS "QWT_VERSION_STRING: ${QWT_VERSION_STRING}")
+    if (QWT_VERSION_STRING LESS "6.1")
+        set(QWT_FOUND FALSE)
+        message(STATUS "Qwt older than v6.1 - using built-in Qwt")
+    endif()
+else (QWT_FOUND)
+    message(STATUS "Qwt not found - using built-in Qwt")
+endif (QWT_FOUND)
+
+if (QWT_FOUND)
+
+    include_directories(${QWT_INCLUDE_DIRS})
+    list(APPEND Qt5_LIBRARIES ${QWT_LIBRARIES})
+    message(STATUS "QWT_INCLUDE_DIRS: ${QWT_INCLUDE_DIRS}")
+    message(STATUS "QWT_LIBRARIES: ${QWT_LIBRARIES}")
+
+else (QWT_FOUND)
+
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qwt/src)
+    add_definitions(-DQWT_DLL)
+    file(GLOB QWT_SOURCES "qwt/src/*.cpp")
+    add_library(PothosQwt SHARED ${QWT_SOURCES})
+    set_target_properties(PothosQwt PROPERTIES DEFINE_SYMBOL "QWT_MAKEDLL")
+    target_link_libraries(PothosQwt ${Qt5_LIBRARIES})
+    install(TARGETS PothosQwt
+        LIBRARY DESTINATION lib${LIB_SUFFIX} # .so file
+        ARCHIVE DESTINATION lib${LIB_SUFFIX} # .lib file
+        RUNTIME DESTINATION bin              # .dll file
+    )
+    list(APPEND Qt5_LIBRARIES PothosQwt)
+
+endif (QWT_FOUND)
 
 ########################################################################
 # plotter utils library
