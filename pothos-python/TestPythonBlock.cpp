@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -17,7 +17,7 @@ POTHOS_TEST_BLOCK("/proxy/python/tests", python_module_import)
 POTHOS_TEST_BLOCK("/proxy/python/tests", test_python_module)
 {
     auto env = Pothos::ProxyEnvironment::make("python");
-    env->findProxy("TestPothos").callProxy("main");
+    env->findProxy("Pothos.TestPothos").callProxy("main");
 }
 
 POTHOS_TEST_BLOCK("/proxy/python/tests", test_python_block)

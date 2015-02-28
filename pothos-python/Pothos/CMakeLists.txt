@@ -39,7 +39,5 @@ install(FILES
     Label.py
     InputPort.py
     OutputPort.py
-    DESTINATION ${POTHOS_PYTHON_DIR}/Pothos)
-install(FILES
     TestPothos.py
-    DESTINATION ${POTHOS_PYTHON_DIR})
+    DESTINATION ${POTHOS_PYTHON_DIR}/Pothos)

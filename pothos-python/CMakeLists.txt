@@ -42,6 +42,13 @@ endif()
 ########################################################################
 include_directories(${PYTHON_INCLUDE_DIRS})
 
+#generate include with build configuration params
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/PythonSupport.in.hpp
+    ${CMAKE_CURRENT_BINARY_DIR}/PythonSupport.hpp
+@ONLY)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 set(SOURCES
    PythonProxy.cpp
    PythonHandle.cpp
