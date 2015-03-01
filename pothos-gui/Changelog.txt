@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.1.1 (pending)
 ==========================
 
+- Prefix QtColorPicker library to avoid install collisions
 - QDoubleSpinBox parameter entry locale support fix
 - Fixed block ID update while editing
 
