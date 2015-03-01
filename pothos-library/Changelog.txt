@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.1.1 (pending)
 ==========================
 
+- Support openSuSE for automatic LIB_SUFFIX detection logic
 - Pothos build utils set library paths in unix environment
 - Added serialization for built-in proxy container types
 - Fixed circular buffer push front condition when non-empty
