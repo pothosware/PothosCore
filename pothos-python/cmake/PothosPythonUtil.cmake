@@ -56,8 +56,7 @@ function(POTHOS_PYTHON_UTIL)
     CMAKE_PARSE_ARGUMENTS(POTHOS_PYTHON_UTIL "ENABLE_DOCS" "TARGET;DESTINATION" "SOURCES;DOC_SOURCES;FACTORIES" ${ARGN})
 
     #generate block registries
-    set(factories_cpp_file ${CMAKE_CURRENT_BINARY_DIR}/${POTHOS_PYTHON_UTIL_TARGET}Factories.cpp)
-    file(WRITE ${factories_cpp_file} "#include \"${POTHOS_PYTHON_UTIL_CMAKE_DIR}/PothosPythonUtil.hpp\"\n")
+    unset(factory_sources)
     foreach(factory ${POTHOS_PYTHON_UTIL_FACTORIES})
 
         #parse the factory markup string
@@ -72,8 +71,12 @@ function(POTHOS_PYTHON_UTIL)
         string(REPLACE "/" "." package_name "${POTHOS_PYTHON_UTIL_DESTINATION}")
 
         #generate a registration
-        file(APPEND ${factories_cpp_file} "static Pothos::BlockRegistry register${class_name}(\"${block_path}\",\n")
-        file(APPEND ${factories_cpp_file} "\tPothos::Callable(&pothosPythonBlockFactory).bind(\"${package_name}\", 0).bind(\"${class_name}\", 1));\n")
+        set(factory_source ${CMAKE_CURRENT_BINARY_DIR}/${class_name}Factory.cpp)
+        configure_file(
+            ${POTHOS_PYTHON_UTIL_CMAKE_DIR}/PothosPythonBlockFactory.in.cpp
+            ${factory_source}
+        @ONLY)
+        list(APPEND factory_sources ${factory_source})
     endforeach(factory)
 
     #install python sources
@@ -85,7 +88,7 @@ function(POTHOS_PYTHON_UTIL)
     endif()
 
     #build the module
-    list(APPEND POTHOS_PYTHON_UTIL_SOURCES ${factories_cpp_file})
+    list(APPEND POTHOS_PYTHON_UTIL_SOURCES ${factory_sources})
     if (POTHOS_PYTHON_UTIL_ENABLE_DOCS)
         set(POTHOS_PYTHON_UTIL_ENABLE_DOCS "ENABLE_DOCS")
     else()
