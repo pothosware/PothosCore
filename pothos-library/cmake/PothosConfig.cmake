@@ -35,7 +35,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 
 ########################################################################
-## it-tree build support
+## in-tree build support
 ########################################################################
 if (POTHOS_IN_TREE_SOURCE_DIR)
 

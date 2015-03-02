@@ -57,15 +57,15 @@ list(APPEND Pothos_LIBRARIES ${Qt5Concurrent_LIBRARIES})
 # Color picker library - LGPL separate library
 ########################################################################
 include_directories(qtcolorpicker/src)
-add_library(QtColorPicker SHARED qtcolorpicker/src/qtcolorpicker.cpp)
-set_target_properties(QtColorPicker PROPERTIES DEFINE_SYMBOL "QT_QTCOLORPICKER_EXPORT")
-target_link_libraries(QtColorPicker ${Pothos_LIBRARIES})
-install(TARGETS QtColorPicker
+add_library(PothosQtColorPicker SHARED qtcolorpicker/src/qtcolorpicker.cpp)
+set_target_properties(PothosQtColorPicker PROPERTIES DEFINE_SYMBOL "QT_QTCOLORPICKER_EXPORT")
+target_link_libraries(PothosQtColorPicker ${Pothos_LIBRARIES})
+install(TARGETS PothosQtColorPicker
     LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_gui # .so file
     ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_gui # .lib file
     RUNTIME DESTINATION bin              COMPONENT pothos_gui # .dll file
 )
-list(APPEND Pothos_LIBRARIES QtColorPicker)
+list(APPEND Pothos_LIBRARIES PothosQtColorPicker)
 
 ########################################################################
 # GUI Main App
