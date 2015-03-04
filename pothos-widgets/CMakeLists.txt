@@ -36,6 +36,8 @@ endforeach(comp)
 ########################################################################
 find_package(Qwt)
 
+add_definitions(-DQWT_DLL)
+
 if (QWT_FOUND)
     message(STATUS "QWT_VERSION_STRING: ${QWT_VERSION_STRING}")
     if (QWT_VERSION_STRING LESS "6.1")
@@ -56,7 +58,6 @@ if (QWT_FOUND)
 else (QWT_FOUND)
 
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qwt/src)
-    add_definitions(-DQWT_DLL)
     file(GLOB QWT_SOURCES "qwt/src/*.cpp")
     add_library(PothosQwt SHARED ${QWT_SOURCES})
     set_target_properties(PothosQwt PROPERTIES DEFINE_SYMBOL "QWT_MAKEDLL")
