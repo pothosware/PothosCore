@@ -21,9 +21,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 endif()
 
 ########################################################################
-# POCO dependency - always build it
+# POCO dependency - build it by default
 ########################################################################
-set(BUILD_POCO TRUE) #always build -- want version 1.5
+option(BUILD_POCO "Enable Poco Build" ON)
 
 if(BUILD_POCO)
     set(ENABLE_MONGODB OFF CACHE INTERNAL "")
