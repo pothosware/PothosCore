@@ -23,7 +23,7 @@ endif()
 ########################################################################
 # POCO dependency - build it by default
 ########################################################################
-find_package(Poco QUIET CONFIG COMPONENTS Foundation Util JSON XML Net)
+find_package(Poco CONFIG COMPONENTS Foundation Util JSON XML Net)
 
 if (Poco_FOUND)
     set(Poco_INCLUDE_DIRS "")
