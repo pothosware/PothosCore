@@ -17,6 +17,12 @@ include(PothosLibraryConfig) #library settings
 include(PothosUtil) #utility functions
 
 ########################################################################
+# use LOCATION target property (until we replace it)
+# http://www.cmake.org/cmake/help/v3.0/policy/CMP0026.html
+########################################################################
+cmake_policy(SET CMP0026 OLD)
+
+########################################################################
 # install directory for cmake files
 ########################################################################
 if (UNIX)
@@ -42,13 +48,13 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
     list(APPEND Pothos_LIBRARIES
         Pothos
         PothosSerialization
-        ${POCO_LIBRARIES}
+        ${Poco_LIBRARIES}
     )
 
     list(APPEND Pothos_INCLUDE_DIRS
         ${POTHOS_IN_TREE_SOURCE_DIR}/pothos-library/include
         ${POTHOS_IN_TREE_SOURCE_DIR}/pothos-serialization/include
-        ${POCO_INCLUDE_DIRS}
+        ${Poco_INCLUDE_DIRS}
     )
 
     get_target_property(POTHOS_UTIL_EXE PothosUtil LOCATION_${CMAKE_BUILD_TYPE})
@@ -190,14 +196,23 @@ list(APPEND Pothos_INCLUDE_DIRS ${POTHOS_INCLUDE_DIR})
 ########################################################################
 ## locate the Poco libraries
 ########################################################################
-foreach(lib Foundation JSON XML Util Net)
-    find_library(
-        POCO_${lib}_LIBRARY Poco${lib} Poco${lib}d
-        PATHS ${POTHOS_ROOT}/lib${LIB_SUFFIX}
-        NO_DEFAULT_PATH
-    )
-    if(NOT POCO_${lib}_LIBRARY)
-        message(FATAL_ERROR "cannot find POCO_${lib}_LIBRARY library in ${POTHOS_ROOT}/lib${LIB_SUFFIX}")
-    endif()
-    list(APPEND Pothos_LIBRARIES ${POCO_${lib}_LIBRARY})
-endforeach(lib)
+find_package(Poco CONFIG COMPONENTS Foundation Util JSON XML Net)
+
+#try to use poco from the system install
+if (Poco_FOUND)
+    list(APPEND Pothos_LIBRARIES ${Poco_LIBRARIES})
+
+#otherwise use poco from the pothos install
+else (Poco_FOUND)
+    foreach(lib Foundation JSON XML Util Net)
+        find_library(
+            POCO_${lib}_LIBRARY Poco${lib} Poco${lib}d
+            PATHS ${POTHOS_ROOT}/lib${LIB_SUFFIX}
+            NO_DEFAULT_PATH
+        )
+        if(NOT POCO_${lib}_LIBRARY)
+            message(FATAL_ERROR "cannot find POCO_${lib}_LIBRARY library in ${POTHOS_ROOT}/lib${LIB_SUFFIX}")
+        endif()
+        list(APPEND Pothos_LIBRARIES ${POCO_${lib}_LIBRARY})
+    endforeach(lib)
+endif (Poco_FOUND)

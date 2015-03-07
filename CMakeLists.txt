@@ -67,32 +67,30 @@ if(BUILD_POCO)
     set(POCO_JSON_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/poco/JSON/include)
     set(POCO_JSON_LIBRARY_REL PocoJSON)
 
+    list(APPEND Poco_INCLUDE_DIRS
+        ${POCO_INCLUDE_DIR}
+        ${POCO_Util_INCLUDE_DIR}
+        ${POCO_XML_INCLUDE_DIR}
+        ${POCO_Net_INCLUDE_DIR}
+        ${POCO_JSON_INCLUDE_DIR}
+    )
+
+    list(APPEND Poco_LIBRARIES
+        ${POCO_LIBRARY_REL}
+        ${POCO_Util_LIBRARY_REL}
+        ${POCO_XML_LIBRARY_REL}
+        ${POCO_Net_LIBRARY_REL}
+        ${POCO_JSON_LIBRARY_REL}
+    )
+
 else(BUILD_POCO)
-    find_package(Poco)
-    if(NOT POCO_FOUND)
-        message(FATAL_ERROR "Cannot find POCO dependency - get it from your package manager")
-    endif()
+    find_package(Poco CONFIG REQUIRED COMPONENTS Foundation Util JSON XML Net)
+    set(Poco_INCLUDE_DIRS "")
+
+    add_custom_target(uninstall
+      "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/poco/cmake_uninstall.cmake")
 
 endif(BUILD_POCO)
-
-list(APPEND POCO_INCLUDE_DIRS
-    ${POCO_INCLUDE_DIR}
-    ${POCO_Util_INCLUDE_DIR}
-    ${POCO_XML_INCLUDE_DIR}
-    ${POCO_Net_INCLUDE_DIR}
-    ${POCO_JSON_INCLUDE_DIR}
-)
-
-list(APPEND POCO_LIBRARIES
-    ${POCO_LIBRARY_REL}
-    ${POCO_Util_LIBRARY_REL}
-    ${POCO_XML_LIBRARY_REL}
-    ${POCO_Net_LIBRARY_REL}
-    ${POCO_JSON_LIBRARY_REL}
-)
-
-message(STATUS "POCO_INCLUDE_DIRS: ${POCO_INCLUDE_DIRS}")
-message(STATUS "POCO_LIBRARIES: ${POCO_LIBRARIES}")
 
 ########################################################################
 # Build serialization library
@@ -110,7 +108,7 @@ add_subdirectory(pothos-library)
 
 #ensure that local headers get precedent over installed headers
 include_directories(pothos-library/include)
-include_directories(${POCO_INCLUDE_DIRS})
+include_directories(${Poco_INCLUDE_DIRS})
 
 add_subdirectory(pothos-gui)
 add_subdirectory(pothos-widgets)
