@@ -72,7 +72,7 @@ POTHOS_MODULE_UTIL(
 install(
     FILES
         cmake/PothosPythonUtil.cmake
-        cmake/PothosPythonUtil.hpp
+        cmake/PothosPythonBlockFactory.in.cpp
     DESTINATION ${POTHOS_CMAKE_DIRECTORY}
 )
 
