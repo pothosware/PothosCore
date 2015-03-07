@@ -17,12 +17,6 @@ include(PothosLibraryConfig) #library settings
 include(PothosUtil) #utility functions
 
 ########################################################################
-# use LOCATION target property (until we replace it)
-# http://www.cmake.org/cmake/help/v3.0/policy/CMP0026.html
-########################################################################
-cmake_policy(SET CMP0026 OLD)
-
-########################################################################
 # install directory for cmake files
 ########################################################################
 if (UNIX)
@@ -196,7 +190,7 @@ list(APPEND Pothos_INCLUDE_DIRS ${POTHOS_INCLUDE_DIR})
 ########################################################################
 ## locate the Poco libraries
 ########################################################################
-find_package(Poco CONFIG COMPONENTS Foundation Util JSON XML Net)
+find_package(Poco QUIET CONFIG COMPONENTS Foundation Util JSON XML Net)
 
 #try to use poco from the system install
 if (Poco_FOUND)

@@ -23,9 +23,17 @@ endif()
 ########################################################################
 # POCO dependency - build it by default
 ########################################################################
-option(BUILD_POCO "Enable Poco Build" ON)
+find_package(Poco QUIET CONFIG COMPONENTS Foundation Util JSON XML Net)
 
-if(BUILD_POCO)
+if (Poco_FOUND)
+    set(Poco_INCLUDE_DIRS "")
+
+    add_custom_target(uninstall
+      "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/poco/cmake_uninstall.cmake")
+
+else (Poco_FOUND)
+    message(STATUS "Poco not found - using built-in Poco")
+
     set(ENABLE_MONGODB OFF CACHE INTERNAL "")
     set(ENABLE_PDF OFF CACHE INTERNAL "")
     set(ENABLE_NETSSL OFF CACHE INTERNAL "")
@@ -83,14 +91,7 @@ if(BUILD_POCO)
         ${POCO_JSON_LIBRARY_REL}
     )
 
-else(BUILD_POCO)
-    find_package(Poco CONFIG REQUIRED COMPONENTS Foundation Util JSON XML Net)
-    set(Poco_INCLUDE_DIRS "")
-
-    add_custom_target(uninstall
-      "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/poco/cmake_uninstall.cmake")
-
-endif(BUILD_POCO)
+endif (Poco_FOUND)
 
 ########################################################################
 # Build serialization library
