@@ -274,3 +274,24 @@ SET(JNI_INCLUDE_DIRS
   ${JAVA_AWT_INCLUDE_PATH}
 )
 
+########################################################################
+## Handle finding libmawt which may be needed on some platforms
+## https://github.com/malaterre/GDCM/blob/master/CMake/FindJNI.cmake#L50
+########################################################################
+if (UNIX)
+
+    SET(JAVA_MAWT_LIBRARY_DIRECTORIES)
+    FOREACH(dir ${JAVA_AWT_LIBRARY_DIRECTORIES})
+      LIST(APPEND JAVA_MAWT_LIBRARY_DIRECTORIES "${dir}/xawt")
+    ENDFOREACH(dir)
+
+    find_library(JAVA_MAWT_LIBRARY NAMES mawt
+        PATHS ${JAVA_MAWT_LIBRARY_DIRECTORIES})
+
+    MARK_AS_ADVANCED(JAVA_MAWT_LIBRARY)
+
+    if (JAVA_MAWT_LIBRARY)
+        list(APPEND JNI_LIBRARIES ${JAVA_MAWT_LIBRARY})
+    endif (JAVA_MAWT_LIBRARY)
+
+endif (UNIX)
