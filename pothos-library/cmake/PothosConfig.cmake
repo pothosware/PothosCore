@@ -51,11 +51,17 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
         ${Poco_INCLUDE_DIRS}
     )
 
+    #a list of in-tree built libraries to generate a library path script
+    set(IN_TREE_LIBRARIES Pothos PothosSerialization)
+    if (POCO_IN_TREE)
+        list(APPEND IN_TREE_LIBRARIES ${Poco_LIBRARIES})
+    endif()
+
     get_target_property(POTHOS_UTIL_EXE PothosUtil LOCATION_${CMAKE_BUILD_TYPE})
 
     if(MSVC AND POTHOS_UTIL_EXE)
         set(built_dll_paths "%PATH%")
-        foreach(target ${Pothos_LIBRARIES})
+        foreach(target ${IN_TREE_LIBRARIES})
             get_target_property(library_location ${target} LOCATION_${CMAKE_BUILD_TYPE})
             get_filename_component(library_location ${library_location} PATH)
             file(TO_NATIVE_PATH ${library_location} library_location)
@@ -71,7 +77,7 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
 
     if(UNIX AND POTHOS_UTIL_EXE)
         set(built_dll_paths "\${LD_LIBRARY_PATH}")
-        foreach(target ${Pothos_LIBRARIES})
+        foreach(target ${IN_TREE_LIBRARIES})
             get_target_property(library_location ${target} LOCATION_${CMAKE_BUILD_TYPE})
             get_filename_component(library_location ${library_location} PATH)
             file(TO_NATIVE_PATH ${library_location} library_location)
@@ -190,7 +196,7 @@ list(APPEND Pothos_INCLUDE_DIRS ${POTHOS_INCLUDE_DIR})
 ########################################################################
 ## locate the Poco libraries
 ########################################################################
-find_package(Poco QUIET CONFIG COMPONENTS Foundation Util JSON XML Net)
+include(SetupPoco) #find poco install
 
 #try to use poco from the system install
 if (Poco_FOUND)
