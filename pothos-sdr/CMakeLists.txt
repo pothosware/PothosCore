@@ -61,3 +61,13 @@ POTHOS_MODULE_UTIL(
         ${CMAKE_CURRENT_BINARY_DIR}/SDRSourceDesc.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/SDRSinkDesc.hpp
 )
+
+########################################################################
+## Utility blocks
+########################################################################
+POTHOS_MODULE_UTIL(
+    TARGET SDRUtilityBlocks
+    SOURCES
+        ChannelAligner.cpp
+    ENABLE_DOCS
+)
