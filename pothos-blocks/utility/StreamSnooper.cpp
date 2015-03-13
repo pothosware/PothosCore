@@ -27,18 +27,18 @@
  * |units events/sec
  * |default 1.0
  *
- * |param alignMode[Alignment] Synchronous or asynchronous multi-channel consumption pattern.
+ * |param align[Alignment] Synchronous or asynchronous multi-channel consumption pattern.
  * When in synchronous mode, work() consumes the same amount from all channels to preserve alignment.
  * When in asynchronous mode, work() consumes all available input from each channel independently.
- * |default "ASYNC"
- * |option [Asynchronous] "ASYNC"
- * |option [Synchronous] "SYNC"
+ * |default false
+ * |option [Disable] false
+ * |option [Enable] true
  *
  * |factory /blocks/stream_snooper()
  * |initializer setNumPorts(numPorts)
  * |setter setChunkSize(chunkSize)
  * |setter setTriggerRate(triggerRate)
- * |setter setAlignMode(alignMode)
+ * |setter setAlignment(align)
  **********************************************************************/
 class StreamSnooper : public Pothos::Block
 {
@@ -50,9 +50,9 @@ public:
 
     StreamSnooper(void):
         _chunkSize(0),
-        _triggerRate(1.0)
+        _triggerRate(1.0),
+        _alignment(false)
     {
-        this->setAlignMode("ASYNC");
         this->setupInput(0);
         this->setupOutput(0);
         this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, setNumPorts));
@@ -60,8 +60,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, getChunkSize));
         this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, setTriggerRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, getTriggerRate));
-        this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, setAlignMode));
-        this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, getAlignMode));
+        this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, setAlignment));
+        this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, getAlignment));
     }
 
     void setNumPorts(const size_t numPorts)
@@ -90,18 +90,14 @@ public:
         return _triggerRate;
     }
 
-    void setAlignMode(const std::string &mode)
+    void setAlignment(const bool enabled)
     {
-        if (mode == "SYNC"){}
-        else if (mode == "ASYNC"){}
-        else throw Pothos::InvalidArgumentException("StreamSnooper::setAlignMode("+mode+")", "unknown mode");
-
-        _alignMode = mode;
+        _alignment = enabled;
     }
 
-    std::string getAlignMode(void) const
+    bool getAlignment(void) const
     {
-        return _alignMode;
+        return _alignment;
     }
 
     void activate(void)
@@ -112,12 +108,11 @@ public:
 
     void work(void)
     {
-        //In sync mode we need to know the minimum number of elements:
+        //Alignment: we need to know the minimum number of elements:
         //These are type agnostic ports, we must check the buffer.
         //The call this->workInfo().minInElements can't be used.
-        const bool sync = (_alignMode == "SYNC");
         size_t minElements = (1 << 30);
-        if (sync) for (auto inPort : this->inputs())
+        if (_alignment) for (auto inPort : this->inputs())
         {
             minElements = std::min(minElements, inPort->buffer().elements());
         }
@@ -132,7 +127,7 @@ public:
             }
 
             //determine how many elements are available based on mode
-            const size_t num = sync?(minElements*inPort->buffer().dtype.size()):inPort->elements();
+            const size_t num = _alignment?(minElements*inPort->buffer().dtype.size()):inPort->elements();
             if (num == 0) continue;
 
             //always consume all available input
@@ -192,7 +187,7 @@ public:
 private:
     size_t _chunkSize;
     double _triggerRate;
-    std::string _alignMode;
+    bool _alignment;
     std::vector<std::chrono::high_resolution_clock::time_point> _lastTriggerTimes;
     std::vector<Pothos::Packet> _accumulationBuffs;
 };
