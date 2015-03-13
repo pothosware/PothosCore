@@ -20,17 +20,25 @@
  * |widget SpinBox(minimum=1)
  * |preview disable
  *
- * |param chunkSize How many elements to yield when triggered?
+ * |param chunkSize[Chunk Size] How many elements to yield when triggered?
  * |default 1024
  *
- * |param triggerRate The rate of the time-based trigger.
+ * |param triggerRate[Trigger Rate] The rate of the time-based trigger.
  * |units events/sec
  * |default 1.0
+ *
+ * |param alignMode[Alignment] Synchronous or asynchronous multi-channel consumption pattern.
+ * When in synchronous mode, work() consumes the same amount from all channels to preserve alignment.
+ * When in asynchronous mode, work() consumes all available input from each channel independently.
+ * |default "ASYNC"
+ * |option [Asynchronous] "ASYNC"
+ * |option [Synchronous] "SYNC"
  *
  * |factory /blocks/stream_snooper()
  * |initializer setNumPorts(numPorts)
  * |setter setChunkSize(chunkSize)
  * |setter setTriggerRate(triggerRate)
+ * |setter setAlignMode(alignMode)
  **********************************************************************/
 class StreamSnooper : public Pothos::Block
 {
@@ -44,6 +52,7 @@ public:
         _chunkSize(0),
         _triggerRate(1.0)
     {
+        this->setAlignMode("ASYNC");
         this->setupInput(0);
         this->setupOutput(0);
         this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, setNumPorts));
@@ -51,6 +60,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, getChunkSize));
         this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, setTriggerRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, getTriggerRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, setAlignMode));
+        this->registerCall(this, POTHOS_FCN_TUPLE(StreamSnooper, getAlignMode));
     }
 
     void setNumPorts(const size_t numPorts)
@@ -79,6 +90,20 @@ public:
         return _triggerRate;
     }
 
+    void setAlignMode(const std::string &mode)
+    {
+        if (mode == "SYNC"){}
+        else if (mode == "ASYNC"){}
+        else throw Pothos::InvalidArgumentException("StreamSnooper::setAlignMode("+mode+")", "unknown mode");
+
+        _alignMode = mode;
+    }
+
+    std::string getAlignMode(void) const
+    {
+        return _alignMode;
+    }
+
     void activate(void)
     {
         _lastTriggerTimes.resize(this->inputs().size());
@@ -87,6 +112,8 @@ public:
 
     void work(void)
     {
+        const bool sync = (_alignMode == "SYNC");
+
         for (auto inPort : this->inputs())
         {
             //forward messages
@@ -96,13 +123,17 @@ public:
                 this->output(inPort->index())->postMessage(msg);
             }
 
+            //determine how many elements are available based on mode
+            const size_t num = sync?this->workInfo().minInElements:inPort->elements();
+            if (num == 0) continue;
+
             //always consume all available input
-            if (inPort->elements() == 0) continue;
-            inPort->consume(inPort->elements());
+            inPort->consume(num);
 
             //forward all labels in case they have meaning
             for (const auto &label : inPort->labels())
             {
+                if (label.index >= num) break;
                 this->output(inPort->index())->postMessage(label);
             }
 
@@ -112,14 +143,14 @@ public:
             bool doUpdate = (std::chrono::high_resolution_clock::now() - lastTriggerTime) > timeBetweenUpdates;
 
             //perform the accumulation buffer update
-            if (doUpdate and this->handleTrigger(inPort))
+            if (doUpdate and this->handleTrigger(inPort, num))
             {
                 lastTriggerTime = std::chrono::high_resolution_clock::now();
             }
         }
     }
 
-    bool handleTrigger(Pothos::InputPort *inPort)
+    bool handleTrigger(Pothos::InputPort *inPort, const size_t num)
     {
         auto &packet = _accumulationBuffs[inPort->index()];
         const auto initialOffset = packet.payload.elements();
@@ -127,7 +158,7 @@ public:
         //append the new buffer
         auto inBuff = inPort->buffer();
         const auto bytesPerEvent = _chunkSize*inBuff.dtype.size();
-        inBuff.length = std::min(inBuff.length, bytesPerEvent - packet.payload.length);
+        inBuff.length = std::min(num, bytesPerEvent - packet.payload.length);
         packet.payload.append(inBuff);
 
         //append new labels
@@ -153,6 +184,7 @@ public:
 private:
     size_t _chunkSize;
     double _triggerRate;
+    std::string _alignMode;
     std::vector<std::chrono::high_resolution_clock::time_point> _lastTriggerTimes;
     std::vector<Pothos::Packet> _accumulationBuffs;
 };
