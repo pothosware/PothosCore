@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockEval.hpp"
@@ -13,8 +13,7 @@ void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &block
     std::vector<Pothos::Proxy> ctorArgs;
     if (blockDesc->isArray("args")) for (auto arg : *blockDesc->getArray("args"))
     {
-        const auto propKey = arg.extract<std::string>();
-        const auto obj = _properties[propKey];
+        const auto obj = this->lookupOrEvalAsType(arg);
         ctorArgs.push_back(env->convertObjectToProxy(obj));
     }
 
@@ -43,8 +42,7 @@ void BlockEval::handleCall(const Poco::JSON::Object::Ptr &callObj)
     std::vector<Pothos::Proxy> callArgs;
     for (auto arg : *callObj->getArray("args"))
     {
-        const auto propKey = arg.extract<std::string>();
-        const auto obj = _properties[propKey];
+        const auto obj = this->lookupOrEvalAsType(arg);
         callArgs.push_back(env->convertObjectToProxy(obj));
     }
     try
