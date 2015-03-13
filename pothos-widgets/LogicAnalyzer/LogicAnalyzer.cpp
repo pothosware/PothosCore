@@ -135,6 +135,7 @@ public:
 
         auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
         _snooper = registry.callProxy("/blocks/stream_snooper");
+        _snooper.callVoid("setAlignMode", "SYNC");
 
         //register calls in this topology
         this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setNumInputs));

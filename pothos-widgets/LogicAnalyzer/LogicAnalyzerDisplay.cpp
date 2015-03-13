@@ -100,7 +100,8 @@ void LogicAnalyzerDisplay::populateChannel(const int channel, const Pothos::Buff
 void LogicAnalyzerDisplay::updateData(const int channel, const Pothos::BufferChunk &buffer)
 {
     //column count changed? new labels
-    if (_tableView->columnCount() != int(buffer.elements()))
+    const bool changed = _tableView->columnCount() != int(buffer.elements());
+    if (changed)
     {
         double factor = 1.0;
         QString units("s");
@@ -142,6 +143,8 @@ void LogicAnalyzerDisplay::updateData(const int channel, const Pothos::BufferChu
     if (buffer.dtype.isComplex()) this->populateChannel<std::complex<qreal>>(channel, buffer);
     else if (buffer.dtype.isFloat()) this->populateChannel<qreal>(channel, buffer);
     else if (buffer.dtype.isInteger()) this->populateChannel<qlonglong>(channel, buffer);
+
+    if (changed) _tableView->resizeColumnsToContents();
 }
 
 void LogicAnalyzerDisplay::handleReplot(void)
