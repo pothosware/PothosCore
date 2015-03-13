@@ -22,6 +22,10 @@ install(
         cmake/PothosStandardFlags.cmake
         cmake/PothosLibraryConfig.cmake
         cmake/PothosUtil.cmake
+        #poco support
+        cmake/FindPkgMacros.cmake
+        cmake/FindPoco.cmake
+        cmake/SetupPoco.cmake
     DESTINATION ${POTHOS_CMAKE_DIRECTORY}
     COMPONENT pothos_devel
 )
