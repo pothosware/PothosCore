@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -42,6 +42,15 @@ public:
     }
 
 private:
+
+    Pothos::Object lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
+    {
+        if (not arg.isString()) return _evalEnv->eval(arg.toString());
+        const auto propKey = arg.extract<std::string>();
+        if (_properties.count(propKey) == 0) return Pothos::Object(propKey);
+        return _properties.at(propKey);
+    }
+
     std::map<std::string, Pothos::Object> _properties;
     Pothos::Proxy _proxyBlock;
     std::shared_ptr<EvalEnvironment> _evalEnv;

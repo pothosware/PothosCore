@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockEval.hpp"
@@ -334,6 +334,7 @@ std::vector<Poco::JSON::Object::Ptr> BlockEval::settersChangedList(void) const
         if (callObj->getValue<std::string>("type") != "setter") continue;
         for (auto arg : *callObj->getArray("args"))
         {
+            if (not arg.isString()) continue;
             const auto propKey = arg.extract<std::string>();
             if (didPropKeyHaveChange(QString::fromStdString(propKey)))
             {

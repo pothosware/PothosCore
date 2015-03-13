@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -34,6 +34,7 @@ public:
 
     Pacer(void):
         _rate(1.0),
+        _sendLabel(false),
         _actualRate(1.0),
         _currentCount(0),
         _startCount(0)
@@ -50,6 +51,7 @@ public:
         _rate = rate;
         _startTime = std::chrono::high_resolution_clock::now();
         _startCount = _currentCount;
+        _sendLabel = true;
     }
 
     double getRate(void) const
@@ -103,10 +105,18 @@ public:
             inputPort->consume(inputPort->elements());
             _currentCount += buffer.elements();
         }
+
+        if (_sendLabel)
+        {
+            _sendLabel = false;
+            Pothos::Label label("rxRate", _rate, 0);
+            outputPort->postLabel(label);
+        }
     }
 
 private:
     double _rate;
+    bool _sendLabel;
     double _actualRate;
     std::chrono::high_resolution_clock::time_point _startTime;
     unsigned long long _currentCount;
