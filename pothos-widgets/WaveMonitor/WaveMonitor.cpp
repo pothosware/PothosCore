@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "WaveMonitorDisplay.hpp"
@@ -35,6 +35,12 @@
  * |param numPoints[Num Points] The number of points per plot capture.
  * |default 1024
  *
+ * |param align[Alignment] Ensure that multiple channels are aligned.
+ * All channels must have matching sample rates when alignment is enabled.
+ * |default false
+ * |option [Disable] false
+ * |option [Enable] true
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
@@ -69,6 +75,7 @@
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumPoints(numPoints)
+ * |setter setAlignment(align)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
@@ -93,6 +100,7 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumInputs));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setDisplayRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumPoints));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setAlignment));
 
         //connect to internal display block
         this->connect(this, "setTitle", _display, "setTitle");
@@ -105,6 +113,7 @@ public:
         //connect to the internal snooper block
         this->connect(this, "setDisplayRate", _snooper, "setTriggerRate");
         this->connect(this, "setNumPoints", _snooper, "setChunkSize");
+        this->connect(this, "setAlignment", _snooper, "setAlignment");
     }
 
     Pothos::Object opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
@@ -143,6 +152,11 @@ public:
     {
         _snooper.callVoid("setChunkSize", num);
         _display->setNumPoints(num);
+    }
+
+    void setAlignment(const bool enabled)
+    {
+        _snooper.callVoid("setAlignment", enabled);
     }
 
 private:

@@ -30,6 +30,12 @@
  * |param numPoints[Num Points] The number of points per plot capture.
  * |default 256
  *
+ * |param align[Alignment] Ensure that multiple channels are aligned.
+ * All channels must have matching sample rates when alignment is enabled.
+ * |default true
+ * |option [Disable] false
+ * |option [Enable] true
+ *
  * |param label0[Ch0 Label] The display label for channel 0.
  * |default "Ch0"
  * |widget StringEntry()
@@ -110,6 +116,7 @@
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumPoints(numPoints)
+ * |setter setAlignment(align)
  * |setter setChannelLabel(0, label0)
  * |setter setChannelBase(0, base0)
  * |setter setChannelLabel(1, label1)
@@ -135,12 +142,12 @@ public:
 
         auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
         _snooper = registry.callProxy("/blocks/stream_snooper");
-        _snooper.callVoid("setAlignMode", "SYNC");
 
         //register calls in this topology
         this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setNumInputs));
         this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setDisplayRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setNumPoints));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setAlignment));
 
         //connect to internal display block
         this->connect(this, "setChannelLabel", _display, "setChannelLabel");
@@ -150,6 +157,7 @@ public:
         //connect to the internal snooper block
         this->connect(this, "setDisplayRate", _snooper, "setTriggerRate");
         this->connect(this, "setNumPoints", _snooper, "setChunkSize");
+        this->connect(this, "setAlignment", _snooper, "setAlignment");
     }
 
     Pothos::Object opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
@@ -187,6 +195,11 @@ public:
     void setNumPoints(const size_t num)
     {
         _snooper.callVoid("setChunkSize", num);
+    }
+
+    void setAlignment(const bool enabled)
+    {
+        _snooper.callVoid("setAlignment", enabled);
     }
 
 private:
