@@ -77,13 +77,14 @@ public:
     void work(void);
 
 private slots:
-    void updateData(const int channel, const Pothos::BufferChunk &);
+    void updateData(const int channel, const Pothos::Packet &);
+    void updateHeaders(void);
     void handleReplot(void);
 
 private:
 
     template <typename T>
-    void populateChannel(const int channel, const Pothos::BufferChunk &);
+    void populateChannel(const int channel, const Pothos::Packet &);
 
     QTableWidget *_tableView;
 
@@ -94,6 +95,6 @@ private:
     //per-channel settings
     std::vector<QString> _chLabel;
     std::vector<size_t> _chBase;
-    std::vector<Pothos::BufferChunk> _chBuffers;
+    std::vector<Pothos::Packet> _chData;
 };
 

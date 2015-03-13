@@ -5,6 +5,7 @@
 #include <QTableWidget>
 #include <QHBoxLayout>
 #include <complex>
+#include <cassert>
 
 /***********************************************************************
  * Number format overloads
@@ -53,7 +54,7 @@ LogicAnalyzerDisplay::LogicAnalyzerDisplay(void):
     this->setupInput(0);
 
     //register types passed to gui thread from work
-    qRegisterMetaType<Pothos::BufferChunk>("Pothos::BufferChunk");
+    qRegisterMetaType<Pothos::Packet>("Pothos::Packet");
 }
 
 LogicAnalyzerDisplay::~LogicAnalyzerDisplay(void)
@@ -70,7 +71,7 @@ void LogicAnalyzerDisplay::setNumInputs(const size_t numInputs)
 
     _chLabel.resize(numInputs);
     _chBase.resize(numInputs, 10);
-    _chBuffers.resize(numInputs);
+    _chData.resize(numInputs);
     _tableView->setRowCount(numInputs);
 }
 
@@ -81,11 +82,16 @@ void LogicAnalyzerDisplay::setSampleRate(const double sampleRate)
 }
 
 template <typename T>
-void LogicAnalyzerDisplay::populateChannel(const int channel, const Pothos::BufferChunk &buffer)
+void LogicAnalyzerDisplay::populateChannel(const int channel, const Pothos::Packet &packet)
 {
-    const auto numericBuff = buffer.convert(typeid(T));
-    _chBuffers[channel] = numericBuff;
-    for (size_t i = 0; i < buffer.elements(); i++)
+    //convert buffer (does not convert when type matches)
+    const auto numericBuff = packet.payload.convert(typeid(T));
+    assert(_chData.size() > channel);
+    _chData[channel] = packet;
+    _chData[channel].payload = numericBuff;
+
+    //load element data into table
+    for (size_t i = 0; i < numericBuff.elements(); i++)
     {
         const auto num = numericBuff.as<const T *>()[i];
         const auto s = toStr(num, _chBase.at(channel));
@@ -93,75 +99,88 @@ void LogicAnalyzerDisplay::populateChannel(const int channel, const Pothos::Buff
         auto flags = item->flags();
         flags &= ~Qt::ItemIsEditable;
         item->setFlags(flags);
+        item->setTextAlignment(Qt::AlignRight);
         _tableView->setItem(channel, i, item);
+    }
+
+    //inspect labels to decorate table
+    for (const auto &label : packet.labels)
+    {
+        const int column = label.index;
+        assert(column < _tableView->columnCount());
+        auto item = _tableView->item(channel, column);
+
+        //highlight and display label id
+        item->setBackground(Qt::yellow);
+        item->setText(QString("%1\n%2")
+            .arg(item->text())
+            .arg(QString::fromStdString(label.id)));
+        _tableView->resizeColumnToContents(column);
     }
 }
 
-void LogicAnalyzerDisplay::updateData(const int channel, const Pothos::BufferChunk &buffer)
+void LogicAnalyzerDisplay::updateData(const int channel, const Pothos::Packet &packet)
 {
     //column count changed? new labels
-    const bool changed = _tableView->columnCount() != int(buffer.elements());
-    if (changed)
-    {
-        double factor = 1.0;
-        QString units("s");
-        double timeSpan = buffer.elements()/_sampleRate;
-        if (timeSpan <= 100e-9)
-        {
-            factor = 1e9;
-            units = "ns";
-        }
-        else if (timeSpan <= 100e-6)
-        {
-            factor = 1e6;
-            units = "us";
-        }
-        else if (timeSpan <= 100e-3)
-        {
-            factor = 1e3;
-            units = "ms";
-        }
+    const size_t numElems = packet.payload.elements();
+    const bool changed = _tableView->columnCount() != int(numElems);
+    _tableView->setColumnCount(numElems);
+    if (changed) this->updateHeaders();
 
-        _tableView->setColumnCount(buffer.elements());
-        if (_xAxisMode == "INDEX")
-        {
-            for (size_t i = 0; i < buffer.elements(); i++)
-            {
-                _tableView->setHorizontalHeaderItem(i, new QTableWidgetItem(QString::number(i)));
-            }
-        }
-        if (_xAxisMode == "TIME")
-        {
-            for (size_t i = 0; i < buffer.elements(); i++)
-            {
-                double t = i*_sampleRate/factor;
-                _tableView->setHorizontalHeaderItem(i, new QTableWidgetItem(QString::number(t)+units));
-            }
-        }
-    }
-
-    if (buffer.dtype.isComplex()) this->populateChannel<std::complex<qreal>>(channel, buffer);
-    else if (buffer.dtype.isFloat()) this->populateChannel<qreal>(channel, buffer);
-    else if (buffer.dtype.isInteger()) this->populateChannel<qlonglong>(channel, buffer);
+    const auto dtype = packet.payload.dtype;
+    if (dtype.isComplex()) this->populateChannel<std::complex<qreal>>(channel, packet);
+    else if (dtype.isFloat()) this->populateChannel<qreal>(channel, packet);
+    else if (dtype.isInteger()) this->populateChannel<qlonglong>(channel, packet);
 
     if (changed) _tableView->resizeColumnsToContents();
+}
+
+void LogicAnalyzerDisplay::updateHeaders(void)
+{
+    const size_t numElems = _tableView->columnCount();
+
+    double factor = 1.0;
+    QString units("s");
+    double timeSpan = numElems/_sampleRate;
+    if (timeSpan <= 100e-9)
+    {
+        factor = 1e9;
+        units = "ns";
+    }
+    else if (timeSpan <= 100e-6)
+    {
+        factor = 1e6;
+        units = "us";
+    }
+    else if (timeSpan <= 100e-3)
+    {
+        factor = 1e3;
+        units = "ms";
+    }
+
+    if (_xAxisMode == "INDEX") for (size_t i = 0; i < numElems; i++)
+    {
+        _tableView->setHorizontalHeaderItem(i, new QTableWidgetItem(QString::number(i)));
+    }
+
+    if (_xAxisMode == "TIME") for (size_t i = 0; i < numElems; i++)
+    {
+        double t = i*_sampleRate/factor;
+        _tableView->setHorizontalHeaderItem(i, new QTableWidgetItem(QString::number(t)+units));
+    }
 }
 
 void LogicAnalyzerDisplay::handleReplot(void)
 {
     _tableView->clear();
-    _tableView->setColumnCount(0);
+    this->updateHeaders();
 
-    const int numChans(this->inputs().size());
-
-    _tableView->setRowCount(numChans);
-
-    for (int ch = 0; ch < numChans; ch++)
+    for (size_t ch = 0; ch < this->numInputs(); ch++)
     {
         auto label = _chLabel.at(ch);
         if (label.isEmpty()) label = tr("Ch%1").arg(ch);
         _tableView->setVerticalHeaderItem(ch, new QTableWidgetItem(label));
-        this->updateData(ch, _chBuffers.at(ch));
+        this->updateData(ch, _chData.at(ch));
     }
 
     _tableView->resizeColumnsToContents();
@@ -189,7 +208,7 @@ void LogicAnalyzerDisplay::work(void)
         {
             const auto &packet = msg.convert<Pothos::Packet>();
             QMetaObject::invokeMethod(this, "updateData", Qt::QueuedConnection,
-                Q_ARG(int, inPort->index()), Q_ARG(Pothos::BufferChunk, packet.payload));
+                Q_ARG(int, inPort->index()), Q_ARG(Pothos::Packet, packet));
         }
     }
 }
