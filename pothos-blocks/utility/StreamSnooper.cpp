@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -112,7 +112,15 @@ public:
 
     void work(void)
     {
+        //In sync mode we need to know the minimum number of elements:
+        //These are type agnostic ports, we must check the buffer.
+        //The call this->workInfo().minInElements can't be used.
         const bool sync = (_alignMode == "SYNC");
+        size_t minElements = (1 << 30);
+        if (sync) for (auto inPort : this->inputs())
+        {
+            minElements = std::min(minElements, inPort->buffer().elements());
+        }
 
         for (auto inPort : this->inputs())
         {
@@ -124,7 +132,7 @@ public:
             }
 
             //determine how many elements are available based on mode
-            const size_t num = sync?this->workInfo().minInElements:inPort->elements();
+            const size_t num = sync?(minElements*inPort->buffer().dtype.size()):inPort->elements();
             if (num == 0) continue;
 
             //always consume all available input
