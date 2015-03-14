@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PeriodogramDisplay.hpp"
@@ -10,7 +10,7 @@
  *
  * The periodogram plot displays a live two dimensional plot of power vs frequency.
  *
- * |category /Widgets
+ * |category /Plotters
  * |keywords frequency plot fft dft spectrum spectral
  *
  * |param title The title of the plot

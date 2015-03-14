@@ -11,7 +11,7 @@
  *
  * The wave monitor plot displays a live two dimensional plot of input elements vs time.
  *
- * |category /Widgets
+ * |category /Plotters
  * |keywords time plot wave scope
  *
  * |param title The title of the plot

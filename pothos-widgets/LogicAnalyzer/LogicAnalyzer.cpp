@@ -11,7 +11,7 @@
  *
  * The logic analyzer displays discrete values of a signal over time.
  *
- * |category /Widgets
+ * |category /Plotters
  * |keywords plot logic trace wave list view
  *
  * |param numInputs[Num Inputs] The number of input ports.
