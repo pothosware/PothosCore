@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "SDRBlock.hpp"
@@ -144,7 +144,7 @@ SDRBlock::~SDRBlock(void)
 
     //if for some reason we didn't complete the future
     //we have to wait on it here and catch all errors
-    try {_deviceFuture.get();} catch (...){}
+    try {_device = _deviceFuture.get();} catch (...){}
 
     //now with the mutex locked, the device object can be released
     std::unique_lock<std::mutex> lock(getMutex());
