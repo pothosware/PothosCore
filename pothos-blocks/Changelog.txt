@@ -31,6 +31,8 @@ File
 
 Misc
 
+- Pacer block produces rxRate label on change
+- Added synchronous alignment option to snooper
 - Added unit test for JSON Topology feature
 
 Release 0.1.0 (2014-12-21)

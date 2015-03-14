@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.2.0 (pending)
 ==========================
 
+- Support using system installed version of Poco
 - Serialization switched to portable text archive
 - Topology waitInactive() support for infinite timeout
 - PothosUtil --print-tree renamed to --plugin-tree

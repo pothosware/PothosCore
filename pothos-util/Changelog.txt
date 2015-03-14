@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos Util toolkit.
 
+Release 0.2.0 (pending)
+==========================
+
+- Added JSON primitive support to block eval call args
+
 Release 0.1.0 (2014-12-21)
 ==========================
 
