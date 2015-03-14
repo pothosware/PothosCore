@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -32,8 +32,12 @@ static const size_t waveTableSize = 4096;
  * |option [Square] "SQUARE"
  * |default "SINE"
  *
- * |param freq[Frequency] The frequency of the waveform (+/- 0.5).
- * |units cycles/sample
+ * |param rate[Sample Rate] The sample rate of the waveform.
+ * |units samples/sec
+ * |default 1.0
+ *
+ * |param freq[Frequency] The frequency of the waveform (+/- 0.5*rate).
+ * |units Hz
  * |default 0.1
  *
  * |param ampl[Amplitude] A constant scalar representing the amplitude.
@@ -44,6 +48,7 @@ static const size_t waveTableSize = 4096;
  * |preview valid
  *
  * |factory /blocks/waveform_source(dtype)
+ * |setter setSampleRate(rate)
  * |setter setWaveform(wave)
  * |setter setOffset(offset)
  * |setter setAmplitude(ampl)
@@ -55,6 +60,7 @@ class WaveformSource : public Pothos::Block
 public:
     WaveformSource(void):
         _index(0), _step(0),
+        _rate(1.0), _freq(0.0),
         _table(waveTableSize),
         _offset(0.0), _scalar(1.0),
         _wave("CONST")
@@ -68,6 +74,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, getAmplitude));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, setFrequency));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, getFrequency));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, setSampleRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, getSampleRate));
     }
 
     void activate(void)
@@ -122,15 +130,32 @@ public:
 
     void setFrequency(const double &freq)
     {
-        _step = size_t(std::llround(freq*_table.size()));
+        _freq = freq;
+        this->updateStep();
     }
 
     double getFrequency(void)
     {
-        return double(_step)/_table.size();
+        return _freq;
+    }
+
+    void setSampleRate(const double &rate)
+    {
+        _rate = rate;
+        this->updateStep();
+    }
+
+    double getSampleRate(void)
+    {
+        return _rate;
     }
 
 private:
+    void updateStep(void)
+    {
+        _step = size_t(std::llround((_freq/_rate)*_table.size()));
+    }
+
     void updateTable(void)
     {
         if (_wave == "CONST")
@@ -185,6 +210,8 @@ private:
 
     size_t _index;
     size_t _step;
+    double _rate;
+    double _freq;
     std::vector<Type> _table;
     std::complex<double> _offset, _scalar;
     std::string _wave;

@@ -31,6 +31,7 @@ File
 
 Misc
 
+- Added sample rate param to waveform source
 - Pacer block produces rxRate label on change
 - Added synchronous alignment option to snooper
 - Added unit test for JSON Topology feature
