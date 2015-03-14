@@ -3,6 +3,7 @@ This this the changelog file for the Pothos SDR toolkit.
 Release 0.1.1 (pending)
 ==========================
 
+- Fix possible device pointer leak in destructor
 - Allow frequency setting of 0.0 Hz to be used
 - Fixed the label index interpretation for the SDR Sink
 
