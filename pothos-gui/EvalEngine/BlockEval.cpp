@@ -91,6 +91,15 @@ void BlockEval::acceptThreadPool(const std::shared_ptr<ThreadPoolEval> &tp)
 
 void BlockEval::update(void)
 {
+    //disabled blocks don't have an evaluated object
+    //and do not continue onto the evaluation section
+    if (not _newBlockInfo.enabled)
+    {
+        _blockEval = Pothos::Proxy();
+        _proxyBlock = Pothos::Proxy();
+        return;
+    }
+
     _newEnvironment = _newEnvironmentEval->getEnv();
     _newThreadPool = _newThreadPoolEval->getThreadPool();
 
