@@ -91,15 +91,6 @@ void BlockEval::acceptThreadPool(const std::shared_ptr<ThreadPoolEval> &tp)
 
 void BlockEval::update(void)
 {
-    //disabled blocks don't have an evaluated object
-    //and do not continue onto the evaluation section
-    if (not _newBlockInfo.enabled)
-    {
-        _blockEval = Pothos::Proxy();
-        _proxyBlock = Pothos::Proxy();
-        return;
-    }
-
     _newEnvironment = _newEnvironmentEval->getEnv();
     _newThreadPool = _newThreadPoolEval->getThreadPool();
 
@@ -144,7 +135,9 @@ bool BlockEval::evaluationProcedure(void)
     bool evalSuccess = true;
 
     //the environment changed? clear everything
-    if (_newEnvironment != _lastEnvironment)
+    //or the block changed enabled or disabled
+    if (_newEnvironment != _lastEnvironment or
+        _newBlockInfo.enabled != _lastBlockInfo.enabled)
     {
         _lastEnvironmentEval = _newEnvironmentEval;
         _lastEnvironment = _newEnvironment;
@@ -153,9 +146,17 @@ bool BlockEval::evaluationProcedure(void)
         _proxyBlock = Pothos::Proxy();
     }
 
+    //when disabled, we only evaluate the properties
+    //however there is no object to apply properties.
+    if (not _newBlockInfo.enabled)
+    {
+        evalSuccess = this->updateAllProperties();
+        goto stash;
+    }
+
     //special case: apply settings only
     //no critical changes, block already exists
-    if (_blockEval and not this->hasCriticalChange())
+    else if (_blockEval and not this->hasCriticalChange())
     {
         //update all properties - regardless of changes
         bool setterError = not this->updateAllProperties();
@@ -263,6 +264,7 @@ bool BlockEval::evaluationProcedure(void)
     }
 
     //stash the most recent state
+    stash:
     if (evalSuccess) _lastBlockInfo = _newBlockInfo;
 
     return evalSuccess;
