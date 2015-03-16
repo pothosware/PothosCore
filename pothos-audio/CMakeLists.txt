@@ -19,6 +19,16 @@ if (PORTAUDIO_FOUND)
     message(STATUS "PORTAUDIO_DEFINITIONS: ${PORTAUDIO_DEFINITIONS}")
 else()
     message(WARNING "Pothos Audio blocks require PortAudio, skipping...")
+endif()
+
+########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_AUDIO "Enable Pothos Audio component" ON "PORTAUDIO_FOUND" OFF)
+add_feature_info(Audio ENABLE_AUDIO "Streaming audio source and sink blocks")
+if (NOT ENABLE_AUDIO)
     return()
 endif()
 

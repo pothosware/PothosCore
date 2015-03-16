@@ -3,14 +3,21 @@
 ########################################################################
 find_package(Doxygen)
 
-if (NOT DOXYGEN_FOUND)
-    return()
-endif()
-
 if (DOXYGEN_DOT_FOUND)
     set(HAVE_DOT YES)
 else()
     set(HAVE_DOT NO)
+endif()
+
+########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_DOCS "Enable Pothos Docs component" ON "DOXYGEN_FOUND" OFF)
+add_feature_info(Docs ENABLE_DOCS "Doxygen generated docs for Pothos main library")
+if (NOT ENABLE_DOCS)
+    return()
 endif()
 
 #header sources used in the generate rule

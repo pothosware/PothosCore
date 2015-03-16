@@ -17,6 +17,16 @@ if (SoapySDR_FOUND)
     message(STATUS "SoapySDR_LIBRARIES: ${SoapySDR_LIBRARIES}")
 else()
     message(WARNING "Pothos SDR blocks require SoapySDR, skipping...")
+endif()
+
+########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_SDR "Enable Pothos SDR component" ON "SoapySDR_FOUND" OFF)
+add_feature_info(SDR ENABLE_SDR "SDR source and sink blocks for radio hardware")
+if (NOT ENABLE_SDR)
     return()
 endif()
 

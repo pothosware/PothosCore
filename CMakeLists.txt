@@ -120,3 +120,16 @@ else (POCO_IN_TREE)
         IMMEDIATE @ONLY)
 
 endif (POCO_IN_TREE)
+
+#########################################################################
+# print features summary
+#########################################################################
+include(FeatureSummary)
+message(STATUS "######################################################")
+message(STATUS "## Enabled features")
+message(STATUS "######################################################")
+feature_summary(WHAT ENABLED_FEATURES)
+message(STATUS "######################################################")
+message(STATUS "## Disabled features")
+message(STATUS "######################################################")
+feature_summary(WHAT DISABLED_FEATURES)

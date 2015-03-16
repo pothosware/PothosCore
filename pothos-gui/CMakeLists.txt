@@ -36,22 +36,31 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Widgets finds its own dependencies.
 find_package(Qt5Widgets)
 
-if(NOT Qt5Widgets_FOUND)
-    return()
+if(Qt5Widgets_FOUND)
+    include_directories(${Qt5Widgets_INCLUDE_DIRS})
+    add_definitions(${Qt5Widgets_DEFINITIONS})
+    list(APPEND Pothos_LIBRARIES ${Qt5Widgets_LIBRARIES})
 endif()
-include_directories(${Qt5Widgets_INCLUDE_DIRS})
-add_definitions(${Qt5Widgets_DEFINITIONS})
-list(APPEND Pothos_LIBRARIES ${Qt5Widgets_LIBRARIES})
 
 # Widgets finds its own dependencies.
 find_package(Qt5Concurrent)
 
-if(NOT Qt5Concurrent_FOUND)
+if(Qt5Concurrent_FOUND)
+    include_directories(${Qt5Concurrent_INCLUDE_DIRS})
+    add_definitions(${Qt5Concurrent_DEFINITIONS})
+    list(APPEND Pothos_LIBRARIES ${Qt5Concurrent_LIBRARIES})
+endif()
+
+########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_GUI "Enable Pothos GUI component" ON "Qt5Widgets_FOUND;Qt5Concurrent_FOUND" OFF)
+add_feature_info(GUI ENABLE_GUI "GUI designer tool for the Pothos framework")
+if (NOT ENABLE_GUI)
     return()
 endif()
-include_directories(${Qt5Concurrent_INCLUDE_DIRS})
-add_definitions(${Qt5Concurrent_DEFINITIONS})
-list(APPEND Pothos_LIBRARIES ${Qt5Concurrent_LIBRARIES})
 
 ########################################################################
 # Color picker library - LGPL separate library
