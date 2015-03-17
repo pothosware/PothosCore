@@ -37,7 +37,7 @@ endforeach(comp)
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_WIDGETS "Enable Pothos Widgets component" ON "${Qt5Enables}" OFF)
+cmake_dependent_option(ENABLE_WIDGETS "Enable Pothos Widgets component" ON "ENABLE_LIBRARY;${Qt5Enables}" OFF)
 add_feature_info(Widgets ENABLE_WIDGETS "Graphical widgets and plotters for the GUI")
 if (NOT ENABLE_WIDGETS)
     return()

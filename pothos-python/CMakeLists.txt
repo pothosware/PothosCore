@@ -40,7 +40,7 @@ endif()
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_PYTHON "Enable Pothos Python component" ON "PYTHONLIBS_FOUND;PYTHON_DEBUG_OK" OFF)
+cmake_dependent_option(ENABLE_PYTHON "Enable Pothos Python component" ON "ENABLE_LIBRARY;PYTHONLIBS_FOUND;PYTHON_DEBUG_OK" OFF)
 add_feature_info(Python ENABLE_PYTHON "Python bindings for the Pothos framework")
 if (NOT ENABLE_PYTHON)
     return()

@@ -11,7 +11,8 @@ find_package(Pothos CONFIG REQUIRED)
 ## Feature registration
 ########################################################################
 include(FeatureSummary)
-option(ENABLE_UTILITY "Enable Pothos Util component" ON)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_UTILITY "Enable Pothos Util component" ON "ENABLE_LIBRARY" OFF)
 add_feature_info(Utility ENABLE_UTILITY "Common utility modules shared by components")
 if (NOT ENABLE_UTILITY)
     return()

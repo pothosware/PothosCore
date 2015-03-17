@@ -26,7 +26,7 @@ endif()
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_AUDIO "Enable Pothos Audio component" ON "PORTAUDIO_FOUND" OFF)
+cmake_dependent_option(ENABLE_AUDIO "Enable Pothos Audio component" ON "ENABLE_LIBRARY;PORTAUDIO_FOUND" OFF)
 add_feature_info(Audio ENABLE_AUDIO "Streaming audio source and sink blocks")
 if (NOT ENABLE_AUDIO)
     return()

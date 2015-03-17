@@ -17,7 +17,8 @@ find_package(Pothos CONFIG REQUIRED)
 ## Feature registration
 ########################################################################
 include(FeatureSummary)
-option(ENABLE_LIBRARY "Enable Pothos Library component" ON)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_LIBRARY "Enable Pothos Library component" ON "ENABLE_SERIALIZATION" OFF)
 add_feature_info(Library ENABLE_LIBRARY "The main library for all Pothos projects")
 if (NOT ENABLE_LIBRARY)
     return()

@@ -56,7 +56,7 @@ endif()
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_GUI "Enable Pothos GUI component" ON "Qt5Widgets_FOUND;Qt5Concurrent_FOUND" OFF)
+cmake_dependent_option(ENABLE_GUI "Enable Pothos GUI component" ON "ENABLE_LIBRARY;Qt5Widgets_FOUND;Qt5Concurrent_FOUND" OFF)
 add_feature_info(GUI ENABLE_GUI "GUI designer tool for the Pothos framework")
 if (NOT ENABLE_GUI)
     return()

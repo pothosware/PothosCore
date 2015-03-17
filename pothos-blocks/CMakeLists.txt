@@ -11,7 +11,8 @@ find_package(Pothos CONFIG REQUIRED)
 ## Feature registration
 ########################################################################
 include(FeatureSummary)
-option(ENABLE_BLOCKS "Enable Pothos Blocks component" ON)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_BLOCKS "Enable Pothos Blocks component" ON "ENABLE_LIBRARY" OFF)
 add_feature_info(Blocks ENABLE_BLOCKS "A collection of core processing blocks")
 if (NOT ENABLE_BLOCKS)
     return()
