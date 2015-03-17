@@ -14,6 +14,16 @@ set(POTHOS_VERSION ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATC
 find_package(Pothos CONFIG REQUIRED)
 
 ########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+option(ENABLE_LIBRARY "Enable Pothos Library component" ON)
+add_feature_info(Library ENABLE_LIBRARY "The main library for all Pothos projects")
+if (NOT ENABLE_LIBRARY)
+    return()
+endif()
+
+########################################################################
 # Install cmake helper modules
 ########################################################################
 install(

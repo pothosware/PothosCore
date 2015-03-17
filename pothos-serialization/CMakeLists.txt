@@ -1,4 +1,14 @@
 ########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+option(ENABLE_SERIALIZATION "Enable Pothos Serialization component" ON)
+add_feature_info(Serialization ENABLE_SERIALIZATION "The Pothos-Serialization C++ library")
+if (NOT ENABLE_SERIALIZATION)
+    return()
+endif()
+
+########################################################################
 # Build Pothos modification of boost serialization
 ########################################################################
 file(GLOB serialization_sources "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.cpp")
