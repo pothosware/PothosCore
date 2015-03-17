@@ -13,6 +13,7 @@ find_package(Pothos CONFIG REQUIRED)
 find_package(SoapySDR CONFIG)
 
 if (SoapySDR_FOUND)
+    message(STATUS "SoapySDR_VERSION: ${SoapySDR_VERSION}")
     message(STATUS "SoapySDR_INCLUDE_DIRS: ${SoapySDR_INCLUDE_DIRS}")
     message(STATUS "SoapySDR_LIBRARIES: ${SoapySDR_LIBRARIES}")
 else()
