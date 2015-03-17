@@ -6,12 +6,29 @@ project(PothosLibrary)
 enable_language(CXX)
 enable_testing()
 
+find_package(Pothos CONFIG REQUIRED)
+
+########################################################################
+# gather version information
+# packagers may specify -DPOTHOS_EXTVER="foo" to replace the git hash
+########################################################################
 set(POTHOS_MAJOR_VERSION 0)
 set(POTHOS_MINOR_VERSION 2)
 set(POTHOS_PATCH_VERSION 0)
-set(POTHOS_VERSION ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATCH_VERSION})
+set(POTHOS_LIBVER ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATCH_VERSION})
 
-find_package(Pothos CONFIG REQUIRED)
+if (NOT POTHOS_EXTVER)
+    include(${PROJECT_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake)
+    get_git_head_revision(GITREFSPEC GITHASH)
+    if (GITHASH)
+        string(SUBSTRING "${GITHASH}" 0 8 GITHASH)
+        set(POTHOS_EXTVER "g${GITHASH}")
+    else (GITHASH)
+        set(POTHOS_EXTVER "unknown")
+    endif (GITHASH)
+endif()
+
+set(POTHOS_VERSION "${POTHOS_LIBVER}-${POTHOS_EXTVER}")
 
 ########################################################################
 ## Feature registration
@@ -27,12 +44,18 @@ endif()
 ########################################################################
 # Install cmake helper modules
 ########################################################################
+configure_file(
+    ${PROJECT_SOURCE_DIR}/cmake/PothosConfigVersion.in.cmake
+    ${PROJECT_BINARY_DIR}/PothosConfigVersion.cmake
+@ONLY)
+
 install(
     FILES
         cmake/PothosConfig.cmake
         cmake/PothosStandardFlags.cmake
         cmake/PothosLibraryConfig.cmake
         cmake/PothosUtil.cmake
+        ${PROJECT_BINARY_DIR}/PothosConfigVersion.cmake
         #poco support
         cmake/FindPkgMacros.cmake
         cmake/FindPoco.cmake
