@@ -44,6 +44,7 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     _messageWindowDock = new MessageWindowDock(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, _messageWindowDock);
     getObjectMap()["messageWindowDock"] = _messageWindowDock;
+    poco_information_f1(Poco::Logger::get("PothosGui.MainWindow"), "Welcome to Pothos v%s", Pothos::System::getApiVersion());
 
     //create graph actions dock
     _graphActionsDock = new GraphActionsDock(this);
