@@ -80,5 +80,6 @@ POTHOS_MODULE_UTIL(
     TARGET SDRUtilityBlocks
     SOURCES
         ChannelAligner.cpp
+        RandomDropper.cpp
     ENABLE_DOCS
 )

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <iostream>
 
 /***********************************************************************
  * |PothosDoc Channel Aligner
@@ -60,21 +61,19 @@ public:
 
     void activate(void)
     {
-        _nextTimeNs.resize(this->inputs().size());
+        _nextTimeNs.resize(this->inputs().size(), 0);
     }
 
     void work(void);
 
-    size_t bytesToTimeNs(const size_t bytes, const Pothos::InputPort *input)
+    size_t sampsToTimeNs(const size_t samps)
     {
-        const size_t deltaSamps = bytes/input->buffer().dtype.size();
-        return size_t(((deltaSamps*1e9)/_sampleRate) + 0.5);
+        return size_t(((samps*1e9)/_sampleRate) + 0.5);
     }
 
-    size_t timeNsToBytes(const size_t timeNs, const Pothos::InputPort *input)
+    size_t timeNsToSamps(const size_t timeNs)
     {
-        const size_t deltaSamps = size_t(((timeNs*_sampleRate)/1e9) + 0.5);
-        return deltaSamps*input->buffer().dtype.size();
+        return size_t(((timeNs*_sampleRate)/1e9) + 0.5);
     }
 
 private:
@@ -84,6 +83,8 @@ private:
 
 void ChannelAligner::work(void)
 {
+    if (this->workInfo().minInElements == 0) return;
+
     //search all inputs for relevant labels
     for (auto input : this->inputs())
     {
@@ -99,7 +100,8 @@ void ChannelAligner::work(void)
             else if (label.id == "rxTime")
             {
                 const auto timeNs = label.data.convert<long long>();
-                const size_t deltaNs = this->bytesToTimeNs(label.index, input);
+                const size_t deltaSamps = label.index/input->buffer().dtype.size();
+                const size_t deltaNs = this->sampsToTimeNs(deltaSamps);
                 _nextTimeNs[input->index()] = timeNs - deltaNs;
             }
         }
@@ -108,9 +110,13 @@ void ChannelAligner::work(void)
     //consume and dont forward inputs to force alignment
     size_t alignIndex = 0;
     auto alignTimeNs = _nextTimeNs[alignIndex++];
+    size_t numElems = this->input(0)->buffer().elements();
     while (alignIndex < this->inputs().size())
     {
+        auto input = this->input(alignIndex);
         const auto frontTimeNs = _nextTimeNs[alignIndex];
+        numElems = std::min(numElems, input->buffer().elements());
+        //if (input->buffer().elements()) std::cout << "  have " << input->buffer().elements() << " on " << alignIndex << std::endl;
 
         //front ticks are equal, check next channel
         if (frontTimeNs == alignTimeNs) alignIndex++;
@@ -125,22 +131,27 @@ void ChannelAligner::work(void)
         //front ticks are older, consume and return
         else if (frontTimeNs < alignTimeNs)
         {
-            auto input = this->input(alignIndex);
-            const size_t deltaTimeNs = (alignTimeNs - frontTimeNs);
-            const size_t deltaBytes = this->timeNsToBytes(deltaTimeNs, input);
-            input->consume(std::min(deltaBytes, input->elements()));
-            _nextTimeNs[input->index()] += deltaTimeNs;
+            const size_t deltaSamps = this->timeNsToSamps(alignTimeNs - frontTimeNs);
+            const size_t consumeSamps = std::min(input->buffer().elements(), deltaSamps);
+            const size_t consumeBytes = consumeSamps*input->buffer().dtype.size();
+            //std::cout << "  catch up consume " << consumeSamps << " on " << alignIndex << std::endl;
+            input->consume(consumeBytes);
+            _nextTimeNs[input->index()] += this->sampsToTimeNs(consumeSamps);
             return; //we get called again ASAP if inputs are available
         }
     }
 
+    if (numElems == 0) return;
+    //std::cout << "consume " << numElems << " on all " << std::endl;
+
     //we are in alignment, forward all outputs
     for (auto input : this->inputs())
     {
-        this->output(input->index())->postBuffer(input->buffer());
-        const size_t deltaNs = this->bytesToTimeNs(input->elements(), input);
-        _nextTimeNs[input->index()] += deltaNs;
-        input->consume(input->elements());
+        auto buffer = input->buffer();
+        buffer.length = numElems*buffer.dtype.size();
+        this->output(input->index())->postBuffer(buffer);
+        _nextTimeNs[input->index()] += this->sampsToTimeNs(numElems);
+        input->consume(buffer.length);
     }
 }
 
