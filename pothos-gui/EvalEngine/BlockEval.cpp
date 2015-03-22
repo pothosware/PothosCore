@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockEval.hpp"
@@ -135,7 +135,9 @@ bool BlockEval::evaluationProcedure(void)
     bool evalSuccess = true;
 
     //the environment changed? clear everything
-    if (_newEnvironment != _lastEnvironment)
+    //or the block changed enabled or disabled
+    if (_newEnvironment != _lastEnvironment or
+        _newBlockInfo.enabled != _lastBlockInfo.enabled)
     {
         _lastEnvironmentEval = _newEnvironmentEval;
         _lastEnvironment = _newEnvironment;
@@ -144,9 +146,17 @@ bool BlockEval::evaluationProcedure(void)
         _proxyBlock = Pothos::Proxy();
     }
 
+    //when disabled, we only evaluate the properties
+    //however there is no object to apply properties.
+    if (not _newBlockInfo.enabled)
+    {
+        evalSuccess = this->updateAllProperties();
+        goto stash;
+    }
+
     //special case: apply settings only
     //no critical changes, block already exists
-    if (_blockEval and not this->hasCriticalChange())
+    else if (_blockEval and not this->hasCriticalChange())
     {
         //update all properties - regardless of changes
         bool setterError = not this->updateAllProperties();
@@ -254,6 +264,7 @@ bool BlockEval::evaluationProcedure(void)
     }
 
     //stash the most recent state
+    stash:
     if (evalSuccess) _lastBlockInfo = _newBlockInfo;
 
     return evalSuccess;
@@ -334,6 +345,7 @@ std::vector<Poco::JSON::Object::Ptr> BlockEval::settersChangedList(void) const
         if (callObj->getValue<std::string>("type") != "setter") continue;
         for (auto arg : *callObj->getArray("args"))
         {
+            if (not arg.isString()) continue;
             const auto propKey = arg.extract<std::string>();
             if (didPropKeyHaveChange(QString::fromStdString(propKey)))
             {

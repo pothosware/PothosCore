@@ -17,11 +17,21 @@ message(STATUS "OPENCL_FOUND: ${OPENCL_FOUND}")
 message(STATUS "OPENCL_INCLUDE_DIRS: ${OPENCL_INCLUDE_DIRS}")
 message(STATUS "OPENCL_LIBRARIES: ${OPENCL_LIBRARIES}")
 
-if(OPENCL_FOUND)
-    include_directories(${OPENCL_INCLUDE_DIRS})
-else()
+########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_OPENCL "Enable Pothos OpenCL component" ON "ENABLE_LIBRARY;OPENCL_FOUND" OFF)
+add_feature_info(OpenCL ENABLE_OPENCL "Support for OpenCL-based processing blocks")
+if (NOT ENABLE_OPENCL)
     return()
 endif()
+
+########################################################################
+## Build the module
+########################################################################
+include_directories(${OPENCL_INCLUDE_DIRS})
 
 set(SOURCES
     OpenClInfo.cpp

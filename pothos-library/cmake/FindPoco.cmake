@@ -11,7 +11,7 @@
 # Once done, this will define
 #
 #  POCO_FOUND - system has POCO
-#  POCO_INCLUDE_DIRS - the POCO include directories 
+#  POCO_INCLUDE_DIRS - the POCO include directories
 #  POCO_LIBRARIES - link these to use POCO
 
 include(FindPkgMacros)
@@ -23,8 +23,8 @@ getenv_path(POCO_ROOT)
 getenv_path(POCO_BASE)
 
 # construct search paths
-set(POCO_PREFIX_PATH 
-  ${POCO_HOME} ${ENV_POCO_HOME} 
+set(POCO_PREFIX_PATH
+  ${POCO_HOME} ${ENV_POCO_HOME}
   ${POCO_ROOT} ${ENV_POCO_ROOT}
   ${POCO_BASE} ${ENV_POCO_BASE}
 )
@@ -99,3 +99,12 @@ find_library(POCO_XML_LIBRARY_DBG NAMES ${POCO_XML_LIBRARY_NAMES_DBG} HINTS ${PO
 make_library_set(POCO_XML_LIBRARY)
 findpkg_finish(POCO_XML)
 
+# Look for Poco's JSON package
+findpkg_begin(POCO_JSON)
+set(POCO_JSON_LIBRARY_NAMES PocoJSON PocoJSONLmt)
+get_debug_names(POCO_JSON_LIBRARY_NAMES)
+find_path(POCO_JSON_INCLUDE_DIR NAMES Poco/JSON/JSON.h HINTS ${POCO_INCLUDE_DIR} ${POCO_INC_SEARCH_PATH} ${POCO_PKGC_INCLUDE_DIRS} PATH_SUFFIXES JSON/include)
+find_library(POCO_JSON_LIBRARY_REL NAMES ${POCO_JSON_LIBRARY_NAMES} HINTS ${POCO_LIB_SEARCH_PATH} ${POCO_PKGC_LIBRARY_DIRS} PATH_SUFFIXES Linux/i686)
+find_library(POCO_JSON_LIBRARY_DBG NAMES ${POCO_JSON_LIBRARY_NAMES_DBG} HINTS ${POCO_LIB_SEARCH_PATH} ${POCO_PKGC_LIBRARY_DIRS} PATH_SUFFIXES Linux/i686)
+make_library_set(POCO_JSON_LIBRARY)
+findpkg_finish(POCO_JSON)

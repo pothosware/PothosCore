@@ -18,18 +18,30 @@ set(CMAKE_AUTOMOC ON)
 # to always look for includes there:
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+unset(Qt5Enables)
 foreach(comp Widgets Concurrent OpenGL Svg PrintSupport)
     find_package(Qt5${comp})
+    set(Qt5Enables "${Qt5Enables};Qt5${comp}_FOUND")
 
-    if(NOT Qt5${comp}_FOUND)
+    if(Qt5${comp}_FOUND)
+        include_directories(${Qt5${comp}_INCLUDE_DIRS})
+        add_definitions(${Qt5${comp}_DEFINITIONS})
+        list(APPEND Qt5_LIBRARIES ${Qt5${comp}_LIBRARIES})
+    else()
         MESSAGE(WARNING "Cant find Qt5${comp}")
-        return()
     endif()
-
-    include_directories(${Qt5${comp}_INCLUDE_DIRS})
-    add_definitions(${Qt5${comp}_DEFINITIONS})
-    list(APPEND Qt5_LIBRARIES ${Qt5${comp}_LIBRARIES})
 endforeach(comp)
+
+########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_WIDGETS "Enable Pothos Widgets component" ON "ENABLE_LIBRARY;${Qt5Enables}" OFF)
+add_feature_info(Widgets ENABLE_WIDGETS "Graphical widgets and plotters for the GUI")
+if (NOT ENABLE_WIDGETS)
+    return()
+endif()
 
 ########################################################################
 # Qwt setup
@@ -102,3 +114,4 @@ add_subdirectory(WaveMonitor)
 add_subdirectory(Periodogram)
 add_subdirectory(Spectrogram)
 add_subdirectory(Constellation)
+add_subdirectory(LogicAnalyzer)

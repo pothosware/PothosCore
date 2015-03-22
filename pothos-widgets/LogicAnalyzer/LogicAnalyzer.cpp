@@ -1,23 +1,18 @@
 // Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "WaveMonitorDisplay.hpp"
+#include "LogicAnalyzerDisplay.hpp"
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <iostream>
 
 /***********************************************************************
- * |PothosDoc Wave Monitor
+ * |PothosDoc Logic Analyzer
  *
- * The wave monitor plot displays a live two dimensional plot of input elements vs time.
+ * The logic analyzer displays discrete values of a signal over time.
  *
  * |category /Plotters
- * |keywords time plot wave scope
- *
- * |param title The title of the plot
- * |default "Amplitude vs Time"
- * |widget StringEntry()
- * |preview valid
+ * |keywords plot logic trace wave list view
  *
  * |param numInputs[Num Inputs] The number of input ports.
  * |default 1
@@ -25,7 +20,7 @@
  * |preview disable
  *
  * |param displayRate[Display Rate] How often the plotter updates.
- * |default 10.0
+ * |default 1.0
  * |units updates/sec
  *
  * |param sampleRate[Sample Rate] The rate of the input elements.
@@ -33,31 +28,78 @@
  * |units samples/sec
  *
  * |param numPoints[Num Points] The number of points per plot capture.
- * |default 1024
+ * |default 256
  *
  * |param align[Alignment] Ensure that multiple channels are aligned.
  * All channels must have matching sample rates when alignment is enabled.
- * |default false
+ * |default true
  * |option [Disable] false
  * |option [Enable] true
  *
- * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
- * |option [Show] true
- * |option [Hide] false
- * |default true
- * |preview disable
- * |tab Axis
- *
- * |param enableYAxis[Enable Y-Axis] Show or hide the vertical axis markers.
- * |option [Show] true
- * |option [Hide] false
- * |default true
- * |preview disable
- * |tab Axis
- *
- * |param yAxisTitle[Y-Axis Title] The title of the verical axis.
- * |default ""
+ * |param label0[Ch0 Label] The display label for channel 0.
+ * |default "Ch0"
  * |widget StringEntry()
+ * |preview disable
+ * |tab Channels
+ *
+ * |param base0[Ch0 Base] The numeric base for channel 0.
+ * |default 10
+ * |option [Binary] 2
+ * |option [Octal] 8
+ * |option [Decimal] 10
+ * |option [Hexadecimal] 16
+ * |preview disable
+ * |tab Channels
+ *
+ * |param label1[Ch1 Label] The display label for channel 1.
+ * |default "Ch1"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Channels
+ *
+ * |param base1[Ch1 Base] The numeric base for channel 1.
+ * |default 10
+ * |option [Binary] 2
+ * |option [Octal] 8
+ * |option [Decimal] 10
+ * |option [Hexadecimal] 16
+ * |preview disable
+ * |tab Channels
+ *
+ * |param label2[Ch2 Label] The display label for channel 2.
+ * |default "Ch2"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Channels
+ *
+ * |param base2[Ch2 Base] The numeric base for channel 2.
+ * |default 10
+ * |option [Binary] 2
+ * |option [Octal] 8
+ * |option [Decimal] 10
+ * |option [Hexadecimal] 16
+ * |preview disable
+ * |tab Channels
+ *
+ * |param label3[Ch2 Label] The display label for channel 3.
+ * |default "Ch3"
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Channels
+ *
+ * |param base3[Ch3 Base] The numeric base for channel 3.
+ * |default 10
+ * |option [Binary] 2
+ * |option [Octal] 8
+ * |option [Decimal] 10
+ * |option [Hexadecimal] 16
+ * |preview disable
+ * |tab Channels
+ *
+ * |param xAxisMode[X Axis Mode] Choose between index or time display.
+ * |option [Index] "INDEX"
+ * |option [Time] "TIME"
+ * |default "INDEX"
  * |preview disable
  * |tab Axis
  *
@@ -69,46 +111,48 @@
  * |tab Labels
  *
  * |mode graphWidget
- * |factory /widgets/wave_monitor(remoteEnv)
+ * |factory /widgets/logic_analyzer(remoteEnv)
  * |initializer setNumInputs(numInputs)
- * |setter setTitle(title)
  * |setter setDisplayRate(displayRate)
  * |setter setSampleRate(sampleRate)
  * |setter setNumPoints(numPoints)
  * |setter setAlignment(align)
- * |setter enableXAxis(enableXAxis)
- * |setter enableYAxis(enableYAxis)
- * |setter setYAxisTitle(yAxisTitle)
+ * |setter setChannelLabel(0, label0)
+ * |setter setChannelBase(0, base0)
+ * |setter setChannelLabel(1, label1)
+ * |setter setChannelBase(1, base1)
+ * |setter setChannelLabel(2, label2)
+ * |setter setChannelBase(2, base2)
+ * |setter setChannelLabel(3, label3)
+ * |setter setChannelBase(3, base3)
+ * |setter setXAxisMode(xAxisMode)
  * |setter setRateLabelId(rateLabelId)
  **********************************************************************/
-class WaveMonitor : public Pothos::Topology
+class LogicAnalyzer : public Pothos::Topology
 {
 public:
     static Topology *make(const Pothos::ProxyEnvironment::Sptr &remoteEnv)
     {
-        return new WaveMonitor(remoteEnv);
+        return new LogicAnalyzer(remoteEnv);
     }
 
-    WaveMonitor(const Pothos::ProxyEnvironment::Sptr &remoteEnv)
+    LogicAnalyzer(const Pothos::ProxyEnvironment::Sptr &remoteEnv)
     {
-        _display.reset(new WaveMonitorDisplay());
+        _display.reset(new LogicAnalyzerDisplay());
 
         auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
         _snooper = registry.callProxy("/blocks/stream_snooper");
 
         //register calls in this topology
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumInputs));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setDisplayRate));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumPoints));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setAlignment));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setNumInputs));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setDisplayRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setNumPoints));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setAlignment));
 
         //connect to internal display block
-        this->connect(this, "setTitle", _display, "setTitle");
-        this->connect(this, "setSampleRate", _display, "setSampleRate");
-        this->connect(this, "setNumPoints", _display, "setNumPoints");
-        this->connect(this, "enableXAxis", _display, "enableXAxis");
-        this->connect(this, "enableYAxis", _display, "enableYAxis");
-        this->connect(this, "setYAxisTitle", _display, "setYAxisTitle");
+        this->connect(this, "setChannelLabel", _display, "setChannelLabel");
+        this->connect(this, "setChannelBase", _display, "setChannelBase");
+        this->connect(this, "setXAxisMode", _display, "setXAxisMode");
 
         //connect to the internal snooper block
         this->connect(this, "setDisplayRate", _snooper, "setTriggerRate");
@@ -151,7 +195,6 @@ public:
     void setNumPoints(const size_t num)
     {
         _snooper.callVoid("setChunkSize", num);
-        _display->setNumPoints(num);
     }
 
     void setAlignment(const bool enabled)
@@ -161,11 +204,11 @@ public:
 
 private:
     Pothos::Proxy _snooper;
-    std::shared_ptr<WaveMonitorDisplay> _display;
+    std::shared_ptr<LogicAnalyzerDisplay> _display;
 };
 
 /***********************************************************************
  * registration
  **********************************************************************/
-static Pothos::BlockRegistry registerWaveMonitor(
-    "/widgets/wave_monitor", &WaveMonitor::make);
+static Pothos::BlockRegistry registerLogicAnalyzer(
+    "/widgets/logic_analyzer", &LogicAnalyzer::make);

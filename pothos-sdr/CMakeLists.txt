@@ -13,10 +13,21 @@ find_package(Pothos CONFIG REQUIRED)
 find_package(SoapySDR CONFIG)
 
 if (SoapySDR_FOUND)
+    message(STATUS "SoapySDR_VERSION: ${SoapySDR_VERSION}")
     message(STATUS "SoapySDR_INCLUDE_DIRS: ${SoapySDR_INCLUDE_DIRS}")
     message(STATUS "SoapySDR_LIBRARIES: ${SoapySDR_LIBRARIES}")
 else()
     message(WARNING "Pothos SDR blocks require SoapySDR, skipping...")
+endif()
+
+########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_SDR "Enable Pothos SDR component" ON "ENABLE_LIBRARY;SoapySDR_FOUND" OFF)
+add_feature_info(SDR ENABLE_SDR "SDR source and sink blocks for radio hardware")
+if (NOT ENABLE_SDR)
     return()
 endif()
 

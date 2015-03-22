@@ -6,7 +6,7 @@ includedir=${prefix}/include
 Name: Pothos
 Description: The Pothos data-flow framework
 URL: http://pothosware.com/
-Version: @POTHOS_VERSION@
+Version: @POTHOS_LIBVER@
 Requires:
 Requires.private:
 Conflicts:

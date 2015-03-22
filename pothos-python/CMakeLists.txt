@@ -29,11 +29,20 @@ endif()
 #on windows, we require a pythonxx_d.lib in debug mode
 #require that the PYTHON_DEBUG_LIBRARY flag is set
 #or the build assumes that the debug library DNE
+set(PYTHON_DEBUG_OK TRUE)
 if(WIN32 AND NOT PYTHON_DEBUG_LIBRARY AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    return()
+    message(WARNING "WIN32 Debug mode requires PYTHON_DEBUG_LIBRARY")
+    set(PYTHON_DEBUG_OK FALSE)
 endif()
 
-if(NOT PYTHONLIBS_FOUND)
+########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_PYTHON "Enable Pothos Python component" ON "ENABLE_LIBRARY;PYTHONLIBS_FOUND;PYTHON_DEBUG_OK" OFF)
+add_feature_info(Python ENABLE_PYTHON "Python bindings for the Pothos framework")
+if (NOT ENABLE_PYTHON)
     return()
 endif()
 

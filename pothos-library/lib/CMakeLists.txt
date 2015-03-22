@@ -232,7 +232,7 @@ endif(MSVC)
 add_library(Pothos SHARED ${POTHOS_SOURCES})
 list(REMOVE_ITEM Pothos_LIBRARIES Pothos) #cant link to self
 target_link_libraries(Pothos ${Pothos_LIBRARIES})
-set_target_properties(Pothos PROPERTIES VERSION ${POTHOS_VERSION})
+set_target_properties(Pothos PROPERTIES VERSION ${POTHOS_LIBVER})
 set_target_properties(Pothos PROPERTIES DEFINE_SYMBOL "POTHOS_DLL_EXPORTS")
 
 install(TARGETS Pothos
