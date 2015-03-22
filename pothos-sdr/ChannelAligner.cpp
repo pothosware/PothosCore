@@ -36,11 +36,14 @@ public:
     }
 
     ChannelAligner(void):
-        _sampleRate(1.0)
+        _sampleRate(1.0),
+        _droppedSamps(0)
     {
         this->setupInput(0);
         this->setupOutput(0, "", this->uid()); //unique domain because of buffer forwarding
         this->registerCall(this, POTHOS_FCN_TUPLE(ChannelAligner, setNumChannels));
+        this->registerCall(this, POTHOS_FCN_TUPLE(ChannelAligner, dropped));
+        this->registerProbe("dropped");
     }
 
     void setNumChannels(const size_t numChans)
@@ -57,6 +60,11 @@ public:
         {
             this->setupOutput(i, this->output(0)->dtype());
         }
+    }
+
+    long long dropped(void) const
+    {
+        return _droppedSamps;
     }
 
     void activate(void)
@@ -79,6 +87,7 @@ public:
 private:
     double _sampleRate;
     std::vector<long long> _nextTimeNs;
+    long long _droppedSamps;
 };
 
 void ChannelAligner::work(void)
@@ -137,6 +146,7 @@ void ChannelAligner::work(void)
             //std::cout << "  catch up consume " << consumeSamps << " on " << alignIndex << std::endl;
             input->consume(consumeBytes);
             _nextTimeNs[input->index()] += this->sampsToTimeNs(consumeSamps);
+            _droppedSamps += consumeSamps;
             return; //we get called again ASAP if inputs are available
         }
     }
