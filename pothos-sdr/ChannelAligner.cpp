@@ -60,14 +60,26 @@ public:
 
     void activate(void)
     {
-        _nextTicks.resize(this->inputs().size());
+        _nextTimeNs.resize(this->inputs().size());
     }
 
     void work(void);
 
+    size_t bytesToTimeNs(const size_t bytes, const Pothos::InputPort *input)
+    {
+        const size_t deltaSamps = bytes/input->buffer().dtype.size();
+        return size_t(((deltaSamps*1e9)/_sampleRate) + 0.5);
+    }
+
+    size_t timeNsToBytes(const size_t timeNs, const Pothos::InputPort *input)
+    {
+        const size_t deltaSamps = size_t(((timeNs*_sampleRate)/1e9) + 0.5);
+        return deltaSamps*input->buffer().dtype.size();
+    }
+
 private:
     double _sampleRate;
-    std::vector<long long> _nextTicks;
+    std::vector<long long> _nextTimeNs;
 };
 
 void ChannelAligner::work(void)
@@ -87,37 +99,37 @@ void ChannelAligner::work(void)
             else if (label.id == "rxTime")
             {
                 const auto timeNs = label.data.convert<long long>();
-                auto ticks = (timeNs*_sampleRate)/1e9;
-                ticks -= label.index/input->buffer().dtype.size();
-                _nextTicks[input->index()] = ticks;
+                const size_t deltaNs = this->bytesToTimeNs(label.index, input);
+                _nextTimeNs[input->index()] = timeNs - deltaNs;
             }
         }
     }
 
     //consume and dont forward inputs to force alignment
     size_t alignIndex = 0;
-    auto alignTicks = _nextTicks[alignIndex++];
+    auto alignTimeNs = _nextTimeNs[alignIndex++];
     while (alignIndex < this->inputs().size())
     {
-        const auto frontTicks = _nextTicks[alignIndex];
+        const auto frontTimeNs = _nextTimeNs[alignIndex];
 
         //front ticks are equal, check next channel
-        if (frontTicks == alignTicks) alignIndex++;
+        if (frontTimeNs == alignTimeNs) alignIndex++;
 
         //front ticks are newer, reset ticks, start loop again
-        else if (frontTicks > alignTicks)
+        else if (frontTimeNs > alignTimeNs)
         {
-            alignTicks = frontTicks;
+            alignTimeNs = frontTimeNs;
             alignIndex = 0;
         }
 
         //front ticks are older, consume and return
-        else if (frontTicks < alignTicks)
+        else if (frontTimeNs < alignTimeNs)
         {
             auto input = this->input(alignIndex);
-            const size_t items = (alignTicks - frontTicks);
-            const size_t bytes = items*input->buffer().dtype.size();
-            input->consume(std::min(bytes, input->elements()));
+            const size_t deltaTimeNs = (alignTimeNs - frontTimeNs);
+            const size_t deltaBytes = this->timeNsToBytes(deltaTimeNs, input);
+            input->consume(std::min(deltaBytes, input->elements()));
+            _nextTimeNs[input->index()] += deltaTimeNs;
             return; //we get called again ASAP if inputs are available
         }
     }
@@ -126,8 +138,8 @@ void ChannelAligner::work(void)
     for (auto input : this->inputs())
     {
         this->output(input->index())->postBuffer(input->buffer());
-        const auto ticks = input->elements()/input->buffer().dtype.size();
-        _nextTicks[input->index()] += ticks;
+        const size_t deltaNs = this->bytesToTimeNs(input->elements(), input);
+        _nextTimeNs[input->index()] += deltaNs;
         input->consume(input->elements());
     }
 }
