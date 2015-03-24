@@ -27,8 +27,8 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
     POTHOS_TEST_EQUAL(result.convert<int>(), 3);
 
     //a pothos type
-    const auto result2 = evalEnv.call<Pothos::Object>("eval", "DType(\"int32\")");
-    POTHOS_TEST_TRUE(result2.convert<Pothos::DType>() == Pothos::DType(typeid(int)));
+    //const auto result2 = evalEnv.call<Pothos::Object>("eval", "DType(\"int32\")");
+    //POTHOS_TEST_TRUE(result2.convert<Pothos::DType>() == Pothos::DType(typeid(int)));
 
     //test string w/ escape quote
     const auto result3 = evalEnv.call<Pothos::Object>("eval", "\"hello \\\" world\"");
