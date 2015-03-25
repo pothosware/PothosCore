@@ -91,6 +91,7 @@ set(SOURCES
     PropertiesPanel/ConnectionPropertiesPanel.cpp
     PropertiesPanel/BlockPropertiesPanel.cpp
     PropertiesPanel/BreakerPropertiesPanel.cpp
+    PropertiesPanel/GraphPropertiesPanel.cpp
 
     MessageWindow/MessageWindowDock.cpp
     MessageWindow/LoggerDisplay.cpp
@@ -139,6 +140,7 @@ set(SOURCES
     EvalEngine/EnvironmentEval.cpp
     EvalEngine/TopologyEval.cpp
     EvalEngine/TopologyTraversal.cpp
+    EvalEngine/GraphGlobals.cpp
 )
 add_executable(PothosGui ${SOURCES})
 target_link_libraries(PothosGui Pothos ${Pothos_LIBRARIES})

@@ -1,8 +1,9 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //make icon theme
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
+#include "PropertiesPanel/GraphPropertiesPanel.hpp"
 #include "PropertiesPanel/BlockPropertiesPanel.hpp"
 #include "PropertiesPanel/BreakerPropertiesPanel.hpp"
 #include "PropertiesPanel/ConnectionPropertiesPanel.hpp"
@@ -59,13 +60,15 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     }
 
     //extract the graph object
+    auto graph = dynamic_cast<GraphEditor *>(obj);
     auto block = dynamic_cast<GraphBlock *>(obj);
     auto breaker = dynamic_cast<GraphBreaker *>(obj);
     auto connection = dynamic_cast<GraphConnection *>(obj);
     auto widget = dynamic_cast<GraphWidget *>(obj);
 
     if (widget != nullptr) block = widget->getGraphBlock();
-    if (block != nullptr) _propertiesPanel = new BlockPropertiesPanel(block, this);
+    if (graph != nullptr) _propertiesPanel = new GraphPropertiesPanel(graph, this);
+    else if (block != nullptr) _propertiesPanel = new BlockPropertiesPanel(block, this);
     else if (breaker != nullptr) _propertiesPanel = new BreakerPropertiesPanel(breaker, this);
     else if (connection != nullptr and connection->isSignalOrSlot()) _propertiesPanel = new ConnectionPropertiesPanel(connection, this);
     else return;
