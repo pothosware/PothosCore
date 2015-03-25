@@ -20,6 +20,11 @@ public:
         return;
     };
 
+    void applyConstant(const std::string &name, const std::string &expr)
+    {
+        _evalEnv->registerConstant(name, expr);
+    }
+
     Pothos::Object evalProperty(const std::string &key, const std::string &expr)
     {
         auto val = _evalEnv->eval(expr);

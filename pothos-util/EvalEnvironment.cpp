@@ -14,13 +14,23 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <mutex>
 #include "mpParser.h"
 
 struct EvalEnvironment::Impl
 {
+    Impl(void):
+        p(mup::pckALL_COMPLEX)
+    {
+        p.DefineConst("True", true);
+        p.DefineConst("False", false);
+        p.DefineConst("j", std::complex<double>(0.0, 1.0));
+    }
     std::map<std::string, Pothos::Object> evalCache;
     std::map<std::string, std::string> errorCache;
     Poco::RWLock mutex;
+    std::mutex parserMutex;
+    mup::ParserX p;
 };
 
 EvalEnvironment::EvalEnvironment(void):
@@ -65,6 +75,23 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr_)
     }
 
     return result;
+}
+
+void EvalEnvironment::registerConstant(const std::string &key, const std::string &expr)
+{
+    try
+    {
+        std::lock_guard<std::mutex> lock(_impl->parserMutex);
+        _impl->p.SetExpr(expr);
+        mup::Value result = _impl->p.Eval();
+
+        if (_impl->p.IsConstDefined(key)) _impl->p.RemoveConst(key);
+        _impl->p.DefineConst(key, result);
+    }
+    catch (const mup::ParserError &ex)
+    {
+        throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.GetMsg());
+    }
 }
 
 Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
@@ -117,14 +144,11 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
         return Pothos::Object(map);
     }
 
-    mup::ParserX p(mup::pckALL_COMPLEX);
-    p.DefineConst("True", true);
-    p.DefineConst("False", false);
-    p.DefineConst("j", std::complex<double>(0.0, 1.0));
     try
     {
-        p.SetExpr(expr);
-        mup::Value result = p.Eval();
+        std::lock_guard<std::mutex> lock(_impl->parserMutex);
+        _impl->p.SetExpr(expr);
+        mup::Value result = _impl->p.Eval();
         switch (result.GetType())
         {
         case 'b': return Pothos::Object(result.GetBool());
