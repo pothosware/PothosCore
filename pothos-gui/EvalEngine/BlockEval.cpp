@@ -12,6 +12,7 @@
 #include <cassert>
 #include <iostream>
 #include <QApplication>
+#include <QRegExp>
 
 //! helper to convert the port info vector into JSON for serialization of the block
 static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo> &infos)
@@ -360,11 +361,45 @@ bool BlockEval::didPropKeyHaveChange(const QString &key) const
 {
     if (_newBlockInfo.properties.count(key) == 0) return true;
     if (_lastBlockInfo.properties.count(key) == 0) return true;
-    return _newBlockInfo.properties.at(key) != _lastBlockInfo.properties.at(key);
+    const auto newVal = _newBlockInfo.properties.at(key);
+    const auto oldVal = _lastBlockInfo.properties.at(key);
+    if (newVal != oldVal) return true;
+    return (this->didExprHaveChange(newVal));
+}
+
+bool BlockEval::didExprHaveChange(const QString &expr, const size_t depth) const
+{
+    //probably encountered a loop, declare this a change
+    if (depth > _newBlockInfo.constants.size()) return true;
+
+    const std::map<QString, QString> newConstants(_newBlockInfo.constants.begin(), _newBlockInfo.constants.end());
+    const std::map<QString, QString> lastConstants(_lastBlockInfo.constants.begin(), _lastBlockInfo.constants.end());
+
+    for (const auto &tok : expr.split(QRegExp("\\W"), QString::SkipEmptyParts))
+    {
+        const bool foundInNew = newConstants.find(tok) != newConstants.end();
+        const bool foundInLast = lastConstants.find(tok) != lastConstants.end();
+
+        //token is not a constant -- ignore
+        if (not foundInNew and not foundInLast) continue;
+
+        //constant removal detection -- report as changed
+        if (foundInNew and not foundInLast) return true;
+        if (not foundInNew and foundInLast) return true;
+
+        //constant expression changed
+        if (newConstants.at(tok) != lastConstants.at(tok)) return true;
+
+        //recurse on this constant's expression
+        if (didExprHaveChange(newConstants.at(tok), depth+1)) return true;
+    }
+
+    return false;
 }
 
 bool BlockEval::updateAllProperties(void)
 {
+    //create a block evaluator if need-be
     if (not _blockEval) try
     {
         Pothos::Proxy evalEnv;
@@ -387,6 +422,10 @@ bool BlockEval::updateAllProperties(void)
         return false;
     }
 
+    //apply constants before eval property expressions
+    if (not this->applyConstants()) return false;
+
+    //update each property
     bool hasError = false;
     for (const auto &pair : _newBlockInfo.properties)
     {
@@ -404,6 +443,25 @@ bool BlockEval::updateAllProperties(void)
         }
     }
     return not hasError;
+}
+
+bool BlockEval::applyConstants(void)
+{
+    for (const auto &pair : _newBlockInfo.constants)
+    {
+        const auto &name = pair.first;
+        const auto &expr = pair.second;
+        try
+        {
+            _blockEval.callProxy("applyConstant", name.toStdString(), expr.toStdString());
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            this->reportError("applyConstants", ex);
+            return false;
+        }
+    }
+    return true;
 }
 
 void BlockEval::reportError(const std::string &action, const Pothos::Exception &ex)

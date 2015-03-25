@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -34,6 +34,7 @@ struct BlockInfo
     bool enabled;
     QString zone;
     std::map<QString, QString> properties;
+    std::vector<std::pair<QString, QString>> constants;
     std::map<QString, Poco::JSON::Object::Ptr> paramDescs;
     Poco::JSON::Object::Ptr desc;
 };
@@ -132,6 +133,13 @@ private:
     bool didPropKeyHaveChange(const QString &key) const;
 
     /*!
+     * Detect a change in an expression
+     * accounting for the constants dependency tree.
+     * The depth parameter prevents infinite recursion.
+     */
+    bool didExprHaveChange(const QString &key, const size_t depth = 0) const;
+
+    /*!
      * Create the remote block evaluator if needed.
      * Call evalProperty on all properties.
      * Record error conditions of each property.
@@ -139,6 +147,12 @@ private:
      * \return true for success, false for error
      */
     bool updateAllProperties(void);
+
+    /*!
+     * Apply constants to the evaluator.
+     * \return true for success, false for error
+     */
+    bool applyConstants(void);
 
     /*!
      * The main evaluation procedure for dealing with changes.

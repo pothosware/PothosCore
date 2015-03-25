@@ -38,9 +38,18 @@ public:
     //! Get the value string for an evaluated variable.
     const QString &getGlobalValueStr(const QString &name) const;
 
+    //! Set an error message for the evaluated variable.
+    void setGlobalErrorMsg(const QString &name, const QString &errorMsg);
+
+    //! Get the error message for an evaluated variable.
+    const QString &getGlobalErrorMsg(const QString &name) const;
+
 private:
     QStringList _names;
     std::map<QString, QString> _variableExprs;
     std::map<QString, QString> _evalTypeStrs;
     std::map<QString, QString> _evalValueStrs;
+    std::map<QString, QString> _evalErrorMsgs;
 };
+
+bool operator==(const GraphGlobals &lhs, const GraphGlobals &rhs);
