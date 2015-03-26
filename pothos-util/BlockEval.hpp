@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -18,7 +18,7 @@ public:
         _evalEnv(env)
     {
         return;
-    };
+    }
 
     Pothos::Object evalProperty(const std::string &key, const std::string &expr)
     {
