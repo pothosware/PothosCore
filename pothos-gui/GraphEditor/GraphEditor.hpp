@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -97,7 +97,8 @@ private slots:
     void handleDelete(void);
     void handleRotateLeft(void);
     void handleRotateRight(void);
-    void handleProperties(void);
+    void handleObjectProperties(void);
+    void handleGraphProperties(void);
     void handleZoomIn(void);
     void handleZoomOut(void);
     void handleZoomOriginal(void);

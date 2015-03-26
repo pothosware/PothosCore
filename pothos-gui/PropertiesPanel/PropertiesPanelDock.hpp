@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -6,7 +6,6 @@
 #include <QDockWidget>
 #include <QPointer>
 
-class GraphObject;
 class QScrollArea;
 class QPushButton;
 
@@ -21,14 +20,14 @@ signals:
 
 private slots:
 
-    void handleGraphModifyProperties(GraphObject *obj);
+    void handleGraphModifyProperties(QObject *obj);
 
     void handlePanelDestroyed(QObject *);
 
     void handleDeletePanel(void);
 
 private:
-    QPointer<GraphObject> _currentGraphObject;
+    QPointer<QObject> _currentGraphObject;
     QPointer<QWidget> _propertiesPanel;
     QScrollArea *_scroll;
     QPushButton *_commitButton;

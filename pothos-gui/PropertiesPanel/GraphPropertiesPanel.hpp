@@ -10,6 +10,8 @@
 #include <map>
 
 class GraphEditor;
+class QFormLayout;
+class QLineEdit;
 
 class GraphPropertiesPanel : public QWidget
 {
@@ -24,6 +26,11 @@ public slots:
     void handleCancel(void);
     void handleCommit(void);
 
+private slots:
+    void handleCreateConstant(void);
+
 private:
     QPointer<GraphEditor> _graphEditor;
+    QFormLayout *_formLayout;
+    QLineEdit *_constantNameEntry;
 };

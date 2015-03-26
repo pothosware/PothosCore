@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //action and object map
@@ -53,8 +53,8 @@ GraphDraw::GraphDraw(QWidget *parent):
 
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
         this, SLOT(handleCustomContextMenuRequested(const QPoint &)));
-    connect(this, SIGNAL(modifyProperties(GraphObject *)),
-        getObjectMap()["propertiesPanel"], SLOT(handleGraphModifyProperties(GraphObject *)));
+    connect(this, SIGNAL(modifyProperties(QObject *)),
+        getObjectMap()["propertiesPanel"], SLOT(handleGraphModifyProperties(QObject *)));
     connect(this->scene(), SIGNAL(selectionChanged(void)), this, SLOT(updateEnabledActions(void)));
 
     //debug view - connect and initialize
@@ -148,7 +148,7 @@ void GraphDraw::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Plus) getActionMap()["increment"]->activate(QAction::Trigger);
     if (event->key() == Qt::Key_Minus) getActionMap()["decrement"]->activate(QAction::Trigger);
-    if (event->key() == Qt::Key_Return) getActionMap()["properties"]->activate(QAction::Trigger);
+    if (event->key() == Qt::Key_Return) getActionMap()["objectProperties"]->activate(QAction::Trigger);
     if (event->key() == Qt::Key_E) getActionMap()["enable"]->activate(QAction::Trigger);
     if (event->key() == Qt::Key_D) getActionMap()["disable"]->activate(QAction::Trigger);
     if (event->key() == Qt::Key_R) getActionMap()["reeval"]->activate(QAction::Trigger);
@@ -171,7 +171,7 @@ void GraphDraw::updateEnabledActions(void)
     getActionMap()["delete"]->setEnabled(selected);
     getActionMap()["rotateLeft"]->setEnabled(selectedNoC);
     getActionMap()["rotateRight"]->setEnabled(selectedNoC);
-    getActionMap()["properties"]->setEnabled(selected);
+    getActionMap()["objectProperties"]->setEnabled(selected);
     getActionMap()["increment"]->setEnabled(selectedBlocks);
     getActionMap()["decrement"]->setEnabled(selectedBlocks);
     getActionMap()["enable"]->setEnabled(selectedBlocks);

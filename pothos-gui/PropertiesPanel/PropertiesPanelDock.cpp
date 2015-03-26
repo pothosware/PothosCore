@@ -50,7 +50,7 @@ PropertiesPanelDock::PropertiesPanelDock(QWidget *parent):
     }
 }
 
-void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
+void PropertiesPanelDock::handleGraphModifyProperties(QObject *obj)
 {
     //clear old panel
     if (_propertiesPanel)
@@ -65,6 +65,7 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     auto breaker = dynamic_cast<GraphBreaker *>(obj);
     auto connection = dynamic_cast<GraphConnection *>(obj);
     auto widget = dynamic_cast<GraphWidget *>(obj);
+    auto graphObject = dynamic_cast<GraphObject *>(obj);
 
     if (widget != nullptr) block = widget->getGraphBlock();
     if (graph != nullptr) _propertiesPanel = new GraphPropertiesPanel(graph, this);
@@ -80,7 +81,7 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     connect(_cancelButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCancel(void)));
 
     //connect state change to the graph editor
-    auto editor = obj->draw()->getGraphEditor();
+    auto editor = (graphObject != nullptr)? graphObject->draw()->getGraphEditor() : graph;
     connect(_propertiesPanel, SIGNAL(stateChanged(const GraphState &)), editor, SLOT(handleStateChange(const GraphState &)));
 
     //set the widget and make the entire dock visible

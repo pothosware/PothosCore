@@ -63,6 +63,15 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
     this->render();
 }
 
+void GraphDraw::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    QGraphicsView::mouseDoubleClickEvent(event);
+
+    //double clicked on graph to edit graph properties when nothing selected
+    const auto objs = this->getObjectsAtPos(event->pos());
+    if (objs.empty()) emit this->modifyProperties(this->getGraphEditor());
+}
+
 static void handleAutoScroll(QScrollBar *bar, const qreal length, const qreal offset)
 {
     const qreal delta = offset - bar->value();

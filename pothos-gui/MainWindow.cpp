@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow.hpp"
@@ -254,8 +254,11 @@ void PothosGuiMainWindow::createActions(void)
     _selectAllAction->setShortcut(QKeySequence::SelectAll);
     _actionMap["selectAll"] = _selectAllAction;
 
-    _propertiesAction = new QAction(makeIconFromTheme("document-properties"), tr("Properti&es"), this);
-    _actionMap["properties"] = _propertiesAction;
+    _objectPropertiesAction = new QAction(makeIconFromTheme("document-properties"), tr("&Object Properties"), this);
+    _actionMap["objectProperties"] = _objectPropertiesAction;
+
+    _graphPropertiesAction = new QAction(makeIconFromTheme("document-properties"), tr("&Graph Properties"), this);
+    _actionMap["graphProperties"] = _graphPropertiesAction;
 
     _createGraphPageAction = new QAction(makeIconFromTheme("document-new"), tr("Create new graph page"), this);
     _actionMap["createGraphPage"] = _createGraphPageAction;
@@ -382,7 +385,8 @@ void PothosGuiMainWindow::createMenus(void)
     _editMenu->addAction(_incrementAction);
     _editMenu->addAction(_decrementAction);
     _editMenu->addSeparator();
-    _editMenu->addAction(_propertiesAction);
+    _editMenu->addAction(_objectPropertiesAction);
+    _editMenu->addAction(_graphPropertiesAction);
     _editMenu->addSeparator();
     auto pageMenu = _editMenu->addMenu(tr("Graph page options..."));
     pageMenu->addAction(_createGraphPageAction);
@@ -473,5 +477,5 @@ void PothosGuiMainWindow::createMainToolBar(void)
     _mainToolBar->addAction(_rotateRightAction);
     _mainToolBar->addSeparator();
 
-    _mainToolBar->addAction(_propertiesAction);
+    _mainToolBar->addAction(_objectPropertiesAction);
 }
