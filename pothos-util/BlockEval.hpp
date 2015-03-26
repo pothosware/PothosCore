@@ -18,7 +18,7 @@ public:
         _evalEnv(env)
     {
         return;
-    };
+    }
 
     Pothos::Object evalProperty(const std::string &key, const std::string &expr)
     {
