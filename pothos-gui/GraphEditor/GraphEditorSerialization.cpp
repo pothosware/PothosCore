@@ -9,6 +9,21 @@
  **********************************************************************/
 void GraphEditor::dumpState(std::ostream &os) const
 {
+    Poco::JSON::Object topObj;
+
+    //store constants graph properties
+    Poco::JSON::Array constants;
+    for (const auto &name : this->globals().listGlobals())
+    {
+        const auto &expr = this->globals().getGlobalExpression(name);
+        Poco::JSON::Object constantObj;
+        constantObj.set("name", name.toStdString());
+        constantObj.set("expr", expr.toStdString());
+        constants.add(constantObj);
+    }
+    topObj.set("constants", constants);
+
+    //store pages
     Poco::JSON::Array pages;
     for (int pageNo = 0; pageNo < this->count(); pageNo++)
     {
@@ -25,6 +40,7 @@ void GraphEditor::dumpState(std::ostream &os) const
         page.set("graphObjects", graphObjects);
         pages.add(page);
     }
+    topObj.set("pages", pages);
 
-    pages.stringify(os, 4/*indent*/);
+    topObj.stringify(os, 4/*indent*/);
 }

@@ -18,7 +18,8 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
     QWidget(parent),
     _graphEditor(editor),
     _formLayout(new QFormLayout(this)),
-    _constantNameEntry(nullptr)
+    _constantNameEntry(nullptr),
+    _constNameFormLayout(nullptr)
 {
     //title
     {
@@ -37,8 +38,11 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
 
     //constants editor
     {
+        _orderedConstNames = _graphEditor->globals().listGlobals();
+
         auto constantsBox = new QGroupBox(tr("Graph Constants"), this);
-        auto constantsBoxLayout = new QVBoxLayout(constantsBox);
+        auto constantsLayout = new QVBoxLayout(constantsBox);
+        _constNameFormLayout = new QFormLayout();
 
         auto nameEntryLayout = new QHBoxLayout();
         _constantNameEntry = new QLineEdit(constantsBox);
@@ -48,7 +52,9 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         connect(_constantNameEntry, SIGNAL(returnPressed(void)), this, SLOT(handleCreateConstant(void)));
         nameEntryLayout->addWidget(_constantNameEntry);
         nameEntryLayout->addWidget(nameEntryButton);
-        constantsBoxLayout->addLayout(nameEntryLayout);
+
+        constantsLayout->addLayout(_constNameFormLayout);
+        constantsLayout->addLayout(nameEntryLayout);
 
         _formLayout->addRow(constantsBox);
     }
@@ -77,8 +83,55 @@ void GraphPropertiesPanel::handleCreateConstant(void)
     //check for a legal variable name
     if (name.count(QRegExp("^[a-zA-Z]\\w*$")) != 1)
     {
-        errorMsg = tr("Not a legal variable name: '%1'").arg(name);
+        errorMsg = tr("'%1' is not a legal variable name").arg(name);
     }
 
-    if (not errorMsg.isEmpty()) QToolTip::showText(_constantNameEntry->mapToGlobal(QPoint()), "<font color=\"red\">"+errorMsg+"</font>");
+    //check if the variable exists
+    if (std::find(_orderedConstNames.begin(), _orderedConstNames.end(), name) != _orderedConstNames.end())
+    {
+        errorMsg = tr("Constant '%1' already exists").arg(name);
+    }
+
+    //report error and exit
+    if (not errorMsg.isEmpty())
+    {
+        QToolTip::showText(_constantNameEntry->mapToGlobal(QPoint()), "<font color=\"red\">"+errorMsg+"</font>");
+        return;
+    }
+
+    //success, add the form
+    _orderedConstNames.push_back(name);
+    this->updateConstantForm(name);
+}
+
+void GraphPropertiesPanel::updateAllConstantForms(void)
+{
+    for (const auto &name : _orderedConstNames)
+    {
+        this->updateConstantForm(name);
+    }
+}
+
+void GraphPropertiesPanel::updateConstantForm(const QString &name)
+{
+    //create the widgets if when they do not exist
+    if (_constNameToEditWidget.count(name) == 0)
+    {
+        auto formLabel = new QLabel(this);
+        auto errorLabel = new QLabel(this);
+        auto editWidget = new QLineEdit(this);
+        auto editLayout = new QVBoxLayout();
+        editLayout->addWidget(editWidget);
+        editLayout->addWidget(errorLabel);
+        _constNameFormLayout->addRow(formLabel, editLayout);
+
+        //TODO what if its blank... _constNameToOriginal[name] = _graphEditor->globals()->getGlobalExpression;
+        _constNameToFormLabel[name] = formLabel;
+        _constNameToErrorLabel[name] = errorLabel;
+        _constNameToEditWidget[name] = editWidget;
+    }
+
+    //update the widgets for this constant
+    _constNameToFormLabel[name]->setText(name);
+    //TODO
 }

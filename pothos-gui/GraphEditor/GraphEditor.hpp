@@ -5,6 +5,7 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
+#include "GraphEditor/GraphGlobals.hpp"
 #include <Poco/JSON/Object.h>
 #include <QTabWidget>
 #include <QPointer>
@@ -67,6 +68,16 @@ public:
 
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);
+
+    GraphGlobals &globals(void)
+    {
+        return _globals;
+    }
+
+    const GraphGlobals &globals(void) const
+    {
+        return _globals;
+    }
 
 signals:
     void newTitleSubtext(const QString &);
@@ -142,4 +153,6 @@ private:
 
     EvalEngine *_evalEngine;
     bool _isTopologyActive;
+
+    GraphGlobals _globals;
 };

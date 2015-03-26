@@ -17,6 +17,9 @@ class GraphGlobals
 public:
     GraphGlobals(void);
 
+    //! clear all globals
+    void clear(void);
+
     //! Set a global variable and its expression -- overwrite existing
     void setGlobalExpression(const QString &name, const QString &expression);
 
@@ -24,7 +27,7 @@ public:
     const QString &getGlobalExpression(const QString &name) const;
 
     //! Get a list of all globals by name (order they were added)
-    const QStringList &getGlobals(void) const;
+    const QStringList &listGlobals(void) const;
 
     //! Set a type string for the evaluated variable.
     void setGlobalTypeStr(const QString &name, const QString &typeStr);

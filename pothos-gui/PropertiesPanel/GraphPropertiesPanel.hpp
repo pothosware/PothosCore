@@ -7,11 +7,13 @@
 #include <QWidget>
 #include <QPointer>
 #include <QString>
+#include <QStringList>
 #include <map>
 
 class GraphEditor;
 class QFormLayout;
 class QLineEdit;
+class QLabel;
 
 class GraphPropertiesPanel : public QWidget
 {
@@ -33,4 +35,15 @@ private:
     QPointer<GraphEditor> _graphEditor;
     QFormLayout *_formLayout;
     QLineEdit *_constantNameEntry;
+
+    //constants expression entry
+    QStringList _orderedConstNames;
+    std::map<QString, QString> _constNameToOriginal;
+    std::map<QString, QLabel *> _constNameToFormLabel;
+    std::map<QString, QLabel *> _constNameToErrorLabel;
+    std::map<QString, QWidget *> _constNameToEditWidget;
+    QFormLayout *_constNameFormLayout;
+
+    void updateAllConstantForms(void);
+    void updateConstantForm(const QString &name);
 };

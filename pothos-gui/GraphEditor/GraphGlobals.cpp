@@ -8,6 +8,15 @@ GraphGlobals::GraphGlobals(void)
     return;
 }
 
+void GraphGlobals::clear(void)
+{
+    _variableExprs.clear();
+    _evalTypeStrs.clear();
+    _evalValueStrs.clear();
+    _evalErrorMsgs.clear();
+    _names.clear();
+}
+
 void GraphGlobals::setGlobalExpression(const QString &name, const QString &expression)
 {
     _variableExprs[name] = expression;
@@ -22,7 +31,7 @@ const QString &GraphGlobals::getGlobalExpression(const QString &name) const
     return _variableExprs.at(name);
 }
 
-const QStringList &GraphGlobals::getGlobals(void) const
+const QStringList &GraphGlobals::listGlobals(void) const
 {
     return _names;
 }
@@ -59,8 +68,8 @@ const QString &GraphGlobals::getGlobalErrorMsg(const QString &name) const
 
 bool operator==(const GraphGlobals &lhs, const GraphGlobals &rhs)
 {
-    if (lhs.getGlobals() != rhs.getGlobals()) return false;
-    for (const auto &name : lhs.getGlobals())
+    if (lhs.listGlobals() != rhs.listGlobals()) return false;
+    for (const auto &name : lhs.listGlobals())
     {
         if (lhs.getGlobalExpression(name) != rhs.getGlobalExpression(name)) return false;
     }

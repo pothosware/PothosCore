@@ -123,6 +123,7 @@ set(SOURCES
     GraphEditor/GraphDraw.cpp
     GraphEditor/GraphDrawSelection.cpp
     GraphEditor/GraphActionsDock.cpp
+    GraphEditor/GraphGlobals.cpp
 
     GraphObjects/GraphEndpoint.cpp
     GraphObjects/GraphObject.cpp
@@ -140,7 +141,6 @@ set(SOURCES
     EvalEngine/EnvironmentEval.cpp
     EvalEngine/TopologyEval.cpp
     EvalEngine/TopologyTraversal.cpp
-    EvalEngine/GraphGlobals.cpp
 )
 add_executable(PothosGui ${SOURCES})
 target_link_libraries(PothosGui Pothos ${Pothos_LIBRARIES})
