@@ -67,6 +67,7 @@ void GraphEditorTabs::doReloadDialog(GraphEditor *editor)
     if (not editor->hasUnsavedChanges()) return;
 
     //yes/no dialog if we have unsaved changes
+    this->setCurrentWidget(editor);
     const auto reply = QMessageBox::question(this,
         tr("Reload: unsaved changes!"),
         tr("Unsaved changes %1!\nAre you sure that you want to reload?").arg(editor->getCurrentFilePath()),
@@ -148,6 +149,7 @@ void GraphEditorTabs::handleSaveAs(void)
     {
         lastPath = editor->getCurrentFilePath();
     }
+    this->setCurrentWidget(editor);
     auto filePath = QFileDialog::getSaveFileName(this,
                         tr("Save As"),
                         lastPath,
@@ -197,6 +199,7 @@ void GraphEditorTabs::handleClose(GraphEditor *editor)
     if (editor->hasUnsavedChanges())
     {
         //yes/no dialog if we have unsaved changes
+        this->setCurrentWidget(editor);
         const auto reply = QMessageBox::question(this,
             tr("Close: unsaved changes!"),
             tr("Unsaved changes %1!\nWould you like to save changes?").arg(editor->getCurrentFilePath()),
