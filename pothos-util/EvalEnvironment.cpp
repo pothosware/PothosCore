@@ -9,13 +9,26 @@
 #include <Pothos/Proxy.hpp>
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
-#include <Poco/RWLock.h>
 #include <string>
 #include <vector>
 #include <map>
 #include <iostream>
 #include <mutex>
 #include "mpParser.h"
+
+static Pothos::Object mupValueToObject(const mup::Value &val)
+{
+    switch (val.GetType())
+    {
+    case 'b': return Pothos::Object(val.GetBool());
+    case 'i': return Pothos::Object(val.GetInteger());
+    case 'f': return Pothos::Object(val.GetFloat());
+    case 'c': return Pothos::Object(val.GetComplex());
+    case 's': return Pothos::Object(val.GetString());
+    //TODO m for matrix type
+    }
+    return Pothos::Object();
+}
 
 struct EvalEnvironment::Impl
 {
@@ -26,9 +39,6 @@ struct EvalEnvironment::Impl
         p.DefineConst("False", false);
         p.DefineConst("j", std::complex<double>(0.0, 1.0));
     }
-    std::map<std::string, Pothos::Object> evalCache;
-    std::map<std::string, std::string> errorCache;
-    Poco::RWLock mutex;
     std::mutex parserMutex;
     mup::ParserX p;
 };
@@ -37,44 +47,6 @@ EvalEnvironment::EvalEnvironment(void):
     _impl(new Impl())
 {
     return;
-}
-
-Pothos::Object EvalEnvironment::eval(const std::string &expr_)
-{
-    const auto expr = Poco::trim(expr_);
-
-    //check the cache
-    {
-        Poco::RWLock::ScopedReadLock l(_impl->mutex);
-        auto it = _impl->evalCache.find(expr);
-        if (it != _impl->evalCache.end()) return it->second;
-
-        //errors cache
-        auto errorIt = _impl->errorCache.find(expr);
-        if (errorIt != _impl->errorCache.end()) throw Pothos::Exception("EvalEnvironment::eval("+expr+")", errorIt->second);
-    }
-
-    //try to perform the evaluation
-    Pothos::Object result;
-    try
-    {
-        result = this->evalNoCache(expr);
-    }
-    catch (const Pothos::Exception &ex)
-    {
-        //cache the error
-        Poco::RWLock::ScopedWriteLock l(_impl->mutex);
-        _impl->errorCache[expr] = ex.displayText();
-        throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.displayText());
-    }
-
-    //cache result and return
-    {
-        Poco::RWLock::ScopedWriteLock l(_impl->mutex);
-        _impl->evalCache[expr] = result;
-    }
-
-    return result;
 }
 
 void EvalEnvironment::registerConstant(const std::string &key, const std::string &expr)
@@ -94,7 +66,7 @@ void EvalEnvironment::registerConstant(const std::string &key, const std::string
     }
 }
 
-Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
+Pothos::Object EvalEnvironment::eval(const std::string &expr)
 {
     if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval()", "expression is empty");
     const auto inBrackets = expr.size() >= 2 and expr.front() == '[' and expr.back() == ']';
@@ -149,15 +121,7 @@ Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
         std::lock_guard<std::mutex> lock(_impl->parserMutex);
         _impl->p.SetExpr(expr);
         mup::Value result = _impl->p.Eval();
-        switch (result.GetType())
-        {
-        case 'b': return Pothos::Object(result.GetBool());
-        case 'i': return Pothos::Object(result.GetInteger());
-        case 'f': return Pothos::Object(result.GetFloat());
-        case 'c': return Pothos::Object(result.GetComplex());
-        case 's': return Pothos::Object(result.GetString());
-        //TODO m for matrix type
-        }
+        return mupValueToObject(result);
     }
     catch (const mup::ParserError &ex)
     {
@@ -173,4 +137,5 @@ static auto managedEvalEnvironment = Pothos::ManagedClass()
     .registerConstructor<EvalEnvironment>()
     .registerStaticMethod(POTHOS_FCN_TUPLE(EvalEnvironment, make))
     .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, eval))
+    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, registerConstant))
     .commit("Pothos/Util/EvalEnvironment");

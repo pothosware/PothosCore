@@ -41,5 +41,4 @@ public:
 
 private:
     struct Impl; std::shared_ptr<Impl> _impl;
-    Pothos::Object evalNoCache(const std::string &);
 };
