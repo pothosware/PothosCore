@@ -15,6 +15,7 @@ class GraphEditor;
 class QFormLayout;
 class QLineEdit;
 class QLabel;
+class PropertyEditWidget;
 
 class GraphPropertiesPanel : public QWidget
 {
@@ -42,16 +43,11 @@ private:
     QStringList _originalConstNames;
     std::map<QString, QString> _constNameToOriginal;
 
-    //current state of constants
-    std::map<QString, QLabel *> _constNameToFormLabel;
-    std::map<QString, QLabel *> _constNameToErrorLabel;
-    std::map<QString, QWidget *> _constNameToEditWidget;
+    //constants edit widget
+    std::map<QString, PropertyEditWidget *> _constNameToEditWidget;
     QFormLayout *_constNameFormLayout;
+    void createConstantEditWidget(const QString &name);
 
     //get a descriptive list of changes
     QStringList constValuesChanged(void) const;
-    void updateConstantForm(const QString &name);
-
-    //get edit widget (same used by block properties)
-    QWidget *makePropertyEditWidget(const std::string &widgetType="LineEdit");
 };

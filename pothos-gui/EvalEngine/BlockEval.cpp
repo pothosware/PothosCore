@@ -208,6 +208,11 @@ bool BlockEval::evaluationProcedure(void)
     {
         _lastBlockStatus.blockErrorMsgs.push_back(tr("Error: empty ID"));
     }
+    else if (_newBlockInfo.id.count(QRegExp("^[a-zA-Z]\\w*$")) != 1)
+    {
+        _lastBlockStatus.blockErrorMsgs.push_back(
+            tr("'%1' is not a legal ID").arg(_newBlockInfo.id));
+    }
 
     //load its port info
     if (evalSuccess and _queryPortDesc) try
@@ -397,6 +402,12 @@ bool BlockEval::didExprHaveChange(const QString &expr, const size_t depth) const
     return false;
 }
 
+bool BlockEval::isConstantUsed(const QString &name, const size_t depth) const
+{
+    //yes TODO
+    return true;
+}
+
 bool BlockEval::updateAllProperties(void)
 {
     //create a block evaluator if need-be
@@ -451,6 +462,7 @@ bool BlockEval::applyConstants(void)
     {
         const auto &name = pair.first;
         const auto &expr = pair.second;
+        if (not this->isConstantUsed(name)) continue;
         try
         {
             _blockEval.callProxy("applyConstant", name.toStdString(), expr.toStdString());

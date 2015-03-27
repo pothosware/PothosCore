@@ -140,6 +140,13 @@ private:
     bool didExprHaveChange(const QString &key, const size_t depth = 0) const;
 
     /*!
+     * Is this constant used in any of the properties.
+     * Use this logic to skip registering unused constants.
+     * The depth parameter prevents infinite recursion.
+     */
+    bool isConstantUsed(const QString &name, const size_t depth = 0) const;
+
+    /*!
      * Create the remote block evaluator if needed.
      * Call evalProperty on all properties.
      * Record error conditions of each property.

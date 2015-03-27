@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //make icon theme
+#include "PropertyEditWidget.hpp"
 #include "GraphPropertiesPanel.hpp"
 #include "GraphEditor/GraphEditor.hpp"
-#include <Pothos/Plugin.hpp>
+#include <Pothos/Proxy.hpp>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QPushButton>
@@ -58,10 +59,11 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         _formLayout->addRow(constantsBox);
     }
 
-    //make a backup of constants
+    //create widgets and make a backup of constants
     _originalConstNames = _graphEditor->listGlobals();
     for (const auto &name : _originalConstNames)
     {
+        this->createConstantEditWidget(name);
         _constNameToOriginal[name] = _graphEditor->getGlobalExpression(name);
     }
 
@@ -71,6 +73,12 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
 
 void GraphPropertiesPanel::handleCancel(void)
 {
+    //widget cancel
+    for (const auto &editWidget : _constNameToEditWidget)
+    {
+        editWidget.second->cancelEvents();
+    }
+
     //revert values
     _graphEditor->clearGlobals();
     for (const auto &name : _originalConstNames)
@@ -114,7 +122,7 @@ QStringList GraphPropertiesPanel::constValuesChanged(void) const
     {
         if (std::find(_originalConstNames.begin(), _originalConstNames.end(), name) == _originalConstNames.end())
         {
-            changes.push_back(tr("Created %1").arg(name));
+            changes.push_back(tr("Created constant %1").arg(name));
         }
     }
 
@@ -123,11 +131,11 @@ QStringList GraphPropertiesPanel::constValuesChanged(void) const
     {
         if (std::find(globalNames.begin(), globalNames.end(), name) == globalNames.end())
         {
-            changes.push_back(tr("Removed %1").arg(name));
+            changes.push_back(tr("Removed constant %1").arg(name));
         }
-        else if (_constNameToOriginal.at(name) != _graphEditor->getGlobalExpression(name))
+        else if (_constNameToEditWidget.at(name)->changed())
         {
-            changes.push_back(tr("Changed %1").arg(name));
+            changes.push_back(tr("Changed constant %1").arg(name));
         }
     }
 
@@ -166,56 +174,47 @@ void GraphPropertiesPanel::handleCreateConstant(void)
 
     //success, add the form
     _graphEditor->setGlobalExpression(name, "0");
-    this->updateConstantForm(name);
+    this->createConstantEditWidget(name);
+    this->updateAllConstantForms();
 }
 
 void GraphPropertiesPanel::updateAllConstantForms(void)
 {
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("make");
+
     for (const auto &name : _graphEditor->listGlobals())
     {
-        this->updateConstantForm(name);
-    }
-}
+        //update the widgets for this constant
+        auto editWidget = _constNameToEditWidget[name];
+        _graphEditor->setGlobalExpression(name, editWidget->value());
 
-void GraphPropertiesPanel::updateConstantForm(const QString &name)
-{
-    //create the widgets if when they do not exist
-    if (_constNameToEditWidget.count(name) == 0)
-    {
-        auto formLabel = new QLabel(this);
-        auto errorLabel = new QLabel(this);
-        auto editWidget = this->makePropertyEditWidget();
-        auto editLayout = new QVBoxLayout();
-        editLayout->addWidget(editWidget);
-        editLayout->addWidget(errorLabel);
-        _constNameFormLayout->addRow(formLabel, editLayout);
-
-        connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(updateAllConstantForms(void)));
-        connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(updateAllConstantForms(void)));
-        connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
-        QMetaObject::invokeMethod(editWidget, "setValue", Qt::DirectConnection, Q_ARG(QString, _graphEditor->getGlobalExpression(name)));
-
-        _constNameToFormLabel[name] = formLabel;
-        _constNameToErrorLabel[name] = errorLabel;
-        _constNameToEditWidget[name] = editWidget;
+        try
+        {
+            const auto expr = _graphEditor->getGlobalExpression(name).toStdString();
+            evalEnv.callProxy("registerConstant", name.toStdString(), expr);
+            auto obj = evalEnv.callProxy("eval", name.toStdString());
+            editWidget->setTypeStr(obj.call<std::string>("getTypeString"));
+            editWidget->setErrorMsg(""); //clear errors
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            editWidget->setErrorMsg(QString::fromStdString(ex.message()));
+        }
     }
 
-    //update the widgets for this constant
-    _constNameToFormLabel[name]->setText(name);
-    //TODO
-    auto editWidget = _constNameToEditWidget[name];
-    QString entryValue; QMetaObject::invokeMethod(editWidget, "value", Qt::DirectConnection, Q_RETURN_ARG(QString, entryValue));
-    _graphEditor->setGlobalExpression(name, entryValue);
+    _graphEditor->commitGlobalsChanges();
 }
 
-QWidget *GraphPropertiesPanel::makePropertyEditWidget(const std::string &widgetType)
+void GraphPropertiesPanel::createConstantEditWidget(const QString &name)
 {
-    //lookup the plugin to get the entry widget factory
-    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType));
-    const auto &factory = plugin.getObject().extract<Pothos::Callable>();
     const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());
-    auto editWidget = factory.call<QWidget *>(paramDesc, static_cast<QWidget *>(this));
-    editWidget->setLocale(QLocale::C);
-    editWidget->setObjectName("BlockPropertiesEditWidget"); //style-sheet id name
-    return editWidget;
+    auto editWidget = new PropertyEditWidget(_graphEditor->getGlobalExpression(name), paramDesc, this);
+    _constNameFormLayout->addRow(editWidget->makeFormLabel(name, this), editWidget);
+
+    connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(updateAllConstantForms(void)));
+    //connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(updateAllConstantForms(void)));
+    connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
+
+    _constNameToEditWidget[name] = editWidget;
 }
