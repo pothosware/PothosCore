@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //get object map
+#include "PropertyEditWidget.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "BlockPropertiesPanel.hpp"
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphObjects/GraphBlock.hpp"
-#include "ColorUtils/ColorUtils.hpp"
-#include <Pothos/Plugin.hpp>
 #include <Poco/Logger.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -89,27 +88,19 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     //properties
     for (const auto &propKey : _block->getProperties())
     {
-        _propIdToOriginal[propKey] = _block->getPropertyValue(propKey);
         auto paramDesc = _block->getParamDesc(propKey);
 
         //create editable widget
-        auto editWidget = this->makePropertyEditWidget(paramDesc);
+        auto editWidget = new PropertyEditWidget(_block->getPropertyValue(propKey), paramDesc, this);
         connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
         connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleEntryChanged(void)));
         connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
         _propIdToEditWidget[propKey] = editWidget;
-
-        //create labels
-        _propIdToFormLabel[propKey] = new QLabel(this);
-        _propIdToErrorLabel[propKey] = new QLabel(this);
         editWidget->setToolTip(this->getParamDocString(propKey));
 
-        //layout stuff
-        auto editLayout = new QVBoxLayout();
-        editLayout->addWidget(editWidget);
-        editLayout->addWidget(_propIdToErrorLabel[propKey]);
+        //install into appropriate form/tab
         auto layout = _paramLayouts.at(paramDesc->optValue<std::string>("tab", ""));
-        layout->addRow(_propIdToFormLabel[propKey], editLayout);
+        layout->addRow(editWidget->makeFormLabel(_block->getPropertyName(propKey), this), editWidget);
     }
 
     //affinity zone
@@ -274,9 +265,7 @@ void BlockPropertiesPanel::handleChange(const bool immediate)
     //dump all values from edit widgets into the block's property values
     for (const auto &propKey : _block->getProperties())
     {
-        QString newValue;
-        auto editWidget = _propIdToEditWidget[propKey];
-        QMetaObject::invokeMethod(editWidget, "value", Qt::DirectConnection, Q_RETURN_ARG(QString, newValue));
+        QString newValue = _propIdToEditWidget[propKey]->value();
         newValue.replace("\n", ""); //cannot handle multi-line values
         _block->setPropertyValue(propKey, newValue);
     }
@@ -307,7 +296,7 @@ void BlockPropertiesPanel::handleCancel(void)
     _block->setAffinityZone(_affinityZoneOriginal);
     for (const auto &propKey : _block->getProperties())
     {
-        _block->setPropertyValue(propKey, _propIdToOriginal[propKey]);
+        _block->setPropertyValue(propKey, _propIdToEditWidget[propKey]->initialValue());
     }
     emit _block->triggerEvalEvent(); //update after change reversion
 
@@ -329,7 +318,7 @@ void BlockPropertiesPanel::handleCommit(void)
     std::vector<QString> propertiesModified;
     for (const auto &propKey : _block->getProperties())
     {
-        if (_block->getPropertyValue(propKey) != _propIdToOriginal[propKey])
+        if (_propIdToEditWidget[propKey]->changed())
         {
             propertiesModified.push_back(_block->getPropertyName(propKey));
         }
@@ -461,59 +450,15 @@ void BlockPropertiesPanel::updateAllForms(void)
 
 void BlockPropertiesPanel::updatePropForms(const QString &propKey)
 {
-    auto paramDesc = _block->getParamDesc(propKey);
     auto editWidget = _propIdToEditWidget[propKey];
-    auto errorLabel = _propIdToErrorLabel[propKey];
-    auto formLabel = _propIdToFormLabel[propKey];
 
-    //create label string
-    bool propChanged = (_propIdToOriginal[propKey] != _block->getPropertyValue(propKey));
-    auto label = QString("<span style='color:%1;'><b>%2%3</b></span>")
-        .arg(_block->getPropertyErrorMsg(propKey).isEmpty()?"black":"red")
-        .arg(_block->getPropertyName(propKey))
-        .arg(propChanged?"*":"");
-    if (paramDesc->has("units")) label += QString("<br /><i>%1</i>")
-        .arg(QString::fromStdString(paramDesc->getValue<std::string>("units")));
-    formLabel->setText(label);
-
-    //error label
-    QString errorMsg = _block->getPropertyErrorMsg(propKey);
-    errorLabel->setVisible(not errorMsg.isEmpty());
-    errorLabel->setText(QString("<span style='color:red;'><p><i>%1</i></p></span>").arg(errorMsg.toHtmlEscaped()));
-    errorLabel->setWordWrap(true);
+    //update the edit widget state
+    editWidget->setTypeStr(_block->getPropertyTypeStr(propKey));
+    editWidget->setErrorMsg(_block->getPropertyErrorMsg(propKey));
 
     //set the editor's value if changed
-    QString oldValue; QMetaObject::invokeMethod(editWidget, "value", Qt::DirectConnection, Q_RETURN_ARG(QString, oldValue));
-    if (_block->getPropertyValue(propKey) != oldValue)
+    if (_block->getPropertyValue(propKey) != editWidget->value())
     {
-        QMetaObject::invokeMethod(editWidget, "setValue", Qt::DirectConnection, Q_ARG(QString, _block->getPropertyValue(propKey)));
+        editWidget->setValue(_block->getPropertyValue(propKey));
     }
-
-    //set the editor's stylesheet colors
-    const auto typeColor = typeStrToColor(_block->getPropertyTypeStr(propKey));
-    editWidget->setStyleSheet(QString("#BlockPropertiesEditWidget{background:%1;color:%2;}")
-        .arg(typeColor.name()).arg((typeColor.lightnessF() > 0.5)?"black":"white"));
-}
-
-QWidget *BlockPropertiesPanel::makePropertyEditWidget(const Poco::JSON::Object::Ptr &paramDesc)
-{
-    //extract widget type
-    auto widgetType = paramDesc->optValue<std::string>("widgetType", "LineEdit");
-    if (paramDesc->isArray("options")) widgetType = "ComboBox";
-    if (widgetType.empty()) widgetType = "LineEdit";
-
-    //check if the widget type exists in the plugin tree
-    if (not Pothos::PluginRegistry::exists(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType)))
-    {
-        poco_error_f1(Poco::Logger::get("PothosGui.BlockPropertiesPanel"), "widget type %s does not exist", widgetType);
-        widgetType = "LineEdit";
-    }
-
-    //lookup the plugin to get the entry widget factory
-    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType));
-    const auto &factory = plugin.getObject().extract<Pothos::Callable>();
-    auto editWidget = factory.call<QWidget *>(paramDesc, static_cast<QWidget *>(this));
-    editWidget->setLocale(QLocale::C);
-    editWidget->setObjectName("BlockPropertiesEditWidget"); //style-sheet id name
-    return editWidget;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -17,6 +17,7 @@ class QTimer;
 class QComboBox;
 class QFormLayout;
 class QTabWidget;
+class PropertyEditWidget;
 
 class BlockPropertiesPanel : public QWidget
 {
@@ -57,10 +58,7 @@ signals:
 
 private:
 
-    std::map<QString, QString> _propIdToOriginal;
-    std::map<QString, QLabel *> _propIdToFormLabel;
-    std::map<QString, QLabel *> _propIdToErrorLabel;
-    std::map<QString, QWidget *> _propIdToEditWidget;
+    std::map<QString, PropertyEditWidget *> _propIdToEditWidget;
 
     /*!
      * Actual handler for changes.
@@ -79,11 +77,6 @@ private:
      * Label string formatting, color of the box, tooltip...
      */
     void updatePropForms(const QString &propKey);
-
-    /*!
-     * Call into the factory to make a new properties edit widget
-     */
-    QWidget *makePropertyEditWidget(const Poco::JSON::Object::Ptr &paramDesc);
 
     bool _ignoreChanges;
 

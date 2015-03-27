@@ -91,6 +91,7 @@ set(SOURCES
     PropertiesPanel/ConnectionPropertiesPanel.cpp
     PropertiesPanel/BlockPropertiesPanel.cpp
     PropertiesPanel/BreakerPropertiesPanel.cpp
+    PropertiesPanel/PropertyEditWidget.cpp
 
     MessageWindow/MessageWindowDock.cpp
     MessageWindow/LoggerDisplay.cpp
