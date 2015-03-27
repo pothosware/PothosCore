@@ -1066,3 +1066,8 @@ const QStringList &GraphEditor::listGlobals(void) const
 {
     return _globalNames;
 }
+
+void GraphEditor::commitGlobalsChanges(void)
+{
+    this->updateExecutionEngine();
+}

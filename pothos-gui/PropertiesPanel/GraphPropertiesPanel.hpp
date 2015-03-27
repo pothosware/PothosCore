@@ -8,6 +8,7 @@
 #include <QPointer>
 #include <QString>
 #include <QStringList>
+#include <string>
 #include <map>
 
 class GraphEditor;
@@ -30,21 +31,27 @@ public slots:
 
 private slots:
     void handleCreateConstant(void);
+    void updateAllConstantForms(void);
 
 private:
     QPointer<GraphEditor> _graphEditor;
     QFormLayout *_formLayout;
     QLineEdit *_constantNameEntry;
 
-    //constants expression entry
-    QStringList _orderedConstNames;
+    //stashed state of constants
+    QStringList _originalConstNames;
     std::map<QString, QString> _constNameToOriginal;
+
+    //current state of constants
     std::map<QString, QLabel *> _constNameToFormLabel;
     std::map<QString, QLabel *> _constNameToErrorLabel;
     std::map<QString, QWidget *> _constNameToEditWidget;
     QFormLayout *_constNameFormLayout;
 
-    bool constValuesChanged(void) const;
-    void updateAllConstantForms(void);
+    //get a descriptive list of changes
+    QStringList constValuesChanged(void) const;
     void updateConstantForm(const QString &name);
+
+    //get edit widget (same used by block properties)
+    QWidget *makePropertyEditWidget(const std::string &widgetType="LineEdit");
 };

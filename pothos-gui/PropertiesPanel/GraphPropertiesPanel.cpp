@@ -4,6 +4,7 @@
 #include "PothosGuiUtils.hpp" //make icon theme
 #include "GraphPropertiesPanel.hpp"
 #include "GraphEditor/GraphEditor.hpp"
+#include <Pothos/Plugin.hpp>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QPushButton>
@@ -38,12 +39,6 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
 
     //constants editor
     {
-        _orderedConstNames = _graphEditor->listGlobals();
-        for (const auto &name : _graphEditor->listGlobals())
-        {
-            _constNameToOriginal[name] = _graphEditor->getGlobalExpression(name);
-        }
-
         auto constantsBox = new QGroupBox(tr("Graph Constants"), this);
         auto constantsLayout = new QVBoxLayout(constantsBox);
         _constNameFormLayout = new QFormLayout();
@@ -62,31 +57,81 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
 
         _formLayout->addRow(constantsBox);
     }
+
+    //make a backup of constants
+    _originalConstNames = _graphEditor->listGlobals();
+    for (const auto &name : _originalConstNames)
+    {
+        _constNameToOriginal[name] = _graphEditor->getGlobalExpression(name);
+    }
+
+    //cause the generation of entry forms for existing constants
+    this->updateAllConstantForms();
 }
 
 void GraphPropertiesPanel::handleCancel(void)
 {
     //revert values
+    _graphEditor->clearGlobals();
+    for (const auto &name : _originalConstNames)
+    {
+        _graphEditor->setGlobalExpression(name, _constNameToOriginal.at(name));
+    }
 
     //emit re-evaluation
+    _graphEditor->commitGlobalsChanges();
+
+    //an edit widget return press signal may have us here,
+    //and not the commit button, so make sure panel is deleted
+    this->deleteLater();
 }
 
 void GraphPropertiesPanel::handleCommit(void)
 {
+    //process through changes before inspecting
+    this->updateAllConstantForms();
+
     //look for changes
-    if (this->constValuesChanged()) return this->handleCancel();
+    const auto propertiesModified = this->constValuesChanged();
+    if (propertiesModified.empty()) return this->handleCancel();
 
     //emit state change
+    auto desc = (propertiesModified.size() == 1)? propertiesModified.front() : tr("Modified constants");
+    emit this->stateChanged(GraphState("document-properties", desc));
+
+    //an edit widget return press signal may have us here,
+    //and not the commit button, so make sure panel is deleted
+    this->deleteLater();
 }
 
-bool GraphPropertiesPanel::constValuesChanged(void) const
+QStringList GraphPropertiesPanel::constValuesChanged(void) const
 {
-    if (_orderedConstNames != _graphEditor->listGlobals()) return true;
-    for (const auto &name : _graphEditor->listGlobals())
+    QStringList changes;
+    const auto globalNames = _graphEditor->listGlobals();
+
+    //look for added constants
+    for (const auto &name : globalNames)
     {
-        if (_constNameToOriginal.at(name) != _graphEditor->getGlobalExpression(name)) return true;
+        if (std::find(_originalConstNames.begin(), _originalConstNames.end(), name) == _originalConstNames.end())
+        {
+            changes.push_back(tr("Created %1").arg(name));
+        }
     }
-    return false;
+
+    //look for removed constants
+    for (const auto &name : _originalConstNames)
+    {
+        if (std::find(globalNames.begin(), globalNames.end(), name) == globalNames.end())
+        {
+            changes.push_back(tr("Removed %1").arg(name));
+        }
+        else if (_constNameToOriginal.at(name) != _graphEditor->getGlobalExpression(name))
+        {
+            changes.push_back(tr("Changed %1").arg(name));
+        }
+    }
+
+    return changes;
 }
 
 void GraphPropertiesPanel::handleCreateConstant(void)
@@ -106,7 +151,8 @@ void GraphPropertiesPanel::handleCreateConstant(void)
     }
 
     //check if the variable exists
-    if (std::find(_orderedConstNames.begin(), _orderedConstNames.end(), name) != _orderedConstNames.end())
+    const auto globalNames = _graphEditor->listGlobals();
+    if (std::find(globalNames.begin(), globalNames.end(), name) != globalNames.end())
     {
         errorMsg = tr("Constant '%1' already exists").arg(name);
     }
@@ -119,13 +165,13 @@ void GraphPropertiesPanel::handleCreateConstant(void)
     }
 
     //success, add the form
-    _orderedConstNames.push_back(name);
+    _graphEditor->setGlobalExpression(name, "0");
     this->updateConstantForm(name);
 }
 
 void GraphPropertiesPanel::updateAllConstantForms(void)
 {
-    for (const auto &name : _orderedConstNames)
+    for (const auto &name : _graphEditor->listGlobals())
     {
         this->updateConstantForm(name);
     }
@@ -138,11 +184,16 @@ void GraphPropertiesPanel::updateConstantForm(const QString &name)
     {
         auto formLabel = new QLabel(this);
         auto errorLabel = new QLabel(this);
-        auto editWidget = new QLineEdit(this);
+        auto editWidget = this->makePropertyEditWidget();
         auto editLayout = new QVBoxLayout();
         editLayout->addWidget(editWidget);
         editLayout->addWidget(errorLabel);
         _constNameFormLayout->addRow(formLabel, editLayout);
+
+        connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(updateAllConstantForms(void)));
+        connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(updateAllConstantForms(void)));
+        connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
+        QMetaObject::invokeMethod(editWidget, "setValue", Qt::DirectConnection, Q_ARG(QString, _graphEditor->getGlobalExpression(name)));
 
         _constNameToFormLabel[name] = formLabel;
         _constNameToErrorLabel[name] = errorLabel;
@@ -152,4 +203,19 @@ void GraphPropertiesPanel::updateConstantForm(const QString &name)
     //update the widgets for this constant
     _constNameToFormLabel[name]->setText(name);
     //TODO
+    auto editWidget = _constNameToEditWidget[name];
+    QString entryValue; QMetaObject::invokeMethod(editWidget, "value", Qt::DirectConnection, Q_RETURN_ARG(QString, entryValue));
+    _graphEditor->setGlobalExpression(name, entryValue);
+}
+
+QWidget *GraphPropertiesPanel::makePropertyEditWidget(const std::string &widgetType)
+{
+    //lookup the plugin to get the entry widget factory
+    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType));
+    const auto &factory = plugin.getObject().extract<Pothos::Callable>();
+    const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());
+    auto editWidget = factory.call<QWidget *>(paramDesc, static_cast<QWidget *>(this));
+    editWidget->setLocale(QLocale::C);
+    editWidget->setObjectName("BlockPropertiesEditWidget"); //style-sheet id name
+    return editWidget;
 }
