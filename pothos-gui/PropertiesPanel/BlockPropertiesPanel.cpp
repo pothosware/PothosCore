@@ -17,8 +17,6 @@
 #include <QTabWidget>
 #include <QLabel>
 #include <QPainter>
-#include <QTimer>
-#include <QLocale>
 #include <sstream>
 #include <cassert>
 
@@ -33,12 +31,10 @@ static const long UPDATE_TIMER_MS = 500;
 BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     QWidget(parent),
     _ignoreChanges(true),
-    _idLabel(new QLabel(this)),
-    _idLineEdit(new QLineEdit(this)),
+    _idLineEdit(nullptr),
     _affinityZoneLabel(new QLabel(this)),
     _affinityZoneBox(nullptr),
     _blockErrorLabel(new QLabel(this)),
-    _updateTimer(new QTimer(this)),
     _infoTabs(new QTabWidget(this)),
     _blockInfoDesc(nullptr),
     _jsonBlockDesc(nullptr),
@@ -60,10 +56,13 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
 
     //id
     {
-        _idOriginal = _block->getId();
-        _formLayout->addRow(_idLabel, _idLineEdit);
-        connect(_idLineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
-        connect(_idLineEdit, SIGNAL(returnPressed(void)), this, SLOT(handleCommit(void)));
+        const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());
+        _idLineEdit = new PropertyEditWidget(_block->getId(), paramDesc, this);
+        _formLayout->addRow(_idLineEdit->makeFormLabel(tr("ID"), this), _idLineEdit);
+        connect(_idLineEdit, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
+        connect(_idLineEdit, SIGNAL(widgetChanged(void)), _block, SIGNAL(triggerEvalEvent(void)));
+        connect(_idLineEdit, SIGNAL(entryChanged(void)), this, SLOT(handleWidgetChanged(void)));
+        connect(_idLineEdit, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
     }
 
     //create optional properties tabs
@@ -93,7 +92,8 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         //create editable widget
         auto editWidget = new PropertyEditWidget(_block->getPropertyValue(propKey), paramDesc, this);
         connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
-        connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleEntryChanged(void)));
+        connect(editWidget, SIGNAL(widgetChanged(void)), _block, SIGNAL(triggerEvalEvent(void)));
+        connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleWidgetChanged(void)));
         connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
         _propIdToEditWidget[propKey] = editWidget;
         editWidget->setToolTip(this->getParamDocString(propKey));
@@ -110,7 +110,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         assert(dock != nullptr);
         _affinityZoneBox = dock->makeComboBox(this);
         _formLayout->addRow(_affinityZoneLabel, _affinityZoneBox);
-        connect(_affinityZoneBox, SIGNAL(activated(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
+        connect(_affinityZoneBox, SIGNAL(activated(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
     }
 
     //errors
@@ -217,11 +217,6 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _evalTypesDesc->setTextInteractionFlags(Qt::TextSelectableByMouse);
     }
 
-    //update timer
-    _updateTimer->setSingleShot(true);
-    _updateTimer->setInterval(UPDATE_TIMER_MS);
-    connect(_updateTimer, SIGNAL(timeout(void)), this, SLOT(handleUpdateTimerExpired(void)));
-
     connect(_block, SIGNAL(destroyed(QObject*)), this, SLOT(handleBlockDestroyed(QObject*)));
     connect(_block, SIGNAL(evalDoneEvent(void)), this, SLOT(handleBlockEvalDone(void)));
     this->updateAllForms();
@@ -252,12 +247,12 @@ void BlockPropertiesPanel::handleBlockDestroyed(QObject *)
     this->deleteLater();
 }
 
-void BlockPropertiesPanel::handleChange(const bool immediate)
+void BlockPropertiesPanel::handleWidgetChanged(void)
 {
     if (_ignoreChanges) return;
 
     //dump editor id to block
-    _block->setId(_idLineEdit->text());
+    _block->setId(_idLineEdit->value());
 
     //dump the affinity zone to block
     _block->setAffinityZone(_affinityZoneBox->itemData(_affinityZoneBox->currentIndex()).toString());
@@ -271,14 +266,11 @@ void BlockPropertiesPanel::handleChange(const bool immediate)
     }
 
     this->updateAllForms(); //quick update for labels
-
-    //schedule an eval, either immediate or delayed
-    if (immediate) this->handleUpdateTimerExpired();
-    else _updateTimer->start(UPDATE_TIMER_MS);
 }
 
-void BlockPropertiesPanel::handleUpdateTimerExpired(void)
+void BlockPropertiesPanel::handleAffinityZoneChanged(const QString &)
 {
+    this->handleWidgetChanged();
     emit _block->triggerEvalEvent();
 }
 
@@ -289,14 +281,14 @@ void BlockPropertiesPanel::handleBlockEvalDone(void)
 
 void BlockPropertiesPanel::handleCancel(void)
 {
-    _updateTimer->stop();
-
     //reset values in block to original setting
-    _block->setId(_idOriginal);
+    _block->setId(_idLineEdit->initialValue());
+    _idLineEdit->cancelEvents();
     _block->setAffinityZone(_affinityZoneOriginal);
     for (const auto &propKey : _block->getProperties())
     {
         _block->setPropertyValue(propKey, _propIdToEditWidget[propKey]->initialValue());
+        _propIdToEditWidget[propKey]->cancelEvents();
     }
     emit _block->triggerEvalEvent(); //update after change reversion
 
@@ -307,13 +299,6 @@ void BlockPropertiesPanel::handleCancel(void)
 
 void BlockPropertiesPanel::handleCommit(void)
 {
-    //process the timer event immediately
-    if (_updateTimer->isActive())
-    {
-        _updateTimer->stop();
-        this->handleUpdateTimerExpired();
-    }
-
     //were there changes?
     std::vector<QString> propertiesModified;
     for (const auto &propKey : _block->getProperties())
@@ -325,7 +310,7 @@ void BlockPropertiesPanel::handleCommit(void)
     }
 
     //was the ID changed?
-    if (_idOriginal != _block->getId()) propertiesModified.push_back(tr("ID"));
+    if (_idLineEdit->changed()) propertiesModified.push_back(tr("ID"));
 
     //was the affinity zone changed?
     if (_affinityZoneOriginal != _block->getAffinityZone()) propertiesModified.push_back(tr("Affinity Zone"));
@@ -401,14 +386,9 @@ void BlockPropertiesPanel::handleDocTabChanged(int index)
 void BlockPropertiesPanel::updateAllForms(void)
 {
     //block id
+    if (_idLineEdit->value() != _block->getId())
     {
-        if (_idLineEdit->text() != _block->getId())
-        {
-            _idLineEdit->setText(_block->getId());
-        }
-        _idLabel->setText(QString("<b>%1%2</b>")
-            .arg(tr("ID"))
-            .arg((_idOriginal != _block->getId())?"*":""));
+        _idLineEdit->setValue(_block->getId());
     }
 
     //affinity zone
