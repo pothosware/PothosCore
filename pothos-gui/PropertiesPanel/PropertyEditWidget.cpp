@@ -5,16 +5,26 @@
 #include "ColorUtils/ColorUtils.hpp"
 #include <QLabel>
 #include <QLocale>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <Pothos/Plugin.hpp>
 #include <Poco/Logger.h>
+
+/*!
+ * We could remove the timer with the eval-background system.
+ * But rather, it may still be useful to have an idle period
+ * in which we accept new edit events before submitting changes.
+ * So just leave this as a small number for the time-being.
+ */
+static const long UPDATE_TIMER_MS = 500;
 
 PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent):
     _initialValue(initialValue),
     _editWidget(nullptr),
     _errorLabel(new QLabel(this)),
     _formLabel(nullptr),
-    _unitsStr(QString::fromStdString(paramDesc->optValue<std::string>("units", "")))
+    _unitsStr(QString::fromStdString(paramDesc->optValue<std::string>("units", ""))),
+    _entryTimer(new QTimer(this))
 {
     //extract widget type
     auto widgetType = paramDesc->optValue<std::string>("widgetType", "LineEdit");
@@ -38,15 +48,15 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::
     //initialize value
     this->setValue(initialValue);
 
-    //signals to top level
-    connect(_editWidget, SIGNAL(widgetChanged(void)), this, SIGNAL(widgetChanged(void)));
-    connect(_editWidget, SIGNAL(entryChanged(void)), this, SIGNAL(entryChanged(void)));
-    connect(_editWidget, SIGNAL(commitRequested(void)), this, SIGNAL(commitRequested(void)));
-
     //signals to internal handler
-    connect(_editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleInternalChange(void)));
-    connect(_editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleInternalChange(void)));
-    connect(_editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleInternalChange(void)));
+    connect(_editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
+    connect(_editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleEntryChanged(void)));
+    connect(_editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommitRequested(void)));
+
+    //setup entry timer - timeout acts like widget changed
+    _entryTimer->setSingleShot(true);
+    _entryTimer->setInterval(UPDATE_TIMER_MS);
+    connect(_entryTimer, SIGNAL(timeout(void)), this, SIGNAL(widgetChanged(void)));
 
     //layout internal widgets
     auto editLayout = new QVBoxLayout(this);
@@ -55,7 +65,7 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::
     editLayout->addWidget(_errorLabel);
 
     //update display
-    this->handleInternalChange();
+    this->updateInternals();
 }
 
 const QString &PropertyEditWidget::initialValue(void) const
@@ -82,26 +92,30 @@ void PropertyEditWidget::setValue(const QString &value)
 
 void PropertyEditWidget::setTypeStr(const std::string &typeStr)
 {
-    const auto typeColor = typeStrToColor(typeStr);
-    _editWidget->setStyleSheet(QString("#BlockPropertiesEditWidget{background:%1;color:%2;}")
-        .arg(typeColor.name()).arg((typeColor.lightnessF() > 0.5)?"black":"white"));
+    this->setBackgroundColor(typeStrToColor(typeStr));
 }
 
 void PropertyEditWidget::setErrorMsg(const QString &errorMsg)
 {
     _errorMsg = errorMsg;
-    this->handleInternalChange();
+    this->updateInternals();
+}
+
+void PropertyEditWidget::setBackgroundColor(const QColor color)
+{
+    _editWidget->setStyleSheet(QString("#BlockPropertiesEditWidget{background:%1;color:%2;}")
+        .arg(color.name()).arg((color.lightnessF() > 0.5)?"black":"white"));
 }
 
 QLabel *PropertyEditWidget::makeFormLabel(const QString &text, QWidget *parent)
 {
     _formLabelText = text;
     _formLabel = new QLabel(text, parent);
-    this->handleInternalChange();
+    this->updateInternals();
     return _formLabel;
 }
 
-void PropertyEditWidget::handleInternalChange(void)
+void PropertyEditWidget::updateInternals(void)
 {
     //determine state
     const bool hasError = not _errorMsg.isEmpty();
@@ -119,4 +133,36 @@ void PropertyEditWidget::handleInternalChange(void)
         .arg(this->changed()?"*":"");
     if (hasUnits) formLabelText += QString("<br /><i>%1</i>").arg(_unitsStr);
     if (_formLabel != nullptr) _formLabel->setText(formLabelText);
+}
+
+void PropertyEditWidget::handleWidgetChanged(void)
+{
+    this->updateInternals();
+    emit this->widgetChanged();
+}
+
+void PropertyEditWidget::handleEntryChanged(void)
+{
+    _entryTimer->start(UPDATE_TIMER_MS);
+    this->updateInternals();
+    emit this->entryChanged();
+}
+
+void PropertyEditWidget::handleCommitRequested(void)
+{
+    this->flushEvents();
+    this->updateInternals();
+    emit this->commitRequested();
+}
+
+void PropertyEditWidget::cancelEvents(void)
+{
+    _entryTimer->stop();
+}
+
+void PropertyEditWidget::flushEvents(void)
+{
+    if (not _entryTimer->isActive()) return;
+    _entryTimer->stop();
+    this->handleEntryChanged();        
 }

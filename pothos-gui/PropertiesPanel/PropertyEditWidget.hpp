@@ -6,10 +6,12 @@
 #include <QWidget>
 #include <QString>
 #include <QLabel>
+#include <QTimer>
 #include <Poco/JSON/Object.h>
 #include <string>
 
 class QLabel;
+class QTimer;
 
 /*!
  * The property edit widget creates an entry widget through a JSON description.
@@ -45,6 +47,9 @@ public:
     //! Set the error message from an evaluation
     void setErrorMsg(const QString &errorMsg);
 
+    //! Set the background color of the edit widget
+    void setBackgroundColor(const QColor color);
+
     /*!
      * Make a label that will track the widget's status.
      * This label might be used in a QFormLayout for example.
@@ -52,15 +57,30 @@ public:
      */
     QLabel *makeFormLabel(const QString &text, QWidget *parent);
 
+    //! Cancel user-entry events - cancel pending timer signals
+    void cancelEvents(void);
+
+    //! Flush user-entry events - triggers pending timer signals
+    void flushEvents(void);
+
 signals:
+
+    //! user pressed enter in an entry box -- force properties commit
     void commitRequested(void);
+
+    //! any kind of immediate widget change other than text entry
     void widgetChanged(void);
+
+    //! a text entry event from the user occurred
     void entryChanged(void);
 
 private slots:
-    void handleInternalChange(void);
+    void handleWidgetChanged(void);
+    void handleEntryChanged(void);
+    void handleCommitRequested(void);
 
 private:
+    void updateInternals(void);
     const QString _initialValue;
     QWidget *_editWidget;
     QLabel *_errorLabel;
@@ -68,4 +88,5 @@ private:
     QString _formLabelText;
     QString _errorMsg;
     const QString _unitsStr;
+    QTimer *_entryTimer;
 };

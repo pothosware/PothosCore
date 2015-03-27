@@ -13,7 +13,6 @@
 class GraphBlock;
 class QLabel;
 class QLineEdit;
-class QTimer;
 class QComboBox;
 class QFormLayout;
 class QTabWidget;
@@ -35,19 +34,10 @@ private slots:
 
     void handleBlockDestroyed(QObject *);
 
-    //! Handle for widget change events -- immediate re-eval
-    void handleWidgetChanged(void) {this->handleChange(true);}
+    //! Handle for all widget change events
+    void handleWidgetChanged(void);
 
-    //! Handle for widget change events -- immediate re-eval
-    void handleWidgetChanged(const QString &) {this->handleWidgetChanged();}
-
-    //! Handle for text entry changes -- delayed re-eval
-    void handleEntryChanged(void) {this->handleChange(false);}
-
-    //! Handle for text entry changes -- delayed re-eval
-    void handleEntryChanged(const QString &) {this->handleEntryChanged();}
-
-    void handleUpdateTimerExpired(void);
+    void handleAffinityZoneChanged(const QString &);
 
     void handleBlockEvalDone(void);
 
@@ -59,13 +49,6 @@ signals:
 private:
 
     std::map<QString, PropertyEditWidget *> _propIdToEditWidget;
-
-    /*!
-     * Actual handler for changes.
-     * Can be used for immediate re-eval or time-delay.
-     * \param immediate true for immediate re-eval
-     */
-    void handleChange(const bool immediate);
 
     /*!
      * Update everything in this panel after a block change
@@ -80,16 +63,13 @@ private:
 
     bool _ignoreChanges;
 
-    QString _idOriginal;
-    QLabel *_idLabel;
-    QLineEdit *_idLineEdit;
+    PropertyEditWidget *_idLineEdit;
 
     QString _affinityZoneOriginal;
     QLabel *_affinityZoneLabel;
     QComboBox *_affinityZoneBox;
 
     QLabel *_blockErrorLabel;
-    QTimer *_updateTimer;
     QTabWidget *_infoTabs;
     QLabel *_blockInfoDesc;
     QLabel *_jsonBlockDesc;
