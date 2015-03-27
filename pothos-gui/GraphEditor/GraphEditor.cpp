@@ -761,6 +761,13 @@ void GraphEditor::handleReeval(void)
 void GraphEditor::handleResetState(int stateNo)
 {
     if (not this->isVisible()) return;
+
+    //Resets the state of whoever is modding the properties:
+    //Do this before loading the state, otherwise a potential
+    //call to handleCancel() afterwards can overwrite settings.
+    auto draw = this->getCurrentGraphDraw();
+    emit draw->modifyProperties(nullptr);
+
     _stateManager->resetTo(stateNo);
     const auto dump = _stateManager->current().dump;
     std::istringstream iss(std::string(dump.constData(), dump.size()));
