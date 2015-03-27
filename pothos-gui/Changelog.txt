@@ -9,6 +9,7 @@ Release 0.2.0 (pending)
 Release 0.1.1 (pending)
 ==========================
 
+- Filled in the implementation for Graph Editor save all
 - Prefix QtColorPicker library to avoid install collisions
 - QDoubleSpinBox parameter entry locale support fix
 - Fixed block ID update while editing
