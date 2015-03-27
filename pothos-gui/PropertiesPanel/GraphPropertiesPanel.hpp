@@ -44,6 +44,7 @@ private:
     std::map<QString, QWidget *> _constNameToEditWidget;
     QFormLayout *_constNameFormLayout;
 
+    bool constValuesChanged(void) const;
     void updateAllConstantForms(void);
     void updateConstantForm(const QString &name);
 };

@@ -38,7 +38,11 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
 
     //constants editor
     {
-        _orderedConstNames = _graphEditor->globals().listGlobals();
+        _orderedConstNames = _graphEditor->listGlobals();
+        for (const auto &name : _graphEditor->listGlobals())
+        {
+            _constNameToOriginal[name] = _graphEditor->getGlobalExpression(name);
+        }
 
         auto constantsBox = new QGroupBox(tr("Graph Constants"), this);
         auto constantsLayout = new QVBoxLayout(constantsBox);
@@ -62,12 +66,27 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
 
 void GraphPropertiesPanel::handleCancel(void)
 {
-    
+    //revert values
+
+    //emit re-evaluation
 }
 
 void GraphPropertiesPanel::handleCommit(void)
 {
-    
+    //look for changes
+    if (this->constValuesChanged()) return this->handleCancel();
+
+    //emit state change
+}
+
+bool GraphPropertiesPanel::constValuesChanged(void) const
+{
+    if (_orderedConstNames != _graphEditor->listGlobals()) return true;
+    for (const auto &name : _graphEditor->listGlobals())
+    {
+        if (_constNameToOriginal.at(name) != _graphEditor->getGlobalExpression(name)) return true;
+    }
+    return false;
 }
 
 void GraphPropertiesPanel::handleCreateConstant(void)
@@ -125,7 +144,6 @@ void GraphPropertiesPanel::updateConstantForm(const QString &name)
         editLayout->addWidget(errorLabel);
         _constNameFormLayout->addRow(formLabel, editLayout);
 
-        //TODO what if its blank... _constNameToOriginal[name] = _graphEditor->globals()->getGlobalExpression;
         _constNameToFormLabel[name] = formLabel;
         _constNameToErrorLabel[name] = errorLabel;
         _constNameToEditWidget[name] = editWidget;

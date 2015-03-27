@@ -69,14 +69,14 @@ void GraphEditor::loadState(std::istream &is)
     }
 
     //extract constants graph properties
-    this->globals().clear();
+    this->clearGlobals();
     auto constants = topObj->getArray("constants");
     if (constants) for (size_t constNo = 0; constNo < constants->size(); constNo++)
     {
         const auto constantObj = constants->getObject(constNo);
         if (not constantObj->has("name")) continue;
         if (not constantObj->has("expr")) continue;
-        this->globals().setGlobalExpression(
+        this->setGlobalExpression(
             QString::fromStdString(constantObj->getValue<std::string>("name")),
             QString::fromStdString(constantObj->getValue<std::string>("expr")));
     }

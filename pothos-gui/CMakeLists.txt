@@ -123,7 +123,6 @@ set(SOURCES
     GraphEditor/GraphDraw.cpp
     GraphEditor/GraphDrawSelection.cpp
     GraphEditor/GraphActionsDock.cpp
-    GraphEditor/GraphGlobals.cpp
 
     GraphObjects/GraphEndpoint.cpp
     GraphObjects/GraphObject.cpp

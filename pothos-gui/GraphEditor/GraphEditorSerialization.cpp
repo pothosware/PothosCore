@@ -13,9 +13,9 @@ void GraphEditor::dumpState(std::ostream &os) const
 
     //store constants graph properties
     Poco::JSON::Array constants;
-    for (const auto &name : this->globals().listGlobals())
+    for (const auto &name : this->listGlobals())
     {
-        const auto &expr = this->globals().getGlobalExpression(name);
+        const auto &expr = this->getGlobalExpression(name);
         Poco::JSON::Object constantObj;
         constantObj.set("name", name.toStdString());
         constantObj.set("expr", expr.toStdString());

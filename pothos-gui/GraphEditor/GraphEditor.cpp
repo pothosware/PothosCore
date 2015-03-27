@@ -1043,3 +1043,26 @@ void GraphEditor::makeDefaultPage(void)
 {
     this->insertTab(0, new GraphDraw(this), tr("Main"));
 }
+
+
+void GraphEditor::clearGlobals(void)
+{
+    _globalNames.clear();
+    _globalExprs.clear();
+}
+
+void GraphEditor::setGlobalExpression(const QString &name, const QString &expression)
+{
+    if (_globalExprs.count(name) == 0) _globalNames.push_back(name);
+    _globalExprs[name] = expression;
+}
+
+const QString &GraphEditor::getGlobalExpression(const QString &name) const
+{
+    return _globalExprs.at(name);
+}
+
+const QStringList &GraphEditor::listGlobals(void) const
+{
+    return _globalNames;
+}

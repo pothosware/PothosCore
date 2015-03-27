@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -28,17 +28,13 @@ public:
      * \throws Pothos::Exception with the evaluation error message
      * \return a proxy object representing the evaluated expression
      */
-    Pothos::Object eval(const std::string &);
+    Pothos::Object eval(const std::string &expression);
 
     /*!
      * Register a constant that will be used in other expressions.
      * For an expression like 2*x, then "x" would be a constant.
      */
     void registerConstant(const std::string &key, const std::string &expr);
-
-    //TODO clear constants //p.RemoveConst()
-
-    //TODO evaluated expr to string
 
     //! Split an expression given the tokenizer -- deals with quotes, nesting, escapes
     static std::vector<std::string> splitExpr(const std::string &expr, const char tokenizer);
