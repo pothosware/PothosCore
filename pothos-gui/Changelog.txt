@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.1.1 (pending)
 ==========================
 
+- Planned cancel of the properties panel before load state
 - Filled in the implementation for Graph Editor save all
 - Prefix QtColorPicker library to avoid install collisions
 - QDoubleSpinBox parameter entry locale support fix
