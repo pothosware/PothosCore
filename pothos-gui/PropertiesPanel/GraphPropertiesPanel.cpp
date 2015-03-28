@@ -13,6 +13,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QSignalMapper>
 #include <QToolTip>
 #include <iostream>
 
@@ -21,7 +22,8 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
     _graphEditor(editor),
     _formLayout(new QFormLayout(this)),
     _constantNameEntry(nullptr),
-    _constNameFormLayout(nullptr)
+    _constNameFormLayout(nullptr),
+    _constRemovalMapper(new QSignalMapper(this))
 {
     //title
     {
@@ -50,6 +52,7 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         auto nameEntryButton = new QPushButton(makeIconFromTheme("list-add"), tr("Create"), constantsBox);
         connect(nameEntryButton, SIGNAL(clicked(void)), this, SLOT(handleCreateConstant(void)));
         connect(_constantNameEntry, SIGNAL(returnPressed(void)), this, SLOT(handleCreateConstant(void)));
+        connect(_constRemovalMapper, SIGNAL(mapped(const QString &)), this, SLOT(handleConstRemoval(const QString &)));
         nameEntryLayout->addWidget(_constantNameEntry);
         nameEntryLayout->addWidget(nameEntryButton);
 
@@ -208,13 +211,52 @@ void GraphPropertiesPanel::updateAllConstantForms(void)
 
 void GraphPropertiesPanel::createConstantEditWidget(const QString &name)
 {
+    //create edit widget
     const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());
     auto editWidget = new PropertyEditWidget(_graphEditor->getGlobalExpression(name), paramDesc, this);
-    _constNameFormLayout->addRow(editWidget->makeFormLabel(name, this), editWidget);
-
     connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(updateAllConstantForms(void)));
     //connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(updateAllConstantForms(void)));
     connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
-
     _constNameToEditWidget[name] = editWidget;
+
+    //create removal button
+    auto removalButton = new QPushButton(makeIconFromTheme("list-remove"), tr("Remove"), this);
+    _constRemovalMapper->setMapping(removalButton, name);
+    connect(removalButton, SIGNAL(clicked(void)), _constRemovalMapper, SLOT(map(void)));
+    auto editLayout = new QHBoxLayout();
+    editLayout->addWidget(editWidget);
+    editLayout->addWidget(removalButton);
+
+    //install into form
+    auto formLabel = editWidget->makeFormLabel(name, this);
+    _constNameFormLayout->addRow(formLabel, editLayout);
+
+    //objects to delete
+    _constNameToObjects[name].push_back(removalButton);
+    _constNameToObjects[name].push_back(editWidget);
+    _constNameToObjects[name].push_back(editLayout);
+    _constNameToObjects[name].push_back(formLabel);
+}
+
+void GraphPropertiesPanel::handleConstRemoval(const QString &name)
+{
+    //delete objects
+    _constNameToEditWidget[name]->cancelEvents();
+    for (auto obj : _constNameToObjects.at(name))
+    {
+        delete obj;
+    }
+    _constNameToObjects.erase(name);
+
+    //remove from globals list
+    QStringList globals = _graphEditor->listGlobals();
+    globals.erase(globals.begin() + globals.indexOf(name));
+    _graphEditor->clearGlobals();
+    for (const auto &name_i : globals)
+    {
+        _graphEditor->setGlobalExpression(name_i, _constNameToEditWidget[name_i]->value());
+    }
+
+    //update
+    this->updateAllConstantForms();
 }

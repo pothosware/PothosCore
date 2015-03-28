@@ -15,6 +15,8 @@ class GraphEditor;
 class QFormLayout;
 class QLineEdit;
 class QLabel;
+class QPushButton;
+class QSignalMapper;
 class PropertyEditWidget;
 
 class GraphPropertiesPanel : public QWidget
@@ -33,6 +35,7 @@ public slots:
 private slots:
     void handleCreateConstant(void);
     void updateAllConstantForms(void);
+    void handleConstRemoval(const QString &);
 
 private:
     QPointer<GraphEditor> _graphEditor;
@@ -45,7 +48,9 @@ private:
 
     //constants edit widget
     std::map<QString, PropertyEditWidget *> _constNameToEditWidget;
+    std::map<QString, QObjectList> _constNameToObjects;
     QFormLayout *_constNameFormLayout;
+    QSignalMapper *_constRemovalMapper;
     void createConstantEditWidget(const QString &name);
 
     //get a descriptive list of changes
