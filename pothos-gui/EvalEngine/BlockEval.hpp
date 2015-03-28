@@ -34,7 +34,8 @@ struct BlockInfo
     bool enabled;
     QString zone;
     std::map<QString, QString> properties;
-    std::vector<std::pair<QString, QString>> constants;
+    QStringList constantNames; //preserves order
+    std::map<QString, QString> constants;
     std::map<QString, Poco::JSON::Object::Ptr> paramDescs;
     Poco::JSON::Object::Ptr desc;
 };
@@ -135,16 +136,20 @@ private:
     /*!
      * Detect a change in an expression
      * accounting for the constants dependency tree.
-     * The depth parameter prevents infinite recursion.
      */
-    bool didExprHaveChange(const QString &key, const size_t depth = 0) const;
+    bool didExprHaveChange(const QString &expr) const;
 
     /*!
      * Is this constant used in any of the properties.
      * Use this logic to skip registering unused constants.
+     */
+    bool isConstantUsed(const QString &name) const;
+
+    /*!
+     * Determine all constants used by this expression
      * The depth parameter prevents infinite recursion.
      */
-    bool isConstantUsed(const QString &name, const size_t depth = 0) const;
+    QStringList getConstantsUsed(const QString &expr, const size_t depth = 0) const;
 
     /*!
      * Create the remote block evaluator if needed.

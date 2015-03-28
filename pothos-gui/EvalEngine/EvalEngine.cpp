@@ -58,10 +58,10 @@ static BlockInfo blockToBlockInfo(GraphBlock *block)
     blockInfo.zone = block->getAffinityZone();
     blockInfo.desc = block->getBlockDesc();
     const auto editor = block->draw()->getGraphEditor();
-    for (const auto &name : editor->listGlobals())
+    blockInfo.constantNames = editor->listGlobals();
+    for (const auto &name : blockInfo.constantNames)
     {
-        const auto &expr = editor->getGlobalExpression(name);
-        blockInfo.constants.push_back(std::make_pair(name, expr));
+        blockInfo.constants[name] = editor->getGlobalExpression(name);;
     }
     for (const auto &propKey : block->getProperties())
     {

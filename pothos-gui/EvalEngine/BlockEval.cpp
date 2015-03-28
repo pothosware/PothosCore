@@ -372,18 +372,12 @@ bool BlockEval::didPropKeyHaveChange(const QString &key) const
     return (this->didExprHaveChange(newVal));
 }
 
-bool BlockEval::didExprHaveChange(const QString &expr, const size_t depth) const
+bool BlockEval::didExprHaveChange(const QString &expr) const
 {
-    //probably encountered a loop, declare this a change
-    if (depth > _newBlockInfo.constants.size()) return true;
-
-    const std::map<QString, QString> newConstants(_newBlockInfo.constants.begin(), _newBlockInfo.constants.end());
-    const std::map<QString, QString> lastConstants(_lastBlockInfo.constants.begin(), _lastBlockInfo.constants.end());
-
-    for (const auto &tok : expr.split(QRegExp("\\W"), QString::SkipEmptyParts))
+    for (const auto &name : this->getConstantsUsed(expr))
     {
-        const bool foundInNew = newConstants.find(tok) != newConstants.end();
-        const bool foundInLast = lastConstants.find(tok) != lastConstants.end();
+        const bool foundInNew = _newBlockInfo.constants.count(name) != 0;
+        const bool foundInLast = _lastBlockInfo.constants.count(name) != 0;
 
         //token is not a constant -- ignore
         if (not foundInNew and not foundInLast) continue;
@@ -393,19 +387,45 @@ bool BlockEval::didExprHaveChange(const QString &expr, const size_t depth) const
         if (not foundInNew and foundInLast) return true;
 
         //constant expression changed
-        if (newConstants.at(tok) != lastConstants.at(tok)) return true;
-
-        //recurse on this constant's expression
-        if (didExprHaveChange(newConstants.at(tok), depth+1)) return true;
+        if (_newBlockInfo.constants.at(name) != _lastBlockInfo.constants.at(name)) return true;
     }
 
     return false;
 }
 
-bool BlockEval::isConstantUsed(const QString &name, const size_t depth) const
+bool BlockEval::isConstantUsed(const QString &name) const
 {
-    //yes TODO
-    return true;
+    QStringList used;
+    for (const auto &pair : _newBlockInfo.properties)
+    {
+        const auto &propVal = pair.second;
+        used += this->getConstantsUsed(propVal);
+    }
+    return used.contains(name);
+}
+
+QStringList BlockEval::getConstantsUsed(const QString &expr, const size_t depth) const
+{
+    //probably encountered a loop, declare this a change
+    if (depth > _newBlockInfo.constants.size()) return QStringList();
+
+    //create a recursive list of used constants by traversing expressions
+    QStringList used;
+    for (const auto &tok : expr.split(QRegExp("\\W"), QString::SkipEmptyParts))
+    {
+        //is this token a constant? then inspect it
+        if (_newBlockInfo.constants.count(tok) != 0)
+        {
+            used.push_back(tok);
+            used += this->getConstantsUsed(_newBlockInfo.constants.at(tok), depth+1);
+        }
+        if (_lastBlockInfo.constants.count(tok) != 0)
+        {
+            used.push_back(tok);
+            used += this->getConstantsUsed(_lastBlockInfo.constants.at(tok), depth+1);
+        }
+    }
+    return used;
 }
 
 bool BlockEval::updateAllProperties(void)
@@ -458,13 +478,12 @@ bool BlockEval::updateAllProperties(void)
 
 bool BlockEval::applyConstants(void)
 {
-    for (const auto &pair : _newBlockInfo.constants)
+    for (const auto &name : _newBlockInfo.constantNames)
     {
-        const auto &name = pair.first;
-        const auto &expr = pair.second;
         if (not this->isConstantUsed(name)) continue;
         try
         {
+            const auto &expr = _newBlockInfo.constants.at(name);
             _blockEval.callProxy("applyConstant", name.toStdString(), expr.toStdString());
         }
         catch (const Pothos::Exception &ex)
