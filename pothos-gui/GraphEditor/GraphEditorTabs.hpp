@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -25,6 +25,7 @@ private slots:
     void handleOpen(void);
     void handleOpen(const QString &filePath);
     void handleSave(void);
+    void handleSave(GraphEditor *editor);
     void handleSaveAs(void);
     void handleSaveAll(void);
     void handleReload(void);

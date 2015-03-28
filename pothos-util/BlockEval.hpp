@@ -18,7 +18,7 @@ public:
         _evalEnv(env)
     {
         return;
-    };
+    }
 
     void applyConstant(const std::string &name, const std::string &expr)
     {

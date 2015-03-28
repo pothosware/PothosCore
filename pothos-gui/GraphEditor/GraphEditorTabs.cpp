@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //make icon path and object/action maps
@@ -67,6 +67,7 @@ void GraphEditorTabs::doReloadDialog(GraphEditor *editor)
     if (not editor->hasUnsavedChanges()) return;
 
     //yes/no dialog if we have unsaved changes
+    this->setCurrentWidget(editor);
     const auto reply = QMessageBox::question(this,
         tr("Reload: unsaved changes!"),
         tr("Unsaved changes %1!\nAre you sure that you want to reload?").arg(editor->getCurrentFilePath()),
@@ -120,7 +121,11 @@ void GraphEditorTabs::handleSave(void)
 {
     auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
     assert(editor != nullptr);
+    this->handleSave(editor);
+}
 
+void GraphEditorTabs::handleSave(GraphEditor *editor)
+{
     //no file path? redirect to save as
     if (editor->getCurrentFilePath().isEmpty()) this->handleSaveAs();
 
@@ -144,6 +149,7 @@ void GraphEditorTabs::handleSaveAs(void)
     {
         lastPath = editor->getCurrentFilePath();
     }
+    this->setCurrentWidget(editor);
     auto filePath = QFileDialog::getSaveFileName(this,
                         tr("Save As"),
                         lastPath,
@@ -169,6 +175,7 @@ void GraphEditorTabs::handleSaveAll(void)
     {
         auto editor = dynamic_cast<GraphEditor *>(this->widget(i));
         assert(editor != nullptr);
+        this->handleSave(editor);
     }
     this->saveState();
 }
@@ -192,6 +199,7 @@ void GraphEditorTabs::handleClose(GraphEditor *editor)
     if (editor->hasUnsavedChanges())
     {
         //yes/no dialog if we have unsaved changes
+        this->setCurrentWidget(editor);
         const auto reply = QMessageBox::question(this,
             tr("Close: unsaved changes!"),
             tr("Unsaved changes %1!\nWould you like to save changes?").arg(editor->getCurrentFilePath()),
