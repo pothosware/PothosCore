@@ -10,10 +10,11 @@
 #include <QGroupBox>
 #include <QPushButton>
 #include <QLineEdit>
+#include <QToolButton>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QSignalMapper>
+#include <QRadioButton>
 #include <QToolTip>
 #include <iostream>
 
@@ -22,8 +23,11 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
     _graphEditor(editor),
     _formLayout(new QFormLayout(this)),
     _constantNameEntry(nullptr),
-    _constNameFormLayout(nullptr),
-    _constRemovalMapper(new QSignalMapper(this))
+    _constantsFormLayout(nullptr),
+    _constantsAddButton(new QPushButton(makeIconFromTheme("list-add"), tr("Create"), this)),
+    _constantsRemoveButton(new QPushButton(makeIconFromTheme("list-remove"), tr("Remove"), this)),
+    _constantsMoveUpButton(new QToolButton(this)),
+    _constantsMoveDownButton(new QToolButton(this))
 {
     //title
     {
@@ -44,20 +48,27 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
     {
         auto constantsBox = new QGroupBox(tr("Graph Constants"), this);
         auto constantsLayout = new QVBoxLayout(constantsBox);
-        _constNameFormLayout = new QFormLayout();
+        _constantsFormLayout = new QFormLayout();
 
         auto nameEntryLayout = new QHBoxLayout();
         _constantNameEntry = new QLineEdit(constantsBox);
         _constantNameEntry->setPlaceholderText(tr("Enter a new constant name"));
-        auto nameEntryButton = new QPushButton(makeIconFromTheme("list-add"), tr("Create"), constantsBox);
-        connect(nameEntryButton, SIGNAL(clicked(void)), this, SLOT(handleCreateConstant(void)));
+        connect(_constantsAddButton, SIGNAL(clicked(void)), this, SLOT(handleCreateConstant(void)));
         connect(_constantNameEntry, SIGNAL(returnPressed(void)), this, SLOT(handleCreateConstant(void)));
-        connect(_constRemovalMapper, SIGNAL(mapped(const QString &)), this, SLOT(handleConstRemoval(const QString &)));
+        connect(_constantsRemoveButton, SIGNAL(clicked(void)), this, SLOT(handleConstRemoval(void)));
+        connect(_constantsMoveUpButton, SIGNAL(clicked(void)), this, SLOT(handleConstMoveUp(void)));
+        connect(_constantsMoveDownButton, SIGNAL(clicked(void)), this, SLOT(handleConstMoveDown(void)));
         nameEntryLayout->addWidget(_constantNameEntry);
-        nameEntryLayout->addWidget(nameEntryButton);
+        nameEntryLayout->addWidget(_constantsAddButton);
 
-        constantsLayout->addLayout(_constNameFormLayout);
+        _constantsMoveUpButton->setArrowType(Qt::UpArrow);
+        _constantsMoveDownButton->setArrowType(Qt::DownArrow);
+        nameEntryLayout->addWidget(_constantsMoveUpButton);
+        nameEntryLayout->addWidget(_constantsMoveDownButton);
+        nameEntryLayout->addWidget(_constantsRemoveButton);
+
         constantsLayout->addLayout(nameEntryLayout);
+        constantsLayout->addLayout(_constantsFormLayout);
 
         _formLayout->addRow(constantsBox);
     }
@@ -77,9 +88,9 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
 void GraphPropertiesPanel::handleCancel(void)
 {
     //widget cancel
-    for (const auto &editWidget : _constNameToEditWidget)
+    for (const auto &formData : _constantToFormData)
     {
-        editWidget.second->cancelEvents();
+        formData.second.editWidget->cancelEvents();
     }
 
     //revert values
@@ -136,7 +147,7 @@ QStringList GraphPropertiesPanel::constValuesChanged(void) const
         {
             changes.push_back(tr("Removed constant %1").arg(name));
         }
-        else if (_constNameToEditWidget.at(name)->changed())
+        else if (_constantToFormData.at(name).editWidget->changed())
         {
             changes.push_back(tr("Changed constant %1").arg(name));
         }
@@ -183,26 +194,57 @@ void GraphPropertiesPanel::handleCreateConstant(void)
 
 void GraphPropertiesPanel::updateAllConstantForms(void)
 {
+    //update the enables for mod buttons
+    _constantsRemoveButton->setEnabled(false);
+    _constantsMoveUpButton->setEnabled(false);
+    _constantsMoveDownButton->setEnabled(false);
+    for (const auto &name : this->getSelectedConstants())
+    {
+        _constantsRemoveButton->setEnabled(true);
+        const int index = _graphEditor->listGlobals().indexOf(name);
+        if (index != 0)
+        {
+            _constantsMoveUpButton->setEnabled(true);
+        }
+        if (index+1 != _graphEditor->listGlobals().size())
+        {
+            _constantsMoveDownButton->setEnabled(true);
+        }
+    }
+
+    //clear the form layout so it can be recreated in order
+    for (const auto &name : _graphEditor->listGlobals())
+    {
+        const auto &formData = _constantToFormData.at(name);
+        _constantsFormLayout->removeWidget(formData.formLabel);
+        _constantsFormLayout->removeItem(formData.editLayout);
+    }
+
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("make");
 
     for (const auto &name : _graphEditor->listGlobals())
     {
         //update the widgets for this constant
-        auto editWidget = _constNameToEditWidget[name];
+        const auto &formData = _constantToFormData.at(name);
+        auto editWidget = formData.editWidget;
         _graphEditor->setGlobalExpression(name, editWidget->value());
+        _constantsFormLayout->addRow(formData.formLabel, formData.editLayout);
 
         try
         {
             const auto expr = _graphEditor->getGlobalExpression(name).toStdString();
             evalEnv.callProxy("registerConstant", name.toStdString(), expr);
             auto obj = evalEnv.callProxy("eval", name.toStdString());
-            editWidget->setTypeStr(obj.call<std::string>("getTypeString"));
+            const auto typeStr = obj.call<std::string>("getTypeString");
+            editWidget->setTypeStr(typeStr);
             editWidget->setErrorMsg(""); //clear errors
+            editWidget->setToolTip(QString::fromStdString(typeStr).toHtmlEscaped());
         }
         catch (const Pothos::Exception &ex)
         {
             editWidget->setErrorMsg(QString::fromStdString(ex.message()));
+            editWidget->setToolTip(QString::fromStdString(ex.message()));
         }
     }
 
@@ -211,51 +253,106 @@ void GraphPropertiesPanel::updateAllConstantForms(void)
 
 void GraphPropertiesPanel::createConstantEditWidget(const QString &name)
 {
+    auto &formData = _constantToFormData[name];
+
     //create edit widget
     const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());
     auto editWidget = new PropertyEditWidget(_graphEditor->getGlobalExpression(name), paramDesc, this);
     connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(updateAllConstantForms(void)));
     //connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(updateAllConstantForms(void)));
     connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
-    _constNameToEditWidget[name] = editWidget;
-
-    //create removal button
-    auto removalButton = new QPushButton(makeIconFromTheme("list-remove"), tr("Remove"), this);
-    _constRemovalMapper->setMapping(removalButton, name);
-    connect(removalButton, SIGNAL(clicked(void)), _constRemovalMapper, SLOT(map(void)));
+    formData.editWidget = editWidget;
     auto editLayout = new QHBoxLayout();
     editLayout->addWidget(editWidget);
-    editLayout->addWidget(removalButton);
+
+    //selection button
+    auto radioButton = new QRadioButton(this);
+    connect(radioButton, SIGNAL(clicked(void)), this, SLOT(updateAllConstantForms(void)));
+    formData.radioButton = radioButton;
+    editLayout->addWidget(radioButton);
 
     //install into form
-    auto formLabel = editWidget->makeFormLabel(name, this);
-    _constNameFormLayout->addRow(formLabel, editLayout);
+    formData.formLabel = editWidget->makeFormLabel(name, this);
+    formData.editLayout = editLayout;
+}
 
-    //objects to delete
-    _constNameToObjects[name].push_back(removalButton);
-    _constNameToObjects[name].push_back(editWidget);
-    _constNameToObjects[name].push_back(editLayout);
-    _constNameToObjects[name].push_back(formLabel);
+QStringList GraphPropertiesPanel::getSelectedConstants(void) const
+{
+    QStringList names;
+    for (const auto &pair : _constantToFormData)
+    {
+        if (pair.second.radioButton->isChecked()) names.push_back(pair.first);
+    }
+    return names;
+}
+
+void GraphPropertiesPanel::handleConstRemoval(void)
+{
+    for (const auto &name : this->getSelectedConstants())
+    {
+        this->handleConstRemoval(name);
+    }
 }
 
 void GraphPropertiesPanel::handleConstRemoval(const QString &name)
 {
     //delete objects
-    _constNameToEditWidget[name]->cancelEvents();
-    for (auto obj : _constNameToObjects.at(name))
-    {
-        delete obj;
-    }
-    _constNameToObjects.erase(name);
+    const auto &formData = _constantToFormData.at(name);
+    formData.editWidget->cancelEvents();
+    delete formData.formLabel;
+    delete formData.editWidget;
+    delete formData.radioButton;
+    delete formData.editLayout;
+    _constantToFormData.erase(name);
 
     //remove from globals list
     QStringList globals = _graphEditor->listGlobals();
     globals.erase(globals.begin() + globals.indexOf(name));
-    _graphEditor->clearGlobals();
-    for (const auto &name_i : globals)
+    _graphEditor->reorderGlobals(globals);
+
+    //update
+    this->updateAllConstantForms();
+}
+
+void GraphPropertiesPanel::handleConstMoveUp(void)
+{
+    for (const auto &name : this->getSelectedConstants())
     {
-        _graphEditor->setGlobalExpression(name_i, _constNameToEditWidget[name_i]->value());
+        this->handleConstMoveUp(name);
     }
+}
+
+void GraphPropertiesPanel::handleConstMoveUp(const QString &name)
+{
+    QStringList globals = _graphEditor->listGlobals();
+    const int index = globals.indexOf(name);
+    if (index < 1) return; //ignore top most and -1 (not found)
+
+    //move it up by swapping
+    std::swap(globals[index-1], globals[index]);
+    _graphEditor->reorderGlobals(globals);
+
+    //update
+    this->updateAllConstantForms();
+}
+
+void GraphPropertiesPanel::handleConstMoveDown(void)
+{
+    for (const auto &name : this->getSelectedConstants())
+    {
+        this->handleConstMoveDown(name);
+    }
+}
+
+void GraphPropertiesPanel::handleConstMoveDown(const QString &name)
+{
+    QStringList globals = _graphEditor->listGlobals();
+    const int index = globals.indexOf(name);
+    if (index == -1 or index+1 >= globals.size()) return; //ignore bottom most and -1 (not found)
+
+    //move it down by swapping
+    std::swap(globals[index+1], globals[index]);
+    _graphEditor->reorderGlobals(globals);
 
     //update
     this->updateAllConstantForms();

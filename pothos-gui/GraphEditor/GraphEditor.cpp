@@ -1058,6 +1058,11 @@ void GraphEditor::clearGlobals(void)
     _globalExprs.clear();
 }
 
+void GraphEditor::reorderGlobals(const QStringList &names)
+{
+    _globalNames = names;
+}
+
 void GraphEditor::setGlobalExpression(const QString &name, const QString &expression)
 {
     if (_globalExprs.count(name) == 0) _globalNames.push_back(name);

@@ -80,6 +80,9 @@ public:
     //! Get a list of all globals by name (order they were added)
     const QStringList &listGlobals(void) const;
 
+    //! Reorder globals based on a new name list
+    void reorderGlobals(const QStringList &names);
+
     //! Tell the evaluator that globals have been modified
     void commitGlobalsChanges(void);
 

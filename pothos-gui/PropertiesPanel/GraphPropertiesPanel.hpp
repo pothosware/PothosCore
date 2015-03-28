@@ -16,8 +16,17 @@ class QFormLayout;
 class QLineEdit;
 class QLabel;
 class QPushButton;
-class QSignalMapper;
+class QToolButton;
+class QRadioButton;
 class PropertyEditWidget;
+
+struct GraphConstantFormData
+{
+    PropertyEditWidget *editWidget;
+    QRadioButton *radioButton;
+    QLabel *formLabel;
+    QLayout *editLayout;
+};
 
 class GraphPropertiesPanel : public QWidget
 {
@@ -35,7 +44,12 @@ public slots:
 private slots:
     void handleCreateConstant(void);
     void updateAllConstantForms(void);
+    void handleConstRemoval(void);
+    void handleConstMoveUp(void);
+    void handleConstMoveDown(void);
     void handleConstRemoval(const QString &);
+    void handleConstMoveUp(const QString &);
+    void handleConstMoveDown(const QString &);
 
 private:
     QPointer<GraphEditor> _graphEditor;
@@ -47,11 +61,16 @@ private:
     std::map<QString, QString> _constNameToOriginal;
 
     //constants edit widget
-    std::map<QString, PropertyEditWidget *> _constNameToEditWidget;
-    std::map<QString, QObjectList> _constNameToObjects;
-    QFormLayout *_constNameFormLayout;
-    QSignalMapper *_constRemovalMapper;
+    QFormLayout *_constantsFormLayout;
+    QPushButton *_constantsAddButton;
+    QPushButton *_constantsRemoveButton;
+    QToolButton *_constantsMoveUpButton;
+    QToolButton *_constantsMoveDownButton;
+
+    //constants entry
     void createConstantEditWidget(const QString &name);
+    QStringList getSelectedConstants(void) const;
+    std::map<QString, GraphConstantFormData> _constantToFormData;
 
     //get a descriptive list of changes
     QStringList constValuesChanged(void) const;
