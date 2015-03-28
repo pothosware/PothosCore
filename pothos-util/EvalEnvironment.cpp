@@ -40,7 +40,7 @@ static Pothos::Object mupValueToObject(mup::IValue &val)
     //detect if this array is a flattened map
     const bool isMap = (val.GetCols() % 2) == 1 and
         val.At(0, 0).GetType() == 's' and
-        val.At(0, 0).GetString() == "__dict__";
+        val.At(0, 0).GetString() == mapTypeId;
 
     //support array to vector
     Pothos::ProxyVector vec(val.GetCols());
@@ -90,7 +90,7 @@ static mup::Value objectToMupValue(const Pothos::Object &obj)
         const auto &map = obj.extract<Pothos::ProxyMap>();
         mup::Value arr(1, map.size()*2+1, 0.0);
         size_t i = 0;
-        arr.At(0, i++) = mup::Value("__dict__");
+        arr.At(0, i++) = mup::Value(mapTypeId);
         for (const auto &pair : map)
         {
             const auto key_i = pair.first.getEnvironment()->convertProxyToObject(pair.first);
