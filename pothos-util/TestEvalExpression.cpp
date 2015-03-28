@@ -130,3 +130,56 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_map_expression)
         POTHOS_TEST_EQUAL(vec_1[2], 3);
     }
 }
+
+POTHOS_TEST_BLOCK("/util/tests", test_eval_with_constants)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("new");
+
+    //simple test
+    {
+        evalEnv.call<Pothos::Object>("registerConstant", "x", "1");
+        evalEnv.call<Pothos::Object>("registerConstant", "y", "2");
+        const auto result = evalEnv.call<Pothos::Object>("eval", "x + y");
+        POTHOS_TEST_EQUAL(result.convert<int>(), 3);
+    }
+
+    //array math
+    {
+        evalEnv.call<Pothos::Object>("registerConstant", "arr", "[1, 2, 3]");
+        const auto result = evalEnv.call<Pothos::Object>("eval", "2*arr");
+        const auto vec = result.convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec.size(), 3);
+        POTHOS_TEST_EQUAL(vec[0], 2);
+        POTHOS_TEST_EQUAL(vec[1], 4);
+        POTHOS_TEST_EQUAL(vec[2], 6);
+    }
+
+    //nested lists
+    {
+        evalEnv.call<Pothos::Object>("registerConstant", "nested", "[1, [\"hello\", \"world\"], 3]");
+        const auto result = evalEnv.call<Pothos::Object>("eval", "nested");
+        const auto vec = result.convert<Pothos::ObjectVector>();
+        POTHOS_TEST_EQUAL(vec.size(), 3);
+        POTHOS_TEST_EQUAL(vec[0].convert<int>(), 1);
+        const auto vec_1 = vec[1].convert<std::vector<std::string>>();
+        POTHOS_TEST_EQUAL(vec_1.size(), 2);
+        POTHOS_TEST_EQUAL(vec_1[0], "hello");
+        POTHOS_TEST_EQUAL(vec_1[1], "world");
+        POTHOS_TEST_EQUAL(vec[2].convert<int>(), 3);
+    }
+
+    //nested dict
+     {
+        evalEnv.call<Pothos::Object>("registerConstant", "nested", "{\"hello\" : 1, \"world\" : [1, 2, 3]}");
+        const auto result = evalEnv.call<Pothos::Object>("eval", "nested");
+        const auto map = result.convert<Pothos::ObjectMap>();
+        POTHOS_TEST_EQUAL(map.size(), 2);
+        POTHOS_TEST_EQUAL(map.at(Pothos::Object("hello")).convert<int>(), 1);
+        const auto vec_1 = map.at(Pothos::Object("world")).convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec_1.size(), 3);
+        POTHOS_TEST_EQUAL(vec_1[0], 1);
+        POTHOS_TEST_EQUAL(vec_1[1], 2);
+        POTHOS_TEST_EQUAL(vec_1[2], 3);
+    }
+}

@@ -16,7 +16,12 @@
 #include <mutex>
 #include "mpParser.h"
 
-static Pothos::Object mupValueToObject(const mup::Value &val)
+static const std::string mapTypeId("__map__B098D7A2__");
+
+/***********************************************************************
+ * convert parser value into a native object
+ **********************************************************************/
+static Pothos::Object mupValueToObject(mup::IValue &val)
 {
     switch (val.GetType())
     {
@@ -25,11 +30,83 @@ static Pothos::Object mupValueToObject(const mup::Value &val)
     case 'f': return Pothos::Object(val.GetFloat());
     case 'c': return Pothos::Object(val.GetComplex());
     case 's': return Pothos::Object(val.GetString());
-    //TODO m for matrix type
+    case 'm': break;
+    default: Pothos::Exception("EvalEnvironment::mupValueToObject()", "unknown type " + val.AsciiDump());
     }
-    return Pothos::Object();
+
+    assert(val.GetType() == 'm');
+    auto env = Pothos::ProxyEnvironment::make("managed");
+
+    //detect if this array is a flattened map
+    const bool isMap = (val.GetCols() % 2) == 1 and
+        val.At(0, 0).GetType() == 's' and
+        val.At(0, 0).GetString() == "__dict__";
+
+    //support array to vector
+    Pothos::ProxyVector vec(val.GetCols());
+    for (size_t i = 0; i < vec.size(); i++)
+    {
+        const auto obj_i = mupValueToObject(val.At(0, i));
+        vec[i] = env->convertObjectToProxy(obj_i);
+    }
+    if (not isMap) return Pothos::Object(vec);
+
+    //special case map mode (array -> vector -> map)
+    Pothos::ProxyMap map;
+    for (size_t i = 0; i < vec.size()/2; i++)
+    {
+        map[vec[i*2 + 1]] = vec[i*2 + 2];
+    }
+    return Pothos::Object(map);
 }
 
+/***********************************************************************
+ * convert native object into a parser value
+ **********************************************************************/
+static mup::Value objectToMupValue(const Pothos::Object &obj)
+{
+    if (obj.type() == typeid(mup::string_type)) return mup::Value(obj.extract<mup::string_type>());
+    if (obj.type() == typeid(mup::float_type)) return mup::Value(obj.extract<mup::float_type>());
+    if (obj.type() == typeid(mup::bool_type)) return mup::Value(obj.extract<mup::bool_type>());
+    if (obj.type() == typeid(mup::int_type)) return mup::Value(obj.extract<mup::int_type>());
+    if (obj.type() == typeid(mup::cmplx_type)) return mup::Value(obj.extract<mup::cmplx_type>());
+
+    //support proxy vector to parser array
+    if (obj.type() == typeid(Pothos::ProxyVector))
+    {
+        const auto &vec = obj.extract<Pothos::ProxyVector>();
+        mup::Value arr(1, vec.size(), 0.0);
+        for (size_t i = 0; i < vec.size(); i++)
+        {
+            const auto obj_i = vec[i].getEnvironment()->convertProxyToObject(vec[i]);
+            arr.At(0, i) = objectToMupValue(obj_i);
+        }
+        return arr;
+    }
+
+    //support proxy map to parser array
+    if (obj.type() == typeid(Pothos::ProxyMap))
+    {
+        const auto &map = obj.extract<Pothos::ProxyMap>();
+        mup::Value arr(1, map.size()*2+1, 0.0);
+        size_t i = 0;
+        arr.At(0, i++) = mup::Value("__dict__");
+        for (const auto &pair : map)
+        {
+            const auto key_i = pair.first.getEnvironment()->convertProxyToObject(pair.first);
+            const auto val_i = pair.second.getEnvironment()->convertProxyToObject(pair.second);
+            arr.At(0, i++) = objectToMupValue(key_i);
+            arr.At(0, i++) = objectToMupValue(val_i);
+        }
+        return arr;
+    }
+
+    throw Pothos::Exception("EvalEnvironment::objectToMupValue()", "unknown type " + obj.getTypeString());
+}
+
+/***********************************************************************
+ * Evaluator implementation
+ **********************************************************************/
 struct EvalEnvironment::Impl
 {
     Impl(void):
@@ -53,10 +130,7 @@ void EvalEnvironment::registerConstant(const std::string &key, const std::string
 {
     try
     {
-        std::lock_guard<std::mutex> lock(_impl->parserMutex);
-        _impl->p.SetExpr(expr);
-        mup::Value result = _impl->p.Eval();
-
+        const auto result = objectToMupValue(this->eval(expr));
         if (_impl->p.IsConstDefined(key)) _impl->p.RemoveConst(key);
         _impl->p.DefineConst(key, result);
     }
