@@ -138,15 +138,15 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_with_constants)
 
     //simple test
     {
-        evalEnv.call<Pothos::Object>("registerConstant", "x", "1");
-        evalEnv.call<Pothos::Object>("registerConstant", "y", "2");
+        evalEnv.call<Pothos::Object>("registerConstantExpr", "x", "1");
+        evalEnv.call<Pothos::Object>("registerConstantExpr", "y", "2");
         const auto result = evalEnv.call<Pothos::Object>("eval", "x + y");
         POTHOS_TEST_EQUAL(result.convert<int>(), 3);
     }
 
     //array math
     {
-        evalEnv.call<Pothos::Object>("registerConstant", "arr", "[1, 2, 3]");
+        evalEnv.call<Pothos::Object>("registerConstantExpr", "arr", "[1, 2, 3]");
         const auto result = evalEnv.call<Pothos::Object>("eval", "2*arr");
         const auto vec = result.convert<std::vector<int>>();
         POTHOS_TEST_EQUAL(vec.size(), 3);
@@ -157,7 +157,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_with_constants)
 
     //nested lists
     {
-        evalEnv.call<Pothos::Object>("registerConstant", "nested", "[1, [\"hello\", \"world\"], 3]");
+        evalEnv.call<Pothos::Object>("registerConstantExpr", "nested", "[1, [\"hello\", \"world\"], 3]");
         const auto result = evalEnv.call<Pothos::Object>("eval", "nested");
         const auto vec = result.convert<Pothos::ObjectVector>();
         POTHOS_TEST_EQUAL(vec.size(), 3);
@@ -171,7 +171,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_with_constants)
 
     //nested dict
      {
-        evalEnv.call<Pothos::Object>("registerConstant", "nested", "{\"hello\" : 1, \"world\" : [1, 2, 3]}");
+        evalEnv.call<Pothos::Object>("registerConstantExpr", "nested", "{\"hello\" : 1, \"world\" : [1, 2, 3]}");
         const auto result = evalEnv.call<Pothos::Object>("eval", "nested");
         const auto map = result.convert<Pothos::ObjectMap>();
         POTHOS_TEST_EQUAL(map.size(), 2);

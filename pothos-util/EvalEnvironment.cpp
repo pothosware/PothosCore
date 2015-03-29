@@ -126,7 +126,7 @@ EvalEnvironment::EvalEnvironment(void):
     return;
 }
 
-void EvalEnvironment::registerConstant(const std::string &key, const std::string &expr)
+void EvalEnvironment::registerConstantExpr(const std::string &key, const std::string &expr)
 {
     try
     {
@@ -138,6 +138,13 @@ void EvalEnvironment::registerConstant(const std::string &key, const std::string
     {
         throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.GetMsg());
     }
+}
+
+void EvalEnvironment::registerConstantObj(const std::string &key, const Pothos::Object &obj)
+{
+    const auto result = objectToMupValue(obj);
+    if (_impl->p.IsConstDefined(key)) _impl->p.RemoveConst(key);
+    _impl->p.DefineConst(key, result);
 }
 
 Pothos::Object EvalEnvironment::eval(const std::string &expr)
@@ -211,5 +218,6 @@ static auto managedEvalEnvironment = Pothos::ManagedClass()
     .registerConstructor<EvalEnvironment>()
     .registerStaticMethod(POTHOS_FCN_TUPLE(EvalEnvironment, make))
     .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, eval))
-    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, registerConstant))
+    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, registerConstantExpr))
+    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, registerConstantObj))
     .commit("Pothos/Util/EvalEnvironment");

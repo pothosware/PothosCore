@@ -34,7 +34,12 @@ public:
      * Register a constant that will be used in other expressions.
      * For an expression like 2*x, then "x" would be a constant.
      */
-    void registerConstant(const std::string &key, const std::string &expr);
+    void registerConstantExpr(const std::string &key, const std::string &expr);
+
+    /*!
+     * Register a constant that will be used in other expressions.
+     */
+    void registerConstantObj(const std::string &key, const Pothos::Object &obj);
 
     //! Split an expression given the tokenizer -- deals with quotes, nesting, escapes
     static std::vector<std::string> splitExpr(const std::string &expr, const char tokenizer);

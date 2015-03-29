@@ -22,7 +22,7 @@ public:
 
     void applyConstant(const std::string &name, const std::string &expr)
     {
-        _evalEnv->registerConstant(name, expr);
+        _evalEnv->registerConstantExpr(name, expr);
     }
 
     Pothos::Object evalProperty(const std::string &key, const std::string &expr)
@@ -48,13 +48,7 @@ public:
 
 private:
 
-    Pothos::Object lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
-    {
-        if (not arg.isString()) return _evalEnv->eval(arg.toString());
-        const auto propKey = arg.extract<std::string>();
-        if (_properties.count(propKey) == 0) return Pothos::Object(propKey);
-        return _properties.at(propKey);
-    }
+    Pothos::Object lookupOrEvalAsType(const Poco::Dynamic::Var &arg);
 
     std::map<std::string, Pothos::Object> _properties;
     Pothos::Proxy _proxyBlock;

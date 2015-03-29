@@ -55,6 +55,29 @@ void BlockEval::handleCall(const Poco::JSON::Object::Ptr &callObj)
     }
 }
 
+Pothos::Object BlockEval::lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
+{
+    //this is not an expression, but a native JSON type
+    if (not arg.isString()) return _evalEnv->eval(arg.toString());
+
+    //the expression is an already evaluated property
+    const auto expr = arg.extract<std::string>();
+    if (_properties.count(expr) != 0) return _properties.at(expr);
+
+    //otherwise the expression must be evaluated
+    //with the evaluated properties as global variables
+    //use a new eval to avoid poisoning the globals
+    auto evalEnv = EvalEnvironment::make();
+    for (const auto &pair : _properties)
+    {
+        //Register can fail for non-primitive types
+        //but those are not used in expressions anyway.
+        try {evalEnv->registerConstantObj(pair.first, pair.second);}
+        catch (...){}
+    }
+    return evalEnv->eval(expr);
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedBlockEval = Pothos::ManagedClass()

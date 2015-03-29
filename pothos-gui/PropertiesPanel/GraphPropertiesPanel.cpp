@@ -234,7 +234,7 @@ void GraphPropertiesPanel::updateAllConstantForms(void)
         try
         {
             const auto expr = _graphEditor->getGlobalExpression(name).toStdString();
-            evalEnv.callProxy("registerConstant", name.toStdString(), expr);
+            evalEnv.callProxy("registerConstantExpr", name.toStdString(), expr);
             auto obj = evalEnv.callProxy("eval", name.toStdString());
             const auto typeStr = obj.call<std::string>("getTypeString");
             editWidget->setTypeStr(typeStr);
