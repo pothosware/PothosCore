@@ -304,7 +304,6 @@ void GraphPropertiesPanel::handleConstRemoval(const QString &name)
     //delete objects
     const auto &formData = _constantToFormData.at(name);
     formData.editWidget->cancelEvents();
-    delete formData.formLabel;
     delete formData.formWidget;
     _constantToFormData.erase(name);
 
