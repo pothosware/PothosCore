@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -27,8 +27,8 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
     POTHOS_TEST_EQUAL(result.convert<int>(), 3);
 
     //a pothos type
-    const auto result2 = evalEnv.call<Pothos::Object>("eval", "DType(\"int32\")");
-    POTHOS_TEST_TRUE(result2.convert<Pothos::DType>() == Pothos::DType(typeid(int)));
+    //const auto result2 = evalEnv.call<Pothos::Object>("eval", "DType(\"int32\")");
+    //POTHOS_TEST_TRUE(result2.convert<Pothos::DType>() == Pothos::DType(typeid(int)));
 
     //test string w/ escape quote
     const auto result3 = evalEnv.call<Pothos::Object>("eval", "\"hello \\\" world\"");
@@ -55,6 +55,16 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
         POTHOS_TEST_EQUAL(vec[0], 1);
         POTHOS_TEST_EQUAL(vec[1], 2);
         POTHOS_TEST_EQUAL(vec[2], 3);
+    }
+
+    //array math
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "(2 * [1, 2, 3]) + [3, 2, 1]");
+        const auto vec = result.convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec.size(), 3);
+        POTHOS_TEST_EQUAL(vec[0], 2*1 + 3);
+        POTHOS_TEST_EQUAL(vec[1], 2*2 + 2);
+        POTHOS_TEST_EQUAL(vec[2], 2*3 + 1);
     }
 
     //a trailing comma test
@@ -120,6 +130,59 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_map_expression)
     //a nested test
     {
         const auto result = evalEnv.call<Pothos::Object>("eval", "{\"hello\" : 1, \"world\" : [1, 2, 3]}");
+        const auto map = result.convert<Pothos::ObjectMap>();
+        POTHOS_TEST_EQUAL(map.size(), 2);
+        POTHOS_TEST_EQUAL(map.at(Pothos::Object("hello")).convert<int>(), 1);
+        const auto vec_1 = map.at(Pothos::Object("world")).convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec_1.size(), 3);
+        POTHOS_TEST_EQUAL(vec_1[0], 1);
+        POTHOS_TEST_EQUAL(vec_1[1], 2);
+        POTHOS_TEST_EQUAL(vec_1[2], 3);
+    }
+}
+
+POTHOS_TEST_BLOCK("/util/tests", test_eval_with_constants)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("new");
+
+    //simple test
+    {
+        evalEnv.call<Pothos::Object>("registerConstantExpr", "x", "1");
+        evalEnv.call<Pothos::Object>("registerConstantExpr", "y", "2");
+        const auto result = evalEnv.call<Pothos::Object>("eval", "x + y");
+        POTHOS_TEST_EQUAL(result.convert<int>(), 3);
+    }
+
+    //array math
+    {
+        evalEnv.call<Pothos::Object>("registerConstantExpr", "arr", "[1, 2, 3]");
+        const auto result = evalEnv.call<Pothos::Object>("eval", "2*arr");
+        const auto vec = result.convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec.size(), 3);
+        POTHOS_TEST_EQUAL(vec[0], 2);
+        POTHOS_TEST_EQUAL(vec[1], 4);
+        POTHOS_TEST_EQUAL(vec[2], 6);
+    }
+
+    //nested lists
+    {
+        evalEnv.call<Pothos::Object>("registerConstantExpr", "nested", "[1, [\"hello\", \"world\"], 3]");
+        const auto result = evalEnv.call<Pothos::Object>("eval", "nested");
+        const auto vec = result.convert<Pothos::ObjectVector>();
+        POTHOS_TEST_EQUAL(vec.size(), 3);
+        POTHOS_TEST_EQUAL(vec[0].convert<int>(), 1);
+        const auto vec_1 = vec[1].convert<std::vector<std::string>>();
+        POTHOS_TEST_EQUAL(vec_1.size(), 2);
+        POTHOS_TEST_EQUAL(vec_1[0], "hello");
+        POTHOS_TEST_EQUAL(vec_1[1], "world");
+        POTHOS_TEST_EQUAL(vec[2].convert<int>(), 3);
+    }
+
+    //nested dict
+     {
+        evalEnv.call<Pothos::Object>("registerConstantExpr", "nested", "{\"hello\" : 1, \"world\" : [1, 2, 3]}");
+        const auto result = evalEnv.call<Pothos::Object>("eval", "nested");
         const auto map = result.convert<Pothos::ObjectMap>();
         POTHOS_TEST_EQUAL(map.size(), 2);
         POTHOS_TEST_EQUAL(map.at(Pothos::Object("hello")).convert<int>(), 1);

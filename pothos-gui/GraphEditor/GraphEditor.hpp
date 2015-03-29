@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -68,6 +68,24 @@ public:
     //! Make a connection between two endpoints
     GraphConnection *makeConnection(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1);
 
+    //! clear all globals
+    void clearGlobals(void);
+
+    //! Set a global variable and its expression -- overwrite existing
+    void setGlobalExpression(const QString &name, const QString &expression);
+
+    //! Get a global variable's expression
+    const QString &getGlobalExpression(const QString &name) const;
+
+    //! Get a list of all globals by name (order they were added)
+    const QStringList &listGlobals(void) const;
+
+    //! Reorder globals based on a new name list
+    void reorderGlobals(const QStringList &names);
+
+    //! Tell the evaluator that globals have been modified
+    void commitGlobalsChanges(void);
+
 signals:
     void newTitleSubtext(const QString &);
 
@@ -97,7 +115,8 @@ private slots:
     void handleDelete(void);
     void handleRotateLeft(void);
     void handleRotateRight(void);
-    void handleProperties(void);
+    void handleObjectProperties(void);
+    void handleGraphProperties(void);
     void handleZoomIn(void);
     void handleZoomOut(void);
     void handleZoomOriginal(void);
@@ -141,4 +160,8 @@ private:
 
     EvalEngine *_evalEngine;
     bool _isTopologyActive;
+
+    //graph globals/constant expressions
+    QStringList _globalNames;
+    std::map<QString, QString> _globalExprs;
 };

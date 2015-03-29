@@ -66,7 +66,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["delete"], SIGNAL(triggered(void)), this, SLOT(handleDelete(void)));
     connect(getActionMap()["rotateLeft"], SIGNAL(triggered(void)), this, SLOT(handleRotateLeft(void)));
     connect(getActionMap()["rotateRight"], SIGNAL(triggered(void)), this, SLOT(handleRotateRight(void)));
-    connect(getActionMap()["properties"], SIGNAL(triggered(void)), this, SLOT(handleProperties(void)));
+    connect(getActionMap()["objectProperties"], SIGNAL(triggered(void)), this, SLOT(handleObjectProperties(void)));
+    connect(getActionMap()["graphProperties"], SIGNAL(triggered(void)), this, SLOT(handleGraphProperties(void)));
     connect(getActionMap()["zoomIn"], SIGNAL(triggered(void)), this, SLOT(handleZoomIn(void)));
     connect(getActionMap()["zoomOut"], SIGNAL(triggered(void)), this, SLOT(handleZoomOut(void)));
     connect(getActionMap()["zoomOriginal"], SIGNAL(triggered(void)), this, SLOT(handleZoomOriginal(void)));
@@ -679,12 +680,18 @@ void GraphEditor::handleRotateRight(void)
     handleStateChange(GraphState("object-rotate-right", tr("Rotate %1 right").arg(draw->getSelectionDescription(~GRAPH_CONNECTION))));
 }
 
-void GraphEditor::handleProperties(void)
+void GraphEditor::handleObjectProperties(void)
 {
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
     const auto objs = draw->getObjectsSelected();
     if (not objs.isEmpty()) emit draw->modifyProperties(objs.at(0));
+}
+
+void GraphEditor::handleGraphProperties(void)
+{
+    if (not this->isVisible()) return;
+    emit this->getCurrentGraphDraw()->modifyProperties(this);
 }
 
 void GraphEditor::handleZoomIn(void)
@@ -1042,4 +1049,37 @@ GraphObject *GraphEditor::getObjectById(const QString &id, const int selectionFl
 void GraphEditor::makeDefaultPage(void)
 {
     this->insertTab(0, new GraphDraw(this), tr("Main"));
+}
+
+
+void GraphEditor::clearGlobals(void)
+{
+    _globalNames.clear();
+    _globalExprs.clear();
+}
+
+void GraphEditor::reorderGlobals(const QStringList &names)
+{
+    _globalNames = names;
+}
+
+void GraphEditor::setGlobalExpression(const QString &name, const QString &expression)
+{
+    if (_globalExprs.count(name) == 0) _globalNames.push_back(name);
+    _globalExprs[name] = expression;
+}
+
+const QString &GraphEditor::getGlobalExpression(const QString &name) const
+{
+    return _globalExprs.at(name);
+}
+
+const QStringList &GraphEditor::listGlobals(void) const
+{
+    return _globalNames;
+}
+
+void GraphEditor::commitGlobalsChanges(void)
+{
+    this->updateExecutionEngine();
 }

@@ -24,6 +24,24 @@ endif()
 add_subdirectory(Compiler)
 
 ########################################################################
+# Eval support
+########################################################################
+get_filename_component(MUPARSERX_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/muparserx/parser" ABSOLUTE)
+include_directories(${MUPARSERX_ROOT})
+file(GLOB MUPARSERX_SOURCES "${MUPARSERX_ROOT}/*.cpp")
+
+POTHOS_MODULE_UTIL(
+    TARGET EvalSupport
+    SOURCES
+        EvalEnvironment.cpp
+        EvalEnvironmentListParsers.cpp
+        TestEvalExpression.cpp
+        BlockEval.cpp
+        ${MUPARSERX_SOURCES}
+    DESTINATION util
+)
+
+########################################################################
 # JSON support (using POCO JSON)
 ########################################################################
 POTHOS_MODULE_UTIL(
@@ -39,13 +57,9 @@ POTHOS_MODULE_UTIL(
 ########################################################################
 set(SOURCES
     ConvertContainers.cpp
-    EvalEnvironment.cpp
-    EvalEnvironmentListParsers.cpp
-    BlockEval.cpp
     DeviceInfoUtils.cpp
     DocUtils.cpp
     TestDocUtils.cpp
-    TestEvalExpression.cpp
     WindowFunction.cpp
 )
 

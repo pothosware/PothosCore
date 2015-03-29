@@ -55,7 +55,34 @@ static void loadPages(GraphEditor *editor, Poco::JSON::Array::Ptr pages, const s
 void GraphEditor::loadState(std::istream &is)
 {
     Poco::JSON::Parser p; p.parse(is);
-    auto pages = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
+
+    //extract topObj, old style is page array only
+    Poco::JSON::Object::Ptr topObj;
+    if (p.getHandler()->asVar().type() == typeid(Poco::JSON::Array::Ptr))
+    {
+        topObj = new Poco::JSON::Object();
+        topObj->set("pages", p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>());
+    }
+    else
+    {
+        topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    }
+
+    //extract constants graph properties
+    this->clearGlobals();
+    auto constants = topObj->getArray("constants");
+    if (constants) for (size_t constNo = 0; constNo < constants->size(); constNo++)
+    {
+        const auto constantObj = constants->getObject(constNo);
+        if (not constantObj->has("name")) continue;
+        if (not constantObj->has("expr")) continue;
+        this->setGlobalExpression(
+            QString::fromStdString(constantObj->getValue<std::string>("name")),
+            QString::fromStdString(constantObj->getValue<std::string>("expr")));
+    }
+
+    //extract pages
+    auto pages = topObj->getArray("pages");
     assert(pages);
 
     ////////////////////////////////////////////////////////////////////

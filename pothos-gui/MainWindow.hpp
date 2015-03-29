@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -60,7 +60,8 @@ private:
     QAction *_pasteAction;
     QAction *_deleteAction;
     QAction *_selectAllAction;
-    QAction *_propertiesAction;
+    QAction *_objectPropertiesAction;
+    QAction *_graphPropertiesAction;
     QAction *_createGraphPageAction;
     QAction *_renameGraphPageAction;
     QAction *_deleteGraphPageAction;

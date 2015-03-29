@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -75,6 +75,7 @@ protected:
     void wheelEvent(QWheelEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -85,7 +86,7 @@ private slots:
     void updateEnabledActions(void);
 
 signals:
-    void modifyProperties(GraphObject *);
+    void modifyProperties(QObject *);
 
 private:
 

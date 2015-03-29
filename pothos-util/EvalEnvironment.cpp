@@ -7,40 +7,119 @@
 #include <Pothos/Object.hpp>
 #include <Pothos/Object/Containers.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Poco/TemporaryFile.h>
-#include <Poco/ClassLoader.h>
-#include <Poco/DigestStream.h>
-#include <Poco/MD5Engine.h>
-#include <Poco/File.h>
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
-#include <Poco/Types.h>
-#include <Poco/RWLock.h>
 #include <Poco/String.h>
 #include <string>
 #include <vector>
 #include <map>
-#include <fstream>
-#include <sstream>
 #include <iostream>
-#include <algorithm>
-#include <future>
+#include <mutex>
+#include "mpParser.h"
 
+static const std::string mapTypeId("__map__");
+static const std::string tmpTypeId("__tmp__");
+
+/***********************************************************************
+ * convert parser value into a native object
+ **********************************************************************/
+static Pothos::Object mupValueToObject(mup::IValue &val)
+{
+    switch (val.GetType())
+    {
+    case 'b': return Pothos::Object(val.GetBool());
+    case 'i': return Pothos::Object(val.GetInteger());
+    case 'f': return Pothos::Object(val.GetFloat());
+    case 'c': return Pothos::Object(val.GetComplex());
+    case 's': return Pothos::Object(val.GetString());
+    case 'm': break;
+    default: Pothos::Exception("EvalEnvironment::mupValueToObject()", "unknown type " + val.AsciiDump());
+    }
+
+    assert(val.GetType() == 'm');
+    auto env = Pothos::ProxyEnvironment::make("managed");
+
+    //detect if this array is a flattened map
+    const bool isMap = (val.GetCols() % 2) == 1 and
+        val.At(0, 0).GetType() == 's' and
+        val.At(0, 0).GetString() == mapTypeId;
+
+    //support array to vector
+    Pothos::ProxyVector vec(val.GetCols());
+    for (size_t i = 0; i < vec.size(); i++)
+    {
+        const auto obj_i = mupValueToObject(val.At(0, i));
+        vec[i] = env->convertObjectToProxy(obj_i);
+    }
+    if (not isMap) return Pothos::Object(vec);
+
+    //special case map mode (array -> vector -> map)
+    Pothos::ProxyMap map;
+    for (size_t i = 0; i < vec.size()/2; i++)
+    {
+        map[vec[i*2 + 1]] = vec[i*2 + 2];
+    }
+    return Pothos::Object(map);
+}
+
+/***********************************************************************
+ * convert native object into a parser value
+ **********************************************************************/
+static mup::Value objectToMupValue(const Pothos::Object &obj)
+{
+    if (obj.type() == typeid(mup::string_type)) return mup::Value(obj.extract<mup::string_type>());
+    if (obj.type() == typeid(mup::float_type)) return mup::Value(obj.extract<mup::float_type>());
+    if (obj.type() == typeid(mup::bool_type)) return mup::Value(obj.extract<mup::bool_type>());
+    if (obj.type() == typeid(mup::int_type)) return mup::Value(obj.extract<mup::int_type>());
+    if (obj.type() == typeid(mup::cmplx_type)) return mup::Value(obj.extract<mup::cmplx_type>());
+
+    //support proxy vector to parser array
+    if (obj.type() == typeid(Pothos::ProxyVector))
+    {
+        const auto &vec = obj.extract<Pothos::ProxyVector>();
+        mup::Value arr(1, vec.size(), 0.0);
+        for (size_t i = 0; i < vec.size(); i++)
+        {
+            const auto obj_i = vec[i].getEnvironment()->convertProxyToObject(vec[i]);
+            arr.At(0, i) = objectToMupValue(obj_i);
+        }
+        return arr;
+    }
+
+    //support proxy map to parser array
+    if (obj.type() == typeid(Pothos::ProxyMap))
+    {
+        const auto &map = obj.extract<Pothos::ProxyMap>();
+        mup::Value arr(1, map.size()*2+1, 0.0);
+        size_t i = 0;
+        arr.At(0, i++) = mup::Value(mapTypeId);
+        for (const auto &pair : map)
+        {
+            const auto key_i = pair.first.getEnvironment()->convertProxyToObject(pair.first);
+            const auto val_i = pair.second.getEnvironment()->convertProxyToObject(pair.second);
+            arr.At(0, i++) = objectToMupValue(key_i);
+            arr.At(0, i++) = objectToMupValue(val_i);
+        }
+        return arr;
+    }
+
+    throw Pothos::Exception("EvalEnvironment::objectToMupValue()", "unknown type " + obj.getTypeString());
+}
+
+/***********************************************************************
+ * Evaluator implementation
+ **********************************************************************/
 struct EvalEnvironment::Impl
 {
-    ~Impl(void)
+    Impl(void):
+        p(mup::pckALL_COMPLEX)
     {
-        for (const auto &outPath : tmpModuleFiles)
-        {
-            try{loader.unloadLibrary(outPath);}catch(const Poco::Exception &){}
-            try{Poco::File(outPath).remove();}catch(const Poco::Exception &){}
-        }
+        p.DefineConst("True", true);
+        p.DefineConst("False", false);
+        p.DefineConst("j", std::complex<double>(0.0, 1.0));
     }
-    Poco::ClassLoader<Pothos::Util::EvalInterface> loader;
-    std::vector<std::string> tmpModuleFiles;
-    std::map<std::string, Pothos::Object> evalCache;
-    std::map<std::string, std::string> errorCache;
-    Poco::RWLock mutex;
+    std::mutex parserMutex;
+    mup::ParserX p;
 };
 
 EvalEnvironment::EvalEnvironment(void):
@@ -49,179 +128,118 @@ EvalEnvironment::EvalEnvironment(void):
     return;
 }
 
-Pothos::Object EvalEnvironment::eval(const std::string &expr_)
+void EvalEnvironment::registerConstantExpr(const std::string &key, const std::string &expr)
 {
-    const auto expr = Poco::trim(expr_);
-
-    //check the cache
-    {
-        Poco::RWLock::ScopedReadLock l(_impl->mutex);
-        auto it = _impl->evalCache.find(expr);
-        if (it != _impl->evalCache.end()) return it->second;
-
-        //errors cache
-        auto errorIt = _impl->errorCache.find(expr);
-        if (errorIt != _impl->errorCache.end()) throw Pothos::Exception("EvalEnvironment::eval("+expr+")", errorIt->second);
-    }
-
-    //try to perform the evaluation
-    Pothos::Object result;
     try
     {
-        result = this->evalNoCache(expr);
+        const auto result = objectToMupValue(this->eval(expr));
+        if (_impl->p.IsConstDefined(key)) _impl->p.RemoveConst(key);
+        _impl->p.DefineConst(key, result);
     }
-    catch (const Pothos::Exception &ex)
+    catch (const mup::ParserError &ex)
     {
-        //cache the error
-        Poco::RWLock::ScopedWriteLock l(_impl->mutex);
-        _impl->errorCache[expr] = ex.displayText();
-        throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.displayText());
+        throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.GetMsg());
     }
-
-    //cache result and return
-    {
-        Poco::RWLock::ScopedWriteLock l(_impl->mutex);
-        _impl->evalCache[expr] = result;
-    }
-
-    return result;
 }
 
-Pothos::Object EvalEnvironment::evalNoCache(const std::string &expr)
+void EvalEnvironment::registerConstantObj(const std::string &key, const Pothos::Object &obj)
 {
-    if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval()", "expression is empty");
-    const auto inQuotes = expr.size() >= 2 and expr.front() == '"' and expr.back() == '"';
-    const auto inBrackets = expr.size() >= 2 and expr.front() == '[' and expr.back() == ']';
-    const auto inBraces = expr.size() >= 2 and expr.front() == '{' and expr.back() == '}';
+    const auto result = objectToMupValue(obj);
+    if (_impl->p.IsConstDefined(key)) _impl->p.RemoveConst(key);
+    _impl->p.DefineConst(key, result);
+}
+
+Pothos::Object EvalEnvironment::eval(const std::string &expr)
+{
+    if (Poco::trim(expr).empty()) throw Pothos::Exception("EvalEnvironment::eval()", "expression is empty");
+
+    //handle multiple containers in top level
+    const auto tokens = EvalEnvironment::splitExpr(expr);
+    if (tokens.size() > 1)
+    {
+        size_t index = 0;
+        std::string newExpr;
+        for (const auto &tok : tokens)
+        {
+            if (tok.empty()) continue;
+            if (tok.front() == '[' or tok.front() == '{')
+            {
+                const std::string key = tmpTypeId + std::to_string(index++);
+                this->registerConstantObj(key, this->eval(tok));
+                newExpr += key;
+            }
+            else
+            {
+                newExpr += tok;
+            }
+        }
+        return this->eval(newExpr);
+    }
 
     //list syntax mode
-    if (inBrackets)
-    {
-        std::vector<std::shared_future<Pothos::Object>> futures;
-        const auto noBrackets = expr.substr(1, expr.size()-2);
-        for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
-        {
-            futures.push_back(std::async(std::launch::async, std::bind(&EvalEnvironment::eval, this, tok)));
-        }
-
-        auto env = Pothos::ProxyEnvironment::make("managed");
-        Pothos::ProxyVector vec;
-        for (const auto &future : futures)
-        {
-            try
-            {
-                vec.emplace_back(env->convertObjectToProxy(future.get()));
-            }
-            catch (const Pothos::Exception &ex)
-            {
-                throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.message());
-            }
-        }
-        return Pothos::Object(vec);
-    }
+    const auto inBrackets = expr.size() >= 2 and expr.front() == '[' and expr.back() == ']';
+    if (inBrackets) return this->_evalList(expr);
 
     //map syntax mode
-    if (inBraces)
-    {
-        std::vector<std::shared_future<Pothos::Object>> futuresK, futuresV;
-        const auto noBrackets = expr.substr(1, expr.size()-2);
-        for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
-        {
-            const auto keyVal = EvalEnvironment::splitExpr(tok, ':');
-            if (keyVal.size() != 2) throw Pothos::Exception("EvalEnvironment::eval("+tok+")", "not key:value");
-            futuresK.push_back(std::async(std::launch::async, std::bind(&EvalEnvironment::eval, this, keyVal[0])));
-            futuresV.push_back(std::async(std::launch::async, std::bind(&EvalEnvironment::eval, this, keyVal[1])));
-        }
+    const auto inBraces = expr.size() >= 2 and expr.front() == '{' and expr.back() == '}';
+    if (inBraces) return this->_evalMap(expr);
 
-        auto env = Pothos::ProxyEnvironment::make("managed");
-        Pothos::ProxyMap map;
-        for (size_t i = 0; i < futuresK.size(); i++)
-        {
-            try
-            {
-                const auto key = env->convertObjectToProxy(futuresK[i].get());
-                const auto val = env->convertObjectToProxy(futuresV[i].get());
-                map.emplace(key, val);
-            }
-            catch (const Pothos::Exception &ex)
-            {
-                throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.message());
-            }
-        }
-        return Pothos::Object(map);
+    //use the muparser
+    try
+    {
+        std::lock_guard<std::mutex> lock(_impl->parserMutex);
+        _impl->p.SetExpr(expr);
+        mup::Value result = _impl->p.Eval();
+        return mupValueToObject(result);
+    }
+    catch (const mup::ParserError &ex)
+    {
+        throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.GetMsg());
     }
 
-    //support simple numbers and booleans with JSON parser
-    if (expr.find_first_of("\t\n ") == std::string::npos or inQuotes)
+    throw Pothos::Exception("EvalEnvironment::eval("+expr+")", "unknown result");
+}
+
+Pothos::Object EvalEnvironment::_evalList(const std::string &expr)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    Pothos::ProxyVector vec;
+    const auto noBrackets = expr.substr(1, expr.size()-2);
+    for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
     {
         try
         {
-            Poco::JSON::Parser p; p.parse("["+expr+"]");
-            const auto val = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>()->get(0);
-            if (val.type() == typeid(bool)) return Pothos::Object(val.convert<bool>());
-            if (val.type() == typeid(std::string)) return Pothos::Object(val.convert<std::string>());
-            if (val.isNumeric() and val.isInteger())
-            {
-                try {return Pothos::Object(val.convert<Poco::UInt32>());} catch (const Poco::Exception &){}
-                try {return Pothos::Object(val.convert<Poco::Int32>());} catch (const Poco::Exception &){}
-                try {return Pothos::Object(val.convert<Poco::UInt64>());} catch (const Poco::Exception &){}
-                try {return Pothos::Object(val.convert<Poco::Int64>());} catch (const Poco::Exception &){}
-            }
-            else if (val.isNumeric())
-            {
-                try {return Pothos::Object(val.convert<double>());} catch (const Poco::Exception &){}
-            }
+            vec.emplace_back(env->convertObjectToProxy(this->eval(tok)));
         }
-        catch (const Poco::Exception &){}
+        catch (const Pothos::Exception &ex)
+        {
+            throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.message());
+        }
     }
+    return Pothos::Object(vec);
+}
 
-    const auto compiler = Pothos::Util::Compiler::make();
-
-    //get a hash of the expr so its symbol is unique
-    Poco::MD5Engine md5; md5.update(expr);
-    const auto symName = Poco::DigestEngine::digestToHex(md5.digest());
-
-    //create the source to eval the string
-    std::ostringstream oss;
-    oss << "#define POCO_NO_AUTOMATIC_LIBS" << std::endl;
-    oss << "#include <Pothos/Framework.hpp>" << std::endl;
-    oss << "#include <Pothos/Util/EvalInterface.hpp>" << std::endl;
-    oss << "#include <Poco/ClassLibrary.h>" << std::endl;
-    oss << "#include <complex>" << std::endl;
-    oss << "#include <cmath>" << std::endl;
-    oss << "static const auto j = std::complex<double>(0, 1);" << std::endl;
-    oss << "using namespace Pothos;" << std::endl;
-    oss << "struct Eval_" << symName << " : Pothos::Util::EvalInterface" << std::endl;
-    oss << "{" << std::endl;
-    oss << "Pothos::Object eval(void) const {return Object(" << expr << ");}" << std::endl;
-    oss << "};" << std::endl;
-    oss << "POCO_BEGIN_MANIFEST(Pothos::Util::EvalInterface)" << std::endl;
-    oss << "    POCO_EXPORT_CLASS(Eval_" << symName << ")" << std::endl;
-    oss << "POCO_END_MANIFEST" << std::endl;
-
-    //perform compilation
-    Pothos::Util::CompilerArgs args = Pothos::Util::CompilerArgs::defaultDevEnv();
-    args.sources.push_back(oss.str());
-    auto outMod = compiler->compileCppModule(args);
-
-    //write module to file and load
-    const auto outPath = Poco::TemporaryFile::tempName() + Poco::SharedLibrary::suffix();
-    std::ofstream(outPath.c_str(), std::ios::binary).write(outMod.data(), outMod.size());
-    _impl->tmpModuleFiles.push_back(outPath);
-    Poco::ClassLoader<Pothos::Util::EvalInterface> loader;
-    try
+Pothos::Object EvalEnvironment::_evalMap(const std::string &expr)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    Pothos::ProxyMap map;
+    const auto noBrackets = expr.substr(1, expr.size()-2);
+    for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
     {
-        loader.loadLibrary(outPath);
+        const auto keyVal = EvalEnvironment::splitExpr(tok, ':');
+        if (keyVal.size() != 2) throw Pothos::Exception("EvalEnvironment::eval("+tok+")", "not key:value");
+        try
+        {
+            const auto key = env->convertObjectToProxy(this->eval(keyVal[0]));
+            const auto val = env->convertObjectToProxy(this->eval(keyVal[1]));
+            map.emplace(key, val);
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.message());
+        }
     }
-    catch (const Poco::Exception &ex)
-    {
-        throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.displayText());
-    }
-
-    //extract the symbol and call its evaluation routine
-    std::shared_ptr<Pothos::Util::EvalInterface> eval0(loader.create("Eval_"+symName));
-    Pothos::Object result = eval0->eval();
-    return result;
+    return Pothos::Object(map);
 }
 
 #include <Pothos/Managed.hpp>
@@ -230,4 +248,6 @@ static auto managedEvalEnvironment = Pothos::ManagedClass()
     .registerConstructor<EvalEnvironment>()
     .registerStaticMethod(POTHOS_FCN_TUPLE(EvalEnvironment, make))
     .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, eval))
+    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, registerConstantExpr))
+    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, registerConstantObj))
     .commit("Pothos/Util/EvalEnvironment");

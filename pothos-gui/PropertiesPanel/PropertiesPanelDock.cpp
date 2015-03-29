@@ -1,8 +1,9 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //make icon theme
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
+#include "PropertiesPanel/GraphPropertiesPanel.hpp"
 #include "PropertiesPanel/BlockPropertiesPanel.hpp"
 #include "PropertiesPanel/BreakerPropertiesPanel.hpp"
 #include "PropertiesPanel/ConnectionPropertiesPanel.hpp"
@@ -49,7 +50,7 @@ PropertiesPanelDock::PropertiesPanelDock(QWidget *parent):
     }
 }
 
-void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
+void PropertiesPanelDock::handleGraphModifyProperties(QObject *obj)
 {
     //clear old panel
     if (_propertiesPanel)
@@ -59,13 +60,16 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     }
 
     //extract the graph object
+    auto graph = dynamic_cast<GraphEditor *>(obj);
     auto block = dynamic_cast<GraphBlock *>(obj);
     auto breaker = dynamic_cast<GraphBreaker *>(obj);
     auto connection = dynamic_cast<GraphConnection *>(obj);
     auto widget = dynamic_cast<GraphWidget *>(obj);
+    auto graphObject = dynamic_cast<GraphObject *>(obj);
 
     if (widget != nullptr) block = widget->getGraphBlock();
-    if (block != nullptr) _propertiesPanel = new BlockPropertiesPanel(block, this);
+    if (graph != nullptr) _propertiesPanel = new GraphPropertiesPanel(graph, this);
+    else if (block != nullptr) _propertiesPanel = new BlockPropertiesPanel(block, this);
     else if (breaker != nullptr) _propertiesPanel = new BreakerPropertiesPanel(breaker, this);
     else if (connection != nullptr and connection->isSignalOrSlot()) _propertiesPanel = new ConnectionPropertiesPanel(connection, this);
     else return;
@@ -77,7 +81,7 @@ void PropertiesPanelDock::handleGraphModifyProperties(GraphObject *obj)
     connect(_cancelButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCancel(void)));
 
     //connect state change to the graph editor
-    auto editor = obj->draw()->getGraphEditor();
+    auto editor = (graphObject != nullptr)? graphObject->draw()->getGraphEditor() : graph;
     connect(_propertiesPanel, SIGNAL(stateChanged(const GraphState &)), editor, SLOT(handleStateChange(const GraphState &)));
 
     //set the widget and make the entire dock visible

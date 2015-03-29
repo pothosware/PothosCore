@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -28,21 +28,28 @@ public:
      * \throws Pothos::Exception with the evaluation error message
      * \return a proxy object representing the evaluated expression
      */
-    Pothos::Object eval(const std::string &);
+    Pothos::Object eval(const std::string &expression);
 
     /*!
      * Register a constant that will be used in other expressions.
      * For an expression like 2*x, then "x" would be a constant.
      */
-    void registerConstant(const std::string &key, const std::string &expression)
-    {
-        throw Pothos::Exception("registerConstant not yet supported", key +":"+ expression);
-    }
+    void registerConstantExpr(const std::string &key, const std::string &expr);
 
-    //! Split an expression given the tokenizer -- deals with quotes, nesting, escapes
-    static std::vector<std::string> splitExpr(const std::string &expr, const char tokenizer);
+    /*!
+     * Register a constant that will be used in other expressions.
+     */
+    void registerConstantObj(const std::string &key, const Pothos::Object &obj);
 
 private:
     struct Impl; std::shared_ptr<Impl> _impl;
-    Pothos::Object evalNoCache(const std::string &);
+
+    /*!
+     * Split an expression given the tokenizer -- deals with quotes, nesting, escapes.
+     * The null tokenizer means split the expression into top level container objects.
+     */
+    static std::vector<std::string> splitExpr(const std::string &expr, const char tokenizer = '\0');
+
+    Pothos::Object _evalList(const std::string &expr);
+    Pothos::Object _evalMap(const std::string &expr);
 };

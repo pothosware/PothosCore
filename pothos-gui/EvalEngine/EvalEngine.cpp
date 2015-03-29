@@ -5,6 +5,8 @@
 #include "EvalEngine.hpp"
 #include "EvalEngineImpl.hpp"
 #include "GraphObjects/GraphBlock.hpp"
+#include "GraphEditor/GraphDraw.hpp"
+#include "GraphEditor/GraphEditor.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include <Poco/Logger.h>
 #include <QSignalMapper>
@@ -55,6 +57,12 @@ static BlockInfo blockToBlockInfo(GraphBlock *block)
     blockInfo.enabled = block->isEnabled();
     blockInfo.zone = block->getAffinityZone();
     blockInfo.desc = block->getBlockDesc();
+    const auto editor = block->draw()->getGraphEditor();
+    blockInfo.constantNames = editor->listGlobals();
+    for (const auto &name : blockInfo.constantNames)
+    {
+        blockInfo.constants[name] = editor->getGlobalExpression(name);;
+    }
     for (const auto &propKey : block->getProperties())
     {
         blockInfo.properties[propKey] = block->getPropertyValue(propKey);

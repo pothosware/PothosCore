@@ -12,6 +12,7 @@
 #include <cassert>
 #include <iostream>
 #include <QApplication>
+#include <QRegExp>
 
 //! helper to convert the port info vector into JSON for serialization of the block
 static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo> &infos)
@@ -207,6 +208,11 @@ bool BlockEval::evaluationProcedure(void)
     {
         _lastBlockStatus.blockErrorMsgs.push_back(tr("Error: empty ID"));
     }
+    else if (_newBlockInfo.id.count(QRegExp("^[a-zA-Z]\\w*$")) != 1)
+    {
+        _lastBlockStatus.blockErrorMsgs.push_back(
+            tr("'%1' is not a legal ID").arg(_newBlockInfo.id));
+    }
 
     //load its port info
     if (evalSuccess and _queryPortDesc) try
@@ -360,11 +366,71 @@ bool BlockEval::didPropKeyHaveChange(const QString &key) const
 {
     if (_newBlockInfo.properties.count(key) == 0) return true;
     if (_lastBlockInfo.properties.count(key) == 0) return true;
-    return _newBlockInfo.properties.at(key) != _lastBlockInfo.properties.at(key);
+    const auto newVal = _newBlockInfo.properties.at(key);
+    const auto oldVal = _lastBlockInfo.properties.at(key);
+    if (newVal != oldVal) return true;
+    return (this->didExprHaveChange(newVal));
+}
+
+bool BlockEval::didExprHaveChange(const QString &expr) const
+{
+    for (const auto &name : this->getConstantsUsed(expr))
+    {
+        const bool foundInNew = _newBlockInfo.constants.count(name) != 0;
+        const bool foundInLast = _lastBlockInfo.constants.count(name) != 0;
+
+        //token is not a constant -- ignore
+        if (not foundInNew and not foundInLast) continue;
+
+        //constant removal detection -- report as changed
+        if (foundInNew and not foundInLast) return true;
+        if (not foundInNew and foundInLast) return true;
+
+        //constant expression changed
+        if (_newBlockInfo.constants.at(name) != _lastBlockInfo.constants.at(name)) return true;
+    }
+
+    return false;
+}
+
+bool BlockEval::isConstantUsed(const QString &name) const
+{
+    QStringList used;
+    for (const auto &pair : _newBlockInfo.properties)
+    {
+        const auto &propVal = pair.second;
+        used += this->getConstantsUsed(propVal);
+    }
+    return used.contains(name);
+}
+
+QStringList BlockEval::getConstantsUsed(const QString &expr, const size_t depth) const
+{
+    //probably encountered a loop, declare this a change
+    if (depth > _newBlockInfo.constants.size()) return QStringList();
+
+    //create a recursive list of used constants by traversing expressions
+    QStringList used;
+    for (const auto &tok : expr.split(QRegExp("\\W"), QString::SkipEmptyParts))
+    {
+        //is this token a constant? then inspect it
+        if (_newBlockInfo.constants.count(tok) != 0)
+        {
+            used.push_back(tok);
+            used += this->getConstantsUsed(_newBlockInfo.constants.at(tok), depth+1);
+        }
+        if (_lastBlockInfo.constants.count(tok) != 0)
+        {
+            used.push_back(tok);
+            used += this->getConstantsUsed(_lastBlockInfo.constants.at(tok), depth+1);
+        }
+    }
+    return used;
 }
 
 bool BlockEval::updateAllProperties(void)
 {
+    //create a block evaluator if need-be
     if (not _blockEval) try
     {
         Pothos::Proxy evalEnv;
@@ -387,6 +453,10 @@ bool BlockEval::updateAllProperties(void)
         return false;
     }
 
+    //apply constants before eval property expressions
+    if (not this->applyConstants()) return false;
+
+    //update each property
     bool hasError = false;
     for (const auto &pair : _newBlockInfo.properties)
     {
@@ -404,6 +474,25 @@ bool BlockEval::updateAllProperties(void)
         }
     }
     return not hasError;
+}
+
+bool BlockEval::applyConstants(void)
+{
+    for (const auto &name : _newBlockInfo.constantNames)
+    {
+        if (not this->isConstantUsed(name)) continue;
+        try
+        {
+            const auto &expr = _newBlockInfo.constants.at(name);
+            _blockEval.callProxy("applyConstant", name.toStdString(), expr.toStdString());
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            this->reportError("applyConstants", ex);
+            return false;
+        }
+    }
+    return true;
 }
 
 void BlockEval::reportError(const std::string &action, const Pothos::Exception &ex)
