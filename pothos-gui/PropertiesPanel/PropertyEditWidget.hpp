@@ -5,8 +5,7 @@
 #include <Pothos/Config.hpp>
 #include <QWidget>
 #include <QString>
-#include <QLabel>
-#include <QTimer>
+#include <QPointer>
 #include <Poco/JSON/Object.h>
 #include <string>
 
@@ -28,6 +27,8 @@ public:
      * The initial value allows the widget to determine if a change occurred.
      */
     PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent);
+
+    ~PropertyEditWidget(void);
 
     //! Get the initial value of the edit widget
     const QString &initialValue(void) const;
@@ -84,7 +85,7 @@ private:
     const QString _initialValue;
     QWidget *_editWidget;
     QLabel *_errorLabel;
-    QLabel *_formLabel;
+    QPointer<QLabel> _formLabel;
     QString _formLabelText;
     QString _errorMsg;
     const QString _unitsStr;

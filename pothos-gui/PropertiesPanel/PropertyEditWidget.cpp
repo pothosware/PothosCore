@@ -68,6 +68,12 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::
     this->updateInternals();
 }
 
+PropertyEditWidget::~PropertyEditWidget(void)
+{
+    //we dont own form label, so it has to be explicitly deleted
+    delete _formLabel;
+}
+
 const QString &PropertyEditWidget::initialValue(void) const
 {
     return _initialValue;
@@ -109,9 +115,12 @@ void PropertyEditWidget::setBackgroundColor(const QColor color)
 
 QLabel *PropertyEditWidget::makeFormLabel(const QString &text, QWidget *parent)
 {
-    _formLabelText = text;
-    _formLabel = new QLabel(text, parent);
-    this->updateInternals();
+    if (not _formLabel)
+    {
+        _formLabelText = text;
+        _formLabel = new QLabel(text, parent);
+        this->updateInternals();
+    }
     return _formLabel;
 }
 
@@ -132,7 +141,7 @@ void PropertyEditWidget::updateInternals(void)
         .arg(_formLabelText)
         .arg(this->changed()?"*":"");
     if (hasUnits) formLabelText += QString("<br /><i>%1</i>").arg(_unitsStr);
-    if (_formLabel != nullptr) _formLabel->setText(formLabelText);
+    if (_formLabel) _formLabel->setText(formLabelText);
 }
 
 void PropertyEditWidget::handleWidgetChanged(void)
@@ -164,5 +173,5 @@ void PropertyEditWidget::flushEvents(void)
 {
     if (not _entryTimer->isActive()) return;
     _entryTimer->stop();
-    this->handleEntryChanged();        
+    this->handleEntryChanged();
 }
