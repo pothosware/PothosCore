@@ -23,16 +23,30 @@ std::vector<std::string> EvalEnvironment::splitExpr(const std::string &expr, con
             if (ch == '"' and previousCh != '\\') inQuotes = false;
         }
 
-        else if (not specials.empty())
+        else if (/*ch == ')' or */ch == '}' or ch == ']')
         {
             field.push_back(ch);
             if ((specials.top() == '(' and ch == ')') or
                 (specials.top() == '{' and ch == '}') or
                 (specials.top() == '[' and ch == ']')) specials.pop();
+
+            //top level container ended
+            if (specials.empty() and tokenizer == '\0')
+            {
+                if (not field.empty()) tokens.push_back(field);
+                field.clear();
+            }
         }
 
-        else if (ch == '(' or ch == '{' or ch == '[')
+        else if (/*ch == '(' or */ch == '{' or ch == '[')
         {
+            //top level container began
+            if (specials.empty() and tokenizer == '\0')
+            {
+                if (not field.empty()) tokens.push_back(field);
+                field.clear();
+            }
+
             field.push_back(ch);
             specials.push(ch);
         }
@@ -43,7 +57,7 @@ std::vector<std::string> EvalEnvironment::splitExpr(const std::string &expr, con
             inQuotes = true;
         }
 
-        else if (ch == tokenizer)
+        else if (specials.empty() and ch == tokenizer)
         {
             if (not field.empty()) tokens.push_back(field);
             field.clear();

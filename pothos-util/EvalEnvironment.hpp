@@ -41,9 +41,15 @@ public:
      */
     void registerConstantObj(const std::string &key, const Pothos::Object &obj);
 
-    //! Split an expression given the tokenizer -- deals with quotes, nesting, escapes
-    static std::vector<std::string> splitExpr(const std::string &expr, const char tokenizer);
-
 private:
     struct Impl; std::shared_ptr<Impl> _impl;
+
+    /*!
+     * Split an expression given the tokenizer -- deals with quotes, nesting, escapes.
+     * The null tokenizer means split the expression into top level container objects.
+     */
+    static std::vector<std::string> splitExpr(const std::string &expr, const char tokenizer = '\0');
+
+    Pothos::Object _evalList(const std::string &expr);
+    Pothos::Object _evalMap(const std::string &expr);
 };

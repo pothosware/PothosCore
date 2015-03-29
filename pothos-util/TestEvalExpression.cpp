@@ -57,6 +57,16 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
         POTHOS_TEST_EQUAL(vec[2], 3);
     }
 
+    //array math
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "(2 * [1, 2, 3]) + [3, 2, 1]");
+        const auto vec = result.convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec.size(), 3);
+        POTHOS_TEST_EQUAL(vec[0], 2*1 + 3);
+        POTHOS_TEST_EQUAL(vec[1], 2*2 + 2);
+        POTHOS_TEST_EQUAL(vec[2], 2*3 + 1);
+    }
+
     //a trailing comma test
     {
         const auto result = evalEnv.call<Pothos::Object>("eval", "[1, ]");

@@ -9,6 +9,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/String.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -16,7 +17,8 @@
 #include <mutex>
 #include "mpParser.h"
 
-static const std::string mapTypeId("__map__B098D7A2__");
+static const std::string mapTypeId("__map__");
+static const std::string tmpTypeId("__tmp__");
 
 /***********************************************************************
  * convert parser value into a native object
@@ -149,54 +151,40 @@ void EvalEnvironment::registerConstantObj(const std::string &key, const Pothos::
 
 Pothos::Object EvalEnvironment::eval(const std::string &expr)
 {
-    if (expr.empty()) throw Pothos::Exception("EvalEnvironment::eval()", "expression is empty");
-    const auto inBrackets = expr.size() >= 2 and expr.front() == '[' and expr.back() == ']';
-    const auto inBraces = expr.size() >= 2 and expr.front() == '{' and expr.back() == '}';
+    if (Poco::trim(expr).empty()) throw Pothos::Exception("EvalEnvironment::eval()", "expression is empty");
+
+    //handle multiple containers in top level
+    const auto tokens = EvalEnvironment::splitExpr(expr);
+    if (tokens.size() > 1)
+    {
+        size_t index = 0;
+        std::string newExpr;
+        for (const auto &tok : tokens)
+        {
+            if (tok.empty()) continue;
+            if (tok.front() == '[' or tok.front() == '{')
+            {
+                const std::string key = tmpTypeId + std::to_string(index++);
+                this->registerConstantObj(key, this->eval(tok));
+                newExpr += key;
+            }
+            else
+            {
+                newExpr += tok;
+            }
+        }
+        return this->eval(newExpr);
+    }
 
     //list syntax mode
-    if (inBrackets)
-    {
-        auto env = Pothos::ProxyEnvironment::make("managed");
-        Pothos::ProxyVector vec;
-        const auto noBrackets = expr.substr(1, expr.size()-2);
-        for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
-        {
-            try
-            {
-                vec.emplace_back(env->convertObjectToProxy(this->eval(tok)));
-            }
-            catch (const Pothos::Exception &ex)
-            {
-                throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.message());
-            }
-        }
-        return Pothos::Object(vec);
-    }
+    const auto inBrackets = expr.size() >= 2 and expr.front() == '[' and expr.back() == ']';
+    if (inBrackets) return this->_evalList(expr);
 
     //map syntax mode
-    if (inBraces)
-    {
-        auto env = Pothos::ProxyEnvironment::make("managed");
-        Pothos::ProxyMap map;
-        const auto noBrackets = expr.substr(1, expr.size()-2);
-        for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
-        {
-            const auto keyVal = EvalEnvironment::splitExpr(tok, ':');
-            if (keyVal.size() != 2) throw Pothos::Exception("EvalEnvironment::eval("+tok+")", "not key:value");
-            try
-            {
-                const auto key = env->convertObjectToProxy(this->eval(keyVal[0]));
-                const auto val = env->convertObjectToProxy(this->eval(keyVal[1]));
-                map.emplace(key, val);
-            }
-            catch (const Pothos::Exception &ex)
-            {
-                throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.message());
-            }
-        }
-        return Pothos::Object(map);
-    }
+    const auto inBraces = expr.size() >= 2 and expr.front() == '{' and expr.back() == '}';
+    if (inBraces) return this->_evalMap(expr);
 
+    //use the muparser
     try
     {
         std::lock_guard<std::mutex> lock(_impl->parserMutex);
@@ -210,6 +198,48 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
     }
 
     throw Pothos::Exception("EvalEnvironment::eval("+expr+")", "unknown result");
+}
+
+Pothos::Object EvalEnvironment::_evalList(const std::string &expr)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    Pothos::ProxyVector vec;
+    const auto noBrackets = expr.substr(1, expr.size()-2);
+    for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
+    {
+        try
+        {
+            vec.emplace_back(env->convertObjectToProxy(this->eval(tok)));
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.message());
+        }
+    }
+    return Pothos::Object(vec);
+}
+
+Pothos::Object EvalEnvironment::_evalMap(const std::string &expr)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    Pothos::ProxyMap map;
+    const auto noBrackets = expr.substr(1, expr.size()-2);
+    for (const auto &tok : EvalEnvironment::splitExpr(noBrackets, ','))
+    {
+        const auto keyVal = EvalEnvironment::splitExpr(tok, ':');
+        if (keyVal.size() != 2) throw Pothos::Exception("EvalEnvironment::eval("+tok+")", "not key:value");
+        try
+        {
+            const auto key = env->convertObjectToProxy(this->eval(keyVal[0]));
+            const auto val = env->convertObjectToProxy(this->eval(keyVal[1]));
+            map.emplace(key, val);
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            throw Pothos::Exception("EvalEnvironment::eval("+expr+")", ex.message());
+        }
+    }
+    return Pothos::Object(map);
 }
 
 #include <Pothos/Managed.hpp>
