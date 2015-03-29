@@ -18,6 +18,7 @@ class QLabel;
 class QPushButton;
 class QToolButton;
 class QRadioButton;
+class QButtonGroup;
 class PropertyEditWidget;
 
 struct GraphConstantFormData
@@ -25,7 +26,7 @@ struct GraphConstantFormData
     PropertyEditWidget *editWidget;
     QRadioButton *radioButton;
     QLabel *formLabel;
-    QLayout *editLayout;
+    QWidget *formWidget;
 };
 
 class GraphPropertiesPanel : public QWidget
@@ -66,6 +67,7 @@ private:
     QPushButton *_constantsRemoveButton;
     QToolButton *_constantsMoveUpButton;
     QToolButton *_constantsMoveDownButton;
+    QButtonGroup *_constantsSelectionGroup;
 
     //constants entry
     void createConstantEditWidget(const QString &name);

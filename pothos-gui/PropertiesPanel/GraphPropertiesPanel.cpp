@@ -15,6 +15,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QRadioButton>
+#include <QButtonGroup>
 #include <QToolTip>
 #include <iostream>
 
@@ -27,7 +28,8 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
     _constantsAddButton(new QPushButton(makeIconFromTheme("list-add"), tr("Create"), this)),
     _constantsRemoveButton(new QPushButton(makeIconFromTheme("list-remove"), tr("Remove"), this)),
     _constantsMoveUpButton(new QToolButton(this)),
-    _constantsMoveDownButton(new QToolButton(this))
+    _constantsMoveDownButton(new QToolButton(this)),
+    _constantsSelectionGroup(new QButtonGroup(this))
 {
     //title
     {
@@ -217,7 +219,7 @@ void GraphPropertiesPanel::updateAllConstantForms(void)
     {
         const auto &formData = _constantToFormData.at(name);
         _constantsFormLayout->removeWidget(formData.formLabel);
-        _constantsFormLayout->removeItem(formData.editLayout);
+        _constantsFormLayout->removeWidget(formData.formWidget);
     }
 
     auto env = Pothos::ProxyEnvironment::make("managed");
@@ -229,7 +231,7 @@ void GraphPropertiesPanel::updateAllConstantForms(void)
         const auto &formData = _constantToFormData.at(name);
         auto editWidget = formData.editWidget;
         _graphEditor->setGlobalExpression(name, editWidget->value());
-        _constantsFormLayout->addRow(formData.formLabel, formData.editLayout);
+        _constantsFormLayout->addRow(formData.formLabel, formData.formWidget);
 
         try
         {
@@ -254,6 +256,9 @@ void GraphPropertiesPanel::updateAllConstantForms(void)
 void GraphPropertiesPanel::createConstantEditWidget(const QString &name)
 {
     auto &formData = _constantToFormData[name];
+    auto formWidget = new QWidget(this);
+    auto editLayout = new QHBoxLayout(formWidget);
+    editLayout->setContentsMargins(0, 0, 0, 0);
 
     //create edit widget
     const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());
@@ -261,19 +266,19 @@ void GraphPropertiesPanel::createConstantEditWidget(const QString &name)
     connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(updateAllConstantForms(void)));
     //connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(updateAllConstantForms(void)));
     connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
-    formData.editWidget = editWidget;
-    auto editLayout = new QHBoxLayout();
     editLayout->addWidget(editWidget);
 
     //selection button
     auto radioButton = new QRadioButton(this);
     connect(radioButton, SIGNAL(clicked(void)), this, SLOT(updateAllConstantForms(void)));
-    formData.radioButton = radioButton;
     editLayout->addWidget(radioButton);
+    _constantsSelectionGroup->addButton(radioButton);
 
     //install into form
+    formData.editWidget = editWidget;
     formData.formLabel = editWidget->makeFormLabel(name, this);
-    formData.editLayout = editLayout;
+    formData.formWidget = formWidget;
+    formData.radioButton = radioButton;
 }
 
 QStringList GraphPropertiesPanel::getSelectedConstants(void) const
@@ -300,9 +305,7 @@ void GraphPropertiesPanel::handleConstRemoval(const QString &name)
     const auto &formData = _constantToFormData.at(name);
     formData.editWidget->cancelEvents();
     delete formData.formLabel;
-    delete formData.editWidget;
-    delete formData.radioButton;
-    delete formData.editLayout;
+    delete formData.formWidget;
     _constantToFormData.erase(name);
 
     //remove from globals list
