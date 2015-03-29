@@ -121,8 +121,14 @@ QString GraphBlock::getPropertyDisplayText(const QString &key) const
         }
     }
 
-    //strip quotes if present
-    if (value.size() >= 2 and value.startsWith("\"") and value.endsWith("\""))
+    //strip enclosing control characters to save space
+    if (value.size() >= 2 and (
+        (value.startsWith("\"") and value.endsWith("\"")) or
+        (value.startsWith("'") and value.endsWith("'")) or
+        (value.startsWith("(") and value.endsWith(")")) or
+        (value.startsWith("[") and value.endsWith("]")) or
+        (value.startsWith("{") and value.endsWith("}"))
+    ))
     {
         value.remove(-1, 1).remove(0, 1);
     }
