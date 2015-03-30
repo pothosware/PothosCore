@@ -61,8 +61,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal)
     {
         Pothos::Topology topology;
         topology.connect(feeder, 0, messageToSignal, 0);
-        topology.connect(messageToSignal, "changeEvent", transform, "setValue");
-        topology.connect(transform, "eval", slotToMessage, "handleEvent");
+        topology.connect(messageToSignal, "changeEvent", transform, "transform");
+        topology.connect(transform, "triggered", slotToMessage, "handleEvent");
         topology.connect(slotToMessage, 0, collector, 0);
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());
@@ -98,8 +98,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal2)
     //run the topology
     {
         Pothos::Topology topology;
-        topology.connect(feeder, 0, transform, "setValue");
-        topology.connect(transform, "eval", slotToMessage, "handleEvent");
+        topology.connect(feeder, 0, transform, "transform");
+        topology.connect(transform, "triggered", slotToMessage, "handleEvent");
         topology.connect(slotToMessage, 0, collector, 0);
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());

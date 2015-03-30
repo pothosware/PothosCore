@@ -22,6 +22,7 @@ New digital blocks:
 
 New utility blocks:
 
+- Created transform signal/slots utility block
 - Created vector source block for testing
 - Created infinite source block for benchmarks
 
