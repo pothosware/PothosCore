@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -10,10 +10,11 @@
 
 POTHOS_TEST_BLOCK("/blocks/tests", test_periodic_trigger)
 {
-    auto env = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
-    auto trigger = env.callProxy("/blocks/periodic_trigger");
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto registry = env->findProxy("Pothos/BlockRegistry");
+    auto trigger = registry.callProxy("/blocks/periodic_trigger");
     trigger.callVoid("setRate", 4.0);
-    auto collector = env.callProxy("/blocks/collector_sink", "int");
+    auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //run the topology
     {
