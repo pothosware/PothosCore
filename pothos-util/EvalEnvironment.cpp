@@ -5,6 +5,7 @@
 #include <Pothos/Util/Compiler.hpp>
 #include <Pothos/Util/EvalInterface.hpp>
 #include <Pothos/Object.hpp>
+#include <Pothos/Framework/DType.hpp>
 #include <Pothos/Object/Containers.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Poco/JSON/Array.h>
@@ -67,16 +68,29 @@ static Pothos::Object mupValueToObject(mup::IValue &val)
  **********************************************************************/
 static mup::Value objectToMupValue(const Pothos::Object &obj)
 {
+    //types that the parser library specifically typedefs
     if (obj.type() == typeid(mup::string_type)) return mup::Value(obj.extract<mup::string_type>());
     if (obj.type() == typeid(mup::float_type)) return mup::Value(obj.extract<mup::float_type>());
     if (obj.type() == typeid(mup::bool_type)) return mup::Value(obj.extract<mup::bool_type>());
     if (obj.type() == typeid(mup::int_type)) return mup::Value(obj.extract<mup::int_type>());
     if (obj.type() == typeid(mup::cmplx_type)) return mup::Value(obj.extract<mup::cmplx_type>());
 
-    //support proxy vector to parser array
-    if (obj.type() == typeid(Pothos::ProxyVector))
+    //other numeric types
+    try
     {
-        const auto &vec = obj.extract<Pothos::ProxyVector>();
+        Pothos::DType dtype(obj.type());
+        if (dtype.isFloat()) return mup::Value(obj.convert<mup::cmplx_type>());
+        if (dtype.isComplex()) return mup::Value(obj.convert<mup::cmplx_type>());
+        //types that fit into the parser's integer type, otherwise use floating point
+        if (dtype.size() <= sizeof(mup::int_type)) return mup::Value(obj.convert<mup::int_type>());
+        else return mup::Value(obj.convert<mup::float_type>());
+    }
+    catch (...) {}
+
+    //support proxy vector to parser array
+    if (obj.canConvert(typeid(Pothos::ProxyVector)))
+    {
+        const auto vec = obj.convert<Pothos::ProxyVector>();
         mup::Value arr(1, vec.size(), 0.0);
         for (size_t i = 0; i < vec.size(); i++)
         {
@@ -87,9 +101,9 @@ static mup::Value objectToMupValue(const Pothos::Object &obj)
     }
 
     //support proxy map to parser array
-    if (obj.type() == typeid(Pothos::ProxyMap))
+    if (obj.canConvert(typeid(Pothos::ProxyMap)))
     {
-        const auto &map = obj.extract<Pothos::ProxyMap>();
+        const auto map = obj.convert<Pothos::ProxyMap>();
         mup::Value arr(1, map.size()*2+1, 0.0);
         size_t i = 0;
         arr.At(0, i++) = mup::Value(mapTypeId);

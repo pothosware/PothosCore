@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/Containers.hpp>
@@ -17,6 +17,19 @@ std::vector<OutType> convertProxyVectorToNativeVector(const Pothos::ProxyVector 
         nativeVec.push_back(elem.convert<OutType>());
     }
     return nativeVec;
+}
+
+template <typename InType>
+Pothos::ProxyVector convertNativeVectorToProxyVector(const std::vector<InType> &v)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    Pothos::ProxyVector pVec;
+    for (const auto &elem : v)
+    {
+        auto o = env->makeProxy(elem);
+        pVec.push_back(o);
+    }
+    return pVec;
 }
 
 static Pothos::ObjectVector convertProxyVectorToObjectVector(const Pothos::ProxyVector &v)
@@ -101,25 +114,32 @@ static Pothos::ProxyMap convertObjectMapToProxyMap(const Pothos::ObjectMap &m)
     return pMap;
 }
 
+template <typename T>
+void registerNumericProxyVectorConversion(const std::string &name)
+{
+    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_"+name+"_vec", Pothos::Callable(&convertProxyVectorToNativeVector<T>));
+    Pothos::PluginRegistry::add("/object/convert/containers/"+name+"_vec_to_proxy_vec", Pothos::Callable(&convertNativeVectorToProxyVector<T>));
+}
+
 pothos_static_block(pothosObjectRegisterConvertContainers)
 {
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_bool_vec", Pothos::Callable(&convertProxyVectorToNativeVector<bool>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_char_vec", Pothos::Callable(&convertProxyVectorToNativeVector<char>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_schar_vec", Pothos::Callable(&convertProxyVectorToNativeVector<signed char>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_uchar_vec", Pothos::Callable(&convertProxyVectorToNativeVector<unsigned char>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_sshort_vec", Pothos::Callable(&convertProxyVectorToNativeVector<signed short>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_ushort_vec", Pothos::Callable(&convertProxyVectorToNativeVector<unsigned short>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_sint_vec", Pothos::Callable(&convertProxyVectorToNativeVector<signed int>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_uint_vec", Pothos::Callable(&convertProxyVectorToNativeVector<unsigned int>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_slong_vec", Pothos::Callable(&convertProxyVectorToNativeVector<signed long>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_ulong_vec", Pothos::Callable(&convertProxyVectorToNativeVector<unsigned long>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_sllong_vec", Pothos::Callable(&convertProxyVectorToNativeVector<signed long long>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_ullong_vec", Pothos::Callable(&convertProxyVectorToNativeVector<unsigned long long>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_float_vec", Pothos::Callable(&convertProxyVectorToNativeVector<float>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_double_vec", Pothos::Callable(&convertProxyVectorToNativeVector<double>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_cfloat_vec", Pothos::Callable(&convertProxyVectorToNativeVector<std::complex<float>>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_cdouble_vec", Pothos::Callable(&convertProxyVectorToNativeVector<std::complex<double>>));
-    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_string_vec", Pothos::Callable(&convertProxyVectorToNativeVector<std::string>));
+    registerNumericProxyVectorConversion<bool>("bool");
+    registerNumericProxyVectorConversion<char>("char");
+    registerNumericProxyVectorConversion<signed char>("schar");
+    registerNumericProxyVectorConversion<unsigned char>("uchar");
+    registerNumericProxyVectorConversion<signed short>("sshort");
+    registerNumericProxyVectorConversion<unsigned short>("ushort");
+    registerNumericProxyVectorConversion<signed int>("sint");
+    registerNumericProxyVectorConversion<unsigned int>("uint");
+    registerNumericProxyVectorConversion<signed long>("slong");
+    registerNumericProxyVectorConversion<unsigned long>("ulong");
+    registerNumericProxyVectorConversion<signed long long>("sllong");
+    registerNumericProxyVectorConversion<unsigned long long>("ullong");
+    registerNumericProxyVectorConversion<float>("float");
+    registerNumericProxyVectorConversion<double>("double");
+    registerNumericProxyVectorConversion<std::complex<float>>("cfloat");
+    registerNumericProxyVectorConversion<std::complex<double>>("cdouble");
+    registerNumericProxyVectorConversion<std::string>("string");
 
     Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_object_vec", Pothos::Callable(&convertProxyVectorToObjectVector));
     Pothos::PluginRegistry::add("/object/convert/containers/proxy_set_to_object_set", Pothos::Callable(&convertProxySetToObjectSet));

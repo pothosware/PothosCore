@@ -6,6 +6,7 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Exception.hpp>
 #include <Pothos/Object/Containers.hpp>
+#include <complex>
 #include <iostream>
 
 POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
@@ -191,5 +192,58 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_with_constants)
         POTHOS_TEST_EQUAL(vec_1[0], 1);
         POTHOS_TEST_EQUAL(vec_1[1], 2);
         POTHOS_TEST_EQUAL(vec_1[2], 3);
+    }
+}
+
+POTHOS_TEST_BLOCK("/util/tests", test_eval_constant_obj)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("new");
+
+    //short type
+    {
+        const auto arg = short(123);
+        evalEnv.call<Pothos::Object>("registerConstantObj", "v0", arg);
+        const auto result = evalEnv.call<Pothos::Object>("eval", "v0");
+        POTHOS_TEST_EQUAL(result.convert<short>(), arg);
+    }
+
+    //float type
+    {
+        const auto arg = float(-10.0);
+        evalEnv.call<Pothos::Object>("registerConstantObj", "v1", arg);
+        const auto result = evalEnv.call<Pothos::Object>("eval", "v1");
+        POTHOS_TEST_EQUAL(result.convert<float>(), arg);
+    }
+
+    //complex float
+    {
+        const auto arg = std::complex<float>(11.0, -32.0);
+        evalEnv.call<Pothos::Object>("registerConstantObj", "v2", arg);
+        const auto result = evalEnv.call<Pothos::Object>("eval", "v2");
+        POTHOS_TEST_EQUAL(result.convert<std::complex<float>>(), arg);
+    }
+
+    //long long type
+    {
+        const auto arg = (long long)(17179869184ll);
+        evalEnv.call<Pothos::Object>("registerConstantObj", "v3", arg);
+        const auto result = evalEnv.call<Pothos::Object>("eval", "v3");
+        POTHOS_TEST_EQUAL(result.convert<long long>(), arg);
+    }
+
+    //numeric vector
+    {
+        auto arg = std::vector<int>();
+        arg.push_back(1);
+        arg.push_back(2);
+        arg.push_back(3);
+        evalEnv.call<Pothos::Object>("registerConstantObj", "v4", arg);
+        const auto result = evalEnv.call<Pothos::Object>("eval", "v4");
+        const auto vec = result.convert<std::vector<int>>();
+        POTHOS_TEST_EQUAL(vec.size(), 3);
+        POTHOS_TEST_EQUAL(vec[0], 1);
+        POTHOS_TEST_EQUAL(vec[1], 2);
+        POTHOS_TEST_EQUAL(vec[2], 3);
     }
 }
