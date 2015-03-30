@@ -5,7 +5,7 @@
 #include <iostream>
 
 /***********************************************************************
- * |PothosDoc MessageToSignal
+ * |PothosDoc Message To Signal
  *
  * The message to signal block takes an input message on port 0,
  * and emits a signal of the name specified in the configuration.

@@ -5,7 +5,7 @@
 #include <iostream>
 
 /***********************************************************************
- * |PothosDoc SlotToMessage
+ * |PothosDoc Slot To Message
  *
  * The slot to message block handles a slot of the specified name,
  * and posts the first argument of the slot to a message port port.
