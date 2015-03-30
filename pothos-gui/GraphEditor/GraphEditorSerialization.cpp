@@ -11,17 +11,17 @@ void GraphEditor::dumpState(std::ostream &os) const
 {
     Poco::JSON::Object topObj;
 
-    //store constants graph properties
-    Poco::JSON::Array constants;
+    //store global variables
+    Poco::JSON::Array globals;
     for (const auto &name : this->listGlobals())
     {
-        const auto &expr = this->getGlobalExpression(name);
-        Poco::JSON::Object constantObj;
-        constantObj.set("name", name.toStdString());
-        constantObj.set("expr", expr.toStdString());
-        constants.add(constantObj);
+        const auto &value = this->getGlobalExpression(name);
+        Poco::JSON::Object globalObj;
+        globalObj.set("name", name.toStdString());
+        globalObj.set("value", value.toStdString());
+        globals.add(globalObj);
     }
-    topObj.set("constants", constants);
+    topObj.set("globals", globals);
 
     //store pages
     Poco::JSON::Array pages;

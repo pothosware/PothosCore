@@ -20,7 +20,7 @@ class QRadioButton;
 class QButtonGroup;
 class PropertyEditWidget;
 
-struct GraphConstantFormData
+struct GraphVariableFormData
 {
     PropertyEditWidget *editWidget;
     QRadioButton *radioButton;
@@ -42,37 +42,35 @@ public slots:
     void handleCommit(void);
 
 private slots:
-    void handleCreateConstant(void);
-    void updateAllConstantForms(void);
-    void handleConstRemoval(void);
-    void handleConstMoveUp(void);
-    void handleConstMoveDown(void);
-    void handleConstRemoval(const QString &);
-    void handleConstMoveUp(const QString &);
-    void handleConstMoveDown(const QString &);
+    void handleCreateVariable(void);
+    void updateAllVariableForms(void);
+    void handleVariableRemoval(void);
+    void handleVariableMoveUp(void);
+    void handleVariableMoveDown(void);
+    void handleVariableRemoval(const QString &);
+    void handleVariableMoveUp(const QString &);
+    void handleVariableMoveDown(const QString &);
 
 private:
     QPointer<GraphEditor> _graphEditor;
     QFormLayout *_formLayout;
-    QLineEdit *_constantNameEntry;
+    QLineEdit *_varNameEntry;
 
-    //stashed state of constants
-    QStringList _originalConstNames;
-    std::map<QString, QString> _constNameToOriginal;
+    //stashed state of global variables
+    QStringList _originalVariableNames;
+    std::map<QString, QString> _varNameToOriginal;
 
-    //constants edit widget
-    QFormLayout *_constantsFormLayout;
-    QToolButton *_constantsAddButton;
-    QToolButton *_constantsRemoveButton;
-    QToolButton *_constantsMoveUpButton;
-    QToolButton *_constantsMoveDownButton;
-    QButtonGroup *_constantsSelectionGroup;
-
-    //constants entry
-    void createConstantEditWidget(const QString &name);
-    QStringList getSelectedConstants(void) const;
-    std::map<QString, GraphConstantFormData> _constantToFormData;
+    //global variables edit widget
+    QFormLayout *_varsFormLayout;
+    QToolButton *_varsAddButton;
+    QToolButton *_varsRemoveButton;
+    QToolButton *_varsMoveUpButton;
+    QToolButton *_varsMoveDownButton;
+    QButtonGroup *_varsSelectionGroup;
+    void createVariableEditWidget(const QString &name);
+    QStringList getSelectedVariables(void) const;
+    std::map<QString, GraphVariableFormData> _varToFormData;
 
     //get a descriptive list of changes
-    QStringList constValuesChanged(void) const;
+    QStringList getChangeDescList(void) const;
 };

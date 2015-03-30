@@ -68,17 +68,17 @@ void GraphEditor::loadState(std::istream &is)
         topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
     }
 
-    //extract constants graph properties
+    //extract global variables
     this->clearGlobals();
-    auto constants = topObj->getArray("constants");
-    if (constants) for (size_t constNo = 0; constNo < constants->size(); constNo++)
+    auto globals = topObj->getArray("globals");
+    if (globals) for (size_t constNo = 0; constNo < globals->size(); constNo++)
     {
-        const auto constantObj = constants->getObject(constNo);
-        if (not constantObj->has("name")) continue;
-        if (not constantObj->has("expr")) continue;
+        const auto globalObj = globals->getObject(constNo);
+        if (not globalObj->has("name")) continue;
+        if (not globalObj->has("value")) continue;
         this->setGlobalExpression(
-            QString::fromStdString(constantObj->getValue<std::string>("name")),
-            QString::fromStdString(constantObj->getValue<std::string>("expr")));
+            QString::fromStdString(globalObj->getValue<std::string>("name")),
+            QString::fromStdString(globalObj->getValue<std::string>("value")));
     }
 
     //extract pages
