@@ -15,7 +15,6 @@ class GraphEditor;
 class QFormLayout;
 class QLineEdit;
 class QLabel;
-class QPushButton;
 class QToolButton;
 class QRadioButton;
 class QButtonGroup;
@@ -63,8 +62,8 @@ private:
 
     //constants edit widget
     QFormLayout *_constantsFormLayout;
-    QPushButton *_constantsAddButton;
-    QPushButton *_constantsRemoveButton;
+    QToolButton *_constantsAddButton;
+    QToolButton *_constantsRemoveButton;
     QToolButton *_constantsMoveUpButton;
     QToolButton *_constantsMoveDownButton;
     QButtonGroup *_constantsSelectionGroup;

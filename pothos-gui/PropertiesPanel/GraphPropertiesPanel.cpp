@@ -17,16 +17,17 @@
 #include <QRadioButton>
 #include <QButtonGroup>
 #include <QToolTip>
+#include <QAction>
 #include <iostream>
 
 GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent):
     QWidget(parent),
     _graphEditor(editor),
     _formLayout(new QFormLayout(this)),
-    _constantNameEntry(nullptr),
-    _constantsFormLayout(nullptr),
-    _constantsAddButton(new QPushButton(makeIconFromTheme("list-add"), tr("Create"), this)),
-    _constantsRemoveButton(new QPushButton(makeIconFromTheme("list-remove"), tr("Remove"), this)),
+    _constantNameEntry(new QLineEdit(this)),
+    _constantsFormLayout(new QFormLayout()),
+    _constantsAddButton(new QToolButton(this)),
+    _constantsRemoveButton(new QToolButton(this)),
     _constantsMoveUpButton(new QToolButton(this)),
     _constantsMoveDownButton(new QToolButton(this)),
     _constantsSelectionGroup(new QButtonGroup(this))
@@ -48,31 +49,42 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
 
     //constants editor
     {
+        //create layouts
         auto constantsBox = new QGroupBox(tr("Graph Constants"), this);
         auto constantsLayout = new QVBoxLayout(constantsBox);
-        _constantsFormLayout = new QFormLayout();
-
+        _formLayout->addRow(constantsBox);
         auto nameEntryLayout = new QHBoxLayout();
-        _constantNameEntry = new QLineEdit(constantsBox);
+        constantsLayout->addLayout(nameEntryLayout);
+        constantsLayout->addLayout(_constantsFormLayout);
+
+        //setup widgets
         _constantNameEntry->setPlaceholderText(tr("Enter a new constant name"));
+        auto addAction = new QAction(makeIconFromTheme("list-add"), tr("Create"), this);
+        auto removeAction = new QAction(makeIconFromTheme("list-remove"), tr("Remove"), this);
+        _constantsAddButton->setDefaultAction(addAction);
+        _constantsRemoveButton->setDefaultAction(removeAction);
+        _constantsMoveUpButton->setArrowType(Qt::UpArrow);
+        _constantsMoveDownButton->setArrowType(Qt::DownArrow);
+
+        //add widgets to the entry layout
+        nameEntryLayout->addWidget(_constantNameEntry);
+        nameEntryLayout->addWidget(_constantsAddButton);
+        nameEntryLayout->addWidget(_constantsMoveUpButton);
+        nameEntryLayout->addWidget(_constantsMoveDownButton);
+        nameEntryLayout->addWidget(_constantsRemoveButton);
+
+        //set tool tips
+        _constantsAddButton->setToolTip(tr("Create new global variable"));
+        _constantsRemoveButton->setToolTip(tr("Remove selected global variable"));
+        _constantsMoveUpButton->setToolTip(tr("Move selected global variable up"));
+        _constantsMoveDownButton->setToolTip(tr("Move selected global variable down"));
+
+        //connect signals
         connect(_constantsAddButton, SIGNAL(clicked(void)), this, SLOT(handleCreateConstant(void)));
         connect(_constantNameEntry, SIGNAL(returnPressed(void)), this, SLOT(handleCreateConstant(void)));
         connect(_constantsRemoveButton, SIGNAL(clicked(void)), this, SLOT(handleConstRemoval(void)));
         connect(_constantsMoveUpButton, SIGNAL(clicked(void)), this, SLOT(handleConstMoveUp(void)));
         connect(_constantsMoveDownButton, SIGNAL(clicked(void)), this, SLOT(handleConstMoveDown(void)));
-        nameEntryLayout->addWidget(_constantNameEntry);
-        nameEntryLayout->addWidget(_constantsAddButton);
-
-        _constantsMoveUpButton->setArrowType(Qt::UpArrow);
-        _constantsMoveDownButton->setArrowType(Qt::DownArrow);
-        nameEntryLayout->addWidget(_constantsMoveUpButton);
-        nameEntryLayout->addWidget(_constantsMoveDownButton);
-        nameEntryLayout->addWidget(_constantsRemoveButton);
-
-        constantsLayout->addLayout(nameEntryLayout);
-        constantsLayout->addLayout(_constantsFormLayout);
-
-        _formLayout->addRow(constantsBox);
     }
 
     //create widgets and make a backup of constants
