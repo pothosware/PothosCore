@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //get object map
@@ -16,6 +16,7 @@
 #include <QColor>
 #include <iostream>
 #include <cassert>
+#include <algorithm> //min/max
 
 GraphBlock::GraphBlock(QObject *parent):
     GraphObject(parent),

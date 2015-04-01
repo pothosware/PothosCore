@@ -32,6 +32,7 @@
 #include <Poco/UUIDGenerator.h>
 #include <Poco/JSON/Parser.h>
 #include <Pothos/Exception.hpp>
+#include <algorithm> //min/max
 
 GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),

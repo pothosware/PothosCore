@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MyPlotPicker.hpp"
@@ -7,6 +7,7 @@
 #include <qwt_raster_data.h>
 #include <QMouseEvent>
 #include <cassert>
+#include <algorithm> //min/max
 
 MyPlotPicker::MyPlotPicker(QWidget *parent):
     QwtPlotZoomer(QwtPlot::xBottom, QwtPlot::yLeft, parent),
