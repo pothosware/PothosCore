@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Logger.hpp>
@@ -7,6 +7,10 @@
 #include <Poco/Format.h>
 #include <Poco/Environment.h>
 #include <Poco/ConsoleChannel.h>
+#include <Poco/Platform.h>
+#if POCO_OS == POCO_OS_WINDOWS_NT
+#include <Poco/WindowsConsoleChannel.h>
+#endif
 #include <Poco/NullChannel.h>
 #include <Poco/SimpleFileChannel.h>
 #include <Poco/FormattingChannel.h>
@@ -184,7 +188,11 @@ static void __setupDefaultLogging(void)
     Poco::AutoPtr<Poco::Channel> channel;
     if (logChannel == "null") channel = new Poco::NullChannel();
     else if (logChannel == "console") channel = new Poco::ConsoleChannel();
+    #if POCO_OS == POCO_OS_WINDOWS_NT
+    else if (logChannel == "color") channel = new Poco::WindowsConsoleChannel();
+    #else
     else if (logChannel == "color") channel = new Poco::ColorConsoleChannel();
+    #endif
     else if (logChannel == "file" and not logFile.empty())
     {
         channel = new Poco::SimpleFileChannel();
