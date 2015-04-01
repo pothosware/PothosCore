@@ -4,6 +4,7 @@
 #include <Pothos/Framework.hpp>
 #include <random>
 #include <iostream>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Random Dropper

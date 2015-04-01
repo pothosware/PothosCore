@@ -3,6 +3,7 @@
 
 #include <Pothos/Framework.hpp>
 #include <iostream>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Channel Aligner

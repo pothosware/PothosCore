@@ -5,6 +5,7 @@
 #include <vector>
 #include <complex>
 #include <cstring> //memcpy
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Vector Source

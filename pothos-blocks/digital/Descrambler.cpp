@@ -5,6 +5,7 @@
 #include <Pothos/Framework.hpp>
 #include <iostream>
 #include <cstring>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Descrambler

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "SDRBlock.hpp"
+#include <algorithm> //min/max
 
 class SDRSink : public SDRBlock
 {

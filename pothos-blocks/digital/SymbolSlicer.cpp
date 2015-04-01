@@ -7,6 +7,7 @@
 #include <complex>
 #include <vector>
 #include <cfloat> //FLT_MAX
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Symbol Slicer

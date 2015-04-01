@@ -8,6 +8,7 @@
 #include <complex>
 #include <vector>
 #include <cmath> //log2
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Symbol Mapper
