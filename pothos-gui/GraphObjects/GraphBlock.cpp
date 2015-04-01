@@ -16,6 +16,7 @@
 #include <QColor>
 #include <iostream>
 #include <cassert>
+#include <algorithm> //min/max
 
 GraphBlock::GraphBlock(QObject *parent):
     GraphObject(parent),

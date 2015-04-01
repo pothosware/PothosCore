@@ -1,10 +1,11 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/SharedBuffer.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Poco/SingletonHolder.h>
 #include <Poco/NamedMutex.h>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * shared buffer implementation

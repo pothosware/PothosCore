@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PeriodogramDisplay.hpp"
@@ -10,6 +10,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
+#include <algorithm> //min/max
 
 PeriodogramDisplay::PeriodogramDisplay(void):
     _mainPlot(new MyQwtPlot(this)),

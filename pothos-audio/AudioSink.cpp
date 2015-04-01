@@ -1,10 +1,11 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "AudioHelper.hpp"
 #include <Pothos/Framework.hpp>
 #include <Poco/Logger.h>
 #include <portaudio.h>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Audio Sink

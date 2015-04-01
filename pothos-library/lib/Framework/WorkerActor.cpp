@@ -8,6 +8,7 @@
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
 #include <cassert>
+#include <algorithm> //min/max
 
 //! Helper routine to deal with automatically accumulating time durations
 struct TimeAccumulator

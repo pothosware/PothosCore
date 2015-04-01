@@ -13,6 +13,7 @@
 #include <vector>
 #include <complex>
 #include <iostream>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * Draggable crosshairs for point selection

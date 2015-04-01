@@ -24,6 +24,7 @@
 #include <iostream>
 #include <cassert>
 #include <limits>
+#include <algorithm> //min/max
 
 GraphDraw::GraphDraw(QWidget *parent):
     QGraphicsView(parent),

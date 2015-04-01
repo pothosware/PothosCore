@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc OpenCL Kernel

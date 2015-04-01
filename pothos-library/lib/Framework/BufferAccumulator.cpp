@@ -7,6 +7,7 @@
 #include <cstring> //memcpy
 #include <cassert>
 #include <set>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * SharedBufferPool

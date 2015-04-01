@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Callable/CallableImpl.hpp>
@@ -7,6 +7,7 @@
 #include <Pothos/Util/TypeInfo.hpp>
 #include <Poco/Format.h>
 #include <cassert>
+#include <algorithm> //min/max
 
 #define MAX_SUPPORTED_NUM_ARGS 13
 

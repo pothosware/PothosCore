@@ -5,6 +5,7 @@
 #include <chrono>
 #include <complex>
 #include <iostream>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Stream Snooper

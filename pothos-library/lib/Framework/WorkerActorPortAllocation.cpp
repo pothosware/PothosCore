@@ -4,6 +4,7 @@
 #include "Framework/WorkerActor.hpp"
 #include <Poco/NumberParser.h>
 #include <cassert>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * misc helper methods

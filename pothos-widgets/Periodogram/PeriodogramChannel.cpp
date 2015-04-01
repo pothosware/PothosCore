@@ -5,6 +5,7 @@
 #include <qwt_plot_curve.h>
 #include <qwt_legend.h>
 #include <cmath>
+#include <algorithm> //min/max
 
 template <typename T>
 T movingAvgPowerBinFilter(const T alpha, const T prev, const T curr)
