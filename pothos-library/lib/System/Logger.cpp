@@ -187,10 +187,11 @@ static void __setupDefaultLogging(void)
     //create and set the channel with the type string specified
     Poco::AutoPtr<Poco::Channel> channel;
     if (logChannel == "null") channel = new Poco::NullChannel();
-    else if (logChannel == "console") channel = new Poco::ConsoleChannel();
     #if POCO_OS == POCO_OS_WINDOWS_NT
-    else if (logChannel == "color") channel = new Poco::WindowsConsoleChannel();
+    else if (logChannel == "console") channel = new Poco::WindowsConsoleChannel();
+    else if (logChannel == "color") channel = new Poco::WindowsColorConsoleChannel();
     #else
+    else if (logChannel == "console") channel = new Poco::ConsoleChannel();
     else if (logChannel == "color") channel = new Poco::ColorConsoleChannel();
     #endif
     else if (logChannel == "file" and not logFile.empty())
