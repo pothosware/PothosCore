@@ -30,6 +30,8 @@
 #include <Pothos/serialization/impl/iterator/iterator_adaptor.hpp>
 #include <Pothos/serialization/impl/iterator/iterator_traits.hpp>
 
+#include <algorithm> //std::min/max
+
 namespace Pothos { 
 namespace archive {
 namespace iterators {

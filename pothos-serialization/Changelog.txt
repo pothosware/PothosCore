@@ -1,0 +1,11 @@
+This this the changelog file for the Pothos Serialization library.
+
+Release 0.1.1 (pending)
+==========================
+
+- Added algorithm include to transform_width.hpp for std::min usage
+
+Release 0.1.0 (2014-12-21)
+==========================
+
+This is the first public release of the Pothos Serialization library.
