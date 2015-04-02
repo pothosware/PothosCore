@@ -23,6 +23,16 @@ endif()
 #cause symbols to be exported to the dynamic library
 add_definitions(-DPOTHOS_ALL_DYN_LINK)
 
+#set POTHOS_ARCHIVE_SOURCE on sources that do not already define it
+#this fixes locally defined symbol warnings produced under MSVC
+foreach (source ${serialization_sources})
+    file(READ ${source} source_code)
+    string(FIND "${source_code}" "POTHOS_ARCHIVE_SOURCE" POTHOS_ARCHIVE_SOURCE_DEFINED)
+    if ("${POTHOS_ARCHIVE_SOURCE_DEFINED}" STREQUAL "-1")
+        set_source_files_properties(${source} PROPERTIES COMPILE_DEFINITIONS "POTHOS_ARCHIVE_SOURCE")
+    endif()
+endforeach (source)
+
 add_library(PothosSerialization SHARED ${serialization_sources})
 
 install(TARGETS PothosSerialization
