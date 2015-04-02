@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Logger.hpp>
@@ -7,6 +7,10 @@
 #include <Poco/Format.h>
 #include <Poco/Environment.h>
 #include <Poco/ConsoleChannel.h>
+#include <Poco/Platform.h>
+#if POCO_OS == POCO_OS_WINDOWS_NT
+#include <Poco/WindowsConsoleChannel.h>
+#endif
 #include <Poco/NullChannel.h>
 #include <Poco/SimpleFileChannel.h>
 #include <Poco/FormattingChannel.h>
@@ -176,6 +180,8 @@ static void __setupDefaultLogging(void)
     const std::string logLevel = Poco::Environment::get("POTHOS_LOG_LEVEL", "notice");
     const std::string logChannel = Poco::Environment::get("POTHOS_LOG_CHANNEL", "color");
     const std::string logFile = Poco::Environment::get("POTHOS_LOG_FILE", "pothos.log");
+    const std::string logFomat = Poco::Environment::get("POTHOS_LOG_FORMAT", "%Y-%m-%d %H:%M:%S %s: %t");
+    const std::string logTimeZone = Poco::Environment::get("POTHOS_LOG_TIMEZONE", "local"); //local or UTC
 
     //set the logging level at the chosen root of logging inheritance
     Poco::Logger::get("").setLevel(logLevel);
@@ -183,8 +189,13 @@ static void __setupDefaultLogging(void)
     //create and set the channel with the type string specified
     Poco::AutoPtr<Poco::Channel> channel;
     if (logChannel == "null") channel = new Poco::NullChannel();
+    #if POCO_OS == POCO_OS_WINDOWS_NT
+    else if (logChannel == "console") channel = new Poco::WindowsConsoleChannel();
+    else if (logChannel == "color") channel = new Poco::WindowsColorConsoleChannel();
+    #else
     else if (logChannel == "console") channel = new Poco::ConsoleChannel();
     else if (logChannel == "color") channel = new Poco::ColorConsoleChannel();
+    #endif
     else if (logChannel == "file" and not logFile.empty())
     {
         channel = new Poco::SimpleFileChannel();
@@ -194,7 +205,8 @@ static void __setupDefaultLogging(void)
 
     //setup formatting
     Poco::AutoPtr<Poco::Formatter> formatter(new Poco::PatternFormatter());
-    formatter->setProperty("pattern", "%Y-%m-%d %H:%M:%S %s: %t");
+    formatter->setProperty("pattern", logFomat);
+    formatter->setProperty("times", logTimeZone);
     Poco::AutoPtr<Poco::Channel> formattingChannel(new Poco::FormattingChannel(formatter, channel));
     Poco::AutoPtr<Poco::SplitterChannel> splitterChannel(new Poco::SplitterChannel());
     splitterChannel->addChannel(formattingChannel);
