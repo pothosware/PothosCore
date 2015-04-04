@@ -94,7 +94,7 @@ function(POTHOS_MODULE_UTIL)
     set_target_properties(${POTHOS_MODULE_UTIL_TARGET} PROPERTIES DEBUG_POSTFIX "") #same name in debug mode
     install(
         TARGETS ${POTHOS_MODULE_UTIL_TARGET}
-        DESTINATION lib${LIB_SUFFIX}/Pothos/modules/${POTHOS_MODULE_UTIL_DESTINATION}
+        DESTINATION ${POTHOS_ROOT}/lib${LIB_SUFFIX}/Pothos/modules/${POTHOS_MODULE_UTIL_DESTINATION}
     )
 
 endfunction(POTHOS_MODULE_UTIL)
