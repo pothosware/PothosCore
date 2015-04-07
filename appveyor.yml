@@ -34,13 +34,13 @@ branches:
 before_build:
   # install SoapySDR from source
   - git clone https://github.com/pothosware/SoapySDR.git
-  - pushd SoapySDR
+  - cd SoapySDR
   - git checkout %SOAPY_BRANCH%
   - mkdir build && cd build
   - cmake ../ -G "%GENERATOR%" -DCMAKE_POTHOS_PREFIX="%SOAPY_PREFIX%" -DCMAKE_BUILD_TYPE=%CONFIGURATION%
   - cmake --build . --config %CONFIGURATION%
   - cmake --build . --config %CONFIGURATION% --target install
-  - popd
+  - cd ../..
 
 # configure and build
 build_script:
