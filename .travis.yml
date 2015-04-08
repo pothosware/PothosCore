@@ -25,8 +25,10 @@ before_install:
   - sudo apt-get update -qq
 
 install:
+  - sudo apt-get install -qq libnuma-dev cmake
+
   # We want to compile with g++ 4.8 when rather than the default g++
-  - sudo apt-get install -qq cmake gcc-4.8 g++-4.8
+  - sudo apt-get install -qq gcc-4.8 g++-4.8
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
 
@@ -56,7 +58,7 @@ install:
 script:
   - mkdir build && cd build
   - cmake ../ -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-  - make
+  - make -j2
   - sudo make install
 
   # setup environment paths
