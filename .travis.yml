@@ -44,7 +44,6 @@ install:
 
   # install poco from rpm
   - sudo apt-get install -qq alien
-  - mkdir poco && pushd poco
   - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/poco-devel-1.6.0-9.1.x86_64.rpm
   - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/libPocoFoundation30-1.6.0-9.1.x86_64.rpm
   - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/libPocoJSON30-1.6.0-9.1.x86_64.rpm
@@ -53,7 +52,6 @@ install:
   - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/libPocoNet30-1.6.0-9.1.x86_64.rpm
   - sudo alien -i *.rpm
   - sudo cp -s /usr/lib64/libPoco* /usr/lib/
-  - popd
 
 script:
   - mkdir build && cd build
