@@ -46,20 +46,21 @@ before_build:
   # download pre-built poco
   - ps: Start-FileDownload 'http://www.joshknows.com/download/Poco_1.6.0_x64_rel.zip'
   - 7z x Poco_1.6.0_x64_rel.zip -o"C:/Program Files"
-  - set PATH=C:/Program Files/Poco/bin;%PATH%
 
 # configure and build
 build_script:
+  - set PATH=C:/Program Files/Poco/bin;%PATH%
   - echo %PATH%
   - mkdir build && cd build
   - cmake ../ -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="%POTHOS_PREFIX%" -DCMAKE_BUILD_TYPE=%CONFIGURATION%
-#  - cmake --build . --config %CONFIGURATION%
-#  - cmake --build . --config %CONFIGURATION% --target install
+  - cmake --build . --config %CONFIGURATION%
+  - cmake --build . --config %CONFIGURATION% --target install
 
 # setup environment paths
 before_test:
   - set PATH=%POTHOS_PREFIX%/bin;%PATH%
   - set PATH=%SOAPY_PREFIX%/bin;%PATH%
+  - echo %PATH%
 
 # basic test for command line utility
 #test_script:
