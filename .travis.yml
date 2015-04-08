@@ -3,7 +3,7 @@
 ##
 ## * not all components will be configured
 ## * the matrix builds Release and Debug
-## * minimal testing for command line util
+## * run the self tests after install
 ########################################################################
 
 language: cpp
@@ -20,7 +20,6 @@ compiler: gcc
 before_install:
   # install a newer cmake since at this time Travis only has version 2.8.7
   - sudo add-apt-repository -y ppa:kalakris/cmake
-
   # install a gcc 4.8 since we need C++11 support (http://gearchicken.com/wordpress/?p=105)
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get update -qq
@@ -29,6 +28,7 @@ install:
   # We want to compile with g++ 4.8 when rather than the default g++
   - sudo apt-get install -qq cmake gcc-4.8 g++-4.8
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
 
   # pothos-python required python dev and numpy
   - sudo apt-get install -qq python-dev python-numpy
@@ -40,6 +40,19 @@ install:
   - mkdir build && cd build
   - cmake ../ -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
   - make && sudo make install
+  - popd
+
+  # install poco from rpm
+  - sudo apt-get install -qq alien
+  - mkdir poco && pushd poco
+  - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/poco-devel-1.6.0-9.1.x86_64.rpm
+  - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/libPocoFoundation30-1.6.0-9.1.x86_64.rpm
+  - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/libPocoJSON30-1.6.0-9.1.x86_64.rpm
+  - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/libPocoXML30-1.6.0-9.1.x86_64.rpm
+  - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/libPocoUtil30-1.6.0-9.1.x86_64.rpm
+  - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/libPocoNet30-1.6.0-9.1.x86_64.rpm
+  - sudo alien -i *.rpm
+  - sudo cp -s /usr/lib64/libPoco* /usr/lib/
   - popd
 
 script:
@@ -54,3 +67,4 @@ script:
 
   # basic test for command line utility
   - PothosUtil --system-info
+  - PothosUtil --self-tests
