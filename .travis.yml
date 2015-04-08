@@ -51,7 +51,7 @@ install:
   - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/libPocoUtil30-1.6.0-9.1.x86_64.rpm
   - wget http://ftp.cse.yzu.edu.tw/pub/Linux/openSUSE/repositories/home:/bschramke/openSUSE_13.1/x86_64/libPocoNet30-1.6.0-9.1.x86_64.rpm
   - sudo alien -i *.rpm
-  - sudo cp -s /usr/lib64/libPoco* /usr/lib/
+  - sudo cp -s /usr/lib64/libPoco* /usr/lib/ || true
 
 script:
   - mkdir build && cd build
