@@ -260,9 +260,10 @@ void GraphPropertiesPanel::updateAllVariableForms(void)
             evalEnv.callVoid("registerConstantExpr", name.toStdString(), expr);
             auto obj = evalEnv.callProxy("eval", name.toStdString());
             const auto typeStr = obj.call<std::string>("getTypeString");
+            const auto toString = obj.call<std::string>("toString");
             editWidget->setTypeStr(typeStr);
             editWidget->setErrorMsg(""); //clear errors
-            editWidget->setToolTip(QString::fromStdString(typeStr).toHtmlEscaped());
+            editWidget->setToolTip(QString::fromStdString(toString));
         }
         catch (const Pothos::Exception &ex)
         {
