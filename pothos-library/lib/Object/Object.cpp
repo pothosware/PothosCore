@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/ObjectImpl.hpp>
@@ -135,18 +135,6 @@ const std::type_info &Pothos::Object::type(void) const
 {
     if (_impl == nullptr) return typeid(NullObject);
     return _impl->type();
-}
-
-std::string Pothos::Object::toString(void) const
-{
-    try
-    {
-        return this->convert<std::string>();
-    }
-    catch (...)
-    {
-        return this->getTypeString();
-    }
 }
 
 std::string Pothos::Object::getTypeString(void) const

@@ -85,6 +85,7 @@ list(APPEND POTHOS_SOURCES
     Object/Hash.cpp
     Object/Compare.cpp
     Object/Convert.cpp
+    Object/ToString.cpp
     Object/Serialize.cpp
     Object/Exception.cpp
 
