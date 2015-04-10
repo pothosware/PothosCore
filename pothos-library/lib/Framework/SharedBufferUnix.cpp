@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/SharedBuffer.hpp>
@@ -121,7 +121,7 @@ private:
         if (mapPtr0 != MAP_FAILED) munmap(mapPtr0, _numBytes);
         mapPtr0 = MAP_FAILED;
 
-        if (tmpFd < 0)
+        if (tmpFd >= 0)
         {
             close(tmpFd);
             unlink(tmpFile.c_str());

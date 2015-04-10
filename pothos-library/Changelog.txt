@@ -16,6 +16,7 @@ Release 0.2.0 (pending)
 Release 0.1.1 (pending)
 ==========================
 
+- Fix temporary file cleanup for unix circular buffer
 - Support openSuSE for automatic LIB_SUFFIX detection logic
 - Pothos build utils set library paths in unix environment
 - Added serialization for built-in proxy container types
