@@ -17,6 +17,11 @@ env:
 
 compiler: gcc
 
+# whitelist
+branches:
+  only:
+    - master
+
 before_install:
   # install a newer cmake since at this time Travis only has version 2.8.7
   - sudo add-apt-repository -y ppa:kalakris/cmake
