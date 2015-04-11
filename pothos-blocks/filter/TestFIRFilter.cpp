@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -19,7 +19,8 @@ static double filterToneGetRMS(
 
     auto waveSource = registry.callProxy("/blocks/waveform_source", "complex128");
     waveSource.callVoid("setWaveform", "SINE");
-    waveSource.callVoid("setFrequency", waveFreq/sampRate);
+    waveSource.callVoid("setFrequency", waveFreq);
+    waveSource.callVoid("setSampleRate", sampRate);
 
     auto finiteRelease = registry.callProxy("/blocks/finite_release");
     finiteRelease.callVoid("setTotalElements", 4096);
