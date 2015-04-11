@@ -27,12 +27,16 @@ void ThreadEnvironment::registerTask(void *handle, TaskData::Task task, TaskData
 {
     std::lock_guard<std::mutex> lock(_registrationMutex);
 
+    //disable wait mode
+    bool waitModeEnabled = false;
+    std::swap(waitModeEnabled, _waitModeEnabled);
+
     //register the new task and bump the signature to notify threads
     {
         std::lock_guard<std::mutex> lock0(_handleUpdateMutex);
         _handleToTask[handle].reset(new TaskData(task, wake));
+        _configurationSignature++;
     }
-    _configurationSignature++;
 
     //single task mode: spawn a new thread for this task
     if (_args.numThreads == 0)
@@ -50,6 +54,9 @@ void ThreadEnvironment::registerTask(void *handle, TaskData::Task task, TaskData
         }
         assert(_threadPool.size() <= _args.numThreads);
     }
+
+    //restore wait mode
+    std::swap(waitModeEnabled, _waitModeEnabled);
 }
 
 void ThreadEnvironment::unregisterTask(void *handle)
@@ -57,13 +64,17 @@ void ThreadEnvironment::unregisterTask(void *handle)
     std::lock_guard<std::mutex> lock(_registrationMutex);
     std::shared_ptr<TaskData> data;
 
+    //disable wait mode
+    bool waitModeEnabled = false;
+    std::swap(waitModeEnabled, _waitModeEnabled);
+
     //unregister the new task and bump the signature to notify threads
     {
         std::lock_guard<std::mutex> lock0(_handleUpdateMutex);
         std::swap(data, _handleToTask[handle]);
         _handleToTask.erase(handle);
+        _configurationSignature++;
     }
-    _configurationSignature++;
 
     //wake every known task to accept the new config state
     data->wake();
@@ -89,6 +100,9 @@ void ThreadEnvironment::unregisterTask(void *handle)
 
     //wait for all threads to relinquish the old configuration
     while (not data.unique()) std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    //restore wait mode
+    std::swap(waitModeEnabled, _waitModeEnabled);
 }
 
 /*!
@@ -154,10 +168,10 @@ void ThreadEnvironment::poolProcessLoop(size_t index)
             it = localTasks.end();
             localSignature = _configurationSignature;
             failAcquireCount = 0; //reset fail count
-        }
 
-        //pool mode, index out of range
-        if (index >= localTasks.size()) return;
+            //pool mode, index out of range
+            if (index >= localTasks.size()) return;
+        }
 
         //perform a task and increment
         if (it == localTasks.end()) it = localTasks.begin();
@@ -195,10 +209,10 @@ void ThreadEnvironment::singleProcessLoop(void *handle)
             localTasks = _handleToTask;
             it = localTasks.find(handle);
             localSignature = _configurationSignature;
-        }
 
-        //handle mode, handle not in tasks
-        if (it == localTasks.end()) return;
+            //handle mode, handle not in tasks
+            if (it == localTasks.end()) return;
+        }
 
         //perform the task
         it->second->task(_waitModeEnabled);
