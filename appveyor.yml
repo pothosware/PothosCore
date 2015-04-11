@@ -1,0 +1,71 @@
+########################################################################
+## AppVeyor config for Pothos
+##
+## * not all components will be configured
+## * build only on a 64-bit environment
+## * only builds for release configuration
+## * install Poco from pre-built zip
+##
+## FAIL: The build takes too long, most components are disabled.
+## TODO: but build takes too long... 40 min limit
+## * install SoapySDR from source
+## * run the self tests after install
+########################################################################
+
+version: '{build}'
+
+platform: x64
+
+configuration:
+  - RelWithDebInfo
+
+environment:
+  global:
+    GENERATOR: Visual Studio 12 Win64
+    POTHOS_PREFIX: C:/Program Files/Pothos
+    SOAPY_PREFIX: C:/Program Files/SoapySDR
+    SOAPY_BRANCH: master
+
+# Operating system (build VM template)
+os: Windows Server 2012 R2
+
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+
+before_build:
+  # install SoapySDR from source
+  #- git clone https://github.com/pothosware/SoapySDR.git
+  #- cd SoapySDR
+  #- git checkout %SOAPY_BRANCH%
+  #- mkdir build && cd build
+  #- cmake ../ -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="%SOAPY_PREFIX%" -DCMAKE_BUILD_TYPE=%CONFIGURATION%
+  #- cmake --build . --config %CONFIGURATION%
+  #- cmake --build . --config %CONFIGURATION% --target install
+  #- cd ../..
+
+  # download pre-built poco
+  - ps: Start-FileDownload 'http://www.joshknows.com/download/Poco_1.6.0_x64_rel.zip'
+  - 7z x Poco_1.6.0_x64_rel.zip -o"C:/Program Files"
+
+# configure and build
+build_script:
+  - set PATH=C:/Program Files/Poco/bin;%PATH%
+  - echo %PATH%
+  - mkdir build && cd build
+  - cmake ../ -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="%POTHOS_PREFIX%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DENABLE_SDR=OFF -DENABLE_OPENCL=OFF -DENABLE_WIDGETS=OFF -DENABLE_GUI=OFF -DENABLE_DOCS=OFF -DENABLE_PYTHON=OFF -DENABLE_JAVA=OFF -DENABLE_BLOCKS=OFF -DENABLE_AUDIO=OFF -DENABLE_UTILITY=OFF
+  - cmake --build . --config %CONFIGURATION%
+  - cmake --build . --config %CONFIGURATION% --target install
+
+# setup environment paths
+before_test:
+  - set PATH=%POTHOS_PREFIX%/bin;%PATH%
+  - set PATH=%SOAPY_PREFIX%/bin;%PATH%
+  - echo %PATH%
+
+# basic test for command line utility
+#test_script:
+#  - PothosUtil --system-info
+#  - PothosUtil --self-tests
