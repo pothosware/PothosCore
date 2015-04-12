@@ -340,6 +340,7 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerMethod("disconnect", &Pothos::Topology::_disconnect)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, toDotMarkup))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, queryJSONStats))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Topology, dumpJSON))
     .commit("Pothos/Topology");
 
 /***********************************************************************

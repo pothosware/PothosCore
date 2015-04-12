@@ -231,10 +231,12 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
     topObj->set("blocks", blocksObj);
     for (const auto &block : getObjSetFromFlowList(_impl->flows))
     {
+        //gather block info
         Poco::JSON::Object::Ptr blockObj(new Poco::JSON::Object());
         blocksObj->set(block.call<std::string>("uid"), blockObj);
         blockObj->set("name", block.call<std::string>("getName"));
 
+        //input port info
         Poco::JSON::Array::Ptr inputsArray(new Poco::JSON::Array());
         for (const auto &portInfo : block.call<std::vector<PortInfo>>("inputPortInfo"))
         {
@@ -246,6 +248,7 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
         }
         if (inputsArray->size() > 0) blockObj->set("inputs", inputsArray);
 
+        //output port info
         Poco::JSON::Array::Ptr outputsArray(new Poco::JSON::Array());
         for (const auto &portInfo : block.call<std::vector<PortInfo>>("outputPortInfo"))
         {
@@ -256,6 +259,18 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
             if (portInfo.isSigSlot) infoObj->set("type", "signal");
         }
         if (outputsArray->size() > 0) blockObj->set("outputs", outputsArray);
+
+        //sub-topology info
+        if (this->uid() != block.call<std::string>("uid")) try
+        {
+            //TODO may not forward request exactly for flat mode
+            auto subDump = block.call<std::string>("dumpJSON", request);
+            Poco::JSON::Parser psub; psub.parse(subDump);
+            auto subObj = psub.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+            std::vector<std::string> names; subObj->getNames(names);
+            for (const auto &name : names) blockObj->set(name, subObj->get(name));
+        }
+        catch (const Pothos::Exception &){}
     }
 
     //create connections list
