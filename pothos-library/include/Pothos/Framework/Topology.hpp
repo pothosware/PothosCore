@@ -221,15 +221,12 @@ public:
      * Dump the topology state to a JSON formatted string.
      * This call provides a structured view of the hierarchy.
      *
-     * Example request object {"rendered" : true, "mode" : "flat"}
-     *
-     * Rendered options:
-     *  - true: Include additional boundary crossing blocks.
-     *  - false: Only blocks that are explicit to the design.
+     * Example request object {"mode" : "flat"}
      *
      * Mode options:
-     *  - "flat": Flattened topology no hierarchies.
-     *  - "top": Top level blocks and hierarchies.
+     *  - "flat": Flattened hierarchies - only processing blocks.
+     *  - "top": Only top-level blocks without hierarchy traversal.
+     *  - "rendered": Flattened hierarchies with traversal blocks.
      *
      * Example JSON markup for presenting the topology:
      * \code {.json}
@@ -262,8 +259,8 @@ public:
      *         }
      *     },
      *     "connections", [
-     *         ["uidblockA", "outx", "uidblockB", "in0"],
-     *         ["uidblockB", "out0", "uidblockC", "iny"]
+     *         {"srcId": "uidblockA", "srcName": "outx", "dstId": "uidblockB", "srcName": "in0"},
+     *         {"srcId": "uidblockB", "srcName": "out0", "dstId": "uidblockC", "srcName": "iny"}
      *     ]
      * }
      * \endcode
@@ -271,7 +268,7 @@ public:
      * \param request a JSON object string with key/value arguments
      * \return a JSON formatted object string
      */
-    std::string dumpJSON(const std::string &request = "");
+    std::string dumpJSON(const std::string &request = "{}");
 
     /*!
      * Convert the topology to a string containing dot markup.
@@ -283,8 +280,9 @@ public:
      * Example request string {"mode" : "flat", "port" : "all"}
      *
      * Mode options:
-     *  - "flat" Flattened topology no hierarchies.
-     *  - "top" Top level blocks and hierarchies.
+     *  - "flat": Flattened hierarchies - only processing blocks.
+     *  - "top": Only top-level blocks without hierarchy traversal.
+     *  - "rendered": Flattened hierarchies with traversal blocks.
      *
      * Port options:
      *  - "all" Show all available IO ports.
@@ -293,7 +291,7 @@ public:
      * \param request a JSON object string with configuration parameters
      * \return the dot markup as a string
      */
-    std::string toDotMarkup(const std::string &request = "");
+    std::string toDotMarkup(const std::string &request = "{}");
 
     /*!
      * Call a method on a derived instance with opaque input and return types.

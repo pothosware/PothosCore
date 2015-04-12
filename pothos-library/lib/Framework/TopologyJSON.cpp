@@ -215,6 +215,124 @@ std::string Pothos::Topology::queryJSONStats(void)
 /***********************************************************************
  * dump to structured view
  **********************************************************************/
+static bool blockIsHier(const Poco::JSON::Object::Ptr &blockObj)
+{
+    return blockObj->has("connections");
+}
+
+static std::vector<std::pair<std::string, std::string>> resolvePorts(
+    const Poco::JSON::Object::Ptr &topObj,
+    const Poco::JSON::Object::Ptr &connObj,
+    const bool resolveSrc
+)
+{
+    std::vector<std::pair<std::string, std::string>> results;
+
+    const auto blockId = resolveSrc?connObj->getValue<std::string>("srcId"):connObj->getValue<std::string>("dstId");
+    const auto portName = resolveSrc?connObj->getValue<std::string>("srcName"):connObj->getValue<std::string>("dstName");
+    const auto blocksObj = topObj->getObject("blocks");
+    const auto blockObj = blocksObj->getObject(blockId);
+
+    if (not blockIsHier(blockObj))
+    {
+        results.push_back(std::make_pair(blockId, portName));
+        return results;
+    }
+
+    const auto connsArray = blockObj->getArray("connections");
+    for (size_t c_i = 0; c_i < connsArray->size(); c_i++)
+    {
+        const auto subConnObj = connsArray->getObject(c_i);
+        std::string subId, subName;
+
+        if (resolveSrc)
+        {
+            if (subConnObj->getValue<std::string>("dstId") == blockId and subConnObj->getValue<std::string>("dstName") == portName)
+            {
+                subId = subConnObj->getValue<std::string>("srcId");
+                subName = subConnObj->getValue<std::string>("srcName");
+            }
+            else continue;
+        }
+        else
+        {
+            if (subConnObj->getValue<std::string>("srcId") == blockId and subConnObj->getValue<std::string>("srcName") == portName)
+            {
+                subId = subConnObj->getValue<std::string>("dstId");
+                subName = subConnObj->getValue<std::string>("dstName");
+            }
+            else continue;
+        }
+
+        //TODO this results could be a passthrough, must resolve again
+        if (subId == blockId) //passthrough
+        {
+            
+        }
+        else results.push_back(std::make_pair(subId, subName));
+    }
+
+    return results;
+}
+
+static bool flattenDump(Poco::JSON::Object::Ptr &topObj)
+{
+    bool hierFound = false;
+    std::cout << "START flattenDump " << std::endl;
+
+    //create new blocks object that flattens any hierarchy to 1 depth
+    //if this block is a hierarchy -- bring its blocks to the top level
+    const auto blocksObj = topObj->getObject("blocks");
+    Poco::JSON::Object::Ptr flatBlocksObj(new Poco::JSON::Object());
+    std::vector<std::string> blockUids; blocksObj->getNames(blockUids);
+    for (const auto &uid : blockUids)
+    {
+        const auto blockObj = blocksObj->getObject(uid);
+    std::cout << "flattenDump UDI " << uid << " " << blockObj->getValue<std::string>("name") << " " << blockIsHier(blockObj) << std::endl;
+        if (blockIsHier(blockObj))
+        {
+            hierFound = true;
+            const auto subBlocksObj = blockObj->getObject("blocks");
+            const auto subConnsObj = blockObj->getObject("connections");
+            const auto thisName = blockObj->getValue<std::string>("name");
+            std::vector<std::string> subBlockUids; subBlocksObj->getNames(subBlockUids);
+            for (const auto &subUid : subBlockUids)
+            {
+                auto subBlockObj = subBlocksObj->getObject(subUid);
+                const auto subName = subBlockObj->getValue<std::string>("name");
+                subBlockObj->set("name", thisName+"/"+subName); //heritage name
+                flatBlocksObj->set(subUid, subBlockObj);
+            }
+        }
+        else flatBlocksObj->set(uid, blockObj);
+    }
+
+    //create new connections array folding out depth 1 hierarchies
+    const auto connsArray = topObj->getArray("connections");
+    Poco::JSON::Array::Ptr flatConnsArray(new Poco::JSON::Array());
+    for (size_t c_i = 0; c_i < connsArray->size(); c_i++)
+    {
+        const auto connObj = connsArray->getObject(c_i);
+        for (const auto & resolvedSrc : resolvePorts(topObj, connObj, true))
+        {
+            for (const auto & resolvedDst : resolvePorts(topObj, connObj, false))
+            {
+                Poco::JSON::Object::Ptr flatConnObj(new Poco::JSON::Object());
+                flatConnsArray->add(flatConnObj);
+                flatConnObj->set("srcId", resolvedSrc.first);
+                flatConnObj->set("srcName", resolvedSrc.second);
+                flatConnObj->set("dstId", resolvedDst.first);
+                flatConnObj->set("dstName", resolvedDst.second);
+            }
+        }
+    }
+
+    //set new flat data into the top object
+    topObj->set("blocks", flatBlocksObj);
+    topObj->set("connections", flatConnsArray);
+    std::cout << " DONE flattenDump " << hierFound << std::endl;
+    return hierFound;
+}
 
 std::string Pothos::Topology::dumpJSON(const std::string &request)
 {
@@ -222,14 +340,19 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
     Poco::JSON::Parser p; p.parse(request.empty()?"{}":request);
     auto configObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
     const auto modeConfig = configObj->optValue<std::string>("mode", "flat");
-    const auto renderedConfig = configObj->optValue<bool>("rendered", false);
 
+    //parse request into traversal arguments
+    const bool flatten = (modeConfig == "flat");
+    const bool traverse = (modeConfig != "rendered");
+    const auto &flows = (modeConfig == "rendered")?_impl->activeFlatFlows:_impl->flows;
+
+    //output object
     Poco::JSON::Object::Ptr topObj(new Poco::JSON::Object());
 
     //create blocks map
     Poco::JSON::Object::Ptr blocksObj(new Poco::JSON::Object());
     topObj->set("blocks", blocksObj);
-    for (const auto &block : getObjSetFromFlowList(_impl->flows))
+    for (const auto &block : getObjSetFromFlowList(flows))
     {
         //gather block info
         Poco::JSON::Object::Ptr blockObj(new Poco::JSON::Object());
@@ -261,10 +384,9 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
         if (outputsArray->size() > 0) blockObj->set("outputs", outputsArray);
 
         //sub-topology info
-        if (this->uid() != block.call<std::string>("uid")) try
+        if (traverse and this->uid() != block.call<std::string>("uid")) try
         {
-            //TODO may not forward request exactly for flat mode
-            auto subDump = block.call<std::string>("dumpJSON", request);
+            auto subDump = block.call<std::string>("dumpJSON", "{\"mode\":\"top\"}");
             Poco::JSON::Parser psub; psub.parse(subDump);
             auto subObj = psub.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
             std::vector<std::string> names; subObj->getNames(names);
@@ -276,15 +398,18 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
     //create connections list
     Poco::JSON::Array::Ptr connsArray(new Poco::JSON::Array());
     topObj->set("connections", connsArray);
-    for (const auto &flow : _impl->flows)
+    for (const auto &flow : flows)
     {
-        Poco::JSON::Array::Ptr connArray(new Poco::JSON::Array());
-        connsArray->add(connArray);
-        connArray->add(flow.src.uid);
-        connArray->add(flow.src.name);
-        connArray->add(flow.dst.uid);
-        connArray->add(flow.dst.name);
+        Poco::JSON::Object::Ptr connObj(new Poco::JSON::Object());
+        connsArray->add(connObj);
+        connObj->set("srcId", flow.src.uid);
+        connObj->set("srcName", flow.src.name);
+        connObj->set("dstId", flow.dst.uid);
+        connObj->set("dstName", flow.dst.name);
     }
+
+    //recursive flatten when instructed
+    while (flatten and flattenDump(topObj));
 
     //return the string-formatted result
     std::stringstream ss; topObj->stringify(ss, 4);

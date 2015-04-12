@@ -63,5 +63,5 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_dump_json2)
     topology.connect(src0, "out0", subTopology, "in0");
     topology.connect(subTopology, "out0", sink0, "in0");
 
-    std::cout << topology.dumpJSON() << std::endl;
+    std::cout << topology.dumpJSON("{\"mode\":\"flat\"}") << std::endl;
 }
