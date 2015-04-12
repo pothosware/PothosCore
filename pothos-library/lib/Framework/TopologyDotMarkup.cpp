@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -73,9 +73,9 @@ static std::vector<Pothos::PortInfo> getConnectedPortInfos(
     return outputInfo;
 }
 
-std::string Pothos::Topology::toDotMarkup(const std::string &config)
+std::string Pothos::Topology::toDotMarkup(const std::string &request)
 {
-    Poco::JSON::Parser p; p.parse(config.empty()?"{}":config);
+    Poco::JSON::Parser p; p.parse(request.empty()?"{}":request);
     auto configObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
     const auto modeConfig = configObj->optValue<std::string>("mode", "flat");
     const auto portConfig = configObj->optValue<std::string>("port", "connected");

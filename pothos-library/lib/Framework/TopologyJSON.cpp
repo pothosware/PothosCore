@@ -211,3 +211,67 @@ std::string Pothos::Topology::queryJSONStats(void)
     std::stringstream ss; stats->stringify(ss, 4);
     return ss.str();
 }
+
+/***********************************************************************
+ * dump to structured view
+ **********************************************************************/
+
+std::string Pothos::Topology::dumpJSON(const std::string &request)
+{
+    //extract input request
+    Poco::JSON::Parser p; p.parse(request.empty()?"{}":request);
+    auto configObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    const auto modeConfig = configObj->optValue<std::string>("mode", "flat");
+    const auto renderedConfig = configObj->optValue<bool>("rendered", false);
+
+    Poco::JSON::Object::Ptr topObj(new Poco::JSON::Object());
+
+    //create blocks map
+    Poco::JSON::Object::Ptr blocksObj(new Poco::JSON::Object());
+    topObj->set("blocks", blocksObj);
+    for (const auto &block : getObjSetFromFlowList(_impl->flows))
+    {
+        Poco::JSON::Object::Ptr blockObj(new Poco::JSON::Object());
+        blocksObj->set(block.call<std::string>("uid"), blockObj);
+        blockObj->set("name", block.call<std::string>("getName"));
+
+        Poco::JSON::Array::Ptr inputsArray(new Poco::JSON::Array());
+        for (const auto &portInfo : block.call<std::vector<PortInfo>>("inputPortInfo"))
+        {
+            Poco::JSON::Object::Ptr infoObj(new Poco::JSON::Object());
+            inputsArray->add(infoObj);
+            infoObj->set("name", portInfo.name);
+            infoObj->set("dtype", portInfo.dtype.toString());
+            if (portInfo.isSigSlot) infoObj->set("type", "slot");
+        }
+        if (inputsArray->size() > 0) blockObj->set("inputs", inputsArray);
+
+        Poco::JSON::Array::Ptr outputsArray(new Poco::JSON::Array());
+        for (const auto &portInfo : block.call<std::vector<PortInfo>>("outputPortInfo"))
+        {
+            Poco::JSON::Object::Ptr infoObj(new Poco::JSON::Object());
+            outputsArray->add(infoObj);
+            infoObj->set("name", portInfo.name);
+            infoObj->set("dtype", portInfo.dtype.toString());
+            if (portInfo.isSigSlot) infoObj->set("type", "signal");
+        }
+        if (outputsArray->size() > 0) blockObj->set("outputs", outputsArray);
+    }
+
+    //create connections list
+    Poco::JSON::Array::Ptr connsArray(new Poco::JSON::Array());
+    topObj->set("connections", connsArray);
+    for (const auto &flow : _impl->flows)
+    {
+        Poco::JSON::Array::Ptr connArray(new Poco::JSON::Array());
+        connsArray->add(connArray);
+        connArray->add(flow.src.uid);
+        connArray->add(flow.src.name);
+        connArray->add(flow.dst.uid);
+        connArray->add(flow.dst.name);
+    }
+
+    //return the string-formatted result
+    std::stringstream ss; topObj->stringify(ss, 4);
+    return ss.str();
+}

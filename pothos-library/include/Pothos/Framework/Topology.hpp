@@ -74,7 +74,7 @@ public:
      *                 ["setBar", "OK"],
      *             ]
      *         }
-     *     },
+     *     ],
      *     "connections", [
      *         ["self", "inputX", "id0", "in0"],
      *         ["id0", "out0", "id1", "in0"],
@@ -218,13 +218,69 @@ public:
     std::string queryJSONStats(void);
 
     /*!
+     * Dump the topology state to a JSON formatted string.
+     * This call provides a structured view of the hierarchy.
+     *
+     * Example request object {"rendered" : true, "mode" : "flat"}
+     *
+     * Rendered options:
+     *  - true: Include additional boundary crossing blocks.
+     *  - false: Only blocks that are explicit to the design.
+     *
+     * Mode options:
+     *  - "flat": Flattened topology no hierarchies.
+     *  - "top": Top level blocks and hierarchies.
+     *
+     * Example JSON markup for presenting the topology:
+     * \code {.json}
+     * {
+     *     "blocks" : {
+     *         "uidblockA" : {
+     *             "name" : "blockA",
+     *             "outputs" : [
+     *                 {"key": "outx", "type": "port"}
+     *             ]
+     *         },
+     *         "uidblockB" : {
+     *             "name" : "blockB",
+     *             "inputs" : [
+     *                 {"key": "in0", "type": "port"},
+     *                 {"key": "setFoo", "type": "slot"}
+     *             ],
+     *             "outputs" : [
+     *                 {"key": "out0", "type": "port"},
+     *                 {"key": "barChanged", "type": "signal"}
+     *             ]
+     *         },
+     *         "uidblockC" : {
+     *             "name" : "blockC",
+     *             "inputs" : [
+     *                 {"key": "iny", "type": "port"}
+     *             ],
+     *             "blocks" : {#this is a hierarchy of blocks#},
+     *             "connections" : {#this is a hierarchy of blocks#},
+     *         }
+     *     },
+     *     "connections", [
+     *         ["uidblockA", "outx", "uidblockB", "in0"],
+     *         ["uidblockB", "out0", "uidblockC", "iny"]
+     *     ]
+     * }
+     * \endcode
+     *
+     * \param request a JSON object string with key/value arguments
+     * \return a JSON formatted object string
+     */
+    std::string dumpJSON(const std::string &request = "");
+
+    /*!
      * Convert the topology to a string containing dot markup.
      * This markup can be passed into the dot tool to create a visual graph.
      * The markup can represent the connections as specified by the user,
      * or if flat is true, the complete flattened topology with
      * network blocks for crossing process/computer boundaries.
      *
-     * Example configuration string {"mode" : "flat", "port" : "all"}
+     * Example request string {"mode" : "flat", "port" : "all"}
      *
      * Mode options:
      *  - "flat" Flattened topology no hierarchies.
@@ -234,10 +290,10 @@ public:
      *  - "all" Show all available IO ports.
      *  - "connected" Show connected ports only.
      *
-     * \param config a JSON object string with configuration parameters
+     * \param request a JSON object string with configuration parameters
      * \return the dot markup as a string
      */
-    std::string toDotMarkup(const std::string &config = "");
+    std::string toDotMarkup(const std::string &request = "");
 
     /*!
      * Call a method on a derived instance with opaque input and return types.
