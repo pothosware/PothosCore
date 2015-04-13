@@ -149,9 +149,11 @@ public:
     Periodogram(const Pothos::ProxyEnvironment::Sptr &remoteEnv)
     {
         _display.reset(new PeriodogramDisplay());
+        _display->setName("Display");
 
         auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
         _snooper = registry.callProxy("/blocks/stream_snooper");
+        _snooper.callVoid("setName", "Snooper");
 
         //register calls in this topology
         this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumInputs));
@@ -194,9 +196,6 @@ public:
 
     void setNumInputs(const size_t numInputs)
     {
-        _display->setName(this->getName()+"Display");
-        _snooper.callVoid("setName", this->getName()+"Snooper");
-
         _display->setNumInputs(numInputs);
         _snooper.callVoid("setNumPorts", numInputs);
         for (size_t i = 0; i < numInputs; i++)
