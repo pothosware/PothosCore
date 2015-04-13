@@ -1,8 +1,11 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
 #include <Pothos/Framework.hpp>
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Array.h>
+#include <Poco/JSON/Parser.h>
 #include <iostream>
 
 /***********************************************************************
@@ -70,6 +73,42 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_simple_passthrough)
     topology.connect(ping, "out0", passer, "passIn");
     topology.connect(passer, "passOut", pong, "in0");
     topology.commit();
+
+    //check the top JSON dump
+    {
+        POTHOS_TEST_CHECKPOINT();
+        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        auto connsArray = topObj->getArray("connections");
+        auto blocksObj = topObj->getObject("blocks");
+        POTHOS_TEST_TRUE(connsArray);
+        POTHOS_TEST_TRUE(blocksObj);
+        POTHOS_TEST_EQUAL(blocksObj->size(), 3);
+        POTHOS_TEST_EQUAL(connsArray->size(), 2);
+        POTHOS_TEST_TRUE(blocksObj->has(passer->uid()));
+        POTHOS_TEST_TRUE(blocksObj->has(ping->uid()));
+        POTHOS_TEST_TRUE(blocksObj->has(pong->uid()));
+        POTHOS_TEST_EQUAL(blocksObj->getObject(passer->uid())->getValue<std::string>("name"), "Passer");
+        POTHOS_TEST_EQUAL(blocksObj->getObject(ping->uid())->getValue<std::string>("name"), "Ping");
+        POTHOS_TEST_EQUAL(blocksObj->getObject(pong->uid())->getValue<std::string>("name"), "Pong");
+    }
+
+    //check the flat JSON dump
+    {
+        POTHOS_TEST_CHECKPOINT();
+        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        auto connsArray = topObj->getArray("connections");
+        auto blocksObj = topObj->getObject("blocks");
+        POTHOS_TEST_TRUE(connsArray);
+        POTHOS_TEST_TRUE(blocksObj);
+        POTHOS_TEST_EQUAL(blocksObj->size(), 2);
+        POTHOS_TEST_EQUAL(connsArray->size(), 1);
+        POTHOS_TEST_TRUE(blocksObj->has(ping->uid()));
+        POTHOS_TEST_TRUE(blocksObj->has(pong->uid()));
+        POTHOS_TEST_EQUAL(blocksObj->getObject(ping->uid())->getValue<std::string>("name"), "Ping");
+        POTHOS_TEST_EQUAL(blocksObj->getObject(pong->uid())->getValue<std::string>("name"), "Pong");
+    }
 
     //check that the message flowed
     POTHOS_TEST_TRUE(topology.waitInactive());

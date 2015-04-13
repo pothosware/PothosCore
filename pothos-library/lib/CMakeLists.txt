@@ -117,6 +117,7 @@ list(APPEND POTHOS_SOURCES
     Framework/TopologyNetworkFlows.cpp
     Framework/TopologyDomainFlows.cpp
     Framework/TopologyDotMarkup.cpp
+    Framework/TopologyDumpJSON.cpp
     Framework/TopologyJSON.cpp
     Framework/WorkInfo.cpp
     Framework/WorkerActor.cpp
@@ -145,7 +146,6 @@ list(APPEND POTHOS_SOURCES
     Framework/Builtin/TestLabel.cpp
     Framework/Builtin/TestThreadPool.cpp
     Framework/Builtin/TestTopology.cpp
-    Framework/Builtin/TestJSONTopology.cpp
 
     Plugin/Path.cpp
     Plugin/Plugin.cpp
