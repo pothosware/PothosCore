@@ -172,6 +172,15 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
     const bool traverse = (modeConfig != "rendered");
     const auto &flows = (modeConfig == "rendered")?_impl->activeFlatFlows:_impl->flows;
 
+    //replace rendered names with names from flattened hierarchy
+    Poco::JSON::Object::Ptr flatBlocks;
+    if (modeConfig == "rendered")
+    {
+        Poco::JSON::Parser pFlat; pFlat.parse(this->dumpJSON("{\"mode\":\"flat\"}"));
+        auto flatObj = pFlat.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        flatBlocks = flatObj->getObject("blocks");
+    }
+
     //output object
     Poco::JSON::Object::Ptr topObj(new Poco::JSON::Object());
 
@@ -182,8 +191,15 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
     {
         //gather block info
         Poco::JSON::Object::Ptr blockObj(new Poco::JSON::Object());
-        blocksObj->set(block.call<std::string>("uid"), blockObj);
+        const auto blockId = block.call<std::string>("uid");
+        blocksObj->set(blockId, blockObj);
+
+        //replace rendered names with names from flattened hierarchy
         blockObj->set("name", block.call<std::string>("getName"));
+        if (flatBlocks and flatBlocks->has(blockId))
+        {
+            blockObj->set("name", flatBlocks->getObject(blockId)->getValue<std::string>("name"));
+        }
 
         //input port info
         Poco::JSON::Array::Ptr inputsArray(new Poco::JSON::Array());
@@ -210,7 +226,7 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
         if (outputsArray->size() > 0) blockObj->set("outputs", outputsArray);
 
         //sub-topology info
-        if (traverse and this->uid() != block.call<std::string>("uid")) try
+        if (traverse and this->uid() != blockId) try
         {
             auto subDump = block.call<std::string>("dumpJSON", "{\"mode\":\"top\"}");
             Poco::JSON::Parser psub; psub.parse(subDump);
