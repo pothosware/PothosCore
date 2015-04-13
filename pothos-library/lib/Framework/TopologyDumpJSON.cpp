@@ -110,7 +110,7 @@ static bool flattenDump(Poco::JSON::Object::Ptr &topObj)
         }
     }
 
-    //resolve pass-through connections
+    //resolve pass-through connections and totally internal connections
     for (const auto &uid : blockUids)
     {
         const auto blockObj = blocksObj->getObject(uid);
@@ -120,8 +120,14 @@ static bool flattenDump(Poco::JSON::Object::Ptr &topObj)
         for (size_t c_i = 0; c_i < subConnsArray->size(); c_i++)
         {
             const auto subConnObj = subConnsArray->getObject(c_i);
-            if (subConnObj->getValue<std::string>("srcId") != uid) continue;
-            if (subConnObj->getValue<std::string>("dstId") != uid) continue;
+            const bool srcIsThis = subConnObj->getValue<std::string>("srcId") == uid;
+            const bool dstIsThis = subConnObj->getValue<std::string>("dstId") == uid;
+
+            //totally internal connection
+            if (not srcIsThis and not dstIsThis) flatConnsArray->add(subConnObj);
+
+            //otherwise not a pass-through
+            if (not srcIsThis or not dstIsThis) continue;
 
             //find sources where the destination is this pass-through
             for (size_t c_s = 0; c_s < connsArray->size(); c_s++)
