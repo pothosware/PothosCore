@@ -182,11 +182,23 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
 /***********************************************************************
  * create JSON stats object
  **********************************************************************/
-static std::pair<std::string, Poco::JSON::Object::Ptr> queryWorkStats(const Pothos::Proxy &block)
+static Poco::JSON::Object::Ptr queryWorkStats(const Pothos::Proxy &block)
 {
+    //try recursive traversal
+    try
+    {
+        auto json = block.call<std::string>("queryJSONStats");
+        Poco::JSON::Parser p; p.parse(json);
+        return p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    }
+    catch (Pothos::Exception &) {}
+
+    //otherwise, regular block, query stats
     auto actor = block.callProxy("get:_actor");
     auto workStats = actor.call<Poco::JSON::Object::Ptr>("queryWorkStats");
-    return std::make_pair(block.call<std::string>("uid"), workStats);
+    Poco::JSON::Object::Ptr topStats(new Poco::JSON::Object());
+    topStats->set(block.call<std::string>("uid"), workStats);
+    return topStats;
 }
 
 std::string Pothos::Topology::queryJSONStats(void)
@@ -194,7 +206,7 @@ std::string Pothos::Topology::queryJSONStats(void)
     Poco::JSON::Object::Ptr stats(new Poco::JSON::Object());
 
     //query each block's work stats and key it with the UID
-    std::vector<std::shared_future<std::pair<std::string, Poco::JSON::Object::Ptr>>> results;
+    std::vector<std::shared_future<Poco::JSON::Object::Ptr>> results;
     for (const auto &block : getObjSetFromFlowList(_impl->flows))
     {
         results.push_back(std::async(std::launch::async, queryWorkStats, block));
@@ -204,7 +216,8 @@ std::string Pothos::Topology::queryJSONStats(void)
     for (const auto &result : results)
     {
         const auto workStats = result.get();
-        stats->set(workStats.first, workStats.second);
+        std::vector<std::string> names; workStats->getNames(names);
+        for (const auto &name : names) stats->set(name, workStats->getObject(name));
     }
 
     //return the string-formatted result
