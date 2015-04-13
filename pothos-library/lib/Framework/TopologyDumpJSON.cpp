@@ -160,6 +160,16 @@ static bool flattenDump(Poco::JSON::Object::Ptr &topObj)
     return hierFound;
 }
 
+static Poco::JSON::Object::Ptr portInfoToObj(const Pothos::PortInfo &portInfo)
+{
+    Poco::JSON::Object::Ptr infoObj(new Poco::JSON::Object());
+    infoObj->set("name", portInfo.name);
+    infoObj->set("dtype", portInfo.dtype.toMarkup());
+    infoObj->set("size", Poco::UInt64(portInfo.dtype.size()));
+    infoObj->set("isSigSlot", portInfo.isSigSlot);
+    return infoObj;
+}
+
 std::string Pothos::Topology::dumpJSON(const std::string &request)
 {
     //extract input request
@@ -205,11 +215,7 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
         Poco::JSON::Array::Ptr inputsArray(new Poco::JSON::Array());
         for (const auto &portInfo : block.call<std::vector<PortInfo>>("inputPortInfo"))
         {
-            Poco::JSON::Object::Ptr infoObj(new Poco::JSON::Object());
-            inputsArray->add(infoObj);
-            infoObj->set("name", portInfo.name);
-            infoObj->set("dtype", portInfo.dtype.toString());
-            infoObj->set("isSigSlot", portInfo.isSigSlot);
+            inputsArray->add(portInfoToObj(portInfo));
         }
         if (inputsArray->size() > 0) blockObj->set("inputs", inputsArray);
 
@@ -217,11 +223,7 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
         Poco::JSON::Array::Ptr outputsArray(new Poco::JSON::Array());
         for (const auto &portInfo : block.call<std::vector<PortInfo>>("outputPortInfo"))
         {
-            Poco::JSON::Object::Ptr infoObj(new Poco::JSON::Object());
-            outputsArray->add(infoObj);
-            infoObj->set("name", portInfo.name);
-            infoObj->set("dtype", portInfo.dtype.toString());
-            infoObj->set("isSigSlot", portInfo.isSigSlot);
+            outputsArray->add(portInfoToObj(portInfo));
         }
         if (outputsArray->size() > 0) blockObj->set("outputs", outputsArray);
 
