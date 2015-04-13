@@ -235,24 +235,24 @@ public:
      *         "uidblockA" : {
      *             "name" : "blockA",
      *             "outputs" : [
-     *                 {"key": "outx", "type": "port"}
+     *                 {"name": "outx", "isSigSlot": false}
      *             ]
      *         },
      *         "uidblockB" : {
      *             "name" : "blockB",
      *             "inputs" : [
-     *                 {"key": "in0", "type": "port"},
-     *                 {"key": "setFoo", "type": "slot"}
+     *                 {"name": "in0", "isSigSlot": false},
+     *                 {"name": "setFoo", "isSigSlot": true}
      *             ],
      *             "outputs" : [
-     *                 {"key": "out0", "type": "port"},
-     *                 {"key": "barChanged", "type": "signal"}
+     *                 {"name": "out0", "isSigSlot": false},
+     *                 {"name": "barChanged", "isSigSlot": true}
      *             ]
      *         },
      *         "uidblockC" : {
      *             "name" : "blockC",
      *             "inputs" : [
-     *                 {"key": "iny", "type": "port"}
+     *                 {"name": "iny", "isSigSlot": false}
      *             ],
      *             "blocks" : {#this is a hierarchy of blocks#},
      *             "connections" : {#this is a hierarchy of blocks#},

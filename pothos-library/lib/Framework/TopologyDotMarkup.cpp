@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
+#include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/DOM/Document.h>
@@ -13,7 +14,7 @@
 #include <Poco/NumberParser.h>
 #include <sstream>
 
-static Poco::AutoPtr<Poco::XML::Element> portInfoToElem(Poco::AutoPtr<Poco::XML::Document> xmlDoc, const std::vector<Pothos::PortInfo> &portInfo, const std::string &prefix)
+static Poco::AutoPtr<Poco::XML::Element> portInfoToElem(Poco::AutoPtr<Poco::XML::Document> xmlDoc, const Poco::JSON::Array::Ptr &portsInfo, const std::string &prefix)
 {
     auto nodeTd = xmlDoc->createElement("td");
     nodeTd->setAttribute("border", "0");
@@ -22,74 +23,91 @@ static Poco::AutoPtr<Poco::XML::Element> portInfoToElem(Poco::AutoPtr<Poco::XML:
     table->setAttribute("border", "0");
     table->setAttribute("cellspacing", "0");
 
-    for (const auto &info : portInfo)
+    for (size_t i = 0; i < portsInfo->size(); i++)
     {
+        const auto portInfo = portsInfo->getObject(i);
+        auto name = portInfo->getValue<std::string>("name");
+        auto isSigSlot = portInfo->getValue<bool>("isSigSlot");
+
         auto tr = xmlDoc->createElement("tr");
         table->appendChild(tr);
         auto td = xmlDoc->createElement("td");
         tr->appendChild(td);
         td->setAttribute("border", "1");
-        if (prefix == "in"  and info.isSigSlot)     td->setAttribute("bgcolor", "#AEC6CF");
-        if (prefix == "in"  and not info.isSigSlot) td->setAttribute("bgcolor", "#779ECB");
-        if (prefix == "out" and info.isSigSlot)     td->setAttribute("bgcolor", "#77DD77");
-        if (prefix == "out" and not info.isSigSlot) td->setAttribute("bgcolor", "#03C03C");
-        td->setAttribute("port", "__"+prefix+"__"+info.name);
+        if (prefix == "in"  and isSigSlot)     td->setAttribute("bgcolor", "#AEC6CF");
+        if (prefix == "in"  and not isSigSlot) td->setAttribute("bgcolor", "#779ECB");
+        if (prefix == "out" and isSigSlot)     td->setAttribute("bgcolor", "#77DD77");
+        if (prefix == "out" and not isSigSlot) td->setAttribute("bgcolor", "#03C03C");
+        td->setAttribute("port", "__"+prefix+"__"+name);
         unsigned value = 0;
-        auto name = info.name;
-        if (Poco::NumberParser::tryParseUnsigned(info.name, value)) name = prefix+name;
+        if (Poco::NumberParser::tryParseUnsigned(name, value)) name = prefix+name;
         td->appendChild(xmlDoc->createTextNode(name));
     }
 
     return nodeTd;
 }
 
-static std::vector<Pothos::PortInfo> getConnectedPortInfos(
-    const Pothos::Proxy &block,
-    const std::vector<Flow> &flows,
-    const std::string &getter,
+static Poco::JSON::Array::Ptr getConnectedPortInfos(
+    const Poco::JSON::Object::Ptr &topObj,
+    const std::string &blockId,
     const bool enbFilter,
     const bool isInput)
 {
-    const auto uid = block.call<std::string>("uid");
-    const auto inputInfo = block.call<std::vector<Pothos::PortInfo>>(getter);
+    const auto connsArray = topObj->getArray("connections");
+    const auto blocksObj = topObj->getObject("blocks");
+    const auto blockObj = blocksObj->getObject(blockId);
 
-    if (not enbFilter) return inputInfo;
+    //grab the raw ports info
+    Poco::JSON::Array::Ptr portsInfo(new Poco::JSON::Array());
+    if (isInput and blockObj->has("inputs")) portsInfo = blockObj->getArray("inputs");
+    if (not isInput and blockObj->has("outputs")) portsInfo = blockObj->getArray("outputs");
 
-    std::vector<Pothos::PortInfo> outputInfo;
-    for (const auto &info : inputInfo)
+    //no filtering? return ASAP
+    if (not enbFilter) return portsInfo;
+
+    Poco::JSON::Array::Ptr filteredPortsInfo(new Poco::JSON::Array());
+    for (size_t i = 0; i < portsInfo->size(); i++)
     {
-        for (const auto &flow : flows)
+        const auto portInfo = portsInfo->getObject(i);
+        for (size_t c_i = 0; c_i < connsArray->size(); c_i++)
         {
+            const auto conn = connsArray->getObject(c_i);
             if (
-                (not isInput and uid == flow.src.uid and info.name == flow.src.name) or
-                (isInput and uid == flow.dst.uid and info.name == flow.dst.name)
+                (not isInput and blockId == conn->getValue<std::string>("srcId") and portInfo->getValue<std::string>("name") == conn->getValue<std::string>("srcName")) or
+                (isInput and blockId == conn->getValue<std::string>("dstId") and portInfo->getValue<std::string>("name") == conn->getValue<std::string>("dstName"))
             )
             {
-                outputInfo.push_back(info);
+                filteredPortsInfo->add(portInfo);
                 break;
             }
         }
     }
-    return outputInfo;
+    return filteredPortsInfo;
 }
 
 std::string Pothos::Topology::toDotMarkup(const std::string &request)
 {
+    //parse request arguments
     Poco::JSON::Parser p; p.parse(request.empty()?"{}":request);
     auto configObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
-    const auto modeConfig = configObj->optValue<std::string>("mode", "flat");
     const auto portConfig = configObj->optValue<std::string>("port", "connected");
 
-    std::ostringstream os;
-    auto flows = (modeConfig == "flat")? _impl->activeFlatFlows : _impl->flows;
-    auto blocks = getObjSetFromFlowList(flows);
+    //get a JSON dump of the topology
+    Poco::JSON::Parser pDump; pDump.parse(this->dumpJSON(request));
+    const auto topObj = pDump.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    const auto connsArray = topObj->getArray("connections");
+    const auto blocksObj = topObj->getObject("blocks");
+    std::vector<std::string> blockIds; blocksObj->getNames(blockIds);
 
+    std::ostringstream os;
     os << "digraph flat_flows {" << std::endl;
     os << "    rankdir=LR;" << std::endl;
     os << "    node [shape=record, fontsize=10];" << std::endl;
 
-    for (const auto &block : blocks)
+    for (const auto &blockId : blockIds)
     {
+        const auto blockObj = blocksObj->getObject(blockId);
+
         //form xml
         Poco::AutoPtr<Poco::XML::Document> xmlDoc(new Poco::XML::Document());
         auto nodeTable = xmlDoc->createElement("table");
@@ -101,10 +119,13 @@ std::string Pothos::Topology::toDotMarkup(const std::string &request)
         nodeTable->appendChild(nodeTr);
 
         const bool enbFilter = portConfig == "connected";
-        const auto inputInfo = getConnectedPortInfos(block, flows, "inputPortInfo", enbFilter, true);
-        const auto outputInfo = getConnectedPortInfos(block, flows, "outputPortInfo", enbFilter, false);
+        const auto inputPorts = getConnectedPortInfos(topObj, blockId, enbFilter, true);
+        const auto outputPorts = getConnectedPortInfos(topObj, blockId, enbFilter, false);
 
-        if (not inputInfo.empty()) nodeTr->appendChild(portInfoToElem(xmlDoc, inputInfo, "in"));
+        if (inputPorts->size() > 0)
+        {
+            nodeTr->appendChild(portInfoToElem(xmlDoc, inputPorts, "in"));
+        }
         {
             auto nodeTd = xmlDoc->createElement("td");
             nodeTd->setAttribute("border", "0");
@@ -119,15 +140,18 @@ std::string Pothos::Topology::toDotMarkup(const std::string &request)
             td->setAttribute("border", "1");
             td->setAttribute("bgcolor", "azure");
             tr->appendChild(td);
-            auto name = block.call<std::string>("getName");
+            auto name = blockObj->getValue<std::string>("name");
             if (name.empty()) name = "Empty Name";
             td->appendChild(xmlDoc->createTextNode(name));
         }
-        if (not outputInfo.empty()) nodeTr->appendChild(portInfoToElem(xmlDoc, outputInfo, "out"));
+        if (outputPorts->size() > 0)
+        {
+            nodeTr->appendChild(portInfoToElem(xmlDoc, outputPorts, "out"));
+        }
 
         //dot node entry
         os << "    ";
-        os << std::hash<std::string>()(block.call<std::string>("uid"));
+        os << std::hash<std::string>()(blockId);
         os << "[" << std::endl;
         os << "    shape=none," << std::endl;
         os << "    label=<" << std::endl;
@@ -138,12 +162,15 @@ std::string Pothos::Topology::toDotMarkup(const std::string &request)
         os << "];" << std::endl;
     }
 
-    for (const auto &flow : flows)
+    for (size_t c_i = 0; c_i < connsArray->size(); c_i++)
     {
+        const auto conn = connsArray->getObject(c_i);
         os << "    ";
-        os << std::hash<std::string>()(flow.src.uid) << ":__out__" << flow.src.name;
+        os << std::hash<std::string>()(conn->getValue<std::string>("srcId"));
+        os << ":__out__" << conn->getValue<std::string>("srcName");
         os << " -> ";
-        os << std::hash<std::string>()(flow.dst.uid) << ":__in__" << flow.dst.name;
+        os << std::hash<std::string>()(conn->getValue<std::string>("dstId"));
+        os << ":__in__" << conn->getValue<std::string>("dstName");
         os << ";" << std::endl;
     }
 

@@ -193,7 +193,7 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
             inputsArray->add(infoObj);
             infoObj->set("name", portInfo.name);
             infoObj->set("dtype", portInfo.dtype.toString());
-            if (portInfo.isSigSlot) infoObj->set("type", "slot");
+            infoObj->set("isSigSlot", portInfo.isSigSlot);
         }
         if (inputsArray->size() > 0) blockObj->set("inputs", inputsArray);
 
@@ -205,7 +205,7 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
             outputsArray->add(infoObj);
             infoObj->set("name", portInfo.name);
             infoObj->set("dtype", portInfo.dtype.toString());
-            if (portInfo.isSigSlot) infoObj->set("type", "signal");
+            infoObj->set("isSigSlot", portInfo.isSigSlot);
         }
         if (outputsArray->size() > 0) blockObj->set("outputs", outputsArray);
 
