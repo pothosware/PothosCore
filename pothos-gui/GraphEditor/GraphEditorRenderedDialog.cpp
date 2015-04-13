@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -101,9 +101,10 @@ public:
         //create entry forms
         auto modeOptionsLayout = new QFormLayout();
         formsLayout->addLayout(modeOptionsLayout);
-        _modeOptions->addItem(tr("Flattened"), QString("flat"));
         _modeOptions->addItem(tr("Top level"), QString("top"));
-        modeOptionsLayout->addRow(tr("Render mode"), _modeOptions);
+        _modeOptions->addItem(tr("Flattened"), QString("flat"));
+        _modeOptions->addItem(tr("Rendered"), QString("rendered"));
+        modeOptionsLayout->addRow(tr("Display mode"), _modeOptions);
 
         auto portOptionsLayout = new QFormLayout();
         formsLayout->addLayout(portOptionsLayout);
