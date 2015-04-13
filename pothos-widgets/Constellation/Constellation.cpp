@@ -80,9 +80,11 @@ public:
     Constellation(const Pothos::ProxyEnvironment::Sptr &remoteEnv)
     {
         _display.reset(new ConstellationDisplay());
+        _display->setName("Display");
 
         auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
         _snooper = registry.callProxy("/blocks/stream_snooper");
+        _snooper.callVoid("setName", "Snooper");
 
         //register calls in this topology
         this->registerCall(this, POTHOS_FCN_TUPLE(Constellation, setDisplayRate));
@@ -125,9 +127,6 @@ public:
 
     void setNumPoints(const size_t num)
     {
-        _display->setName(this->getName()+"Display");
-        _snooper.callVoid("setName", this->getName()+"Snooper");
-
         _snooper.callVoid("setChunkSize", num);
     }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -57,8 +57,8 @@ inline std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> 
     std::map<std::string, Pothos::Proxy> uniques;
     for (const auto &flow : flows)
     {
-        uniques[flow.src.uid] = flow.src.obj;
-        uniques[flow.dst.uid] = flow.dst.obj;
+        if (flow.src.obj) uniques[flow.src.uid] = flow.src.obj;
+        if (flow.dst.obj) uniques[flow.dst.uid] = flow.dst.obj;
     }
     for (const auto &flow : excludes)
     {
