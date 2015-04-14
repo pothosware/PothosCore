@@ -9,6 +9,8 @@ set(INCLUDED_SETUP_POCO_CMAKE TRUE)
 set(Poco_INCLUDE_DIRS "")
 find_package(Poco CONFIG COMPONENTS Foundation Util JSON XML Net)
 if (Poco_FOUND)
+    message(STATUS "Poco_DIR: ${Poco_DIR}")
+    message(STATUS "Poco_LIBRARIES: ${Poco_LIBRARIES}")
     return()
 endif()
 
@@ -28,6 +30,8 @@ if (POCO_FOUND)
         ${POCO_XML_LIBRARIES}
         ${POCO_JSON_LIBRARIES}
     )
+    message(STATUS "Poco_INCLUDE_DIRS: ${Poco_INCLUDE_DIRS}")
+    message(STATUS "Poco_LIBRARIES: ${Poco_LIBRARIES}")
 endif()
 
 ########################################################################
