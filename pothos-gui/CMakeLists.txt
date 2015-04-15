@@ -77,9 +77,23 @@ install(TARGETS PothosQtColorPicker
 list(APPEND Pothos_LIBRARIES PothosQtColorPicker)
 
 ########################################################################
+# Resource file - adds an icon to Pothos GUI executable
+########################################################################
+if (WIN32)
+    set(ICON_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/icons/PothosGui.ico)
+    set(RES_FILES "${CMAKE_CURRENT_BINARY_DIR}/PothosGui.rc")
+    file(WRITE "${RES_FILES}" "id ICON \"${ICON_SOURCE}\"")
+    set(CMAKE_RC_COMPILER_INIT windres)
+    enable_language(RC)
+    set(CMAKE_RC_COMPILE_OBJECT
+        "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+    list(APPEND SOURCES ${RES_FILES})
+endif(WIN32)
+
+########################################################################
 # GUI Main App
 ########################################################################
-set(SOURCES
+list(APPEND SOURCES
     PothosGui.cpp
     PothosGuiUtils.cpp
     MainWindow.cpp
