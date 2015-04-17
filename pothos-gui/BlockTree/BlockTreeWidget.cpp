@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //get object map
@@ -167,6 +167,10 @@ void BlockTreeWidget::populate(void)
             poco_error_f1(Poco::Logger::get("PothosGui.BlockTree"), "Failed JSON Doc parse %s", ex.displayText());
         }
     }
+
+    //sort the columns alphabetically
+    this->sortByColumn(0, Qt::AscendingOrder);
+
     emit this->blockDescEvent(Poco::JSON::Object::Ptr(), false); //unselect
 }
 
