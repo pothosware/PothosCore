@@ -156,8 +156,17 @@ list(APPEND SOURCES
     EvalEngine/TopologyEval.cpp
     EvalEngine/TopologyTraversal.cpp
 )
-add_executable(PothosGui ${SOURCES})
-target_link_libraries(PothosGui Pothos ${Pothos_LIBRARIES})
+
+#under MSVC build a win32 app so a console is not launched with the GUI exe
+if (MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "/entry:mainCRTStartup ${CMAKE_EXE_LINKER_FLAGS}")
+    add_executable(PothosGui WIN32 ${SOURCES})
+else (MSVC)
+    add_executable(PothosGui ${SOURCES})
+endif (MSVC)
+
+target_link_libraries(PothosGui ${Pothos_LIBRARIES})
+
 install(
     TARGETS PothosGui
     RUNTIME DESTINATION bin
