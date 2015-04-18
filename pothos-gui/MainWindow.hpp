@@ -18,7 +18,7 @@ class PothosGuiMainWindow : public QMainWindow
     Q_OBJECT
 public:
 
-    PothosGuiMainWindow(QWidget *parent);
+    PothosGuiMainWindow(QWidget *parent, void (*splashShowMessage)(const QString &));
 
     ~PothosGuiMainWindow(void);
 

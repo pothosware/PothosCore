@@ -26,72 +26,86 @@
 #include <Poco/Logger.h>
 #include <iostream>
 
-PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
+PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent, void (*splashShowMessage)(const QString &)):
     QMainWindow(parent),
     _actionMap(getActionMap()),
     _menuMap(getMenuMap())
 {
+    splashShowMessage(tr("Creating main window..."));
     getObjectMap()["mainWindow"] = this;
 
     this->setMinimumSize(800, 600);
     this->setWindowTitle("Pothos GUI");
 
     //initialize actions and action buttons
+    splashShowMessage(tr("Creating actions..."));
     this->createActions();
+    splashShowMessage(tr("Creating toolbar..."));
     this->createMainToolBar();
 
     //create message window dock
+    splashShowMessage(tr("Creating message window..."));
     _messageWindowDock = new MessageWindowDock(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, _messageWindowDock);
     getObjectMap()["messageWindowDock"] = _messageWindowDock;
     poco_information_f1(Poco::Logger::get("PothosGui.MainWindow"), "Welcome to Pothos v%s", Pothos::System::getApiVersion());
 
     //create graph actions dock
+    splashShowMessage(tr("Creating actions dock..."));
     _graphActionsDock = new GraphActionsDock(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, _graphActionsDock);
     getObjectMap()["graphActionsDock"] = _graphActionsDock;
 
     //create host explorer dock
+    splashShowMessage(tr("Creating host explorer..."));
     _hostExplorerDock = new HostExplorerDock(this);
     getObjectMap()["hostExplorerDock"] = _hostExplorerDock;
     this->addDockWidget(Qt::RightDockWidgetArea, _hostExplorerDock);
 
     //create affinity panel
+    splashShowMessage(tr("Creating affinity panel..."));
     _affinityZonesDock = new AffinityZonesDock(this);
     getObjectMap()["affinityZonesDock"] = _affinityZonesDock;
     this->tabifyDockWidget(_hostExplorerDock, _affinityZonesDock);
 
     //block cache (make before block tree)
+    splashShowMessage(tr("Creating block cache..."));
     auto blockCache = new BlockCache(this);
     getObjectMap()["blockCache"] = blockCache;
     connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
 
     //create topology editor tabbed widget
+    splashShowMessage(tr("Creating graph editor..."));
     auto editorTabs = new GraphEditorTabs(this);
     this->setCentralWidget(editorTabs);
     getObjectMap()["editorTabs"] = editorTabs;
 
     //create block tree (after the block cache)
+    splashShowMessage(tr("Creating block tree..."));
     _blockTreeDock = new BlockTreeDock(this);
     connect(getActionMap()["find"], SIGNAL(triggered(void)), _blockTreeDock, SLOT(activateFind(void)));
     getObjectMap()["blockTreeDock"] = _blockTreeDock;
     this->tabifyDockWidget(_affinityZonesDock, _blockTreeDock);
 
     //create properties panel (make after block cache)
+    splashShowMessage(tr("Creating properties panel..."));
     _propertiesPanelDock = new PropertiesPanelDock(this);
     getObjectMap()["propertiesPanel"] = _propertiesPanelDock;
     this->tabifyDockWidget(_blockTreeDock, _propertiesPanelDock);
 
     //restore main window settings from file
+    splashShowMessage(tr("Restoring configuration..."));
     this->restoreGeometry(getSettings().value("MainWindow/geometry").toByteArray());
     this->restoreState(getSettings().value("MainWindow/state").toByteArray());
     _propertiesPanelDock->hide(); //hidden until used
     _showPortNamesAction->setChecked(getSettings().value("MainWindow/showPortNames", true).toBool());
 
     //create menus after docks and tool bars (view menu calls their toggleViewAction())
+    splashShowMessage(tr("Creating menus..."));
     this->createMenus();
 
     //we do this last so all of the connections and logging is setup
+    splashShowMessage(tr("Completing initialization..."));
     poco_information(Poco::Logger::get("PothosGui.MainWindow"), "Initialization complete");
     emit this->initDone();
 }

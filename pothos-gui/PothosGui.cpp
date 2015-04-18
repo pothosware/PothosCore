@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow.hpp"
@@ -9,6 +9,7 @@
 #include <Poco/Logger.h>
 #include <QMessageBox>
 #include <QApplication>
+#include <QSplashScreen>
 #include <stdexcept>
 #include <cstdlib> //EXIT_FAILURE
 #include <memory>
@@ -25,6 +26,14 @@ struct MyScopedSyslogListener
     }
 };
 
+static QSplashScreen *splash = nullptr;
+
+static void splashShowMessage(const QString &msg)
+{
+    splash->showMessage(msg, Qt::AlignLeft | Qt::AlignBottom);
+    QApplication::instance()->processEvents();
+}
+
 int main(int argc, char **argv)
 {
     MyScopedSyslogListener syslogListener;
@@ -34,19 +43,24 @@ int main(int argc, char **argv)
     app.setOrganizationName("PothosWare");
     app.setApplicationName("Pothos");
 
+    //create splash screen
+    QPixmap pixmap(makeIconPath("PothosSplash.png"));
+    splash = new QSplashScreen(pixmap);
+    splash->show();
+
     //setup the application icon
-    {
-        app.setWindowIcon(QIcon(makeIconPath("PothosGui.png")));
-    }
+    app.setWindowIcon(QIcon(makeIconPath("PothosGui.png")));
 
     //perform library initialization with graphical error message on failure
     Pothos::RemoteServer server;
     try
     {
+        splashShowMessage("Initializing Pothos plugins...");
         Pothos::init();
 
         //try to talk to the server on localhost, if not there, spawn a custom one
         //make a server and node that is temporary with this process
+        splashShowMessage("Launching scratch process...");
         try
         {
             Pothos::RemoteClient client("tcp://localhost");
@@ -68,8 +82,9 @@ int main(int argc, char **argv)
     POTHOS_EXCEPTION_TRY
     {
         //create the main window for the GUI
-        std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr));
+        std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr, &splashShowMessage));
         mainWindow->show();
+        splash->finish(mainWindow.get());
 
         //begin application execution
         return app.exec();
