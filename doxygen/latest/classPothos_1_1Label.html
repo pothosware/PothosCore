@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.2.0</span>
+   &#160;<span id="projectnumber">0.2.0-gd4ec0b37</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -109,8 +109,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5bdbf5fa6181b2a97d3364f8ba044ec0"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#a5bdbf5fa6181b2a97d3364f8ba044ec0">Label</a> (const std::string &amp;<a class="el" href="classPothos_1_1Label.html#a08e9516f2c3f3b3f43dfa1a934d828fa">id</a>, ValueType &amp;&amp;<a class="el" href="classPothos_1_1Label.html#a145e14814fb67096e036e8f8531b1eac">data</a>, const unsigned long long <a class="el" href="classPothos_1_1Label.html#ac2ad3c1695d0b636a92a936cf4710a1f">index</a>, const size_t <a class="el" href="classPothos_1_1Label.html#a418b3185f08b7142ebe28eca14844a06">width</a>=1)</td></tr>
 <tr class="memdesc:a5bdbf5fa6181b2a97d3364f8ba044ec0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a label with specified data of ValueType and index.  <a href="#a5bdbf5fa6181b2a97d3364f8ba044ec0">More...</a><br/></td></tr>
 <tr class="separator:a5bdbf5fa6181b2a97d3364f8ba044ec0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5c43432f2e63efec096072d8a81dfa3b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1Label.html">Label</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#a5c43432f2e63efec096072d8a81dfa3b">toAdjusted</a> (const size_t mult, const size_t div) const </td></tr>
-<tr class="separator:a5c43432f2e63efec096072d8a81dfa3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3d6fed26c3e30949b3811b3565c0fa8"><td class="memTemplParams" colspan="2">template&lt;typename MultType , typename DivType &gt; </td></tr>
+<tr class="memitem:ac3d6fed26c3e30949b3811b3565c0fa8"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1Label.html">Label</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#ac3d6fed26c3e30949b3811b3565c0fa8">toAdjusted</a> (const MultType &amp;mult, const DivType &amp;div) const </td></tr>
+<tr class="separator:ac3d6fed26c3e30949b3811b3565c0fa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b1f1300a91dd9046fe9f790a5db6d3d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#a4b1f1300a91dd9046fe9f790a5db6d3d">operator&lt;</a> (const <a class="el" href="classPothos_1_1Label.html">Label</a> &amp;other) const </td></tr>
 <tr class="memdesc:a4b1f1300a91dd9046fe9f790a5db6d3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">support for sorting Labels by index  <a href="#a4b1f1300a91dd9046fe9f790a5db6d3d">More...</a><br/></td></tr>
 <tr class="separator:a4b1f1300a91dd9046fe9f790a5db6d3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -118,6 +119,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abfdc4ecdb211feac42c3771d56a91c13"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#abfdc4ecdb211feac42c3771d56a91c13">serialize</a> (Archive &amp;ar, const unsigned int version)</td></tr>
 <tr class="memdesc:abfdc4ecdb211feac42c3771d56a91c13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization support.  <a href="#abfdc4ecdb211feac42c3771d56a91c13">More...</a><br/></td></tr>
 <tr class="separator:abfdc4ecdb211feac42c3771d56a91c13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae76da382e260d90ae9f570c861527412"><td class="memTemplParams" colspan="2">template&lt;typename MultType , typename DivType &gt; </td></tr>
+<tr class="memitem:ae76da382e260d90ae9f570c861527412"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1Label.html">Pothos::Label</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1Label.html#ae76da382e260d90ae9f570c861527412">toAdjusted</a> (const MultType &amp;mult, const DivType &amp;div) const </td></tr>
+<tr class="separator:ae76da382e260d90ae9f570c861527412"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -250,23 +254,22 @@ template&lt;class Archive &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a5c43432f2e63efec096072d8a81dfa3b"></a>
+<a class="anchor" id="ac3d6fed26c3e30949b3811b3565c0fa8"></a>
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
+<div class="memtemplate">
+template&lt;typename MultType , typename DivType &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classPothos_1_1Label.html">Pothos::Label</a> Pothos::Label::toAdjusted </td>
+          <td class="memname"><a class="el" href="classPothos_1_1Label.html">Label</a> Pothos::Label::toAdjusted </td>
           <td>(</td>
-          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramtype">const MultType &amp;&#160;</td>
           <td class="paramname"><em>mult</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramtype">const DivType &amp;&#160;</td>
           <td class="paramname"><em>div</em>&#160;</td>
         </tr>
         <tr>
@@ -275,11 +278,6 @@ template&lt;class Archive &gt; </div>
           <td></td><td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 <p>Create a new label with an adjusted index and width. Example convert bytes to elements: newLbl = lbl.toAdjusted(1, elemSize); Example convert elements to bytes: newLbl = lbl.toAdjusted(elemSize, 1); </p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -290,6 +288,34 @@ template&lt;class Archive &gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>a copy of this label with an adjusted position </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ae76da382e260d90ae9f570c861527412"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename MultType , typename DivType &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classPothos_1_1Label.html">Pothos::Label</a> Pothos::Label::toAdjusted </td>
+          <td>(</td>
+          <td class="paramtype">const MultType &amp;&#160;</td>
+          <td class="paramname"><em>mult</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const DivType &amp;&#160;</td>
+          <td class="paramname"><em>div</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -352,7 +378,7 @@ template&lt;class Archive &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jan 27 2015 21:46:16 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 22 2015 16:02:41 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
