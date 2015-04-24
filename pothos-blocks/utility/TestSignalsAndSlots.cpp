@@ -78,7 +78,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal)
     POTHOS_TEST_EQUAL(msgs[1].convert<int>(), -64);
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal2)
+POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal_multiarg)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -112,4 +112,48 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal2)
     //check msgs
     POTHOS_TEST_EQUAL(msgs.size(), 1);
     POTHOS_TEST_EQUAL(msgs[0].convert<int>(), 2*11 + -32);
+}
+
+POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal_multislot)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto registry = env->findProxy("Pothos/BlockRegistry");
+
+    auto feederX = registry.callProxy("/blocks/feeder_source", "int");
+    auto feederY = registry.callProxy("/blocks/feeder_source", "int");
+    auto collector = registry.callProxy("/blocks/collector_sink", "int");
+    auto messageToSignalX = registry.callProxy("/blocks/message_to_signal", "changeEvent");
+    auto messageToSignalY = registry.callProxy("/blocks/message_to_signal", "changeEvent");
+    auto slotToMessage = registry.callProxy("/blocks/slot_to_message", "handleEvent");
+
+    std::vector<std::string> varNames;
+    varNames.push_back("valX");
+    varNames.push_back("valY");
+    auto transform = registry.callProxy("/blocks/transform_signal", varNames);
+    transform.callVoid("setExpression", "valX - 2*valY");
+
+    //feed some msgs
+    feederX.callProxy("feedMessage", Pothos::Object(11));
+    feederY.callProxy("feedMessage", Pothos::Object(-32));
+
+    //run the topology
+    {
+        Pothos::Topology topology;
+        topology.connect(feederX, 0, messageToSignalX, 0);
+        topology.connect(messageToSignalX, "changeEvent", transform, "setValX");
+        topology.connect(feederY, 0, messageToSignalY, 0);
+        topology.connect(messageToSignalY, "changeEvent", transform, "setValY");
+        topology.connect(transform, "triggered", slotToMessage, "handleEvent");
+        topology.connect(slotToMessage, 0, collector, 0);
+        topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+    }
+
+    //collect the messages
+    auto msgs = collector.call<std::vector<Pothos::Object>>("getMessages");
+    std::cout << msgs.size() << std::endl;
+
+    //check msgs
+    POTHOS_TEST_EQUAL(msgs.size(), 1);
+    POTHOS_TEST_EQUAL(msgs[0].convert<int>(), (11 - 2*(-32)));
 }

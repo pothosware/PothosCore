@@ -5,6 +5,9 @@
 #include <Pothos/Proxy.hpp>
 #include <Poco/Format.h>
 #include <cctype> //toupper
+#include <string>
+#include <map>
+#include <set>
 #include <iostream>
 
 /***********************************************************************
@@ -78,13 +81,25 @@ public:
     //but dont use this block as a good example of signal and slots usage.
     Pothos::Object opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
     {
+        //check if this is for one of the set value slots
         auto it = _slotNameToVarName.find(name);
         if (it == _slotNameToVarName.end()) return Pothos::Block::opaqueCallHandler(name, inputArgs, numArgs);
+
+        //stash the values from the slot arguments
         for (size_t i = 0; i < numArgs; i++)
         {
-            if (numArgs == 1) _varNameToValue[it->second] = inputArgs[i];
-            else _varNameToValue[Poco::format("%s%d", it->second, int(i))] = inputArgs[i];
+            if (numArgs == 1) _varValues[it->second] = inputArgs[i];
+            else _varValues[Poco::format("%s%d", it->second, int(i))] = inputArgs[i];
         }
+        _varsReady.insert(it->second);
+
+        //check that all slots specified are ready
+        for (const auto &pair : _slotNameToVarName)
+        {
+            if (_varsReady.count(pair.second) == 0) return Pothos::Object();
+        }
+
+        //perform the evaluation and emit the result
         this->callVoid("triggered", this->peformEval());
         return Pothos::Object();
     }
@@ -95,7 +110,7 @@ public:
     Pothos::Object peformEval(void)
     {
         auto evalEnv = _EvalEnvironment.callProxy("make");
-        for (const auto &pair : _varNameToValue)
+        for (const auto &pair : _varValues)
         {
             evalEnv.callVoid("registerConstantObj", pair.first, pair.second);
         }
@@ -105,7 +120,8 @@ public:
 private:
     std::string _expr;
     std::map<std::string, std::string> _slotNameToVarName;
-    std::map<std::string, Pothos::Object> _varNameToValue;
+    std::map<std::string, Pothos::Object> _varValues;
+    std::set<std::string> _varsReady;
     Pothos::Proxy _EvalEnvironment;
 };
 
