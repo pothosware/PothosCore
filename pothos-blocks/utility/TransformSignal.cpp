@@ -4,6 +4,7 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Poco/Format.h>
+#include <cctype> //toupper
 #include <iostream>
 
 /***********************************************************************
