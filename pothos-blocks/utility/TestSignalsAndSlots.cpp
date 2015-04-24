@@ -50,8 +50,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal)
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
     auto messageToSignal = registry.callProxy("/blocks/message_to_signal", "changeEvent");
     auto slotToMessage = registry.callProxy("/blocks/slot_to_message", "handleEvent");
-    auto transform = registry.callProxy("/blocks/transform_signal");
-    transform.callVoid("setExpression", "2*a0");
+    auto transform = registry.callProxy("/blocks/transform_signal", std::vector<std::string>(1, "val"));
+    transform.callVoid("setExpression", "2*val");
 
     //feed some msgs
     feeder.callProxy("feedMessage", Pothos::Object(11));
@@ -61,7 +61,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal)
     {
         Pothos::Topology topology;
         topology.connect(feeder, 0, messageToSignal, 0);
-        topology.connect(messageToSignal, "changeEvent", transform, "transform");
+        topology.connect(messageToSignal, "changeEvent", transform, "setVal");
         topology.connect(transform, "triggered", slotToMessage, "handleEvent");
         topology.connect(slotToMessage, 0, collector, 0);
         topology.commit();
@@ -86,8 +86,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal2)
     auto feeder = registry.callProxy("/blocks/feeder_source", "int");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
     auto slotToMessage = registry.callProxy("/blocks/slot_to_message", "handleEvent");
-    auto transform = registry.callProxy("/blocks/transform_signal");
-    transform.callVoid("setExpression", "2*a0 + a1");
+    auto transform = registry.callProxy("/blocks/transform_signal", std::vector<std::string>(1, "val"));
+    transform.callVoid("setExpression", "2*val0 + val1");
 
     //test message with two args - object vector format since we are not using messageToSignal
     std::vector<Pothos::Object> args;
@@ -98,7 +98,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal2)
     //run the topology
     {
         Pothos::Topology topology;
-        topology.connect(feeder, 0, transform, "transform");
+        topology.connect(feeder, 0, transform, "setVal");
         topology.connect(transform, "triggered", slotToMessage, "handleEvent");
         topology.connect(slotToMessage, 0, collector, 0);
         topology.commit();
