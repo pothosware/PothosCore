@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 /***********************************************************************
@@ -76,7 +76,7 @@
  *
  * |param deviceArgs[Device Args] Device construction arguments.
  * A map of key/value string pairs that identifies a SDR device.
- * |default {"driver":"null", "type":"null"}
+ * |default {"driver":"null"}
  * |preview valid
  * |tab Streaming
  *
