@@ -137,7 +137,7 @@ QString GraphBlock::getPropertyDisplayText(const QString &key) const
     //shorten
     if (value.size() > 23) value = QString("%1%2%3")
         .arg(value.leftRef(10).toString())
-        .arg(QString::fromUtf8("\u2026")) //&hellip;
+        .arg(QChar(0x2026)) //&hellip;
         .arg(value.rightRef(10).toString());
 
     return value;

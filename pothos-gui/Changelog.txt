@@ -11,6 +11,7 @@ Release 0.2.0 (pending)
 Release 0.1.1 (pending)
 ==========================
 
+- Fixed display of ellipsis Unicode character on Windows
 - Planned cancel of the properties panel before load state
 - Filled in the implementation for Graph Editor save all
 - Prefix QtColorPicker library to avoid install collisions
