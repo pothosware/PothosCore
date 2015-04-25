@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -19,7 +19,7 @@ public:
     FileEntry(const QString &mode, QWidget *parent):
         QWidget(parent),
         _mode(mode),
-        _button(new QPushButton(QString::fromUtf8("\u2026"), this)), //&hellip;
+        _button(new QPushButton(QChar(0x2026), this)), //&hellip;
         _edit(new QLineEdit(this))
     {
         auto layout = new QHBoxLayout(this);
