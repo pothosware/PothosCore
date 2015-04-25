@@ -14,6 +14,7 @@
 #include <QPen>
 #include <QBrush>
 #include <QColor>
+#include <QFontMetrics>
 #include <iostream>
 #include <cassert>
 #include <algorithm> //min/max
@@ -133,12 +134,6 @@ QString GraphBlock::getPropertyDisplayText(const QString &key) const
     {
         value.remove(-1, 1).remove(0, 1);
     }
-
-    //shorten
-    if (value.size() > 23) value = QString("%1%2%3")
-        .arg(value.leftRef(10).toString())
-        .arg(QChar(0x2026)) //&hellip;
-        .arg(value.rightRef(10).toString());
 
     return value;
 }
@@ -434,11 +429,18 @@ void GraphBlock::renderStaticText(void)
     for (int i = 0; i < _properties.size(); i++)
     {
         if (not this->getPropertyPreview(_properties[i])) continue;
+
+        //shorten text with ellipsis
+        QFont font; font.setPointSize(GraphBlockPropPointWidth);
+        QFontMetrics metrics(font);
+        auto propText = this->getPropertyDisplayText(_properties[i]);
+        propText = metrics.elidedText(propText, Qt::ElideMiddle, GraphBlockPropMaxWidthPx);
+
         auto text = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3: </b> %4</span>")
             .arg(getTextColor(this->getPropertyErrorMsg(_properties[i]).isEmpty(), _impl->mainBlockColor))
             .arg(GraphBlockPropFontSize)
             .arg(this->getPropertyName(_properties[i]).toHtmlEscaped())
-            .arg(this->getPropertyDisplayText(_properties[i]).toHtmlEscaped()));
+            .arg(propText.toHtmlEscaped()));
         _impl->propertiesText.push_back(text);
     }
 
