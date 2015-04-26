@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Config.hpp>
@@ -16,6 +16,21 @@ static FARPROC GetKernelProcAddress(LPCSTR lpProcName)
     FARPROC r = GetProcAddress(hKernel, lpProcName);
     if (not r) std::cerr << "This kernel32 does not support " << lpProcName << std::endl;
     return r;
+}
+
+/***********************************************************************
+ * set error mode with non-thread safe backup
+ **********************************************************************/
+BOOL DL_SetThreadErrorMode(DWORD dwNewMode, LPDWORD lpOldMode)
+{
+    typedef BOOL (WINAPI * SetThreadErrorMode_t)(DWORD, LPDWORD);
+    static auto fcn = (SetThreadErrorMode_t)GetKernelProcAddress("SetThreadErrorMode");
+    if (not fcn)
+    {
+        *lpOldMode = SetErrorMode(dwNewMode);
+        return true;
+    }
+    return fcn(dwNewMode, lpOldMode);
 }
 
 /***********************************************************************

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Paths.hpp>
@@ -6,10 +6,41 @@
 #include <Pothos/Plugin/Exception.hpp>
 #include <Pothos/Object.hpp> //pulls in full Object implementation
 #include <Poco/SharedLibrary.h>
+#include <Poco/Platform.h>
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
 #include <mutex>
 #include <Poco/SingletonHolder.h>
+
+/***********************************************************************
+ * Disabler for windows error messages
+ **********************************************************************/
+#if POCO_OS == POCO_OS_WINDOWS_NT
+
+#include <windows.h>
+
+BOOL DL_SetThreadErrorMode(DWORD dwNewMode, LPDWORD lpOldMode);
+
+struct ErrorMessageDisableGuard
+{
+    ErrorMessageDisableGuard(void)
+    {
+        DL_SetThreadErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX, &oldMode);
+    }
+    ~ErrorMessageDisableGuard(void)
+    {
+        DL_SetThreadErrorMode(oldMode, nullptr);
+    }
+    DWORD oldMode;
+};
+
+#else
+struct ErrorMessageDisableGuard
+{
+    ErrorMessageDisableGuard(void){}
+    ~ErrorMessageDisableGuard(void){}
+};
+#endif
 
 /***********************************************************************
  * Locking for plugin attach helper
@@ -57,6 +88,7 @@ Pothos::PluginModule::PluginModule(const std::string &path):
     {
         std::lock_guard<std::mutex> lock(getModuleMutex());
         registrySetActiveModuleLoading(*this);
+        ErrorMessageDisableGuard emdg;
         _impl->sharedLibrary.load(path);
         registrySetActiveModuleLoading(PluginModule());
     }
