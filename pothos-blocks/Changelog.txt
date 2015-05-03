@@ -5,6 +5,8 @@ Release 0.2.0 (pending)
 
 New packet blocks:
 
+- Added link layer control block
+- Added media access control block
 - Added label deframer block
 
 New digital blocks:
