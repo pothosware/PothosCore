@@ -1,9 +1,10 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin/Loader.hpp>
 #include <Pothos/System.hpp>
 #include <Pothos/Plugin.hpp>
+#include <Poco/StringTokenizer.h>
 #include <Poco/SharedLibrary.h>
 #include <Poco/Environment.h>
 #include <Poco/Logger.h>
@@ -54,13 +55,27 @@ void Pothos::PluginLoader::loadModules(void)
     libPath.append("lib@LIB_SUFFIX@");
     libPath.append("Pothos");
     libPath.append("modules");
-    const auto paths = getModulePaths(libPath.absolute());
+    auto searchPaths = getModulePaths(libPath.absolute());
 
-    //TODO load user built modules -- when we have a comprehension for them
+    //separator for search paths
+    #ifdef _MSC_VER
+    static const std::string sep = ";";
+    #else
+    static const std::string sep = ":";
+    #endif
+
+    //check the environment's search path
+    const auto pluginPaths = Poco::Environment::get("POTHOS_PLUGIN_PATH", "");
+    for (const auto &pluginPath : Poco::StringTokenizer(pluginPaths, sep))
+    {
+        if (pluginPath.empty()) continue;
+        const auto subSearchPaths = getModulePaths(Poco::Path(pluginPath).absolute());
+        searchPaths.insert(searchPaths.end(), subSearchPaths.begin(), subSearchPaths.end());
+    }
 
     //spawn futures and wait for completion of load
     std::vector<std::future<void>> futures;
-    for (const auto &path : paths)
+    for (const auto &path : searchPaths)
     {
         futures.push_back(std::async(std::launch::async, &loadModuleAtPath, path.toString()));
     }
