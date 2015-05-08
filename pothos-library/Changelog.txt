@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.2.0 (pending)
 ==========================
 
+- Support /usr/local module installs when root is /usr
 - Support POTHOS_PLUGIN_PATH environment variable
 - Support using system installed version of Poco
 - Serialization switched to portable text archive

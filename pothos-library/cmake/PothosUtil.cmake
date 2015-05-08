@@ -41,11 +41,15 @@ set(INCLUDED_POTHOS_UTIL_CMAKE TRUE)
 ## Pass this flag to the util function to enable scanning of SOURCES.
 ## This is required to scan SOURCES but not when DOC_SOURCES are used.
 ##
+## PREFIX - custom install prefix or unspecified for automatic
+## The automatic prefix defaults to the Pothos install root,
+## or CMAKE_INSTALL_PREFIX when the Pothos install root is /usr.
+##
 ########################################################################
 function(POTHOS_MODULE_UTIL)
 
     include(CMakeParseArguments)
-    CMAKE_PARSE_ARGUMENTS(POTHOS_MODULE_UTIL "ENABLE_DOCS" "TARGET;DESTINATION" "SOURCES;LIBRARIES;DOC_SOURCES" ${ARGN})
+    CMAKE_PARSE_ARGUMENTS(POTHOS_MODULE_UTIL "ENABLE_DOCS" "TARGET;DESTINATION;PREFIX" "SOURCES;LIBRARIES;DOC_SOURCES" ${ARGN})
 
     #always enable docs if user specifies doc sources
     if (POTHOS_MODULE_UTIL_DOC_SOURCES)
@@ -87,6 +91,14 @@ function(POTHOS_MODULE_UTIL)
         list(APPEND POTHOS_MODULE_UTIL_SOURCES ${cpp_doc_file})
     endif()
 
+    #determine user-specified or automatic install prefix
+    if (MODULE_PREFIX)
+    elseif ("${POTHOS_ROOT}" STREQUAL "/usr")
+        set(MODULE_PREFIX ${CMAKE_INSTALL_PREFIX})
+    else()
+        set(MODULE_PREFIX ${POTHOS_ROOT})
+    endif()
+
     #setup module build and install rules
     include_directories(${Pothos_INCLUDE_DIRS})
     add_library(${POTHOS_MODULE_UTIL_TARGET} MODULE ${POTHOS_MODULE_UTIL_SOURCES})
@@ -94,7 +106,7 @@ function(POTHOS_MODULE_UTIL)
     set_target_properties(${POTHOS_MODULE_UTIL_TARGET} PROPERTIES DEBUG_POSTFIX "") #same name in debug mode
     install(
         TARGETS ${POTHOS_MODULE_UTIL_TARGET}
-        DESTINATION ${POTHOS_ROOT}/lib${LIB_SUFFIX}/Pothos/modules/${POTHOS_MODULE_UTIL_DESTINATION}
+        DESTINATION ${MODULE_PREFIX}/lib${LIB_SUFFIX}/Pothos/modules/${POTHOS_MODULE_UTIL_DESTINATION}
     )
 
 endfunction(POTHOS_MODULE_UTIL)

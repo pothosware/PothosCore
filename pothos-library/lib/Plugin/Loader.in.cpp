@@ -51,33 +51,45 @@ std::vector<Poco::Path> getModulePaths(const Poco::Path &path)
 
 void Pothos::PluginLoader::loadModules(void)
 {
+    //the default search path
+    std::vector<Poco::Path> searchPaths;
     Poco::Path libPath = Pothos::System::getRootPath();
     libPath.append("lib@LIB_SUFFIX@");
     libPath.append("Pothos");
     libPath.append("modules");
-    auto searchPaths = getModulePaths(libPath.absolute());
+    searchPaths.push_back(libPath);
+
+    //support /usr/local module installs when the install prefix is /usr
+    if (Pothos::System::getRootPath() == "/usr")
+    {
+        Poco::Path libPath = "/usr/local";
+        libPath.append("lib@LIB_SUFFIX@");
+        libPath.append("Pothos");
+        libPath.append("modules");
+        searchPaths.push_back(libPath);
+    }
 
     //separator for search paths
-    #ifdef _MSC_VER
-    static const std::string sep = ";";
-    #else
-    static const std::string sep = ":";
-    #endif
+    const std::string sep(1, Poco::Path::pathSeparator());
 
     //check the environment's search path
     const auto pluginPaths = Poco::Environment::get("POTHOS_PLUGIN_PATH", "");
     for (const auto &pluginPath : Poco::StringTokenizer(pluginPaths, sep))
     {
         if (pluginPath.empty()) continue;
-        const auto subSearchPaths = getModulePaths(Poco::Path(pluginPath).absolute());
-        searchPaths.insert(searchPaths.end(), subSearchPaths.begin(), subSearchPaths.end());
+        searchPaths.push_back(Poco::Path(pluginPath));
     }
 
-    //spawn futures and wait for completion of load
+    //traverse the search paths and spawn futures
     std::vector<std::future<void>> futures;
-    for (const auto &path : searchPaths)
+    for (const auto &searchPath : searchPaths)
     {
-        futures.push_back(std::async(std::launch::async, &loadModuleAtPath, path.toString()));
+        for (const auto &path : getModulePaths(searchPath.absolute()))
+        {
+            futures.push_back(std::async(std::launch::async, &loadModuleAtPath, path.toString()));
+        }
     }
+
+    //wait for completion of future module load
     for (auto &future : futures) future.wait();
 }
