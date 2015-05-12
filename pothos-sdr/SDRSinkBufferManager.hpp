@@ -35,14 +35,11 @@ public:
         for (size_t i = 0; i < args.numBuffers; i++)
         {
             size_t handle = 0;
-            auto container = std::make_shared<int>(0);
             void *addrs[1];
+            auto container = std::make_shared<int>(0);
             const int ret = _device->acquireWriteBuffer(_stream, handle, addrs);
-            if (ret <= 0)
-            {
-                throw Pothos::Exception("SDRSinkBufferManager::init()", "acquireWriteBuffer "+std::to_string(ret));
-            }
-            auto sharedBuff = Pothos::SharedBuffer(size_t(addrs[0]), ret, container);
+            if (ret <= 0) throw Pothos::Exception("SDRSinkBufferManager::init()", "acquireWriteBuffer "+std::to_string(ret));
+            auto sharedBuff = Pothos::SharedBuffer(size_t(addrs[0]), args.bufferSize, container);
             Pothos::ManagedBuffer buffer;
             buffer.reset(this->shared_from_this(), sharedBuff, handle);
         }

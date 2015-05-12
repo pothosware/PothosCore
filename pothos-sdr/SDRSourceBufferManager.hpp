@@ -27,18 +27,20 @@ public:
         Pothos::BufferManagerArgs args;
         args.numBuffers = _device->getNumDirectAccessBuffers(_stream);
         args.bufferSize = _device->getStreamMTU(_stream);
-        _readyBuffs = Pothos::Util::RingDeque<Pothos::ManagedBuffer>(args.numBuffers);
+        _readyBuffs = Pothos::Util::OrderedQueue<Pothos::ManagedBuffer>(args.numBuffers);
 
         //this will flag the manager as initialized after the allocation above
         Pothos::BufferManager::init(args);
 
         for (size_t i = 0; i < args.numBuffers; i++)
         {
-            size_t handle = 0;
+            void *addrs[1];
             auto container = std::make_shared<int>(0);
-            auto sharedBuff = Pothos::SharedBuffer(size_t(0), args.bufferSize, container);
+            const int ret = _device->getDirectAccessBufferAddrs(_stream, i, addrs);
+            if (ret != 0) throw Pothos::Exception("SDRSourceBufferManager::init()", "getDirectAccessBufferAddrs "+std::to_string(ret));
+            auto sharedBuff = Pothos::SharedBuffer(size_t(addrs[0]), args.bufferSize, container);
             Pothos::ManagedBuffer buffer;
-            buffer.reset(this->shared_from_this(), sharedBuff, handle);
+            buffer.reset(this->shared_from_this(), sharedBuff, i);
         }
     }
 
@@ -52,7 +54,7 @@ public:
         //boiler-plate to pop from the queue and set the front buffer
         assert(not _readyBuffs.empty());
         auto buff = _readyBuffs.front();
-        _readyBuffs.pop_front();
+        _readyBuffs.pop();
 
         //prepare the next buffer in the queue
         if (_readyBuffs.empty()) this->setFrontBuffer(Pothos::BufferChunk::null());
@@ -63,22 +65,14 @@ public:
     {
         assert(buff.getSlabIndex() < _readyBuffs.capacity());
         _device->releaseReadBuffer(_stream, buff.getSlabIndex());
-        _readyBuffs.push_back(buff);
+        _readyBuffs.push(buff, buff.getSlabIndex());
 
         //prepare the next buffer in the queue
         if (not _readyBuffs.empty()) this->setFrontBuffer(_readyBuffs.front());
     }
 
-    void updateFront(const size_t handle, const void *addr)
-    {
-        auto &buff = _readyBuffs.front();
-        const auto &sbuff = buff.getBuffer();
-        auto sharedBuff = Pothos::SharedBuffer(size_t(addr), sbuff.getLength(), sbuff.getContainer());
-        buff.reset(this->shared_from_this(), sharedBuff, handle);
-    }
-
 private:
     SoapySDR::Device *_device;
     SoapySDR::Stream *_stream;
-    Pothos::Util::RingDeque<Pothos::ManagedBuffer> _readyBuffs;
+    Pothos::Util::OrderedQueue<Pothos::ManagedBuffer> _readyBuffs;
 };
