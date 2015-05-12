@@ -1,7 +1,8 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "SDRBlock.hpp"
+#include "SDRSourceBufferManager.hpp"
 
 class SDRSource : public SDRBlock
 {
@@ -18,6 +19,18 @@ public:
         for (size_t i = 0; i < _channels.size(); i++) this->setupOutput(i, dtype);
     }
 
+    Pothos::BufferManager::Sptr getOutputBufferManager(const std::string &, const std::string &domain)
+    {
+        //Try to use a DMA buffer manager when the upstream domain is unspecified
+        //and there is only one stream channel and the hardware supports this feature.
+        if (domain.empty() and _channels.size() == 1 and _device->getNumDirectAccessBuffers(_stream) > 0)
+        {
+            this->_manager = std::shared_ptr<SDRSourceBufferManager>(new SDRSourceBufferManager(_device, _stream));
+            return this->_manager;
+        }
+        throw Pothos::PortDomainError();
+    }
+
     /*******************************************************************
      * Streaming implementation
      ******************************************************************/
@@ -29,13 +42,26 @@ public:
 
     void work(void)
     {
+        int ret = 0;
         int flags = 0;
         long long timeNs = 0;
         const size_t numElems = this->workInfo().minOutElements;
         if (numElems == 0) return;
         const long timeoutUs = this->workInfo().maxTimeoutNs/1000;
-        const auto &buffs = this->workInfo().outputPointers;
-        const int ret = _device->readStream(_stream, buffs.data(), numElems, flags, timeNs, timeoutUs);
+
+        //read: dispatch calls for DMA or user-provided memory
+        if (_manager)
+        {
+            size_t handle = 0;
+            const void *addrs[1]; //only 1 ch supported for now
+            ret = _device->acquireReadBuffer(_stream, handle, addrs, flags, timeNs, timeoutUs);
+            if (ret > 0) _manager->updateFront(handle, addrs[0]);
+        }
+        else
+        {
+            const auto &buffs = this->workInfo().outputPointers;
+            ret = _device->readStream(_stream, buffs.data(), numElems, flags, timeNs, timeoutUs);
+        }
 
         //handle error
         if (ret <= 0)
@@ -87,6 +113,7 @@ public:
 
 private:
     bool _postTime;
+    std::shared_ptr<SDRSourceBufferManager> _manager;
 };
 
 static Pothos::BlockRegistry registerSDRSource(

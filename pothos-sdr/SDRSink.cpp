@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "SDRBlock.hpp"
+#include "SDRSinkBufferManager.hpp"
 #include <algorithm> //min/max
 
 class SDRSink : public SDRBlock
@@ -16,6 +17,14 @@ public:
         SDRBlock(SOAPY_SDR_TX, dtype, channels)
     {
         for (size_t i = 0; i < _channels.size(); i++) this->setupInput(i, dtype);
+    }
+
+    Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &domain)
+    {
+        if (domain.empty())
+        {
+        }
+        throw Pothos::PortDomainError();
     }
 
     /*******************************************************************
