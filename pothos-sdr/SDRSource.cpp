@@ -16,11 +16,21 @@ public:
         SDRBlock(SOAPY_SDR_RX, dtype, channels),
         _postTime(false)
     {
-        for (size_t i = 0; i < _channels.size(); i++) this->setupOutput(i, dtype);
+        for (size_t i = 0; i < _channels.size(); i++) this->setupOutput(i, dtype, "djksghdkjs");
     }
 
     Pothos::BufferManager::Sptr getOutputBufferManager(const std::string &, const std::string &domain)
     {
+        if (_stream != nullptr and not _manager)
+        {
+            poco_information(Poco::Logger::get("SDRSource"), "Using DMA buffer manager");
+            _manager = std::shared_ptr<SDRSourceBufferManager>(new SDRSourceBufferManager(_device, _stream));
+            return _manager;
+        }
+        if (domain.empty()) return _manager;
+        throw Pothos::PortDomainError();
+
+        /*
         return Pothos::BufferManager::Sptr();
         //Try to use a DMA buffer manager when the upstream domain is unspecified
         //and there is only one stream channel and the hardware supports this feature.
@@ -34,6 +44,7 @@ public:
             return _manager;
         }
         return Pothos::BufferManager::Sptr();
+        */
     }
 
     /*******************************************************************
@@ -60,7 +71,7 @@ public:
             size_t handle = 0;
             const void *addrs[1]; //only 1 ch supported for now
             ret = _device->acquireReadBuffer(_stream, handle, addrs, flags, timeNs, timeoutUs);
-            if (handle != this->output(0)->buffer().getManagedBuffer().getSlabIndex())
+            if (ret > 0 and handle != this->output(0)->buffer().getManagedBuffer().getSlabIndex())
             {
                 throw Pothos::Exception("SDRSource::work()", "acquireReadBuffer FAIL sync");
             }

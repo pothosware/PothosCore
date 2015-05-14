@@ -17,11 +17,22 @@ public:
         SDRBlock(SOAPY_SDR_TX, dtype, channels),
         _numBuffsToAcquire(0)
     {
-        for (size_t i = 0; i < _channels.size(); i++) this->setupInput(i, dtype);
+        for (size_t i = 0; i < _channels.size(); i++) this->setupInput(i, dtype, "djksghdsasakjs");
     }
 
     Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &domain)
     {
+        if (_stream != nullptr and not _manager)
+        {
+            poco_information(Poco::Logger::get("SDRSink"), "Using DMA buffer manager");
+            _manager = std::shared_ptr<SDRSinkBufferManager>(new SDRSinkBufferManager(_device, _stream));
+            _releasedBuffs.resize(_device->getNumDirectAccessBuffers(_stream));
+            _numBuffsToAcquire = 0;
+        }
+        if (domain.empty()) return _manager;
+        throw Pothos::PortDomainError();
+
+        /*
         return Pothos::BufferManager::Sptr();
         //Try to use a DMA buffer manager when the upstream domain is unspecified
         //and there is only one stream channel and the hardware supports this feature.
@@ -37,6 +48,7 @@ public:
             return _manager;
         }
         return Pothos::BufferManager::Sptr();
+        */
     }
 
     /*******************************************************************
