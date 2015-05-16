@@ -1,0 +1,103 @@
+Source: pothos
+Section: science
+Priority: optional
+Maintainer: Josh Blum <josh@pothosware.com>
+Build-Depends:
+    debhelper (>= 9.0.0),
+    cmake (>= 2.8.9),
+    libpoco-dev (>= 1.6),
+    qtbase5-dev, libqt5svg5-dev,
+    portaudio19-dev, libjack-jackd2-dev,
+    libsoapysdr-dev,
+    libpython-dev, python
+Standards-Version: 3.9.5
+Homepage: https://github.com/pothosware/pothos/wiki
+Vcs-Git: https://github.com/pothosware/pothos.git
+Vcs-Browser: https://github.com/pothosware/pothos
+
+Package: pothos
+Section: science
+Architecture: any
+Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Pothos - runtime application
+ The Pothos data-flow software suite.
+
+Package: libpothos0
+Section: libs
+Architecture: any
+Multi-Arch: same
+Pre-Depends: multiarch-support, ${misc:Pre-Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Pothos - shared library
+ The Pothos data-flow software suite.
+
+Package: libpothos-dev
+Section: libdevel
+Architecture: any
+Depends: libpothos0 (= ${binary:Version}), ${misc:Depends}
+Description: Pothos - development files
+ The Pothos data-flow software suite.
+
+Package: pothos-all
+Section: libs
+Architecture: any
+Depends:
+    pothos-gui (= ${binary:Version}),
+    pothos-widgets (= ${binary:Version}),
+    pothos-blocks (= ${binary:Version}),
+    pothos-audio (= ${binary:Version}),
+    pothos-sdr (= ${binary:Version}),
+    pothos-python (= ${binary:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends}
+Description: Pothos - Meta package for all official toolkits
+ The Pothos data-flow software suite.
+
+Package: pothos-util
+Section: libs
+Architecture: any
+Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Pothos toolkit - misc utility functions
+ The Pothos data-flow software suite.
+
+Package: pothos-blocks
+Section: libs
+Architecture: any
+Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Pothos toolkit - core processing blocks
+ The Pothos data-flow software suite.
+
+Package: pothos-gui
+Section: libs
+Architecture: any
+Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}, graphviz
+Description: Pothos toolkit - graphical design tool
+ The Pothos data-flow software suite.
+
+Package: pothos-widgets
+Section: libs
+Architecture: any
+Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Pothos toolkit - graphical controls and plotter widgets
+ The Pothos data-flow software suite.
+
+Package: pothos-python
+Section: libs
+Architecture: any
+Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}, python-numpy
+Description: Pothos toolkit - Python language bindings
+ The Pothos data-flow software suite.
+
+Package: pothos-audio
+Section: libs
+Architecture: any
+Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Pothos toolkit - Audio source and sink blocks
+ The Pothos data-flow software suite.
+
+Package: pothos-sdr
+Section: libs
+Architecture: any
+Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Pothos toolkit - SDR source and sink blocks
+ The Pothos data-flow software suite.
