@@ -73,6 +73,7 @@ else (QWT_FOUND)
     file(GLOB QWT_SOURCES "qwt/src/*.cpp")
     add_library(PothosQwt SHARED ${QWT_SOURCES})
     set_target_properties(PothosQwt PROPERTIES DEFINE_SYMBOL "QWT_MAKEDLL")
+    set_target_properties(PothosQwt PROPERTIES VERSION 0)
     target_link_libraries(PothosQwt ${Qt5_LIBRARIES})
     install(TARGETS PothosQwt
         LIBRARY DESTINATION lib${LIB_SUFFIX} # .so file
@@ -90,6 +91,7 @@ file(GLOB WIDGET_UTILS_SOURCES "WidgetUtils/*.cpp")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/WidgetUtils)
 add_library(PothosWidgetUtils SHARED ${WIDGET_UTILS_SOURCES})
 set_target_properties(PothosWidgetUtils PROPERTIES DEFINE_SYMBOL "POTHOS_WIDGET_UTILS_MAKEDLL")
+set_target_properties(PothosWidgetUtils PROPERTIES VERSION 0)
 target_link_libraries(PothosWidgetUtils ${Qt5_LIBRARIES})
 install(TARGETS PothosWidgetUtils
     LIBRARY DESTINATION lib${LIB_SUFFIX} # .so file
