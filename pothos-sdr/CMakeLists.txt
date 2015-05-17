@@ -81,5 +81,6 @@ POTHOS_MODULE_UTIL(
     SOURCES
         ChannelAligner.cpp
         RandomDropper.cpp
+    DESTINATION sdr
     ENABLE_DOCS
 )
