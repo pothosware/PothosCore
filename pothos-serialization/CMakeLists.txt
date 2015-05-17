@@ -34,9 +34,12 @@ foreach (source ${serialization_sources})
 endforeach (source)
 
 add_library(PothosSerialization SHARED ${serialization_sources})
+set_target_properties(PothosSerialization PROPERTIES VERSION 0)
 
 install(TARGETS PothosSerialization
     LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_runtime # .so file
     ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_devel   # .lib file
     RUNTIME DESTINATION bin              COMPONENT pothos_runtime # .dll file
 )
+
+install(DIRECTORY include/Pothos DESTINATION include)
