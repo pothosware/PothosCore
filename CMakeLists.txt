@@ -30,8 +30,8 @@ if (NOT Poco_FOUND)
 
     message(STATUS "Poco not found - using built-in Poco")
 
-    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/${POCO_DIR})
-        message(FATAL_ERROR "in-tree poco submodule not configured (git submodule init && git submodule update)")
+    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/${POCO_DIR}/CMakeLists.txt)
+        message(FATAL_ERROR "poco submodule not configured (git submodule init && git submodule update)")
     endif ()
 
     #mark that the in-tree poco build is used
