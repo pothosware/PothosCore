@@ -1,1 +1,2 @@
 usr/lib/*/libPothos.so.*
+usr/lib/*/libPothosSerialization.so.*

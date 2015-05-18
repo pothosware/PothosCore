@@ -26,18 +26,9 @@ Package: libpothos0
 Section: libs
 Architecture: any
 Multi-Arch: same
-Pre-Depends: multiarch-support, ${misc:Pre-Depends}, libpothosserialization0 (= ${binary:Version})
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Pothos - shared library
- The Pothos data-flow software suite.
-
-Package: libpothosserialization0
-Section: libs
-Architecture: any
-Multi-Arch: same
 Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Pothos Serialization - shared library
+Description: Pothos - shared library
  The Pothos data-flow software suite.
 
 Package: libpothos-dev
@@ -49,18 +40,19 @@ Description: Pothos - development files
 
 Package: pothos-all
 Section: libs
-Architecture: any
+Architecture: all
 Depends:
-    pothos-gui (= ${binary:Version}),
-    pothos-widgets (= ${binary:Version}),
-    pothos-blocks (= ${binary:Version}),
-    pothos-audio (= ${binary:Version}),
-    pothos-sdr (= ${binary:Version}),
-    pothos-python (= ${binary:Version}),
+    pothos,
+    pothos-gui,
+    pothos-widgets,
+    pothos-blocks,
+    pothos-audio,
+    pothos-sdr,
+    pothos-python,
     ${shlibs:Depends},
     ${misc:Depends}
 Description: Pothos - Meta package for all official toolkits
- The Pothos data-flow software suite.
+ This is a metapackage for the most common Pothos toolkits.
 
 Package: pothos-util
 Section: libs

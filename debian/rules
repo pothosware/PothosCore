@@ -16,7 +16,12 @@ export DH_OPTIONS
 
 
 %:
-	dh $@ --buildsystem=cmake
+	dh $@ --buildsystem=cmake --parallel
 
 override_dh_auto_configure:
-	dh_auto_configure -- -DLIB_SUFFIX="/$(DEB_HOST_MULTIARCH)" -DSOAPY_SDR_EXTVER=$(EXTRA_INFO) -DENABLE_OPENCL=OFF -DENABLE_JAVA=OFF
+	dh_auto_configure -- \
+		-DLIB_SUFFIX="/$(DEB_HOST_MULTIARCH)" \
+		-DPOTHOS_EXTVER=$(EXTRA_INFO) \
+		-DCMAKE_SKIP_RPATH=TRUE \
+		-DENABLE_OPENCL=OFF \
+		-DENABLE_JAVA=OFF
