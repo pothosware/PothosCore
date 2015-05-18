@@ -1,0 +1,3 @@
+[submodule "poco154"]
+	path = poco154
+	url = https://github.com/pocoproject/poco.git
