@@ -19,7 +19,7 @@ Package: pothos
 Section: science
 Architecture: any
 Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Pothos - runtime application
+Description: runtime application
  The Pothos data-flow software suite.
 
 Package: libpothos0
@@ -28,14 +28,14 @@ Architecture: any
 Multi-Arch: same
 Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Pothos - shared library
+Description: shared library
  The Pothos data-flow software suite.
 
 Package: libpothos-dev
 Section: libdevel
 Architecture: any
 Depends: libpothos0 (= ${binary:Version}), ${misc:Depends}
-Description: Pothos - development files
+Description: development files
  The Pothos data-flow software suite.
 
 Package: pothos-all
@@ -49,56 +49,62 @@ Depends:
     pothos-audio,
     pothos-sdr,
     pothos-python,
-    ${shlibs:Depends},
     ${misc:Depends}
-Description: Pothos - Meta package for all official toolkits
+Description: Meta package for all official toolkits
  This is a metapackage for the most common Pothos toolkits.
 
 Package: pothos-util
 Section: libs
 Architecture: any
+Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Pothos toolkit - misc utility functions
+Description: misc utility functions
  The Pothos data-flow software suite.
 
 Package: pothos-blocks
 Section: libs
 Architecture: any
+Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Pothos toolkit - core processing blocks
+Description: core processing blocks
  The Pothos data-flow software suite.
 
 Package: pothos-gui
 Section: libs
 Architecture: any
+Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}, graphviz
-Description: Pothos toolkit - graphical design tool
+Description: graphical design tool
  The Pothos data-flow software suite.
 
 Package: pothos-widgets
 Section: libs
 Architecture: any
+Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Pothos toolkit - graphical controls and plotter widgets
+Description: graphical controls and plotter widgets
  The Pothos data-flow software suite.
 
 Package: pothos-python
 Section: libs
 Architecture: any
+Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}, python-numpy
-Description: Pothos toolkit - Python language bindings
+Description: Python language bindings
  The Pothos data-flow software suite.
 
 Package: pothos-audio
 Section: libs
 Architecture: any
+Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Pothos toolkit - Audio source and sink blocks
+Description: Audio source and sink blocks
  The Pothos data-flow software suite.
 
 Package: pothos-sdr
 Section: libs
 Architecture: any
+Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Pothos toolkit - SDR source and sink blocks
+Description: SDR source and sink blocks
  The Pothos data-flow software suite.
