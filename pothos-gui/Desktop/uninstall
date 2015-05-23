@@ -1,0 +1,32 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+echo -n "Uninstall Pothos GUI icon resources...	"
+if [ -x /usr/bin/xdg-icon-resource ] ; then
+    for context in mimetypes apps; do
+    for theme in hicolor gnome; do
+        xdg-icon-resource uninstall --noupdate --context ${context} --theme ${theme} --size 128 application-pothos-gui || true
+    done
+    done
+    xdg-icon-resource forceupdate || true
+    echo "OK"
+else
+    echo "FAIL (missing xdg-icon-resource)"
+fi
+
+echo -n "Uninstall Pothos GUI MIME types...	"
+if [ -x /usr/bin/xdg-mime ] ; then
+    xdg-mime uninstall ${DIR}/pothos-gui.xml || true
+    echo "OK"
+else
+    echo "FAIL (missing xdg-mime)"
+fi
+
+echo -n "Uninstall Pothos GUI menu launcher...	"
+if [ -x /usr/bin/xdg-desktop-menu ] ; then
+    xdg-desktop-menu uninstall pothos-gui.desktop || true
+    echo "OK"
+else
+    echo "FAIL (missing xdg-desktop-menu)"
+fi
