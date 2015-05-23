@@ -38,6 +38,18 @@ int main(int argc, char **argv)
 {
     MyScopedSyslogListener syslogListener;
 
+    //did the user specified files on the command line?
+    //stash the files so they are loaded into the editor
+    //this replaces the currently stored file list
+    QStringList files;
+    for (int i = 1; i < argc; i++)
+    {
+        QString file(argv[i]);
+        if (file.isEmpty()) continue;
+        files.push_back(file);
+    }
+    if (not files.isEmpty()) getSettings().setValue("GraphEditorTabs/files", files);
+
     //create the entry point to the GUI
     QApplication app(argc, argv);
     app.setOrganizationName("PothosWare");

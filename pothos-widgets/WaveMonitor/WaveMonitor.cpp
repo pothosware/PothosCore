@@ -41,6 +41,19 @@
  * |option [Disable] false
  * |option [Enable] true
  *
+ * |param autoScale[Auto-Scale] Enable automatic scaling for the vertical axis.
+ * |default true
+ * |option [Auto scale] true
+ * |option [Use limits] false
+ * |preview disable
+ * |tab Axis
+ *
+ * |param yRange[Y-Axis Range] The minimum and maximum values for the Y-Axis.
+ * When auto scale is off, this parameter controls the vertical axis.
+ * |default [-1.0, 1.0]
+ * |preview disable
+ * |tab Axis
+ *
  * |param enableXAxis[Enable X-Axis] Show or hide the horizontal axis markers.
  * |option [Show] true
  * |option [Hide] false
@@ -76,6 +89,8 @@
  * |setter setSampleRate(sampleRate)
  * |setter setNumPoints(numPoints)
  * |setter setAlignment(align)
+ * |setter setAutoScale(autoScale)
+ * |setter setYRange(yRange)
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
@@ -108,6 +123,8 @@ public:
         this->connect(this, "setTitle", _display, "setTitle");
         this->connect(this, "setSampleRate", _display, "setSampleRate");
         this->connect(this, "setNumPoints", _display, "setNumPoints");
+        this->connect(this, "setAutoScale", _display, "setAutoScale");
+        this->connect(this, "setYRange", _display, "setYRange");
         this->connect(this, "enableXAxis", _display, "enableXAxis");
         this->connect(this, "enableYAxis", _display, "enableYAxis");
         this->connect(this, "setYAxisTitle", _display, "setYAxisTitle");

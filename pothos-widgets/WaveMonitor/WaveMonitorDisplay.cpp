@@ -19,6 +19,7 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
     _sampleRate(1.0),
     _sampleRateWoAxisUnits(1.0),
     _numPoints(1024),
+    _autoScale(false),
     _rateLabelId("rxRate"),
     _nextColorIndex(0)
 {
@@ -32,6 +33,8 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, title));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, numPoints));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setAutoScale));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setYRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, enableYAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setYAxisTitle));
@@ -99,6 +102,19 @@ QString WaveMonitorDisplay::title(void) const
     return _mainPlot->title().text();
 }
 
+void WaveMonitorDisplay::setAutoScale(const bool autoScale)
+{
+    _autoScale = autoScale;
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
+}
+
+void WaveMonitorDisplay::setYRange(const std::vector<double> &range)
+{
+    if (range.size() != 2) throw Pothos::RangeException("WaveMonitorDisplay::setYRange()", "range vector must be size 2");
+    _yRange = range;
+    QMetaObject::invokeMethod(this, "handleUpdateAxis", Qt::QueuedConnection);
+}
+
 void WaveMonitorDisplay::enableXAxis(const bool enb)
 {
     _mainPlot->enableAxis(QwtPlot::xBottom, enb);
@@ -116,6 +132,8 @@ void WaveMonitorDisplay::setYAxisTitle(const QString &title)
 
 void WaveMonitorDisplay::handleUpdateAxis(void)
 {
+    if (_yRange.size() == 2) _mainPlot->setAxisScale(QwtPlot::yLeft, _yRange[0], _yRange[1]);
+
     QString timeAxisTitle("secs");
     double factor = 1.0;
 
@@ -148,7 +166,7 @@ void WaveMonitorDisplay::handleUpdateAxis(void)
 void WaveMonitorDisplay::handleZoomed(const QRectF &rect)
 {
     //when zoomed all the way out, return to autoscale
-    if (rect == _zoomer->zoomBase())
+    if (rect == _zoomer->zoomBase() and _autoScale)
     {
         _mainPlot->setAxisAutoScale(QwtPlot::yLeft);
         _mainPlot->updateAxes(); //update after axis changes

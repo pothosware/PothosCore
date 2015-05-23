@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -71,7 +71,7 @@ public:
     void activate(void)
     {
         //emit current value when design becomes active
-        this->callVoid("valueChanged", this->value());
+        this->handleRadioChanged(true);
     }
 
     void setTitle(const QString &title)
@@ -142,8 +142,9 @@ private slots:
         }
     }
 
-    void handleRadioChanged(bool)
+    void handleRadioChanged(const bool toggled)
     {
+        if (not toggled) return;
         this->callVoid("valueChanged", this->value());
     }
 

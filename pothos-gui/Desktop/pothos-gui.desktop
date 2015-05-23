@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Pothos GUI
+Comment=Pothos data flow suite graphical design tool
+TryExec=PothosGui
+Exec=PothosGui %F
+Icon=PothosGui
+MimeType=application/pothos-gui;
+Categories=Development;

@@ -43,6 +43,10 @@ public:
 
     void setNumPoints(const size_t numPoints);
 
+    void setAutoScale(const bool autoScale);
+
+    void setYRange(const std::vector<double> &range);
+
     QString title(void) const;
 
     size_t numInputs(void) const
@@ -95,6 +99,8 @@ private:
     double _sampleRate;
     double _sampleRateWoAxisUnits;
     size_t _numPoints;
+    bool _autoScale;
+    std::vector<double> _yRange;
     std::string _rateLabelId;
 
     //per-port data structs

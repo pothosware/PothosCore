@@ -25,7 +25,7 @@
  * |param numPoints[Num Points] The number of points per plot capture.
  * |default 1024
  *
- * |param autoScale[Auto-Scale] Enable automatic scaling for the vertical axis.
+ * |param autoScale[Auto-Scale] Enable automatic scaling for the axes.
  * |default false
  * |option [Auto scale] true
  * |option [Use limits] false
