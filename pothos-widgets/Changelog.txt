@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Widgets toolkit.
 Release 0.2.0 (pending)
 ==========================
 
+- Auto-scale for wave monitor Y axis
 - Added push button control widget
 - Added logic analyzer display plotter block
 - Use installed Qwt if found and version >= 6.1
