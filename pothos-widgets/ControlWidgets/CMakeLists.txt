@@ -10,6 +10,7 @@ set(SOURCES
     PlanarSelect.cpp
     QwtSlider.cpp
     ChatBox.cpp
+    PushButton.cpp
 )
 
 POTHOS_MODULE_UTIL(
