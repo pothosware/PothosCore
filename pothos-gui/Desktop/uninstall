@@ -20,10 +20,9 @@ fi
 
 echo -n "Uninstall Pothos GUI icon resources...	"
 if [ -x /usr/bin/xdg-icon-resource ] ; then
-    for context in mimetypes apps; do
     for theme in hicolor gnome; do
-        xdg-icon-resource uninstall --noupdate --context ${context} --theme ${theme} --size 128 application-pothos-gui || true
-    done
+        xdg-icon-resource uninstall --noupdate --context mimetypes --theme ${theme} --size 128 application-pothos-gui || true
+        xdg-icon-resource uninstall --noupdate --context apps --theme ${theme} --size 128 pothos-gui || true
     done
     xdg-icon-resource forceupdate || true
     echo "OK"

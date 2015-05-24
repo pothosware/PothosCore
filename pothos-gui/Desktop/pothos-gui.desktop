@@ -5,6 +5,6 @@ Name=Pothos GUI
 Comment=Pothos data flow suite graphical design tool
 TryExec=PothosGui
 Exec=PothosGui %F
-Icon=PothosGui
+Icon=pothos-gui
 MimeType=application/pothos-gui;
 Categories=Development;
