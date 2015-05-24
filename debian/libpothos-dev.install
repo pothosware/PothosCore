@@ -1,0 +1,12 @@
+usr/include
+usr/share/cmake/Pothos/PothosConfig.cmake
+usr/share/cmake/Pothos/PothosStandardFlags.cmake
+usr/share/cmake/Pothos/PothosLibraryConfig.cmake
+usr/share/cmake/Pothos/PothosUtil.cmake
+usr/share/cmake/Pothos/PothosConfigVersion.cmake
+usr/share/cmake/Pothos/FindPkgMacros.cmake
+usr/share/cmake/Pothos/FindPoco.cmake
+usr/share/cmake/Pothos/SetupPoco.cmake
+usr/lib/*/pkgconfig
+usr/lib/*/libPothos.so
+usr/lib/*/libPothosSerialization.so

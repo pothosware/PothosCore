@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+export DEB_HOST_MULTIARCH
+
+# Set extra build info for the library version
+EXTRA_INFO = snapshot
+#EXTRA_INFO = release
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+
+
+%:
+	dh $@ --buildsystem=cmake --parallel
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DLIB_SUFFIX="/$(DEB_HOST_MULTIARCH)" \
+		-DPOTHOS_EXTVER=$(EXTRA_INFO) \
+		-DCMAKE_SKIP_RPATH=TRUE \
+		-DENABLE_OPENCL=OFF \
+		-DENABLE_JAVA=OFF

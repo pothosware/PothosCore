@@ -1,0 +1,2 @@
+#this is a normal header file for bsd compatibility, not a license
+libpothos-dev: extra-license-file usr/include/Pothos/serialization/impl/config/platform/bsd.hpp
