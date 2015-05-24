@@ -74,7 +74,12 @@ Package: pothos-gui
 Section: libs
 Architecture: any
 Pre-Depends: multiarch-support, ${misc:Pre-Depends}
-Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}, graphviz
+Depends:
+    libpothos0 (= ${binary:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends},
+    xdg-utils,
+    graphviz
 Description: graphical design tool
  The Pothos data-flow software suite.
 
