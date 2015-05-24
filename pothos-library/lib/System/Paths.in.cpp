@@ -86,7 +86,7 @@ std::string Pothos::System::getPothosRuntimeLibraryPath(void)
     #elif defined(POCO_OS_FAMILY_UNIX)
     dllPath.append("lib@LIB_SUFFIX@");
     #endif
-    dllPath.append("@POTHOS_LIBRARY_NAME@");
+    dllPath.append(POTHOS_LIBRARY_NAME);
 
     return dllPath.absolute().toString();
 }

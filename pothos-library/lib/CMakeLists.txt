@@ -243,15 +243,8 @@ install(TARGETS Pothos
     RUNTIME DESTINATION bin              COMPONENT pothos_runtime # .dll file
 )
 
-########################################################################
-# Determine library name and reconfigure paths with that name
-########################################################################
-get_target_property(POTHOS_LIBRARY_LOCATION Pothos LOCATION_${CMAKE_BUILD_TYPE})
-get_filename_component(POTHOS_LIBRARY_NAME ${POTHOS_LIBRARY_LOCATION} NAME)
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/System/Paths.in.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/Paths.cpp
-@ONLY)
+#get the library name into Paths.cpp for getPothosRuntimeLibraryPath()
+add_definitions("-DPOTHOS_LIBRARY_NAME=\"$<TARGET_FILE_NAME:Pothos>\"")
 
 ########################################################################
 # Build pkg config file
