@@ -24,9 +24,15 @@ endif()
 ########################################################################
 include(${Pothos_DIR}/SetupPoco.cmake)
 
+set(POCO_DIR poco154)
+
 if (NOT Poco_FOUND)
 
     message(STATUS "Poco not found - using built-in Poco")
+
+    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/${POCO_DIR}/CMakeLists.txt)
+        message(FATAL_ERROR "poco submodule not configured (git submodule init && git submodule update)")
+    endif ()
 
     #mark that the in-tree poco build is used
     #used by uninstall target and PothosConfig
@@ -47,20 +53,20 @@ if (NOT Poco_FOUND)
 
     #set top level dirs, go into submodule, and restore
     set(POTHOS_MODULE_PATH ${CMAKE_MODULE_PATH})
-    set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/poco)
-    set(CMAKE_BINARY_DIR ${PROJECT_BINARY_DIR}/poco)
+    set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${POCO_DIR})
+    set(CMAKE_BINARY_DIR ${PROJECT_BINARY_DIR}/${POCO_DIR})
     unset(CMAKE_MODULE_PATH)
-    add_subdirectory(poco)
+    add_subdirectory(${POCO_DIR})
     set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR})
     set(CMAKE_BINARY_DIR ${PROJECT_BINARY_DIR})
     set(CMAKE_MODULE_PATH ${POTHOS_MODULE_PATH})
 
     list(APPEND Poco_INCLUDE_DIRS
-        ${PROJECT_SOURCE_DIR}/poco/Foundation/include
-        ${PROJECT_SOURCE_DIR}/poco/Util/include
-        ${PROJECT_SOURCE_DIR}/poco/XML/include
-        ${PROJECT_SOURCE_DIR}/poco/Net/include
-        ${PROJECT_SOURCE_DIR}/poco/JSON/include
+        ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Foundation/include
+        ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Util/include
+        ${PROJECT_SOURCE_DIR}/${POCO_DIR}/XML/include
+        ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Net/include
+        ${PROJECT_SOURCE_DIR}/${POCO_DIR}/JSON/include
     )
 
     list(APPEND Poco_LIBRARIES
@@ -108,7 +114,7 @@ if (POCO_IN_TREE)
     # use poco's uninstall target, but overwrite the script
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/poco/cmake_uninstall.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${POCO_DIR}/cmake_uninstall.cmake"
         IMMEDIATE @ONLY)
 
 else (POCO_IN_TREE)
