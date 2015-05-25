@@ -96,6 +96,18 @@ public:
         return _device->getFrequency(_direction, _channels.at(chan));
     }
 
+    void setFrequency(const size_t chan, const std::string &name, const double freq, const std::map<std::string, std::string> &args)
+    {
+        if (chan >= _channels.size()) return;
+        _device->setFrequency(_direction, _channels.at(chan), name, freq, args);
+    }
+
+    double getFrequency(const size_t chan, const std::string &name) const
+    {
+        if (chan >= _channels.size()) return 0.0;
+        return _device->getFrequency(_direction, _channels.at(chan), name);
+    }
+
     /*******************************************************************
      * Gain mode
      ******************************************************************/

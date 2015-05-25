@@ -56,11 +56,14 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     for (size_t i = 0; i < _channels.size(); i++)
     {
         const auto chanStr = std::to_string(i);
-        //freq with tune args
-        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1));
-        //freq without tune args
-        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1).bind(std::map<std::string, std::string>(), 3));
-        this->registerCallable("getFrequency"+chanStr, Pothos::Callable::make<const size_t>(&SDRBlock::getFrequency).bind(std::ref(*this), 0).bind(i, 1));
+        //freq overall with tune args
+        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t, double>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1));
+        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t, double>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1).bind(std::map<std::string, std::string>(), 3));
+        this->registerCallable("getFrequency"+chanStr, Pothos::Callable::make<const size_t, double>(&SDRBlock::getFrequency).bind(std::ref(*this), 0).bind(i, 1));
+        //freq component by name
+        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t, const std::string &>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1));
+        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t, const std::string &>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1).bind(std::map<std::string, std::string>(), 4));
+        this->registerCallable("getFrequency"+chanStr, Pothos::Callable::make<const size_t, const std::string &>(&SDRBlock::getFrequency).bind(std::ref(*this), 0).bind(i, 1));
         //gain by name
         this->registerCallable("setGain"+chanStr, Pothos::Callable::make<const size_t, const std::string &>(&SDRBlock::setGain).bind(std::ref(*this), 0).bind(i, 1));
         this->registerCallable("getGain"+chanStr, Pothos::Callable::make<const size_t, const std::string &>(&SDRBlock::getGain).bind(std::ref(*this), 0).bind(i, 1));
