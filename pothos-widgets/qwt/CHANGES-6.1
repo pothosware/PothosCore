@@ -1,3 +1,40 @@
+Qwt 6.1.2
+=========
+
+1) Qt 5.4 compatibility
+
+   - QT_STATIC_CONST
+     "QT_STATIC_CONST" replaced by "static const"
+  
+2) build environment
+
+   - QMAKELIBDIRFLAGS
+     using QMAKELIBDIRFLAGS to avoid conflicts with already 
+     installed linux distro packages
+
+3) color maps
+
+    - QwtLinearColorMap 
+      handling of alpha values added
+
+    - QwtAlphaColorMap
+      basic functinality fixed
+
+    - QwtPainter
+      QwtPainter::drawColorBar() fixed for semi transparent colors.
+
+4) QwtPlot and friends
+      
+   - QwtLegend
+     layout issue fixed
+
+   - QwtLogScaleEngine
+     tick duplicates fixed     
+
+   - QwtPainter
+     internal chunk size for drawing polylines with the raster paint engine 
+     reduced from 20 to 6 ( faster ).
+
 Qwt 6.1.1
 =========
 
