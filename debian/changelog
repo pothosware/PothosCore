@@ -1,5 +1,5 @@
-pothos (0.1.0+1SNAPSHOT1431836369-gd85943b~unstable) unstable; urgency=low
+pothos (0.1.0+1SNAPSHOT1432582775-geb9c964~unstable) unstable; urgency=low
 
   * Pending release (master branch)
 
- -- Josh Blum <josh@pothosware.com>  Sat, 16 May 2015 23:18:51 -0500
+ -- Josh Blum <josh@pothosware.com>  Mon, 25 May 2015 12:39:15 -0700
