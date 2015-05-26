@@ -100,7 +100,7 @@ public:
         }
 
         //perform the evaluation and emit the result
-        this->callVoid("triggered", this->peformEval());
+        this->callVoid("triggered", std::string("SIGGEN"), this->peformEval());
         return Pothos::Object();
     }
 

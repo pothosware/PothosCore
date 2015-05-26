@@ -413,7 +413,7 @@ protected:
     SoapySDR::Device *_device;
     SoapySDR::Stream *_stream;
 
-    std::map<std::string, Pothos::ObjectVector> _cachedArgs;
+    std::vector<std::pair<std::string, Pothos::ObjectVector>> _cachedArgs;
     std::shared_future<SoapySDR::Device *> _deviceFuture;
 
     std::vector<Pothos::ObjectKwargs> _pendingLabels;

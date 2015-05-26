@@ -176,7 +176,7 @@ Pothos::Object SDRBlock::opaqueCallHandler(const std::string &name, const Pothos
 
     //cache attempted settings when not ready
     const bool isSetter = (name.size() > 3 and name.substr(0, 3) == "set");
-    if (isSetter) _cachedArgs[name] = std::vector<Pothos::Object>(inputArgs, inputArgs+numArgs);
+    if (isSetter) _cachedArgs.push_back(std::make_pair(name, Pothos::ObjectVector(inputArgs, inputArgs+numArgs)));
     else throw Pothos::Exception("SDRBlock::"+name+"()", "device not ready");
     return Pothos::Object();
 }
