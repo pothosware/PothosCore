@@ -3,6 +3,9 @@ This this the changelog file for the Pothos SDR toolkit.
 Release 0.2.0 (pending)
 ==========================
 
+- Preserve the ordering of setters during initialization
+- Use cached tune arguments when unspecified by slot
+- Support arbitrary value types in key/value parameters
 - Added multi-channel alignment block for MIMO applications
 - Added random dropper block for testing overflow recovery
 - Make use of the label width for the SDR Sink end of burst
