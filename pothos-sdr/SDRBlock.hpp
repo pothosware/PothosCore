@@ -73,6 +73,31 @@ public:
     /*******************************************************************
      * Frequency
      ******************************************************************/
+
+    //-------- setFrequency(no tune args) ----------//
+
+    void setFrequency(const double freq)
+    {
+        this->setFrequency(freq, _cachedTuneArgs[0]);
+    }
+
+    void setFrequency(const std::vector<double> &freqs)
+    {
+        this->setFrequency(freqs, _cachedTuneArgs[0]);
+    }
+
+    void setFrequency(const size_t chan, const double freq)
+    {
+        this->setFrequency(chan, freq, _cachedTuneArgs[chan]);
+    }
+
+    void setFrequency(const size_t chan, const std::string &name, const double freq)
+    {
+        this->setFrequency(chan, name, freq, _cachedTuneArgs[chan]);
+    }
+
+    //-------- setFrequency(tune args) ----------//
+
     void setFrequency(const double freq, const Pothos::ObjectKwargs &args)
     {
         for (size_t i = 0; i < _channels.size(); i++) this->setFrequency(i, freq, args);
@@ -86,20 +111,24 @@ public:
     void setFrequency(const size_t chan, const double freq, const Pothos::ObjectKwargs &args)
     {
         if (chan >= _channels.size()) return;
+        _cachedTuneArgs[chan] = args;
         _device->setFrequency(_direction, _channels.at(chan), freq, _toKwargs(args));
         _pendingLabels[chan]["rxFreq"] = Pothos::Object(_device->getFrequency(_direction, _channels.at(chan)));
-    }
-
-    double getFrequency(const size_t chan) const
-    {
-        if (chan >= _channels.size()) return 0.0;
-        return _device->getFrequency(_direction, _channels.at(chan));
     }
 
     void setFrequency(const size_t chan, const std::string &name, const double freq, const Pothos::ObjectKwargs &args)
     {
         if (chan >= _channels.size()) return;
+        _cachedTuneArgs[chan] = args;
         _device->setFrequency(_direction, _channels.at(chan), name, freq, _toKwargs(args));
+    }
+
+    //-------- getFrequency ----------//
+
+    double getFrequency(const size_t chan) const
+    {
+        if (chan >= _channels.size()) return 0.0;
+        return _device->getFrequency(_direction, _channels.at(chan));
     }
 
     double getFrequency(const size_t chan, const std::string &name) const
@@ -417,4 +446,8 @@ protected:
     std::shared_future<SoapySDR::Device *> _deviceFuture;
 
     std::vector<Pothos::ObjectKwargs> _pendingLabels;
+
+    //Save the last tune args to re-use when slots are called without args.
+    //This means that args can be set once at initialization and re-used.
+    std::map<size_t, Pothos::ObjectKwargs> _cachedTuneArgs;
 };
