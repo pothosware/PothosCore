@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -18,7 +18,7 @@ public:
     /*******************************************************************
      * Device object creation
      ******************************************************************/
-    void setupDevice(const std::map<std::string, std::string> &deviceArgs);
+    void setupDevice(const Pothos::ObjectKwargs &deviceArgs);
 
     /*******************************************************************
      * Delayed method dispatch
@@ -28,7 +28,7 @@ public:
     /*******************************************************************
      * Stream config
      ******************************************************************/
-    void setupStream(const std::map<std::string, std::string> &streamArgs);
+    void setupStream(const Pothos::ObjectKwargs &streamArgs);
 
     void setSampleRate(const double rate)
     {
@@ -73,27 +73,68 @@ public:
     /*******************************************************************
      * Frequency
      ******************************************************************/
-    void setFrequency(const double freq, const std::map<std::string, std::string> &args)
+
+    //-------- setFrequency(no tune args) ----------//
+
+    void setFrequency(const double freq)
+    {
+        this->setFrequency(freq, _cachedTuneArgs[0]);
+    }
+
+    void setFrequency(const std::vector<double> &freqs)
+    {
+        this->setFrequency(freqs, _cachedTuneArgs[0]);
+    }
+
+    void setFrequency(const size_t chan, const double freq)
+    {
+        this->setFrequency(chan, freq, _cachedTuneArgs[chan]);
+    }
+
+    void setFrequency(const size_t chan, const std::string &name, const double freq)
+    {
+        this->setFrequency(chan, name, freq, _cachedTuneArgs[chan]);
+    }
+
+    //-------- setFrequency(tune args) ----------//
+
+    void setFrequency(const double freq, const Pothos::ObjectKwargs &args)
     {
         for (size_t i = 0; i < _channels.size(); i++) this->setFrequency(i, freq, args);
     }
 
-    void setFrequency(const std::vector<double> &freqs, const std::map<std::string, std::string> &args)
+    void setFrequency(const std::vector<double> &freqs, const Pothos::ObjectKwargs &args)
     {
         for (size_t i = 0; i < freqs.size(); i++) this->setFrequency(i, freqs[i], args);
     }
 
-    void setFrequency(const size_t chan, const double freq, const std::map<std::string, std::string> &args)
+    void setFrequency(const size_t chan, const double freq, const Pothos::ObjectKwargs &args)
     {
         if (chan >= _channels.size()) return;
-        _device->setFrequency(_direction, _channels.at(chan), freq, args);
+        _cachedTuneArgs[chan] = args;
+        _device->setFrequency(_direction, _channels.at(chan), freq, _toKwargs(args));
         _pendingLabels[chan]["rxFreq"] = Pothos::Object(_device->getFrequency(_direction, _channels.at(chan)));
     }
+
+    void setFrequency(const size_t chan, const std::string &name, const double freq, const Pothos::ObjectKwargs &args)
+    {
+        if (chan >= _channels.size()) return;
+        _cachedTuneArgs[chan] = args;
+        _device->setFrequency(_direction, _channels.at(chan), name, freq, _toKwargs(args));
+    }
+
+    //-------- getFrequency ----------//
 
     double getFrequency(const size_t chan) const
     {
         if (chan >= _channels.size()) return 0.0;
         return _device->getFrequency(_direction, _channels.at(chan));
+    }
+
+    double getFrequency(const size_t chan, const std::string &name) const
+    {
+        if (chan >= _channels.size()) return 0.0;
+        return _device->getFrequency(_direction, _channels.at(chan), name);
     }
 
     /*******************************************************************
@@ -377,6 +418,19 @@ public:
     virtual void deactivate(void);
     virtual void work(void) = 0;
 
+private:
+    SoapySDR::Kwargs _toKwargs(const Pothos::ObjectKwargs &args)
+    {
+        SoapySDR::Kwargs kwargs;
+        for (const auto &pair : args)
+        {
+            const auto val = pair.second;
+            const auto valStr = (val.type() == typeid(std::string))?val.extract<std::string>():val.toString();
+            kwargs[pair.first] = valStr;
+        }
+        return kwargs;
+    }
+
 protected:
     bool isReady(void);
     void emitActivationSignals(void);
@@ -388,8 +442,12 @@ protected:
     SoapySDR::Device *_device;
     SoapySDR::Stream *_stream;
 
-    std::map<std::string, std::vector<Pothos::Object>> _cachedArgs;
+    std::vector<std::pair<std::string, Pothos::ObjectVector>> _cachedArgs;
     std::shared_future<SoapySDR::Device *> _deviceFuture;
 
-    std::vector<std::map<std::string, Pothos::Object>> _pendingLabels;
+    std::vector<Pothos::ObjectKwargs> _pendingLabels;
+
+    //Save the last tune args to re-use when slots are called without args.
+    //This means that args can be set once at initialization and re-used.
+    std::map<size_t, Pothos::ObjectKwargs> _cachedTuneArgs;
 };

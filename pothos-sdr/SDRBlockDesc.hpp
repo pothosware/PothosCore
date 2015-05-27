@@ -133,8 +133,14 @@
  * |tab Channels
  *
  * |param tuneArgs[Tune Args] Advanced key/value tuning parameters.
+ * Well known arguments include "OFFSET":1e6 which specifies a RF frontend tuning offset,
+ * which is automatically compensated for by adjusting the baseband tuning component;
+ * "RF":"IGNORE" which avoids tuning the named tuning component;
+ * "BB":0.0 which forces the named tuning component to a specified value.
  * <ul>
- * <li>Example to set an LO offset: {"OFFSET" : "1e6"}</li>
+ * <li>Example: {"OFFSET" : 1e6}</li>
+ * <li>Example: {"RF" : "IGNORE"}</li>
+ * <li>Example: {"BB" : 0.0}</li>
  * </ul>
  * |default {}
  * |preview valid
@@ -156,8 +162,8 @@
  * where each name represents an amplification element in the chain.
  * Provide a single value for all channels or a list of values for each channel.
  * <ul>
- * <li>Example: {"BB" : 10.0, "RF" : "5.5"}</li>
- * <li>Example: [{"BB" : 10.0}, {"RF" : "5.5"}]</li>
+ * <li>Example: {"PGA" : 10.0, "LNA" : 5.5}</li>
+ * <li>Example: [{"PGA" : 10.0}, {"PGA" : 20.0}]</li>
  * </ul>
  * |units dB
  * |default 0.0
@@ -211,9 +217,9 @@
  * |factory @PATH@(dtype, channels)
  * |initializer setupDevice(deviceArgs)
  * |initializer setupStream(streamArgs)
+ * |initializer setFrontendMap(frontendMap)
  * |setter setSampleRate(sampleRate)
  * |setter setAutoActivate(autoActivate)
- * |setter setFrontendMap(frontendMap)
  * |setter setFrequency(frequency, tuneArgs)
  * |setter setGainMode(gainMode)
  * |setter setGain(gain)

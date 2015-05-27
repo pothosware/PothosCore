@@ -35,10 +35,10 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerCallable("streamControl", Pothos::Callable(&SDRBlock::streamControl).bind(std::ref(*this), 0).bind(0, 2).bind(0, 3)); //1 arg version
 
     //channels -- called by setters
-    this->registerCallable("setFrequency", Pothos::Callable::make<const double>(&SDRBlock::setFrequency).bind(std::ref(*this), 0));
-    this->registerCallable("setFrequency", Pothos::Callable::make<const double>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(std::map<std::string, std::string>(), 2));
-    this->registerCallable("setFrequency", Pothos::Callable::make<const std::vector<double> &>(&SDRBlock::setFrequency).bind(std::ref(*this), 0));
-    this->registerCallable("setFrequency", Pothos::Callable::make<const std::vector<double> &>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(std::map<std::string, std::string>(), 2));
+    this->registerCallable("setFrequency", Pothos::Callable::make<const double, void>(&SDRBlock::setFrequency).bind(std::ref(*this), 0));
+    this->registerCallable("setFrequency", Pothos::Callable::make<const double, const Pothos::ObjectKwargs &>(&SDRBlock::setFrequency).bind(std::ref(*this), 0));
+    this->registerCallable("setFrequency", Pothos::Callable::make<const std::vector<double> &, void>(&SDRBlock::setFrequency).bind(std::ref(*this), 0));
+    this->registerCallable("setFrequency", Pothos::Callable::make<const std::vector<double> &, const Pothos::ObjectKwargs &>(&SDRBlock::setFrequency).bind(std::ref(*this), 0));
     this->registerCallable("setGainMode", Pothos::Callable::make<const bool>(&SDRBlock::setGainMode).bind(std::ref(*this), 0));
     this->registerCallable("setGainMode", Pothos::Callable::make<const std::vector<bool> &>(&SDRBlock::setGainMode).bind(std::ref(*this), 0));
     this->registerCallable("setGain", Pothos::Callable::make<const double>(&SDRBlock::setGain).bind(std::ref(*this), 0));
@@ -56,11 +56,14 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     for (size_t i = 0; i < _channels.size(); i++)
     {
         const auto chanStr = std::to_string(i);
-        //freq with tune args
-        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1));
-        //freq without tune args
-        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1).bind(std::map<std::string, std::string>(), 3));
-        this->registerCallable("getFrequency"+chanStr, Pothos::Callable::make<const size_t>(&SDRBlock::getFrequency).bind(std::ref(*this), 0).bind(i, 1));
+        //freq overall with tune args
+        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t, double, void>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1));
+        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t, double, const Pothos::ObjectKwargs &>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1));
+        this->registerCallable("getFrequency"+chanStr, Pothos::Callable::make<const size_t, double>(&SDRBlock::getFrequency).bind(std::ref(*this), 0).bind(i, 1));
+        //freq component by name
+        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t, const std::string &, double, void>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1));
+        this->registerCallable("setFrequency"+chanStr, Pothos::Callable::make<const size_t, const std::string &, double, const Pothos::ObjectKwargs &>(&SDRBlock::setFrequency).bind(std::ref(*this), 0).bind(i, 1));
+        this->registerCallable("getFrequency"+chanStr, Pothos::Callable::make<const size_t, const std::string &, double>(&SDRBlock::getFrequency).bind(std::ref(*this), 0).bind(i, 1));
         //gain by name
         this->registerCallable("setGain"+chanStr, Pothos::Callable::make<const size_t, const std::string &>(&SDRBlock::setGain).bind(std::ref(*this), 0).bind(i, 1));
         this->registerCallable("getGain"+chanStr, Pothos::Callable::make<const size_t, const std::string &>(&SDRBlock::getGain).bind(std::ref(*this), 0).bind(i, 1));
@@ -151,16 +154,16 @@ SDRBlock::~SDRBlock(void)
     if (_device != nullptr) SoapySDR::Device::unmake(_device);
 }
 
-static SoapySDR::Device *makeDevice(const std::map<std::string, std::string> &deviceArgs)
+static SoapySDR::Device *makeDevice(const SoapySDR::Kwargs &deviceArgs)
 {
     //protect device make -- its not thread safe
     std::unique_lock<std::mutex> lock(getMutex());
     return SoapySDR::Device::make(deviceArgs);
 }
 
-void SDRBlock::setupDevice(const std::map<std::string, std::string> &deviceArgs)
+void SDRBlock::setupDevice(const Pothos::ObjectKwargs &deviceArgs)
 {
-    _deviceFuture = std::async(std::launch::async, &makeDevice, deviceArgs);
+    _deviceFuture = std::async(std::launch::async, &makeDevice, _toKwargs(deviceArgs));
 }
 
 Pothos::Object SDRBlock::opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
@@ -173,12 +176,12 @@ Pothos::Object SDRBlock::opaqueCallHandler(const std::string &name, const Pothos
 
     //cache attempted settings when not ready
     const bool isSetter = (name.size() > 3 and name.substr(0, 3) == "set");
-    if (isSetter) _cachedArgs[name] = std::vector<Pothos::Object>(inputArgs, inputArgs+numArgs);
+    if (isSetter) _cachedArgs.push_back(std::make_pair(name, Pothos::ObjectVector(inputArgs, inputArgs+numArgs)));
     else throw Pothos::Exception("SDRBlock::"+name+"()", "device not ready");
     return Pothos::Object();
 }
 
-void SDRBlock::setupStream(const std::map<std::string, std::string> &streamArgs)
+void SDRBlock::setupStream(const Pothos::ObjectKwargs &streamArgs)
 {
     //create format string from the dtype
     std::string format;
@@ -191,7 +194,7 @@ void SDRBlock::setupStream(const std::map<std::string, std::string> &streamArgs)
     format += std::to_string(bits);
 
     //create the stream
-    _stream = _device->setupStream(_direction, format, _channels, streamArgs);
+    _stream = _device->setupStream(_direction, format, _channels, _toKwargs(streamArgs));
 }
 
 bool SDRBlock::isReady(void)
