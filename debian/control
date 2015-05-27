@@ -8,6 +8,7 @@ Build-Depends:
     libpoco-dev (>= 1.6),
     libnuma-dev,
     qtbase5-dev, libqt5svg5-dev, libqt5opengl5-dev,
+    libqwt-qt5-dev,
     portaudio19-dev, libjack-jackd2-dev,
     libsoapysdr-dev,
     libpython-dev, python
