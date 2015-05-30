@@ -5,6 +5,7 @@
 #include "EvalEngine/EvalEngine.hpp"
 #include <Pothos/Framework/Topology.hpp>
 #include <Pothos/Exception.hpp>
+#include <Poco/Format.h>
 #include <Poco/Pipe.h>
 #include <Poco/PipeStream.h>
 #include <Poco/Process.h>
@@ -66,13 +67,13 @@ static ImageResult dotMarkupToImage(const std::string &markup)
     outPipe.close();
 
     //check for errors
-    if (ph.wait() != 0 or not QFile(QString::fromStdString(tempFile)).exists())
+    const int retCode = ph.wait();
+    if (retCode != 0 or not QFile(QString::fromStdString(tempFile)).exists())
     {
         Poco::PipeInputStream es(errPipe);
-        std::string errMsg;
-        es >> errMsg;
-        result.errorMsg = "png failed: " + errMsg;
-        return result;
+        std::string errMsg; es >> errMsg;
+        if (errMsg.empty()) errMsg = "dot";
+        throw Poco::SystemException(Poco::format("%s - (%d)", errMsg, retCode));
     }
 
     //create the image from file
@@ -89,7 +90,9 @@ static ImageResult dotMarkupToImageSafe(const std::string &markup)
     }
     catch (const Poco::Exception &ex)
     {
-        result.errorMsg = "png failed: " + ex.displayText();
+        result.errorMsg = "Image generation failed!\n";
+        result.errorMsg += ex.displayText() + "\n";
+        result.errorMsg += "Is Graphviz installed?";
     }
     return result;
 }
