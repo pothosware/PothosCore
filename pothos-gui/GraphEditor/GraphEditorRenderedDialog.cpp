@@ -80,6 +80,20 @@ static ImageResult dotMarkupToImage(const std::string &markup)
     return result;
 }
 
+static ImageResult dotMarkupToImageSafe(const std::string &markup)
+{
+    ImageResult result;
+    try
+    {
+        result = dotMarkupToImage(markup);
+    }
+    catch (const Poco::Exception &ex)
+    {
+        result.errorMsg = "png failed: " + ex.displayText();
+    }
+    return result;
+}
+
 class RenderedGraphDialog : public QDialog
 {
     Q_OBJECT
@@ -134,7 +148,7 @@ private slots:
         configObj->stringify(ss);
 
         const auto markup = _evalEngine->getTopologyDotMarkup(ss.str());
-        _watcher->setFuture(QtConcurrent::run(std::bind(&dotMarkupToImage, markup)));
+        _watcher->setFuture(QtConcurrent::run(std::bind(&dotMarkupToImageSafe, markup)));
     }
 
     void handleWatcherDone(void)
