@@ -9,9 +9,9 @@ enable_testing()
 set(Pothos_DIR ${PROJECT_SOURCE_DIR}/pothos-library/cmake)
 set(POTHOS_IN_TREE_SOURCE_DIR ${PROJECT_SOURCE_DIR})
 
-#args to extend the CMAKE_PREFIX_PATH environment variable
+#args to set the CMAKE_PREFIX_PATH environment variable
 if (CMAKE_PREFIX_PATH)
-    list(INSERT 0 ENV{CMAKE_PREFIX_PATH} ${CMAKE_PREFIX_PATH})
+    set(ENV{CMAKE_PREFIX_PATH} ${CMAKE_PREFIX_PATH})
 endif (CMAKE_PREFIX_PATH)
 
 ########################################################################
