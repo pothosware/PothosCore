@@ -321,8 +321,11 @@ void PothosGuiMainWindow::createActions(void)
     _showGraphBoundingBoxesAction->setCheckable(true);
     _actionMap["showGraphBoundingBoxes"] = _showGraphBoundingBoxesAction;
 
-    _showRenderedGraphViewAction = new QAction(tr("Show rendered graph view"), this);
-    _actionMap["showRenderedGraphView"] = _showRenderedGraphViewAction;
+    _showRenderedGraphAction = new QAction(tr("Show rendered graph view"), this);
+    _actionMap["showRenderedGraph"] = _showRenderedGraphAction;
+
+    _showTopologyStatsAction = new QAction(tr("Show topology stats dump"), this);
+    _actionMap["showTopologyStats"] = _showTopologyStatsAction;
 
     _activateTopologyAction = new QAction(makeIconFromTheme("run-build"), tr("&Activate topology"), this);
     _activateTopologyAction->setCheckable(true);
@@ -417,7 +420,8 @@ void PothosGuiMainWindow::createMenus(void)
     _executeMenu = menuBar()->addMenu(tr("&Execute"));
     _executeMenu->addSeparator();
     _executeMenu->addAction(_activateTopologyAction);
-    _executeMenu->addAction(_showRenderedGraphViewAction);
+    _executeMenu->addAction(_showRenderedGraphAction);
+    _executeMenu->addAction(_showTopologyStatsAction);
 
     _viewMenu = menuBar()->addMenu(tr("&View"));
     _menuMap["view"] = _viewMenu;

@@ -136,6 +136,7 @@ list(APPEND SOURCES
     GraphEditor/GraphEditorSerialization.cpp
     GraphEditor/GraphEditorDeserialization.cpp
     GraphEditor/GraphEditorRenderedDialog.cpp
+    GraphEditor/GraphEditorTopologyStats.cpp
     GraphEditor/GraphDraw.cpp
     GraphEditor/GraphDrawSelection.cpp
     GraphEditor/GraphActionsDock.cpp

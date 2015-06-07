@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.2.0 (pending)
 ==========================
 
+- Created stats dialog for viewing JSON topology stats
 - Added properties panel for graph-wide global variables
 - Disabling a block drops the evaluated block instance
 - Enable/disable hooks for connections and breakers

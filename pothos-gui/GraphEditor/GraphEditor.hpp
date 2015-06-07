@@ -130,6 +130,7 @@ private slots:
     void handleAffinityZoneClicked(const QString &zone);
     void handleAffinityZoneChanged(const QString &zone);
     void handleShowRenderedGraphDialog(void);
+    void handleShowTopologyStatsDialog(void);
     void handleToggleActivateTopology(bool);
     void handleShowPortNames(void);
     void handleBlockIncrement(void);
