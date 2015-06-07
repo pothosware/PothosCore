@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //getObjectMap
@@ -114,6 +114,13 @@ std::string EvalEngine::getTopologyDotMarkup(const std::string &config)
 {
     std::string result;
     QMetaObject::invokeMethod(_impl, "getTopologyDotMarkup", Qt::BlockingQueuedConnection, Q_RETURN_ARG(std::string, result), Q_ARG(std::string, config));
+    return result;
+}
+
+std::string EvalEngine::getTopologyJSONDump(const std::string &config)
+{
+    std::string result;
+    QMetaObject::invokeMethod(_impl, "getTopologyJSONDump", Qt::BlockingQueuedConnection, Q_RETURN_ARG(std::string, result), Q_ARG(std::string, config));
     return result;
 }
 

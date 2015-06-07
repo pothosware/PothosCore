@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -55,6 +55,9 @@ public slots:
 
     //! query the dot markup for the active topology
     std::string getTopologyDotMarkup(const std::string &config);
+
+    //! query the JSON dump for the active topology
+    std::string getTopologyJSONDump(const std::string &config);
 
 signals:
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngineImpl.hpp"
@@ -140,6 +140,15 @@ std::string EvalEngineImpl::getTopologyDotMarkup(const std::string &config)
 
     if (not _topologyEval) return "";
     return _topologyEval->getTopology()->toDotMarkup(config);
+}
+
+std::string EvalEngineImpl::getTopologyJSONDump(const std::string &config)
+{
+    //have to do this in case this call compressed an eval-worthy event
+    this->evaluate();
+
+    if (not _topologyEval) return "";
+    return _topologyEval->getTopology()->dumpJSON(config);
 }
 
 void EvalEngineImpl::handleMonitorTimeout(void)
