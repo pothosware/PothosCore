@@ -13,6 +13,7 @@
 #include <iostream>
 #include <QApplication>
 #include <QRegExp>
+#include <QSet>
 
 //! helper to convert the port info vector into JSON for serialization of the block
 static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo> &infos)
@@ -478,6 +479,20 @@ bool BlockEval::updateAllProperties(void)
 
 bool BlockEval::applyConstants(void)
 {
+    //determine which constants were removed from the last eval
+    auto removedConstants = _lastBlockInfo.constantNames.toSet();
+    for (const auto &name : _newBlockInfo.constantNames)
+    {
+        removedConstants.remove(name);
+    }
+
+    //unregister all constants from the removed list
+    for (const auto &name : removedConstants)
+    {
+        _blockEval.callProxy("removeConstant", name.toStdString());
+    }
+
+    //apply all currently used constants in the order of dependency
     for (const auto &name : _newBlockInfo.constantNames)
     {
         if (not this->isConstantUsed(name)) continue;
