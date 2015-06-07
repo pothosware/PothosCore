@@ -5,8 +5,10 @@
 #include "GraphEditor/GraphEditor.hpp"
 #include "EvalEngine/EvalEngine.hpp"
 #include <QDialog>
+#include <QTimer>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
 #include <QFuture>
@@ -23,19 +25,23 @@ public:
         QDialog(parent),
         _evalEngine(evalEngine),
         _topLayout(new QVBoxLayout(this)),
-        _refreshButton(new QPushButton(makeIconFromTheme("view-refresh"), tr("Reload"), this)),
+        _manualReloadButton(new QPushButton(makeIconFromTheme("view-refresh"), tr("Manual Reload"), this)),
+        _autoReloadButton(new QPushButton(makeIconFromTheme("view-refresh"), tr("Automatic Reload"), this)),
         _statsScroller(new QScrollArea(this)),
         _statsLabel(new QLabel(this)),
+        _timer(new QTimer(this)),
         _watcher(new QFutureWatcher<std::string>(this))
     {
         //create layouts
         this->setWindowTitle(tr("Topology stats viewer"));
-        _topLayout->addWidget(_refreshButton);
+        auto formsLayout = new QHBoxLayout();
+        _topLayout->addLayout(formsLayout);
+        formsLayout->addWidget(_manualReloadButton);
+        formsLayout->addWidget(_autoReloadButton);
         _topLayout->addWidget(_statsScroller);
 
-        //setup the refresh button
-        connect(_refreshButton, SIGNAL(pressed(void)), this, SLOT(handleClicked(void)));
-        connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleWatcherDone(void)));
+        //setup the refresh buttons
+        _autoReloadButton->setCheckable(true);
 
         //setup the JSON stats label
         _statsLabel->setStyleSheet("QLabel{background:white;margin:1px;}");
@@ -45,14 +51,26 @@ public:
         _statsScroller->setWidget(_statsLabel);
         _statsScroller->setWidgetResizable(true);
 
+        //connect the signals
+        connect(_manualReloadButton, SIGNAL(pressed(void)), this, SLOT(handleManualReload(void)));
+        connect(_autoReloadButton, SIGNAL(clicked(bool)), this, SLOT(handleAutomaticReload(bool)));
+        connect(_timer, SIGNAL(timeout(void)), this, SLOT(handleManualReload(void)));
+        connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleWatcherDone(void)));
+
         //initialize
-        this->handleClicked();
+        this->handleManualReload();
     }
 
 private slots:
-    void handleClicked(void)
+    void handleManualReload(void)
     {
         _watcher->setFuture(QtConcurrent::run(std::bind(&EvalEngine::getTopologyJSONStats, _evalEngine)));
+    }
+
+    void handleAutomaticReload(const bool enb)
+    {
+        if (enb) _timer->start(1000);
+        else _timer->stop();
     }
 
     void handleWatcherDone(void)
@@ -72,9 +90,11 @@ private slots:
 private:
     EvalEngine *_evalEngine;
     QVBoxLayout *_topLayout;
-    QPushButton *_refreshButton;
+    QPushButton *_manualReloadButton;
+    QPushButton *_autoReloadButton;
     QScrollArea *_statsScroller;
     QLabel *_statsLabel;
+    QTimer *_timer;
     QFutureWatcher<std::string> *_watcher;
 };
 
