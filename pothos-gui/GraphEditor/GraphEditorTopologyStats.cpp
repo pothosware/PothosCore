@@ -83,7 +83,7 @@ private slots:
         }
         else
         {
-            _statsLabel->setText(QString::fromStdString(jsonStats));
+            _statsLabel->setText(QString::fromStdString(jsonStats).replace("\\/", "/"));
         }
     }
 
