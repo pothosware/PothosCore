@@ -41,6 +41,11 @@ public:
      */
     void registerConstantObj(const std::string &key, const Pothos::Object &obj);
 
+    /*!
+     * Unregister a previously registered constant.
+     */
+    void unregisterConstant(const std::string &key);
+
 private:
     struct Impl; std::shared_ptr<Impl> _impl;
 

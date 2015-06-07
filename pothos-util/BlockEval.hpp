@@ -25,6 +25,11 @@ public:
         _evalEnv->registerConstantExpr(name, expr);
     }
 
+    void removeConstant(const std::string &name)
+    {
+        _evalEnv->unregisterConstant(name);
+    }
+
     Pothos::Object evalProperty(const std::string &key, const std::string &expr)
     {
         auto val = _evalEnv->eval(expr);
