@@ -124,6 +124,13 @@ std::string EvalEngine::getTopologyJSONDump(const std::string &config)
     return result;
 }
 
+std::string EvalEngine::getTopologyJSONStats(void)
+{
+    std::string result;
+    QMetaObject::invokeMethod(_impl, "getTopologyJSONStats", Qt::BlockingQueuedConnection, Q_RETURN_ARG(std::string, result));
+    return result;
+}
+
 void EvalEngine::handleAffinityZonesChanged(void)
 {
     ZoneInfos zoneInfos;

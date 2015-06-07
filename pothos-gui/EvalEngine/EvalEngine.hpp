@@ -59,6 +59,9 @@ public slots:
     //! query the JSON dump for the active topology
     std::string getTopologyJSONDump(const std::string &config);
 
+    //! query the JSON stats for the active topology
+    std::string getTopologyJSONStats(void);
+
 signals:
 
     //! A failure occured, this is a notification to deactivate

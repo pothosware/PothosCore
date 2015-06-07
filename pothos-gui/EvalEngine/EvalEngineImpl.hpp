@@ -66,6 +66,9 @@ public slots:
     //! query the JSON dump for the active topology
     std::string getTopologyJSONDump(const std::string &config);
 
+    //! query the JSON stats for the active topology
+    std::string getTopologyJSONStats(void);
+
     //! Cleanup and shutdown prior to destruction
     void submitCleanup(void);
 

@@ -151,6 +151,15 @@ std::string EvalEngineImpl::getTopologyJSONDump(const std::string &config)
     return _topologyEval->getTopology()->dumpJSON(config);
 }
 
+std::string EvalEngineImpl::getTopologyJSONStats(void)
+{
+    //have to do this in case this call compressed an eval-worthy event
+    this->evaluate();
+
+    if (not _topologyEval) return "";
+    return _topologyEval->getTopology()->queryJSONStats();
+}
+
 void EvalEngineImpl::handleMonitorTimeout(void)
 {
     //cause periodic re-eval to deal with errors
