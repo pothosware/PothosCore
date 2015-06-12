@@ -62,12 +62,6 @@ function(POTHOS_MODULE_UTIL)
     #setup json doc file generation and install
     if (POTHOS_MODULE_UTIL_ENABLE_DOCS)
 
-        #in-tree builds depend on the executable to be built
-        unset(__POTHOS_UTIL_TARGET_NAME)
-        if (POTHOS_IN_TREE_SOURCE_DIR)
-            set(__POTHOS_UTIL_TARGET_NAME PothosUtil)
-        endif()
-
         #turn sources into an absolute path
         unset(__POTHOS_SOURCES)
         foreach(source ${POTHOS_MODULE_UTIL_DOC_SOURCES})

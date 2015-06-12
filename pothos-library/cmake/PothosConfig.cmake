@@ -59,44 +59,43 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
         list(APPEND IN_TREE_LIBRARIES ${Poco_LIBRARIES})
     endif()
 
-    get_target_property(POTHOS_UTIL_EXE PothosUtil LOCATION_${CMAKE_BUILD_TYPE})
-
-    if(MSVC AND POTHOS_UTIL_EXE)
+    if(MSVC)
         set(built_dll_paths "%PATH%")
         foreach(target ${IN_TREE_LIBRARIES})
-            get_target_property(library_location ${target} LOCATION_${CMAKE_BUILD_TYPE})
-            get_filename_component(library_location ${library_location} PATH)
-            file(TO_NATIVE_PATH ${library_location} library_location)
-            set(built_dll_paths "${library_location};${built_dll_paths}")
+            set(built_dll_paths "$<TARGET_FILE_DIR:${target}>;${built_dll_paths}")
         endforeach(target)
-        file(TO_NATIVE_PATH "${POTHOS_UTIL_EXE}" POTHOS_UTIL_EXE)
-        file(WRITE ${PROJECT_BINARY_DIR}/PothosUtil.bat
-            "set PATH=${built_dll_paths}\n"
-            "\"${POTHOS_UTIL_EXE}\" %*\n"
-        )
         set(POTHOS_UTIL_EXE ${PROJECT_BINARY_DIR}/PothosUtil.bat)
+        add_custom_command(
+            OUTPUT ${POTHOS_UTIL_EXE}
+            DEPENDS PothosUtil
+            COMMAND ${CMAKE_COMMAND} -E echo "set PATH=${built_dll_paths}" > ${POTHOS_UTIL_EXE}
+            COMMAND ${CMAKE_COMMAND} -E echo "\"$<TARGET_FILE:PothosUtil>\" %*" >> ${POTHOS_UTIL_EXE}
+            VERBATIM
+        )
     endif()
 
-    if(UNIX AND POTHOS_UTIL_EXE)
+    if(UNIX)
         set(built_dll_paths "\${LD_LIBRARY_PATH}")
         foreach(target ${IN_TREE_LIBRARIES})
-            get_target_property(library_location ${target} LOCATION_${CMAKE_BUILD_TYPE})
-            get_filename_component(library_location ${library_location} PATH)
-            file(TO_NATIVE_PATH ${library_location} library_location)
-            set(built_dll_paths "${library_location}:${built_dll_paths}")
+            set(built_dll_paths "$<TARGET_FILE_DIR:${target}>:${built_dll_paths}")
         endforeach(target)
-        file(TO_NATIVE_PATH "${POTHOS_UTIL_EXE}" POTHOS_UTIL_EXE)
         find_program(SH_EXE sh)
         find_program(CHMOD_EXE chmod)
-        file(WRITE ${PROJECT_BINARY_DIR}/PothosUtil.sh
-            "#!${SH_EXE}\n"
-            "export LD_LIBRARY_PATH=${built_dll_paths}\n"
-            "export DYLD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\${DYLD_LIBRARY_PATH}\n"
-            "\"${POTHOS_UTIL_EXE}\" $@\n"
-        )
-        execute_process(COMMAND ${CHMOD_EXE} +x ${PROJECT_BINARY_DIR}/PothosUtil.sh)
         set(POTHOS_UTIL_EXE ${PROJECT_BINARY_DIR}/PothosUtil.sh)
+        add_custom_command(
+            OUTPUT ${POTHOS_UTIL_EXE}
+            DEPENDS PothosUtil
+            COMMAND ${CMAKE_COMMAND} -E echo "#!${SH_EXE}" > ${POTHOS_UTIL_EXE}
+            COMMAND ${CMAKE_COMMAND} -E echo "export LD_LIBRARY_PATH=${built_dll_paths}" >> ${POTHOS_UTIL_EXE}
+            COMMAND ${CMAKE_COMMAND} -E echo "export DYLD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:\${DYLD_LIBRARY_PATH}" >> ${POTHOS_UTIL_EXE}
+            COMMAND ${CMAKE_COMMAND} -E echo "\"$<TARGET_FILE:PothosUtil>\" $@" >> ${POTHOS_UTIL_EXE}
+            COMMAND ${CHMOD_EXE} +x ${POTHOS_UTIL_EXE}
+            VERBATIM
+        )
     endif()
+
+    set(__POTHOS_UTIL_TARGET_NAME ${PROJECT_NAME}PothosUtil)
+    add_custom_target(${__POTHOS_UTIL_TARGET_NAME} DEPENDS ${POTHOS_UTIL_EXE})
 
     return()
 endif ()
