@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos Widgets toolkit.
 
-Release 0.1.1 (pending)
+Release 0.1.1 (2014-06-16)
 ==========================
 
 - Fix null object error when RadioGroup is not toggled

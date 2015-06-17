@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.1.1 (pending)
+Release 0.1.1 (2014-06-16)
 ==========================
 
 - Fix temporary file cleanup for unix circular buffer

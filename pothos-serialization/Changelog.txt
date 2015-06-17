@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos Serialization library.
 
-Release 0.1.1 (pending)
+Release 0.1.1 (2014-06-16)
 ==========================
 
 - Fix locally defined symbol warnings with -DPOTHOS_ARCHIVE_SOURCE
