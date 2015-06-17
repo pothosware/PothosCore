@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos Audio toolkit.
 
-Release 0.1.1 (2014-06-16)
+Release 0.1.1 (2015-06-16)
 ==========================
 
 - Pa_Read/WriteStream replace exceptions with logging in work

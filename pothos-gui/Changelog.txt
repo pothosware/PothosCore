@@ -9,7 +9,7 @@ Release 0.2.0 (2015-06-17)
 - Enable/disable hooks for connections and breakers
 - Zoom in and zoom out centering adjustments
 
-Release 0.1.1 (2014-06-16)
+Release 0.1.1 (2015-06-16)
 ==========================
 
 - Fixed display of ellipsis Unicode character on Windows

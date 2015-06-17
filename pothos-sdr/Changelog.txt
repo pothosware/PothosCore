@@ -10,7 +10,7 @@ Release 0.2.0 (2015-06-17)
 - Added random dropper block for testing overflow recovery
 - Make use of the label width for the SDR Sink end of burst
 
-Release 0.1.1 (2014-06-16)
+Release 0.1.1 (2015-06-16)
 ==========================
 
 - Fix possible device pointer leak in destructor
