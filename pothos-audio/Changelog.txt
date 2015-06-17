@@ -1,10 +1,5 @@
 This this the changelog file for the Pothos Audio toolkit.
 
-Release 0.2.0 (pending)
-==========================
-
-- TODO
-
 Release 0.1.1 (2014-06-16)
 ==========================
 
