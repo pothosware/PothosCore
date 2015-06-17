@@ -8,7 +8,7 @@ Release 0.2.0 (pending)
 - Added logic analyzer display plotter block
 - Use installed Qwt if found and version >= 6.1
 
-Release 0.1.1 (pending)
+Release 0.1.1 (2014-06-16)
 ==========================
 
 - Fix null object error when RadioGroup is not toggled
