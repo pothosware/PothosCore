@@ -108,6 +108,7 @@ void Pothos::InputPort::bufferAccumulatorPushNoLock(const BufferChunk &buffer_)
         //unspecified buffer dtype? copy it from the port
         if (not buffer.dtype) buffer.dtype = this->dtype();
         _bufferAccumulator.push(buffer);
+        _totalBuffers++;
     }
     else
     {
