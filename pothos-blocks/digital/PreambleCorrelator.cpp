@@ -10,9 +10,9 @@
 /***********************************************************************
  * |PothosDoc Preamble Correlator
  *
- * The PreambleCorrelator searches an input unpacked bit stream from port 0
- * for a matching pattern and outputs the same bit stream with a tag
- * annotating the first bit of a match
+ * The PreambleCorrelator searches an input bit stream from port 0
+ * for a matching pattern and forwards the same bit stream with a label
+ * annotating the first bit after the preamble match
  *
  * http://en.wikipedia.org/wiki/Hamming_distance
  *
@@ -22,10 +22,10 @@
  * |param preamble The unpacked vector of bits representing preamble to match.
  * |default [1]
  *
- * |param thresh The threshold hamming distance for tagging.
+ * |param thresh The threshold hamming distance for preamble match detection.
  * |default 0
  *
- * |param label The label text for tagging first sample of correlator match.
+ * |param label The label id that marks the first sample of a correlator match.
  * |default "Matched!"
  * |widget StringEntry()
  *
@@ -46,7 +46,7 @@ public:
     {
         this->setupInput(0, typeid(unsigned char));
         this->setupOutput(0, typeid(unsigned char), this->uid()); //unique domain because of buffer forwarding
-        //this->setupOutput(1, typeid(int));
+        //this->setupOutput(1, typeid(unsigned));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, setPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, getPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, setThreshold));
@@ -60,7 +60,7 @@ public:
 
     void setPreamble(const std::vector<unsigned char> preamble)
     {
-        if (preamble.empty()) throw Pothos::InvalidArgumentException("PreambleCorrelator::setPreamble()", "taps cannot be empty");
+        if (preamble.empty()) throw Pothos::InvalidArgumentException("PreambleCorrelator::setPreamble()", "preamble cannot be empty");
         _preamble = preamble;
     }
 
@@ -69,12 +69,12 @@ public:
         return _preamble;
     }
 
-    void setThreshold(int threshold)
+    void setThreshold(const unsigned threshold)
     {
         _threshold = threshold;
     }
 
-    int getThreshold()
+    unsigned getThreshold(void) const
     {
         return _threshold;
     }
@@ -84,7 +84,7 @@ public:
         _label = label;
     }
 
-    std::string getLabel()
+    std::string getLabel(void) const
     {
         return _label;
     }
@@ -98,32 +98,27 @@ public:
     void work(void)
     {
         auto inputPort = this->input(0);
-        inputPort->setReserve(_preamble.size()+1);
         auto outputPort = this->output(0);
         //auto outputDistance = this->output(1);
-        const auto &workInfo = this->workInfo();
-        const int minElements = workInfo.minElements;
 
-        if (minElements <= (int) _preamble.size()) return;
-
+        //require preamble size + 1 elements to perform processing
+        inputPort->setReserve(_preamble.size()+1);
         auto buffer = inputPort->buffer();
-        if (buffer.length < (size_t) _preamble.size()) return;
+        if (buffer.length <= (size_t) _preamble.size()) return;
 
-        const auto N = minElements - _preamble.size();
+        //due to search window, the last preamble size elements are used
+        //consume and forward all processable elements of the input buffer
+        buffer.length -= _preamble.size();
+        outputPort->postBuffer(buffer);
+        inputPort->consume(buffer.length);
 
-        buffer.length = N;
-        if (buffer.length != 0)
+        // Calculate Hamming distance at each position looking for match
+        // When a match is found a label is created after the preamble
+        auto in = buffer.as<unsigned char *>();
+        //auto distance = outputDistance->buffer().template as<unsigned *>();
+        for (size_t n = 0; n < buffer.length; n++)
         {
-            outputPort->postBuffer(buffer);
-            inputPort->consume(N);
-        }
-
-        // Calculate Hamming distance
-        auto in = inputPort->buffer().template as<unsigned char *>();
-        //auto distance = outputDistance->buffer().template as<int *>();
-        for (size_t n = 0; n < N; n++)
-        {
-            int dist = 0;
+            unsigned dist = 0;
 
             // Count the number of bits set
             for (size_t i = 0; i < _preamble.size(); i++)
@@ -143,7 +138,7 @@ public:
     }
 
 private:
-    int _threshold;
+    unsigned _threshold;
     std::string _label;
     std::vector<unsigned char> _preamble;
 };

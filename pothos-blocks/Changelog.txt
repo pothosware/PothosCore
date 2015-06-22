@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos Blocks toolkit.
 
+Release 0.2.1 (pending)
+==========================
+
+- Preamble correlator typos, comments, style changes
+
 Release 0.2.0 (2015-06-17)
 ==========================
 
