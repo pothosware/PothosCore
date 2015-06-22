@@ -21,20 +21,25 @@
  *
  * The Preamble Correlator searches an input symbol stream on port 0
  * for a matching pattern and forwards the stream to output port 0
- * with a label annotating the first bit after the preamble match.
+ * with a label annotating the first symbol after the preamble match.
+ *
+ * This block supports operations on arbitrary symbol widths,
+ * and therefore it may be used operationally on a bit-stream,
+ * because a bit-stream is identically a symbol stream of N=1.
  *
  * http://en.wikipedia.org/wiki/Hamming_distance
  *
  * |category /Digital
- * |keywords bit preamble correlate
+ * |keywords bit symbol preamble correlate
  *
- * |param preamble The unpacked vector of bits representing preamble to match.
+ * |param preamble A vector of symbols representing the preamble.
+ * The width of each preamble symbol must the intended input stream.
  * |default [1]
  *
  * |param thresh The threshold hamming distance for preamble match detection.
  * |default 0
  *
- * |param label The label id that marks the first sample of a correlator match.
+ * |param label The label id that marks the first symbol of a correlator match.
  * |default "Matched!"
  * |widget StringEntry()
  *

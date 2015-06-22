@@ -10,7 +10,8 @@
 /***********************************************************************
  * |PothosDoc Bytes to Symbols
  *
- * Unpack an incoming stream of bytes to N-bit symbols.
+ * Unpack an incoming stream of bytes into N-bit symbols.
+ * Each output byte represents a symbol of bit width specified by modulus.
  *
  * |category /Digital
  * |category /Symbol
@@ -41,9 +42,9 @@ public:
         _mod(1),
         _mask(1),
         _rem(0),
-        _nb(0)
+        _nb(0),
+        _order(BitOrder::LSBit)
     {
-        _order = BitOrder::LSBit;
         this->setupInput(0, typeid(unsigned char));
         this->setupOutput(0, typeid(unsigned char));
         this->registerCall(this, POTHOS_FCN_TUPLE(BytesToSymbols, getModulus));
@@ -123,7 +124,9 @@ public:
                     _nb -= _mod;
                 }
             }
-        } else {
+        }
+        else
+        {
             const int shift = 8*(sizeof(unsigned int));
             while(n<N && m<M)
             {
@@ -140,6 +143,15 @@ public:
 
         inPort->consume(n);
         outPort->produce(m);
+    }
+
+    void propagateLabels(const Pothos::InputPort *port)
+    {
+        auto outputPort = this->output(0);
+        for (const auto &label : port->labels())
+        {
+            outputPort->postLabel(label.toAdjusted(8, _mod));
+        }
     }
 
 private:

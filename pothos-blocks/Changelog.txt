@@ -3,7 +3,10 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.1 (pending)
 ==========================
 
-- Preamble correlator typos, comments, style changes
+- Added symbols to bytes conversion block
+- Added preamble framer block to frame a symbol stream
+- Preamble correlator supports arbitrary symbol widths
+- Style and documentation changes for digital blocks
 
 Release 0.2.0 (2015-06-17)
 ==========================

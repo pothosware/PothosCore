@@ -1,4 +1,5 @@
 // Copyright (c) 2015-2015 Rinat Zakirov
+// Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -11,6 +12,11 @@
  * Each input byte represents a bit and can take the values of 0 and 1.
  * Each output byte represents a symbol of bit width specified by modulus.
  *
+ * This block also accepts packet messages on input port 0.
+ * The payload will be converted and posted to output port 0.
+ *
+ * This block can be used to convert between bytes and bits when symbol size is 8.
+ *
  * |category /Digital
  * |category /Symbol
  *
@@ -19,6 +25,8 @@
  * |widget SpinBox(minimum=1, maximum=8)
  *
  * |param bitOrder[Bit Order] The bit ordering: MSBit or LSBit.
+ * For MSBit, input 0 becomes the high bit of the output symbol.
+ * For LSBit, input 0 becomes the low bit of the output symbol.
  * |option [MSBit] "MSBit"
  * |option [LSBit] "LSBit"
  * |default "MSBit"
@@ -72,13 +80,13 @@ public:
         else throw Pothos::InvalidArgumentException("BitsToSymbols::setBitOrder()", "Order must be LSBit or MSBit");
     }
 
-    void bitsToSymbols(const uint8_t *in, uint8_t *out, const size_t len)
+    void bitsToSymbols(const unsigned char *in, unsigned char *out, const size_t len)
     {
-        uint8_t sampleBit = 0x1;
+        unsigned char sampleBit = 0x1;
         if (_order == BitOrder::LSBit) sampleBit = 1 << (_mod - 1);
         for (size_t i = 0; i < len; i++)
         {
-            uint8_t symbol = 0;
+            unsigned char symbol = 0;
             for (size_t b = 0; b < _mod; b++)
             {
                 if(_order == BitOrder::MSBit)
@@ -111,9 +119,15 @@ public:
 
         //perform conversion
         this->bitsToSymbols(
-            packet.payload.as<const uint8_t*>(),
-            newPacket.payload.as<uint8_t*>(),
+            packet.payload.as<const unsigned char*>(),
+            newPacket.payload.as<unsigned char*>(),
             newPacket.payload.elements());
+
+        //copy and adjust labels
+        for (const auto &label : packet.labels)
+        {
+            newPacket.labels.push_back(label.toAdjusted(1, _mod));
+        }
 
         //post the output packet
         outputPort->postMessage(newPacket);
@@ -136,8 +150,8 @@ public:
 
         //perform conversion
         this->bitsToSymbols(
-            inBuff.as<const uint8_t*>(),
-            outBuff.as<uint8_t*>(),
+            inBuff.as<const unsigned char*>(),
+            outBuff.as<unsigned char*>(),
             symLen);
 
         //produce/consume
@@ -145,10 +159,19 @@ public:
         outputPort->produce(symLen);
     }
 
+    void propagateLabels(const Pothos::InputPort *port)
+    {
+        auto outputPort = this->output(0);
+        for (const auto &label : port->labels())
+        {
+            outputPort->postLabel(label.toAdjusted(1, _mod));
+        }
+    }
+
 protected:
     typedef enum {LSBit, MSBit} BitOrder;
     BitOrder _order;
-    uint8_t _mod;
+    unsigned char _mod;
 };
 
 static Pothos::BlockRegistry registerBitsToSymbols(

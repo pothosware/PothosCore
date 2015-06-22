@@ -1,4 +1,5 @@
 // Copyright (c) 2015-2015 Rinat Zakirov
+// Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>

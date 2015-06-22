@@ -10,24 +10,29 @@
 /***********************************************************************
  * |PothosDoc Preamble Framer
  *
- * The Preamble Framer accepts input packet messages on port 0
- * and forwards each packet into an output byte stream domain
- * led by a preamble of packed bytes specified by the user.
+ * The Preamble Framer parses a symbol stream on input port 0
+ * for a special label indicating the start of a new frame.
+ * The preamble is inserted into the stream before the label,
+ * and the rest of the stream is forwarded to output port 0.
+ *
+ * This block supports operations on arbitrary symbol widths,
+ * and therefore it may be used operationally on a bit-stream,
+ * because a bit-stream is identically a symbol stream of N=1.
  *
  * |category /Digital
- * |keywords bit preamble frame
+ * |keywords bit symbol preamble frame
  *
- * |param preamble The unpacked vector of bits representing preamble to match.
+ * |param preamble A vector of symbols representing the preamble.
+ * The width of each preamble symbol must the intended input stream.
  * |default [1]
  *
- * |param endianness Specify if bits are sent most or least significant bit first.
- * |default "MSB"
- * |option [MSB First] "MSB"
- * |option [LSB First] "LSB"
+ * |param label The label id that marks the first symbol of frame data.
+ * |default "Matched!"
+ * |widget StringEntry()
  *
  * |factory /blocks/preamble_framer()
  * |setter setPreamble(preamble)
- * |setter setEndianness(endianness)
+ * |setter setLabel(label)
  **********************************************************************/
 class PreambleFramer : public Pothos::Block
 {
@@ -37,14 +42,14 @@ public:
         return new PreambleFramer();
     }
 
-    PreambleFramer(void):
-        _msbFirst(true)
+    PreambleFramer(void)
     {
         this->setupInput(0);
         this->setupOutput(0, typeid(unsigned char), this->uid()); //unique domain because of buffer forwarding
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, setPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, getPreamble));
-        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, setEndianness));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, setLabel));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, getLabel));
         this->setPreamble(std::vector<unsigned char>(1, 1)); //initial update
     }
 
@@ -52,7 +57,7 @@ public:
     {
         if (preamble.empty()) throw Pothos::InvalidArgumentException("PreambleFramer::setPreamble()", "preamble cannot be empty");
         _preamble = preamble;
-        this->updatePreableBytes();
+        _preambleBuff = Pothos::BufferChunk((preamble.size()+7)/8);
     }
 
     std::vector<unsigned char> getPreamble(void) const
@@ -60,27 +65,24 @@ public:
         return _preamble;
     }
 
-    void setEndianness(const std::string &type)
+    void setLabel(std::string label)
     {
-        _msbFirst = type == "MSB";
-        this->updatePreableBytes();
+        _label = label;
+    }
+
+    std::string getLabel(void) const
+    {
+        return _label;
     }
 
     void work(void)
     {
     }
 
-    void updatePreableBytes(void)
-    {
-        
-        //_preambleBytes = Pothos::BufferChunk((preamble.size()+7)/8);
-
-    }
-
 private:
-    bool _msbFirst;
+    std::string _label;
     std::vector<unsigned char> _preamble;
-    Pothos::BufferChunk _preambleBytes;
+    Pothos::BufferChunk _preambleBuff;
 };
 
 /***********************************************************************

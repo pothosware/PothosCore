@@ -12,6 +12,7 @@ POTHOS_MODULE_UTIL(
         SymbolSlicer.cpp
         TestSymbolMapperSlicer.cpp
         BytesToSymbols.cpp
+        SymbolsToBytes.cpp
         TestBytesToSymbols.cpp
         TestDifferentialCoding.cpp
         DifferentialEncoder.cpp
