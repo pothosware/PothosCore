@@ -18,6 +18,7 @@
  *
  * |param N[Modulus] The number of bits per symbol.
  * |default 2
+ * |widget SpinBox(minimum=1, maximum=8)
  *
  * |param bitOrder[Bit Order] The bit ordering: MSBit or LSBit.
  * |option [MSBit] "MSBit"
@@ -36,18 +37,19 @@ public:
         return new BytesToSymbols();
     }
 
-    BytesToSymbols(void)
+    BytesToSymbols(void):
+        _mod(1),
+        _mask(1),
+        _rem(0),
+        _nb(0)
     {
-        _mod = 1;
-        _mask = 1;
-        _nb = 0;
-        _rem = 0;
         _order = BitOrder::LSBit;
         this->setupInput(0, typeid(unsigned char));
         this->setupOutput(0, typeid(unsigned char));
         this->registerCall(this, POTHOS_FCN_TUPLE(BytesToSymbols, getModulus));
         this->registerCall(this, POTHOS_FCN_TUPLE(BytesToSymbols, setModulus));
         this->registerCall(this, POTHOS_FCN_TUPLE(BytesToSymbols, setBitOrder));
+        this->registerCall(this, POTHOS_FCN_TUPLE(BytesToSymbols, getBitOrder));
     }
 
     unsigned char getModulus(void) const
@@ -57,13 +59,14 @@ public:
 
     void updateMask(void)
     {
-        if(_order == BitOrder::MSBit)
+        if (_order == BitOrder::MSBit)
         {
             _mask = ((1<<_mod) - 1) << (8*sizeof(unsigned int)-_mod);
-        } else {
+        }
+        else
+        {
             _mask = (1<<_mod) - 1;
         }
-//        std::cout << "New mask: " << std::hex << int(_mask) << std::dec << std::endl;
     }
 
     void setModulus(const unsigned char mod)
@@ -73,21 +76,20 @@ public:
             throw Pothos::InvalidArgumentException("BytesToSymbols::setModulus()", "Modulus must be <= 8");
         }
         _mod = mod;
-        updateMask();
+        this->updateMask();
     }
 
-    std::string getBitOrder(void)
+    std::string getBitOrder(void) const
     {
-        if(_order == BitOrder::LSBit) return "LSBit";
-        else return "MSBit";
+        return (_order == BitOrder::LSBit)? "LSBit" : "MSBit";
     }
 
     void setBitOrder(std::string order)
     {
-        if(order == "LSBit") _order = BitOrder::LSBit;
-        else if(order == "MSBit") _order = BitOrder::MSBit;
+        if (order == "LSBit") _order = BitOrder::LSBit;
+        else if (order == "MSBit") _order = BitOrder::MSBit;
         else throw Pothos::InvalidArgumentException("BytesToSymbols::setBitOrder()", "Order must be LSBit or MSBit");
-        updateMask();
+        this->updateMask();
     }
 
     void work(void)

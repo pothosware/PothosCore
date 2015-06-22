@@ -14,12 +14,12 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_bit_conversions)
     auto registry = env->findProxy("Pothos/BlockRegistry");
 
     //run the topology
-    for(int symbols = 2; symbols != 512; symbols *= 2)
-    for(int i = 0; i < 2; i++)
+    for (int mod = 1; mod <= 8; mod++)
+    for (int i = 0; i < 2; i++)
     {
-        std::string endianness = i == 0 ? "LSB" : "MSB";
-        std::cout << "run the topology with " << endianness << " endianness";
-        std::cout << "and " << symbols << " symbols" << std::endl;
+        const std::string order = i == 0 ? "LSBit" : "MSBit";
+        std::cout << "run the topology with " << order << " order ";
+        std::cout << "and " << mod << " modulus" << std::endl;
 
         auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
         auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
@@ -30,12 +30,12 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_bit_conversions)
         Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
         testPlan->set("enableBuffers", true);
         testPlan->set("minValue", 0);
-        testPlan->set("maxValue", symbols - 1);
+        testPlan->set("maxValue", (1 << mod) - 1);
 
-        bytes2bits.callProxy("setSymbols", symbols);
-        bits2bytes.callProxy("setSymbols", symbols);
-        bytes2bits.callProxy("setEndianness", endianness);
-        bits2bytes.callProxy("setEndianness", endianness);
+        bytes2bits.callProxy("setModulus", mod);
+        bits2bytes.callProxy("setModulus", mod);
+        bytes2bits.callProxy("setBitOrder", order);
+        bits2bytes.callProxy("setBitOrder", order);
 
         Pothos::Topology topology;
         topology.connect(feeder, 0, bytes2bits, 0);
