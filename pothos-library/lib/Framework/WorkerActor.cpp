@@ -388,9 +388,12 @@ void Pothos::WorkerActor::postWorkTasks(void)
         if (not postedLabels.empty()) std::sort(postedLabels.begin(), postedLabels.end());
 
         //send the outgoing labels with buffers
-        for (const auto &subscriber : port._subscribers)
+        if (not postedLabels.empty() or not postedBuffers.empty())
         {
-            subscriber->bufferLabelPush(postedLabels, postedBuffers);
+            for (const auto &subscriber : port._subscribers)
+            {
+                subscriber->bufferLabelPush(postedLabels, postedBuffers);
+            }
         }
 
         //clear posted labels

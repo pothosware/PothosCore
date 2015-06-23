@@ -257,7 +257,8 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
     const auto exitTime = entryTime + std::chrono::nanoseconds((long long)(timeout*1e9));
     do
     {
-        //check each worker for idle time from the stats
+        //check each worker for idle time from the activity indicator
+        bool allIdle = true;
         for (size_t i = 0; i < blocks.size(); i++)
         {
             const auto &block = blocks[i];
@@ -268,14 +269,14 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
                 lastActivityIndicator[i] = activityIndicator;
             }
             const auto workerIdleDuration = std::chrono::high_resolution_clock::now() - std::max(entryTime, lastActivityTime[i]);
-            if (workerIdleDuration < idleDurationNs) goto pollSleep;
+            if (workerIdleDuration < idleDurationNs) allIdle = false;
         }
 
         //all workers reached the max idle time specified
-        return true;
+        if (allIdle) return true;
 
         //idle time not reached on any workers, therefore sleep
-        pollSleep: std::this_thread::sleep_for(pollSleepTime);
+        else std::this_thread::sleep_for(pollSleepTime);
     }
     while (std::chrono::high_resolution_clock::now() < exitTime or timeout == 0.0);
 
