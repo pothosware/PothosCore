@@ -3,10 +3,7 @@
 
 #include "SymbolHelpers.hpp"
 #include <Pothos/Framework.hpp>
-#include <cstdint>
-#include <iostream>
-#include <complex>
-#include <vector>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Symbols to Bytes

@@ -84,7 +84,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_byte_conversions)
         topology.connect(bytesToSyms2, 0, collector2, 0);
 
         topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive(0.1, 2.0));
+        POTHOS_TEST_TRUE(topology.waitInactive());
 
         std::cout << "verifyTestPlan0..." << std::endl;
         collector0.callVoid("verifyTestPlan", expected);
