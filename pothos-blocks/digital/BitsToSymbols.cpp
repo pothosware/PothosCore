@@ -1,36 +1,40 @@
 // Copyright (c) 2015-2015 Rinat Zakirov
+// Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "SymbolHelpers.hpp"
 #include <Pothos/Framework.hpp>
 #include <algorithm> //min/max
 
 /***********************************************************************
- * |PothosDoc BitsToSymbols
+ * |PothosDoc Bits To Symbols
  *
- * Converts encoding symbols into data as a bit stream.
+ * Pack a stream of bits from input port 0 to a stream of symbols on output port 0.
+ * Each input byte represents a bit and can take the values of 0 and 1.
+ * Each output byte represents a symbol of bit width specified by modulus.
+ *
+ * This block also accepts packet messages on input port 0.
+ * The payload will be converted and posted to output port 0.
+ *
+ * This block can be used to convert between bytes and bits when symbol size is 8.
  *
  * |category /Digital
  * |category /Symbol
  *
- * |param symbols Number of possible symbols encoded in a byte. 
+ * |param N[Modulus] The number of bits per symbol.
  * |default 2
- * |option 2
- * |option 4
- * |option 8
- * |option 16
- * |option 32
- * |option 64
- * |option 128
- * |option 256
+ * |widget SpinBox(minimum=1, maximum=8)
  *
- * |param endianness Specify if bits are sent most or least significant bit first.
- * |default "MSB"
- * |option [MSB First] "MSB"
- * |option [LSB First] "LSB"
+ * |param bitOrder[Bit Order] The bit ordering: MSBit or LSBit.
+ * For MSBit, input 0 becomes the high bit of the output symbol.
+ * For LSBit, input 0 becomes the low bit of the output symbol.
+ * |option [MSBit] "MSBit"
+ * |option [LSBit] "LSBit"
+ * |default "MSBit"
  *
  * |factory /blocks/bits_to_symbols()
- * |setter setSymbols(symbols)
- * |setter setEndianness(endianness)
+ * |setter setModulus(N)
+ * |setter setBitOrder(bitOrder)
  **********************************************************************/
 class BitsToSymbols : public Pothos::Block
 {
@@ -41,119 +45,123 @@ public:
         return new BitsToSymbols();
     }
 
-    BitsToSymbols(void) : msbFirst(true), symbolsMask(0x01), bitsPerSymbol(1)
+    BitsToSymbols(void) : _order(BitOrder::MSBit), _mod(1)
     {
         this->setupInput(0, typeid(unsigned char));
         this->setupOutput(0, typeid(unsigned char));
-        this->registerCall(this, POTHOS_FCN_TUPLE(BitsToSymbols, setEndianness));
-        this->registerCall(this, POTHOS_FCN_TUPLE(BitsToSymbols, setSymbols));
+        this->registerCall(this, POTHOS_FCN_TUPLE(BitsToSymbols, getModulus));
+        this->registerCall(this, POTHOS_FCN_TUPLE(BitsToSymbols, setModulus));
+        this->registerCall(this, POTHOS_FCN_TUPLE(BitsToSymbols, setBitOrder));
+        this->registerCall(this, POTHOS_FCN_TUPLE(BitsToSymbols, getBitOrder));
     }
 
-    void setSymbols(const size_t symbols)
+    unsigned char getModulus(void) const
     {
-        if(symbols ==   2) { symbolsMask = 0x01; bitsPerSymbol = 1; }
-        if(symbols ==   4) { symbolsMask = 0x03; bitsPerSymbol = 2; }
-        if(symbols ==   8) { symbolsMask = 0x07; bitsPerSymbol = 3; }
-        if(symbols ==  16) { symbolsMask = 0x0f; bitsPerSymbol = 4; }
-        if(symbols ==  32) { symbolsMask = 0x1f; bitsPerSymbol = 5; }
-        if(symbols ==  64) { symbolsMask = 0x3f; bitsPerSymbol = 6; }
-        if(symbols == 128) { symbolsMask = 0x7f; bitsPerSymbol = 7; }
-        if(symbols == 256) { symbolsMask = 0xff; bitsPerSymbol = 8; }
+        return _mod;
     }
 
-    void setEndianness(const std::string &type)
+    void setModulus(const unsigned char mod)
     {
-        msbFirst = true;
-        if(type == "LSB") msbFirst = false;
+        if (mod < 1 or mod > 8)
+        {
+            throw Pothos::InvalidArgumentException("BitsToSymbols::setModulus()", "Modulus must be between 1 and 8 inclusive");
+        }
+        _mod = mod;
+    }
+
+    std::string getBitOrder(void) const
+    {
+        return (_order == BitOrder::LSBit)? "LSBit" : "MSBit";
+    }
+
+    void setBitOrder(std::string order)
+    {
+        if (order == "LSBit") _order = BitOrder::LSBit;
+        else if (order == "MSBit") _order = BitOrder::MSBit;
+        else throw Pothos::InvalidArgumentException("BitsToSymbols::setBitOrder()", "Order must be LSBit or MSBit");
+    }
+
+    void msgWork(const Pothos::Packet &inPkt)
+    {
+        //calculate conversion and buffer sizes (round up)
+        const size_t numSyms = (inPkt.payload.elements() + _mod - 1)/_mod;
+
+        //create a new packet for output symbols
+        Pothos::Packet outPkt;
+        auto outPort = this->output(0);
+        if (outPort->elements() >= numSyms)
+        {
+            outPkt.payload = outPort->buffer();
+            outPkt.payload.length = numSyms;
+            outPort->popBuffer(numSyms);
+        }
+        else outPkt.payload = Pothos::BufferChunk(numSyms);
+
+        //perform conversion
+        auto in = inPkt.payload.as<const unsigned char*>();
+        auto out = outPkt.payload.as<unsigned char*>();
+        switch (_order)
+        {
+        case MSBit: ::bitsToSymbolsMSBit(_mod, in, out, numSyms); break;
+        case LSBit: ::bitsToSymbolsLSBit(_mod, in, out, numSyms); break;
+        }
+
+        //copy and adjust labels
+        for (const auto &label : inPkt.labels)
+        {
+            outPkt.labels.push_back(label.toAdjusted(1, _mod));
+        }
+
+        //post the output packet
+        outPort->postMessage(outPkt);
     }
 
     void work(void)
     {
-        auto inputPort = this->input(0);
-        auto outputPort = this->output(0);
+        auto inPort = this->input(0);
+        auto outPort = this->output(0);
+        inPort->setReserve(_mod);
 
-        //get input buffer
-        auto inBuff = inputPort->buffer();
-        if (inBuff.length != 0)
-        {        
-
-            //setup output buffer
-            auto outBuff = outputPort->buffer();
-            uint32_t symLen = std::min(inBuff.elements() / bitsPerSymbol, outBuff.elements());
-
-            auto inBytes = inBuff.as<const uint8_t*>();
-            auto outBytes = outBuff.as<uint8_t*>();
-
-            uint8_t sampleBit = 0x1;
-            if(!msbFirst) sampleBit = 1 << (bitsPerSymbol - 1);
-            for(uint32_t i = 0; i < symLen; i++)
-            {
-                uint8_t symbol = 0;
-                uint8_t mask = symbolsMask;
-                while(mask)
-                {
-                    mask = mask >> 1;   
-                    if(msbFirst)
-                        symbol = symbol << 1; 
-                    else
-                        symbol = symbol >> 1;
-
-                    symbol |= (*inBytes++ != 0) ? sampleBit : 0; 
-                }
-                *outBytes++ = symbol;
-            }
-
-            //produce/consume
-            inputPort->consume(symLen * bitsPerSymbol);
-            outputPort->produce(symLen);
-        }
-
-        // Below code handles message based conversion
-
-        if (not inputPort->hasMessage()) return;
-        auto msg = inputPort->popMessage();
-        
-        if (msg.type() != typeid(Pothos::Packet))
+        //handle packet conversion if applicable
+        if (inPort->hasMessage())
         {
-            outputPort->postMessage(msg);
-            return;
+            auto msg = inPort->popMessage();
+            if (msg.type() == typeid(Pothos::Packet))
+                this->msgWork(msg.extract<Pothos::Packet>());
+            else outPort->postMessage(msg);
+            return; //output buffer used, return now
         }
 
-        const auto &packet = msg.extract<Pothos::Packet>();
-        Pothos::Packet newPacket;
-        auto symLen = packet.payload.elements() / bitsPerSymbol;
-        newPacket.payload = Pothos::BufferChunk("uint8", symLen);
-        
-        auto inBytes = packet.payload.as<const uint8_t*>();
-        auto outBytes = newPacket.payload.as<uint8_t*>();
+        //calculate work size
+        const size_t numSyms = std::min(inPort->elements() / _mod, outPort->elements());
+        if (numSyms == 0) return;
 
-        uint8_t sampleBit = 0x1;
-        if(!msbFirst) sampleBit = 1 << (bitsPerSymbol - 1);
-
-        for(uint32_t i = 0; i < symLen; i++)
+        //perform conversion
+        auto in = inPort->buffer().as<const unsigned char *>();
+        auto out = outPort->buffer().as<unsigned char *>();
+        switch (_order)
         {
-            uint8_t symbol = 0;
-            uint8_t mask = symbolsMask;
-            while(mask)
-            {
-                mask = mask >> 1;   
-                if(msbFirst)
-                    symbol = symbol << 1; 
-                else
-                    symbol = symbol >> 1;
-
-                symbol |= (*inBytes++ != 0) ? sampleBit : 0; 
-            }
-            *outBytes++ = symbol;
+        case MSBit: ::bitsToSymbolsMSBit(_mod, in, out, numSyms); break;
+        case LSBit: ::bitsToSymbolsLSBit(_mod, in, out, numSyms); break;
         }
 
-        outputPort->postMessage(newPacket);
+        //produce/consume
+        inPort->consume(numSyms * _mod);
+        outPort->produce(numSyms);
+    }
+
+    void propagateLabels(const Pothos::InputPort *port)
+    {
+        auto outPort = this->output(0);
+        for (const auto &label : port->labels())
+        {
+            outPort->postLabel(label.toAdjusted(1, _mod));
+        }
     }
 
 protected:
-    bool msbFirst;
-    uint8_t symbolsMask;
-    uint8_t bitsPerSymbol;
+    BitOrder _order;
+    unsigned char _mod;
 };
 
 static Pothos::BlockRegistry registerBitsToSymbols(

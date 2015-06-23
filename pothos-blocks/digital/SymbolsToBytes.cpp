@@ -7,10 +7,13 @@
 #include <iostream>
 
 /***********************************************************************
- * |PothosDoc Bytes to Symbols
+ * |PothosDoc Symbols to Bytes
  *
- * Unpack an incoming stream of bytes into N-bit symbols.
- * Each output byte represents a symbol of bit width specified by modulus.
+ * Pack an incoming stream of N-bit symbols into bytes.
+ * Each input byte represents a symbol of bit width specified by modulus.
+ *
+ * This block also accepts packet messages on input port 0.
+ * The payload will be converted and posted to output port 0.
  *
  * |category /Digital
  * |category /Symbol
@@ -21,35 +24,35 @@
  * |widget SpinBox(minimum=1, maximum=8)
  *
  * |param bitOrder[Bit Order] The bit ordering: MSBit or LSBit.
- * For MSBit, input bytes get unpacked high to low into output symbols.
- * For LSBit, input bytes get unpacked low to high into output symbols.
+ * For MSBit, input symbols get packed high to low in the output byte.
+ * For LSBit, input symbols get packed low to high in the output byte.
  * |option [MSBit] "MSBit"
  * |option [LSBit] "LSBit"
  * |default "MSBit"
  *
- * |factory /blocks/bytes_to_symbols()
+ * |factory /blocks/symbols_to_bytes()
  * |setter setModulus(N)
  * |setter setBitOrder(bitOrder)
  **********************************************************************/
-class BytesToSymbols : public Pothos::Block
+class SymbolsToBytes : public Pothos::Block
 {
 public:
     static Block *make(void)
     {
-        return new BytesToSymbols();
+        return new SymbolsToBytes();
     }
 
-    BytesToSymbols(void):
+    SymbolsToBytes(void):
         _mod(1),
-        _reserveBytes(1),
+        _reserveSyms(1),
         _order(BitOrder::LSBit)
     {
         this->setupInput(0, typeid(unsigned char));
         this->setupOutput(0, typeid(unsigned char));
-        this->registerCall(this, POTHOS_FCN_TUPLE(BytesToSymbols, getModulus));
-        this->registerCall(this, POTHOS_FCN_TUPLE(BytesToSymbols, setModulus));
-        this->registerCall(this, POTHOS_FCN_TUPLE(BytesToSymbols, setBitOrder));
-        this->registerCall(this, POTHOS_FCN_TUPLE(BytesToSymbols, getBitOrder));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SymbolsToBytes, getModulus));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SymbolsToBytes, setModulus));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SymbolsToBytes, setBitOrder));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SymbolsToBytes, getBitOrder));
     }
 
     unsigned char getModulus(void) const
@@ -61,17 +64,17 @@ public:
     {
         if (mod < 1 or mod > 8)
         {
-            throw Pothos::InvalidArgumentException("BytesToSymbols::setModulus()", "Modulus must be between 1 and 8 inclusive");
+            throw Pothos::InvalidArgumentException("SymbolsToBytes::setModulus()", "Modulus must be between 1 and 8 inclusive");
         }
         _mod = mod;
 
         switch (_mod)
         {
-        case 7: _reserveBytes = 7; break;
-        case 5: _reserveBytes = 5; break;
-        case 3: _reserveBytes = 3; break;
-        case 6: _reserveBytes = 3; break;
-        default: _reserveBytes = 1; break;
+        case 8: _reserveSyms = 1; break;
+        case 4: _reserveSyms = 2; break;
+        case 6: _reserveSyms = 4; break;
+        case 2: _reserveSyms = 4; break;
+        default: _reserveSyms = 8; break;
         }
     }
 
@@ -84,39 +87,39 @@ public:
     {
         if (order == "LSBit") _order = BitOrder::LSBit;
         else if (order == "MSBit") _order = BitOrder::MSBit;
-        else throw Pothos::InvalidArgumentException("BytesToSymbols::setBitOrder()", "Order must be LSBit or MSBit");
+        else throw Pothos::InvalidArgumentException("SymbolsToBytes::setBitOrder()", "Order must be LSBit or MSBit");
     }
 
     void msgWork(const Pothos::Packet &inPkt)
     {
         //calculate conversion and buffer sizes (round up)
-        const size_t numBytes = ((inPkt.payload.elements() + _reserveBytes - 1)/_reserveBytes)*_reserveBytes;
-        const size_t numSyms = (numBytes*8)/_mod;
+        const size_t numSyms = ((inPkt.payload.elements() + _reserveSyms - 1)/_reserveSyms)*_reserveSyms;
+        const size_t numBytes = (numSyms*_mod)/8;
 
         //create a new packet for output symbols
         Pothos::Packet outPkt;
         auto outPort = this->output(0);
-        if (outPort->elements() >= numSyms)
+        if (outPort->elements() >= numBytes)
         {
             outPkt.payload = outPort->buffer();
-            outPkt.payload.length = numSyms;
-            outPort->popBuffer(numSyms);
+            outPkt.payload.length = numBytes;
+            outPort->popBuffer(numBytes);
         }
-        else outPkt.payload = Pothos::BufferChunk(numSyms);
+        else outPkt.payload = Pothos::BufferChunk(numBytes);
 
         //perform conversion
         auto in = inPkt.payload.as<const unsigned char*>();
         auto out = outPkt.payload.as<unsigned char*>();
         switch (_order)
         {
-        case MSBit: ::bytesToSymbolsMSBit(_mod, in, out, numBytes); break;
-        case LSBit: ::bytesToSymbolsLSBit(_mod, in, out, numBytes); break;
+        case MSBit: ::symbolsToBytesMSBit(_mod, in, out, numBytes); break;
+        case LSBit: ::symbolsToBytesLSBit(_mod, in, out, numBytes); break;
         }
 
         //copy and adjust labels
         for (const auto &label : inPkt.labels)
         {
-            outPkt.labels.push_back(label.toAdjusted(8, _mod));
+            outPkt.labels.push_back(label.toAdjusted(_mod, 8));
         }
 
         //post the output packet
@@ -127,7 +130,7 @@ public:
     {
         auto inPort = this->input(0);
         auto outPort = this->output(0);
-        inPort->setReserve(_reserveBytes);
+        inPort->setReserve(_reserveSyms);
 
         //handle packet conversion if applicable
         if (inPort->hasMessage())
@@ -140,10 +143,10 @@ public:
         }
 
         //calculate work size given reserve requirements
-        const size_t numInBytes = (inPort->elements()/_reserveBytes)*_reserveBytes;
-        const size_t reserveSyms = (_reserveBytes*8)/_mod;
-        const size_t numOutSyms = (outPort->elements()/reserveSyms)*reserveSyms;
-        const size_t numBytes = std::min((numOutSyms*_mod)/8, numInBytes);
+        const size_t numInSyms = (inPort->elements()/_reserveSyms)*_reserveSyms;
+        const size_t reserveBytes = (_reserveSyms*_mod)/8;
+        const size_t numOutBytes = (outPort->elements()/reserveBytes)*reserveBytes;
+        const size_t numBytes = std::min((numInSyms*_mod)/8, numOutBytes);
         if (numBytes == 0) return;
 
         //perform conversion
@@ -151,33 +154,33 @@ public:
         auto out = outPort->buffer().as<unsigned char *>();
         switch (_order)
         {
-        case MSBit: ::bytesToSymbolsMSBit(_mod, in, out, numBytes); break;
-        case LSBit: ::bytesToSymbolsLSBit(_mod, in, out, numBytes); break;
+        case MSBit: ::symbolsToBytesMSBit(_mod, in, out, numBytes); break;
+        case LSBit: ::symbolsToBytesLSBit(_mod, in, out, numBytes); break;
         }
 
-        //consume input bytes and output symbols
-        inPort->consume(numBytes);
-        outPort->produce((numBytes*8)/_mod);
+        //consume input symbols and output bytes
+        inPort->consume((numBytes*8)/_mod);
+        outPort->produce(numBytes);
     }
 
     void propagateLabels(const Pothos::InputPort *port)
     {
-        auto outputPort = this->output(0);
+        auto outPort = this->output(0);
         for (const auto &label : port->labels())
         {
-            outputPort->postLabel(label.toAdjusted(8, _mod));
+            outPort->postLabel(label.toAdjusted(_mod, 8));
         }
     }
 
 private:
     unsigned char _mod;
-    size_t _reserveBytes;
+    size_t _reserveSyms;
     BitOrder _order;
 };
 
 /***********************************************************************
  * registration
  **********************************************************************/
-static Pothos::BlockRegistry registerBytesToSymbols(
-    "/blocks/bytes_to_symbols", &BytesToSymbols::make);
+static Pothos::BlockRegistry registerSymbolsToBytes(
+    "/blocks/symbols_to_bytes", &SymbolsToBytes::make);
 

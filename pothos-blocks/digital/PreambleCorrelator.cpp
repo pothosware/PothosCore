@@ -7,25 +7,39 @@
 #include <cassert>
 #include <iostream>
 
+//provide __popcnt()
+#ifdef _MSC_VER
+#  include <intrin.h>
+#elif __GNUC__
+#  define __popcnt __builtin_popcount
+#else
+#  error "provide __popcnt() for this compiler"
+#endif
+
 /***********************************************************************
  * |PothosDoc Preamble Correlator
  *
- * The PreambleCorrelator searches an input bit stream from port 0
- * for a matching pattern and forwards the same bit stream with a label
- * annotating the first bit after the preamble match
+ * The Preamble Correlator searches an input symbol stream on port 0
+ * for a matching pattern and forwards the stream to output port 0
+ * with a label annotating the first symbol after the preamble match.
+ *
+ * This block supports operations on arbitrary symbol widths,
+ * and therefore it may be used operationally on a bit-stream,
+ * because a bit-stream is identically a symbol stream of N=1.
  *
  * http://en.wikipedia.org/wiki/Hamming_distance
  *
  * |category /Digital
- * |keywords bit preamble correlate
+ * |keywords bit symbol preamble correlate
  *
- * |param preamble The unpacked vector of bits representing preamble to match.
+ * |param preamble A vector of symbols representing the preamble.
+ * The width of each preamble symbol must the intended input stream.
  * |default [1]
  *
  * |param thresh The threshold hamming distance for preamble match detection.
  * |default 0
  *
- * |param label The label id that marks the first sample of a correlator match.
+ * |param label The label id that marks the first symbol of a correlator match.
  * |default "Matched!"
  * |widget StringEntry()
  *
@@ -42,7 +56,8 @@ public:
         return new PreambleCorrelator();
     }
 
-    PreambleCorrelator(void)
+    PreambleCorrelator(void):
+        _threshold(0)
     {
         this->setupInput(0, typeid(unsigned char));
         this->setupOutput(0, typeid(unsigned char), this->uid()); //unique domain because of buffer forwarding
@@ -124,7 +139,7 @@ public:
             for (size_t i = 0; i < _preamble.size(); i++)
             {
                 // A bit is set, so increment the distance
-                dist += _preamble[i] ^ in[n+i];
+                dist += __popcnt(_preamble[i] ^ in[n+i]);
             }
             // Emit a label if within the distance threshold
             if (dist <= _threshold)

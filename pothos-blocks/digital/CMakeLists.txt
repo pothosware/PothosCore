@@ -12,14 +12,16 @@ POTHOS_MODULE_UTIL(
         SymbolSlicer.cpp
         TestSymbolMapperSlicer.cpp
         BytesToSymbols.cpp
-        TestBytesToSymbols.cpp
+        SymbolsToBytes.cpp
         TestDifferentialCoding.cpp
         DifferentialEncoder.cpp
         DifferentialDecoder.cpp
         SymbolsToBits.cpp
         BitsToSymbols.cpp
         TestSymbolBitConversions.cpp
+        TestSymbolByteConversions.cpp
         PreambleCorrelator.cpp
+        PreambleFramer.cpp
         TestPreambleCorrelator.cpp
         Scrambler.cpp
         Descrambler.cpp
