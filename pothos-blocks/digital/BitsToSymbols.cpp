@@ -2,6 +2,7 @@
 // Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "SymbolHelpers.hpp"
 #include <Pothos/Framework.hpp>
 #include <algorithm> //min/max
 
@@ -61,9 +62,9 @@ public:
 
     void setModulus(const unsigned char mod)
     {
-        if(mod>8)
+        if (mod < 1 or mod > 8)
         {
-            throw Pothos::InvalidArgumentException("BitsToSymbols::setModulus()", "Modulus must be <= 8");
+            throw Pothos::InvalidArgumentException("BitsToSymbols::setModulus()", "Modulus must be between 1 and 8 inclusive");
         }
         _mod = mod;
     }
@@ -115,7 +116,7 @@ public:
         //create a new packet for output symbols
         const auto &packet = msg.extract<Pothos::Packet>();
         Pothos::Packet newPacket;
-        newPacket.payload = Pothos::BufferChunk("uint8", packet.payload.elements() / _mod);
+        newPacket.payload = Pothos::BufferChunk(packet.payload.elements() / _mod);
 
         //perform conversion
         this->bitsToSymbols(
@@ -169,7 +170,6 @@ public:
     }
 
 protected:
-    typedef enum {LSBit, MSBit} BitOrder;
     BitOrder _order;
     unsigned char _mod;
 };
