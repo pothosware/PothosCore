@@ -30,8 +30,10 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_bit_conversions)
         //create a test plan
         Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
         testPlan->set("enableBuffers", true);
+        testPlan->set("enableLabels", true);
         testPlan->set("minValue", 0);
         testPlan->set("maxValue", (1 << mod) - 1);
+        auto expected = feeder.callProxy("feedTestPlan", testPlan);
 
         symsToBits.callProxy("setModulus", mod);
         bitsToSyms.callProxy("setModulus", mod);
@@ -44,7 +46,6 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_bit_conversions)
         topology.connect(bitsToSyms, 0, collector, 0);
         topology.commit();
 
-        auto expected = feeder.callProxy("feedTestPlan", testPlan);
         POTHOS_TEST_TRUE(topology.waitInactive());
 
         std::cout << "verifyTestPlan!\n";
