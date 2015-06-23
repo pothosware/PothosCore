@@ -81,48 +81,33 @@ public:
         else throw Pothos::InvalidArgumentException("BitsToSymbols::setBitOrder()", "Order must be LSBit or MSBit");
     }
 
-    void bitsToSymbols(const unsigned char *in, unsigned char *out, const size_t len)
-    {
-        unsigned char sampleBit = 0x1;
-        if (_order == BitOrder::LSBit) sampleBit = 1 << (_mod - 1);
-        for (size_t i = 0; i < len; i++)
-        {
-            unsigned char symbol = 0;
-            for (size_t b = 0; b < _mod; b++)
-            {
-                if(_order == BitOrder::MSBit)
-                    symbol = symbol << 1;
-                else
-                    symbol = symbol >> 1;
-
-                symbol |= (*in++ != 0) ? sampleBit : 0;
-            }
-            out[i] = symbol;
-        }
-    }
-
     void msgWork(void)
     {
-        auto inputPort = this->input(0);
-        auto outputPort = this->output(0);
+        auto inPort = this->input(0);
+        auto outPort = this->output(0);
 
-        auto msg = inputPort->popMessage();
+        auto msg = inPort->popMessage();
         if (msg.type() != typeid(Pothos::Packet))
         {
-            outputPort->postMessage(msg);
+            outPort->postMessage(msg);
             return;
         }
 
         //create a new packet for output symbols
         const auto &packet = msg.extract<Pothos::Packet>();
+        const size_t numInBits = ((packet.payload.elements() + _mod - 1)/_mod)*_mod;
+        const size_t numSyms = numInBits/_mod;
         Pothos::Packet newPacket;
-        newPacket.payload = Pothos::BufferChunk(packet.payload.elements() / _mod);
+        newPacket.payload = Pothos::BufferChunk(numSyms);
 
         //perform conversion
-        this->bitsToSymbols(
-            packet.payload.as<const unsigned char*>(),
-            newPacket.payload.as<unsigned char*>(),
-            newPacket.payload.elements());
+        auto in = packet.payload.as<const unsigned char*>();
+        auto out = newPacket.payload.as<unsigned char*>();
+        switch (_order)
+        {
+        case MSBit: ::bitsToSymbolsMSBit(_mod, in, out, numSyms); break;
+        case LSBit: ::bitsToSymbolsLSBit(_mod, in, out, numSyms); break;
+        }
 
         //copy and adjust labels
         for (const auto &label : packet.labels)
@@ -131,41 +116,42 @@ public:
         }
 
         //post the output packet
-        outputPort->postMessage(newPacket);
+        outPort->postMessage(newPacket);
     }
 
     void work(void)
     {
-        auto inputPort = this->input(0);
-        auto outputPort = this->output(0);
-        inputPort->setReserve(_mod);
+        auto inPort = this->input(0);
+        auto outPort = this->output(0);
+        inPort->setReserve(_mod);
 
         //handle packet conversion if applicable
-        if (inputPort->hasMessage()) this->msgWork();
+        if (inPort->hasMessage()) this->msgWork();
 
-        //setup buffers
-        auto inBuff = inputPort->buffer();
-        auto outBuff = outputPort->buffer();
-        const size_t symLen = std::min(inBuff.elements() / _mod, outBuff.elements());
-        if (symLen == 0) return;
+        //calculate work size
+        const size_t numSyms = std::min(inPort->elements() / _mod, outPort->elements());
+        if (numSyms == 0) return;
 
         //perform conversion
-        this->bitsToSymbols(
-            inBuff.as<const unsigned char*>(),
-            outBuff.as<unsigned char*>(),
-            symLen);
+        auto in = inPort->buffer().as<const unsigned char *>();
+        auto out = outPort->buffer().as<unsigned char *>();
+        switch (_order)
+        {
+        case MSBit: ::bitsToSymbolsMSBit(_mod, in, out, numSyms); break;
+        case LSBit: ::bitsToSymbolsLSBit(_mod, in, out, numSyms); break;
+        }
 
         //produce/consume
-        inputPort->consume(symLen * _mod);
-        outputPort->produce(symLen);
+        inPort->consume(numSyms * _mod);
+        outPort->produce(numSyms);
     }
 
     void propagateLabels(const Pothos::InputPort *port)
     {
-        auto outputPort = this->output(0);
+        auto outPort = this->output(0);
         for (const auto &label : port->labels())
         {
-            outputPort->postLabel(label.toAdjusted(1, _mod));
+            outPort->postLabel(label.toAdjusted(1, _mod));
         }
     }
 

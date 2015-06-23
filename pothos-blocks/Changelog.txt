@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Added multiple option to Feeder source test plan
 - Added symbols to bytes conversion block
 - Added preamble framer block to frame a symbol stream
 - Preamble correlator supports arbitrary symbol widths

@@ -43,9 +43,7 @@ public:
 
     BytesToSymbols(void):
         _mod(1),
-        _mask(1),
-        _rem(0),
-        _nb(0),
+        _reserveBytes(1),
         _order(BitOrder::LSBit)
     {
         this->setupInput(0, typeid(unsigned char));
@@ -61,18 +59,6 @@ public:
         return _mod;
     }
 
-    void updateMask(void)
-    {
-        if (_order == BitOrder::MSBit)
-        {
-            _mask = ((1<<_mod) - 1) << (8*sizeof(unsigned int)-_mod);
-        }
-        else
-        {
-            _mask = (1<<_mod) - 1;
-        }
-    }
-
     void setModulus(const unsigned char mod)
     {
         if (mod < 1 or mod > 8)
@@ -80,7 +66,15 @@ public:
             throw Pothos::InvalidArgumentException("BytesToSymbols::setModulus()", "Modulus must be between 1 and 8 inclusive");
         }
         _mod = mod;
-        this->updateMask();
+
+        switch (_mod)
+        {
+        case 7: _reserveBytes = 7; break;
+        case 5: _reserveBytes = 5; break;
+        case 3: _reserveBytes = 3; break;
+        case 6: _reserveBytes = 3; break;
+        default: _reserveBytes = 1; break;
+        }
     }
 
     std::string getBitOrder(void) const
@@ -93,59 +87,33 @@ public:
         if (order == "LSBit") _order = BitOrder::LSBit;
         else if (order == "MSBit") _order = BitOrder::MSBit;
         else throw Pothos::InvalidArgumentException("BytesToSymbols::setBitOrder()", "Order must be LSBit or MSBit");
-        this->updateMask();
     }
 
     void work(void)
     {
         auto inPort = this->input(0);
         auto outPort = this->output(0);
+        inPort->setReserve(_reserveBytes);
 
-        auto in = inPort->buffer().template as<const unsigned char *>();
-        auto out = outPort->buffer().template as<unsigned char *>();
+        //calculate work size given reserve requirements
+        const size_t numInBytes = (inPort->elements()/_reserveBytes)*_reserveBytes;
+        const size_t reserveSyms = (_reserveBytes*8)/_mod;
+        const size_t numOutSyms = (outPort->elements()/reserveSyms)*reserveSyms;
+        const size_t numBytes = std::min((numOutSyms*_mod)/8, numInBytes);
+        if (numBytes == 0) return;
 
-        int N = inPort->elements();
-        int M = outPort->elements();
-        int n = 0;
-        int m = 0;
-
-        if(_order == BitOrder::LSBit)
+        //perform conversion
+        auto in = inPort->buffer().as<const unsigned char *>();
+        auto out = outPort->buffer().as<unsigned char *>();
+        switch (_order)
         {
-            while(n<N && m<M)
-            {
-                _rem |= (in[n++] << _nb);
-                _nb += 8;
-                while(_nb >= _mod)
-                {
-                    out[m] = 0;
-                    for(int i=0; i<_mod; i++) {
-                        out[m] <<= 1;
-                        out[m] |= _rem & 1;
-                        _rem >>= 1;
-                    }
-                    m++;
-                    _nb -= _mod;
-                }
-            }
-        }
-        else
-        {
-            const int shift = 8*(sizeof(unsigned int));
-            while(n<N && m<M)
-            {
-                _rem |= (in[n++]<<(shift-8-_nb));
-                _nb += 8;
-                while(_nb >= _mod)
-                {
-                    out[m++] = (_rem & _mask) >> (shift-_mod);
-                    _rem <<= _mod;
-                    _nb -= _mod;
-                }
-            }
+        case MSBit: ::bytesToSymbolsMSBit(_mod, in, out, numBytes); break;
+        case LSBit: ::bytesToSymbolsLSBit(_mod, in, out, numBytes); break;
         }
 
-        inPort->consume(n);
-        outPort->produce(m);
+        //consume input bytes and output symbols
+        inPort->consume(numBytes);
+        outPort->produce((numBytes*8)/_mod);
     }
 
     void propagateLabels(const Pothos::InputPort *port)
@@ -159,9 +127,7 @@ public:
 
 private:
     unsigned char _mod;
-    unsigned int _mask;
-    unsigned int _rem;
-    unsigned char _nb;
+    size_t _reserveBytes;
     BitOrder _order;
 };
 

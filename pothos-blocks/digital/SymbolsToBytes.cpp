@@ -46,6 +46,7 @@ public:
 
     SymbolsToBytes(void):
         _mod(1),
+        _reserveSyms(1),
         _order(BitOrder::LSBit)
     {
         this->setupInput(0, typeid(unsigned char));
@@ -68,6 +69,15 @@ public:
             throw Pothos::InvalidArgumentException("SymbolsToBytes::setModulus()", "Modulus must be between 1 and 8 inclusive");
         }
         _mod = mod;
+
+        switch (_mod)
+        {
+        case 8: _reserveSyms = 1; break;
+        case 4: _reserveSyms = 2; break;
+        case 6: _reserveSyms = 4; break;
+        case 2: _reserveSyms = 4; break;
+        default: _reserveSyms = 8; break;
+        }
     }
 
     std::string getBitOrder(void) const
@@ -84,19 +94,20 @@ public:
 
     void msgWork(void)
     {
-        auto inputPort = this->input(0);
-        auto outputPort = this->output(0);
+        auto inPort = this->input(0);
+        auto outPort = this->output(0);
 
-        auto msg = inputPort->popMessage();
+        auto msg = inPort->popMessage();
         if (msg.type() != typeid(Pothos::Packet))
         {
-            outputPort->postMessage(msg);
+            outPort->postMessage(msg);
             return;
         }
 
         //create a new packet for output bytes
         const auto &packet = msg.extract<Pothos::Packet>();
-        const size_t numBytes = (packet.payload.elements()*_mod)/8;
+        const size_t numInSyms = ((packet.payload.elements() + _reserveSyms - 1)/_reserveSyms)*_reserveSyms;
+        const size_t numBytes = (numInSyms*_mod)/8;
         Pothos::Packet newPacket;
         newPacket.payload = Pothos::BufferChunk(numBytes);
 
@@ -112,26 +123,30 @@ public:
         //copy and adjust labels
         for (const auto &label : packet.labels)
         {
-            newPacket.labels.push_back(label.toAdjusted(1, _mod));
+            newPacket.labels.push_back(label.toAdjusted(_mod, 8));
         }
 
         //post the output packet
-        outputPort->postMessage(newPacket);
+        outPort->postMessage(newPacket);
     }
 
     void work(void)
     {
         auto inPort = this->input(0);
         auto outPort = this->output(0);
+        inPort->setReserve(_reserveSyms);
 
         //handle packet conversion if applicable
         if (inPort->hasMessage()) this->msgWork();
 
-        //calculate work size -- based on having multiples of 8 bits
-        const size_t numBytes = std::min((inPort->elements()*_mod)/8, outPort->elements());
+        //calculate work size given reserve requirements
+        const size_t numInSyms = (inPort->elements()/_reserveSyms)*_reserveSyms;
+        const size_t reserveBytes = (_reserveSyms*_mod)/8;
+        const size_t numOutBytes = (outPort->elements()/reserveBytes)*reserveBytes;
+        const size_t numBytes = std::min((numInSyms*_mod)/8, numOutBytes);
         if (numBytes == 0) return;
 
-        //perform the conversion to pack each output byte
+        //perform conversion
         auto in = inPort->buffer().as<const unsigned char *>();
         auto out = outPort->buffer().as<unsigned char *>();
         switch (_order)
@@ -147,15 +162,16 @@ public:
 
     void propagateLabels(const Pothos::InputPort *port)
     {
-        auto outputPort = this->output(0);
+        auto outPort = this->output(0);
         for (const auto &label : port->labels())
         {
-            outputPort->postLabel(label.toAdjusted(_mod, 8));
+            outPort->postLabel(label.toAdjusted(_mod, 8));
         }
     }
 
 private:
     unsigned char _mod;
+    size_t _reserveSyms;
     BitOrder _order;
 };
 

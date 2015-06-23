@@ -78,46 +78,27 @@ public:
         else throw Pothos::InvalidArgumentException("SymbolsToBits::setBitOrder()", "Order must be LSBit or MSBit");
     }
 
-    void symbolsToBits(const unsigned char *in, unsigned char *out, const size_t len)
-    {
-        unsigned char sampleBit = 0x1;
-        if (_order == BitOrder::MSBit) sampleBit = 1 << (_mod - 1);
-        for (size_t i = 0; i < len; i++)
-        {
-            unsigned char symbol = in[i];
-            for (size_t b = 0; b < _mod; b++)
-            {
-                *out++ = ((sampleBit & symbol) != 0) ? 1 : 0;
-
-                if(_order == BitOrder::MSBit)
-                    symbol = symbol << 1;
-                else
-                    symbol = symbol >> 1;
-            }
-        }
-    }
-
     void work(void)
     {
-        auto inputPort = this->input(0);
-        auto outputPort = this->output(0);
+        auto inPort = this->input(0);
+        auto outPort = this->output(0);
 
-        //setup buffers
-        auto inBuff = inputPort->buffer();
-        auto outBuff = outputPort->buffer();
-        const size_t symLen = std::min(inBuff.elements(), outBuff.elements() / _mod);
-        if (symLen == 0) return;
+        //calculate work size
+        const size_t numSyms = std::min(inPort->elements(), outPort->elements() / _mod);
+        if (numSyms == 0) return;
 
         //perform conversion
-        this->symbolsToBits(
-            inBuff.as<const unsigned char*>(),
-            outBuff.as<unsigned char*>(),
-            symLen
-        );
+        auto in = inPort->buffer().as<const unsigned char *>();
+        auto out = outPort->buffer().as<unsigned char *>();
+        switch (_order)
+        {
+        case MSBit: ::symbolsToBitsMSBit(_mod, in, out, numSyms); break;
+        case LSBit: ::symbolsToBitsLSBit(_mod, in, out, numSyms); break;
+        }
 
         //produce/consume
-        inputPort->consume(symLen);
-        outputPort->produce(symLen * _mod);
+        inPort->consume(numSyms);
+        outPort->produce(numSyms * _mod);
     }
 
     void propagateLabels(const Pothos::InputPort *port)

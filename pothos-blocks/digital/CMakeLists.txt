@@ -20,6 +20,7 @@ POTHOS_MODULE_UTIL(
         SymbolsToBits.cpp
         BitsToSymbols.cpp
         TestSymbolBitConversions.cpp
+        TestSymbolByteConversions.cpp
         PreambleCorrelator.cpp
         PreambleFramer.cpp
         TestPreambleCorrelator.cpp

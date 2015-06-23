@@ -148,9 +148,19 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
 
         //generate the buffers and elements
         const size_t numBuffs = bufferDist(gen);
-        for (size_t bufno = 0; bufno < numBuffs; bufno++)
+        for (size_t bufno = 0; bufno <= numBuffs; bufno++)
         {
-            const size_t numElems = elementsDist(gen);
+            size_t numElems = elementsDist(gen);
+
+            //support last extra buffer to multiple when specified
+            if (bufno == numBuffs)
+            {
+                const int multiple = testPlan->optValue<int>("multiple", 1);
+                const size_t missing = totalElements % multiple;
+                if (missing == 0) break;
+                numElems = multiple - missing;
+            }
+
             totalElements += numElems;
             Pothos::BufferChunk buff(numElems*elemDType.size());
             for (size_t i = 0; i < numElems; i++)
