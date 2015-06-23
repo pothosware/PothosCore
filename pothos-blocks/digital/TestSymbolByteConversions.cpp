@@ -56,10 +56,11 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_byte_conversions)
         auto collector2 = registry.callProxy("/blocks/collector_sink", "uint8");
 
         //create a test plan
+        //total multiple required to flush out complete stream
         auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
         Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
         testPlan->set("enableBuffers", true);
-        testPlan->set("multiple", 8);
+        testPlan->set("totalMultiple", 8);
         testPlan->set("minValue", 0);
         testPlan->set("maxValue", (1 << mod) - 1);
         auto expected = feeder.callProxy("feedTestPlan", testPlan);
@@ -92,6 +93,59 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_byte_conversions)
         collector1.callVoid("verifyTestPlan", expected);
         std::cout << "verifyTestPlan2..." << std::endl;
         collector2.callVoid("verifyTestPlan", expected);
+    }
+
+    std::cout << "done!\n";
+}
+
+POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_byte_conversions_pkt)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto registry = env->findProxy("Pothos/BlockRegistry");
+
+    //run the topology
+    for (int mod = 1; mod <= 8; mod++)
+    for (int i = 0; i < 2; i++)
+    {
+        const std::string order = i == 0 ? "LSBit" : "MSBit";
+        std::cout << "run the topology with " << order << " order ";
+        std::cout << "and " << mod << " modulus" << std::endl;
+
+        //path 3 tests pkt in -> symbols to bytes -> bytes to symbols -> pkt out
+        auto s2p3 = registry.callProxy("/blocks/stream_to_packet");
+        auto symsToBytes3 = registry.callProxy("/blocks/symbols_to_bytes");
+        symsToBytes3.callProxy("setModulus", mod);
+        symsToBytes3.callProxy("setBitOrder", order);
+        auto bytesToSyms3 = registry.callProxy("/blocks/bytes_to_symbols");
+        bytesToSyms3.callProxy("setModulus", mod);
+        bytesToSyms3.callProxy("setBitOrder", order);
+        auto p2s3 = registry.callProxy("/blocks/packet_to_stream");
+        auto collector3 = registry.callProxy("/blocks/collector_sink", "uint8");
+
+        //create a test plan
+        //buffer multiple required to avoid padding packets in loopback test
+        auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
+        Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+        testPlan->set("enableBuffers", true);
+        testPlan->set("bufferMultiple", 8);
+        testPlan->set("minValue", 0);
+        testPlan->set("maxValue", (1 << mod) - 1);
+        auto expected = feeder.callProxy("feedTestPlan", testPlan);
+
+        Pothos::Topology topology;
+
+        //setup path 3
+        topology.connect(feeder, 0, s2p3, 0);
+        topology.connect(s2p3, 0, symsToBytes3, 0);
+        topology.connect(symsToBytes3, 0, bytesToSyms3, 0);
+        topology.connect(bytesToSyms3, 0, p2s3, 0);
+        topology.connect(p2s3, 0, collector3, 0);
+
+        topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+
+        std::cout << "verifyTestPlan3..." << std::endl;
+        collector3.callVoid("verifyTestPlan", expected);
     }
 
     std::cout << "done!\n";

@@ -78,10 +78,56 @@ public:
         else throw Pothos::InvalidArgumentException("SymbolsToBits::setBitOrder()", "Order must be LSBit or MSBit");
     }
 
+    void msgWork(const Pothos::Packet &inPkt)
+    {
+        //calculate conversion and buffer sizes
+        const size_t numSyms = inPkt.payload.elements();
+        const size_t numBits = numSyms*_mod;
+
+        //create a new packet for output symbols
+        Pothos::Packet outPkt;
+        auto outPort = this->output(0);
+        if (outPort->elements() >= numBits)
+        {
+            outPkt.payload = outPort->buffer();
+            outPkt.payload.length = numBits;
+            outPort->popBuffer(numBits);
+        }
+        else outPkt.payload = Pothos::BufferChunk(numBits);
+
+        //perform conversion
+        auto in = inPkt.payload.as<const unsigned char*>();
+        auto out = outPkt.payload.as<unsigned char*>();
+        switch (_order)
+        {
+        case MSBit: ::symbolsToBitsMSBit(_mod, in, out, numSyms); break;
+        case LSBit: ::symbolsToBitsLSBit(_mod, in, out, numSyms); break;
+        }
+
+        //copy and adjust labels
+        for (const auto &label : inPkt.labels)
+        {
+            outPkt.labels.push_back(label.toAdjusted(_mod, 1));
+        }
+
+        //post the output packet
+        outPort->postMessage(outPkt);
+    }
+
     void work(void)
     {
         auto inPort = this->input(0);
         auto outPort = this->output(0);
+
+        //handle packet conversion if applicable
+        if (inPort->hasMessage())
+        {
+            auto msg = inPort->popMessage();
+            if (msg.type() == typeid(Pothos::Packet))
+                this->msgWork(msg.extract<Pothos::Packet>());
+            else outPort->postMessage(msg);
+            return; //output buffer used, return now
+        }
 
         //calculate work size
         const size_t numSyms = std::min(inPort->elements(), outPort->elements() / _mod);

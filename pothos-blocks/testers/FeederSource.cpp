@@ -146,24 +146,31 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
             testPlan->optValue<int>("minValue", -(1 << (elemDType.size()*8 - 1))),
             testPlan->optValue<int>("maxValue", (1 << (elemDType.size()*8 - 1))-1));
 
+        //constraints on random numbers of elements produced
+        const int totalMultiple = testPlan->optValue<int>("totalMultiple", 1);
+        const int bufferMultiple = testPlan->optValue<int>("bufferMultiple", 1);
+
         //generate the buffers and elements
         const size_t numBuffs = bufferDist(gen);
-        for (size_t bufno = 0; bufno <= numBuffs; bufno++)
+        for (size_t bufno = 0; bufno < numBuffs; bufno++)
         {
-            size_t numElems = elementsDist(gen);
+            int numElems = elementsDist(gen);
 
-            //support last extra buffer to multiple when specified
-            if (bufno == numBuffs)
+            //round up to multiple and re-enforce the distribution bounds
+            numElems = ((numElems + bufferMultiple - 1)/bufferMultiple)*bufferMultiple;
+            if (numElems > elementsDist.b()) numElems -= bufferMultiple;
+            if (numElems < elementsDist.a()) numElems += bufferMultiple;
+
+            //pad last buffer to multiple when specified
+            if ((bufno+1) == numBuffs)
             {
-                const int multiple = testPlan->optValue<int>("multiple", 1);
-                const size_t missing = totalElements % multiple;
-                if (missing == 0) break;
-                numElems = multiple - missing;
+                const size_t extra = (totalElements + numElems) % totalMultiple;
+                if (extra != 0) numElems += totalMultiple - extra;
             }
 
             totalElements += numElems;
             Pothos::BufferChunk buff(numElems*elemDType.size());
-            for (size_t i = 0; i < numElems; i++)
+            for (int i = 0; i < numElems; i++)
             {
                 auto value = valueDist(gen);
                 expectedValues->add(value);

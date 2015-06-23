@@ -81,28 +81,25 @@ public:
         else throw Pothos::InvalidArgumentException("BitsToSymbols::setBitOrder()", "Order must be LSBit or MSBit");
     }
 
-    void msgWork(void)
+    void msgWork(const Pothos::Packet &inPkt)
     {
-        auto inPort = this->input(0);
-        auto outPort = this->output(0);
-
-        auto msg = inPort->popMessage();
-        if (msg.type() != typeid(Pothos::Packet))
-        {
-            outPort->postMessage(msg);
-            return;
-        }
+        //calculate conversion and buffer sizes (round up)
+        const size_t numSyms = (inPkt.payload.elements() + _mod - 1)/_mod;
 
         //create a new packet for output symbols
-        const auto &packet = msg.extract<Pothos::Packet>();
-        const size_t numInBits = ((packet.payload.elements() + _mod - 1)/_mod)*_mod;
-        const size_t numSyms = numInBits/_mod;
-        Pothos::Packet newPacket;
-        newPacket.payload = Pothos::BufferChunk(numSyms);
+        Pothos::Packet outPkt;
+        auto outPort = this->output(0);
+        if (outPort->elements() >= numSyms)
+        {
+            outPkt.payload = outPort->buffer();
+            outPkt.payload.length = numSyms;
+            outPort->popBuffer(numSyms);
+        }
+        else outPkt.payload = Pothos::BufferChunk(numSyms);
 
         //perform conversion
-        auto in = packet.payload.as<const unsigned char*>();
-        auto out = newPacket.payload.as<unsigned char*>();
+        auto in = inPkt.payload.as<const unsigned char*>();
+        auto out = outPkt.payload.as<unsigned char*>();
         switch (_order)
         {
         case MSBit: ::bitsToSymbolsMSBit(_mod, in, out, numSyms); break;
@@ -110,13 +107,13 @@ public:
         }
 
         //copy and adjust labels
-        for (const auto &label : packet.labels)
+        for (const auto &label : inPkt.labels)
         {
-            newPacket.labels.push_back(label.toAdjusted(1, _mod));
+            outPkt.labels.push_back(label.toAdjusted(1, _mod));
         }
 
         //post the output packet
-        outPort->postMessage(newPacket);
+        outPort->postMessage(outPkt);
     }
 
     void work(void)
@@ -126,7 +123,14 @@ public:
         inPort->setReserve(_mod);
 
         //handle packet conversion if applicable
-        if (inPort->hasMessage()) this->msgWork();
+        if (inPort->hasMessage())
+        {
+            auto msg = inPort->popMessage();
+            if (msg.type() == typeid(Pothos::Packet))
+                this->msgWork(msg.extract<Pothos::Packet>());
+            else outPort->postMessage(msg);
+            return; //output buffer used, return now
+        }
 
         //calculate work size
         const size_t numSyms = std::min(inPort->elements() / _mod, outPort->elements());

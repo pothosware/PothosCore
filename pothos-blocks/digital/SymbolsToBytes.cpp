@@ -4,6 +4,7 @@
 #include "SymbolHelpers.hpp"
 #include <Pothos/Framework.hpp>
 #include <algorithm> //min/max
+#include <iostream>
 
 /***********************************************************************
  * |PothosDoc Symbols to Bytes
@@ -89,28 +90,26 @@ public:
         else throw Pothos::InvalidArgumentException("SymbolsToBytes::setBitOrder()", "Order must be LSBit or MSBit");
     }
 
-    void msgWork(void)
+    void msgWork(const Pothos::Packet &inPkt)
     {
-        auto inPort = this->input(0);
+        //calculate conversion and buffer sizes (round up)
+        const size_t numSyms = ((inPkt.payload.elements() + _reserveSyms - 1)/_reserveSyms)*_reserveSyms;
+        const size_t numBytes = (numSyms*_mod)/8;
+
+        //create a new packet for output symbols
+        Pothos::Packet outPkt;
         auto outPort = this->output(0);
-
-        auto msg = inPort->popMessage();
-        if (msg.type() != typeid(Pothos::Packet))
+        if (outPort->elements() >= numBytes)
         {
-            outPort->postMessage(msg);
-            return;
+            outPkt.payload = outPort->buffer();
+            outPkt.payload.length = numBytes;
+            outPort->popBuffer(numBytes);
         }
-
-        //create a new packet for output bytes
-        const auto &packet = msg.extract<Pothos::Packet>();
-        const size_t numInSyms = ((packet.payload.elements() + _reserveSyms - 1)/_reserveSyms)*_reserveSyms;
-        const size_t numBytes = (numInSyms*_mod)/8;
-        Pothos::Packet newPacket;
-        newPacket.payload = Pothos::BufferChunk(numBytes);
+        else outPkt.payload = Pothos::BufferChunk(numBytes);
 
         //perform conversion
-        auto in = packet.payload.as<const unsigned char*>();
-        auto out = newPacket.payload.as<unsigned char*>();
+        auto in = inPkt.payload.as<const unsigned char*>();
+        auto out = outPkt.payload.as<unsigned char*>();
         switch (_order)
         {
         case MSBit: ::symbolsToBytesMSBit(_mod, in, out, numBytes); break;
@@ -118,13 +117,13 @@ public:
         }
 
         //copy and adjust labels
-        for (const auto &label : packet.labels)
+        for (const auto &label : inPkt.labels)
         {
-            newPacket.labels.push_back(label.toAdjusted(_mod, 8));
+            outPkt.labels.push_back(label.toAdjusted(_mod, 8));
         }
 
         //post the output packet
-        outPort->postMessage(newPacket);
+        outPort->postMessage(outPkt);
     }
 
     void work(void)
@@ -134,7 +133,14 @@ public:
         inPort->setReserve(_reserveSyms);
 
         //handle packet conversion if applicable
-        if (inPort->hasMessage()) this->msgWork();
+        if (inPort->hasMessage())
+        {
+            auto msg = inPort->popMessage();
+            if (msg.type() == typeid(Pothos::Packet))
+                this->msgWork(msg.extract<Pothos::Packet>());
+            else outPort->postMessage(msg);
+            return; //output buffer used, return now
+        }
 
         //calculate work size given reserve requirements
         const size_t numInSyms = (inPort->elements()/_reserveSyms)*_reserveSyms;
