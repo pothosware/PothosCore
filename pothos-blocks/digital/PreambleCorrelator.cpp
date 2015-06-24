@@ -36,17 +36,17 @@
  * The width of each preamble symbol must the intended input stream.
  * |default [1]
  *
- * |param thresh The threshold hamming distance for preamble match detection.
+ * |param thresh[Threshold] The threshold hamming distance for preamble match detection.
  * |default 0
  *
- * |param label The label id that marks the first symbol of a correlator match.
- * |default "Matched!"
+ * |param frameStartId[Frame Start ID] The label ID that marks the first symbol of a correlator match.
+ * |default "frameStart"
  * |widget StringEntry()
  *
  * |factory /blocks/preamble_correlator()
  * |setter setPreamble(preamble)
  * |setter setThreshold(thresh)
- * |setter setLabel(label)
+ * |setter setFrameStartId(frameStartId)
  **********************************************************************/
 class PreambleCorrelator : public Pothos::Block
 {
@@ -66,11 +66,11 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, getPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, setThreshold));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, getThreshold));
-        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, setLabel));
-        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, getLabel));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, setFrameStartId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleCorrelator, getFrameStartId));
         this->setPreamble(std::vector<unsigned char>(1, 1)); //initial update
         this->setThreshold(1); //initial update
-        this->setLabel("Matched!"); //initial update
+        this->setFrameStartId("frameStart"); //initial update
     }
 
     void setPreamble(const std::vector<unsigned char> preamble)
@@ -94,14 +94,14 @@ public:
         return _threshold;
     }
 
-    void setLabel(std::string label)
+    void setFrameStartId(std::string id)
     {
-        _label = label;
+        _frameStartId = id;
     }
 
-    std::string getLabel(void) const
+    std::string getFrameStartId(void) const
     {
-        return _label;
+        return _frameStartId;
     }
 
     //! always use a circular buffer to avoid discontinuity over sliding window
@@ -144,7 +144,7 @@ public:
             // Emit a label if within the distance threshold
             if (dist <= _threshold)
             {
-                outputPort->postLabel(Pothos::Label(_label, Pothos::Object(), n + _preamble.size()));
+                outputPort->postLabel(Pothos::Label(_frameStartId, Pothos::Object(), n + _preamble.size()));
             }
 
             //distance[n] = dist;
@@ -154,7 +154,7 @@ public:
 
 private:
     unsigned _threshold;
-    std::string _label;
+    std::string _frameStartId;
     std::vector<unsigned char> _preamble;
 };
 

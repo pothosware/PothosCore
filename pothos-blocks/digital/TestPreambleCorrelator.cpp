@@ -9,7 +9,8 @@
 
 POTHOS_TEST_BLOCK("/blocks/tests", test_preamble_correlator)
 {
-    auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto registry = env->findProxy("Pothos/BlockRegistry");
 
     auto feeder = registry.callProxy("/blocks/feeder_source", "unsigned char");
     auto correlator = registry.callProxy("/blocks/preamble_correlator");

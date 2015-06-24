@@ -9,7 +9,8 @@
 
 POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_mapper_slicer_float)
 {
-    auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto registry = env->findProxy("Pothos/BlockRegistry");
 
     auto feeder0 = registry.callProxy("/blocks/feeder_source", "unsigned char");
     auto mapper = registry.callProxy("/blocks/symbol_mapper", "float");

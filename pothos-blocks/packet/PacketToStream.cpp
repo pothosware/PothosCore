@@ -19,10 +19,20 @@
  * Input buffer references held by the packet object
  * will be forwarded directly to the output byte stream.
  *
+ * Use of labels to indicate start of frame: When the frame start ID is specified,
+ * a new label is produced for the first output element from each packet payload.
+ *
  * |category /Packet
  * |keywords packet message datagram
  *
+ * |param frameStartId[Frame Start ID] The label ID to mark the first element from each payload.
+ * An empty string (default) means that frame labels are not produced.
+ * |default ""
+ * |widget StringEntry()
+ * |preview valid
+ *
  * |factory /blocks/packet_to_stream()
+ * |setter setFrameStartId(frameStartId)
  **********************************************************************/
 class PacketToStream : public Pothos::Block
 {
@@ -31,11 +41,23 @@ public:
     {
         this->setupInput(0);
         this->setupOutput(0, "", this->uid()/*unique domain*/);
+        this->registerCall(this, POTHOS_FCN_TUPLE(PacketToStream, setFrameStartId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PacketToStream, getFrameStartId));
     }
 
     static Block *make(void)
     {
         return new PacketToStream();
+    }
+
+    void setFrameStartId(std::string id)
+    {
+        _frameStartId = id;
+    }
+
+    std::string getFrameStartId(void) const
+    {
+        return _frameStartId;
     }
 
     void work(void)
@@ -62,9 +84,18 @@ public:
                 packet.payload.dtype.size(), 1)); //elements to bytes
         }
 
+        //post frame label
+        if (not _frameStartId.empty())
+        {
+            outputPort->postLabel(Pothos::Label(_frameStartId, Pothos::Object(), 0));
+        }
+
         //post the payload
         outputPort->postBuffer(packet.payload);
     }
+
+private:
+    std::string _frameStartId;
 };
 
 static Pothos::BlockRegistry registerPacketToStream(

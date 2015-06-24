@@ -1,10 +1,9 @@
 // Copyright (c) 2015-2015 Rinat Zakirov
+// Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <list>
 #include <algorithm>
-#include <cstring>
 
 /***********************************************************************
  * |PothosDoc Simplified Label Deframer
@@ -13,16 +12,16 @@
  *
  * |category /Packet
  *
- * |param packetLength The length of the packet as a number of elements
- * |default 1
+ * |param mtu[MTU] The length of the each output packet as a number of elements.
+ * |default 1024
  *
- * |param frameStartLabel The label that signifies the beginning of the frame
- * |default "Matched!"
+ * |param frameStartId[Frame Start ID] The label ID that signifies the beginning of the frame.
+ * |default "frameStart"
  * |widget StringEntry()
  *
  * |factory /blocks/label_deframer()
- * |setter setPacketLength(packetLength)
- * |setter setFrameStartLabel(frameStartLabel)
+ * |setter setMTU(mtu)
+ * |setter setFrameStartId(frameStartId)
  **********************************************************************/
 class LabelDeframer : public Pothos::Block
 {
@@ -33,22 +32,34 @@ public:
         return new LabelDeframer();
     }
 
-    LabelDeframer(void) : packetLength(0x1), frameStartLabel("Matched!")
+    LabelDeframer(void) : _mtu(1024), _frameStartId("frameStart")
     {
         this->setupInput(0, typeid(unsigned char));
         this->setupOutput(0, typeid(unsigned char));
-        this->registerCall(this, POTHOS_FCN_TUPLE(LabelDeframer, setPacketLength));
-        this->registerCall(this, POTHOS_FCN_TUPLE(LabelDeframer, setFrameStartLabel));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LabelDeframer, setMTU));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LabelDeframer, getMTU));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LabelDeframer, setFrameStartId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LabelDeframer, getFrameStartId));
     }
 
-    void setFrameStartLabel(const std::string &label)
+    void setMTU(const size_t mtu)
     {
-        frameStartLabel = label;
+        _mtu = mtu;
     }
 
-    void setPacketLength(const size_t length)
+    size_t getMTU(void) const
     {
-        packetLength = length;
+        return _mtu;
+    }
+
+    void setFrameStartId(const std::string &id)
+    {
+        _frameStartId = id;
+    }
+
+    std::string getFrameStartId(void) const
+    {
+        return _frameStartId;
     }
 
     void work(void)
@@ -70,34 +81,34 @@ public:
             if(label.index >= inLen)
                 continue;
 
-            // If the packet is not a start-of-frame packet, yet it is within the packet's data boundaries, 
+            // If the packet is not a start-of-frame packet, yet it is within the packet's data boundaries,
             // append that label to the packet message, with correction about the label position
-            if(label.id != frameStartLabel)
+            if(label.id != _frameStartId)
             {
                 if(frameFound)
                 {
-                    if(label.index < packetLength)
+                    if(label.index < _mtu)
                     {
                         packet.labels.push_back(label);
                     }
                 }
                 continue;
             }
-    
+
             // Skip all of data before the start of packet if this is the first time we see the label
             auto dataStartIndex = label.index;
             if(dataStartIndex != 0 && !frameFound)
             {
-                inputPort->consume(dataStartIndex);                
-                inputPort->setReserve(packetLength);
+                inputPort->consume(dataStartIndex);
+                inputPort->setReserve(_mtu);
                 return;
-            } 
+            }
 
             // This case happens when the start of frame is naturally aligned with the begining of a buffer, but we didn't get enough data
             // In that case we wait
-            if(dataStartIndex == 0 && inLen < packetLength)
+            if(dataStartIndex == 0 && inLen < _mtu)
             {
-                inputPort->setReserve(packetLength);
+                inputPort->setReserve(_mtu);
                 return;
             }
 
@@ -108,7 +119,7 @@ public:
 
             // If we see multiple frame labels, skip all the other ones for now
         }
-        
+
         // Skip all of the data in case we didn't see any frame labels
         if(!frameFound)
         {
@@ -116,10 +127,16 @@ public:
             return;
         }
 
-        inBuff.length = packetLength;
+        inBuff.length = _mtu;
         packet.payload = inBuff;
         outputPort->postMessage(packet);
-        inputPort->consume(packetLength);
+        inputPort->consume(_mtu);
+    }
+
+    void propagateLabels(const Pothos::InputPort *)
+    {
+        //labels are not propagated
+        return;
     }
 
     Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &)
@@ -127,10 +144,9 @@ public:
         return Pothos::BufferManager::make("circular");
     }
 
-protected:
-
-    size_t packetLength;
-    std::string frameStartLabel;
+private:
+    size_t _mtu;
+    std::string _frameStartId;
 };
 
 static Pothos::BlockRegistry registerLabelDeframer(
