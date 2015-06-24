@@ -22,7 +22,8 @@ POTHOS_MODULE_UTIL(
         TestSymbolByteConversions.cpp
         PreambleCorrelator.cpp
         PreambleFramer.cpp
-        TestPreambleBlocks.cpp
+        TestFramerToCorrelator.cpp
+        TestPreambleFramer.cpp
         TestPreambleCorrelator.cpp
         Scrambler.cpp
         Descrambler.cpp

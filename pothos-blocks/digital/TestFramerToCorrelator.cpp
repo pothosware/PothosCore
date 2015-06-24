@@ -8,7 +8,7 @@
 #include <Poco/JSON/Object.h>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_preamble_blocks)
+POTHOS_TEST_BLOCK("/blocks/tests", test_framer_to_correlator)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
