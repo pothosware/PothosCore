@@ -6,7 +6,7 @@
 /// The test macros are loosely based on the Boost unit test suite.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -15,7 +15,6 @@
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Callable.hpp>
 #include <Pothos/Exception.hpp>
-#include <sstream>
 #include <memory>
 #include <string>
 
@@ -102,6 +101,18 @@ void name::runTestsImpl_(void)
     } \
 }
 
+//! Test two arrays for equality
+#define POTHOS_TEST_EQUALA(lhs, rhs, size) \
+{ \
+    for (size_t i = 0; i < (size); i++) \
+    { \
+        __POTHOS_TEST_ASSERT( \
+            "index " + Pothos::TestingBase::current().toString(i) + \
+            " asserts " + Pothos::TestingBase::current().toString((lhs)[i]) + \
+            " == " + Pothos::TestingBase::current().toString((rhs)[i]), (lhs)[i] == (rhs)[i]); \
+    } \
+}
+
 //! Test that a statement throws a particular exception
 #define POTHOS_TEST_THROWS(statement, expectedException) \
 { \
@@ -129,9 +140,7 @@ struct POTHOS_API TestingBase
     template <typename T>
     std::string toString(const T &v)
     {
-        std::stringstream ss;
-        ss << v;
-        return ss.str();
+        return Pothos::Object(v).toString();
     }
 };
 
