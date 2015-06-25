@@ -22,56 +22,45 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_bit_conversions)
         std::cout << "run the topology with " << order << " order ";
         std::cout << "and " << mod << " modulus" << std::endl;
 
-        //path 0 tests symbols to bits -> bits to symbols
-        auto symsToBits0 = registry.callProxy("/blocks/symbols_to_bits");
-        symsToBits0.callProxy("setModulus", mod);
-        symsToBits0.callProxy("setBitOrder", order);
-        auto bitsToSyms0 = registry.callProxy("/blocks/bits_to_symbols");
-        bitsToSyms0.callProxy("setModulus", mod);
-        bitsToSyms0.callProxy("setBitOrder", order);
-        auto collector0 = registry.callProxy("/blocks/collector_sink", "uint8");
-
-        //path 1 tests pkt in -> symbols to bits -> bits to symbols -> pkt out
-        auto s2p1 = registry.callProxy("/blocks/stream_to_packet");
-        auto symsToBits1 = registry.callProxy("/blocks/symbols_to_bits");
-        symsToBits1.callProxy("setModulus", mod);
-        symsToBits1.callProxy("setBitOrder", order);
-        auto bitsToSyms1 = registry.callProxy("/blocks/bits_to_symbols");
-        bitsToSyms1.callProxy("setModulus", mod);
-        bitsToSyms1.callProxy("setBitOrder", order);
-        auto p2s1 = registry.callProxy("/blocks/packet_to_stream");
-        auto collector1 = registry.callProxy("/blocks/collector_sink", "uint8");
-
-        //create a test plan
+        //create the blocks
         auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
-        Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
-        testPlan->set("enableBuffers", true);
-        testPlan->set("enableLabels", true);
-        testPlan->set("minValue", 0);
-        testPlan->set("maxValue", (1 << mod) - 1);
-        auto expected = feeder.callProxy("feedTestPlan", testPlan);
+        auto symsToBits = registry.callProxy("/blocks/symbols_to_bits");
+        symsToBits.callProxy("setModulus", mod);
+        symsToBits.callProxy("setBitOrder", order);
+        auto bitsToSyms = registry.callProxy("/blocks/bits_to_symbols");
+        bitsToSyms.callProxy("setModulus", mod);
+        bitsToSyms.callProxy("setBitOrder", order);
+        auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
 
+        //setup the topology
         Pothos::Topology topology;
+        topology.connect(feeder, 0, symsToBits, 0);
+        topology.connect(symsToBits, 0, bitsToSyms, 0);
+        topology.connect(bitsToSyms, 0, collector, 0);
 
-        //setup path 0
-        topology.connect(feeder, 0, symsToBits0, 0);
-        topology.connect(symsToBits0, 0, bitsToSyms0, 0);
-        topology.connect(bitsToSyms0, 0, collector0, 0);
-
-        //setup path 1
-        topology.connect(feeder, 0, s2p1, 0);
-        topology.connect(s2p1, 0, symsToBits1, 0);
-        topology.connect(symsToBits1, 0, bitsToSyms1, 0);
-        topology.connect(bitsToSyms1, 0, p2s1, 0);
-        topology.connect(p2s1, 0, collector1, 0);
-
+        //create a test plan for streams
+        std::cout << "Perform stream-based test plan..." << std::endl;
+        Poco::JSON::Object::Ptr testPlan0(new Poco::JSON::Object());
+        testPlan0->set("enableBuffers", true);
+        testPlan0->set("enableLabels", true);
+        testPlan0->set("minValue", 0);
+        testPlan0->set("maxValue", (1 << mod) - 1);
+        auto expected0 = feeder.callProxy("feedTestPlan", testPlan0);
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());
+        collector.callVoid("verifyTestPlan", expected0);
 
-        std::cout << "verifyTestPlan0..." << std::endl;
-        collector0.callVoid("verifyTestPlan", expected);
-        std::cout << "verifyTestPlan1..." << std::endl;
-        collector1.callVoid("verifyTestPlan", expected);
+        //create a test plan for packets
+        std::cout << "Perform packet-based test plan..." << std::endl;
+        Poco::JSON::Object::Ptr testPlan1(new Poco::JSON::Object());
+        testPlan1->set("enablePackets", true);
+        testPlan1->set("enableLabels", true);
+        testPlan1->set("minValue", 0);
+        testPlan1->set("maxValue", (1 << mod) - 1);
+        auto expected1 = feeder.callProxy("feedTestPlan", testPlan1);
+        topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+        collector.callVoid("verifyTestPlan", expected1);
     }
 
     std::cout << "done!\n";

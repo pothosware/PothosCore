@@ -22,6 +22,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_byte_conversions)
         std::cout << "run the topology with " << order << " order ";
         std::cout << "and " << mod << " modulus" << std::endl;
 
+        auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
+
         //path 0 tests symbols to bytes -> bytes to symbols
         auto symsToBytes0 = registry.callProxy("/blocks/symbols_to_bytes");
         symsToBytes0.callProxy("setModulus", mod);
@@ -55,16 +57,6 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_byte_conversions)
         bytesToSyms2.callProxy("setBitOrder", order);
         auto collector2 = registry.callProxy("/blocks/collector_sink", "uint8");
 
-        //create a test plan
-        //total multiple required to flush out complete stream
-        auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
-        Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
-        testPlan->set("enableBuffers", true);
-        testPlan->set("totalMultiple", 8);
-        testPlan->set("minValue", 0);
-        testPlan->set("maxValue", (1 << mod) - 1);
-        auto expected = feeder.callProxy("feedTestPlan", testPlan);
-
         Pothos::Topology topology;
 
         //setup path 0
@@ -84,68 +76,47 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_byte_conversions)
         topology.connect(bitsToSyms2, 0, bytesToSyms2, 0);
         topology.connect(bytesToSyms2, 0, collector2, 0);
 
-        topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
+        //create a test plan for streams
+        //total multiple required to flush out complete stream
+        std::cout << "Perform stream-based test plan..." << std::endl;
+        {
+            Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+            testPlan->set("enableBuffers", true);
+            testPlan->set("totalMultiple", 8);
+            testPlan->set("minValue", 0);
+            testPlan->set("maxValue", (1 << mod) - 1);
+            auto expected = feeder.callProxy("feedTestPlan", testPlan);
+            topology.commit();
+            POTHOS_TEST_TRUE(topology.waitInactive());
 
-        std::cout << "verifyTestPlan0..." << std::endl;
-        collector0.callVoid("verifyTestPlan", expected);
-        std::cout << "verifyTestPlan1..." << std::endl;
-        collector1.callVoid("verifyTestPlan", expected);
-        std::cout << "verifyTestPlan2..." << std::endl;
-        collector2.callVoid("verifyTestPlan", expected);
-    }
+            std::cout << "verifyTestPlan path0..." << std::endl;
+            collector0.callVoid("verifyTestPlan", expected);
+            std::cout << "verifyTestPlan path1..." << std::endl;
+            collector1.callVoid("verifyTestPlan", expected);
+            std::cout << "verifyTestPlan path2..." << std::endl;
+            collector2.callVoid("verifyTestPlan", expected);
+        }
 
-    std::cout << "done!\n";
-}
-
-POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_byte_conversions_pkt)
-{
-    auto env = Pothos::ProxyEnvironment::make("managed");
-    auto registry = env->findProxy("Pothos/BlockRegistry");
-
-    //run the topology
-    for (int mod = 1; mod <= 8; mod++)
-    for (int i = 0; i < 2; i++)
-    {
-        const std::string order = i == 0 ? "LSBit" : "MSBit";
-        std::cout << "run the topology with " << order << " order ";
-        std::cout << "and " << mod << " modulus" << std::endl;
-
-        //path 3 tests pkt in -> symbols to bytes -> bytes to symbols -> pkt out
-        auto s2p3 = registry.callProxy("/blocks/stream_to_packet");
-        auto symsToBytes3 = registry.callProxy("/blocks/symbols_to_bytes");
-        symsToBytes3.callProxy("setModulus", mod);
-        symsToBytes3.callProxy("setBitOrder", order);
-        auto bytesToSyms3 = registry.callProxy("/blocks/bytes_to_symbols");
-        bytesToSyms3.callProxy("setModulus", mod);
-        bytesToSyms3.callProxy("setBitOrder", order);
-        auto p2s3 = registry.callProxy("/blocks/packet_to_stream");
-        auto collector3 = registry.callProxy("/blocks/collector_sink", "uint8");
-
-        //create a test plan
+        //create a test plan for packets
         //buffer multiple required to avoid padding packets in loopback test
-        auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
-        Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
-        testPlan->set("enableBuffers", true);
-        testPlan->set("bufferMultiple", 8);
-        testPlan->set("minValue", 0);
-        testPlan->set("maxValue", (1 << mod) - 1);
-        auto expected = feeder.callProxy("feedTestPlan", testPlan);
+        std::cout << "Perform packet-based test plan..." << std::endl;
+        {
+            Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+            testPlan->set("enablePackets", true);
+            testPlan->set("bufferMultiple", 8);
+            testPlan->set("minValue", 0);
+            testPlan->set("maxValue", (1 << mod) - 1);
+            auto expected = feeder.callProxy("feedTestPlan", testPlan);
+            topology.commit();
+            POTHOS_TEST_TRUE(topology.waitInactive());
 
-        Pothos::Topology topology;
-
-        //setup path 3
-        topology.connect(feeder, 0, s2p3, 0);
-        topology.connect(s2p3, 0, symsToBytes3, 0);
-        topology.connect(symsToBytes3, 0, bytesToSyms3, 0);
-        topology.connect(bytesToSyms3, 0, p2s3, 0);
-        topology.connect(p2s3, 0, collector3, 0);
-
-        topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
-
-        std::cout << "verifyTestPlan3..." << std::endl;
-        collector3.callVoid("verifyTestPlan", expected);
+            std::cout << "verifyTestPlan path0..." << std::endl;
+            collector0.callVoid("verifyTestPlan", expected);
+            std::cout << "verifyTestPlan path1..." << std::endl;
+            collector1.callVoid("verifyTestPlan", expected);
+            std::cout << "verifyTestPlan path2..." << std::endl;
+            collector2.callVoid("verifyTestPlan", expected);
+        }
     }
 
     std::cout << "done!\n";

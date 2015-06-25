@@ -14,12 +14,10 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_framer_to_correlator)
     auto registry = env->findProxy("Pothos/BlockRegistry");
 
     auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
-    auto s2p = registry.callProxy("/blocks/stream_to_packet");
     auto generator = registry.callProxy("/blocks/packet_to_stream");
     auto framer = registry.callProxy("/blocks/preamble_framer");
     auto correlator = registry.callProxy("/blocks/preamble_correlator");
     auto deframer = registry.callProxy("/blocks/label_deframer");
-    auto p2s = registry.callProxy("/blocks/packet_to_stream");
     auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
 
     //configuration constants
@@ -43,7 +41,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_framer_to_correlator)
 
     //create a test plan
     Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
-    testPlan->set("enableBuffers", true);
+    testPlan->set("enablePackets", true);
     testPlan->set("minValue", 0);
     testPlan->set("maxValue", maxValue);
     testPlan->set("minBufferSize", mtu);
@@ -51,18 +49,18 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_framer_to_correlator)
     auto expected = feeder.callProxy("feedTestPlan", testPlan);
 
     //because of correlation window, pad feeder to flush through last message
-    feeder.callVoid("feedBuffer", Pothos::BufferChunk(preamble.size()));
+    Pothos::Packet paddingPacket;
+    paddingPacket.payload = Pothos::BufferChunk("uint8", preamble.size());
+    feeder.callVoid("feedPacket", paddingPacket);
 
     //create tester topology
     {
         Pothos::Topology topology;
-        topology.connect(feeder, 0, s2p, 0);
-        topology.connect(s2p, 0, generator, 0);
+        topology.connect(feeder, 0, generator, 0);
         topology.connect(generator, 0, framer, 0);
         topology.connect(framer, 0, correlator, 0);
         topology.connect(correlator, 0, deframer, 0);
-        topology.connect(deframer, 0, p2s, 0);
-        topology.connect(p2s, 0, collector, 0);
+        topology.connect(deframer, 0, collector, 0);
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());
         //std::cout << topology.queryJSONStats() << std::endl;

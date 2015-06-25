@@ -74,31 +74,34 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_unit_test_blocks)
     POTHOS_TEST_EQUAL(lbls[1].data.extract<std::string>(), "lbl1");
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_random_unit_test)
+POTHOS_TEST_BLOCK("/blocks/tests", test_unit_testplans)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
     auto feeder = registry.callProxy("/blocks/feeder_source", "int");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
-    //create a test plan
-    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
-    testPlan->set("enableBuffers", true);
-    testPlan->set("enableLabels", true);
-    testPlan->set("enableMessages", true);
-    auto expected = feeder.callProxy("feedTestPlan", testPlan);
+    //setup the topology
+    Pothos::Topology topology;
+    topology.connect(feeder, 0, collector, 0);
 
-    //std::stringstream ss;
-    //expected.convert<Poco::JSON::Object::Ptr>()->stringify(ss, 4);
-    //std::cout << ss.str() << std::endl;
+    //create a test plan for streams
+    Poco::JSON::Object::Ptr testPlan0(new Poco::JSON::Object());
+    testPlan0->set("enableBuffers", true);
+    testPlan0->set("enableLabels", true);
+    testPlan0->set("enableMessages", true);
+    auto expected0 = feeder.callProxy("feedTestPlan", testPlan0);
+    topology.commit();
+    POTHOS_TEST_TRUE(topology.waitInactive());
+    collector.callVoid("verifyTestPlan", expected0);
 
-    //run the topology
-    {
-        Pothos::Topology topology;
-        topology.connect(feeder, 0, collector, 0);
-        topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
-    }
-
-    collector.callVoid("verifyTestPlan", expected);
+    //create a test plan for packets
+    Poco::JSON::Object::Ptr testPlan1(new Poco::JSON::Object());
+    testPlan1->set("enablePackets", true);
+    testPlan1->set("enableLabels", true);
+    testPlan1->set("enableMessages", true);
+    auto expected1 = feeder.callProxy("feedTestPlan", testPlan1);
+    topology.commit();
+    POTHOS_TEST_TRUE(topology.waitInactive());
+    collector.callVoid("verifyTestPlan", expected1);
 }
