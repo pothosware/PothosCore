@@ -4,7 +4,7 @@
 /// This file contains the definition for the DType object.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -39,7 +39,7 @@ class POTHOS_API DType
 {
 public:
 
-    //! Create an empty DType with blank name, empty shape, and size 0
+    //! Create an unknown DType of size 1
     DType(void);
 
     /*!
