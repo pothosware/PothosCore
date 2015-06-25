@@ -93,7 +93,7 @@ public:
             outPkt.payload.length = numBits;
             outPort->popBuffer(numBits);
         }
-        else outPkt.payload = Pothos::BufferChunk(numBits);
+        else outPkt.payload = Pothos::BufferChunk(outPort->dtype(), numBits);
 
         //perform conversion
         auto in = inPkt.payload.as<const unsigned char*>();
