@@ -14,7 +14,7 @@
  * |category /Packet
  * |keywords MAC PHY packet
  *
- * |param macId A 16-bit address of the MAC interface
+ * |param macId[MAC ID] A 16-bit address of the MAC interface
  * |default 0
  *
  * |factory /blocks/simple_mac()

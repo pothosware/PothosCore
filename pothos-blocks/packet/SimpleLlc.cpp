@@ -1,9 +1,11 @@
 // Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include <Pothos/Framework.hpp>
+#include <mutex>
+#include <chrono>
 #include <list>
 #include <cstring>
-#include <Pothos/Framework.hpp>
 #include "MacHelper.hpp"
 
 /***********************************************************************
@@ -14,21 +16,22 @@
  * http://en.wikipedia.org/wiki/Logical_link_control
  *
  * |category /Packet
- * |keywords LLC
+ * |keywords LLC MAC packet
  *
- * |param Port The port id this LLC is going to be servicing
+ * |param port The port id this LLC is going to be servicing
  * |default 0
  *
- * |param Recipient The ID of the recipient that the LLC is conneting to 
+ * |param recipient The ID of the recipient that the LLC is connecting to
  * |default 0
  *
- * |param ResendTime The time in seconds that is required to be waited before re-sending the outgoing packet
+ * |param resendTime[Resend Time] The time in seconds that is required to be waited before re-sending the outgoing packet
  * |default 1.0
+ * |units seconds
  *
  * |factory /blocks/simple_llc()
- * |setter setPort(Port)
- * |setter setRecipient(Recipient)
- * |setter setResendTime(ResendTime)
+ * |setter setPort(port)
+ * |setter setRecipient(recipient)
+ * |setter setResendTime(resendTime)
  **********************************************************************/
 class SimpleLlc : public Pothos::Block
 {
@@ -73,21 +76,21 @@ public:
     {
         _port = port;
     }
-    
+
     void setResendTime(double time)
     {
         _resendTime = time;
     }
-    
+
     void setResetState(bool resetState)
     {
         _resetState = resetState;
     }
-    
+
     void onUpdateTick(int /*dummy*/)
     {
         auto timeNow = std::chrono::high_resolution_clock::now();
-        
+
         // While in reset state, send out reset beacons regularly
         if(_resetState)
         {
@@ -97,34 +100,34 @@ public:
                 _resetBeaconSendTime = timeNow;
                 uint16_t nonce = 0;
                 if(!_sentPackets.empty()) nonce = _sentPackets.front().nonce;
-                
+
                 postControlPacket(nonce, RESET | REQ_ACK);
-            } 
+            }
         }
-        
+
         if(_resetState) return;
 
         if(!_lock.try_lock()) return;
-        
+
         for(auto &item: _sentPackets)
         {
             if(!item.sent) continue;
-            
+
             std::chrono::duration<double> timeSinceSent = timeNow - item.sendTime;
-            // When we reach an item that has not been timed out yet, we know all the 
+            // When we reach an item that has not been timed out yet, we know all the
             // packets were queued later, therefore wouldn't be timed out either.
             if(timeSinceSent.count() < _resendTime) break;
-            
+
             item.sendTime = timeNow;
             _macOut->postMessage(item.packet);
         }
-        
+
         _lock.unlock();
     }
-    
+
     void postControlPacket(uint16_t nonce, uint8_t control)
     {
-        //FIXME: Save the previously sent ack packet and use the .unique() to check if 
+        //FIXME: Save the previously sent ack packet and use the .unique() to check if
         // that previous packet could be reused, so as to avoid reallocation of buffer space that happens below
         Pothos::Packet packet;
         packet.payload = Pothos::BufferChunk("uint8", 4);
@@ -132,7 +135,7 @@ public:
         packet.metadata["recipient"] = Pothos::Object(_recipient);
         _macOut->postMessage(packet);
     }
-    
+
     void work(void)
     {
         // handle incoming data from MAC
@@ -148,9 +151,9 @@ public:
             uint16_t nonce;
             uint8_t control;
             extractHeader(byteBuf, port, nonce, control);
-            
+
             if(port != _port) return;
-            
+
             // Initiate the reset if the other side requests a reset, and finish the reset if we receive a reset acknowledgment
             if(control & RESET)
             {
@@ -177,7 +180,7 @@ public:
                 _streamOut->postMessage(pkt);
                 _expectedRecvNonce++;
             }
-            
+
             // Remove the acknowledged packet from being re-sent again
             if((control & ACK) && (control & SEND))
             {
@@ -207,7 +210,7 @@ public:
             auto msg = _streamIn->popMessage();
             auto pktIn = msg.extract<Pothos::Packet>();
             auto data = pktIn.payload;
-            
+
             _lock.lock();
             uint16_t nonce = ++_lastNonceSent;
             PacketItem &item = *_sentPackets.insert(_sentPackets.end(), PacketItem());
@@ -238,7 +241,7 @@ private:
         byteBuf[2] = nonce % 256;
         byteBuf[3] = control;
     }
-    
+
     void extractHeader(const uint8_t *byteBuf, uint8_t &port, uint16_t &nonce, uint8_t &control)
     {
         // Data byte format: RECIPIENT_PORT NONCE_MSB NONCE_LSB CONTROL [DATA]*
@@ -246,42 +249,42 @@ private:
         nonce = (byteBuf[1] << 8) | byteBuf[2];
         control = byteBuf[3];
     }
-    
+
     bool safeToQueueNewPacket()
     {
         bool safe = true;
-        
+
         if(_resetState) return false;
-                
+
         _lock.lock();
         auto &item = _sentPackets.front();
         if(_lastNonceSent + 1 == item.nonce) safe = false;
         _lock.unlock();
-        
+
         return safe;
     }
-    
-    struct PacketItem 
+
+    struct PacketItem
     {
         uint16_t nonce;
         Pothos::Packet packet;
         std::chrono::high_resolution_clock::time_point sendTime;
         bool sent;
     };
-    
+
     unsigned long long _errorCount;
     uint8_t _port;
     uint16_t _recipient;
     uint16_t _lastNonceSent;
     uint16_t _expectedRecvNonce;
     double _resendTime;
-    
+
     bool _resetState;
     std::chrono::high_resolution_clock::time_point _resetBeaconSendTime;
-    
+
     std::mutex _lock;
     std::list<PacketItem> _sentPackets;
-    
+
     Pothos::OutputPort *_macOut;
     Pothos::OutputPort *_streamOut;
     Pothos::InputPort *_macIn;
