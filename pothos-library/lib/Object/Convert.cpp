@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/ObjectImpl.hpp>
@@ -123,7 +123,7 @@ static Pothos::Object convertObject(const Pothos::Object &inputObj, const std::t
 
     //thow an error when the conversion is not supported
     if (it == getConvertMap().end()) throw Pothos::ObjectConvertError(
-        "Pothos::Detail::convert()",
+        "Pothos::Object::convert()",
         Poco::format("doesnt support %s to %s",
         inputObj.getTypeString(),
         Pothos::Util::typeInfoToString(outputType)));
