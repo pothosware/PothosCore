@@ -32,6 +32,9 @@ public:
         this->setupOutput("phyOut");
         this->setupOutput("macOut");
         this->registerCall(this, POTHOS_FCN_TUPLE(SimpleMac, setMacId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleMac, getMacId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleMac, getErrorCount));
+        this->registerProbe("getErrorCount");
     }
 
     static Block *make(void)
@@ -50,6 +53,16 @@ public:
     void setMacId(uint16_t macId)
     {
         _id = macId;
+    }
+
+    uint16_t getMacId(void) const
+    {
+        return _id;
+    }
+
+    unsigned long long getErrorCount(void) const
+    {
+        return _errorCount;
     }
 
     Pothos::BufferChunk unpack(const Pothos::Packet &pkt, uint16_t &senderId, uint16_t &recipientId)
@@ -90,7 +103,7 @@ public:
             auto msg = _phyIn->popMessage();
             auto pktIn = msg.extract<Pothos::Packet>();
             Pothos::Packet pktOut;
-            uint16_t recipientId, senderId;
+            uint16_t recipientId = 0, senderId = 0;
             pktOut.payload = this->unpack(pktIn, recipientId, senderId);
             if (pktOut.payload)
             {
@@ -115,7 +128,7 @@ public:
                 _errorCount++;
                 return;
             }
-            auto recipientId = recipientIdIter->second.extract<uint16_t>();
+            auto recipientId = recipientIdIter->second.convert<uint16_t>();
     
             auto packetLength = data.length + 7;
             Pothos::Packet packetOut;

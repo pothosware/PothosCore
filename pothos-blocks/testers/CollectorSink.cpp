@@ -19,6 +19,7 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(CollectorSink, getBuffer));
         this->registerCall(this, POTHOS_FCN_TUPLE(CollectorSink, getLabels));
         this->registerCall(this, POTHOS_FCN_TUPLE(CollectorSink, getMessages));
+        this->registerCall(this, POTHOS_FCN_TUPLE(CollectorSink, getPackets));
         this->registerCall(this, POTHOS_FCN_TUPLE(CollectorSink, verifyTestPlan));
         this->registerCall(this, POTHOS_FCN_TUPLE(CollectorSink, clear));
     }
@@ -28,19 +29,24 @@ public:
         return new CollectorSink(dtype);
     }
 
-    Pothos::BufferChunk getBuffer(void)
+    Pothos::BufferChunk getBuffer(void) const
     {
         return _buffer;
     }
 
-    std::vector<Pothos::Label> getLabels(void)
+    std::vector<Pothos::Label> getLabels(void) const
     {
         return _labels;
     }
 
-    std::vector<Pothos::Object> getMessages(void)
+    std::vector<Pothos::Object> getMessages(void) const
     {
         return _messages;
+    }
+
+    std::vector<Pothos::Packet> getPackets(void) const
+    {
+        return _packets;
     }
 
     void verifyTestPlan(const Poco::JSON::Object::Ptr &expected);
