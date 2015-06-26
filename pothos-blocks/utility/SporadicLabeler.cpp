@@ -40,7 +40,7 @@ public:
         _probability(0.0)
     {
         this->setupInput(0);
-        this->setupOutput(0);
+        this->setupOutput(0, "", this->uid()); //unique domain because of buffer forwarding
         this->registerCall(this, POTHOS_FCN_TUPLE(SporadicLabeler, setProbability));
         this->registerCall(this, POTHOS_FCN_TUPLE(SporadicLabeler, getProbability));
         this->registerCall(this, POTHOS_FCN_TUPLE(SporadicLabeler, setIdList));

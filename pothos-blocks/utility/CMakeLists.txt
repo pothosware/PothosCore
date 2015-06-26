@@ -21,6 +21,7 @@ POTHOS_MODULE_UTIL(
         DynamicRouter.cpp
         StreamProbe.cpp
         SporadicLabeler.cpp
+        SporadicDropper.cpp
         FiniteRelease.cpp
         StreamSnooper.cpp
         InfiniteSource.cpp
