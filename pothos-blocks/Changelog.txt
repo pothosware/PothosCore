@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Fix feeder element generator to support unsigned
 - Feeder+collector blocks support packets in test plan
 - Support packet payloads for symbol conversion blocks
 - Added multiple option to Feeder source test plan

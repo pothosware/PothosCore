@@ -166,9 +166,11 @@ Poco::JSON::Object::Ptr FeederSource::feedTestPlan(const Poco::JSON::Object::Ptr
         std::uniform_int_distribution<int> elementsDist(
             testPlan->optValue<int>("minBufferSize", minSize)/elemDType.size(),
             testPlan->optValue<int>("maxBufferSize", maxSize)/elemDType.size());
+        const int valueSize = (1 << elemDType.size()*8);
+        const int signedOff = elemDType.isSigned()?valueSize/2:0;
         std::uniform_int_distribution<int> valueDist(
-            testPlan->optValue<int>("minValue", -(1 << (elemDType.size()*8 - 1))),
-            testPlan->optValue<int>("maxValue", (1 << (elemDType.size()*8 - 1))-1));
+            testPlan->optValue<int>("minValue", -signedOff),
+            testPlan->optValue<int>("maxValue", valueSize-signedOff-1));
 
         //constraints on random numbers of elements produced
         const int totalMultiple = testPlan->optValue<int>("totalMultiple", 1);
