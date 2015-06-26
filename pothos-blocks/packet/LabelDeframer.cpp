@@ -6,7 +6,7 @@
 #include <algorithm>
 
 /***********************************************************************
- * |PothosDoc Simplified Label Deframer
+ * |PothosDoc Label Deframer
  *
  * Extracts packets from a data stream based on a match label.
  *

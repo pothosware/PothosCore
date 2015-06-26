@@ -8,13 +8,38 @@
 /***********************************************************************
  * |PothosDoc Simple MAC
  *
- * This MAC is a simple implementation of a media access control layer.
+ * The Simple MAC block is an implementation of a media access control layer.
+ * It acts as an interface between physical-layer datagrams and a layer of addressable packets.
+ * Packets from the MAC to the PHY get a packet header to embed source, destination and checksum.
+ * Packets from the PHY to the MAC have their header inspected and stripped from the payload.
+ *
  * https://en.wikipedia.org/wiki/Media_access_control
+ *
+ * <h3>Error recovery</h3>
+ * When the simple MAC detects a packet checksum error, it simply drops the packet.
+ * The MAC block does not handle packet loss, error recovery, or resending of data.
+ * However, the simple LLC block can be used with the simple MAC to implement reliability.
+ *
+ * <h2>Interfaces</h2>
+ * The Simple MAC block has 4 ports that operate on packet streams:
+ * <ul>
+ * <li><b>macIn</b> - This port accepts a packet of user data
+ *  where the metadata has the "recipient" field set to the remote destination MAC.</li>
+ * <li><b>phyOut</b> - This port produces a packet of user data with an additional header
+ *  containing source address, destination address, and checksum.</li>
+ * <li><b>phyIn</b> - This port accepts a packet of physical-layer data,
+ *  and inspects the payload for the MAC-layer header.
+ *  Packets with checksum errors or incorrect destinations are dropped.</li>
+ * <li><b>macOut</b> - This port produces a packet of user data
+ *  where the metadata has the "sender" field set to the remote destination MAC.</li>
+ * </ul>
  *
  * |category /Packet
  * |keywords MAC PHY packet
  *
- * |param macId[MAC ID] A 16-bit address of the MAC interface
+ * |param macId[MAC ID] A 16-bit address of the MAC interface.
+ * This address is used as the sender ID for outgoing PHY packets,
+ * and is used to check the recipient ID for incoming PHY packets.
  * |default 0
  *
  * |factory /blocks/simple_mac()

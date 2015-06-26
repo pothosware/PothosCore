@@ -5,8 +5,9 @@ POTHOS_MODULE_UTIL(
     TARGET PacketBlocks
     SOURCES
         SimpleMac.cpp
-        SimpleLlc.cpp
         TestSimpleMac.cpp
+        SimpleLlc.cpp
+        TestSimpleLlc.cpp
         PacketToStream.cpp
         StreamToPacket.cpp
         TestPacketBlocks.cpp
