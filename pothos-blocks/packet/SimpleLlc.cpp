@@ -51,10 +51,14 @@
  * |default 1.0
  * |units seconds
  *
+ * |param windowSize[Window Size] The number of packets allowed out before an acknowledgment is required.
+ * |default 4
+ *
  * |factory /blocks/simple_llc()
  * |setter setPort(port)
  * |setter setRecipient(recipient)
  * |setter setResendTime(resendTime)
+ * |setter setWindowSize(windowSize)
  **********************************************************************/
 class SimpleLlc : public Pothos::Block
 {
@@ -64,7 +68,14 @@ class SimpleLlc : public Pothos::Block
     static const uint8_t RESET = 0x8;
 public:
     SimpleLlc(void):
-        _errorCount(0), _port(0), _recipient(0), _lastNonceSent(0xFFFF), _expectedRecvNonce(0), _resendTime(1.0), _resetState(true)
+        _errorCount(0),
+        _port(0),
+        _recipient(0),
+        _lastNonceSent(0xFFFF),
+        _expectedRecvNonce(0),
+        _resendTime(1.0),
+        _windowSize(0),
+        _resetState(true)
     {
         this->setupInput("macIn");
         this->setupInput("dataIn");
@@ -73,6 +84,7 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setPort));
         this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setRecipient));
         this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setResendTime));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setWindowSize));
         this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, onUpdateTick));
         this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setResetState));
     }
@@ -109,6 +121,11 @@ public:
     void setResendTime(double time)
     {
         _resendTime = time;
+    }
+
+    void setWindowSize(const size_t windowSize)
+    {
+        _windowSize = windowSize;
     }
 
     void setResetState(bool resetState)
@@ -286,6 +303,7 @@ private:
         if(_resetState) return false;
 
         _lock.lock();
+        if (_sentPackets.size() > _windowSize) safe = false;
         auto &item = _sentPackets.front();
         if(_lastNonceSent + 1 == item.nonce) safe = false;
         _lock.unlock();
@@ -307,6 +325,7 @@ private:
     uint16_t _lastNonceSent;
     uint16_t _expectedRecvNonce;
     double _resendTime;
+    size_t _windowSize;
 
     bool _resetState;
     std::chrono::high_resolution_clock::time_point _resetBeaconSendTime;
