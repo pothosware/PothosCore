@@ -87,7 +87,7 @@ public:
         //post frame label
         if (not _frameStartId.empty())
         {
-            outputPort->postLabel(Pothos::Label(_frameStartId, Pothos::Object(), 0));
+            outputPort->postLabel(Pothos::Label(_frameStartId, Pothos::Object(), 0, packet.payload.dtype.size()));
         }
 
         //post the payload
