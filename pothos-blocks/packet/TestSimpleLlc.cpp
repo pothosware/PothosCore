@@ -135,7 +135,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_simple_llc_harsh)
     macB.callVoid("setMacId", 0xB);
 
     //create dropper blocks for connection
-    const double dropChance = 0.0; //disabled for now
+    const double dropChance = 0.1; //chance of dropping out of 1.0
     auto dropperA2B = registry.callProxy("/blocks/sporadic_dropper");
     dropperA2B.callVoid("setProbability", dropChance); //chance of drop
     auto dropperB2A = registry.callProxy("/blocks/sporadic_dropper");
@@ -176,9 +176,14 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_simple_llc_harsh)
 
     //run the design
     topology.commit();
-    POTHOS_TEST_TRUE(topology.waitInactive());
+    POTHOS_TEST_TRUE(topology.waitInactive(0.5, 0.0));
     //std::cout << topology.queryJSONStats() << std::endl;
 
+    //check the results
+    std::cout << "llcA resend count " << llcA.call<unsigned long long>("getResendCount") << std::endl;
+    std::cout << "llcB resend count " << llcB.call<unsigned long long>("getResendCount") << std::endl;
+    POTHOS_TEST_EQUAL(llcA.call<unsigned long long>("getExpiredCount"), 0);
+    POTHOS_TEST_EQUAL(llcB.call<unsigned long long>("getExpiredCount"), 0);
     collectorA.callVoid("verifyTestPlan", expectedB2A);
     collectorB.callVoid("verifyTestPlan", expectedA2B);
 }

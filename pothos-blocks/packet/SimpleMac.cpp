@@ -156,9 +156,10 @@ public:
             auto recipientId = recipientIdIter->second.convert<uint16_t>();
     
             auto packetLength = data.length + 7;
-            Pothos::Packet packetOut;
-            packetOut.payload = Pothos::BufferChunk("uint8", packetLength);
-            auto byteBuf = packetOut.payload.as<uint8_t *>();
+            Pothos::Packet pktOut;
+            pktOut.payload = Pothos::BufferChunk(packetLength);
+            pktOut.payload.dtype = pktIn.payload.dtype;
+            auto byteBuf = pktOut.payload.as<uint8_t *>();
 
             // Data byte format: CRC SENDER_MSB SENDER_LSB RECIPIENT_MSB RECIPIENT_LSB LENGTH_MSB LENGTH_LSB
             byteBuf[1] = _id >> 8;
@@ -170,7 +171,7 @@ public:
             std::memcpy(byteBuf + 7, data.as<const uint8_t*>(), data.length);
             byteBuf[0] = Crc8(byteBuf + 1, packetLength - 1);
 
-            _phyOut->postMessage(packetOut);
+            _phyOut->postMessage(pktOut);
         }
     }
 

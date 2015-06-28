@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <mutex>
+#include <Pothos/Util/RingDeque.hpp>
+#include <Pothos/Util/SpinLock.hpp>
+#include <thread>
+#include <mutex> //lock_guard
 #include <chrono>
-#include <list>
-#include <cstring>
+#include <iostream>
+#include <cstring> //memcpy
 
 /***********************************************************************
  * |PothosDoc Simple LLC
@@ -18,6 +21,8 @@
  * to monitor packet flow and to implement control communication.
  *
  * http://en.wikipedia.org/wiki/Logical_link_control
+ *
+ * http://en.wikipedia.org/wiki/Go-Back-N_ARQ
  *
  * <h3>Ports</h3>
  * Multiple LLC blocks can be connected to a single MAC block,
@@ -40,15 +45,21 @@
  * |category /Packet
  * |keywords LLC MAC packet
  *
- * |param port The port number that this LLC will servicing.
- * The port number should match the port of the remote LLC.
+ * |param port[Port Number] The port number that this LLC will servicing.
+ * The port number is 8-bits and should match the port of the remote LLC.
  * |default 0
  *
- * |param recipient The 16-bit ID of the remote destination MAC.
+ * |param recipient[Recipient ID] The 16-bit ID of the remote destination MAC.
  * |default 0
  *
- * |param resendTime[Resend Time] Required wait time in seconds before re-sending the outgoing packet.
- * |default 1.0
+ * |param resendTimeout[Resend Timeout] Timeout in seconds before re-sending the outgoing packet.
+ * The LLC will resend any packets that have not been acknowledged within this time window.
+ * |default 0.01
+ * |units seconds
+ *
+ * |param expireTimeout[Expire Timeout] Maximum time in seconds that LLC can hold a packet.
+ * The LLC will try to guarantee delivery of a packet by resending within this time window.
+ * |default 0.1
  * |units seconds
  *
  * |param windowSize[Window Size] The number of packets allowed out before an acknowledgment is required.
@@ -57,25 +68,24 @@
  * |factory /blocks/simple_llc()
  * |setter setPort(port)
  * |setter setRecipient(recipient)
- * |setter setResendTime(resendTime)
+ * |setter setResendTimeout(resendTimeout)
+ * |setter setExpireTimeout(expireTimeout)
  * |setter setWindowSize(windowSize)
  **********************************************************************/
 class SimpleLlc : public Pothos::Block
 {
-    static const uint8_t SEND = 0x1;
-    static const uint8_t ACK = 0x2;
-    static const uint8_t REQ_ACK = 0x4;
-    static const uint8_t RESET = 0x8;
+    static const uint8_t PSH = 0x1; //push data packet type
+    static const uint8_t REQ = 0x4; //request packet type
 public:
     SimpleLlc(void):
-        _errorCount(0),
+        _resendCount(0),
+        _expiredCount(0),
         _port(0),
         _recipient(0),
-        _lastNonceSent(0xFFFF),
-        _expectedRecvNonce(0),
-        _resendTime(1.0),
         _windowSize(0),
-        _resetState(true)
+        _seqBase(0),
+        _reqSeq(0),
+        _resendMsg(1)
     {
         this->setupInput("macIn");
         this->setupInput("dataIn");
@@ -83,10 +93,17 @@ public:
         this->setupOutput("dataOut");
         this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setPort));
         this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setRecipient));
-        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setResendTime));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setResendTimeout));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setExpireTimeout));
         this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setWindowSize));
-        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, onUpdateTick));
-        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, setResetState));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, getResendCount));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SimpleLlc, getExpiredCount));
+        this->registerProbe("getResendCount");
+        this->registerProbe("getExpiredCount");
+        this->setWindowSize(4); //initial state
+        this->setRecipient(0); //initial state
+        this->setResendTimeout(0.01); //initial state
+        this->setExpireTimeout(0.1); //initial state
     }
 
     static Block *make(void)
@@ -96,21 +113,54 @@ public:
 
     void activate(void)
     {
-        this->setResetState(false);
+        //we must be able to synchronize to any random starting sequence
+        _reqSeq = std::rand() & 0xffff;
+        _seqBase = std::rand() & 0xffff;
+
+        //grab pointers to the ports
         _macIn = this->input("macIn");
         _dataIn = this->input("dataIn");
         _macOut = this->output("macOut");
         _dataOut = this->output("dataOut");
+
+        //start the monitor thread
+        std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
+        _monitorThread = std::thread(&SimpleLlc::monitorTimeoutsTask, this);
     }
 
     void deactivate(void)
     {
-        this->setResetState(true);
+        _monitorThread.join();
+    }
+
+    void monitorTimeoutsTask(void)
+    {
+        while (this->isActive())
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            const auto timeNow = std::chrono::high_resolution_clock::now();
+
+            std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
+
+            //remove expired packets, oldest to newest
+            while (not _sentPackets.empty() and _sentPackets.front().expiredTime < timeNow)
+            {
+                _sentPackets.pop_front();
+                _seqBase++;
+                _expiredCount++;
+            }
+
+            //check if the oldest packet should cause full resend
+            if (_sentPackets.empty()) continue;
+            const auto delta = timeNow - _sentPackets.front().lastSentTime;
+            if (delta > _resendTimeout) _macIn->pushMessage(_resendMsg);
+        }
     }
 
     void setRecipient(uint16_t recipient)
     {
         _recipient = recipient;
+        _prePkt.metadata["recipient"] = Pothos::Object(_recipient);
     }
 
     void setPort(uint16_t port)
@@ -118,163 +168,124 @@ public:
         _port = port;
     }
 
-    void setResendTime(double time)
+    void setResendTimeout(const double timeout)
     {
-        _resendTime = time;
+        _resendTimeout = std::chrono::nanoseconds(long(timeout*1e9));
+    }
+
+    void setExpireTimeout(const double timeout)
+    {
+        _expireTimeout = std::chrono::nanoseconds(long(timeout*1e9));
     }
 
     void setWindowSize(const size_t windowSize)
     {
         _windowSize = windowSize;
+        _sentPackets.set_capacity(_windowSize);
     }
 
-    void setResetState(bool resetState)
+    unsigned long long getResendCount(void) const
     {
-        _resetState = resetState;
+        return _resendCount;
     }
 
-    void onUpdateTick(int /*dummy*/)
+    unsigned long long getExpiredCount(void) const
     {
-        auto timeNow = std::chrono::high_resolution_clock::now();
-
-        // While in reset state, send out reset beacons regularly
-        if(_resetState)
-        {
-            std::chrono::duration<double> timeSinceSent = timeNow - _resetBeaconSendTime;
-            if(timeSinceSent.count() > _resendTime)
-            {
-                _resetBeaconSendTime = timeNow;
-                uint16_t nonce = 0;
-                if(!_sentPackets.empty()) nonce = _sentPackets.front().nonce;
-
-                postControlPacket(nonce, RESET | REQ_ACK);
-            }
-        }
-
-        if(_resetState) return;
-
-        if(!_lock.try_lock()) return;
-
-        for(auto &item: _sentPackets)
-        {
-            if(!item.sent) continue;
-
-            std::chrono::duration<double> timeSinceSent = timeNow - item.sendTime;
-            // When we reach an item that has not been timed out yet, we know all the
-            // packets were queued later, therefore wouldn't be timed out either.
-            if(timeSinceSent.count() < _resendTime) break;
-
-            item.sendTime = timeNow;
-            _macOut->postMessage(item.packet);
-        }
-
-        _lock.unlock();
-    }
-
-    void postControlPacket(uint16_t nonce, uint8_t control)
-    {
-        //FIXME: Save the previously sent ack packet and use the .unique() to check if
-        // that previous packet could be reused, so as to avoid reallocation of buffer space that happens below
-        Pothos::Packet packet;
-        packet.payload = Pothos::BufferChunk("uint8", 4);
-        fillHeader(packet.payload.as<uint8_t *>(), nonce, control);
-        packet.metadata["recipient"] = Pothos::Object(_recipient);
-        _macOut->postMessage(packet);
+        return _expiredCount;
     }
 
     void work(void)
     {
         // handle incoming data from MAC
-        if (_macIn->hasMessage())
+        while (_macIn->hasMessage())
         {
             auto msg = _macIn->popMessage();
-            auto pkt = msg.extract<Pothos::Packet>();
 
-            if (pkt.payload.length < 4) return;
+            //handle the resend message from the timeout monitor thread
+            if (msg == _resendMsg)
+            {
+                this->resendPackets();
+                continue;
+            }
+
+            //extract the packet
+            auto pkt = msg.extract<Pothos::Packet>();
+            if (pkt.payload.length < 4) continue;
             const auto byteBuf = pkt.payload.as<const uint8_t *>();
 
-            uint8_t port;
-            uint16_t nonce;
-            uint8_t control;
+            //parse the header
+            uint8_t port = 0;
+            uint16_t nonce = 0;
+            uint8_t control = 0;
             extractHeader(byteBuf, port, nonce, control);
 
-            if(port != _port) return;
+            //was this packet intended for this LLC?
+            if(port != _port) continue;
 
-            // Initiate the reset if the other side requests a reset, and finish the reset if we receive a reset acknowledgment
-            if(control & RESET)
+            //got a datagram packet
+            //adjust expected sequenc and acknowledge with a request packet
+            if((control & PSH) != 0)
             {
-                if(control & ACK)
-                    _resetState = false;
-                else
+                //sequence obviously out of range, resync
+                if (nonce < uint16_t(_reqSeq-_windowSize) or nonce > uint16_t(_reqSeq+_windowSize))
                 {
-                    _resetState = true;
-                    _expectedRecvNonce = nonce;
+                    _reqSeq = nonce;
                 }
-            }
 
-            // Responding with the acknowledgment
-            if((control & REQ_ACK) && _expectedRecvNonce == nonce)
-            {
-                postControlPacket(nonce, (control & ~REQ_ACK) | ACK);
-            }
-
-            // Posting the incoming data forward
-            if((control & SEND) && !(control & ACK) && _expectedRecvNonce == nonce)
-            {
-                pkt.payload.address += 4;
-                pkt.payload.length -= 4;
-                _dataOut->postMessage(pkt);
-                _expectedRecvNonce++;
-            }
-
-            // Remove the acknowledged packet from being re-sent again
-            if((control & ACK) && (control & SEND))
-            {
-                _lock.lock();
-                for(auto iter = _sentPackets.begin(), end = _sentPackets.end(); iter != end; iter++)
+                //got the expected sequence, forward the packet
+                if (nonce == _reqSeq)
                 {
-                    // TODO: perform an network unitilization and delay optimization trick,
-                    // where an acknowledged nonce can be used to determine that all packets
-                    // with nonce < received_nonce were all successfully sent.
-                    // Useful in case an ack packet is lost in transmission.
-                    // Trick requires a little bit more careful nonce handling in other parts of the code.
-                    if((*iter).nonce == nonce)
-                    {
-                        _sentPackets.erase(iter);
-                        break;
-                    }
-                };
-                _lock.unlock();
+                    pkt.payload.address += 4;
+                    pkt.payload.length -= 4;
+                    _dataOut->postMessage(pkt);
+                    _reqSeq++;
+                }
+
+                //always reply with a request
+                postControlPacket(_reqSeq, REQ);
+            }
+
+            //got a request packet
+            //clear everything sent up to but not including the latest request
+            if((control & REQ) != 0)
+            {
+                std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
+                for (uint16_t i = _seqBase; i < nonce; i++)
+                {
+                    if (not _sentPackets.empty()) _sentPackets.pop_front();
+                    _seqBase++;
+                }
             }
         }
 
         // handle outgoing data to MAC
-        if (_dataIn->hasMessage())
+        while (_dataIn->hasMessage())
         {
-            if(!safeToQueueNewPacket()) return;
+            const auto timeNow = std::chrono::high_resolution_clock::now();
+            std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
+            if (_sentPackets.full()) return; //wait for timeout or request response
 
+            //extract the packet
             auto msg = _dataIn->popMessage();
             auto pktIn = msg.extract<Pothos::Packet>();
             auto data = pktIn.payload;
 
-            _lock.lock();
-            uint16_t nonce = ++_lastNonceSent;
-            PacketItem &item = *_sentPackets.insert(_sentPackets.end(), PacketItem());
-            item.sent = false;
-            _lock.unlock();
-
-            item.sendTime = std::chrono::high_resolution_clock::now();
-
-            item.nonce = nonce;
-            item.packet.payload = Pothos::BufferChunk("uint8", data.length + 4);
-            auto byteBuf = item.packet.payload.as<uint8_t *>();
-            fillHeader(byteBuf, nonce, SEND | REQ_ACK);
+            //append the LLC header
+            Pothos::Packet &pktOut = _prePkt;
+            pktOut.payload = Pothos::BufferChunk(data.length + 4);
+            pktOut.payload.dtype = pktIn.payload.dtype;
+            auto byteBuf = pktOut.payload.as<uint8_t *>();
+            uint16_t seq = _seqBase + _sentPackets.size();
+            fillHeader(byteBuf, seq, PSH);
             std::memcpy(byteBuf + 4, data.as<const uint8_t*>(), data.length);
+            _macOut->postMessage(pktOut);
 
-            item.packet.metadata["recipient"] = Pothos::Object(_recipient);
-
-            _macOut->postMessage(item.packet);
-            item.sent = true;
+            //save the packet for resending
+            PacketItem item;
+            item.packet = pktOut;
+            item.lastSentTime = timeNow;
+            item.expiredTime = timeNow + _expireTimeout;
+            _sentPackets.push_back(item);
         }
     }
 
@@ -296,43 +307,59 @@ private:
         control = byteBuf[3];
     }
 
-    bool safeToQueueNewPacket()
+    void postControlPacket(uint16_t nonce, uint8_t control)
     {
-        bool safe = true;
+        //FIXME: Save the previously sent ack packet and use the .unique() to check if
+        // that previous packet could be reused, so as to avoid reallocation of buffer space that happens below
+        Pothos::Packet &packet = _prePkt;
+        packet.payload = Pothos::BufferChunk(4);
+        fillHeader(packet.payload.as<uint8_t *>(), nonce, control);
+        _macOut->postMessage(packet);
+    }
 
-        if(_resetState) return false;
-
-        _lock.lock();
-        if (_sentPackets.size() > _windowSize) safe = false;
-        auto &item = _sentPackets.front();
-        if(_lastNonceSent + 1 == item.nonce) safe = false;
-        _lock.unlock();
-
-        return safe;
+    void resendPackets(void)
+    {
+        const auto timeNow = std::chrono::high_resolution_clock::now();
+        std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
+        for (size_t i = 0; i < _sentPackets.size(); i++)
+        {
+            _macOut->postMessage(_sentPackets[i].packet);
+            _sentPackets[i].lastSentTime = timeNow;
+            _resendCount++;
+        }
     }
 
     struct PacketItem
     {
-        uint16_t nonce;
         Pothos::Packet packet;
-        std::chrono::high_resolution_clock::time_point sendTime;
-        bool sent;
+        std::chrono::high_resolution_clock::time_point expiredTime; //used for expiration
+        std::chrono::high_resolution_clock::time_point lastSentTime; //used for resending
     };
 
-    unsigned long long _errorCount;
+    //status counts
+    unsigned long long _resendCount;
+    unsigned long long _expiredCount;
+
+    //configuration
     uint8_t _port;
     uint16_t _recipient;
-    uint16_t _lastNonceSent;
-    uint16_t _expectedRecvNonce;
-    double _resendTime;
-    size_t _windowSize;
+    Pothos::Packet _prePkt;
+    std::chrono::high_resolution_clock::duration _resendTimeout;
+    std::chrono::high_resolution_clock::duration _expireTimeout;
+    uint16_t _windowSize;
 
-    bool _resetState;
-    std::chrono::high_resolution_clock::time_point _resetBeaconSendTime;
+    //sender side state
+    Pothos::Util::SpinLock _lock;
+    Pothos::Util::RingDeque<PacketItem> _sentPackets;
+    uint16_t _seqBase;
 
-    std::mutex _lock;
-    std::list<PacketItem> _sentPackets;
+    //receiver side state
+    uint16_t _reqSeq;
 
+    std::thread _monitorThread;
+    const Pothos::Object _resendMsg;
+
+    //pointers for port access
     Pothos::OutputPort *_macOut;
     Pothos::OutputPort *_dataOut;
     Pothos::InputPort *_macIn;

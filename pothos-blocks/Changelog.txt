@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Added simple LLC block for logical link control
 - Created sporadic dropper for reliability testing
 - Fix feeder element generator to support unsigned
 - Feeder+collector blocks support packets in test plan
