@@ -18,18 +18,23 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_preamble_framer)
 
     static const unsigned char preambleD[] = {0, 1, 1, 1, 1, 0};
     std::vector<unsigned char> preamble(preambleD, preambleD+6);
-    size_t testLength = 10;
-    size_t preambleIndex = 4;
+    size_t testLength = 40;
+    size_t startIndex = 5;
+    size_t endIndex = 33;
+    size_t paddingSize = 13;
 
     framer.callProxy("setPreamble", preamble);
     framer.callProxy("setFrameStartId", "myFrameStart");
+    framer.callProxy("setFrameEndId", "myFrameEnd");
+    framer.callProxy("setPaddingSize", paddingSize);
 
     //load feeder blocks
-    auto b0 = Pothos::BufferChunk(testLength * sizeof(unsigned char));
+    auto b0 = Pothos::BufferChunk(typeid(unsigned char), testLength);
     auto p0 = b0.as<unsigned char *>();
     for (size_t i = 0; i < testLength; i++) p0[i] = i % 2;
     feeder.callVoid("feedBuffer", b0);
-    feeder.callVoid("feedLabel", Pothos::Label("myFrameStart", Pothos::Object(), preambleIndex));
+    feeder.callVoid("feedLabel", Pothos::Label("myFrameStart", Pothos::Object(), startIndex));
+    feeder.callVoid("feedLabel", Pothos::Label("myFrameEnd", Pothos::Object(), endIndex));
 
     //run the topology
     {
@@ -42,9 +47,18 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_preamble_framer)
 
     //check the collector buffer matches input with preamble inserted
     auto buff = collector.call<Pothos::BufferChunk>("getBuffer");
-    POTHOS_TEST_EQUAL(buff.elements(), testLength + preamble.size());
+    POTHOS_TEST_EQUAL(buff.elements(), testLength + preamble.size() + paddingSize);
     auto pb = buff.as<const unsigned char *>();
-    POTHOS_TEST_EQUALA(pb, p0, preambleIndex);
-    POTHOS_TEST_EQUALA(pb+preambleIndex, preamble.data(), preamble.size());
-    POTHOS_TEST_EQUALA(pb+preambleIndex+preamble.size(), p0+preambleIndex, testLength-preambleIndex);
+    POTHOS_TEST_EQUALA(pb, p0, startIndex); //check data before frame
+    POTHOS_TEST_EQUALA(pb+startIndex, preamble.data(), preamble.size()); //check preamble insertion
+    POTHOS_TEST_EQUALA(pb+startIndex+preamble.size(), p0+startIndex, endIndex-startIndex+1); //check frame
+    POTHOS_TEST_EQUALA(pb+endIndex+preamble.size()+paddingSize+1, p0+endIndex+1, testLength-(endIndex+1)); //check data after frame
+
+    //check the label positions
+    auto labels = collector.call<std::vector<Pothos::Label>>("getLabels");
+    POTHOS_TEST_EQUAL(labels.size(), 2);
+    POTHOS_TEST_EQUAL(labels[0].id, "myFrameStart");
+    POTHOS_TEST_EQUAL(labels[0].index, startIndex);
+    POTHOS_TEST_EQUAL(labels[1].id, "myFrameEnd");
+    POTHOS_TEST_EQUAL(labels[1].index, endIndex+preamble.size()+paddingSize);
 }

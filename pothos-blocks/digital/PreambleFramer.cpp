@@ -13,10 +13,23 @@
  * The preamble is inserted into the stream before the label,
  * and the rest of the stream is forwarded to output port 0.
  *
+ * An optional frame end label can be used to append padding
+ * to the frame. The user must specify the frame end ID
+ * and the end padding size for this feature to work.
+ *
+ * <h2>Label adjustment</h2>
+ *
  * All labels with the same index as the frame start label
  * (and including the frame start label itself),
  * will be shifted to the start of the preamble buffer.
  * All other labels propagate with the same position.
+ *
+ * All labels with the same index as the frame end label
+ * (and including the frame end label itself),
+ * will be shifted to the last symbol of the padding buffer.
+ * All other labels propagate with the same position.
+ *
+ * <h2>Symbol width notes</h2>
  *
  * This block supports operations on arbitrary symbol widths,
  * and therefore it may be used operationally on a bit-stream,
@@ -33,9 +46,23 @@
  * |default "frameStart"
  * |widget StringEntry()
  *
+ * |param frameEndId[Frame End ID] The label ID that marks the last symbol of frame data.
+ * The end of frame label is optionally used to insert padding at the end of a frame.
+ * Specify an empty end of frame ID to disable this feature.
+ * |default ""
+ * |widget StringEntry()
+ * |preview valid
+ *
+ * |param paddingSize[Padding Size] The number of symbols to pad at the end of a frame.
+ * This parameter controls the length of the padding when the end of frame ID is enabled.
+ * |default 0
+ * |preview valid
+ *
  * |factory /blocks/preamble_framer()
  * |setter setPreamble(preamble)
  * |setter setFrameStartId(frameStartId)
+ * |setter setFrameEndId(frameEndId)
+ * |setter setPaddingSize(paddingSize)
  **********************************************************************/
 class PreambleFramer : public Pothos::Block
 {
@@ -53,15 +80,20 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, getPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, setFrameStartId));
         this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, getFrameStartId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, setFrameEndId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, getFrameEndId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, setPaddingSize));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PreambleFramer, getPaddingSize));
         this->setPreamble(std::vector<unsigned char>(1, 1)); //initial update
         this->setFrameStartId("frameStart"); //initial update
+        this->setFrameEndId(""); //initial update
     }
 
     void setPreamble(const std::vector<unsigned char> preamble)
     {
         if (preamble.empty()) throw Pothos::InvalidArgumentException("PreambleFramer::setPreamble()", "preamble cannot be empty");
         _preamble = preamble;
-        _preambleBuff = Pothos::BufferChunk(_preamble.size());
+        _preambleBuff = Pothos::BufferChunk(this->output(0)->dtype(), _preamble.size());
         std::memcpy(_preambleBuff.as<unsigned char *>(), _preamble.data(), _preamble.size());
     }
 
@@ -80,10 +112,32 @@ public:
         return _frameStartId;
     }
 
+    void setFrameEndId(std::string id)
+    {
+        _frameEndId = id;
+    }
+
+    std::string getFrameEndId(void) const
+    {
+        return _frameEndId;
+    }
+
+    void setPaddingSize(const size_t size)
+    {
+        _paddingBuff = Pothos::BufferChunk(this->output(0)->dtype(), size);
+        std::memset(_paddingBuff.as<unsigned char *>(), 0, _paddingBuff.elements());
+    }
+
+    size_t getPaddingSize(void) const
+    {
+        return _paddingBuff.elements();
+    }
+
     void work(void)
     {
         auto inputPort = this->input(0);
         auto outputPort = this->output(0);
+        size_t consumed = 0;
 
         //get input buffer
         auto inBuff = inputPort->buffer();
@@ -100,28 +154,50 @@ public:
             // Skip any label that doesn't yet appear in the data buffer
             if (label.index >= inputPort->elements()) continue;
 
+            //increment the offset as soon as we are past the last found index
+            if (lastFoundIndex != -1 and size_t(lastFoundIndex) != label.index)
+            {
+                lastFoundIndex = -1;
+                labelIndexOffset += _preambleBuff.length;
+            }
+
             if (label.id == _frameStartId)
             {
-                lastFoundIndex = label.index;
-
-                //post everything before this label and exit
+                //post everything before this label
                 Pothos::BufferChunk headBuff = inBuff;
-                headBuff.length = label.index;
+                headBuff.length = label.index - consumed;
                 if (headBuff.length != 0) outputPort->postBuffer(headBuff);
 
-                //post the preamble
+                //post the buffer
                 outputPort->postBuffer(_preambleBuff);
 
                 //remove header from the remaining buffer
                 inBuff.length -= headBuff.length;
                 inBuff.address += headBuff.length;
+                consumed += headBuff.length;
+
+                //mark for increment on next label index
+                lastFoundIndex = label.index;
             }
 
-            //increment the offset as soon as we are past the last found index
-            if (lastFoundIndex != -1 and size_t(lastFoundIndex) != label.index)
+            else if (label.id == _frameEndId)
             {
-                lastFoundIndex = -1;
-                labelIndexOffset += _preamble.size();
+                //post everything before this label
+                Pothos::BufferChunk headBuff = inBuff;
+                headBuff.length = label.index + label.width - consumed; //place at end of width
+                headBuff.length = std::min(headBuff.length, inBuff.length); //bounds check
+                if (headBuff.length != 0) outputPort->postBuffer(headBuff);
+
+                //post the buffer
+                outputPort->postBuffer(_paddingBuff);
+
+                //remove header from the remaining buffer
+                inBuff.length -= headBuff.length;
+                inBuff.address += headBuff.length;
+                consumed += headBuff.length;
+
+                //increment index for insertion of padding
+                labelIndexOffset += _paddingBuff.length;
             }
 
             //propagate labels here with the offset
@@ -144,8 +220,10 @@ public:
 
 private:
     std::string _frameStartId;
+    std::string _frameEndId;
     std::vector<unsigned char> _preamble;
     Pothos::BufferChunk _preambleBuff;
+    Pothos::BufferChunk _paddingBuff;
 };
 
 /***********************************************************************
