@@ -19,20 +19,27 @@
  * Input buffer references held by the packet object
  * will be forwarded directly to the output byte stream.
  *
- * Use of labels to indicate start of frame: When the frame start ID is specified,
- * a new label is produced for the first output element from each packet payload.
+ * Use of labels to indicate frame boundaries: When the start and end frame IDs are specified,
+ * labels are produced for the first and last output element from each packet payload (respectively).
  *
  * |category /Packet
  * |keywords packet message datagram
  *
  * |param frameStartId[Frame Start ID] The label ID to mark the first element from each payload.
- * An empty string (default) means that frame labels are not produced.
+ * An empty string (default) means that start of frame labels are not produced.
+ * |default ""
+ * |widget StringEntry()
+ * |preview valid
+ *
+ * |param frameEndId[Frame End ID] The label ID to mark the last element from each payload.
+ * An empty string (default) means that end of frame labels are not produced.
  * |default ""
  * |widget StringEntry()
  * |preview valid
  *
  * |factory /blocks/packet_to_stream()
  * |setter setFrameStartId(frameStartId)
+ * |setter setFrameEndId(frameEndId)
  **********************************************************************/
 class PacketToStream : public Pothos::Block
 {
@@ -43,6 +50,8 @@ public:
         this->setupOutput(0, "", this->uid()/*unique domain*/);
         this->registerCall(this, POTHOS_FCN_TUPLE(PacketToStream, setFrameStartId));
         this->registerCall(this, POTHOS_FCN_TUPLE(PacketToStream, getFrameStartId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PacketToStream, setFrameEndId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(PacketToStream, getFrameEndId));
     }
 
     static Block *make(void)
@@ -58,6 +67,16 @@ public:
     std::string getFrameStartId(void) const
     {
         return _frameStartId;
+    }
+
+    void setFrameEndId(std::string id)
+    {
+        _frameEndId = id;
+    }
+
+    std::string getFrameEndId(void) const
+    {
+        return _frameEndId;
     }
 
     void work(void)
@@ -84,10 +103,16 @@ public:
                 packet.payload.dtype.size(), 1)); //elements to bytes
         }
 
-        //post frame label
+        //post start of frame label
         if (not _frameStartId.empty())
         {
             outputPort->postLabel(Pothos::Label(_frameStartId, Pothos::Object(), 0, packet.payload.dtype.size()));
+        }
+
+        //post end of frame label
+        if (not _frameEndId.empty())
+        {
+            outputPort->postLabel(Pothos::Label(_frameEndId, Pothos::Object(), packet.payload.length-1, packet.payload.dtype.size()));
         }
 
         //post the payload
@@ -96,6 +121,7 @@ public:
 
 private:
     std::string _frameStartId;
+    std::string _frameEndId;
 };
 
 static Pothos::BlockRegistry registerPacketToStream(
