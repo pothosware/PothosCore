@@ -8,6 +8,7 @@
 #include <mutex> //lock_guard
 #include <chrono>
 #include <iostream>
+#include <cstdint>
 #include <cstring> //memcpy
 
 /***********************************************************************
@@ -76,6 +77,7 @@ class SimpleLlc : public Pothos::Block
 {
     static const uint8_t PSH = 0x1; //push data packet type
     static const uint8_t REQ = 0x4; //request packet type
+    static const uint8_t SYN = 0x8; //synchronize sequence
 public:
     SimpleLlc(void):
         _resendCount(0),
@@ -84,6 +86,7 @@ public:
         _recipient(0),
         _windowSize(0),
         _seqBase(0),
+        _seqOut(0),
         _reqSeq(0),
         _resendMsg(1)
     {
@@ -116,6 +119,7 @@ public:
         //we must be able to synchronize to any random starting sequence
         _reqSeq = std::rand() & 0xffff;
         _seqBase = std::rand() & 0xffff;
+        _seqOut = _seqBase;
 
         //grab pointers to the ports
         _macIn = this->input("macIn");
@@ -124,7 +128,6 @@ public:
         _dataOut = this->output("dataOut");
 
         //start the monitor thread
-        std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
         _monitorThread = std::thread(&SimpleLlc::monitorTimeoutsTask, this);
     }
 
@@ -157,13 +160,13 @@ public:
         }
     }
 
-    void setRecipient(uint16_t recipient)
+    void setRecipient(const uint16_t recipient)
     {
         _recipient = recipient;
         _metadata["recipient"] = Pothos::Object(_recipient);
     }
 
-    void setPort(uint16_t port)
+    void setPort(const uint16_t port)
     {
         _port = port;
     }
@@ -222,16 +225,12 @@ public:
             //was this packet intended for this LLC?
             if(port != _port) continue;
 
-            //got a datagram packet
-            //adjust expected sequenc and acknowledge with a request packet
+            //got a synchronize packet from sender
+            if ((control & SYN) != 0) _reqSeq = nonce;
+
+            //got a datagram packet from sender
             if((control & PSH) != 0)
             {
-                //sequence obviously out of range, resync
-                if (nonce < uint16_t(_reqSeq-_windowSize) or nonce > uint16_t(_reqSeq+_windowSize))
-                {
-                    _reqSeq = nonce;
-                }
-
                 //got the expected sequence, forward the packet
                 if (nonce == _reqSeq)
                 {
@@ -245,26 +244,34 @@ public:
                 postControlPacket(_reqSeq, REQ);
             }
 
-            //got a request packet
-            //clear everything sent up to but not including the latest request
+            //got a request packet from receiver
             if((control & REQ) != 0)
             {
                 std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
-                for (uint16_t i = _seqBase; i < nonce; i++)
+
+                //check for sequence obviously out of range and request resync
+                if (nonce < uint16_t(_seqBase-_windowSize) or nonce > uint16_t(_seqBase+_windowSize))
+                {
+                    this->postControlPacket(_seqBase, SYN);
+                }
+
+                //otherwise clear everything sent up to but not including the latest request
+                else for (; _seqBase < nonce; _seqBase++)
                 {
                     if (not _sentPackets.empty()) _sentPackets.pop_front();
-                    _seqBase++;
                 }
             }
+        }
+
+        // return without handling the user data if we are flow controlled
+        {
+            std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
+            if (_sentPackets.full()) return;
         }
 
         // handle outgoing data to MAC
         while (_dataIn->hasMessage())
         {
-            const auto timeNow = std::chrono::high_resolution_clock::now();
-            std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
-            if (_sentPackets.full()) return; //wait for timeout or request response
-
             //extract the packet
             auto msg = _dataIn->popMessage();
             auto pktIn = msg.extract<Pothos::Packet>();
@@ -276,17 +283,21 @@ public:
             pktOut.payload = Pothos::BufferChunk(data.length + 4);
             pktOut.payload.dtype = pktIn.payload.dtype;
             auto byteBuf = pktOut.payload.as<uint8_t *>();
-            uint16_t seq = _seqBase + _sentPackets.size();
-            fillHeader(byteBuf, seq, PSH);
+            fillHeader(byteBuf, _seqOut++, PSH);
             std::memcpy(byteBuf + 4, data.as<const uint8_t*>(), data.length);
             _macOut->postMessage(pktOut);
 
             //save the packet for resending
             PacketItem item;
             item.packet = pktOut;
+            const auto timeNow = std::chrono::high_resolution_clock::now();
             item.lastSentTime = timeNow;
             item.expiredTime = timeNow + _expireTimeout;
+
+            //stash the packet and check capacity (locked)
+            std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
             _sentPackets.push_back(item);
+            if (_sentPackets.full()) break;
         }
     }
 
@@ -354,6 +365,7 @@ private:
     Pothos::Util::SpinLock _lock;
     Pothos::Util::RingDeque<PacketItem> _sentPackets;
     uint16_t _seqBase;
+    uint16_t _seqOut;
 
     //receiver side state
     uint16_t _reqSeq;
