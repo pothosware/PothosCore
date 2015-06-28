@@ -160,7 +160,7 @@ public:
     void setRecipient(uint16_t recipient)
     {
         _recipient = recipient;
-        _prePkt.metadata["recipient"] = Pothos::Object(_recipient);
+        _metadata["recipient"] = Pothos::Object(_recipient);
     }
 
     void setPort(uint16_t port)
@@ -271,7 +271,8 @@ public:
             auto data = pktIn.payload;
 
             //append the LLC header
-            Pothos::Packet &pktOut = _prePkt;
+            Pothos::Packet pktOut = pktIn;
+            pktOut.metadata = _metadata;
             pktOut.payload = Pothos::BufferChunk(data.length + 4);
             pktOut.payload.dtype = pktIn.payload.dtype;
             auto byteBuf = pktOut.payload.as<uint8_t *>();
@@ -311,7 +312,8 @@ private:
     {
         //FIXME: Save the previously sent ack packet and use the .unique() to check if
         // that previous packet could be reused, so as to avoid reallocation of buffer space that happens below
-        Pothos::Packet &packet = _prePkt;
+        Pothos::Packet packet;
+        packet.metadata = _metadata;
         packet.payload = Pothos::BufferChunk(4);
         fillHeader(packet.payload.as<uint8_t *>(), nonce, control);
         _macOut->postMessage(packet);
@@ -343,7 +345,7 @@ private:
     //configuration
     uint8_t _port;
     uint16_t _recipient;
-    Pothos::Packet _prePkt;
+    Pothos::ObjectKwargs _metadata;
     std::chrono::high_resolution_clock::duration _resendTimeout;
     std::chrono::high_resolution_clock::duration _expireTimeout;
     uint16_t _windowSize;

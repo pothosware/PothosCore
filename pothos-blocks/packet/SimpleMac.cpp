@@ -127,7 +127,7 @@ public:
         {
             auto msg = _phyIn->popMessage();
             auto pktIn = msg.extract<Pothos::Packet>();
-            Pothos::Packet pktOut;
+            Pothos::Packet pktOut = pktIn;
             uint16_t recipientId = 0, senderId = 0;
             pktOut.payload = this->unpack(pktIn, recipientId, senderId);
             if (pktOut.payload)
@@ -156,7 +156,7 @@ public:
             auto recipientId = recipientIdIter->second.convert<uint16_t>();
     
             auto packetLength = data.length + 7;
-            Pothos::Packet pktOut;
+            Pothos::Packet pktOut = pktIn;
             pktOut.payload = Pothos::BufferChunk(packetLength);
             pktOut.payload.dtype = pktIn.payload.dtype;
             auto byteBuf = pktOut.payload.as<uint8_t *>();
