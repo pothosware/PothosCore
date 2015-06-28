@@ -250,7 +250,7 @@ public:
                 std::lock_guard<Pothos::Util::SpinLock> lock(_lock);
 
                 //check for sequence obviously out of range and request resync
-                if (nonce < uint16_t(_seqBase-_windowSize) or nonce > uint16_t(_seqBase+_windowSize))
+                if (nonce < _seqBase or nonce > _seqOut)
                 {
                     this->postControlPacket(_seqBase, SYN);
                 }
