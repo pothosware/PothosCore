@@ -28,6 +28,7 @@
  * packet payloads will accept the entire input buffer.
  * |default 0
  * |units bytes
+ * |preview valid
  *
  * |factory /blocks/stream_to_packet()
  * |setter setMTU(mtu)
