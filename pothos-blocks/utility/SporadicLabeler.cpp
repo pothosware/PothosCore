@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -94,6 +94,7 @@ public:
                 {
                     Pothos::Label label;
                     label.index = i;
+                    label.width = buffer.dtype.size();
                     if (not _ids.empty()) label.id = _ids.at(_randomId(_gen));
                     outputPort->postLabel(label);
                 }
