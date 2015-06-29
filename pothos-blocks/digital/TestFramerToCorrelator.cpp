@@ -20,9 +20,15 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_framer_to_correlator)
     auto deframer = registry.callProxy("/blocks/label_deframer");
     auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
 
+    //Copy block provides the loopback path:
+    //Copy can cause buffer boundaries to change,
+    //which helps to aid in robust testing.
+    auto copier = registry.callProxy("/blocks/copier");
+
     //configuration constants
     const size_t mtu = 107;
     const std::string txFrameStartId = "txFrameStart";
+    const std::string txFrameEndId = "txFrameEnd";
     const std::string rxFrameStartId = "rxFrameStart";
     const size_t maxValue = 1;
     std::vector<unsigned char> preamble;
@@ -30,9 +36,12 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_framer_to_correlator)
 
     //configure
     generator.callVoid("setFrameStartId", txFrameStartId);
+    generator.callVoid("setFrameEndId", txFrameEndId);
     generator.callVoid("setName", "frameGenerator");
     framer.callVoid("setPreamble", preamble);
     framer.callVoid("setFrameStartId", txFrameStartId);
+    framer.callVoid("setFrameEndId", txFrameEndId);
+    framer.callVoid("setPaddingSize", 10);
     correlator.callVoid("setPreamble", preamble);
     correlator.callVoid("setThreshold", 0); //expect perfect match
     correlator.callVoid("setFrameStartId", rxFrameStartId);
@@ -58,7 +67,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_framer_to_correlator)
         Pothos::Topology topology;
         topology.connect(feeder, 0, generator, 0);
         topology.connect(generator, 0, framer, 0);
-        topology.connect(framer, 0, correlator, 0);
+        topology.connect(framer, 0, copier, 0);
+        topology.connect(copier, 0, correlator, 0);
         topology.connect(correlator, 0, deframer, 0);
         topology.connect(deframer, 0, collector, 0);
         topology.commit();
