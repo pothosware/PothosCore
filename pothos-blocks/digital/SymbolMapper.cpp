@@ -33,6 +33,10 @@
  * or complex constellation points for MPSK modulations.
  * This must be a power-of-two in length; e.g. 2, 4, 8...
  * |default [-1, 1]
+ * |option [2-bit Gray Code] \[0, 1, 3, 2\]
+ * |option [3-bit Gray Code] \[0, 1, 3, 2, 6, 7, 5, 4\]
+ * |option [4-bit Gray Code] \[0, 1, 3, 2, 6, 7, 5, 4, 12, 13, 15, 14, 10, 11, 9, 8\]
+ * |widget ComboBox(editable=true)
  *
  * |factory /blocks/symbol_mapper(dtype)
  * |setter setMap(map)
