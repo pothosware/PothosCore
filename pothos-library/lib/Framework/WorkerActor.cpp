@@ -127,6 +127,19 @@ void Pothos::WorkerActor::subscribeOutput(const std::string &action, const std::
  **********************************************************************/
 void Pothos::WorkerActor::setActiveStateOn(void)
 {
+    //ensure that every output port gets a buffer manager
+    //because connection logic skips over unused ports
+    for (const auto &entry : this->outputs)
+    {
+        auto &port = *entry.second;
+        if (port.isSignal()) continue;
+        if (port._bufferManager) continue;
+        BufferManager::Sptr mgr;
+        try {mgr = this->getBufferManager(port._name, "", false);}
+        catch (...){}
+        this->setOutputBufferManager(port._name, mgr);
+    }
+
     ActorInterfaceLock lock(this);
 
     POTHOS_EXCEPTION_TRY

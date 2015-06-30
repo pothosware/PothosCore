@@ -54,6 +54,38 @@ size_t triggered;
 };
 
 /***********************************************************************
+ * Helper blocks to test block w/ unconnected ports
+ **********************************************************************/
+struct Passer : Pothos::Block
+{
+    Passer(const std::string which = ""):
+        workCount(0)
+    {
+        //forward in0 to out0
+        //out0 to out1 are unused and should be unconnected
+        this->setupInput("in0");
+        this->setupInput("in1");
+        this->setupOutput("out0");
+        this->setupOutput("out1");
+        this->setName("Passer"+which);
+    }
+
+    void work(void)
+    {
+        workCount++;
+        auto in0 = this->input("in0");
+        auto out0 = this->output("out0");
+        if (in0->hasMessage())
+        {
+            auto msg = in0->popMessage();
+            out0->postMessage(msg);
+        }
+    }
+
+size_t workCount;
+};
+
+/***********************************************************************
  * Helper method for unit tests
  **********************************************************************/
 static bool connectionsHave(
@@ -74,6 +106,29 @@ static bool connectionsHave(
     return false;
 }
 
+/***********************************************************************
+ * Test operation with unused ports
+ **********************************************************************/
+POTHOS_TEST_BLOCK("/framework/tests/topology", test_unused_ports)
+{
+    //create blocks
+    auto ping = std::shared_ptr<Ping>(new Ping());
+    auto passer = std::shared_ptr<Passer>(new Passer());
+    auto pong = std::shared_ptr<Pong>(new Pong());
+    POTHOS_TEST_EQUAL(passer->workCount, 0);
+    POTHOS_TEST_EQUAL(pong->triggered, 0);
+
+    //connect all the blocks
+    Pothos::Topology topology;
+    topology.connect(ping, "out0", passer, "in0");
+    topology.connect(passer, "out0", pong, "in0");
+    topology.commit();
+
+    //check that the message flowed
+    POTHOS_TEST_TRUE(topology.waitInactive());
+    POTHOS_TEST_TRUE(passer->workCount != 0);
+    POTHOS_TEST_EQUAL(pong->triggered, 1);
+}
 
 /***********************************************************************
  * Test a simple pass-through topology
