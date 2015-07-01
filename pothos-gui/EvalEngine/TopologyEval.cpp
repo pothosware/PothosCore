@@ -57,6 +57,10 @@ void TopologyEval::update(void)
         if (not src->isReady()) continue;
         if (not dst->isReady()) continue;
 
+        //dont include connections to non-existent endpoints
+        if (not src->portExists(conn.srcPort, false)) continue;
+        if (not dst->portExists(conn.dstPort, true)) continue;
+
         //attempt to create the connection
         try
         {
