@@ -50,7 +50,6 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
     //setup plotter
     {
         _mainPlot->setCanvasBackground(MyPlotCanvasBg());
-        new MyPlotPicker(_mainPlot->canvas());
         _mainPlot->setAxisFont(QwtPlot::xBottom, MyPlotAxisFontSize());
         _mainPlot->setAxisFont(QwtPlot::yLeft, MyPlotAxisFontSize());
         connect(_zoomer, SIGNAL(zoomed(const QRectF &)), this, SLOT(handleZoomed(const QRectF &)));
