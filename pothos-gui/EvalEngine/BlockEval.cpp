@@ -69,6 +69,16 @@ bool BlockEval::isReady(void) const
     return true;
 }
 
+bool BlockEval::portExists(const std::string &name, const bool isInput) const
+{
+    const auto desc = isInput?_lastBlockStatus.inPortDesc:_lastBlockStatus.outPortDesc;
+    for (size_t i = 0; i < desc->size(); i++)
+    {
+        if (desc->getObject(i)->getValue<std::string>("name") == name) return true;
+    }
+    return false;
+}
+
 Pothos::Proxy BlockEval::getProxyBlock(void) const
 {
     return _proxyBlock;

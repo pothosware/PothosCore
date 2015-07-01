@@ -61,6 +61,8 @@ ConnectionInfos TopologyEval::getConnectionInfo(const GraphObjectList &graphObje
         auto connection = dynamic_cast<GraphConnection *>(graphObject);
         if (connection == nullptr) continue;
         if (not connection->isEnabled()) continue;
+        if (not connection->getInputEndpoint().isValid()) continue;
+        if (not connection->getOutputEndpoint().isValid()) continue;
         for (const auto &epPair : connection->getEndpointPairs())
         {
             const auto &outputEp = epPair.first;

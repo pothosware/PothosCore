@@ -82,6 +82,13 @@ public:
     bool isReady(void) const;
 
     /*!
+     * Check the current evaluated state to see if a port exists.
+     * This is used by the topology evaluation logic to check
+     * before making a connection.
+     */
+    bool portExists(const std::string &name, const bool isInput) const;
+
+    /*!
      * Get the remote proxy block from the evaluator
      */
     Pothos::Proxy getProxyBlock(void) const;
