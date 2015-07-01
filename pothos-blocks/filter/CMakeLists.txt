@@ -7,6 +7,7 @@ POTHOS_MODULE_UTIL(
         FIRDesigner.cpp
         FIRFilter.cpp
         TestFIRFilter.cpp
+        EnvelopeDetector.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
