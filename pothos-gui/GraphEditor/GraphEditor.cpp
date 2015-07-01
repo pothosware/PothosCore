@@ -892,6 +892,7 @@ void GraphEditor::handleBlockXcrement(const int adj)
 
 void GraphEditor::updateExecutionEngine(void)
 {
+    this->deleteFlagged(); //scan+remove deleted before submit
     _evalEngine->submitTopology(this->getGraphObjects());
 }
 
