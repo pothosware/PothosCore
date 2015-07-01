@@ -154,6 +154,11 @@ void GraphConnection::removeSigSlotPair(const SigSlotPair &sigSlot)
 std::vector<std::pair<GraphConnectionEndpoint, GraphConnectionEndpoint>> GraphConnection::getEndpointPairs(void) const
 {
     std::vector<std::pair<GraphConnectionEndpoint, GraphConnectionEndpoint>> pairs;
+
+    //ensure that the endpoints in question are valid
+    if (not this->getInputEndpoint().isValid()) return pairs;
+    if (not this->getOutputEndpoint().isValid()) return pairs;
+
     if (not this->isSignalOrSlot())
     {
         pairs.push_back(std::make_pair(this->getOutputEndpoint(), this->getInputEndpoint()));
