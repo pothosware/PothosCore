@@ -94,6 +94,8 @@
  * |factory /blocks/envelope_detector(dtype)
  * |setter setAttack(attack)
  * |setter setRelease(release)
+ * |setter setActivationThreshold(activationThresh)
+ * |setter setDeactivationThreshold(deactivationThresh)
  * |setter setActivationId(activationId)
  * |setter setDeactivationId(deactivationId)
  **********************************************************************/
@@ -102,34 +104,48 @@ class EnvelopeDetector : public Pothos::Block
 {
 public:
     EnvelopeDetector(void):
-        _envelope(0.0f),
-        _attackAlpha(0.0f),
-        _releaseAlpha(0.0f),
-        _oneMinusAttackAlpha(0.0f),
-        _oneMinusReleaseAlpha(0.0f),
-        _activationThreshold(0.0f),
-        _deactivationThreshold(0.0f),
-        _activeState(0.0f)
+        _envelope(0),
+        _attackAlpha(0),
+        _releaseAlpha(0),
+        _oneMinusAttackAlpha(0),
+        _oneMinusReleaseAlpha(0),
+        _activationThreshold(0),
+        _deactivationThreshold(0),
+        _activeState(false),
+        _theshOutPort(nullptr)
     {
         this->setupInput(0, typeid(InType));
         this->setupOutput(0, typeid(OutType));
         this->setupOutput("th", typeid(InType), this->uid()); //unique domain because of buffer forwarding
         this->registerCall(this, POTHOS_FCN_TUPLE(EnvelopeDetector, setAttack));
         this->registerCall(this, POTHOS_FCN_TUPLE(EnvelopeDetector, setRelease));
+        this->registerCall(this, POTHOS_FCN_TUPLE(EnvelopeDetector, setActivationThreshold));
+        this->registerCall(this, POTHOS_FCN_TUPLE(EnvelopeDetector, setDeactivationThreshold));
         this->registerCall(this, POTHOS_FCN_TUPLE(EnvelopeDetector, setActivationId));
         this->registerCall(this, POTHOS_FCN_TUPLE(EnvelopeDetector, setDeactivationId));
+        _theshOutPort = this->output("th");
     }
 
-    void setAttack(const float attack)
+    void setAttack(const OutType attack)
     {
-        _attackAlpha = std::exp(-1.0f/attack);
-        _oneMinusAttackAlpha = 1.0f-_attackAlpha;
+        _attackAlpha = std::exp(-1/attack);
+        _oneMinusAttackAlpha = 1-_attackAlpha;
     }
 
-    void setRelease(const float release)
+    void setRelease(const OutType release)
     {
-        _releaseAlpha = std::exp(-1.0f/release);
-        _oneMinusReleaseAlpha = 1.0f-_releaseAlpha;
+        _releaseAlpha = std::exp(-1/release);
+        _oneMinusReleaseAlpha = 1-_releaseAlpha;
+    }
+
+    void setActivationThreshold(const OutType thresh)
+    {
+        _activationThreshold = thresh;
+    }
+
+    void setDeactivationThreshold(const OutType thresh)
+    {
+        _deactivationThreshold = thresh;
     }
 
     void setActivationId(const std::string id)
@@ -160,6 +176,7 @@ public:
 
         for (size_t i = 0; i < N; i++)
         {
+            //envelope calculation
             const OutType xn = OutType(std::abs(in[i]));
             if (xn > _envelope)
             {
@@ -170,10 +187,32 @@ public:
                 _envelope = _releaseAlpha*_envelope + _oneMinusReleaseAlpha*xn;
             }
             out[i] = _envelope;
+
+            //threshold operation
+            if (not _activeState and _envelope > _activationThreshold)
+            {
+                _activeState = true;
+                if (not _activationId.empty())
+                {
+                    _theshOutPort->postLabel(Pothos::Label(_activationId, Pothos::Object(), i));
+                }
+            }
+            else if (_activeState and _envelope < _deactivationThreshold)
+            {
+                _activeState = false;
+                if (not _deactivationId.empty())
+                {
+                    _theshOutPort->postLabel(Pothos::Label(_deactivationId, Pothos::Object(), i));
+                }
+            }
         }
 
         inPort->consume(N);
         outPort->produce(N);
+
+        auto buff = inPort->buffer();
+        buff.length = N*buff.dtype.size();
+        _theshOutPort->postBuffer(buff);
     }
 
 /*
@@ -188,16 +227,17 @@ public:
 
 private:
 
-    float _envelope;
-    float _attackAlpha;
-    float _releaseAlpha;
-    float _oneMinusAttackAlpha;
-    float _oneMinusReleaseAlpha;
-    float _activationThreshold;
-    float _deactivationThreshold;
+    OutType _envelope;
+    OutType _attackAlpha;
+    OutType _releaseAlpha;
+    OutType _oneMinusAttackAlpha;
+    OutType _oneMinusReleaseAlpha;
+    OutType _activationThreshold;
+    OutType _deactivationThreshold;
     std::string _activationId;
     std::string _deactivationId;
     bool _activeState;
+    Pothos::OutputPort *_theshOutPort;
 };
 
 /***********************************************************************
