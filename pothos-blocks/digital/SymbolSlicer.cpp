@@ -30,6 +30,8 @@
  * |param map[Symbol Map] The symbol map is a list of arbitrary slicer values
  * which can be anything supported by the input data type.
  * |default [-1, 1]
+ * |option [BPSK] \[-1, 1\]
+ * |option [QPSK] \[-1.0-1.0*j, -1.0+1.0*j, 1.0+1.0*j, 1.0-1.0*j\]
  *
  * |factory /blocks/symbol_slicer(dtype)
  * |setter setMap(map)
