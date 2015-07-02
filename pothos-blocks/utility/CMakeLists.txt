@@ -27,6 +27,7 @@ POTHOS_MODULE_UTIL(
         InfiniteSource.cpp
         VectorSource.cpp
         TransformSignal.cpp
+        Threshold.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
