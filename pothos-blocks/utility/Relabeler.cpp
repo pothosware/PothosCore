@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Relabeler
@@ -26,7 +25,15 @@
  * |category /Utility
  * |keywords stream label
  *
+ * |param keepPrimary[Keep Primary] How to handle labels from the primary input port.
+ * Labels will always be forwarded from the input labels port,
+ * however the user may configure how labels from the primary port are handled.
+ * |default false
+ * |option [Forward] true
+ * |option [Discard] false
+ *
  * |factory /blocks/relabeler()
+ * |setter setKeepPrimary(keepPrimary)
  **********************************************************************/
 class Relabeler : public Pothos::Block
 {
@@ -37,12 +44,25 @@ public:
     }
 
     Relabeler(void):
-        _lblPort(nullptr)
+        _lblPort(nullptr),
+        _keepPrimary(false)
     {
         this->setupInput(0);
         this->setupInput("lbl");
         this->setupOutput(0, "", this->uid()); //unique domain because of buffer forwarding
         _lblPort = this->input("lbl");
+        this->registerCall(this, POTHOS_FCN_TUPLE(Relabeler, setKeepPrimary));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Relabeler, getKeepPrimary));
+    }
+
+    void setKeepPrimary(const bool keep)
+    {
+        _keepPrimary = keep;
+    }
+
+    bool getKeepPrimary(void) const
+    {
+        return _keepPrimary;
     }
 
     void work(void)
@@ -57,7 +77,7 @@ public:
         }
 
         //we can only forward as many elements from primate as we have labels
-        const size_t N = std::min(inPort->elements(), _lblPort->elements());
+        const size_t N = this->workInfo().minAllInElements;
         if (N == 0) return;
 
         //grab the primary buffer and set the length
@@ -68,12 +88,20 @@ public:
         inPort->consume(N);
         _lblPort->consume(N);
         outPort->postBuffer(buff);
+    }
 
-        //default propagate labels implementation handles labels...
+    void propagateLabels(const Pothos::InputPort *port)
+    {
+        //labels are discarded here from the primary port based on keep setting
+        if (port == this->input(0) and not _keepPrimary) return;
+
+        //propagate labels with default implementation
+        Pothos::Block::propagateLabels(port);
     }
 
 private:
     Pothos::InputPort *_lblPort;
+    bool _keepPrimary;
 };
 
 static Pothos::BlockRegistry registerRelabeler(
