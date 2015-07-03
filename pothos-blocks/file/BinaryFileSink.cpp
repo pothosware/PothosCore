@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -71,10 +71,11 @@ public:
 
     void activate(void)
     {
+        if (_path.empty()) throw Pothos::FileException("BinaryFileSink", "empty file path");
         _fd = open(_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, MY_S_IREADWRITE);
         if (_fd < 0)
         {
-            poco_error_f4(Poco::Logger::get("BinaryFileSource"), "open(%s) returned %d -- %s(%d)", _path, _fd, std::string(strerror(errno)), errno);
+            poco_error_f4(Poco::Logger::get("BinaryFileSink"), "open(%s) returned %d -- %s(%d)", _path, _fd, std::string(strerror(errno)), errno);
         }
     }
 

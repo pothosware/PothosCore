@@ -69,6 +69,7 @@ public:
 
     void activate(void)
     {
+        if (_path.empty()) throw Pothos::FileException("BinaryFileSource", "empty file path");
         _fd = open(_path.c_str(), O_RDONLY | O_BINARY);
         if (_fd < 0)
         {
