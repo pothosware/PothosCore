@@ -2,18 +2,23 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
-#include <Poco/NumberParser.h>
 #include <cassert>
 #include <algorithm> //min/max
+#include <cctype> //isdigit
 
 /***********************************************************************
  * misc helper methods
  **********************************************************************/
 static int portNameToIndex(const std::string &name)
 {
-    unsigned value = -1;
-    if (Poco::NumberParser::tryParseUnsigned(name, value)) return int(value);
-    return -1;
+    //check if all characters are digits or return -1
+    for (const auto &ch : name)
+    {
+        if (not std::isdigit(ch)) return -1;
+    }
+
+    //convert the string to an integer
+    return std::stoi(name);
 }
 
 /***********************************************************************
