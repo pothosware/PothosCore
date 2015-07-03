@@ -19,8 +19,11 @@
  * Input buffer references held by the packet object
  * will be forwarded directly to the output byte stream.
  *
- * Use of labels to indicate frame boundaries: When the start and end frame IDs are specified,
- * labels are produced for the first and last output element from each packet payload (respectively).
+ * <h2>Label support</h2>
+ *
+ * Labels can be used to indicate frame boundaries.
+ * When the start and end frame IDs are specified,
+ * labels are produced for the first and last output element of each packet payload.
  *
  * |category /Packet
  * |keywords packet message datagram

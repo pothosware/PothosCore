@@ -148,6 +148,7 @@ private:
     size_t _mtu;
     std::string _frameStartId;
 };
-
+/*
 static Pothos::BlockRegistry registerLabelDeframer(
     "/blocks/label_deframer", &LabelDeframer::make);
+*/

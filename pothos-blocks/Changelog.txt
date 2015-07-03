@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Packet to/from stream blocks support frame labels
 - Fixed sporadic dropper to set the label width
 - Added simple LLC block for logical link control
 - Created sporadic dropper for reliability testing
