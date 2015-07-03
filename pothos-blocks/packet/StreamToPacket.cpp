@@ -161,12 +161,8 @@ public:
         {
             for (const auto &label : inputPort->labels())
             {
-                //end of input buffer labels, consume all, done work
-                if (label.index >= inputPort->elements())
-                {
-                    inputPort->consume(inputPort->elements());
-                    return;
-                }
+                //end of input buffer labels, exit loop
+                if (label.index >= inputPort->elements()) break;
 
                 //ignore labels that are not start of frame
                 if (label.id != _frameStartId) continue;
@@ -186,6 +182,13 @@ public:
                     _inFrame = true;
                     return;
                 }
+            }
+
+            //start of frame not found, consume everything, exit this work
+            if (not _inFrame)
+            {
+                inputPort->consume(inputPort->elements());
+                return;
             }
         }
 
