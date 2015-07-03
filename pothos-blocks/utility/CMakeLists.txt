@@ -28,6 +28,7 @@ POTHOS_MODULE_UTIL(
         VectorSource.cpp
         TransformSignal.cpp
         Threshold.cpp
+        Relabeler.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
