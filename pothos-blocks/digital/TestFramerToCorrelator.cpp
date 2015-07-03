@@ -17,7 +17,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_framer_to_correlator)
     auto generator = registry.callProxy("/blocks/packet_to_stream");
     auto framer = registry.callProxy("/blocks/preamble_framer");
     auto correlator = registry.callProxy("/blocks/preamble_correlator");
-    auto deframer = registry.callProxy("/blocks/label_deframer");
+    auto deframer = registry.callProxy("/blocks/stream_to_packet");
     auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
 
     //Copy block provides the loopback path:
