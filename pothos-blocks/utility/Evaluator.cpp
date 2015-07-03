@@ -11,9 +11,9 @@
 #include <iostream>
 
 /***********************************************************************
- * |PothosDoc Transform Signal
+ * |PothosDoc Evaluator
  *
- * The transform signal block performs a user-specified expression evaluation
+ * The evaluator block performs a user-specified expression evaluation
  * on input slot(s) and produces the evaluation result on an output signal.
  * The input slots are user-defined. The output signal is named "triggered".
  * The arguments from the input slots must be primitive types.
@@ -38,18 +38,18 @@
  * |default "log2(val)"
  * |widget StringEntry()
  *
- * |factory /blocks/transform_signal(vars)
+ * |factory /blocks/evaluator(vars)
  * |setter setExpression(expr)
  **********************************************************************/
-class TransformSignal : public Pothos::Block
+class Evaluator : public Pothos::Block
 {
 public:
     static Block *make(const std::vector<std::string> &varNames)
     {
-        return new TransformSignal(varNames);
+        return new Evaluator(varNames);
     }
 
-    TransformSignal(const std::vector<std::string> &varNames)
+    Evaluator(const std::vector<std::string> &varNames)
     {
         for (const auto &name : varNames)
         {
@@ -59,8 +59,8 @@ public:
             this->registerSlot(slotName); //opaqueCallHandler
         }
         this->registerSignal("triggered");
-        this->registerCall(this, POTHOS_FCN_TUPLE(TransformSignal, setExpression));
-        this->registerCall(this, POTHOS_FCN_TUPLE(TransformSignal, getExpression));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Evaluator, setExpression));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Evaluator, getExpression));
 
         //create eval environment
         auto env = Pothos::ProxyEnvironment::make("managed");
@@ -125,5 +125,5 @@ private:
     Pothos::Proxy _EvalEnvironment;
 };
 
-static Pothos::BlockRegistry registerTransformSignal(
-    "/blocks/transform_signal", &TransformSignal::make);
+static Pothos::BlockRegistry registerEvaluator(
+    "/blocks/evaluator", &Evaluator::make);

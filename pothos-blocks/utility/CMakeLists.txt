@@ -26,7 +26,7 @@ POTHOS_MODULE_UTIL(
         StreamSnooper.cpp
         InfiniteSource.cpp
         VectorSource.cpp
-        TransformSignal.cpp
+        Evaluator.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )

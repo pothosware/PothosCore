@@ -41,7 +41,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_signals_and_slots)
     POTHOS_TEST_EQUAL(msgs[1].extract<std::string>(), "msg1");
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal)
+POTHOS_TEST_BLOCK("/blocks/tests", test_evaluator)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -50,7 +50,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal)
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
     auto messageToSignal = registry.callProxy("/blocks/message_to_signal", "changeEvent");
     auto slotToMessage = registry.callProxy("/blocks/slot_to_message", "handleEvent");
-    auto transform = registry.callProxy("/blocks/transform_signal", std::vector<std::string>(1, "val"));
+    auto transform = registry.callProxy("/blocks/evaluator", std::vector<std::string>(1, "val"));
     transform.callVoid("setExpression", "2*val");
 
     //feed some msgs
@@ -78,7 +78,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal)
     POTHOS_TEST_EQUAL(msgs[1].convert<int>(), -64);
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal_multiarg)
+POTHOS_TEST_BLOCK("/blocks/tests", test_evaluator_multiarg)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -86,7 +86,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal_multiarg)
     auto feeder = registry.callProxy("/blocks/feeder_source", "int");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
     auto slotToMessage = registry.callProxy("/blocks/slot_to_message", "handleEvent");
-    auto transform = registry.callProxy("/blocks/transform_signal", std::vector<std::string>(1, "val"));
+    auto transform = registry.callProxy("/blocks/evaluator", std::vector<std::string>(1, "val"));
     transform.callVoid("setExpression", "2*val0 + val1");
 
     //test message with two args - object vector format since we are not using messageToSignal
@@ -114,7 +114,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal_multiarg)
     POTHOS_TEST_EQUAL(msgs[0].convert<int>(), 2*11 + -32);
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal_multislot)
+POTHOS_TEST_BLOCK("/blocks/tests", test_evaluator_multislot)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -129,7 +129,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_transform_signal_multislot)
     std::vector<std::string> varNames;
     varNames.push_back("valX");
     varNames.push_back("valY");
-    auto transform = registry.callProxy("/blocks/transform_signal", varNames);
+    auto transform = registry.callProxy("/blocks/evaluator", varNames);
     transform.callVoid("setExpression", "valX - 2*valY");
 
     //feed some msgs
