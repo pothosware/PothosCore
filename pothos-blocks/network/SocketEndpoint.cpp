@@ -17,6 +17,12 @@
 #include <algorithm> //min/max
 
 /***********************************************************************
+ * The maximum number of bytes passed to a single send() call.
+ * Larger buffers will be split into multiple calls to send().
+ **********************************************************************/
+#define SEND_MTU 4096
+
+/***********************************************************************
  * Ensure that the MSG_MORE flag exists:
  * MSG_MORE hints to send that there is guaranteed additional data.
  **********************************************************************/
@@ -227,11 +233,7 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
 
     int send(const void *buff, const size_t length, const int flags)
     {
-        int bytes = int(length);
-        #ifdef _MSC_VER
-        bytes = std::min(bytes, 1024*8);
-        #endif
-        int r = UDT::send(this->clientSock, (const char *)buff, bytes, flags);
+        int r = UDT::send(this->clientSock, (const char *)buff, int(length), flags);
         if (r == UDT::ERROR) throw Pothos::RuntimeException("UDT::send()", UDT::getlasterror().getErrorMessage());
         return r;
     }
@@ -259,7 +261,7 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
     (uint32_t(str[2]) << 8) | \
     (uint32_t(str[3]) << 0)
 
-static const uint32_t PothosPacketHeaderWord = POTHOS_PACKET_WORD32("PTHS");
+static const uint32_t PothosPacketHeaderWord = POTHOS_PACKET_WORD32("PTH2");
 
 #define PothosPacketFlagFin (1 << 0)
 #define PothosPacketFlagSyn (1 << 1)
@@ -273,8 +275,8 @@ struct PothosPacketHeader
     uint32_t headerWord;
     uint16_t flags;
     uint16_t type;
-    uint16_t payloadBytes;
-    uint16_t packetCount;
+    uint32_t payloadBytes;
+    uint32_t packetCount;
     uint32_t indexWord[2];
 };
 
@@ -313,8 +315,8 @@ struct PothosPacketSocketEndpoint::Impl
 
     //state
     EndpointState state;
-    uint16_t lastSentPacketCount;
-    uint16_t nextRecvPacketCount;
+    uint32_t lastSentPacketCount;
+    uint32_t nextRecvPacketCount;
     size_t bytesLeftInStream;
     uint16_t lastType;
     uint64_t lastIndex;
@@ -419,7 +421,7 @@ void PothosPacketSocketEndpoint::openComms(void)
     uint64_t index;
 
     //start with a new random sequence number
-    _impl->lastSentPacketCount = uint16_t(std::rand());
+    _impl->lastSentPacketCount = uint32_t(std::rand());
     _impl->totalBytesRecv = 0;
     _impl->totalBytesSent = 0;
     _impl->lastFlowMsgRecv = 0;
@@ -602,7 +604,7 @@ void PothosPacketSocketEndpoint::Impl::unpackHeader(const PothosPacketHeader &he
 
     //extract header fields
     flags = Poco::ByteOrder::fromNetwork(header.flags);
-    const uint16_t recvPacketCount = Poco::ByteOrder::fromNetwork(header.packetCount);
+    const uint32_t recvPacketCount = Poco::ByteOrder::fromNetwork(header.packetCount);
     payloadBytes = Poco::ByteOrder::fromNetwork(header.payloadBytes);
     type = Poco::ByteOrder::fromNetwork(header.type);
     index = uint64_t(Poco::ByteOrder::fromNetwork(header.indexWord[1]));
@@ -721,17 +723,19 @@ void PothosPacketSocketEndpoint::Impl::send(const uint16_t flags, const uint16_t
     std::unique_lock<std::mutex> lock(this->sendMutex);
 
     int ret;
+    bool hasMore;
     PothosPacketHeader header;
     header.headerWord = Poco::ByteOrder::toNetwork(PothosPacketHeaderWord);
     header.flags = Poco::ByteOrder::toNetwork(flags);
-    header.payloadBytes = Poco::ByteOrder::toNetwork(uint16_t(numBytes));
-    header.packetCount = Poco::ByteOrder::toNetwork(uint16_t(this->lastSentPacketCount++));
+    header.payloadBytes = Poco::ByteOrder::toNetwork(uint32_t(numBytes));
+    header.packetCount = Poco::ByteOrder::toNetwork(uint32_t(this->lastSentPacketCount++));
     header.type = Poco::ByteOrder::toNetwork(type);
     header.indexWord[0] = Poco::ByteOrder::toNetwork(uint32_t(index >> 32));
     header.indexWord[1] = Poco::ByteOrder::toNetwork(uint32_t(index >> 0));
 
     //send the header
-    ret = this->iface->send(&header, sizeof(header), more?MSG_MORE:((numBytes==0)?0:MSG_MORE));
+    hasMore = (numBytes != 0) or more;
+    ret = this->iface->send(&header, sizeof(header), hasMore?MSG_MORE:0);
     if (ret != int(sizeof(header)))
     {
         throw Pothos::Exception("PothosPacketSocketEndpoint::send(header)", std::to_string(ret));
@@ -742,7 +746,9 @@ void PothosPacketSocketEndpoint::Impl::send(const uint16_t flags, const uint16_t
     size_t bytesLeft = numBytes;
     while (bytesLeft != 0)
     {
-        ret = this->iface->send((const void *)(size_t(buff)+numBytes-bytesLeft), bytesLeft, more?MSG_MORE:0);
+        const size_t bytesToSend = std::min<size_t>(bytesLeft, SEND_MTU);
+        hasMore = (bytesToSend != bytesLeft) or more;
+        ret = this->iface->send((const void *)(size_t(buff)+numBytes-bytesLeft), bytesToSend, hasMore?MSG_MORE:0);
         if (ret <= 0)
         {
             throw Pothos::Exception("PothosPacketSocketEndpoint::send(payload)", std::to_string(ret));
