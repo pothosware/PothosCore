@@ -79,6 +79,7 @@ void Pothos::Block::propagateLabels(const InputPort *input)
     for (auto &entry : this->allOutputs())
     {
         auto &output = entry.second;
+        if (output->isSignal()) continue;
         for (const auto &label : input->labels())
         {
             output->postLabel(label);
