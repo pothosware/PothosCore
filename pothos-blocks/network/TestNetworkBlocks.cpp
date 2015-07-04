@@ -36,31 +36,6 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
     auto feeder = env.callProxy("/blocks/feeder_source", "int");
     auto collector = env.callProxy("/blocks/collector_sink", "int");
 
-    //create a test plan
-    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
-    testPlan->set("enableBuffers", true);
-    testPlan->set("enableLabels", true);
-    testPlan->set("enableMessages", true);
-    //large and numerous payloads
-    testPlan->set("minTrials", 100);
-    testPlan->set("maxTrials", 200);
-    testPlan->set("minSize", 512);
-    testPlan->set("maxSize", 1048); //TODO FIXME see #7
-    auto expected = feeder.callProxy("feedTestPlan", testPlan);
-
-    //create tester topology
-    std::cout << "Basic message test" << std::endl;
-    {
-        Pothos::Topology topology;
-        topology.connect(source, 0, collector, 0);
-        topology.connect(feeder, 0, sink, 0);
-        topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
-    }
-
-    std::cout << "verifyTestPlan" << std::endl;
-    collector.callVoid("verifyTestPlan", expected);
-
     //create tester topology -- tests for open close
     std::cout << "Open/close repeat test" << std::endl;
     for (size_t i = 0; i < 3; i++)
@@ -71,6 +46,38 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
         topology.commit();
     }
 
+    //create tester topology
+    Pothos::Topology topology;
+    topology.connect(source, 0, collector, 0);
+    topology.connect(feeder, 0, sink, 0);
+
+    //create the testplan with large and numerous payloads
+    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
+    testPlan->set("enableLabels", true);
+    testPlan->set("enableMessages", true);
+    testPlan->set("minTrials", 100);
+    testPlan->set("maxTrials", 200);
+    testPlan->set("minSize", 512);
+    testPlan->set("maxSize", 1048*8);
+
+    //test buffers with labels and messages
+    std::cout << "Buffer based test" << std::endl;
+    testPlan->set("enablePackets", false);
+    testPlan->set("enableBuffers", true);
+    auto expected = feeder.callProxy("feedTestPlan", testPlan);
+    topology.commit();
+    POTHOS_TEST_TRUE(topology.waitInactive());
+    collector.callVoid("verifyTestPlan", expected);
+
+    //test packets with labels and messages
+    std::cout << "Packet based test" << std::endl;
+    testPlan->set("enablePackets", true);
+    testPlan->set("enableBuffers", false);
+    expected = feeder.callProxy("feedTestPlan", testPlan);
+    topology.commit();
+    POTHOS_TEST_TRUE(topology.waitInactive());
+    collector.callVoid("verifyTestPlan", expected);
+
     std::cout << "Done!\n" << std::endl;
 }
 
@@ -80,43 +87,4 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_network_blocks)
     network_test_harness("tcp", false);
     //network_test_harness("udt", true);
     //network_test_harness("udt", false);
-}
-
-POTHOS_TEST_BLOCK("/blocks/tests", test_network_packet_message)
-{
-    auto env = Pothos::ProxyEnvironment::make("managed");
-    auto registry = env->findProxy("Pothos/BlockRegistry");
-
-    //network blocks
-    auto source = registry.callProxy("/blocks/network_source", "tcp://0.0.0.0", "BIND");
-    auto client_uri = Poco::format("tcp://localhost:%s", source.call<std::string>("getActualPort"));
-    auto sink = registry.callProxy("/blocks/network_sink", client_uri, "CONNECT");
-
-    //tester blocks
-    auto feeder = registry.callProxy("/blocks/feeder_source", "int");
-    auto collector = registry.callProxy("/blocks/collector_sink", "int");
-    auto s2p = registry.callProxy("/blocks/stream_to_packet");
-    auto p2s = registry.callProxy("/blocks/packet_to_stream");
-
-    //create a test plan
-    Poco::JSON::Object::Ptr testPlan(new Poco::JSON::Object());
-    testPlan->set("enableBuffers", true);
-    testPlan->set("enableLabels", true);
-    testPlan->set("enableMessages", true);
-    auto expected = feeder.callProxy("feedTestPlan", testPlan);
-
-    //create tester topology
-    std::cout << "Basic message test" << std::endl;
-    {
-        Pothos::Topology topology;
-        topology.connect(feeder, 0, s2p, 0);
-        topology.connect(s2p, 0, sink, 0);
-        topology.connect(source, 0, p2s, 0);
-        topology.connect(p2s, 0, collector, 0);
-        topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
-    }
-
-    std::cout << "verifyTestPlan" << std::endl;
-    collector.callVoid("verifyTestPlan", expected);
 }
