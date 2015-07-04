@@ -202,6 +202,25 @@ void Pothos::WorkerActor::workTask(void)
 }
 
 /***********************************************************************
+ * call slots
+ **********************************************************************/
+void Pothos::WorkerActor::handleSlotCalls(InputPort &port)
+{
+    while (not port.slotCallsEmpty())
+    {
+        POTHOS_EXCEPTION_TRY
+        {
+            const auto args =  port.slotCallsPop().extract<ObjectVector>();
+            block->opaqueCallHandler(port.name(), args.data(), args.size());
+        }
+        POTHOS_EXCEPTION_CATCH(const Exception &ex)
+        {
+            poco_error_f3(Poco::Logger::get("Pothos.Block.callSlot"), "%s[%s]: %s", block->getName(), port.name(), ex.displayText());
+        }
+    }
+}
+
+/***********************************************************************
  * pre-work
  **********************************************************************/
 bool Pothos::WorkerActor::preWorkTasks(void)
@@ -219,6 +238,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     {
         auto &port = *entry.second;
         port._workEvents = 0;
+        if (port.isSignal()) continue;
 
         //is it ok to use the read-before-write optimization?
         const auto tryRBW = port._readBeforeWritePort != nullptr and
@@ -246,7 +266,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         }
         port._buffer.dtype = port.dtype(); //always copy from port's dtype setting
         port._elements = port._buffer.elements();
-        if (port._elements == 0 and not port.isSignal()) allOutputsReady = false;
+        if (port._elements == 0) allOutputsReady = false;
         if (port.tokenManagerEmpty()) allOutputsReady = false;
         port._pendingElements = 0;
         if (port.index() != -1)
@@ -265,18 +285,12 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     {
         auto &port = *entry.second;
         port._workEvents = 0;
-        if (not port.slotCallsEmpty())
+        if (port.isSlot())
         {
-            POTHOS_EXCEPTION_TRY
-            {
-                const auto args =  port.slotCallsPop().extract<ObjectVector>();
-                block->opaqueCallHandler(port.name(), args.data(), args.size());
-            }
-            POTHOS_EXCEPTION_CATCH(const Exception &ex)
-            {
-                poco_error_f3(Poco::Logger::get("Pothos.Block.callSlot"), "%s[%s]: %s", block->getName(), port.name(), ex.displayText());
-            }
+            this->handleSlotCalls(port);
+            continue;
         }
+
         //perform minimum reserve accumulator require to recover from possible element fragmentation
         const size_t requireElems = std::max<size_t>(1, port._reserveElements);
         port.bufferAccumulatorRequire(requireElems*port.dtype().size());

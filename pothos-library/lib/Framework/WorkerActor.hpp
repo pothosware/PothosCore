@@ -118,4 +118,5 @@ public:
     void workTask(void);
     bool preWorkTasks(void);
     void postWorkTasks(void);
+    void handleSlotCalls(InputPort &);
 };
