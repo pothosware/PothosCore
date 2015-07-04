@@ -185,6 +185,11 @@ public:
         return true;
     }
 
+    void propagateLabels(const Pothos::InputPort *)
+    {
+        //do not propagate labels
+    }
+
 private:
     size_t _chunkSize;
     double _triggerRate;

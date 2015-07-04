@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Fix stream snooper disable propagate labels
 - Rename transform signal/slots block to evaluator
 - Created stream relabeler utility block
 - Created threshold labeler utility block
