@@ -44,8 +44,7 @@ public:
     }
 
     NetworkSource(const std::string &uri, const std::string &opt):
-        _ep(PothosPacketSocketEndpoint(uri, opt)),
-        _nextExpectedIndex(0)
+        _ep(PothosPacketSocketEndpoint(uri, opt))
     {
         //std::cout << "NetworkSource " << opt << " " << uri << std::endl;
         this->setupOutput(0);
@@ -71,7 +70,6 @@ public:
 
 private:
     PothosPacketSocketEndpoint _ep;
-    unsigned long long _nextExpectedIndex;
     Pothos::DType _lastDtype;
     Pothos::Packet _packetHeader;
 };
@@ -84,15 +82,13 @@ void NetworkSource::work(void)
     auto outputPort = this->output(0);
 
     //recv the header, use output buffer when possible for zero-copy
-    uint16_t type;
-    uint64_t index;
+    uint16_t type = 0;
     auto buffer = outputPort->buffer();
-    _ep.recv(type, index, buffer, timeout);
+    _ep.recv(type, buffer, timeout);
 
     //handle the output
     if (type == PothosPacketTypeBuffer)
     {
-        _nextExpectedIndex = index + buffer.length;
         buffer.dtype = _lastDtype;
         outputPort->popBuffer(buffer.length);
         outputPort->postBuffer(buffer);
