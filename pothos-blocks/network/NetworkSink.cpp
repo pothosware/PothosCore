@@ -163,14 +163,13 @@ void NetworkSink::work(void)
     }
 
     //serialize labels (all labels are sent before buffers to ensure ordering at the destination)
-    while (inputPort->labels().begin() != inputPort->labels().end())
+    for (const auto &label : inputPort->labels())
     {
-        const auto &label = *inputPort->labels().begin();
+        if (label.index >= inputPort->elements()) break;
         std::ostringstream oss;
         Pothos::Object(label).serialize(oss);
         auto index = label.index + inputPort->totalElements();
         _ep.send(PothosPacketTypeLabel, index, oss.str().data(), oss.str().length());
-        inputPort->removeLabel(label);
     }
 
     //available buffer?

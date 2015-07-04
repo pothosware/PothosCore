@@ -127,7 +127,6 @@ void NetworkSource::work(void)
         Pothos::Object data;
         data.deserialize(iss);
         auto label = data.extract<Pothos::Label>();
-        label.index = index - _nextExpectedIndex;
         outputPort->postLabel(label);
     }
     else if (type == PothosPacketTypeDType)
