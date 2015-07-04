@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.2.1 (pending)
 ==========================
 
+- Support alias paths in block description markup
 - Fixed integer parser failure in named ports setup
 - Allow work() operation with unused output ports
 - Created new test suite macro for array equality
