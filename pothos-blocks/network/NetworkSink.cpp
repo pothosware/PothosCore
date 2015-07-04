@@ -93,10 +93,9 @@ public:
     {
         while (running)
         {
-            uint16_t type;
-            uint64_t index;
+            uint16_t type = 0;
             Pothos::BufferChunk buffer;
-            try {_ep.recv(type, index, buffer);}
+            try {_ep.recv(type, buffer);}
             catch (...){}
         }
     }
@@ -108,7 +107,7 @@ public:
         if (_lastDtype == dtype) return;
         std::ostringstream oss;
         Pothos::Object(dtype).serialize(oss);
-        _ep.send(PothosPacketTypeDType, 0, oss.str().data(), oss.str().length(), true);
+        _ep.send(PothosPacketTypeDType, oss.str().data(), oss.str().length(), true);
         _lastDtype = dtype;
     }
 
@@ -144,13 +143,13 @@ void NetworkSink::work(void)
 
             //send the packet without buffer
             std::ostringstream oss; Pothos::Object(packet).serialize(oss);
-            _ep.send(PothosPacketTypeHeader, inputPort->totalMessages(), oss.str().data(), oss.str().length(), true);
+            _ep.send(PothosPacketTypeHeader, oss.str().data(), oss.str().length(), true);
 
             //send the dtype when changed
             this->updateDType(buffer.dtype);
 
             //send the packet buffer
-            _ep.send(PothosPacketTypePayload, 0, buffer.as<const void *>(), buffer.length);
+            _ep.send(PothosPacketTypePayload, buffer.as<const void *>(), buffer.length);
         }
 
         //arbitrary serialization
@@ -158,19 +157,17 @@ void NetworkSink::work(void)
         {
             std::ostringstream oss;
             msg.serialize(oss);
-            _ep.send(PothosPacketTypeMessage, inputPort->totalMessages(), oss.str().data(), oss.str().length());
+            _ep.send(PothosPacketTypeMessage, oss.str().data(), oss.str().length());
         }
     }
 
     //serialize labels (all labels are sent before buffers to ensure ordering at the destination)
-    while (inputPort->labels().begin() != inputPort->labels().end())
+    for (const auto &label : inputPort->labels())
     {
-        const auto &label = *inputPort->labels().begin();
+        if (label.index >= inputPort->elements()) break;
         std::ostringstream oss;
         Pothos::Object(label).serialize(oss);
-        auto index = label.index + inputPort->totalElements();
-        _ep.send(PothosPacketTypeLabel, index, oss.str().data(), oss.str().length());
-        inputPort->removeLabel(label);
+        _ep.send(PothosPacketTypeLabel, oss.str().data(), oss.str().length());
     }
 
     //available buffer?
@@ -182,7 +179,7 @@ void NetworkSink::work(void)
 
     //send a buffer
     {
-        _ep.send(PothosPacketTypeBuffer, inputPort->totalElements(), buffer.as<const void *>(), buffer.length);
+        _ep.send(PothosPacketTypeBuffer, buffer.as<const void *>(), buffer.length);
         inputPort->consume(inputPort->elements());
     }
 }

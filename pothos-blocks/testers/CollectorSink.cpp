@@ -81,7 +81,12 @@ public:
             auto msg = inputPort->popMessage();
             if (msg.type() == typeid(Pothos::Packet))
             {
-                _packets.push_back(msg.extract<Pothos::Packet>());
+                auto pkt = msg.extract<Pothos::Packet>();
+                const auto oldBuff = pkt.payload;
+                //copy the payload so we don't hold upstream resources
+                pkt.payload = Pothos::BufferChunk(oldBuff.dtype, oldBuff.elements());
+                std::memcpy(pkt.payload.as<void *>(), oldBuff.as<const void *>(), oldBuff.length);
+                _packets.push_back(pkt);
             }
             else _messages.push_back(msg);
         }
