@@ -20,6 +20,7 @@
  *
  * |category /Utility
  * |keywords signal slot eval expression
+ * |alias /blocks/transform_signal
  *
  * |param vars[Variables] A list of named variables to use in the expression.
  * Each variable corresponds to settings slot on the transform block.
@@ -127,3 +128,7 @@ private:
 
 static Pothos::BlockRegistry registerEvaluator(
     "/blocks/evaluator", &Evaluator::make);
+
+//backwards compatible alias
+static Pothos::BlockRegistry registerTransformSignal(
+    "/blocks/transform_signal", &Evaluator::make);
