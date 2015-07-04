@@ -52,6 +52,7 @@
  *
  * |category /Packet
  * |keywords packet message datagram
+ * |alias /blocks/label_deframer
  *
  * |param mtu[MTU] The maximum size of the payload in an output packet.
  * An MTU of 0 bytes means unconstrained payload size;
@@ -330,3 +331,7 @@ private:
 
 static Pothos::BlockRegistry registerStreamToPacket(
     "/blocks/stream_to_packet", &StreamToPacket::make);
+
+//backwards compatible alias
+static Pothos::BlockRegistry registerLabelDeframer(
+    "/blocks/label_deframer", &StreamToPacket::make);

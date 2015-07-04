@@ -26,7 +26,7 @@ POTHOS_MODULE_UTIL(
         StreamSnooper.cpp
         InfiniteSource.cpp
         VectorSource.cpp
-        TransformSignal.cpp
+        Evaluator.cpp
         Threshold.cpp
         Relabeler.cpp
     DESTINATION blocks

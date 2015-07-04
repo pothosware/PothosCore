@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -211,6 +211,7 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
     Poco::JSON::Object topObj;
     Poco::JSON::Array calls;
     Poco::JSON::Array keywords;
+    Poco::JSON::Array::Ptr aliases(new Poco::JSON::Array());
     Poco::JSON::Array categories;
     Poco::JSON::Array params;
     Poco::JSON::Array::Ptr topDocs(new Poco::JSON::Array());
@@ -278,6 +279,16 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
             {
                 keywords.add(Poco::trim(keyword));
             }
+        }
+        else if (instruction == "alias" and state == "DOC")
+        {
+            const std::string alias(Poco::trim(payload));
+            try {Pothos::PluginPath(alias);}
+            catch (const Pothos::PluginPathError &)
+            {
+                throw Pothos::SyntaxException("Invalid alias path", codeLine.toString());
+            }
+            aliases->add(alias);
         }
         else if (instruction == "param" and (state == "DOC" or state == "PARAM"))
         {
@@ -434,6 +445,7 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
     if (topDocs->size() > 0) topObj.set("docs", topDocs);
     if (categories.size() > 0) topObj.set("categories", categories);
     if (keywords.size() > 0) topObj.set("keywords", keywords);
+    if (aliases->size() > 0) topObj.set("aliases", aliases);
     if (params.size() > 0) topObj.set("params", params);
     if (calls.size() > 0) topObj.set("calls", calls);
 
@@ -469,8 +481,20 @@ static void jsonArrayToCppStaticBlock(const Poco::JSON::Array &arrayOut, std::os
             escaped += "\\x" + Poco::NumberFormatter::formatHex(int(ch), 2/*width*/, false/*no 0x*/);
         }
 
-        auto path = Pothos::PluginPath("/blocks/docs").join(obj->getValue<std::string>("path").substr(1));
-        os << Poco::format("    Pothos::PluginRegistry::add(\"%s\", std::string(\"%s\"));\n", path.toString(), escaped);
+        //get a list of all paths including aliases
+        std::vector<std::string> paths;
+        paths.push_back(obj->getValue<std::string>("path"));
+        if (obj->has("aliases")) for (const auto &alias : *obj->getArray("aliases"))
+        {
+            paths.push_back(alias.toString());
+        }
+
+        //register the block description for every path
+        for (const auto &path : paths)
+        {
+            const auto pluginPath = Pothos::PluginPath("/blocks/docs").join(path.substr(1));
+            os << Poco::format("    Pothos::PluginRegistry::add(\"%s\", std::string(\"%s\"));\n", pluginPath.toString(), escaped);
+        }
     }
     os << "}\n";
 }
