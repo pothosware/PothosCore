@@ -29,39 +29,50 @@ struct TimeAccumulator
 /***********************************************************************
  * buffer manager helpers
  **********************************************************************/
-std::string Pothos::WorkerActor::getInputBufferMode(const std::string &name, const std::string &domain)
+std::string Pothos::WorkerActor::getBufferMode(const std::string &name, const std::string &domain, const bool isInput)
 {
-    if (block->input(name)->isSlot()) return "ABDICATE";
-    try
-    {
-        if (block->getInputBufferManager(name, domain)) return "CUSTOM";
-    }
-    catch (const PortDomainError &)
-    {
-        return "ERROR";
-    }
-    return "ABDICATE";
-}
+    ActorInterfaceLock lock(this);
 
-std::string Pothos::WorkerActor::getOutputBufferMode(const std::string &name, const std::string &domain)
-{
-    if (block->output(name)->isSignal()) return "ABDICATE";
+    //signals and slots always abdicate, they don't care about buffers
+    if (isInput and block->input(name)->isSlot()) return "ABDICATE";
+    if (not isInput and block->output(name)->isSignal()) return "ABDICATE";
+
+    //look up the mode in the cache from a previous request
+    auto &mode = bufferModeCache[isInput][name][domain];
+    if (not mode.empty()) return mode;
+
+    //query the mode from the block's buffer manager overloads
+    //the result is cached for subsequent calls to getBufferManager()
+    //only the last manager for each port is actually stored (in tmp)
     try
     {
-        if (block->getOutputBufferManager(name, domain)) return "CUSTOM";
+        auto &m = bufferManagerTmpCache[isInput][name]; m.reset();
+        m = isInput? block->getInputBufferManager(name, domain) : block->getOutputBufferManager(name, domain);
+        mode = m? "CUSTOM" : "ABDICATE";
+        bufferManagerCache[isInput][name][domain] = m;
     }
     catch (const PortDomainError &)
     {
-        return "ERROR";
+        mode = "ERROR";
     }
-    return "ABDICATE";
+    return mode;
 }
 
 Pothos::BufferManager::Sptr Pothos::WorkerActor::getBufferManager(const std::string &name, const std::string &domain, const bool isInput)
 {
-    auto m = isInput? block->getInputBufferManager(name, domain) : block->getOutputBufferManager(name, domain);
+    ActorInterfaceLock lock(this);
+
+    //check the cache for a manager thats still in use
+    auto &weakMgr = bufferManagerCache[isInput][name][domain];
+    auto m = weakMgr.lock();
+
+    //try to get the manager and make one if its null
+    if (not m) m = isInput? block->getInputBufferManager(name, domain) : block->getOutputBufferManager(name, domain);
     if (not m) m = BufferManager::make("generic", BufferManagerArgs());
     else if (not m->isInitialized()) m->init(BufferManagerArgs()); //TODO pass this in from somewhere
+
+    //store the new buffer manager to the cache
+    weakMgr = m;
     return m;
 }
 
@@ -96,6 +107,13 @@ void Pothos::WorkerActor::subscribeInput(const std::string &action, const std::s
         subscribers.erase(it);
     }
 
+    //empty subscribers, don't hold onto the buffer manager so it can be cleaned up
+    if (subscribers.empty())
+    {
+        this->outputs.at(myPortName)->bufferManagerSetup(BufferManager::Sptr());
+        bufferManagerTmpCache[false][myPortName].reset();
+    }
+
     this->updatePorts();
 }
 
@@ -119,6 +137,12 @@ void Pothos::WorkerActor::subscribeOutput(const std::string &action, const std::
         if (not found) throw PortAccessError("Pothos::WorkerActor::unsubscribePort()",
             Poco::format("output %s subscription missing from input port %s", outputPort->name(), myPortName));
         subscribers.erase(it);
+    }
+
+    //empty subscribers, don't hold onto the buffer manager so it can be cleaned up
+    if (subscribers.empty())
+    {
+        bufferManagerTmpCache[true][myPortName].reset();
     }
 
     this->updatePorts();
@@ -520,8 +544,7 @@ static auto managedWorkerActor = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, setActiveStateOff))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, subscribeInput))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, subscribeOutput))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getInputBufferMode))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getOutputBufferMode))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getBufferMode))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, getBufferManager))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, setOutputBufferManager))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::WorkerActor, autoAllocateInput))

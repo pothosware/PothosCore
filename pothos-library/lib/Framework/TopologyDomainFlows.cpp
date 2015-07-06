@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -10,10 +10,10 @@
 /***********************************************************************
  * helpers to call into remote worker
  **********************************************************************/
-static std::string getBufferMode(const Port &port, const bool &isInput, const std::string &domain)
+static std::string getBufferMode(const Port &port, const std::string &domain, const bool &isInput)
 {
     auto actor = port.obj.callProxy("get:_actor");
-    return actor.call<std::string>(isInput?"getInputBufferMode":"getOutputBufferMode", port.name, domain);
+    return actor.call<std::string>("getBufferMode", port.name, domain, isInput);
 }
 
 static std::string getDomain(const Port &port, const bool &isInput)
@@ -41,7 +41,7 @@ static bool isDomainCrossingAcceptable(
     for (const auto &subPort : subPorts)
     {
         subDomains.insert(getDomain(subPort, not isInput));
-        const auto subMode = getBufferMode(subPort, not isInput, mainDomain);
+        const auto subMode = getBufferMode(subPort, mainDomain, not isInput);
         if (subMode != "ABDICATE") allOthersAbdicate = false;
     }
 
@@ -50,7 +50,7 @@ static bool isDomainCrossingAcceptable(
 
     assert(subDomains.size() == 1);
     const auto subDomain = *subDomains.begin();
-    const auto mainMode = getBufferMode(mainPort, isInput, subDomain);
+    const auto mainMode = getBufferMode(mainPort, subDomain, isInput);
 
     //error always means we make a copy block
     if (mainMode == "ERROR") return false;

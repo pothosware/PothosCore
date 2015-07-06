@@ -37,6 +37,18 @@ std::string collectFutureInfoErrors(const std::vector<FutureInfo> infoFutures)
 /***********************************************************************
  * helpers to deal with buffer managers
  **********************************************************************/
+static std::string getBufferMode(const Port &port, const std::string &domain, const bool &isInput)
+{
+    auto actor = port.obj.callProxy("get:_actor");
+    return actor.call<std::string>("getBufferMode", port.name, domain, isInput);
+}
+
+static Pothos::Proxy getBufferManager(const Port &port, const std::string &domain, const bool &isInput)
+{
+    auto actor = port.obj.callProxy("get:_actor");
+    return actor.callProxy("getBufferManager", port.name, domain, isInput);
+}
+
 static void setOutputBufferManager(const Port &src, const Pothos::Proxy &manager)
 {
     src.obj.callProxy("get:_actor").callVoid("setOutputBufferManager", src.name, manager);
@@ -68,13 +80,13 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         auto srcDomain = src.obj.callProxy("output", src.name).call<std::string>("domain");
         auto dstDomain = dst.obj.callProxy("input", dst.name).call<std::string>("domain");
 
-        auto srcMode = src.obj.callProxy("get:_actor").call<std::string>("getOutputBufferMode", src.name, dstDomain);
-        auto dstMode = dst.obj.callProxy("get:_actor").call<std::string>("getInputBufferMode", dst.name, srcDomain);
+        auto srcMode = getBufferMode(src, dstDomain, false);
+        auto dstMode = getBufferMode(dst, srcDomain, true);
 
         //check if the source provides a manager and install it to the source
         if (srcMode == "CUSTOM")
         {
-            manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
+            manager = getBufferManager(src, dstDomain, false);
         }
 
         //check if the destination provides a manager and install it to the source
@@ -83,14 +95,14 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
             for (const auto &otherDst : dsts)
             {
                 if (otherDst == dst) continue;
-                if (otherDst.obj.callProxy("get:_actor").call<std::string>("getInputBufferMode", dst.name, srcDomain) != "ABDICATE")
+                if (getBufferMode(otherDst, srcDomain, true) != "ABDICATE")
                 {
                     throw Pothos::Exception("Pothos::Topology::installBufferManagers", Poco::format("%s->%s\n"
                         "rectifyDomainFlows() logic does not /yet/ handle multiple destinations w/ custom buffer managers",
                         src.toString(), otherDst.toString()));
                 }
             }
-            manager = dst.obj.callProxy("get:_actor").callProxy("getBufferManager", dst.name, srcDomain, true);
+            manager = getBufferManager(dst, srcDomain, true);
         }
 
         //otherwise create a generic manager and install it to the source
@@ -98,7 +110,7 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         {
             assert(srcMode == "ABDICATE"); //this must be true if the previous logic was good
             assert(dstMode == "ABDICATE");
-            manager = src.obj.callProxy("get:_actor").callProxy("getBufferManager", src.name, dstDomain, false);
+            manager = getBufferManager(src, dstDomain, false);
         }
 
         std::shared_future<void> result(std::async(std::launch::async, setOutputBufferManager, src, manager));

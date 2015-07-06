@@ -69,6 +69,9 @@ public:
     std::atomic<int> activityIndicator;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
+    std::map<bool, std::map<std::string, std::map<std::string, std::string>>> bufferModeCache;
+    std::map<bool, std::map<std::string, Pothos::BufferManager::Sptr>> bufferManagerTmpCache;
+    std::map<bool, std::map<std::string, std::map<std::string, std::weak_ptr<Pothos::BufferManager>>>> bufferManagerCache;
 
     ///////////////////// work stats collection ///////////////////////
     unsigned long long numTaskCalls;
@@ -109,8 +112,7 @@ public:
     void setActiveStateOff(void);
     void subscribeInput(const std::string &action, const std::string &myPortName, InputPort *subscriberPort);
     void subscribeOutput(const std::string &action, const std::string &myPortName, OutputPort *subscriberPort);
-    std::string getInputBufferMode(const std::string &name, const std::string &domain);
-    std::string getOutputBufferMode(const std::string &name, const std::string &domain);
+    std::string getBufferMode(const std::string &name, const std::string &domain, const bool isInput);
     BufferManager::Sptr getBufferManager(const std::string &name, const std::string &domain, const bool isInput);
     void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager);
 
