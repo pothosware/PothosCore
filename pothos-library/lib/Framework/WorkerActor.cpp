@@ -31,6 +31,7 @@ struct TimeAccumulator
  **********************************************************************/
 std::string Pothos::WorkerActor::getInputBufferMode(const std::string &name, const std::string &domain)
 {
+    if (block->input(name)->isSlot()) return "ABDICATE";
     try
     {
         if (block->getInputBufferManager(name, domain)) return "CUSTOM";
@@ -44,6 +45,7 @@ std::string Pothos::WorkerActor::getInputBufferMode(const std::string &name, con
 
 std::string Pothos::WorkerActor::getOutputBufferMode(const std::string &name, const std::string &domain)
 {
+    if (block->output(name)->isSignal()) return "ABDICATE";
     try
     {
         if (block->getOutputBufferManager(name, domain)) return "CUSTOM";

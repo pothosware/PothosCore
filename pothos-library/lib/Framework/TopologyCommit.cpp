@@ -85,8 +85,9 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
                 if (otherDst == dst) continue;
                 if (otherDst.obj.callProxy("get:_actor").call<std::string>("getInputBufferMode", dst.name, srcDomain) != "ABDICATE")
                 {
-                    throw Pothos::Exception("Pothos::Topology::installBufferManagers",
-                        "rectifyDomainFlows() logic does not /yet/ handle multiple destinations w/ custom buffer managers");
+                    throw Pothos::Exception("Pothos::Topology::installBufferManagers", Poco::format("%s->%s\n"
+                        "rectifyDomainFlows() logic does not /yet/ handle multiple destinations w/ custom buffer managers",
+                        src.toString(), otherDst.toString()));
                 }
             }
             manager = dst.obj.callProxy("get:_actor").callProxy("getBufferManager", dst.name, srcDomain, true);
