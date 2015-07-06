@@ -461,6 +461,7 @@ void GraphEditor::handleInsertGraphWidget(QObject *obj)
 
 void GraphEditor::handleCut(void)
 {
+    if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
     auto desc = tr("Cut %1").arg(draw->getSelectionDescription());
 

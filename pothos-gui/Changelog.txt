@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Fix graph editor handle cut to check for active graph
 - Topology evaluator connections check for port existence
 
 Release 0.2.0 (2015-06-17)
