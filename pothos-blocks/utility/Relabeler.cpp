@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Relabeler
@@ -77,16 +78,16 @@ public:
         }
 
         //we can only forward as many elements from primate as we have labels
-        const size_t N = this->workInfo().minAllInElements;
+        const size_t N = std::min(inPort->buffer().elements(), _lblPort->buffer().elements());
         if (N == 0) return;
 
         //grab the primary buffer and set the length
         auto buff = inPort->buffer();
-        buff.length = N;
+        buff.length = N*buff.dtype.size();
 
         //consume and forward buffer
-        inPort->consume(N);
-        _lblPort->consume(N);
+        inPort->consume(N*inPort->buffer().dtype.size());
+        _lblPort->consume(N*_lblPort->buffer().dtype.size());
         outPort->postBuffer(buff);
     }
 
