@@ -93,7 +93,7 @@ public:
     void msgWork(const Pothos::Packet &inPkt)
     {
         //calculate conversion and buffer sizes (round up)
-        const size_t numSyms = ((inPkt.payload.elements() + _reserveSyms - 1)/_reserveSyms)*_reserveSyms;
+        const size_t numSyms = ((inPkt.payload.length + _reserveSyms - 1)/_reserveSyms)*_reserveSyms;
         const size_t numBytes = (numSyms*_mod)/8;
 
         //create a new packet for output symbols
