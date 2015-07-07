@@ -107,6 +107,14 @@ public:
         _accumulationBuffs.resize(this->inputs().size());
     }
 
+    void deactivate(void)
+    {
+        for (auto &pkt : _accumulationBuffs)
+        {
+            pkt = Pothos::Packet(); //clear
+        }
+    }
+
     void work(void)
     {
         //Alignment: we need to know the minimum number of elements:
@@ -142,14 +150,17 @@ public:
             }
 
             //are we triggered by the periodic event?
-            auto &lastTriggerTime = _lastTriggerTimes[inPort->index()];
+            //when aligned always use port 0 as a time trigger
+            auto &lastTriggerTime = _lastTriggerTimes[_alignment?0:inPort->index()];
             const auto timeBetweenUpdates = std::chrono::nanoseconds((long long)(1e9/_triggerRate));
             bool doUpdate = (std::chrono::high_resolution_clock::now() - lastTriggerTime) > timeBetweenUpdates;
 
             //perform the accumulation buffer update
+            //when aligned, only mark the time when we are on the last port
             if (doUpdate and this->handleTrigger(inPort, num))
             {
-                lastTriggerTime = std::chrono::high_resolution_clock::now();
+                if (not _alignment or inPort == this->inputs().back())
+                    lastTriggerTime = std::chrono::high_resolution_clock::now();
             }
         }
     }
