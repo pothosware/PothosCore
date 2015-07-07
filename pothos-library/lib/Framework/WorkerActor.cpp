@@ -61,7 +61,11 @@ std::string Pothos::WorkerActor::getBufferMode(const std::string &name, const st
 Pothos::BufferManager::Sptr Pothos::WorkerActor::getBufferManager(const std::string &name, const std::string &domain, const bool isInput)
 {
     ActorInterfaceLock lock(this);
+    return this->getBufferManagerNoLock(name, domain, isInput);
+}
 
+Pothos::BufferManager::Sptr Pothos::WorkerActor::getBufferManagerNoLock(const std::string &name, const std::string &domain, const bool isInput)
+{
     //check the cache for a manager thats still in use
     auto &weakMgr = bufferManagerCache[isInput][name][domain];
     auto m = weakMgr.lock();
@@ -80,6 +84,28 @@ void Pothos::WorkerActor::setOutputBufferManager(const std::string &name, const 
 {
     ActorInterfaceLock lock(this);
     outputs.at(name)->bufferManagerSetup(manager);
+}
+
+void Pothos::WorkerActor::ensureOutputBufferManagerNoLock(const std::string &name)
+{
+    auto &port = *this->outputs.at(name);
+
+    //signal ports ignored, they don't need managers
+    if (port.isSignal()) return;
+
+    //without subscribers, provide the manager from a local source
+    if (port._subscribers.empty())
+    {
+        BufferManager::Sptr mgr;
+        try {mgr = this->getBufferManagerNoLock(name, "", false);}
+        catch (...){}
+        port.bufferManagerSetup(mgr);
+    }
+
+    //ensure that a buffer manager has been installed
+    if (not port._bufferManager) throw RuntimeException(
+        "Pothos::WorkerActor::ensureBufferManager()",
+        Poco::format("%s[%s] has no buffer manager set", block->getName(), name));
 }
 
 /***********************************************************************
@@ -108,11 +134,10 @@ void Pothos::WorkerActor::subscribeInput(const std::string &action, const std::s
     }
 
     //empty subscribers, don't hold onto the buffer manager so it can be cleaned up
-    if (subscribers.empty())
-    {
-        this->outputs.at(myPortName)->bufferManagerSetup(BufferManager::Sptr());
-        bufferManagerTmpCache[false][myPortName].reset();
-    }
+    if (subscribers.empty()) bufferManagerTmpCache[false][myPortName].reset();
+
+    //when unsubscripted, ensure that we have a local buffer manager
+    if (subscribers.empty()) this->ensureOutputBufferManagerNoLock(myPortName);
 
     this->updatePorts();
 }
@@ -140,10 +165,7 @@ void Pothos::WorkerActor::subscribeOutput(const std::string &action, const std::
     }
 
     //empty subscribers, don't hold onto the buffer manager so it can be cleaned up
-    if (subscribers.empty())
-    {
-        bufferManagerTmpCache[true][myPortName].reset();
-    }
+    if (subscribers.empty()) bufferManagerTmpCache[true][myPortName].reset();
 
     this->updatePorts();
 }
@@ -153,20 +175,14 @@ void Pothos::WorkerActor::subscribeOutput(const std::string &action, const std::
  **********************************************************************/
 void Pothos::WorkerActor::setActiveStateOn(void)
 {
+    ActorInterfaceLock lock(this);
+
     //ensure that every output port gets a buffer manager
     //because connection logic skips over unused ports
     for (const auto &entry : this->outputs)
     {
-        auto &port = *entry.second;
-        if (port.isSignal()) continue;
-        if (port._bufferManager) continue;
-        BufferManager::Sptr mgr;
-        try {mgr = this->getBufferManager(port._name, "", false);}
-        catch (...){}
-        this->setOutputBufferManager(port._name, mgr);
+        this->ensureOutputBufferManagerNoLock(entry.first);
     }
-
-    ActorInterfaceLock lock(this);
 
     POTHOS_EXCEPTION_TRY
     {
@@ -501,7 +517,7 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
     Poco::JSON::Array::Ptr inputStats(new Poco::JSON::Array());
     for (const auto &name : block->inputPortNames())
     {
-        const auto &port = *this->inputs.at(name);
+        auto &port = *this->inputs.at(name);
         if (port.isSlot()) continue;
         Poco::JSON::Object::Ptr portStats(new Poco::JSON::Object());
         portStats->set("totalElements", Poco::UInt64(port.totalElements()));
@@ -511,6 +527,21 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
         portStats->set("dtypeSize", Poco::UInt64(port.dtype().size()));
         portStats->set("dtypeMarkup", port.dtype().toMarkup());
         portStats->set("portName", name);
+        portStats->set("reserveElements", Poco::UInt64(port._reserveElements));
+        {
+            BufferChunk frontBuff; port.bufferAccumulatorFront(frontBuff);
+            portStats->set("frontBytes", Poco::UInt64(frontBuff.length));
+        }
+        {
+            std::lock_guard<Util::SpinLock> lockB(port._bufferAccumulatorLock);
+            portStats->set("enqueuedBytes", Poco::UInt64(port._bufferAccumulator.getTotalBytesAvailable()));
+            portStats->set("enqueuedBuffers", Poco::UInt64(port._bufferAccumulator.getUniqueManagedBufferCount()));
+            portStats->set("enqueuedLabels", Poco::UInt64(port._inlineMessages.size()+port._inputInlineMessages.size()));
+        }
+        {
+            std::lock_guard<Util::SpinLock> lockM(port._asyncMessagesLock);
+            portStats->set("enqueuedMessages", Poco::UInt64(port._asyncMessages.size()));
+        }
         inputStats->add(portStats);
     }
     if (inputStats->size() > 0) stats->set("inputStats", inputStats);
@@ -519,7 +550,7 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
     Poco::JSON::Array::Ptr outputStats(new Poco::JSON::Array());
     for (const auto &name : block->outputPortNames())
     {
-        const auto &port = *this->outputs.at(name);
+        auto &port = *this->outputs.at(name);
         if (port.isSignal()) continue;
         Poco::JSON::Object::Ptr portStats(new Poco::JSON::Object());
         portStats->set("totalElements", Poco::UInt64(port.totalElements()));
@@ -529,6 +560,11 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
         portStats->set("dtypeSize", Poco::UInt64(port.dtype().size()));
         portStats->set("dtypeMarkup", port.dtype().toMarkup());
         portStats->set("portName", name);
+        {
+            BufferChunk frontBuff; port.bufferManagerFront(frontBuff);
+            portStats->set("frontBytes", Poco::UInt64(frontBuff.length));
+        }
+        portStats->set("tokensEmpty", port.tokenManagerEmpty());
         outputStats->add(portStats);
     }
     if (outputStats->size() > 0) stats->set("outputStats", outputStats);

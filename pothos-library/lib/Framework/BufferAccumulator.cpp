@@ -250,6 +250,7 @@ size_t Pothos::BufferAccumulator::getUniqueManagedBufferCount(void) const
     for (size_t i = 0; i < _queue.size(); i++)
     {
         if (not _queue[i]) continue;
+        if (not _queue[i].getManagedBuffer()) continue;
         managedBufferSet.insert(_queue[i].getManagedBuffer());
     }
     return managedBufferSet.size();

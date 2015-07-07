@@ -118,6 +118,7 @@ inline bool Pothos::OutputPort::bufferManagerEmpty(void)
 inline void Pothos::OutputPort::bufferManagerFront(Pothos::BufferChunk &buff)
 {
     std::lock_guard<Util::SpinLock> lock(_bufferManagerLock);
+    if (not _bufferManager) buff = Pothos::BufferChunk();
     buff = _bufferManager->front();
 }
 
@@ -130,7 +131,7 @@ inline void Pothos::OutputPort::bufferManagerPop(const size_t numBytes)
 inline bool Pothos::OutputPort::tokenManagerEmpty(void)
 {
     std::lock_guard<Util::SpinLock> lock(_tokenManagerLock);
-    return _tokenManager->empty();
+    return not _tokenManager or _tokenManager->empty();
 }
 
 inline Pothos::BufferChunk Pothos::OutputPort::tokenManagerPop(void)

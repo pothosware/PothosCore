@@ -114,7 +114,9 @@ public:
     void subscribeOutput(const std::string &action, const std::string &myPortName, OutputPort *subscriberPort);
     std::string getBufferMode(const std::string &name, const std::string &domain, const bool isInput);
     BufferManager::Sptr getBufferManager(const std::string &name, const std::string &domain, const bool isInput);
+    BufferManager::Sptr getBufferManagerNoLock(const std::string &name, const std::string &domain, const bool isInput);
     void setOutputBufferManager(const std::string &name, const BufferManager::Sptr &manager);
+    void ensureOutputBufferManagerNoLock(const std::string &name);
 
     ///////////////////// work helper methods ///////////////////////
     void workTask(void);
