@@ -778,10 +778,15 @@ void GraphEditor::handleResetState(int stateNo)
     auto draw = this->getCurrentGraphDraw();
     emit draw->modifyProperties(nullptr);
 
+    //Restore the last displayed page in stateNo,
+    //and not the saved viewed page in stateNo.
+    const int lastPageNo = _stateToLastTabIndex.at(stateNo);
+
     _stateManager->resetTo(stateNo);
     const auto dump = _stateManager->current().dump;
     std::istringstream iss(std::string(dump.constData(), dump.size()));
     this->loadState(iss);
+    this->setCurrentIndex(lastPageNo);
     this->updateGraphEditorMenus();
     this->render();
 
@@ -979,6 +984,10 @@ void GraphEditor::render(void)
 void GraphEditor::updateGraphEditorMenus(void)
 {
     if (not this->isVisible()) return;
+
+    //always store the last visible page with the state
+    //we use this to restore the last viewed page when undo/reset
+    _stateToLastTabIndex[_stateManager->getCurrentIndex()] = this->currentIndex();
 
     auto menu = getMenuMap()["moveGraphObjects"];
     menu->clear();

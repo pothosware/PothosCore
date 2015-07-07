@@ -152,6 +152,7 @@ private:
 
     QString _currentFilePath;
     QPointer<GraphStateManager> _stateManager;
+    std::map<size_t, int> _stateToLastTabIndex;
 
     //! update enabled actions based on state - after a change or when editor becomes visible
     void updateEnabledActions(void);
