@@ -938,6 +938,7 @@ void GraphEditor::load(void)
     try
     {
         poco_information_f1(Poco::Logger::get("PothosGui.GraphEditor.load"), "Loading %s from file", fileName);
+        postStatusMessage(tr("Loading %1").arg(QString::fromStdString(fileName)));
         std::ifstream inFile(fileName.c_str());
         this->loadState(inFile);
     }

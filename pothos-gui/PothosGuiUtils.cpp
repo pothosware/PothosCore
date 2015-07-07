@@ -1,10 +1,12 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp"
 #include <Pothos/System.hpp>
 #include <Poco/Path.h>
 #include <Poco/SingletonHolder.h>
+#include <QSplashScreen>
+#include <QApplication>
 
 QMap<QString, QAction *> &getActionMap(void)
 {
@@ -57,4 +59,21 @@ QString makeIconPath(const QString &name)
 QIcon makeIconFromTheme(const QString &name)
 {
     return QIcon::fromTheme(name, QIcon(makeIconPath(name+".png")));
+}
+
+void postStatusMessage(const QString &msg)
+{
+    getSplashScreen()->showMessage(msg, Qt::AlignLeft | Qt::AlignBottom);
+    QApplication::instance()->processEvents();
+}
+
+QSplashScreen *getSplashScreen(void)
+{
+    static QSplashScreen *splash = nullptr;
+    if (splash == nullptr)
+    {
+        QPixmap pixmap(makeIconPath("PothosSplash.png"));
+        splash = new QSplashScreen(pixmap);
+    }
+    return splash;
 }

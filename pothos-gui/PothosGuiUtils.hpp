@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -10,6 +10,7 @@
 
 class QAction;
 class QMenu;
+class QSplashScreen;
 
 //! global settings
 QSettings &getSettings(void);
@@ -22,3 +23,9 @@ QMap<QString, QObject *> &getObjectMap(void);
 //! icon utils
 QString makeIconPath(const QString &name);
 QIcon makeIconFromTheme(const QString &name);
+
+//! status message
+void postStatusMessage(const QString &msg);
+
+//! get global splash screen
+QSplashScreen *getSplashScreen(void);

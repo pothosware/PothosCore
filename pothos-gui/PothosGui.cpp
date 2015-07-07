@@ -26,14 +26,6 @@ struct MyScopedSyslogListener
     }
 };
 
-static QSplashScreen *splash = nullptr;
-
-static void splashShowMessage(const QString &msg)
-{
-    splash->showMessage(msg, Qt::AlignLeft | Qt::AlignBottom);
-    QApplication::instance()->processEvents();
-}
-
 int main(int argc, char **argv)
 {
     MyScopedSyslogListener syslogListener;
@@ -56,9 +48,7 @@ int main(int argc, char **argv)
     app.setApplicationName("Pothos");
 
     //create splash screen
-    QPixmap pixmap(makeIconPath("PothosSplash.png"));
-    splash = new QSplashScreen(pixmap);
-    splash->show();
+    getSplashScreen()->show();
 
     //setup the application icon
     app.setWindowIcon(QIcon(makeIconPath("PothosGui.png")));
@@ -67,12 +57,12 @@ int main(int argc, char **argv)
     Pothos::RemoteServer server;
     try
     {
-        splashShowMessage("Initializing Pothos plugins...");
+        postStatusMessage("Initializing Pothos plugins...");
         Pothos::init();
 
         //try to talk to the server on localhost, if not there, spawn a custom one
         //make a server and node that is temporary with this process
-        splashShowMessage("Launching scratch process...");
+        postStatusMessage("Launching scratch process...");
         try
         {
             Pothos::RemoteClient client("tcp://localhost");
@@ -94,9 +84,9 @@ int main(int argc, char **argv)
     POTHOS_EXCEPTION_TRY
     {
         //create the main window for the GUI
-        std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr, &splashShowMessage));
+        std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr));
         mainWindow->show();
-        splash->finish(mainWindow.get());
+        getSplashScreen()->finish(mainWindow.get());
 
         //begin application execution
         return app.exec();
