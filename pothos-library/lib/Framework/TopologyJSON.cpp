@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <future>
+#include <cassert>
 #include <map>
 
 /***********************************************************************
@@ -218,6 +219,20 @@ std::string Pothos::Topology::queryJSONStats(void)
         const auto workStats = result.get();
         std::vector<std::string> names; workStats->getNames(names);
         for (const auto &name : names) stats->set(name, workStats->getObject(name));
+    }
+
+    //use flat topology to get hierarchical block names
+    const auto flatTopologyObj = parseJSONStr(this->dumpJSON());
+    const auto flatTopologyBlocks = flatTopologyObj->getObject("blocks");
+    std::vector<std::string> names; flatTopologyBlocks->getNames(names);
+    for (const auto &name : names)
+    {
+        if (not stats->has(name)) continue;
+        assert(stats->getObject(name));
+        const auto topologObj = flatTopologyBlocks->getObject(name);
+        assert(topologObj);
+        const auto blockName = topologObj->getValue<std::string>("name");
+        stats->getObject(name)->set("blockName", blockName);
     }
 
     //return the string-formatted result

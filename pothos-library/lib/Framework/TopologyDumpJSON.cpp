@@ -9,9 +9,11 @@
 #include <Poco/JSON/Parser.h>
 #include <sstream>
 #include <iostream>
+#include <cassert>
 
 static bool blockIsHier(const Poco::JSON::Object::Ptr &blockObj)
 {
+    assert(blockObj);
     return blockObj->has("connections");
 }
 
@@ -22,10 +24,14 @@ static std::vector<std::pair<std::string, std::string>> resolvePorts(
     const bool resolveSrc
 )
 {
+    assert(topObj);
     std::vector<std::pair<std::string, std::string>> results;
 
     const auto blocksObj = topObj->getObject("blocks");
+    assert(blocksObj);
+    if (not blocksObj->has(blockId)) return results;
     const auto blockObj = blocksObj->getObject(blockId);
+    assert(blockObj);
 
     if (not blockIsHier(blockObj))
     {
@@ -37,6 +43,7 @@ static std::vector<std::pair<std::string, std::string>> resolvePorts(
     for (size_t c_i = 0; c_i < connsArray->size(); c_i++)
     {
         const auto subConnObj = connsArray->getObject(c_i);
+        assert(subConnObj);
         std::string subId, subName;
 
         if (resolveSrc)
@@ -63,25 +70,30 @@ static std::vector<std::pair<std::string, std::string>> resolvePorts(
 
 static bool flattenDump(Poco::JSON::Object::Ptr &topObj)
 {
+    assert(topObj);
     bool hierFound = false;
 
     //create new blocks object that flattens any hierarchy to 1 depth
     //if this block is a hierarchy -- bring its blocks to the top level
     const auto blocksObj = topObj->getObject("blocks");
+    assert(blocksObj);
     Poco::JSON::Object::Ptr flatBlocksObj(new Poco::JSON::Object());
     std::vector<std::string> blockUids; blocksObj->getNames(blockUids);
     for (const auto &uid : blockUids)
     {
         const auto blockObj = blocksObj->getObject(uid);
+        assert(blockObj);
         if (blockIsHier(blockObj))
         {
             hierFound = true;
             const auto subBlocksObj = blockObj->getObject("blocks");
+            assert(subBlocksObj);
             const auto thisName = blockObj->getValue<std::string>("name");
             std::vector<std::string> subBlockUids; subBlocksObj->getNames(subBlockUids);
             for (const auto &subUid : subBlockUids)
             {
                 auto subBlockObj = subBlocksObj->getObject(subUid);
+                assert(subBlockObj);
                 const auto subName = subBlockObj->getValue<std::string>("name");
                 subBlockObj->set("name", thisName+"/"+subName); //heritage name
                 flatBlocksObj->set(subUid, subBlockObj);
@@ -92,10 +104,12 @@ static bool flattenDump(Poco::JSON::Object::Ptr &topObj)
 
     //create new connections array folding out depth 1 hierarchies
     const auto connsArray = topObj->getArray("connections");
+    assert(connsArray);
     Poco::JSON::Array::Ptr flatConnsArray(new Poco::JSON::Array());
     for (size_t c_i = 0; c_i < connsArray->size(); c_i++)
     {
         const auto connObj = connsArray->getObject(c_i);
+        assert(connObj);
         for (const auto & resolvedSrc : resolvePorts(topObj, connObj->getValue<std::string>("srcId"), connObj->getValue<std::string>("srcName"), true))
         {
             for (const auto & resolvedDst : resolvePorts(topObj, connObj->getValue<std::string>("dstId"), connObj->getValue<std::string>("dstName"), false))
@@ -114,12 +128,14 @@ static bool flattenDump(Poco::JSON::Object::Ptr &topObj)
     for (const auto &uid : blockUids)
     {
         const auto blockObj = blocksObj->getObject(uid);
+        assert(blockObj);
         if (not blockIsHier(blockObj)) continue;
         const auto subConnsArray = blockObj->getArray("connections");
 
         for (size_t c_i = 0; c_i < subConnsArray->size(); c_i++)
         {
             const auto subConnObj = subConnsArray->getObject(c_i);
+            assert(subConnObj);
             const bool srcIsThis = subConnObj->getValue<std::string>("srcId") == uid;
             const bool dstIsThis = subConnObj->getValue<std::string>("dstId") == uid;
 
@@ -133,6 +149,7 @@ static bool flattenDump(Poco::JSON::Object::Ptr &topObj)
             for (size_t c_s = 0; c_s < connsArray->size(); c_s++)
             {
                 const auto connObj_s = connsArray->getObject(c_s);
+                assert(connObj_s);
                 if (connObj_s->getValue<std::string>("dstId") != uid) continue;
                 if (connObj_s->getValue<std::string>("dstName") != subConnObj->getValue<std::string>("srcName")) continue;
 
@@ -140,6 +157,7 @@ static bool flattenDump(Poco::JSON::Object::Ptr &topObj)
                 for (size_t c_d = 0; c_d < connsArray->size(); c_d++)
                 {
                     const auto connObj_d = connsArray->getObject(c_d);
+                    assert(connObj_d);
                     if (connObj_d->getValue<std::string>("srcId") != uid) continue;
                     if (connObj_d->getValue<std::string>("srcName") != subConnObj->getValue<std::string>("dstName")) continue;
 
@@ -175,6 +193,7 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
     //extract input request
     Poco::JSON::Parser p; p.parse(request.empty()?"{}":request);
     auto configObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    assert(configObj);
     const auto modeConfig = configObj->optValue<std::string>("mode", "flat");
 
     //parse request into traversal arguments
@@ -188,7 +207,9 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
     {
         Poco::JSON::Parser pFlat; pFlat.parse(this->dumpJSON("{\"mode\":\"flat\"}"));
         auto flatObj = pFlat.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        assert(flatObj);
         flatBlocks = flatObj->getObject("blocks");
+        assert(flatBlocks);
     }
 
     //output object
@@ -233,6 +254,7 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
             auto subDump = block.call<std::string>("dumpJSON", "{\"mode\":\"top\"}");
             Poco::JSON::Parser psub; psub.parse(subDump);
             auto subObj = psub.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+            assert(subObj);
             std::vector<std::string> names; subObj->getNames(names);
             for (const auto &name : names) blockObj->set(name, subObj->get(name));
         }
