@@ -14,7 +14,11 @@
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QScrollArea>
+#include <QTreeWidget>
 #include <QtConcurrent/QtConcurrent>
+#include <Poco/JSON/Parser.h>
+#include <Poco/JSON/Array.h>
+#include <Poco/JSON/Object.h>
 
 class TopologyStatsDialog : public QDialog
 {
@@ -28,7 +32,7 @@ public:
         _manualReloadButton(new QPushButton(makeIconFromTheme("view-refresh"), tr("Manual Reload"), this)),
         _autoReloadButton(new QPushButton(makeIconFromTheme("view-refresh"), tr("Automatic Reload"), this)),
         _statsScroller(new QScrollArea(this)),
-        _statsLabel(new QLabel(this)),
+        _statsTree(new QTreeWidget(this)),
         _timer(new QTimer(this)),
         _watcher(new QFutureWatcher<std::string>(this))
     {
@@ -43,12 +47,9 @@ public:
         //setup the refresh buttons
         _autoReloadButton->setCheckable(true);
 
-        //setup the JSON stats label
-        _statsLabel->setStyleSheet("QLabel{background:white;margin:1px;}");
-        _statsLabel->setWordWrap(true);
-        _statsLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-        _statsLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-        _statsScroller->setWidget(_statsLabel);
+        //setup the JSON stats tree
+        _statsTree->setHeaderLabels(QStringList(tr("Block Stats")));
+        _statsScroller->setWidget(_statsTree);
         _statsScroller->setWidgetResizable(true);
 
         //connect the signals
@@ -83,7 +84,36 @@ private slots:
         }
         else
         {
-            _statsLabel->setText(QString::fromStdString(jsonStats).replace("\\/", "/"));
+            Poco::JSON::Parser p; p.parse(jsonStats);
+            auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+            std::vector<std::string> names; topObj->getNames(names);
+            for (const auto &name : names)
+            {
+                const auto dataObj = topObj->getObject(name);
+
+                auto &item = _statsItems[name];
+                if (item == nullptr)
+                {
+                    const auto title = dataObj->getValue<std::string>("blockName");
+                    item = new QTreeWidgetItem(QStringList(QString::fromStdString(title)));
+                    _statsTree->addTopLevelItem(item);
+                }
+
+                auto &label = _statsLabels[name];
+                if (label == nullptr)
+                {
+                    label = new QLabel(_statsTree);
+                    label->setStyleSheet("QLabel{background:white;margin:1px;}");
+                    label->setWordWrap(true);
+                    label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+                    label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+                    auto subItem = new QTreeWidgetItem(item);
+                    _statsTree->setItemWidget(subItem, 0, label);
+                }
+
+                std::stringstream ss; dataObj->stringify(ss, 4);
+                label->setText(QString::fromStdString(ss.str()).replace("\\/", "/"));
+            }
         }
     }
 
@@ -93,9 +123,11 @@ private:
     QPushButton *_manualReloadButton;
     QPushButton *_autoReloadButton;
     QScrollArea *_statsScroller;
-    QLabel *_statsLabel;
+    QTreeWidget *_statsTree;
     QTimer *_timer;
     QFutureWatcher<std::string> *_watcher;
+    std::map<std::string, QTreeWidgetItem *> _statsItems;
+    std::map<std::string, QLabel *> _statsLabels;
 };
 
 void GraphEditor::handleShowTopologyStatsDialog(void)
