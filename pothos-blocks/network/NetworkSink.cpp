@@ -90,11 +90,11 @@ public:
 
     //NetworkSink is a send-only block and needs a polling thread.
     void handleState(void)
-    {
+{
+        uint16_t type = 0;
+        Pothos::BufferChunk buffer(1024);
         while (running)
         {
-            uint16_t type = 0;
-            Pothos::BufferChunk buffer;
             try {_ep.recv(type, buffer);}
             catch (...){}
         }
