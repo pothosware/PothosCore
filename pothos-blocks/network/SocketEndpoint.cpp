@@ -698,7 +698,7 @@ void PothosPacketSocketEndpoint::Impl::recv(uint16_t &flags, uint16_t &type, Pot
     if (this->totalBytesRecv > this->lastFlowMsgSent + this->flowControlWindowBytes()/8)
     {
         const uint64_t totalN = Poco::ByteOrder::toNetwork(this->totalBytesRecv);
-        this->send(PothosPacketFlagFlo, this->totalBytesRecv, &totalN, sizeof(totalN));
+        this->send(PothosPacketFlagFlo, 0, &totalN, sizeof(totalN));
         this->lastFlowMsgSent = this->totalBytesRecv;
     }
 }
