@@ -173,12 +173,12 @@ public:
 
     void setResendTimeout(const double timeout)
     {
-        _resendTimeout = std::chrono::nanoseconds(long(timeout*1e9));
+        _resendTimeout = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::nanoseconds(long(timeout*1e9)));
     }
 
     void setExpireTimeout(const double timeout)
     {
-        _expireTimeout = std::chrono::nanoseconds(long(timeout*1e9));
+        _expireTimeout = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::nanoseconds(long(timeout*1e9)));
     }
 
     void setWindowSize(const size_t windowSize)

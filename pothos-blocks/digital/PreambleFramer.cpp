@@ -4,6 +4,7 @@
 #include <Pothos/Framework.hpp>
 #include <cstring> //memcpy
 #include <iostream>
+#include <algorithm> //min/max
 
 /***********************************************************************
  * |PothosDoc Preamble Framer
