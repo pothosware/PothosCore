@@ -18,7 +18,7 @@
  * |param delay The delay in number of stream elements.
  * |default 0
  *
- * |factory /blocks/delay(dtype)
+ * |factory /blocks/delay()
  * |setter setDelay(delay)
  **********************************************************************/
 class Delay : public Pothos::Block
