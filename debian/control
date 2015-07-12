@@ -45,6 +45,7 @@ Section: libs
 Architecture: all
 Depends:
     pothos,
+    pothos-util,
     pothos-gui,
     pothos-widgets,
     pothos-blocks,
