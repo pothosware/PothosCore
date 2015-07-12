@@ -163,7 +163,7 @@ bool BlockEval::evaluationProcedure(void)
     if (not _newBlockInfo.enabled)
     {
         evalSuccess = this->updateAllProperties();
-        goto stash;
+        goto handle_property_errors;
     }
 
     //special case: apply settings only
@@ -270,6 +270,7 @@ bool BlockEval::evaluationProcedure(void)
     }
 
     //report block level error when properties errors are present
+    handle_property_errors:
     if (not evalSuccess and _lastBlockStatus.blockErrorMsgs.empty())
     {
         for (const auto &pair : _lastBlockStatus.propertyErrorMsgs)
@@ -281,7 +282,6 @@ bool BlockEval::evaluationProcedure(void)
     }
 
     //stash the most recent state
-    stash:
     if (evalSuccess) _lastBlockInfo = _newBlockInfo;
 
     return evalSuccess;

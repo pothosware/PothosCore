@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Fixed handling of disabled block with property errors
 - Topology stats use tree view to collapse/hide stat data
 - Restore the last displayed graph page when reset/undoing
 - Splash screen prints the current saved graph loading
