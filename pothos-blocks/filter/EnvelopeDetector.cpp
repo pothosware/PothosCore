@@ -95,12 +95,12 @@ public:
         return _release;
     }
 
-    void setLookahead(const OutType lookahead)
+    void setLookahead(const size_t lookahead)
     {
         _lookahead = lookahead;
     }
 
-    OutType getLookahead(void) const
+    size_t getLookahead(void) const
     {
         return _lookahead;
     }

@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Stream snooper buffer accumulator optimization
 - Fixed typo in delay block description markup
 - Fix stream snooper alignment mode time trigger
 - Network blocks support jumbo sized transfers

@@ -6,6 +6,7 @@
 #include <complex>
 #include <iostream>
 #include <algorithm> //min/max
+#include <cstring> //memcpy
 
 /***********************************************************************
  * |PothosDoc Stream Snooper
@@ -113,6 +114,10 @@ public:
         {
             pkt = Pothos::Packet(); //clear
         }
+        for (auto inPort : this->inputs())
+        {
+            inPort->clear();
+        }
     }
 
     void work(void)
@@ -165,16 +170,46 @@ public:
         }
     }
 
+    void smartAppend(Pothos::BufferChunk &outBuff, const Pothos::BufferChunk &inBuff)
+    {
+        //the outgoing packet is empty and the input buffer is sufficient
+        //simply forward the entire buffer to the outgoing packet
+        if (not outBuff and inBuff.elements() >= _chunkSize)
+        {
+            outBuff = inBuff;
+            return;
+        }
+
+        //allocate a new buffer to hold an entire chunk
+        if (not outBuff)
+        {
+            outBuff = Pothos::BufferChunk(inBuff.dtype, _chunkSize);
+            outBuff.length = 0;
+        }
+
+        //copy in the buffer as long as it can fit (it should unless user changed dtypes)
+        if (outBuff.getBuffer().getLength()-outBuff.length >= inBuff.length)
+        {
+            std::memcpy(outBuff.as<char *>() + outBuff.length, inBuff.as<const void *>(), inBuff.length);
+            outBuff.length += inBuff.length;
+        }
+
+        //otherwise append (which resizes and memcpys)
+        else outBuff.append(inBuff);
+    }
+
     bool handleTrigger(Pothos::InputPort *inPort, const size_t num)
     {
         auto &packet = _accumulationBuffs[inPort->index()];
         const auto initialOffset = packet.payload.elements();
 
-        //append the new buffer
+        //truncate to the required remaining length
         auto inBuff = inPort->buffer();
         const auto bytesPerEvent = _chunkSize*inBuff.dtype.size();
         inBuff.length = std::min(num, bytesPerEvent - packet.payload.length);
-        packet.payload.append(inBuff);
+
+        //append the buffer into the outgoing packet payload
+        this->smartAppend(packet.payload, inBuff);
 
         //append new labels
         for (auto label : inPort->labels())
