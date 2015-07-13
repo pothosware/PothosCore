@@ -663,8 +663,11 @@ void GraphEditor::handleRotateLeft(void)
 {
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
+    const auto objs = draw->getObjectsSelected(~GRAPH_CONNECTION);
+    if (objs.isEmpty()) return;
+
     //TODO rotate group of objects around central point
-    for (auto obj : draw->getObjectsSelected(~GRAPH_CONNECTION))
+    for (auto obj : objs)
     {
         obj->rotateLeft();
     }
@@ -675,8 +678,11 @@ void GraphEditor::handleRotateRight(void)
 {
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
+    const auto objs = draw->getObjectsSelected(~GRAPH_CONNECTION);
+    if (objs.isEmpty()) return;
+
     //TODO rotate group of objects around central point
-    for (auto obj : draw->getObjectsSelected(~GRAPH_CONNECTION))
+    for (auto obj : objs)
     {
         obj->rotateRight();
     }
@@ -749,9 +755,18 @@ void GraphEditor::handleSetEnabled(const bool enb)
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
 
-    auto objs = draw->getObjectsSelected();
+    //get a set of all selected objects that can be changed
+    QSet<GraphObject *> objs;
+    for (auto obj : draw->getObjectsSelected())
+    {
+        //stash the graph widget's actual block
+        auto graphWidget = dynamic_cast<GraphWidget *>(obj);
+        if (graphWidget != nullptr) obj = graphWidget->getGraphBlock();
+        if (obj->isEnabled() != enb) objs.insert(obj);
+    }
     if (objs.isEmpty()) return;
 
+    //set the enable property on all objects in the set
     for (auto obj : objs)
     {
         obj->setEnabled(enb);

@@ -3,6 +3,8 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Fix enable handler for redundant events and widget objects
+- Skip rotation event when no graph objects are selected
 - Fixed handling of disabled block with property errors
 - Topology stats use tree view to collapse/hide stat data
 - Restore the last displayed graph page when reset/undoing
