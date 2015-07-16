@@ -98,9 +98,10 @@ GraphEditor::~GraphEditor(void)
     delete _stateManager;
 }
 
-QString GraphEditor::newId(const QString &hint) const
+QString GraphEditor::newId(const QString &hint, const QStringList &blacklist) const
 {
     std::set<QString> allIds;
+    for (auto id : blacklist) allIds.insert(id);
     for (auto obj : this->getGraphObjects()) allIds.insert(obj->getId());
 
     //either use the hint or UUID if blank
@@ -550,11 +551,14 @@ void GraphEditor::handlePaste(void)
 
     //rewrite ids
     std::map<std::string, std::string> oldIdToNew;
+    QStringList pastedIds; //prevents duplicates
     for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
     {
         const auto jGraphObj = graphObjects->getObject(objIndex);
-        auto oldId = jGraphObj->getValue<std::string>("id");
-        oldIdToNew[oldId] = this->newId(QString::fromStdString(oldId)).toStdString();
+        const auto oldId = jGraphObj->getValue<std::string>("id");
+        const auto newId = this->newId(QString::fromStdString(oldId), pastedIds);
+        pastedIds.push_back(newId);
+        oldIdToNew[oldId] = newId.toStdString();
     }
     for (size_t objIndex = 0; objIndex < graphObjects->size();)
     {

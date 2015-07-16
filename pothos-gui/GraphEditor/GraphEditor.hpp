@@ -27,7 +27,16 @@ public:
 
     void loadState(std::istream &os);
 
-    QString newId(const QString &hint = "") const;
+    /*!
+     * Generate a new ID that is unique to the graph,
+     * taking into account the IDs used by all objects within the graph.
+     * The blacklist is currently used during the handle paste operation
+     * to prevent ID duplicates before the pasted blocks are instantiated.
+     * \param hint an optional string to guide the name of the new ID.
+     * \param blacklist a list of IDs that are not allowed to be used
+     * \return a new ID that is unique to the graph
+     */
+    QString newId(const QString &hint = "", const QStringList &blacklist = QStringList()) const;
 
     //! Serializes the editor and saves to file.
     void save(void);
