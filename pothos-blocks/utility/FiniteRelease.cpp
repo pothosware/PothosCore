@@ -80,13 +80,14 @@ public:
             _elementsLeft -= 1;
         }
 
-        const auto &buffer = inputPort->buffer();
+        auto buffer = inputPort->buffer();
         //input port type unspecified, inspect buffer for actual element count
         const size_t elems = std::min(_elementsLeft, buffer.elements());
         if (elems != 0)
         {
+            buffer.length = elems*buffer.dtype.size();
             outputPort->postBuffer(buffer);
-            inputPort->consume(elems*buffer.dtype.size());
+            inputPort->consume(buffer.length);
             _elementsLeft -= elems;
         }
     }
