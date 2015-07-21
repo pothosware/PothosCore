@@ -27,6 +27,8 @@ POTHOS_MODULE_UTIL(
         TestPreambleCorrelator.cpp
         Scrambler.cpp
         Descrambler.cpp
+        FrameInsert.cpp
+        FrameSync.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
