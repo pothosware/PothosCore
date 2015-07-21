@@ -17,7 +17,7 @@
  * |keywords preamble frame sync timing offset recover
  *
  * |param dtype[Data Type] The input data type consumed by the slicer.
- * |widget DTypeChooser(cfloat=1,cint=1)
+ * |widget DTypeChooser(cfloat=1)
  * |default "complex_float64"
  * |preview disable
  *
@@ -128,23 +128,53 @@ public:
             return;
         }
 
-        auto in = inPort-> buffer().template as<const Type *>();
+        auto in = inPort->buffer().template as<const Type *>();
 
         //when searching for frame start, first calculate the frequency offset
+        //and while we are at it, estimate the envelope of the frame
         Type K = 0;
+        RealType env = 0;
         auto lastSymBar = in + _symbolWidth*_preamble.size();
         auto lastSym = lastSymBar - _symbolWidth;
         for (size_t i = 0; i < _symbolWidth; i++)
         {
+            env += std::abs(lastSym[i]) + std::abs(lastSymBar[i]);
             K += lastSym[i] * std::conj(lastSymBar[i]);
         }
+        const auto deltaFc = std::arg(K)/_symbolWidth;
+        env = env/(_symbolWidth*2);
+
+        //normalize to the amplitude of the actual symbol
+        const auto scale = env/std::abs(_preamble.back());
+
+        //using scale and frequency offset, calculate correlation
+        Type L = 0;
+        RealType freqCorr = 0;
+        auto frameSyms = in;
+        for (size_t i = 0; i < _preamble.size(); i++)
+        {
+            const auto sym = _preamble[i]*scale;
+            for (size_t j = 0; j < _symbolWidth; j++)
+            {
+                auto frameSym = *frameSyms++;
+                L += sym*frameSym*std::sin(freqCorr);
+                freqCorr += deltaFc;
+            }
+        }
+
+        auto out = outPort->buffer().template as<Type *>();
+        out[0] = std::abs(L);
+        inPort->consume(1);
+        outPort->produce(1);
 
     }
 
+    /*
     void propagateLabels(const Pothos::InputPort *)
     {
         //don't propagate here, its done in work()
     }
+    */
 
     //! always use a circular buffer to avoid discontinuity over sliding window
     Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &)
@@ -154,6 +184,7 @@ public:
 
 private:
 
+    typedef typename Type::value_type RealType;
     std::string _frameStartId;
     std::string _frameEndId;
     std::vector<Type> _preamble;
@@ -170,7 +201,6 @@ static Pothos::Block *FrameSyncFactory(const Pothos::DType &dtype)
             return new FrameSync<std::complex<type>>();
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
-    ifTypeDeclareFactory(int16_t);
     throw Pothos::InvalidArgumentException("FrameSyncFactory("+dtype.toString()+")", "unsupported type");
 }
 

@@ -33,7 +33,7 @@
  * |keywords preamble frame sync
  *
  * |param dtype[Data Type] The input data type consumed by the slicer.
- * |widget DTypeChooser(cfloat=1,cint=1)
+ * |widget DTypeChooser(cfloat=1)
  * |default "complex_float64"
  * |preview disable
  *
@@ -273,7 +273,6 @@ static Pothos::Block *FrameInsertFactory(const Pothos::DType &dtype)
             return new FrameInsert<std::complex<type>>();
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
-    ifTypeDeclareFactory(int16_t);
     throw Pothos::InvalidArgumentException("FrameInsertFactory("+dtype.toString()+")", "unsupported type");
 }
 
