@@ -48,6 +48,8 @@
 template <typename Type>
 class FrameSync : public Pothos::Block
 {
+    typedef typename Type::value_type RealType;
+
 public:
     static Block *make(void)
     {
@@ -59,6 +61,8 @@ public:
     {
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
+        this->setupOutput("freq", typeid(RealType));
+        this->setupOutput("corr", typeid(RealType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setSymbolWidth));
@@ -130,22 +134,8 @@ public:
 
         auto in = inPort->buffer().template as<const Type *>();
 
-        //when searching for frame start, first calculate the frequency offset
-        //and while we are at it, estimate the envelope of the frame
-        Type K = 0;
-        RealType env = 0;
-        auto lastSymBar = in + _symbolWidth*_preamble.size();
-        auto lastSym = lastSymBar - _symbolWidth;
-        for (size_t i = 0; i < _symbolWidth; i++)
-        {
-            env += std::abs(lastSym[i]) + std::abs(lastSymBar[i]);
-            K += lastSym[i] * std::conj(lastSymBar[i]);
-        }
-        const auto deltaFc = std::arg(K)/_symbolWidth;
-        env = env/(_symbolWidth*2);
-
-        //normalize to the amplitude of the actual symbol
-        const auto scale = env/std::abs(_preamble.back());
+        RealType deltaFc, scale;
+        this->processFreqSync(in, deltaFc, scale);
 
         //using scale and frequency offset, calculate correlation
         Type L = 0;
@@ -153,28 +143,92 @@ public:
         auto frameSyms = in;
         for (size_t i = 0; i < _preamble.size(); i++)
         {
-            const auto sym = _preamble[i]*scale;
+            const auto sym = std::conj(_preamble[i])*scale;
             for (size_t j = 0; j < _symbolWidth; j++)
             {
                 auto frameSym = *frameSyms++;
-                L += sym*frameSym*std::sin(freqCorr);
+                L += sym*frameSym*std::polar<RealType>(1.0, freqCorr);
                 freqCorr += deltaFc;
             }
         }
 
+        if (_inActiveRegion)
+        {
+            if (std::abs(L) < _deactivationThresh)
+            {
+                std::cout << "become deactive " <<std::abs(L) << " old _maxL " << _maxL << "\n";
+                _inActiveRegion = false;
+                _maxL = 0;
+            }
+        }
+        else
+        {
+            if (std::abs(L) > _activationThresh)
+            {
+                _inActiveRegion = true;
+                _maxL = 0;
+            }
+        }
+
+        if (_inActiveRegion and std::abs(L) > _maxL)
+        {
+            _maxL = std::abs(L);
+            _phaseInc = deltaFc;
+            _phaseAccum = -std::arg(L);
+            /*
+            std::cout << "in[0] " << in[0] << std::endl;
+            std::cout << "deltaFc " << deltaFc << std::endl;
+            std::cout << "L " << L << std::endl;
+            */
+        }
+
         auto out = outPort->buffer().template as<Type *>();
-        out[0] = std::abs(L);
+        out[0] = in[0]*std::polar<RealType>(1.0, _phaseAccum);
+        _phaseAccum += _phaseInc;
+
+        /*
+        auto err = std::arg(out[0]);
+        err += M_PI;
+        while (err > M_PI/8) err -= M_PI/8;
+
+        static RealType lastErr;
+
+        if (lastErr > err)
+        {
+            _phaseInc -= M_PI/128;
+        }
+        else
+        {
+            _phaseInc += M_PI/128;
+        }
+        
+        
+        lastErr = err;
+        */
+        auto err = std::arg(out[0]);
+        if (err > +M_PI/2) err -= M_PI;
+        if (err < -M_PI/2) err += M_PI;
+        //if (err > 0) _phaseInc += M_PI/100;
+        //if (err < 0) _phaseInc -= M_PI/100;
+
+        if (_phaseAccum > +M_PI) _phaseAccum -= M_PI;
+        if (_phaseAccum < -M_PI) _phaseAccum += M_PI;
         inPort->consume(1);
         outPort->produce(1);
 
+        this->output("freq")->buffer().template as<RealType *>()[0] = err;
+        this->output("corr")->buffer().template as<RealType *>()[0] = _maxL;
+        this->output("freq")->produce(1);
+        this->output("corr")->produce(1);
     }
 
-    /*
-    void propagateLabels(const Pothos::InputPort *)
+    void propagateLabels(const Pothos::InputPort *port)
     {
-        //don't propagate here, its done in work()
+        for (const auto label : port->labels())
+        {
+            this->output(0)->postLabel(label);
+        }
     }
-    */
 
     //! always use a circular buffer to avoid discontinuity over sliding window
     Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &)
@@ -182,13 +236,53 @@ public:
         return Pothos::BufferManager::make("circular");
     }
 
+    void activate(void)
+    {
+        _maxL = 0;
+        _inActiveRegion = false;
+        _activationThresh = _symbolWidth*(_preamble.size()-0.5);
+        _deactivationThresh = _symbolWidth*(_preamble.size()-1);
+        std::cout << "_preamble.size() " << _preamble.size() << std::endl;
+        std::cout << "_symbolWidth " << _symbolWidth << std::endl;
+        std::cout << "_activationThresh " << _activationThresh << std::endl;
+        std::cout << "_deactivationThresh " << _deactivationThresh << std::endl;
+    }
+
 private:
 
-    typedef typename Type::value_type RealType;
+    void processFreqSync(const Type *in, RealType &deltaFc, RealType &scale)
+    {
+        //when searching for frame start, first calculate the frequency offset
+        //and while we are at it, estimate the envelope of the frame
+        Type K = 0;
+        RealType env = 0;
+        auto lastSymBar = in + _symbolWidth*_preamble.size();
+        auto lastSym = lastSymBar - _symbolWidth;
+        const auto numFreqSyncSamps = size_t(_symbolWidth*0.8);
+        for (size_t i = 0; i < numFreqSyncSamps; i++)
+        {
+            env += std::abs(lastSym[i]) + std::abs(lastSymBar[i]);
+            K += lastSym[i] * std::conj(lastSymBar[i]);
+        }
+        deltaFc = std::arg(K)/numFreqSyncSamps;
+
+        //normalize to the amplitude of the actual symbol
+        env = env/(numFreqSyncSamps*2);
+        scale = env/std::abs(_preamble.back());
+    }
+
     std::string _frameStartId;
     std::string _frameEndId;
     std::vector<Type> _preamble;
     size_t _symbolWidth;
+
+    RealType _phaseInc;
+    RealType _phaseAccum;
+
+    RealType _maxL;
+    bool _inActiveRegion;
+    RealType _activationThresh;
+    RealType _deactivationThresh;
 };
 
 /***********************************************************************
