@@ -102,7 +102,6 @@ public:
     {
         if (preamble.empty()) throw Pothos::InvalidArgumentException("FrameInsert::setPreamble()", "preamble cannot be empty");
         _preamble = preamble;
-        _preamble.push_back(_preamble.back()); //duplicate symbol for freq offset estimation
         this->updatePreambleBuffer();
     }
 
@@ -146,7 +145,7 @@ public:
     void setPaddingSize(const size_t size)
     {
         _paddingBuff = Pothos::BufferChunk(typeid(Type), size);
-        std::memset(_paddingBuff.as<Type *>(), 0, _paddingBuff.elements());
+        std::memset(_paddingBuff.as<void *>(), 0, _paddingBuff.length);
     }
 
     size_t getPaddingSize(void) const
@@ -179,14 +178,15 @@ public:
             if (lastFoundIndex != -1 and size_t(lastFoundIndex) != label.index)
             {
                 lastFoundIndex = -1;
-                labelIndexOffset += _preambleBuff.length;
+                labelIndexOffset += _preambleBuff.elements();
             }
 
             if (label.id == _frameStartId)
             {
                 //post everything before this label
                 Pothos::BufferChunk headBuff = inBuff;
-                headBuff.length = label.index - consumed;
+                size_t headElems = label.index - consumed;
+                headBuff.length = headElems*sizeof(Type);
                 if (headBuff.length != 0) outputPort->postBuffer(headBuff);
 
                 //post the buffer
@@ -195,7 +195,7 @@ public:
                 //remove header from the remaining buffer
                 inBuff.length -= headBuff.length;
                 inBuff.address += headBuff.length;
-                consumed += headBuff.length;
+                consumed += headBuff.elements();
 
                 //mark for increment on next label index
                 lastFoundIndex = label.index;
@@ -205,7 +205,8 @@ public:
             {
                 //post everything before this label
                 Pothos::BufferChunk headBuff = inBuff;
-                headBuff.length = label.index + label.width - consumed; //place at end of width
+                size_t headElems = label.index + label.width - consumed; //place at end of width
+                headBuff.length = headElems*sizeof(Type);
                 headBuff.length = std::min(headBuff.length, inBuff.length); //bounds check
                 if (headBuff.length != 0) outputPort->postBuffer(headBuff);
 
@@ -215,10 +216,10 @@ public:
                 //remove header from the remaining buffer
                 inBuff.length -= headBuff.length;
                 inBuff.address += headBuff.length;
-                consumed += headBuff.length;
+                consumed += headBuff.elements();
 
                 //increment index for insertion of padding
-                labelIndexOffset += _paddingBuff.length;
+                labelIndexOffset += _paddingBuff.elements();
             }
 
             //propagate labels here with the offset
@@ -243,7 +244,7 @@ private:
 
     void updatePreambleBuffer(void)
     {
-        _preambleBuff = Pothos::BufferChunk(typeid(Type), _preamble.size()*_symbolWidth);
+        _preambleBuff = Pothos::BufferChunk(typeid(Type), (_preamble.size()*_symbolWidth) + size_t(_symbolWidth*0.8));
 
         auto p = _preambleBuff.as<Type *>();
         for (size_t i = 0; i < _preamble.size(); i++)
@@ -252,6 +253,11 @@ private:
             {
                 *p++ = _preamble[i];
             }
+        }
+        for (size_t j = 0; j < size_t(_symbolWidth*0.8); j++)
+        {
+            if (_preamble.empty()) break;
+            *p++ = _preamble.back();
         }
     }
 
