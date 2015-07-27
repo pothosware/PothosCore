@@ -175,8 +175,8 @@ void GraphDraw::updateEnabledActions(void)
     getActionMap()["objectProperties"]->setEnabled(selected);
     getActionMap()["increment"]->setEnabled(selectedBlocks);
     getActionMap()["decrement"]->setEnabled(selectedBlocks);
-    getActionMap()["enable"]->setEnabled(selectedBlocks);
-    getActionMap()["disable"]->setEnabled(selectedBlocks);
+    getActionMap()["enable"]->setEnabled(selected);
+    getActionMap()["disable"]->setEnabled(selected);
     getActionMap()["reeval"]->setEnabled(selectedBlocks);
     getMenuMap()["setAffinityZone"]->setEnabled(selectedBlocks);
 
