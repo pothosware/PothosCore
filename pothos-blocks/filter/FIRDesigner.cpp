@@ -74,6 +74,7 @@
  * |setter setFrequencyUpper(freqUpper)
  * |setter setNumTaps(numTaps)
  * |setter setBeta(beta)
+ * |setter setGain(gain)
  **********************************************************************/
 class FIRDesigner : public Pothos::Block
 {
