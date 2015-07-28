@@ -8,7 +8,6 @@
 #include <complex>
 #include <cstdint>
 
-static const double FREQ_SYNC_WIDTH = 0.8;
 static const size_t NUM_LENGTH_BITS = 16;
 
 /***********************************************************************
@@ -79,7 +78,6 @@ public:
         _symbolWidth(0),
         _dataWidth(0),
         _syncWordWidth(0),
-        _freqSyncWidth(0),
         _frameWidth(0)
     {
         this->setupInput(0, typeid(Type));
@@ -199,6 +197,28 @@ public:
         RealType phaseOff; size_t corrPeak;
         this->processSyncWord(in, deltaFc, scale, phaseOff, corrPeak);
 
+        for (const auto &label : inPort->labels())
+        {
+            if (label.index == 0 and label.id == _frameStartId)
+            {
+                
+                std::cout << "LBL START FOUND \n";
+                std::cout << " corrPeak = " << corrPeak << std::endl;
+                std::cout << " deltaFc = " << deltaFc << std::endl;
+                std::cout << " phaseOff = " << phaseOff << std::endl;
+                std::cout << " scale = " << scale << std::endl;
+                //_frameSearch = false;
+                size_t length;
+                this->processLenBits(in, deltaFc, scale, phaseOff, length);
+                std::cout << " length = " << length << std::endl;
+                std::cout << " real length = " << label.data.template convert<size_t>() << std::endl;
+                _maxCorrPeak = 0;
+                _phase = phaseOff;
+                _phaseInc = deltaFc;
+                _countSinceStart = 0;
+            }
+        }
+
         if (corrPeak > _maxCorrPeak)
         {
             _maxCorrPeak = corrPeak;
@@ -223,12 +243,16 @@ public:
             _maxCorrPeak = 0;
         }
         _countSinceMax++;
+        _countSinceStart++;
 
         inPort->consume(1);
         outPort->produce(1);
 
         auto out = outPort->buffer().template as<Type *>();
-        out[0] = in[0];
+        out[0] = in[0]*std::polar<RealType>(scale, _phase);
+        _phase += _phaseInc;
+        if (_phase > +2*M_PI) _phase -= 2*M_PI;
+        if (_phase < -2*M_PI) _phase += 2*M_PI;
         this->output("freq")->buffer().template as<RealType *>()[0] = deltaFc;
         this->output("corr")->buffer().template as<RealType *>()[0] = corrPeak;
         this->output("freq")->produce(1);
@@ -254,6 +278,8 @@ public:
         _maxCorrPeak = 0;
         _countSinceMax = 0;
         _frameSearch = true;
+        _phase = 0;
+        _phaseInc = 0;
     }
 
 private:
@@ -265,8 +291,12 @@ private:
     void updateSettings(void)
     {
         _syncWordWidth = _symbolWidth*_dataWidth*_preamble.size();
-        _freqSyncWidth = size_t(_symbolWidth*_dataWidth*FREQ_SYNC_WIDTH);
-        _frameWidth = _syncWordWidth+_freqSyncWidth+(NUM_LENGTH_BITS*_dataWidth);
+        _frameWidth = _syncWordWidth+(NUM_LENGTH_BITS*_dataWidth);
+        std::cout << "_preamble.size() " << _preamble.size() << std::endl;
+        std::cout << "_dataWidth " << _dataWidth << std::endl;
+        std::cout << "_symbolWidth " << _symbolWidth << std::endl;
+        std::cout << "_syncWordWidth " << _syncWordWidth << std::endl;
+        std::cout << "_frameWidth " << _frameWidth << std::endl;
     }
 
     std::string _frameStartId;
@@ -276,7 +306,6 @@ private:
     size_t _symbolWidth;
     size_t _dataWidth;
     size_t _syncWordWidth;
-    size_t _freqSyncWidth;
     size_t _frameWidth;
 
     size_t _maxCorrPeak;
@@ -284,6 +313,10 @@ private:
     RealType _deltaFcMax;
     RealType _phaseOffMax;
     RealType _scaleAtMax;
+
+    RealType _phase;
+    RealType _phaseInc;
+    size_t _countSinceStart;
 
     bool _frameSearch;
 };
@@ -294,22 +327,25 @@ private:
 template <typename Type>
 void FrameSync<Type>::processFreqSync(const Type *in, RealType &deltaFc, RealType &scale)
 {
+    const size_t width = _symbolWidth*_dataWidth;
+    auto syms = in + width*(_preamble.size()-1);
+    const size_t delta = width/2;
+    const size_t iterations = width-delta;
+
     //when searching for frame start, first calculate the frequency offset
     //and while we are at it, estimate the envelope of the frame
     Type K = 0;
     RealType env = 0;
-    auto lastSymBar = in + _syncWordWidth;
-    auto lastSym = lastSymBar - _symbolWidth;
-    for (size_t i = 0; i < _freqSyncWidth; i++)
+    for (size_t i = 0; i < iterations; i++)
     {
-        env += std::abs(lastSym[i]) + std::abs(lastSymBar[i]);
-        K += lastSym[i] * std::conj(lastSymBar[i]);
+        env += std::abs(syms[i]);
+        K += syms[i] * std::conj(syms[i+delta]);
     }
-    deltaFc = std::arg(K)/_freqSyncWidth;
+    deltaFc = std::arg(K)/delta;
 
     //normalize to the amplitude of the actual symbol
-    env = env/(_freqSyncWidth*2);
-    scale = env/std::abs(_preamble.back());
+    env = env/iterations;
+    scale = std::abs(_preamble.back())/env;
 }
 
 /***********************************************************************
@@ -329,13 +365,13 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
         for (size_t j = 0; j < width; j++)
         {
             auto frameSym = *frameSyms++;
-            L += sym*frameSym*std::polar<RealType>(1.0/scale, freqCorr);
+            L += sym*frameSym*std::polar<RealType>(scale, freqCorr);
             freqCorr += deltaFc;
         }
     }
 
     //the phase offset at the first point is the angle of L
-    phaseOff = std::arg(L);
+    phaseOff = -std::arg(L);
 
     //the correlation peak is the magnitude of L
     corrPeak = size_t(std::abs(L));
@@ -347,13 +383,13 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
 template <typename Type>
 void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &length)
 {
-    const size_t lengthBitsOff = _syncWordWidth+_freqSyncWidth;
+    const size_t lengthBitsOff = _syncWordWidth;
     auto lenBits = in + lengthBitsOff;
     RealType freqCorr = phaseOff + deltaFc*(lengthBitsOff);
 
     length = 0;
 
-    const auto sym = std::conj(_preamble.back());
+    const auto sym = _preamble.back();
 
     for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
     {
@@ -361,13 +397,18 @@ void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, co
         for (size_t j = 0; j < _dataWidth; j++)
         {
             auto lenBit = *lenBits++;
-            sum += lenBit*std::polar<RealType>(1.0/scale, freqCorr);
+            //if (i == 15 or i == 14)
+            {
+                std::cout << (((lenBit*std::polar<RealType>(scale, freqCorr)).real() > 0)?+1:-1) << std::endl;
+            }
+            sum += lenBit*std::polar<RealType>(scale, freqCorr);
+            //std::cout << std::arg(lenBit*std::polar<RealType>(scale, freqCorr)) << std::endl;
             freqCorr += deltaFc;
         }
         auto angle = std::arg(sum) - std::arg(sym);
         if (angle > +M_PI) angle -= 2*M_PI;
         if (angle < -M_PI) angle += 2*M_PI;
-        if (std::abs(angle) < M_PI/2) length |= (1 << i);
+        if (std::abs(angle) > M_PI/2) length |= (1 << i);
     }
 }
 

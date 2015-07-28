@@ -8,7 +8,6 @@
 #include <complex>
 #include <cstdint>
 
-static const double FREQ_SYNC_WIDTH = 0.8;
 static const size_t NUM_LENGTH_BITS = 16;
 
 /***********************************************************************
@@ -85,8 +84,7 @@ public:
 
     FrameInsert(void):
         _symbolWidth(0),
-        _syncWordWidth(0),
-        _freqSyncWidth(0)
+        _syncWordWidth(0)
     {
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type), this->uid()); //unique domain because of buffer forwarding
@@ -200,7 +198,7 @@ public:
 
                 //load the length word
                 //FIXME this will overwrite the buffer, cant do it...
-                auto p = _preambleBuff.as<Type *>() + _syncWordWidth + _freqSyncWidth;
+                auto p = _preambleBuff.as<Type *>() + _syncWordWidth;
                 if (label.data.canConvert(typeid(size_t)))
                 {
                     const auto sym = _preamble.back();
@@ -208,7 +206,9 @@ public:
                     std::cout << "sent length " << len << std::endl;
                     for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
                     {
-                        *p++ = (((1 << i) & len) != 0)?+sym:-sym;
+                        if (i == 15) *p++ = -sym;
+                        else if (i == 14) *p++ = +sym;
+                        else *p++ = (((1 << i) & len) != 0)?+sym:-sym;
                     }
                 }
                 else std::memset(p, 0, NUM_LENGTH_BITS*sizeof(Type));
@@ -269,10 +269,8 @@ private:
     void updatePreambleBuffer(void)
     {
         _syncWordWidth = _symbolWidth*_preamble.size();
-        _freqSyncWidth = size_t(_symbolWidth*FREQ_SYNC_WIDTH);
-        _preambleBuff = Pothos::BufferChunk(typeid(Type), _syncWordWidth+_freqSyncWidth+NUM_LENGTH_BITS);
+        _preambleBuff = Pothos::BufferChunk(typeid(Type), _syncWordWidth+NUM_LENGTH_BITS);
 
-        //load the sync word
         auto p = _preambleBuff.as<Type *>();
         for (size_t i = 0; i < _preamble.size(); i++)
         {
@@ -281,13 +279,6 @@ private:
                 *p++ = _preamble[i];
             }
         }
-
-        //load the freq sync
-        for (size_t j = 0; j < _freqSyncWidth; j++)
-        {
-            if (_preamble.empty()) break;
-            *p++ = _preamble.back();
-        }
     }
 
     std::string _frameStartId;
@@ -295,7 +286,6 @@ private:
     std::vector<Type> _preamble;
     size_t _symbolWidth;
     size_t _syncWordWidth;
-    size_t _freqSyncWidth;
     Pothos::BufferChunk _preambleBuff;
     Pothos::BufferChunk _paddingBuff;
 };
