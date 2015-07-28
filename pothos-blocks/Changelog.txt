@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Added element count to labels in Packet to Stream
 - Added missing setGain to FIR Designer setter list
 - Fix finite release block output buffer truncation
 - Stream snooper buffer accumulator optimization
