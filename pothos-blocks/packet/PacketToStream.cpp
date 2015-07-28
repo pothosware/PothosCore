@@ -25,6 +25,12 @@
  * When the start and end frame IDs are specified,
  * labels are produced for the first and last output element of each packet payload.
  *
+ * The frame start label data holds the number of elements present in the packet.
+ * The element count can be used by upstream blocks to determine the length without
+ * the use of the end of frame label. A consumer of this label (in most cases)
+ * can assume that the number of elements from this label to the end of this packet
+ * will be the element count times the label width (which accounts for rate increases).
+ *
  * |category /Packet
  * |keywords packet message datagram
  *
@@ -109,13 +115,13 @@ public:
         //post start of frame label
         if (not _frameStartId.empty())
         {
-            outputPort->postLabel(Pothos::Label(_frameStartId, Pothos::Object(), 0, packet.payload.dtype.size()));
+            outputPort->postLabel(Pothos::Label(_frameStartId, Pothos::Object(packet.payload.elements()), 0, packet.payload.dtype.size()));
         }
 
         //post end of frame label
         if (not _frameEndId.empty())
         {
-            outputPort->postLabel(Pothos::Label(_frameEndId, Pothos::Object(), packet.payload.length-1, packet.payload.dtype.size()));
+            outputPort->postLabel(Pothos::Label(_frameEndId, Pothos::Object(packet.payload.elements()), packet.payload.length-1, packet.payload.dtype.size()));
         }
 
         //post the payload
