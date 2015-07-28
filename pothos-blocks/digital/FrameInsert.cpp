@@ -8,6 +8,9 @@
 #include <complex>
 #include <cstdint>
 
+static const double FREQ_SYNC_WIDTH = 0.8;
+static const size_t NUM_LENGTH_BITS = 16;
+
 /***********************************************************************
  * |PothosDoc Frame Insert
  *
@@ -38,7 +41,11 @@
  * |preview disable
  *
  * |param preamble A vector of symbols representing the preamble.
- * |default [-1.0, 1.0]
+ * |default [1, 1, -1]
+ * |option [Barker Code 2] \[1, -1\]
+ * |option [Barker Code 3] \[1, 1, -1\]
+ * |option [Barker Code 4] \[1, 1, -1, 1\]
+ * |option [Barker Code 5] \[1, 1, 1, -1, 1\]
  *
  * |param symbolWidth [Symbol Width] The number of samples per preamble symbol.
  * Each symbol in the preamble will be duplicated by the specified symbol width.
@@ -77,7 +84,9 @@ public:
     }
 
     FrameInsert(void):
-        _symbolWidth(0)
+        _symbolWidth(0),
+        _syncWordWidth(0),
+        _freqSyncWidth(0)
     {
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type), this->uid()); //unique domain because of buffer forwarding
@@ -189,6 +198,21 @@ public:
                 headBuff.length = headElems*sizeof(Type);
                 if (headBuff.length != 0) outputPort->postBuffer(headBuff);
 
+                //load the length word
+                //FIXME this will overwrite the buffer, cant do it...
+                auto p = _preambleBuff.as<Type *>() + _syncWordWidth + _freqSyncWidth;
+                if (label.data.canConvert(typeid(size_t)))
+                {
+                    const auto sym = _preamble.back();
+                    const size_t len = label.data.template convert<size_t>()*label.width;
+                    std::cout << "sent length " << len << std::endl;
+                    for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
+                    {
+                        *p++ = (((1 << i) & len) != 0)?+sym:-sym;
+                    }
+                }
+                else std::memset(p, 0, NUM_LENGTH_BITS*sizeof(Type));
+
                 //post the buffer
                 outputPort->postBuffer(_preambleBuff);
 
@@ -244,8 +268,11 @@ private:
 
     void updatePreambleBuffer(void)
     {
-        _preambleBuff = Pothos::BufferChunk(typeid(Type), (_preamble.size()*_symbolWidth) + size_t(_symbolWidth*0.8));
+        _syncWordWidth = _symbolWidth*_preamble.size();
+        _freqSyncWidth = size_t(_symbolWidth*FREQ_SYNC_WIDTH);
+        _preambleBuff = Pothos::BufferChunk(typeid(Type), _syncWordWidth+_freqSyncWidth+NUM_LENGTH_BITS);
 
+        //load the sync word
         auto p = _preambleBuff.as<Type *>();
         for (size_t i = 0; i < _preamble.size(); i++)
         {
@@ -254,7 +281,9 @@ private:
                 *p++ = _preamble[i];
             }
         }
-        for (size_t j = 0; j < size_t(_symbolWidth*0.8); j++)
+
+        //load the freq sync
+        for (size_t j = 0; j < _freqSyncWidth; j++)
         {
             if (_preamble.empty()) break;
             *p++ = _preamble.back();
@@ -265,6 +294,8 @@ private:
     std::string _frameEndId;
     std::vector<Type> _preamble;
     size_t _symbolWidth;
+    size_t _syncWordWidth;
+    size_t _freqSyncWidth;
     Pothos::BufferChunk _preambleBuff;
     Pothos::BufferChunk _paddingBuff;
 };

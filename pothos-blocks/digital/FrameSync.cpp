@@ -8,6 +8,9 @@
 #include <complex>
 #include <cstdint>
 
+static const double FREQ_SYNC_WIDTH = 0.8;
+static const size_t NUM_LENGTH_BITS = 16;
+
 /***********************************************************************
  * |PothosDoc Frame Sync
  *
@@ -22,13 +25,19 @@
  * |preview disable
  *
  * |param preamble A vector of symbols representing the preamble.
- * |default [-1.0, 1.0]
+ * |default [1, 1, -1]
+ * |option [Barker Code 2] \[1, -1\]
+ * |option [Barker Code 3] \[1, 1, -1\]
+ * |option [Barker Code 4] \[1, 1, -1, 1\]
+ * |option [Barker Code 5] \[1, 1, 1, -1, 1\]
  *
  * |param symbolWidth [Symbol Width] The number of samples per preamble symbol.
- * Each symbol in the preamble will be duplicated by the specified symbol width.
- * Note: this is not the same as the samples per symbol used in data modulation,
- * and is is typically many times greater for synchronization purposes.
+ * This value should correspond to the symbol width used in the frame inserter block.
  * |default 20
+ * |units samples
+ *
+ * |param dataWidth [Data Width] The number of samples per data symbol.
+ * |default 4
  * |units samples
  *
  * |param frameStartId[Frame Start ID] The label ID that marks the first symbol of frame data.
@@ -39,11 +48,21 @@
  * |default "frameEnd"
  * |widget StringEntry()
  *
+ * |param phaseOffsetID[Phase Offset ID] The label ID used to resync phase downstream.
+ * The phase offset label specifies the phase offset as a double value in radians.
+ * A downstream block may use this to reset its internal phase tracking loop.
+ * The phase offset label will not be produced when the label is not specified.
+ * |default "phaseOffset"
+ * |widget StringEntry()
+ * |preview valid
+ *
  * |factory /blocks/frame_sync(dtype)
  * |setter setPreamble(preamble)
  * |setter setSymbolWidth(symbolWidth)
+ * |setter setDataWidth(dataWidth)
  * |setter setFrameStartId(frameStartId)
  * |setter setFrameEndId(frameEndId)
+ * |setter setPhaseOffsetID(phaseOffsetID)
  **********************************************************************/
 template <typename Type>
 class FrameSync : public Pothos::Block
@@ -57,7 +76,11 @@ public:
     }
 
     FrameSync(void):
-        _symbolWidth(0)
+        _symbolWidth(0),
+        _dataWidth(0),
+        _syncWordWidth(0),
+        _freqSyncWidth(0),
+        _frameWidth(0)
     {
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
@@ -67,21 +90,28 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setSymbolWidth));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getSymbolWidth));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setDataWidth));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getDataWidth));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setFrameStartId));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getFrameStartId));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setFrameEndId));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getFrameEndId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setPhaseOffsetID));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getPhaseOffsetID));
 
         this->setSymbolWidth(20); //initial update
+        this->setDataWidth(4); //initial update
         this->setPreamble(std::vector<Type>(1, 1)); //initial update
         this->setFrameStartId("frameStart"); //initial update
         this->setFrameEndId("frameEnd"); //initial update
+        this->setPhaseOffsetID("phaseOffset"); //initial update
     }
 
     void setPreamble(const std::vector<Type> preamble)
     {
         if (preamble.empty()) throw Pothos::InvalidArgumentException("FrameSync::setPreamble()", "preamble cannot be empty");
         _preamble = preamble;
+        this->updateSettings();
     }
 
     std::vector<Type> getPreamble(void) const
@@ -93,11 +123,24 @@ public:
     {
         if (width == 0) throw Pothos::InvalidArgumentException("FrameSync::setSymbolWidth()", "symbol width cannot be 0");
         _symbolWidth = width;
+        this->updateSettings();
     }
 
     size_t getSymbolWidth(void) const
     {
         return _symbolWidth;
+    }
+
+    void setDataWidth(const size_t width)
+    {
+        if (width < 2) throw Pothos::InvalidArgumentException("FrameSync::setDataWidth()", "data width should be at least 2 samples per symbol");
+        _dataWidth = width;
+        this->updateSettings();
+    }
+
+    size_t getDataWidth(void) const
+    {
+        return _dataWidth;
     }
 
     void setFrameStartId(std::string id)
@@ -120,15 +163,31 @@ public:
         return _frameEndId;
     }
 
+    void setPhaseOffsetID(std::string id)
+    {
+        _phaseOffsetId = id;
+    }
+
+    std::string getPhaseOffsetID(void) const
+    {
+        return _phaseOffsetId;
+    }
+
     void work(void)
     {
         auto inPort = this->input(0);
         auto outPort = this->output(0);
 
-        const size_t minReq = (_preamble.size()+1)*_symbolWidth;
-        if (inPort->elements() < minReq)
+        if (not _frameSearch)
         {
-            inPort->setReserve(minReq);
+            inPort->consume(inPort->elements());
+            return;
+            //DONE TEST!
+        }
+
+        if (inPort->elements() < _frameWidth)
+        {
+            inPort->setReserve(_frameWidth);
             return;
         }
 
@@ -137,69 +196,41 @@ public:
         RealType deltaFc, scale;
         this->processFreqSync(in, deltaFc, scale);
 
-        //using scale and frequency offset, calculate correlation
-        Type L = 0;
-        RealType freqCorr = 0;
-        auto frameSyms = in;
-        for (size_t i = 0; i < _preamble.size(); i++)
-        {
-            const auto sym = std::conj(_preamble[i]);
-            for (size_t j = 0; j < _symbolWidth; j++)
-            {
-                auto frameSym = *frameSyms++;
-                L += sym*frameSym*std::polar<RealType>(1.0/scale, freqCorr);
-                freqCorr += deltaFc;
-            }
-        }
+        RealType phaseOff; size_t corrPeak;
+        this->processSyncWord(in, deltaFc, scale, phaseOff, corrPeak);
 
-        if (_inActiveRegion)
+        if (corrPeak > _maxCorrPeak)
         {
-            if (std::abs(L) < _deactivationThresh)
-            {
-                std::cout << "become deactive " <<std::abs(L) << " old _maxL " << _maxL << "\n";
-                _inActiveRegion = false;
-                _maxL = 0;
-            }
-        }
-        else
-        {
-            if (std::abs(L) > _activationThresh)
-            {
-                _inActiveRegion = true;
-                _maxL = 0;
-            }
-        }
-
-        if (_inActiveRegion and std::abs(L) > _maxL)
-        {
+            _maxCorrPeak = corrPeak;
             _countSinceMax = 0;
-            _maxL = std::abs(L);
-            _phaseInc = deltaFc;
-            _phaseAccum = -std::arg(L);
-            /*
-            std::cout << "in[0] " << in[0] << std::endl;
-            std::cout << "deltaFc " << deltaFc << std::endl;
-            std::cout << "L " << L << std::endl;
-            */
+            _deltaFcMax = deltaFc;
+            _phaseOffMax = phaseOff;
+            _scaleAtMax = scale;
         }
 
-        auto out = outPort->buffer().template as<Type *>();
-        out[0] = in[0]*std::polar<RealType>(1.0, _phaseAccum);
-        _phaseAccum += _phaseInc;
-
-        if (_countSinceMax == size_t(_symbolWidth*(0.8+_preamble.size())))
+        if (_maxCorrPeak > (_syncWordWidth*0.85) and _countSinceMax > (_syncWordWidth*0.5))
         {
-            outPort->postLabel(Pothos::Label("phase_est", Pothos::Object(_phaseAccum), 0));
+            std::cout << "PEAK FOUND \n";
+            std::cout << " _countSinceMax = " << _countSinceMax << std::endl;
+            std::cout << " _maxCorrPeak = " << _maxCorrPeak << std::endl;
+            std::cout << " _deltaFcMax = " << _deltaFcMax << std::endl;
+            std::cout << " _phaseOffMax = " << _phaseOffMax << std::endl;
+            std::cout << " _scaleAtMax = " << _scaleAtMax << std::endl;
+            //_frameSearch = false;
+            size_t length;
+            this->processLenBits(in-_countSinceMax, _deltaFcMax, _scaleAtMax, _phaseOffMax, length);
+            std::cout << " length = " << length << std::endl;
+            _maxCorrPeak = 0;
         }
         _countSinceMax++;
 
-        if (_phaseAccum > +2*M_PI) _phaseAccum -= 2*M_PI;
-        if (_phaseAccum < -2*M_PI) _phaseAccum += 2*M_PI;
         inPort->consume(1);
         outPort->produce(1);
 
-        this->output("freq")->buffer().template as<RealType *>()[0] = _phaseInc;
-        this->output("corr")->buffer().template as<RealType *>()[0] = std::abs(L);
+        auto out = outPort->buffer().template as<Type *>();
+        out[0] = in[0];
+        this->output("freq")->buffer().template as<RealType *>()[0] = deltaFc;
+        this->output("corr")->buffer().template as<RealType *>()[0] = corrPeak;
         this->output("freq")->produce(1);
         this->output("corr")->produce(1);
     }
@@ -220,53 +251,125 @@ public:
 
     void activate(void)
     {
-        _maxL = 0;
-        _inActiveRegion = false;
-        _activationThresh = _symbolWidth*(_preamble.size()-0.5);
-        _deactivationThresh = _symbolWidth*(_preamble.size()-1);
-        std::cout << "_preamble.size() " << _preamble.size() << std::endl;
-        std::cout << "_symbolWidth " << _symbolWidth << std::endl;
-        std::cout << "_activationThresh " << _activationThresh << std::endl;
-        std::cout << "_deactivationThresh " << _deactivationThresh << std::endl;
+        _maxCorrPeak = 0;
+        _countSinceMax = 0;
+        _frameSearch = true;
     }
 
 private:
 
-    void processFreqSync(const Type *in, RealType &deltaFc, RealType &scale)
-    {
-        //when searching for frame start, first calculate the frequency offset
-        //and while we are at it, estimate the envelope of the frame
-        Type K = 0;
-        RealType env = 0;
-        auto lastSymBar = in + _symbolWidth*_preamble.size();
-        auto lastSym = lastSymBar - _symbolWidth;
-        const auto numFreqSyncSamps = size_t(_symbolWidth*0.8);
-        for (size_t i = 0; i < numFreqSyncSamps; i++)
-        {
-            env += std::abs(lastSym[i]) + std::abs(lastSymBar[i]);
-            K += lastSym[i] * std::conj(lastSymBar[i]);
-        }
-        deltaFc = std::arg(K)/numFreqSyncSamps;
+    void processFreqSync(const Type *in, RealType &deltaFc, RealType &scale);
+    void processSyncWord(const Type *in, const RealType &deltaFc, const RealType &scale, RealType &phaseOff, size_t &corrPeak);
+    void processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &length);
 
-        //normalize to the amplitude of the actual symbol
-        env = env/(numFreqSyncSamps*2);
-        scale = env/std::abs(_preamble.back());
+    void updateSettings(void)
+    {
+        _syncWordWidth = _symbolWidth*_dataWidth*_preamble.size();
+        _freqSyncWidth = size_t(_symbolWidth*_dataWidth*FREQ_SYNC_WIDTH);
+        _frameWidth = _syncWordWidth+_freqSyncWidth+(NUM_LENGTH_BITS*_dataWidth);
     }
 
     std::string _frameStartId;
     std::string _frameEndId;
+    std::string _phaseOffsetId;
     std::vector<Type> _preamble;
     size_t _symbolWidth;
+    size_t _dataWidth;
+    size_t _syncWordWidth;
+    size_t _freqSyncWidth;
+    size_t _frameWidth;
 
-    RealType _phaseInc;
-    RealType _phaseAccum;
+    size_t _maxCorrPeak;
+    size_t _countSinceMax;
+    RealType _deltaFcMax;
+    RealType _phaseOffMax;
+    RealType _scaleAtMax;
 
-    RealType _maxL;
-    unsigned long long _countSinceMax;
-    bool _inActiveRegion;
-    RealType _activationThresh;
-    RealType _deactivationThresh;
+    bool _frameSearch;
 };
+
+/***********************************************************************
+ * Process the frame sync to find the freq offset
+ **********************************************************************/
+template <typename Type>
+void FrameSync<Type>::processFreqSync(const Type *in, RealType &deltaFc, RealType &scale)
+{
+    //when searching for frame start, first calculate the frequency offset
+    //and while we are at it, estimate the envelope of the frame
+    Type K = 0;
+    RealType env = 0;
+    auto lastSymBar = in + _syncWordWidth;
+    auto lastSym = lastSymBar - _symbolWidth;
+    for (size_t i = 0; i < _freqSyncWidth; i++)
+    {
+        env += std::abs(lastSym[i]) + std::abs(lastSymBar[i]);
+        K += lastSym[i] * std::conj(lastSymBar[i]);
+    }
+    deltaFc = std::arg(K)/_freqSyncWidth;
+
+    //normalize to the amplitude of the actual symbol
+    env = env/(_freqSyncWidth*2);
+    scale = env/std::abs(_preamble.back());
+}
+
+/***********************************************************************
+ * Process the sync word to find the max correlation
+ **********************************************************************/
+template <typename Type>
+void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, const RealType &scale, RealType &phaseOff, size_t &corrPeak)
+{
+    //using scale and frequency offset, calculate correlation
+    Type L = 0;
+    RealType freqCorr = 0;
+    auto frameSyms = in;
+    const auto width = _symbolWidth*_dataWidth;
+    for (size_t i = 0; i < _preamble.size(); i++)
+    {
+        const auto sym = std::conj(_preamble[i]);
+        for (size_t j = 0; j < width; j++)
+        {
+            auto frameSym = *frameSyms++;
+            L += sym*frameSym*std::polar<RealType>(1.0/scale, freqCorr);
+            freqCorr += deltaFc;
+        }
+    }
+
+    //the phase offset at the first point is the angle of L
+    phaseOff = std::arg(L);
+
+    //the correlation peak is the magnitude of L
+    corrPeak = size_t(std::abs(L));
+}
+
+/***********************************************************************
+ * Process the length bits to get a symbol count
+ **********************************************************************/
+template <typename Type>
+void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &length)
+{
+    const size_t lengthBitsOff = _syncWordWidth+_freqSyncWidth;
+    auto lenBits = in + lengthBitsOff;
+    RealType freqCorr = phaseOff + deltaFc*(lengthBitsOff);
+
+    length = 0;
+
+    const auto sym = std::conj(_preamble.back());
+
+    for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
+    {
+        Type sum = 0;
+        for (size_t j = 0; j < _dataWidth; j++)
+        {
+            auto lenBit = *lenBits++;
+            sum += lenBit*std::polar<RealType>(1.0/scale, freqCorr);
+            freqCorr += deltaFc;
+        }
+        auto angle = std::arg(sum) - std::arg(sym);
+        if (angle > +M_PI) angle -= 2*M_PI;
+        if (angle < -M_PI) angle += 2*M_PI;
+        if (std::abs(angle) < M_PI/2) length |= (1 << i);
+    }
+}
 
 /***********************************************************************
  * registration
