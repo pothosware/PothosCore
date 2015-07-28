@@ -143,11 +143,11 @@ public:
         auto frameSyms = in;
         for (size_t i = 0; i < _preamble.size(); i++)
         {
-            const auto sym = std::conj(_preamble[i])*scale;
+            const auto sym = std::conj(_preamble[i]);
             for (size_t j = 0; j < _symbolWidth; j++)
             {
                 auto frameSym = *frameSyms++;
-                L += sym*frameSym*std::polar<RealType>(1.0, freqCorr);
+                L += sym*frameSym*std::polar<RealType>(1.0/scale, freqCorr);
                 freqCorr += deltaFc;
             }
         }
@@ -172,6 +172,7 @@ public:
 
         if (_inActiveRegion and std::abs(L) > _maxL)
         {
+            _countSinceMax = 0;
             _maxL = std::abs(L);
             _phaseInc = deltaFc;
             _phaseAccum = -std::arg(L);
@@ -186,38 +187,19 @@ public:
         out[0] = in[0]*std::polar<RealType>(1.0, _phaseAccum);
         _phaseAccum += _phaseInc;
 
-        /*
-        auto err = std::arg(out[0]);
-        err += M_PI;
-        while (err > M_PI/8) err -= M_PI/8;
-
-        static RealType lastErr;
-
-        if (lastErr > err)
+        if (_countSinceMax == size_t(_symbolWidth*(0.8+_preamble.size())))
         {
-            _phaseInc -= M_PI/128;
+            outPort->postLabel(Pothos::Label("phase_est", Pothos::Object(_phaseAccum), 0));
         }
-        else
-        {
-            _phaseInc += M_PI/128;
-        }
-        
-        
-        lastErr = err;
-        */
-        auto err = std::arg(out[0]);
-        if (err > +M_PI/2) err -= M_PI;
-        if (err < -M_PI/2) err += M_PI;
-        //if (err > 0) _phaseInc += M_PI/100;
-        //if (err < 0) _phaseInc -= M_PI/100;
+        _countSinceMax++;
 
-        if (_phaseAccum > +M_PI) _phaseAccum -= M_PI;
-        if (_phaseAccum < -M_PI) _phaseAccum += M_PI;
+        if (_phaseAccum > +2*M_PI) _phaseAccum -= 2*M_PI;
+        if (_phaseAccum < -2*M_PI) _phaseAccum += 2*M_PI;
         inPort->consume(1);
         outPort->produce(1);
 
-        this->output("freq")->buffer().template as<RealType *>()[0] = err;
-        this->output("corr")->buffer().template as<RealType *>()[0] = _maxL;
+        this->output("freq")->buffer().template as<RealType *>()[0] = _phaseInc;
+        this->output("corr")->buffer().template as<RealType *>()[0] = std::abs(L);
         this->output("freq")->produce(1);
         this->output("corr")->produce(1);
     }
@@ -280,6 +262,7 @@ private:
     RealType _phaseAccum;
 
     RealType _maxL;
+    unsigned long long _countSinceMax;
     bool _inActiveRegion;
     RealType _activationThresh;
     RealType _deactivationThresh;
