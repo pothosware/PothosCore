@@ -175,14 +175,46 @@ public:
     {
         auto inPort = this->input(0);
         auto outPort = this->output(0);
+        auto in = inPort->buffer().template as<const Type *>();
+        auto out = outPort->buffer().template as<Type *>();
 
-        if (not _frameSearch)
+        /***************************************************************
+         * A frame was found, consume remaining frame until payload
+         **************************************************************/
+        if (_remainingFrame != 0)
         {
-            inPort->consume(inPort->elements());
+            auto N = std::min(_remainingFrame, inPort->elements());
+            inPort->consume(N);
+            _remainingFrame -= N;
+            _phase += _phaseInc*N;
             return;
-            //DONE TEST!
         }
 
+        /***************************************************************
+         * A frame was found, produce payload until complete
+         * Correct the payload phase and resample for data width
+         **************************************************************/
+        if (_payloadElems != 0)
+        {
+            auto N = std::min(_payloadElems, inPort->elements());
+            auto widthOut = 1;//_dataWidth
+            N = std::min(N, outPort->elements()/widthOut);
+            inPort->consume(N);
+            _payloadElems -= N;
+
+            size_t produced = 0;
+            for (size_t i = 0; i < N; i+=widthOut)
+            {
+                out[produced++] = in[i+widthOut/2]*std::polar<RealType>(_scaleAtMax, _phase);
+                _phase += _phaseInc*widthOut;
+            }
+            outPort->produce(produced);
+            return;
+        }
+
+        /***************************************************************
+         * Correlation search for a new frame
+         **************************************************************/
         if (inPort->elements() < _frameWidth)
         {
             inPort->setReserve(_frameWidth);
@@ -191,16 +223,12 @@ public:
 
         auto N = inPort->elements()-_frameWidth+1;
         auto minOutElems = this->workInfo().minAllOutElements;
-        auto in = inPort->buffer().template as<const Type *>();
-        auto out = outPort->buffer().template as<Type *>();
         auto freqBuff = this->output("freq")->buffer().template as<RealType *>();
         auto corrBuff = this->output("corr")->buffer().template as<RealType *>();
         size_t produced = 0;
 
         if (N == 0) return;
         if (minOutElems == 0) return;
-        if (N > 1) std::cout << " N = " << N << std::endl;
-        //std::cout << " minOutElems = " << minOutElems << std::endl;
 
         while (N != produced and minOutElems != produced)
         {
@@ -209,29 +237,6 @@ public:
 
             RealType phaseOff; size_t corrPeak;
             this->processSyncWord(in+produced, deltaFc, scale, phaseOff, corrPeak);
-
-            for (const auto &label : inPort->labels())
-            {
-                if (label.index == 0 and label.id == _frameStartId)
-                {
-                    /*
-                    std::cout << "LBL START FOUND \n";
-                    std::cout << " corrPeak = " << corrPeak << std::endl;
-                    std::cout << " deltaFc = " << deltaFc << std::endl;
-                    std::cout << " phaseOff = " << phaseOff << std::endl;
-                    std::cout << " scale = " << scale << std::endl;
-                    //_frameSearch = false;
-                    size_t length;
-                    this->processLenBits(in, deltaFc, scale, phaseOff, length);
-                    std::cout << " length = " << length << std::endl;
-                    std::cout << " real length = " << label.data.template convert<size_t>() << std::endl;
-                    _maxCorrPeak = 0;
-                    _phase = phaseOff;
-                    _phaseInc = deltaFc;
-                    _countSinceStart = 0;
-                    */
-                }
-            }
 
             if (corrPeak > _maxCorrPeak)
             {
@@ -242,6 +247,7 @@ public:
                 _scaleAtMax = scale;
             }
 
+            _countSinceMax++;
             if (_maxCorrPeak > (_syncWordWidth*0.85) and _countSinceMax > (_syncWordWidth*0.5))
             {
                 std::cout << "PEAK FOUND \n";
@@ -250,24 +256,25 @@ public:
                 std::cout << " _deltaFcMax = " << _deltaFcMax << std::endl;
                 std::cout << " _phaseOffMax = " << _phaseOffMax << std::endl;
                 std::cout << " _scaleAtMax = " << _scaleAtMax << std::endl;
-                _phase = _phaseOffMax + _phaseInc*_countSinceMax;
                 _phaseInc = _deltaFcMax;
-                //_frameSearch = false;
+                _phase = _phaseOffMax + _phaseInc*_countSinceMax;
                 size_t length;
                 this->processLenBits(in-_countSinceMax+produced, _deltaFcMax, _scaleAtMax, _phaseOffMax, length);
                 std::cout << " length = " << length << std::endl;
+                _remainingFrame = _frameWidth-_countSinceMax;
+                _payloadElems = length*_dataWidth;
                 _maxCorrPeak = 0;
+                //TODO labels... out
+                break;
             }
-            _countSinceMax++;
-            //_countSinceStart++;
 
             out[produced] = in[produced]*std::polar<RealType>(scale, _phase);
             freqBuff[produced] = deltaFc;
             corrBuff[produced] = corrPeak;
 
             _phase += _phaseInc;
-            if (_phase > +2*M_PI) _phase -= 2*M_PI;
-            if (_phase < -2*M_PI) _phase += 2*M_PI;
+            //if (_phase > +2*M_PI) _phase -= 2*M_PI;
+            //if (_phase < -2*M_PI) _phase += 2*M_PI;
 
             produced++;
         }
@@ -296,9 +303,10 @@ public:
     {
         _maxCorrPeak = 0;
         _countSinceMax = 0;
-        _frameSearch = true;
         _phase = 0;
         _phaseInc = 0;
+        _payloadElems = 0;
+        _remainingFrame = 0;
     }
 
 private:
@@ -327,12 +335,11 @@ private:
     RealType _deltaFcMax;
     RealType _phaseOffMax;
     RealType _scaleAtMax;
+    size_t _remainingFrame;
+    size_t _payloadElems;
 
     RealType _phase;
     RealType _phaseInc;
-    //size_t _countSinceStart;
-
-    bool _frameSearch;
 };
 
 /***********************************************************************
