@@ -189,74 +189,93 @@ public:
             return;
         }
 
+        auto N = inPort->elements()-_frameWidth+1;
+        auto minOutElems = this->workInfo().minAllOutElements;
         auto in = inPort->buffer().template as<const Type *>();
+        auto out = outPort->buffer().template as<Type *>();
+        auto freqBuff = this->output("freq")->buffer().template as<RealType *>();
+        auto corrBuff = this->output("corr")->buffer().template as<RealType *>();
+        size_t produced = 0;
 
-        RealType deltaFc, scale;
-        this->processFreqSync(in, deltaFc, scale);
+        if (N == 0) return;
+        if (minOutElems == 0) return;
+        if (N > 1) std::cout << " N = " << N << std::endl;
+        //std::cout << " minOutElems = " << minOutElems << std::endl;
 
-        RealType phaseOff; size_t corrPeak;
-        this->processSyncWord(in, deltaFc, scale, phaseOff, corrPeak);
-
-        for (const auto &label : inPort->labels())
+        while (N != produced and minOutElems != produced)
         {
-            if (label.index == 0 and label.id == _frameStartId)
+            RealType deltaFc, scale;
+            this->processFreqSync(in+produced, deltaFc, scale);
+
+            RealType phaseOff; size_t corrPeak;
+            this->processSyncWord(in+produced, deltaFc, scale, phaseOff, corrPeak);
+
+            for (const auto &label : inPort->labels())
             {
-                
-                std::cout << "LBL START FOUND \n";
-                std::cout << " corrPeak = " << corrPeak << std::endl;
-                std::cout << " deltaFc = " << deltaFc << std::endl;
-                std::cout << " phaseOff = " << phaseOff << std::endl;
-                std::cout << " scale = " << scale << std::endl;
+                if (label.index == 0 and label.id == _frameStartId)
+                {
+                    /*
+                    std::cout << "LBL START FOUND \n";
+                    std::cout << " corrPeak = " << corrPeak << std::endl;
+                    std::cout << " deltaFc = " << deltaFc << std::endl;
+                    std::cout << " phaseOff = " << phaseOff << std::endl;
+                    std::cout << " scale = " << scale << std::endl;
+                    //_frameSearch = false;
+                    size_t length;
+                    this->processLenBits(in, deltaFc, scale, phaseOff, length);
+                    std::cout << " length = " << length << std::endl;
+                    std::cout << " real length = " << label.data.template convert<size_t>() << std::endl;
+                    _maxCorrPeak = 0;
+                    _phase = phaseOff;
+                    _phaseInc = deltaFc;
+                    _countSinceStart = 0;
+                    */
+                }
+            }
+
+            if (corrPeak > _maxCorrPeak)
+            {
+                _maxCorrPeak = corrPeak;
+                _countSinceMax = 0;
+                _deltaFcMax = deltaFc;
+                _phaseOffMax = phaseOff;
+                _scaleAtMax = scale;
+            }
+
+            if (_maxCorrPeak > (_syncWordWidth*0.85) and _countSinceMax > (_syncWordWidth*0.5))
+            {
+                std::cout << "PEAK FOUND \n";
+                std::cout << " _countSinceMax = " << _countSinceMax << std::endl;
+                std::cout << " _maxCorrPeak = " << _maxCorrPeak << std::endl;
+                std::cout << " _deltaFcMax = " << _deltaFcMax << std::endl;
+                std::cout << " _phaseOffMax = " << _phaseOffMax << std::endl;
+                std::cout << " _scaleAtMax = " << _scaleAtMax << std::endl;
+                _phase = _phaseOffMax + _phaseInc*_countSinceMax;
+                _phaseInc = _deltaFcMax;
                 //_frameSearch = false;
                 size_t length;
-                this->processLenBits(in, deltaFc, scale, phaseOff, length);
+                this->processLenBits(in-_countSinceMax+produced, _deltaFcMax, _scaleAtMax, _phaseOffMax, length);
                 std::cout << " length = " << length << std::endl;
-                std::cout << " real length = " << label.data.template convert<size_t>() << std::endl;
                 _maxCorrPeak = 0;
-                _phase = phaseOff;
-                _phaseInc = deltaFc;
-                _countSinceStart = 0;
             }
+            _countSinceMax++;
+            //_countSinceStart++;
+
+            out[produced] = in[produced]*std::polar<RealType>(scale, _phase);
+            freqBuff[produced] = deltaFc;
+            corrBuff[produced] = corrPeak;
+
+            _phase += _phaseInc;
+            if (_phase > +2*M_PI) _phase -= 2*M_PI;
+            if (_phase < -2*M_PI) _phase += 2*M_PI;
+
+            produced++;
         }
 
-        if (corrPeak > _maxCorrPeak)
-        {
-            _maxCorrPeak = corrPeak;
-            _countSinceMax = 0;
-            _deltaFcMax = deltaFc;
-            _phaseOffMax = phaseOff;
-            _scaleAtMax = scale;
-        }
-
-        if (_maxCorrPeak > (_syncWordWidth*0.85) and _countSinceMax > (_syncWordWidth*0.5))
-        {
-            std::cout << "PEAK FOUND \n";
-            std::cout << " _countSinceMax = " << _countSinceMax << std::endl;
-            std::cout << " _maxCorrPeak = " << _maxCorrPeak << std::endl;
-            std::cout << " _deltaFcMax = " << _deltaFcMax << std::endl;
-            std::cout << " _phaseOffMax = " << _phaseOffMax << std::endl;
-            std::cout << " _scaleAtMax = " << _scaleAtMax << std::endl;
-            //_frameSearch = false;
-            size_t length;
-            this->processLenBits(in-_countSinceMax, _deltaFcMax, _scaleAtMax, _phaseOffMax, length);
-            std::cout << " length = " << length << std::endl;
-            _maxCorrPeak = 0;
-        }
-        _countSinceMax++;
-        _countSinceStart++;
-
-        inPort->consume(1);
-        outPort->produce(1);
-
-        auto out = outPort->buffer().template as<Type *>();
-        out[0] = in[0]*std::polar<RealType>(scale, _phase);
-        _phase += _phaseInc;
-        if (_phase > +2*M_PI) _phase -= 2*M_PI;
-        if (_phase < -2*M_PI) _phase += 2*M_PI;
-        this->output("freq")->buffer().template as<RealType *>()[0] = deltaFc;
-        this->output("corr")->buffer().template as<RealType *>()[0] = corrPeak;
-        this->output("freq")->produce(1);
-        this->output("corr")->produce(1);
+        inPort->consume(produced);
+        outPort->produce(produced);
+        this->output("freq")->produce(produced);
+        this->output("corr")->produce(produced);
     }
 
     void propagateLabels(const Pothos::InputPort *port)
@@ -292,11 +311,6 @@ private:
     {
         _syncWordWidth = _symbolWidth*_dataWidth*_preamble.size();
         _frameWidth = _syncWordWidth+(NUM_LENGTH_BITS*_dataWidth);
-        std::cout << "_preamble.size() " << _preamble.size() << std::endl;
-        std::cout << "_dataWidth " << _dataWidth << std::endl;
-        std::cout << "_symbolWidth " << _symbolWidth << std::endl;
-        std::cout << "_syncWordWidth " << _syncWordWidth << std::endl;
-        std::cout << "_frameWidth " << _frameWidth << std::endl;
     }
 
     std::string _frameStartId;
@@ -316,7 +330,7 @@ private:
 
     RealType _phase;
     RealType _phaseInc;
-    size_t _countSinceStart;
+    //size_t _countSinceStart;
 
     bool _frameSearch;
 };
@@ -383,32 +397,23 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
 template <typename Type>
 void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &length)
 {
-    const size_t lengthBitsOff = _syncWordWidth;
+    length = 0;
+
+    //sample offset to length field + sample offset
+    const size_t lengthBitsOff = _syncWordWidth + _dataWidth/2;
     auto lenBits = in + lengthBitsOff;
     RealType freqCorr = phaseOff + deltaFc*(lengthBitsOff);
 
-    length = 0;
-
-    const auto sym = _preamble.back();
-
+    //the bit value is the phase difference with the last symbol
+    const auto sym = std::conj(_preamble.back());
     for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
     {
-        Type sum = 0;
-        for (size_t j = 0; j < _dataWidth; j++)
-        {
-            auto lenBit = *lenBits++;
-            //if (i == 15 or i == 14)
-            {
-                std::cout << (((lenBit*std::polar<RealType>(scale, freqCorr)).real() > 0)?+1:-1) << std::endl;
-            }
-            sum += lenBit*std::polar<RealType>(scale, freqCorr);
-            //std::cout << std::arg(lenBit*std::polar<RealType>(scale, freqCorr)) << std::endl;
-            freqCorr += deltaFc;
-        }
-        auto angle = std::arg(sum) - std::arg(sym);
-        if (angle > +M_PI) angle -= 2*M_PI;
-        if (angle < -M_PI) angle += 2*M_PI;
-        if (std::abs(angle) > M_PI/2) length |= (1 << i);
+        auto bit = (*lenBits)*std::polar<RealType>(scale, freqCorr)*sym;
+        freqCorr += deltaFc*_dataWidth;
+        lenBits += _dataWidth;
+
+        auto angle = std::arg(bit);
+        if (std::abs(angle) < M_PI/2) length |= (1 << i);
     }
 }
 

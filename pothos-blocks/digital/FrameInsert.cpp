@@ -206,9 +206,7 @@ public:
                     std::cout << "sent length " << len << std::endl;
                     for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
                     {
-                        if (i == 15) *p++ = -sym;
-                        else if (i == 14) *p++ = +sym;
-                        else *p++ = (((1 << i) & len) != 0)?+sym:-sym;
+                        *p++ = (((1 << i) & len) != 0)?+sym:-sym;
                     }
                 }
                 else std::memset(p, 0, NUM_LENGTH_BITS*sizeof(Type));
