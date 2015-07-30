@@ -431,12 +431,6 @@ void FrameSync<Type>::work(void)
         //a greater correlation peak within the specified duration threshold
         if (_maxCorrPeak < _corrMagThresh) continue;
         if (_countSinceMax < _corrDurThresh) continue;
-        _maxCorrPeak = 0; //reset for next time
-
-        //now that the frame was found, process the length field
-        //and determine sample offset (used in timing recovery mode)
-        size_t length;
-        this->processLenBits(in+i-_countSinceMax, _deltaFcMax, _scaleAtMax, _phaseOffMax, _sampOffset, length);
 
         //print summary
         std::cout << "PEAK FOUND \n";
@@ -445,6 +439,16 @@ void FrameSync<Type>::work(void)
         std::cout << " _deltaFcMax = " << _deltaFcMax << std::endl;
         std::cout << " _phaseOffMax = " << _phaseOffMax << std::endl;
         std::cout << " _scaleAtMax = " << _scaleAtMax << std::endl;
+
+        _maxCorrPeak = 0; //reset for next time
+
+        //now that the frame was found, process the length field
+        //and determine sample offset (used in timing recovery mode)
+        size_t length;
+        this->processLenBits(in+i-_countSinceMax, _deltaFcMax, _scaleAtMax, _phaseOffMax, _sampOffset, length);
+        if (length == 0) continue; //this is probably a false frame detection
+
+        //print length results
         std::cout << " length = " << length << std::endl;
         std::cout << " _sampOffset = " << _sampOffset << std::endl;
 
@@ -517,6 +521,7 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
 {
     //using scale and frequency offset, calculate correlation
     Type L = 0;
+    RealType env = 0;
     RealType freqCorr = 0;
     auto frameSyms = in;
     const auto width = _symbolWidth*_dataWidth;
@@ -526,9 +531,19 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
         for (size_t j = 0; j < width; j++)
         {
             auto frameSym = *frameSyms++;
+            env += std::abs(frameSym);
             L += sym*frameSym*std::polar<RealType>(scale, freqCorr);
             freqCorr += deltaFc;
         }
+    }
+
+    //check that the scale discovered in the freq sync is relevant here
+    env = env/_syncWordWidth;
+    const auto ratio = (env*scale)/std::abs(_preamble.back());
+    if (ratio > RealType(2.0) or ratio < RealType(0.5))
+    {
+        corrPeak = 0;
+        return;
     }
 
     //the phase offset at the first point is the angle of L
@@ -544,25 +559,47 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
 template <typename Type>
 void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &sampOffset, size_t &length)
 {
-    length = 0;
-    sampOffset = _dataWidth/2; //TODO better
+    //the last preamble symbol is used to encode the phase shifts
+    const auto sym = std::conj(_preamble.back());
 
-    //sample offset to length field + sample offset
-    const size_t lengthBitsOff = _syncWordWidth + sampOffset;
-    auto lenBits = in + lengthBitsOff;
-    RealType freqCorr = phaseOff + deltaFc*(lengthBitsOff);
+    //use the intentional phase transitions before the
+    //length bits to determine the optimal sampling offset
+    size_t firstBitPosition = 0;
+    RealType firstBitPeak = 0;
+    for (size_t i = _syncWordWidth-_dataWidth; i < _syncWordWidth+_dataWidth; i++)
+    {
+        auto bit = in[i]*std::polar<RealType>(scale, phaseOff + deltaFc*i)*sym;
+        if (bit.real() > firstBitPeak) continue;
+        firstBitPosition = i;
+        firstBitPeak = bit.real();
+    }
+
+    //this is probably the wrong frame start, cancel
+    if (firstBitPosition < _syncWordWidth)
+    {
+        length = 0;
+        return;
+    }
+
+    //the sample offset for timing recovery
+    sampOffset = firstBitPosition-_syncWordWidth;
+
+    //offsets to sampling index of length bits
+    auto lenBits = in + firstBitPosition;
+    RealType freqCorr = phaseOff + deltaFc*(firstBitPosition);
 
     //the bit value is the phase difference with the last symbol
-    const auto sym = std::conj(_preamble.back());
+    length = 0;
     for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
     {
         auto bit = (*lenBits)*std::polar<RealType>(scale, freqCorr)*sym;
+        if (bit.real() > 0) length |= (1 << i);
         freqCorr += deltaFc*_dataWidth;
         lenBits += _dataWidth;
-
-        auto angle = std::arg(bit);
-        if (std::abs(angle) < M_PI/2) length |= (1 << i);
     }
+
+    //top two bits used for timing sync
+    length &= 0x3fff;
 }
 
 /***********************************************************************

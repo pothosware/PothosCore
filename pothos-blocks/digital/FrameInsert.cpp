@@ -204,7 +204,10 @@ public:
                     const auto sym = _preamble.back();
                     const size_t len = label.data.template convert<size_t>()*label.width;
                     std::cout << "sent length " << len << std::endl;
-                    for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
+                    //first two length bits contain phase transition to detect timing
+                    *p++ = -sym;
+                    *p++ = +sym;
+                    for (int i = NUM_LENGTH_BITS-3; i >= 0; i--)
                     {
                         *p++ = (((1 << i) & len) != 0)?+sym:-sym;
                     }
