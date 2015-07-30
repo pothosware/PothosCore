@@ -13,7 +13,49 @@ static const size_t NUM_LENGTH_BITS = 16;
 /***********************************************************************
  * |PothosDoc Frame Sync
  *
- * The Frame Sync block ..
+ * The Frame Sync block decodes a PHY synchronization header,
+ * and forwards frame payload data to the output port.
+ * The synchronization header can be used to establish frequency,
+ * phase, and sample timing offset, and frame boundaries.
+ *
+ * <h2>Output modes</h2>
+ *
+ * The frame sync block can be used with downstream synchronization blocks
+ * such as carrier tracking, matched filtering, and timing recovery.
+ * However, the frame sync block does have its own built-in
+ * carrier offset and sample timing compensation based on
+ * the offsets discovered by the frame header search.
+ * Use external synchronization blocks that track phase and offset drift
+ * for long payloads or when there is significant drift within the payload.
+ *
+ * <h3>Raw payload output</h3>
+ *
+ * Once the frame is discovered, the raw input symbols are forwarded
+ * to the output for the entire frame payload length.
+ * In this mode, the next downstream block may track carrier phase.
+ * Also, the phase offset label can be used to reset the starting phase
+ * to help the loop synchronize at the start of the payload.
+ *
+ * A Costas loop may be used track carrier phase:<br />
+ * <a href="https://en.wikipedia.org/wiki/Costas_loop">https://en.wikipedia.org/wiki/Costas_loop</a>
+ *
+ * <h3>Phase compensation</h3>
+ *
+ * Using the discovered carrier frequency and phase offset,
+ * the frame sync will apply phase compensation to the payload symbols.
+ * Supposing that the waveform was QPSK, the next downstream block
+ * may be a matched filter to aid in symbol timing recovery.
+ *
+ * A Root-raised-cosing filter may aid in symbol recovery:<br />
+ * <a href="https://en.wikipedia.org/wiki/Root-raised-cosine_filter">https://en.wikipedia.org/wiki/Root-raised-cosine_filter</a>
+ *
+ * <h3>Re-sample timing</h3>
+ *
+ * In addition to the phase compensation noted above,
+ * the frame sync will use the discovered timing offset
+ * to re-sample the payload to the original symbol rate.
+ * The next downstream block may perform symbol detection
+ * to remap the recovered symbols into data bits.
  *
  * |category /Digital
  * |keywords preamble frame sync timing offset recover
@@ -22,6 +64,12 @@ static const size_t NUM_LENGTH_BITS = 16;
  * |widget DTypeChooser(cfloat=1)
  * |default "complex_float64"
  * |preview disable
+ *
+ * |param outputMode[Output Mode] The output mode for payload symbols.
+ * |default "RAW"
+ * |option [Raw symbols] "RAW"
+ * |option [Phase correction] "PHASE"
+ * |option [Timing recovery] "TIMING"
  *
  * |param preamble A vector of symbols representing the preamble.
  * |default [1, 1, -1]
@@ -42,20 +90,23 @@ static const size_t NUM_LENGTH_BITS = 16;
  * |param frameStartId[Frame Start ID] The label ID that marks the first symbol of frame data.
  * |default "frameStart"
  * |widget StringEntry()
+ * |preview valid
  *
  * |param frameEndId[Frame End ID] The label ID that marks the last symbol of frame data.
  * |default "frameEnd"
  * |widget StringEntry()
+ * |preview valid
  *
  * |param phaseOffsetID[Phase Offset ID] The label ID used to resync phase downstream.
  * The phase offset label specifies the phase offset as a double value in radians.
  * A downstream block may use this to reset its internal phase tracking loop.
  * The phase offset label will not be produced when the label is not specified.
- * |default "phaseOffset"
+ * |default ""
  * |widget StringEntry()
  * |preview valid
  *
  * |factory /blocks/frame_sync(dtype)
+ * |setter setOutputMode(outputMode)
  * |setter setPreamble(preamble)
  * |setter setSymbolWidth(symbolWidth)
  * |setter setDataWidth(dataWidth)
@@ -82,8 +133,8 @@ public:
     {
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
-        this->setupOutput("freq", typeid(RealType));
-        this->setupOutput("corr", typeid(RealType));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setOutputMode));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getOutputMode));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setSymbolWidth));
@@ -97,12 +148,30 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setPhaseOffsetID));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getPhaseOffsetID));
 
+        this->setOutputMode("RAW");
         this->setSymbolWidth(20); //initial update
         this->setDataWidth(4); //initial update
         this->setPreamble(std::vector<Type>(1, 1)); //initial update
         this->setFrameStartId("frameStart"); //initial update
         this->setFrameEndId("frameEnd"); //initial update
         this->setPhaseOffsetID("phaseOffset"); //initial update
+    }
+
+    void setOutputMode(const std::string &mode)
+    {
+        if (mode == "RAW"){}
+        else if (mode == "PHASE"){}
+        else if (mode == "TIMING"){}
+        else throw Pothos::InvalidArgumentException("FrameSync::setOutputMode("+mode+")", "unknown output mode");
+        _outputModeRaw = (mode == "RAW");
+        _outputModePhase = (mode == "PHASE");
+        _outputModeTiming = (mode == "TIMING");
+        _outputModeStr = mode;
+    }
+
+    std::string getOutputMode(void) const
+    {
+        return _outputModeStr;
     }
 
     void setPreamble(const std::vector<Type> preamble)
@@ -171,125 +240,14 @@ public:
         return _phaseOffsetId;
     }
 
-    void work(void)
-    {
-        auto inPort = this->input(0);
-        auto outPort = this->output(0);
-        auto in = inPort->buffer().template as<const Type *>();
-        auto out = outPort->buffer().template as<Type *>();
-
-        /***************************************************************
-         * A frame was found, consume remaining frame until payload
-         **************************************************************/
-        if (_remainingFrame != 0)
-        {
-            auto N = std::min(_remainingFrame, inPort->elements());
-            inPort->consume(N);
-            _remainingFrame -= N;
-            _phase += _phaseInc*N;
-            return;
-        }
-
-        /***************************************************************
-         * A frame was found, produce payload until complete
-         * Correct the payload phase and resample for data width
-         **************************************************************/
-        if (_payloadElems != 0)
-        {
-            auto N = std::min(_payloadElems, inPort->elements());
-            auto widthOut = 1;//_dataWidth
-            N = std::min(N, outPort->elements()/widthOut);
-            inPort->consume(N);
-            _payloadElems -= N;
-
-            size_t produced = 0;
-            for (size_t i = 0; i < N; i+=widthOut)
-            {
-                out[produced++] = in[i+widthOut/2]*std::polar<RealType>(_scaleAtMax, _phase);
-                _phase += _phaseInc*widthOut;
-            }
-            outPort->produce(produced);
-            return;
-        }
-
-        /***************************************************************
-         * Correlation search for a new frame
-         **************************************************************/
-        if (inPort->elements() < _frameWidth)
-        {
-            inPort->setReserve(_frameWidth);
-            return;
-        }
-
-        auto N = inPort->elements()-_frameWidth+1;
-        auto minOutElems = this->workInfo().minAllOutElements;
-        auto freqBuff = this->output("freq")->buffer().template as<RealType *>();
-        auto corrBuff = this->output("corr")->buffer().template as<RealType *>();
-        size_t produced = 0;
-
-        if (N == 0) return;
-        if (minOutElems == 0) return;
-
-        while (N != produced and minOutElems != produced)
-        {
-            RealType deltaFc, scale;
-            this->processFreqSync(in+produced, deltaFc, scale);
-
-            RealType phaseOff; size_t corrPeak;
-            this->processSyncWord(in+produced, deltaFc, scale, phaseOff, corrPeak);
-
-            if (corrPeak > _maxCorrPeak)
-            {
-                _maxCorrPeak = corrPeak;
-                _countSinceMax = 0;
-                _deltaFcMax = deltaFc;
-                _phaseOffMax = phaseOff;
-                _scaleAtMax = scale;
-            }
-
-            _countSinceMax++;
-            if (_maxCorrPeak > (_syncWordWidth*0.85) and _countSinceMax > (_syncWordWidth*0.5))
-            {
-                std::cout << "PEAK FOUND \n";
-                std::cout << " _countSinceMax = " << _countSinceMax << std::endl;
-                std::cout << " _maxCorrPeak = " << _maxCorrPeak << std::endl;
-                std::cout << " _deltaFcMax = " << _deltaFcMax << std::endl;
-                std::cout << " _phaseOffMax = " << _phaseOffMax << std::endl;
-                std::cout << " _scaleAtMax = " << _scaleAtMax << std::endl;
-                _phaseInc = _deltaFcMax;
-                _phase = _phaseOffMax + _phaseInc*_countSinceMax;
-                size_t length;
-                this->processLenBits(in-_countSinceMax+produced, _deltaFcMax, _scaleAtMax, _phaseOffMax, length);
-                std::cout << " length = " << length << std::endl;
-                _remainingFrame = _frameWidth-_countSinceMax;
-                _payloadElems = length*_dataWidth;
-                _maxCorrPeak = 0;
-                //TODO labels... out
-                break;
-            }
-
-            out[produced] = in[produced]*std::polar<RealType>(scale, _phase);
-            freqBuff[produced] = deltaFc;
-            corrBuff[produced] = corrPeak;
-
-            _phase += _phaseInc;
-            //if (_phase > +2*M_PI) _phase -= 2*M_PI;
-            //if (_phase < -2*M_PI) _phase += 2*M_PI;
-
-            produced++;
-        }
-
-        inPort->consume(produced);
-        outPort->produce(produced);
-        this->output("freq")->produce(produced);
-        this->output("corr")->produce(produced);
-    }
+    void work(void);
 
     void propagateLabels(const Pothos::InputPort *port)
     {
         for (const auto label : port->labels())
         {
-            this->output(0)->postLabel(label);
+            //labels from input currently discarded
+            //this->output(0)->postLabel(label);
         }
     }
 
@@ -305,42 +263,224 @@ public:
         _countSinceMax = 0;
         _phase = 0;
         _phaseInc = 0;
-        _payloadElems = 0;
-        _remainingFrame = 0;
+        _remainingPayload = 0;
+        _remainingHeader = 0;
     }
 
 private:
 
     void processFreqSync(const Type *in, RealType &deltaFc, RealType &scale);
     void processSyncWord(const Type *in, const RealType &deltaFc, const RealType &scale, RealType &phaseOff, size_t &corrPeak);
-    void processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &length);
+    void processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &sampOffset, size_t &length);
 
     void updateSettings(void)
     {
         _syncWordWidth = _symbolWidth*_dataWidth*_preamble.size();
         _frameWidth = _syncWordWidth+(NUM_LENGTH_BITS*_dataWidth);
+        _corrMagThresh = size_t(_syncWordWidth*0.85);
+        _corrDurThresh = size_t(_syncWordWidth*0.5);
     }
 
+    //output mode
+    std::string _outputModeStr;
+    bool _outputModeRaw;
+    bool _outputModePhase;
+    bool _outputModeTiming;
+
+    //configuration
     std::string _frameStartId;
     std::string _frameEndId;
     std::string _phaseOffsetId;
     std::vector<Type> _preamble;
-    size_t _symbolWidth;
-    size_t _dataWidth;
-    size_t _syncWordWidth;
-    size_t _frameWidth;
+    size_t _symbolWidth; //width of a preamble symbol
+    size_t _dataWidth; //width of a data dymbol
+    size_t _syncWordWidth; //preamble sync portion width
+    size_t _frameWidth; //full frame header width
+    size_t _corrMagThresh; //minimum required correlation magnitude threshold
+    size_t _corrDurThresh; //minimum required correlation duration threshold
 
+    //values at last max correlation peak
     size_t _maxCorrPeak;
     size_t _countSinceMax;
     RealType _deltaFcMax;
     RealType _phaseOffMax;
     RealType _scaleAtMax;
-    size_t _remainingFrame;
-    size_t _payloadElems;
 
+    //track header and payload after frame found
+    size_t _remainingHeader;
+    size_t _remainingPayload;
+
+    //calculated output offset corrections
     RealType _phase;
     RealType _phaseInc;
+    size_t _sampOffset;
 };
+
+/***********************************************************************
+ * Work implementation
+ **********************************************************************/
+template <typename Type>
+void FrameSync<Type>::work(void)
+{
+    auto inPort = this->input(0);
+    auto outPort = this->output(0);
+    auto in = inPort->buffer().template as<const Type *>();
+    auto out = outPort->buffer().template as<Type *>();
+
+    /***************************************************************
+     * A frame was found, consume remaining frame until payload
+     **************************************************************/
+    if (_remainingHeader != 0)
+    {
+        auto N = std::min(_remainingHeader, inPort->elements());
+        _phase += _phaseInc*N;
+        _remainingHeader -= N;
+        inPort->consume(N);
+        return;
+    }
+
+    /***************************************************************
+     * Produce payload with no compensation
+     **************************************************************/
+    else if (_remainingPayload != 0 and _outputModeRaw)
+    {
+        const auto N = std::min(_remainingPayload, this->workInfo().minElements);
+
+        for (size_t i = 0; i < N; i++)
+        {
+            out[i] = in[i]*_scaleAtMax;
+        }
+
+        _remainingPayload -= N;
+        inPort->consume(N);
+        outPort->produce(N);
+        return;
+    }
+
+    /***************************************************************
+     * Produce payload with phase compensation
+     **************************************************************/
+    else if (_remainingPayload != 0 and _outputModePhase)
+    {
+        const auto N = std::min(_remainingPayload, this->workInfo().minElements);
+
+        for (size_t i = 0; i < N; i++)
+        {
+            out[i] = in[i]*std::polar<RealType>(_scaleAtMax, _phase);
+            _phase += _phaseInc;
+        }
+
+        _remainingPayload -= N;
+        inPort->consume(N);
+        outPort->produce(N);
+        return;
+    }
+
+    /***************************************************************
+     * Produce payload with timing compensation
+     **************************************************************/
+    else if (_remainingPayload != 0 and _outputModeTiming)
+    {
+        const auto N = std::min(_remainingPayload, this->workInfo().minElements);
+
+        size_t produced = 0;
+        for (size_t i = 0; i < N; i+=_dataWidth)
+        {
+            out[produced++] = in[i+_sampOffset]*std::polar<RealType>(_scaleAtMax, _phase);
+            _phase += _phaseInc*_dataWidth;
+        }
+
+        _remainingPayload -= N;
+        inPort->consume(N);
+        outPort->produce(produced);
+        return;
+    }
+
+    /***************************************************************
+     * Correlation search for a new frame
+     **************************************************************/
+    if (inPort->elements() < _frameWidth)
+    {
+        inPort->setReserve(_frameWidth);
+        return;
+    }
+    const auto N = inPort->elements()-_frameWidth+1;
+
+    for (size_t i = 0; i < N; i++)
+    {
+        //calculate the frequency offset as if this was the frame start
+        RealType deltaFc, scale;
+        this->processFreqSync(in+i, deltaFc, scale);
+
+        //use the frequency offset to calculate the correlation value
+        RealType phaseOff; size_t corrPeak;
+        this->processSyncWord(in+i, deltaFc, scale, phaseOff, corrPeak);
+
+        //if this correlation value is larger, record the state
+        if (corrPeak > _maxCorrPeak)
+        {
+            _maxCorrPeak = corrPeak;
+            _countSinceMax = 0;
+            _deltaFcMax = deltaFc;
+            _phaseOffMax = phaseOff;
+            _scaleAtMax = scale;
+        }
+        _countSinceMax++;
+
+        //check if the peak is above the threshold and we have not found
+        //a greater correlation peak within the specified duration threshold
+        if (_maxCorrPeak < _corrMagThresh) continue;
+        if (_countSinceMax < _corrDurThresh) continue;
+        _maxCorrPeak = 0; //reset for next time
+
+        //now that the frame was found, process the length field
+        //and determine sample offset (used in timing recovery mode)
+        size_t length;
+        this->processLenBits(in+i-_countSinceMax, _deltaFcMax, _scaleAtMax, _phaseOffMax, _sampOffset, length);
+
+        //print summary
+        std::cout << "PEAK FOUND \n";
+        std::cout << " _countSinceMax = " << _countSinceMax << std::endl;
+        std::cout << " _maxCorrPeak = " << _maxCorrPeak << std::endl;
+        std::cout << " _deltaFcMax = " << _deltaFcMax << std::endl;
+        std::cout << " _phaseOffMax = " << _phaseOffMax << std::endl;
+        std::cout << " _scaleAtMax = " << _scaleAtMax << std::endl;
+        std::cout << " length = " << length << std::endl;
+        std::cout << " _sampOffset = " << _sampOffset << std::endl;
+
+        //initialize carrier recovery compensation for use in the
+        //remaining header and payload sections of the work routine
+        _remainingHeader = _frameWidth-_countSinceMax;
+        _remainingPayload = length*_dataWidth;
+        _phaseInc = _deltaFcMax;
+        _phase = _phaseOffMax + _phaseInc*_countSinceMax;
+
+        //Label width is specified based on the output mode.
+        //Width may be divided down by an upstream time recovery block.
+        //The length and label width are used in conjunction to specify
+        //the number of elements between start and end labels.
+        const size_t labelWidth = _outputModeTiming?1:_dataWidth;
+
+        //produce a phase offset label at the first payload index
+        if (not _phaseOffsetId.empty()) outPort->postLabel(
+            Pothos::Label(_phaseOffsetId, Pothos::Object(_phase),
+            i+_remainingHeader+1, labelWidth));
+
+        //produce a start of frame label at the first payload index
+        if (not _frameStartId.empty()) outPort->postLabel(
+            Pothos::Label(_frameStartId, Pothos::Object(length),
+            i+_remainingHeader+1, labelWidth));
+
+        //produce an end of frame label at the last payload index
+        if (not _frameEndId.empty()) outPort->postLabel(
+            Pothos::Label(_frameEndId, Pothos::Object(length),
+            i+_remainingHeader+_remainingPayload, labelWidth));
+
+        inPort->consume(i+1);
+        return;
+    }
+    inPort->consume(N);
+}
 
 /***********************************************************************
  * Process the frame sync to find the freq offset
@@ -402,12 +542,13 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
  * Process the length bits to get a symbol count
  **********************************************************************/
 template <typename Type>
-void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &length)
+void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &sampOffset, size_t &length)
 {
     length = 0;
+    sampOffset = _dataWidth/2; //TODO better
 
     //sample offset to length field + sample offset
-    const size_t lengthBitsOff = _syncWordWidth + _dataWidth/2;
+    const size_t lengthBitsOff = _syncWordWidth + sampOffset;
     auto lenBits = in + lengthBitsOff;
     RealType freqCorr = phaseOff + deltaFc*(lengthBitsOff);
 
