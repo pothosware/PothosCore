@@ -154,7 +154,7 @@ public:
         this->setPreamble(std::vector<Type>(1, 1)); //initial update
         this->setFrameStartId("frameStart"); //initial update
         this->setFrameEndId("frameEnd"); //initial update
-        this->setPhaseOffsetID("phaseOffset"); //initial update
+        this->setPhaseOffsetID(""); //initial update
     }
 
     void setOutputMode(const std::string &mode)
@@ -381,7 +381,9 @@ void FrameSync<Type>::work(void)
      **************************************************************/
     else if (_remainingPayload != 0 and _outputModeTiming)
     {
-        const auto N = std::min(_remainingPayload, this->workInfo().minElements);
+        auto N = std::min(_remainingPayload, this->workInfo().minElements);
+        N = (N/_dataWidth)*_dataWidth; //only in multiples of data width
+        if (N == 0) inPort->setReserve(_dataWidth);
 
         size_t produced = 0;
         for (size_t i = 0; i < N; i+=_dataWidth)
@@ -468,17 +470,17 @@ void FrameSync<Type>::work(void)
         //produce a phase offset label at the first payload index
         if (not _phaseOffsetId.empty()) outPort->postLabel(
             Pothos::Label(_phaseOffsetId, Pothos::Object(_phase),
-            i+_remainingHeader+1, labelWidth));
+            0, labelWidth));
 
         //produce a start of frame label at the first payload index
         if (not _frameStartId.empty()) outPort->postLabel(
             Pothos::Label(_frameStartId, Pothos::Object(length),
-            i+_remainingHeader+1, labelWidth));
+            0, labelWidth));
 
         //produce an end of frame label at the last payload index
         if (not _frameEndId.empty()) outPort->postLabel(
             Pothos::Label(_frameEndId, Pothos::Object(length),
-            i+_remainingHeader+_remainingPayload, labelWidth));
+            (length-1)*labelWidth, labelWidth));
 
         inPort->consume(i+1);
         return;
