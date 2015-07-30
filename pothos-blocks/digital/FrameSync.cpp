@@ -88,19 +88,21 @@ static const size_t NUM_LENGTH_BITS = 16;
  * |units samples
  *
  * |param frameStartId[Frame Start ID] The label ID that marks the first symbol of frame data.
+ * The label data will contain the length of the payload as encoded by the frame inserter.
  * |default "frameStart"
  * |widget StringEntry()
  * |preview valid
  *
  * |param frameEndId[Frame End ID] The label ID that marks the last symbol of frame data.
- * |default "frameEnd"
+ * The frame end label will not be produced when the label ID is not specified.
+ * |default ""
  * |widget StringEntry()
  * |preview valid
  *
  * |param phaseOffsetID[Phase Offset ID] The label ID used to resync phase downstream.
  * The phase offset label specifies the phase offset as a double value in radians.
  * A downstream block may use this to reset its internal phase tracking loop.
- * The phase offset label will not be produced when the label is not specified.
+ * The phase offset label will not be produced when the label ID is not specified.
  * |default ""
  * |widget StringEntry()
  * |preview valid
@@ -153,7 +155,7 @@ public:
         this->setDataWidth(4); //initial update
         this->setPreamble(std::vector<Type>(1, 1)); //initial update
         this->setFrameStartId("frameStart"); //initial update
-        this->setFrameEndId("frameEnd"); //initial update
+        this->setFrameEndId(""); //initial update
         this->setPhaseOffsetID(""); //initial update
     }
 
@@ -381,20 +383,21 @@ void FrameSync<Type>::work(void)
      **************************************************************/
     else if (_remainingPayload != 0 and _outputModeTiming)
     {
-        auto N = std::min(_remainingPayload, this->workInfo().minElements);
-        N = (N/_dataWidth)*_dataWidth; //only in multiples of data width
+        auto N = std::min(_remainingPayload, inPort->elements());
+        N = std::min(N/_dataWidth, outPort->elements());
         if (N == 0) inPort->setReserve(_dataWidth);
 
-        size_t produced = 0;
-        for (size_t i = 0; i < N; i+=_dataWidth)
+        for (size_t i = 0; i < N; i++)
         {
-            out[produced++] = in[i+_sampOffset]*std::polar<RealType>(_scaleAtMax, _phase);
+            const auto sym = in[i*_dataWidth+_sampOffset];
+            out[i] = sym*std::polar<RealType>(_scaleAtMax, _phase);
             _phase += _phaseInc*_dataWidth;
         }
 
-        _remainingPayload -= N;
-        inPort->consume(N);
-        outPort->produce(produced);
+        const size_t consumed = N*_dataWidth;
+        _remainingPayload -= consumed;
+        inPort->consume(consumed);
+        outPort->produce(N);
         return;
     }
 
