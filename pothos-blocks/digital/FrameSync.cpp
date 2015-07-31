@@ -271,15 +271,16 @@ public:
 
 private:
 
-    void processFreqSync(const Type *in, RealType &deltaFc, RealType &scale);
+    void processEnvelope(const Type *in, RealType &scale);
+    void processFreqSync(const Type *in, RealType &deltaFc);
     void processSyncWord(const Type *in, const RealType &deltaFc, const RealType &scale, RealType &phaseOff, size_t &corrPeak);
-    void processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &sampOffset, size_t &length);
+    void processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, size_t &length);
 
     void updateSettings(void)
     {
         _syncWordWidth = _symbolWidth*_dataWidth*_preamble.size();
         _frameWidth = _syncWordWidth+(NUM_LENGTH_BITS*_dataWidth);
-        _corrMagThresh = size_t(_syncWordWidth*0.85);
+        _corrMagThresh = size_t(_syncWordWidth*0.5);
         _corrDurThresh = size_t(_syncWordWidth*0.5);
     }
 
@@ -315,7 +316,6 @@ private:
     //calculated output offset corrections
     RealType _phase;
     RealType _phaseInc;
-    size_t _sampOffset;
 };
 
 /***********************************************************************
@@ -389,7 +389,7 @@ void FrameSync<Type>::work(void)
 
         for (size_t i = 0; i < N; i++)
         {
-            const auto sym = in[i*_dataWidth+_sampOffset];
+            const auto sym = in[i*_dataWidth];
             out[i] = sym*std::polar<RealType>(_scaleAtMax, _phase);
             _phase += _phaseInc*_dataWidth;
         }
@@ -413,9 +413,20 @@ void FrameSync<Type>::work(void)
 
     for (size_t i = 0; i < N; i++)
     {
+        //TODO think about when the give up and reset state
+        if (_countSinceMax > _corrDurThresh)
+        {
+            _maxCorrPeak = 0;
+        }
+
+        //calculate the scaling value, and check for consistent envelope
+        RealType scale;
+        this->processEnvelope(in+i, scale);
+        if (scale == 0) {_maxCorrPeak = 0; continue;}
+
         //calculate the frequency offset as if this was the frame start
-        RealType deltaFc, scale;
-        this->processFreqSync(in+i, deltaFc, scale);
+        RealType deltaFc;
+        this->processFreqSync(in+i, deltaFc);
 
         //use the frequency offset to calculate the correlation value
         RealType phaseOff; size_t corrPeak;
@@ -449,17 +460,18 @@ void FrameSync<Type>::work(void)
 
         //now that the frame was found, process the length field
         //and determine sample offset (used in timing recovery mode)
-        size_t length;
-        this->processLenBits(in+i-_countSinceMax, _deltaFcMax, _scaleAtMax, _phaseOffMax, _sampOffset, length);
+        size_t firstBit, length;
+        this->processLenBits(in+i-_countSinceMax, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, length);
         if (length == 0) continue; //this is probably a false frame detection
 
         //print length results
         std::cout << " length = " << length << std::endl;
-        std::cout << " _sampOffset = " << _sampOffset << std::endl;
+        std::cout << " firstBit = " << firstBit << std::endl;
+        std::cout << " sampOffset = " << (int(firstBit)-int(_syncWordWidth)) << std::endl;
 
         //initialize carrier recovery compensation for use in the
         //remaining header and payload sections of the work routine
-        _remainingHeader = _frameWidth-_countSinceMax;
+        _remainingHeader = firstBit+(NUM_LENGTH_BITS*_dataWidth)-_countSinceMax;
         _remainingPayload = length*_dataWidth;
         _phaseInc = _deltaFcMax;
         _phase = _phaseOffMax + _phaseInc*_countSinceMax;
@@ -492,30 +504,72 @@ void FrameSync<Type>::work(void)
 }
 
 /***********************************************************************
+ * Process the envelope of the frame preamble
+ **********************************************************************/
+template <typename Type>
+void FrameSync<Type>::processEnvelope(const Type *in, RealType &scale)
+{
+    scale = 0;
+
+    //width of a sum across symbol in samples
+    const size_t width = _symbolWidth*_dataWidth/2;
+
+    //check for consistent amplitude across the frame
+    RealType sumFirst = 0;
+    for (size_t i = 0; i < width; i++)
+    {
+        sumFirst += std::abs(in[i]);
+    }
+    sumFirst /= width;
+    if (sumFirst < 0.05) return; //TODO threshold variable
+    sumFirst /= std::abs(_preamble.front());
+    //if (sumFirst < 0.01) return;
+
+    RealType sumLast = 0;
+    for (size_t i = _syncWordWidth-1; i >= _syncWordWidth-width; i--)
+    {
+        sumLast += std::abs(in[i]);
+    }
+    sumLast /= width;
+    if (sumLast < 0.05) return; //TODO threshold variable
+    sumLast /= std::abs(_preamble.back());
+    //if (sumLast < 0.01) return;
+
+    const auto ratio = sumFirst/sumLast;
+    //if (ratio > 2 or ratio < 0.5) return;
+
+    //use the two sums to estimate the scale
+    scale = 2.0/(sumFirst + sumLast);
+}
+
+/***********************************************************************
  * Process the frame sync to find the freq offset
  **********************************************************************/
 template <typename Type>
-void FrameSync<Type>::processFreqSync(const Type *in, RealType &deltaFc, RealType &scale)
+void FrameSync<Type>::processFreqSync(const Type *in, RealType &deltaFc)
 {
+    //width of a preamble symbol in samples
     const size_t width = _symbolWidth*_dataWidth;
-    auto syms = in + width*(_preamble.size()-1);
-    const size_t delta = width/2;
-    const size_t iterations = width-delta;
 
-    //when searching for frame start, first calculate the frequency offset
-    //and while we are at it, estimate the envelope of the frame
+    //offset into the start of the final preamble symbol
+    auto syms = in + width*(_preamble.size()-1);
+
+    //difference between any two compare samples
+    const size_t delta = width/2;
+
+    //avoid transition edges with padding
+    const size_t padding = _dataWidth;
+    const size_t begin = padding;
+    const size_t end = width - delta - padding;
+
+    //calculate the frequency offset across multiple
+    //pairs of samples that are within the same symbol
     Type K = 0;
-    RealType env = 0;
-    for (size_t i = 0; i < iterations; i++)
+    for (size_t i = begin; i < end; i++)
     {
-        env += std::abs(syms[i]);
         K += syms[i] * std::conj(syms[i+delta]);
     }
     deltaFc = std::arg(K)/delta;
-
-    //normalize to the amplitude of the actual symbol
-    env = env/iterations;
-    scale = std::abs(_preamble.back())/env;
 }
 
 /***********************************************************************
@@ -526,7 +580,6 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
 {
     //using scale and frequency offset, calculate correlation
     Type L = 0;
-    RealType env = 0;
     RealType freqCorr = 0;
     auto frameSyms = in;
     const auto width = _symbolWidth*_dataWidth;
@@ -536,19 +589,9 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
         for (size_t j = 0; j < width; j++)
         {
             auto frameSym = *frameSyms++;
-            env += std::abs(frameSym);
             L += sym*frameSym*std::polar<RealType>(scale, freqCorr);
             freqCorr += deltaFc;
         }
-    }
-
-    //check that the scale discovered in the freq sync is relevant here
-    env = env/_syncWordWidth;
-    const auto ratio = (env*scale)/std::abs(_preamble.back());
-    if (ratio > RealType(2.0) or ratio < RealType(0.5))
-    {
-        corrPeak = 0;
-        return;
     }
 
     //the phase offset at the first point is the angle of L
@@ -562,39 +605,34 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
  * Process the length bits to get a symbol count
  **********************************************************************/
 template <typename Type>
-void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &sampOffset, size_t &length)
+void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, size_t &length)
 {
+    firstBit = 0;
+    length = 0;
+
     //the last preamble symbol is used to encode the phase shifts
     const auto sym = std::conj(_preamble.back());
 
     //use the intentional phase transitions before the
     //length bits to determine the optimal sampling offset
-    size_t firstBitPosition = 0;
+    firstBit = _syncWordWidth + _dataWidth/2;
     RealType firstBitPeak = 0;
-    for (size_t i = _syncWordWidth-_dataWidth; i < _syncWordWidth+_dataWidth; i++)
+    for (size_t i = _syncWordWidth-_dataWidth; i <= _syncWordWidth+_dataWidth; i++)
     {
         auto bit = in[i]*std::polar<RealType>(scale, phaseOff + deltaFc*i)*sym;
         if (bit.real() > firstBitPeak) continue;
-        firstBitPosition = i;
+        firstBit = i;
         firstBitPeak = bit.real();
     }
 
-    //this is probably the wrong frame start, cancel
-    if (firstBitPosition < _syncWordWidth)
-    {
-        length = 0;
-        return;
-    }
-
-    //the sample offset for timing recovery
-    sampOffset = firstBitPosition-_syncWordWidth;
+    //never found the peak, probably not a frame
+    if (firstBitPeak == 0) return;
 
     //offsets to sampling index of length bits
-    auto lenBits = in + firstBitPosition;
-    RealType freqCorr = phaseOff + deltaFc*(firstBitPosition);
+    auto lenBits = in + firstBit;
+    RealType freqCorr = phaseOff + deltaFc*(firstBit);
 
     //the bit value is the phase difference with the last symbol
-    length = 0;
     for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
     {
         auto bit = (*lenBits)*std::polar<RealType>(scale, freqCorr)*sym;
