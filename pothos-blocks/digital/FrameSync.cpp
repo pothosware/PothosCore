@@ -87,17 +87,23 @@ static const size_t NUM_LENGTH_BITS = 16;
  * |default 4
  * |units samples
  *
+ * |param inputThreshold [Input Threshold] The activation threshold for raw input samples.
+ * The frame search algorithm will discard input below this threshold, effectively noise.
+ * |default 0.01
+ *
  * |param frameStartId[Frame Start ID] The label ID that marks the first symbol of frame data.
  * The label data will contain the length of the payload as encoded by the frame inserter.
  * |default "frameStart"
  * |widget StringEntry()
  * |preview valid
+ * |tab Labels
  *
  * |param frameEndId[Frame End ID] The label ID that marks the last symbol of frame data.
  * The frame end label will not be produced when the label ID is not specified.
  * |default ""
  * |widget StringEntry()
  * |preview valid
+ * |tab Labels
  *
  * |param phaseOffsetID[Phase Offset ID] The label ID used to resync phase downstream.
  * The phase offset label specifies the phase offset as a double value in radians.
@@ -106,6 +112,7 @@ static const size_t NUM_LENGTH_BITS = 16;
  * |default ""
  * |widget StringEntry()
  * |preview valid
+ * |tab Labels
  *
  * |factory /blocks/frame_sync(dtype)
  * |setter setOutputMode(outputMode)
@@ -115,6 +122,7 @@ static const size_t NUM_LENGTH_BITS = 16;
  * |setter setFrameStartId(frameStartId)
  * |setter setFrameEndId(frameEndId)
  * |setter setPhaseOffsetID(phaseOffsetID)
+ * |setter setInputThreshold(inputThreshold)
  **********************************************************************/
 template <typename Type>
 class FrameSync : public Pothos::Block
@@ -131,7 +139,8 @@ public:
         _symbolWidth(0),
         _dataWidth(0),
         _syncWordWidth(0),
-        _frameWidth(0)
+        _frameWidth(0),
+        _inputThreshold(0)
     {
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
@@ -149,6 +158,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getFrameEndId));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setPhaseOffsetID));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getPhaseOffsetID));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setInputThreshold));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getInputThreshold));
 
         this->setOutputMode("RAW");
         this->setSymbolWidth(20); //initial update
@@ -157,6 +168,7 @@ public:
         this->setFrameStartId("frameStart"); //initial update
         this->setFrameEndId(""); //initial update
         this->setPhaseOffsetID(""); //initial update
+        this->setInputThreshold(0.01); //initial update
     }
 
     void setOutputMode(const std::string &mode)
@@ -242,6 +254,17 @@ public:
         return _phaseOffsetId;
     }
 
+    void setInputThreshold(const RealType threshold)
+    {
+        if (threshold < 0) throw Pothos::InvalidArgumentException("FrameSync::setInputThreshold()", "threshold should be non-negative");
+        _inputThreshold = threshold;
+    }
+
+    RealType getInputThreshold(void) const
+    {
+        return _inputThreshold;
+    }
+
     void work(void);
 
     void propagateLabels(const Pothos::InputPort *port)
@@ -280,7 +303,7 @@ private:
     {
         _syncWordWidth = _symbolWidth*_dataWidth*_preamble.size();
         _frameWidth = _syncWordWidth+(NUM_LENGTH_BITS*_dataWidth);
-        _corrMagThresh = size_t(_syncWordWidth*0.5);
+        _corrMagThresh = size_t(_syncWordWidth*0.7);
         _corrDurThresh = size_t(_syncWordWidth*0.5);
     }
 
@@ -301,6 +324,7 @@ private:
     size_t _frameWidth; //full frame header width
     size_t _corrMagThresh; //minimum required correlation magnitude threshold
     size_t _corrDurThresh; //minimum required correlation duration threshold
+    RealType _inputThreshold; //minimum required input activation threshold
 
     //values at last max correlation peak
     size_t _maxCorrPeak;
@@ -338,6 +362,7 @@ void FrameSync<Type>::work(void)
         _phase += _phaseInc*N;
         _remainingHeader -= N;
         inPort->consume(N);
+        if (_remainingHeader == 0) std::cout << "header consumed\n";
         return;
     }
 
@@ -398,6 +423,7 @@ void FrameSync<Type>::work(void)
         _remainingPayload -= consumed;
         inPort->consume(consumed);
         outPort->produce(N);
+        if (_remainingPayload == 0) std::cout << "payload forwarded\n";
         return;
     }
 
@@ -422,7 +448,7 @@ void FrameSync<Type>::work(void)
         //calculate the scaling value, and check for consistent envelope
         RealType scale;
         this->processEnvelope(in+i, scale);
-        if (scale == 0) {_maxCorrPeak = 0; continue;}
+        if (scale == 0) continue;
 
         //calculate the frequency offset as if this was the frame start
         RealType deltaFc;
@@ -475,6 +501,8 @@ void FrameSync<Type>::work(void)
         _remainingPayload = length*_dataWidth;
         _phaseInc = _deltaFcMax;
         _phase = _phaseOffMax + _phaseInc*_countSinceMax;
+        std::cout << " _remainingHeader = " << _remainingHeader << std::endl;
+        std::cout << " _remainingPayload = " << _remainingPayload << std::endl;
 
         //Label width is specified based on the output mode.
         //Width may be divided down by an upstream time recovery block.
@@ -511,32 +539,31 @@ void FrameSync<Type>::processEnvelope(const Type *in, RealType &scale)
 {
     scale = 0;
 
+    //spot check the amplitude near the sync word edges
+    if (std::abs(in[_dataWidth]) < _inputThreshold) return;
+    if (std::abs(in[_syncWordWidth-_dataWidth]) < _inputThreshold) return;
+
     //width of a sum across symbol in samples
     const size_t width = _symbolWidth*_dataWidth/2;
 
-    //check for consistent amplitude across the frame
+    //get a rough average of amplitude at the beginning and end
     RealType sumFirst = 0;
     for (size_t i = 0; i < width; i++)
     {
         sumFirst += std::abs(in[i]);
     }
-    sumFirst /= width;
-    if (sumFirst < 0.05) return; //TODO threshold variable
-    sumFirst /= std::abs(_preamble.front());
-    //if (sumFirst < 0.01) return;
+    sumFirst /= width*std::abs(_preamble.front());
 
     RealType sumLast = 0;
     for (size_t i = _syncWordWidth-1; i >= _syncWordWidth-width; i--)
     {
         sumLast += std::abs(in[i]);
     }
-    sumLast /= width;
-    if (sumLast < 0.05) return; //TODO threshold variable
-    sumLast /= std::abs(_preamble.back());
-    //if (sumLast < 0.01) return;
+    sumLast /= width*std::abs(_preamble.back());
 
+    //check for consistent amplitude across the frame
     const auto ratio = sumFirst/sumLast;
-    //if (ratio > 2 or ratio < 0.5) return;
+    if (ratio > 2 or ratio < 0.5) return;
 
     //use the two sums to estimate the scale
     scale = 2.0/(sumFirst + sumLast);
