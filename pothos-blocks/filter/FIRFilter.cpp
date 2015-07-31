@@ -41,10 +41,18 @@
  * and use the FIR Designer taps signal to configure the filter taps at runtime.
  * |default [1.0]
  *
+ * |param waitTaps[Wait Taps] Wait for the taps to be set before allowing operation.
+ * Use this mode when taps are set exclusively at runtime by the setTaps() slot.
+ * |default false
+ * |preview valid
+ * |option [Enabled] true
+ * |option [Disabled] false
+ *
  * |factory /blocks/fir_filter(dtype, tapsType)
  * |setter setTaps(taps)
  * |setter setDecimation(decim)
  * |setter setInterpolation(interp)
+ * |setter setWaitTaps(waitTaps)
  **********************************************************************/
 template <typename InType, typename OutType, typename TapsType>
 class FIRFilter : public Pothos::Block
@@ -53,7 +61,9 @@ public:
     FIRFilter(void):
         M(1),
         L(1),
-        K(1)
+        K(1),
+        _waitTapsMode(false),
+        _waitTapsArmed(false)
     {
         this->setupInput(0, typeid(InType));
         this->setupOutput(0, typeid(OutType));
@@ -63,13 +73,26 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getDecimation));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, setInterpolation));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getInterpolation));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, setWaitTaps));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getWaitTaps));
         this->setTaps(std::vector<TapsType>(1, TapsType(1))); //initial update
+    }
+
+    void setWaitTaps(const bool waitTaps)
+    {
+        _waitTapsMode = waitTaps;
+    }
+
+    bool getWaitTaps(void) const
+    {
+        return _waitTapsMode;
     }
 
     void setTaps(const std::vector<TapsType> &taps)
     {
         if (taps.empty()) throw Pothos::InvalidArgumentException("FIRFilter::setTaps()", "taps cannot be empty");
         _taps = taps;
+        _waitTapsArmed = false; //got taps
         this->updateInternals();
     }
 
@@ -108,8 +131,14 @@ public:
         return Pothos::BufferManager::make("circular");
     }
 
+    void activate(void)
+    {
+        _waitTapsArmed = _waitTapsMode;
+    }
+
     void work(void)
     {
+        if (_waitTapsArmed) return;
         auto inPort = this->input(0);
         auto outPort = this->output(0);
 
@@ -191,6 +220,8 @@ private:
     std::vector<TapsType> _taps;
     std::vector<std::vector<TapsType>> _interpTaps;
     size_t M, L, K;
+    bool _waitTapsMode;
+    bool _waitTapsArmed;
 };
 
 /***********************************************************************

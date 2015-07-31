@@ -3,6 +3,8 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Support start label length in Stream to Packet
+- Added wait taps active mode to FIR filter block
 - Added element count to labels in Packet to Stream
 - Added missing setGain to FIR Designer setter list
 - Fix finite release block output buffer truncation

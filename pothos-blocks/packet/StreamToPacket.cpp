@@ -42,6 +42,8 @@
  * until a start of frame label is encountered.
  * Unlike the other modes which treat MTU as a maximum length,
  * this mode produces an exact MTU length payload for every start of frame.
+ * If the start frame label contains an element count length,
+ * then the MTU is overridden and the specified length is used.
  *
  * <b>Full-frame operation:</b>
  * In full-frame operation mode, both frame IDs are specified.
@@ -240,64 +242,76 @@ public:
 
         bool frameFound = false;
         Pothos::Packet packet;
+        packet.payload = inBuff;
+        size_t outputLength = _mtu;
 
         auto inLen = inBuff.length;
         for (auto &label : inputPort->labels())
         {
             // Skip any label that doesn't yet appear in the data buffer
-            if(label.index >= inLen)
-                continue;
+            if (label.index >= inLen) continue;
 
-            // If the packet is not a start-of-frame packet, yet it is within the packet's data boundaries,
-            // append that label to the packet message, with correction about the label position
-            if(label.id != _frameStartId)
+            // Skip any label that isn't a frame start label
+            if (label.id != _frameStartId) continue;
+
+            //use the label's length when specified
+            if (label.data.canConvert(typeid(size_t)))
             {
-                if(frameFound)
-                {
-                    if(label.index < _mtu)
-                    {
-                        packet.labels.push_back(label);
-                    }
-                }
-                continue;
+                outputLength = label.data.convert<size_t>();
+                outputLength *= label.width; //expand for width
+                outputLength *= inBuff.dtype.size(); //convert to bytes
             }
 
             // Skip all of data before the start of packet if this is the first time we see the label
-            auto dataStartIndex = label.index;
-            if(dataStartIndex != 0 && !frameFound)
+            if (label.index != 0)
             {
-                inputPort->consume(dataStartIndex);
-                inputPort->setReserve(_mtu);
+                inputPort->consume(label.index);
+                inputPort->setReserve(outputLength);
                 return;
             }
 
             // This case happens when the start of frame is naturally aligned with the begining of a buffer, but we didn't get enough data
             // In that case we wait
-            if(dataStartIndex == 0 && inLen < _mtu)
+            if (inLen < outputLength)
             {
-                inputPort->setReserve(_mtu);
+                inputPort->setReserve(outputLength);
                 return;
             }
 
-            if(dataStartIndex == 0)
-            {
-                frameFound = true;
-            }
-
-            // If we see multiple frame labels, skip all the other ones for now
+            //found! start of frame on index 0
+            frameFound = true;
+            break;
         }
 
         // Skip all of the data in case we didn't see any frame labels
-        if(!frameFound)
+        if (not frameFound)
         {
             inputPort->consume(inLen);
             return;
         }
 
-        inBuff.length = _mtu;
-        packet.payload = inBuff;
+        //load non-frame start labels into the packet
+        size_t nextFrameIndex = 0;
+        for (auto &label : inputPort->labels())
+        {
+            if (label.index >= outputLength) continue;
+            if (label.id == _frameStartId)
+            {
+                if (nextFrameIndex == 0)
+                {
+                    nextFrameIndex = label.index;
+                }
+                continue;
+            }
+            packet.labels.push_back(label);
+        }
+
+        //produce the output packet
+        packet.payload.length = outputLength;
         outputPort->postMessage(packet);
-        inputPort->consume(_mtu);
+
+        //consume the input, stopping at the next frame label (in the case of overlap)
+        inputPort->consume((nextFrameIndex != 0)?nextFrameIndex:outputLength);
     }
 
     void propagateLabels(const Pothos::InputPort *)
