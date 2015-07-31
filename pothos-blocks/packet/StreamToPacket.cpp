@@ -309,6 +309,7 @@ public:
         //produce the output packet
         packet.payload.length = outputLength;
         outputPort->postMessage(packet);
+        inputPort->setReserve(0); //clear reserve for next packet
 
         //consume the input, stopping at the next frame label (in the case of overlap)
         inputPort->consume((nextFrameIndex != 0)?nextFrameIndex:outputLength);
