@@ -366,7 +366,7 @@ void FrameSync<Type>::work(void)
         _phase += _phaseInc*N;
         _remainingHeader -= N;
         inPort->consume(N);
-        if (_remainingHeader == 0) std::cout << "header consumed\n";
+        //if (_remainingHeader == 0) std::cout << "header consumed\n";
         return;
     }
 
@@ -427,7 +427,7 @@ void FrameSync<Type>::work(void)
         _remainingPayload -= consumed;
         inPort->consume(consumed);
         outPort->produce(N);
-        if (_remainingPayload == 0) std::cout << "payload forwarded\n";
+        //if (_remainingPayload == 0) std::cout << "payload forwarded\n";
         return;
     }
 
@@ -466,7 +466,7 @@ void FrameSync<Type>::work(void)
             _deltaFcMax = deltaFc;
             _phaseOffMax = phaseOff;
             _scaleAtMax = scale;
-            std::cout << " new _maxCorrPeak = " << _maxCorrPeak << std::endl;
+            //std::cout << " new _maxCorrPeak = " << _maxCorrPeak << std::endl;
         }
         _countSinceMax++;
 

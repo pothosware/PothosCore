@@ -197,8 +197,9 @@ public:
                 if (headBuff.length != 0) outputPort->postBuffer(headBuff);
 
                 //load the length word
-                //FIXME this will overwrite the buffer, cant do it...
-                auto p = _preambleBuff.as<Type *>() + _syncWordWidth;
+                Pothos::BufferChunk newPreambleBuff(typeid(Type), _preambleBuff.elements());
+                std::memcpy(newPreambleBuff.as<void *>(), _preambleBuff.as<const void *>(), _preambleBuff.length);
+                auto p = newPreambleBuff.as<Type *>() + _syncWordWidth;
                 if (label.data.canConvert(typeid(size_t)))
                 {
                     const auto sym = _preamble.back();
@@ -212,10 +213,9 @@ public:
                         *p++ = (((1 << i) & len) != 0)?+sym:-sym;
                     }
                 }
-                else std::memset(p, 0, NUM_LENGTH_BITS*sizeof(Type));
 
                 //post the buffer
-                outputPort->postBuffer(_preambleBuff);
+                outputPort->postBuffer(newPreambleBuff);
 
                 //remove header from the remaining buffer
                 inBuff.length -= headBuff.length;
@@ -273,6 +273,7 @@ private:
         _preambleBuff = Pothos::BufferChunk(typeid(Type), _syncWordWidth+NUM_LENGTH_BITS);
 
         auto p = _preambleBuff.as<Type *>();
+        std::memset(p, 0, _preambleBuff.length);
         for (size_t i = 0; i < _preamble.size(); i++)
         {
             for (size_t j = 0; j < _symbolWidth; j++)
