@@ -212,9 +212,9 @@ public:
         this->smartAppend(packet.payload, inBuff);
 
         //append new labels
-        for (auto label : inPort->labels())
+        for (const auto &inLabel : inPort->labels())
         {
-            label.index /= packet.payload.dtype.size(); //bytes to elements
+            auto label = inLabel.toAdjusted(1, packet.payload.dtype.size()); //bytes to elements
             label.index += initialOffset;
             if (label.index >= packet.payload.elements()) break;
             packet.labels.push_back(label);
