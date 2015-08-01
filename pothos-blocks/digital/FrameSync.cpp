@@ -10,6 +10,10 @@
 
 static const size_t NUM_LENGTH_BITS = 16;
 
+//percent of sync word to declare peak found
+static const double CORR_MAG_PERCENT = 0.7;
+static const double CORR_DUR_PERCENT = 0.5;
+
 /***********************************************************************
  * |PothosDoc Frame Sync
  *
@@ -303,8 +307,8 @@ private:
     {
         _syncWordWidth = _symbolWidth*_dataWidth*_preamble.size();
         _frameWidth = _syncWordWidth+(NUM_LENGTH_BITS*_dataWidth);
-        _corrMagThresh = size_t(_syncWordWidth*0.7);
-        _corrDurThresh = size_t(_syncWordWidth*0.5);
+        _corrMagThresh = size_t(_syncWordWidth*CORR_MAG_PERCENT);
+        _corrDurThresh = size_t(_syncWordWidth*CORR_DUR_PERCENT);
     }
 
     //output mode
@@ -439,33 +443,30 @@ void FrameSync<Type>::work(void)
 
     for (size_t i = 0; i < N; i++)
     {
-        //TODO think about when the give up and reset state
-        if (_countSinceMax > _corrDurThresh)
-        {
-            _maxCorrPeak = 0;
-        }
+        //process the potential frame to discover these values
+        RealType scale = 0;
+        RealType deltaFc = 0;
+        RealType phaseOff = 0;
+        size_t corrPeak = 0;
 
         //calculate the scaling value, and check for consistent envelope
-        RealType scale;
         this->processEnvelope(in+i, scale);
-        if (scale == 0) continue;
 
         //calculate the frequency offset as if this was the frame start
-        RealType deltaFc;
-        this->processFreqSync(in+i, deltaFc);
+        if (scale != 0) this->processFreqSync(in+i, deltaFc);
 
         //use the frequency offset to calculate the correlation value
-        RealType phaseOff; size_t corrPeak;
-        this->processSyncWord(in+i, deltaFc, scale, phaseOff, corrPeak);
+        if (scale != 0) this->processSyncWord(in+i, deltaFc, scale, phaseOff, corrPeak);
 
         //if this correlation value is larger, record the state
-        if (corrPeak > _maxCorrPeak)
+        if (corrPeak > _maxCorrPeak and corrPeak > _corrMagThresh)
         {
             _maxCorrPeak = corrPeak;
             _countSinceMax = 0;
             _deltaFcMax = deltaFc;
             _phaseOffMax = phaseOff;
             _scaleAtMax = scale;
+            std::cout << " new _maxCorrPeak = " << _maxCorrPeak << std::endl;
         }
         _countSinceMax++;
 
@@ -495,20 +496,20 @@ void FrameSync<Type>::work(void)
         std::cout << " firstBit = " << firstBit << std::endl;
         std::cout << " sampOffset = " << (int(firstBit)-int(_syncWordWidth)) << std::endl;
 
-        //initialize carrier recovery compensation for use in the
-        //remaining header and payload sections of the work routine
-        _remainingHeader = firstBit+(NUM_LENGTH_BITS*_dataWidth)-_countSinceMax;
-        _remainingPayload = length*_dataWidth;
-        _phaseInc = _deltaFcMax;
-        _phase = _phaseOffMax + _phaseInc*_countSinceMax;
-        std::cout << " _remainingHeader = " << _remainingHeader << std::endl;
-        std::cout << " _remainingPayload = " << _remainingPayload << std::endl;
-
         //Label width is specified based on the output mode.
         //Width may be divided down by an upstream time recovery block.
         //The length and label width are used in conjunction to specify
         //the number of elements between start and end labels.
         const size_t labelWidth = _outputModeTiming?1:_dataWidth;
+
+        //initialize carrier recovery compensation for use in the
+        //remaining header and payload sections of the work routine
+        _remainingHeader = firstBit+(NUM_LENGTH_BITS*_dataWidth)-_countSinceMax-labelWidth/2;
+        _remainingPayload = length*_dataWidth;
+        _phaseInc = _deltaFcMax;
+        _phase = _phaseOffMax + _phaseInc*_countSinceMax;
+        std::cout << " _remainingHeader = " << _remainingHeader << std::endl;
+        std::cout << " _remainingPayload = " << _remainingPayload << std::endl;
 
         //produce a phase offset label at the first payload index
         if (not _phaseOffsetId.empty()) outPort->postLabel(
@@ -525,6 +526,7 @@ void FrameSync<Type>::work(void)
             Pothos::Label(_frameEndId, Pothos::Object(length),
             (length-1)*labelWidth, labelWidth));
 
+        inPort->setReserve(0);
         inPort->consume(i+1);
         return;
     }
@@ -543,30 +545,36 @@ void FrameSync<Type>::processEnvelope(const Type *in, RealType &scale)
     if (std::abs(in[_dataWidth]) < _inputThreshold) return;
     if (std::abs(in[_syncWordWidth-_dataWidth]) < _inputThreshold) return;
 
-    //width of a sum across symbol in samples
-    const size_t width = _symbolWidth*_dataWidth/2;
-
-    //get a rough average of amplitude at the beginning and end
-    RealType sumFirst = 0;
-    for (size_t i = 0; i < width; i++)
+    //get a rough average of amplitude at the beginning
+    RealType sum0 = 0;
+    const size_t begin0 = _dataWidth;
+    const size_t end0 = (_symbolWidth*_dataWidth/2);
+    for (size_t i = begin0; i < end0; i++)
     {
-        sumFirst += std::abs(in[i]);
+        sum0 += std::abs(in[i]);
     }
-    sumFirst /= width*std::abs(_preamble.front());
+    sum0 /= (end0-begin0);
+    if (sum0 < _inputThreshold) return;
+    sum0 /= std::abs(_preamble.front());
 
-    RealType sumLast = 0;
-    for (size_t i = _syncWordWidth-1; i >= _syncWordWidth-width; i--)
+    //get a rough average of amplitude at the end
+    RealType sum1 = 0;
+    const size_t begin1 = _syncWordWidth-(_symbolWidth*_dataWidth/2);
+    const size_t end1 = _syncWordWidth-_dataWidth;
+    for (size_t i = begin1; i < end1; i++)
     {
-        sumLast += std::abs(in[i]);
+        sum1 += std::abs(in[i]);
     }
-    sumLast /= width*std::abs(_preamble.back());
+    sum1 /= (end1-begin1);
+    if (sum1 < _inputThreshold) return;
+    sum1 /= std::abs(_preamble.back());
 
     //check for consistent amplitude across the frame
-    const auto ratio = sumFirst/sumLast;
+    const auto ratio = sum0/sum1;
     if (ratio > 2 or ratio < 0.5) return;
 
     //use the two sums to estimate the scale
-    scale = 2.0/(sumFirst + sumLast);
+    scale = 2.0/(sum0 + sum1);
 }
 
 /***********************************************************************

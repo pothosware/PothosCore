@@ -250,8 +250,6 @@ public:
             //propagate labels here with the offset
             Pothos::Label newLabel(label);
             newLabel.index += labelIndexOffset;
-            if (label.id == _frameStartId) newLabel.index += _paddingBuff.elements()/2;
-            if (label.id == _frameEndId) newLabel.index -= _paddingBuff.elements()/2;
             outputPort->postLabel(newLabel);
         }
 
