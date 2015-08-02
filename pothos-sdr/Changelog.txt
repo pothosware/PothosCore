@@ -3,6 +3,7 @@ This this the changelog file for the Pothos SDR toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- SDR Sink consumes available input on writeStream error
 - SDR Sink skips out of range labels to fix EOB problem
 
 Release 0.2.0 (2015-06-17)
