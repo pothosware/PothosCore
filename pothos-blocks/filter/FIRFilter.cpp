@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <complex>
 #include <cassert>
+#include <cstring> //memset, memcpy
 #include <iostream>
 #include <algorithm> //min/max
 
@@ -14,7 +15,22 @@
  * The FIR filter convolves an input element stream from port 0 with
  * the filter taps to produce an output element stream on port 0.
  *
- * https://en.wikipedia.org/wiki/Finite_impulse_response
+ * <a href="https://en.wikipedia.org/wiki/Finite_impulse_response">
+ * https://en.wikipedia.org/wiki/Finite_impulse_response</a>
+ *
+ * <h2>Burst support</h2>
+ *
+ * The FIR filter supports bursts that are properly labeled within a stream.
+ * When a burst is encountered, the FIR filter will flush it out without
+ * consuming or convolving with any of the samples from the next burst.
+ *
+ * A burst or frame can be represented in one of two ways:
+ * <ol>
+ * <li>Using a start of frame label that contains the length in elements.
+ * The end of the burst index is considered to be label.index + length * label.width - 1.</li>
+ * <li>Or using an end of frame label on the final element of the burst.
+ * The end of the burst index is considered to be label.index + label.width - 1.</li>
+ * </ol>
  *
  * |category /Filter
  * |keywords fir filter taps highpass lowpass bandpass
@@ -48,11 +64,31 @@
  * |option [Enabled] true
  * |option [Disabled] false
  *
+ * |param frameStartId[Frame Start ID] The label ID to mark the first element of a burst.
+ * When the start frame ID is specified and the start frame label contains an element length,
+ * the FIR filter will flush out the remainder of the burst without consuming the next burst.
+ * An empty string (default) disables this feature.
+ * |default ""
+ * |widget StringEntry()
+ * |preview valid
+ * |tab Labels
+ *
+ * |param frameEndId[Frame End ID] The label ID to mark the last element of a burst.
+ * Rather than using a start frame label with a length, when the end frame ID is specified,
+ * the FIR filter will flush out the remainder of the burst without consuming the next burst.
+ * An empty string (default) disables this feature.
+ * |default ""
+ * |widget StringEntry()
+ * |preview valid
+ * |tab Labels
+ *
  * |factory /blocks/fir_filter(dtype, tapsType)
  * |setter setTaps(taps)
  * |setter setDecimation(decim)
  * |setter setInterpolation(interp)
  * |setter setWaitTaps(waitTaps)
+ * |setter setFrameStartId(frameStartId)
+ * |setter setFrameEndId(frameEndId)
  **********************************************************************/
 template <typename InType, typename OutType, typename TapsType>
 class FIRFilter : public Pothos::Block
@@ -62,8 +98,10 @@ public:
         M(1),
         L(1),
         K(1),
+        _inputRequire(1),
         _waitTapsMode(false),
-        _waitTapsArmed(false)
+        _waitTapsArmed(false),
+        _eobSampsLeft(0)
     {
         this->setupInput(0, typeid(InType));
         this->setupOutput(0, typeid(OutType));
@@ -75,6 +113,10 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getInterpolation));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, setWaitTaps));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getWaitTaps));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, setFrameStartId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getFrameStartId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, setFrameEndId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRFilter, getFrameEndId));
         this->setTaps(std::vector<TapsType>(1, TapsType(1))); //initial update
     }
 
@@ -125,6 +167,26 @@ public:
         return L;
     }
 
+    void setFrameStartId(std::string id)
+    {
+        _frameStartId = id;
+    }
+
+    std::string getFrameStartId(void) const
+    {
+        return _frameStartId;
+    }
+
+    void setFrameEndId(std::string id)
+    {
+        _frameEndId = id;
+    }
+
+    std::string getFrameEndId(void) const
+    {
+        return _frameEndId;
+    }
+
     //! always use a circular buffer to avoid discontinuity over sliding window
     Pothos::BufferManager::Sptr getInputBufferManager(const std::string &, const std::string &)
     {
@@ -134,6 +196,7 @@ public:
     void activate(void)
     {
         _waitTapsArmed = _waitTapsMode;
+        _eobSampsLeft = 0;
     }
 
     void work(void)
@@ -141,20 +204,76 @@ public:
         if (_waitTapsArmed) return;
         auto inPort = this->input(0);
         auto outPort = this->output(0);
+        auto inputAvailable = inPort->elements();
+        if (inputAvailable == 0) return;
 
-        //require the minimum number of input elements to produce at least 1 output
-        const auto inputRequire = (M + (K-1));
-        if (inPort->elements() < inputRequire)
+        /***************************************************************
+         * search for burst labels and record the next end of burst
+         **************************************************************/
+        if (_eobSampsLeft == 0) for (const auto &label : inPort->labels())
         {
-            inPort->setReserve(inputRequire);
+            if (not _frameStartId.empty() and label.id == _frameStartId and label.data.canConvert(typeid(size_t)))
+            {
+                const auto length = label.data.template convert<size_t>();
+                _eobSampsLeft = label.index + length*label.width;
+                break;
+            }
+            else if (not _frameEndId.empty() and label.id == _frameEndId)
+            {
+                _eobSampsLeft = label.index + label.width;
+                break;
+            }
+        }
+
+        /***************************************************************
+         * check that the available input is sufficient
+         **************************************************************/
+        //in burst mode, make sure input available stops at the end
+        if (_eobSampsLeft != 0)
+        {
+            if (_eobSampsLeft <= inputAvailable)
+            {
+                inputAvailable = _eobSampsLeft;
+            }
+            else
+            {
+                inPort->setReserve(_eobSampsLeft);
+                return;
+            }
+        }
+
+        //otherwise insufficient input for the regular streaming mode
+        else if (inputAvailable < _inputRequire)
+        {
+            inPort->setReserve(_inputRequire);
             return;
         }
 
+        //normally we don't enforce a requirement unless there is a problem
+        inPort->setReserve(0);
+
+        /***************************************************************
+         * Special input buffer to flush the burst
+         **************************************************************/
+        auto inBuff = inPort->buffer();
+        inBuff.length = inputAvailable*sizeof(InType);
+        if (_eobSampsLeft != 0 and _eobSampsLeft < _inputRequire)
+        {
+            const size_t numBytesCopy = _eobSampsLeft*sizeof(InType);
+            Pothos::BufferChunk flushBuff(typeid(InType), _eobSampsLeft + K - 1);
+            std::memcpy(flushBuff.as<void *>(), inBuff.template as<const void *>(), numBytesCopy);
+            std::memset(flushBuff.as<char *>() + numBytesCopy, 0, flushBuff.length-numBytesCopy);
+            inBuff = flushBuff;
+        }
+
+        /***************************************************************
+         * Normal FIR filter operation
+         **************************************************************/
         //how many iterations?
-        const auto N = std::min((inPort->elements()-(K-1))/M, outPort->elements()/L);
+        const auto N = std::min((inBuff.elements()-(K-1))/M, outPort->elements()/L);
 
         //grab pointers
-        auto x = inPort->buffer().template as<const InType *>() + (K-1);
+        auto x = inBuff.template as<const InType *>() + (K-1);
         auto y = outPort->buffer().template as<OutType *>();
 
         //for each decimated input
@@ -175,6 +294,7 @@ public:
 
         //consume decimated, produce interpolated
         //K-1 elements are left in the input buffer for filter history
+        if (_eobSampsLeft != 0) _eobSampsLeft -= N*M;
         inPort->consume(N*M);
         outPort->produce(N*L);
     }
@@ -199,7 +319,6 @@ private:
 
         //K is the largest value of k for which h[j+kL] is non-zero
         K = _taps.size()/L + (((_taps.size()%L) == 0)?0:1);
-        this->input(0)->setReserve(K+M-1);
         assert(K > 0);
 
         //Precalculate the taps array for each interpolation index,
@@ -215,13 +334,19 @@ private:
                 _interpTaps[j].push_back(_taps[i]);
             }
         }
+
+        //require the minimum number of input elements to produce at least 1 output
+        _inputRequire = (M + (K-1));
     }
 
     std::vector<TapsType> _taps;
     std::vector<std::vector<TapsType>> _interpTaps;
-    size_t M, L, K;
+    size_t M, L, K, _inputRequire;
     bool _waitTapsMode;
     bool _waitTapsArmed;
+    std::string _frameStartId;
+    std::string _frameEndId;
+    size_t _eobSampsLeft;
 };
 
 /***********************************************************************
