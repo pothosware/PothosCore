@@ -31,6 +31,9 @@ public:
         //parse labels (from input 0)
         for (const auto &label : this->input(0)->labels())
         {
+            //skip out of range labels
+            if (label.index >= numElems) break;
+
             //found a time label
             if (label.id == "txTime")
             {
