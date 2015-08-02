@@ -31,6 +31,9 @@ public:
         //parse labels (from input 0)
         for (const auto &label : this->input(0)->labels())
         {
+            //skip out of range labels
+            if (label.index >= numElems) break;
+
             //found a time label
             if (label.id == "txTime")
             {
@@ -63,7 +66,11 @@ public:
         //handle result
         if (ret > 0) for (auto input : this->inputs()) input->consume(size_t(ret));
         else if (ret == SOAPY_SDR_TIMEOUT) return this->yield();
-        else throw Pothos::Exception("SDRSink::work()", "writeStream "+std::to_string(ret));
+        else
+        {
+            for (auto input : this->inputs()) input->consume(numElems); //consume error region
+            throw Pothos::Exception("SDRSink::work()", "writeStream "+std::to_string(ret));
+        }
     }
 };
 
