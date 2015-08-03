@@ -181,6 +181,8 @@ public:
             // Skip any label that doesn't yet appear in the data buffer
             if (label.index >= inputPort->elements()) continue;
 
+            Pothos::Label outLabel(label); //modified and posted below
+
             //increment the offset as soon as we are past the last found index
             if (lastFoundIndex != -1 and size_t(lastFoundIndex) != label.index)
             {
@@ -204,7 +206,7 @@ public:
                 {
                     const auto sym = _preamble.back();
                     const size_t len = label.data.template convert<size_t>()*label.width;
-                    std::cout << "sent length " << len << std::endl;
+                    //std::cout << "sent length " << len << std::endl;
                     //first two length bits contain phase transition to detect timing
                     *p++ = -sym;
                     *p++ = +sym;
@@ -212,6 +214,10 @@ public:
                     {
                         *p++ = (((1 << i) & len) != 0)?+sym:-sym;
                     }
+
+                    //adjust the output label's length for the entire frame including padding
+                    outLabel.data = Pothos::Object(size_t(len+_preambleBuff.elements()+_paddingBuff.elements()));
+                    outLabel.width = 1;
                 }
 
                 //post the buffer
@@ -248,9 +254,8 @@ public:
             }
 
             //propagate labels here with the offset
-            Pothos::Label newLabel(label);
-            newLabel.index += labelIndexOffset;
-            outputPort->postLabel(newLabel);
+            outLabel.index += labelIndexOffset;
+            outputPort->postLabel(outLabel);
         }
 
         //post the remaining bytes
