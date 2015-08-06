@@ -70,13 +70,11 @@
  * <li>In automatic mode, the trigger event is forced by timer if none occurs.</li>
  * <li>In normal mode, samples are only forwarded when a trigger event occurs.</li>
  * <li>In disabled mode, trigger sweeping is disabled and samples are not forwarded.</li>
- * <li>In one-shot mode, the trigger event occurs once and then becomes disabled.</li>
  * </ul>
  * |default "AUTOMATIC"
  * |option [Automatic] "AUTOMATIC"
  * |option [Normal] "NORMAL"
  * |option [Disabled] "DISABLED"
- * |option [One-Shot] "ONESHOT"
  *
  * |param level [Level] The value of the input required for a trigger event.
  * |default 0.5
@@ -118,8 +116,7 @@ public:
         _posSlope(false),
         _negSlope(false),
         _automaticMode(false),
-        _normalMode(false),
-        _oneShotMode(false),
+        _disabledMode(false),
         _level(0.0),
         _position(0)
     {
@@ -187,6 +184,9 @@ public:
     void setHoldOff(const size_t holdOff)
     {
         _holdOff = holdOff;
+
+        //clip to new hold off when in hold off state
+        _holdOffRemaining = std::min(_holdOffRemaining, _holdOff);
     }
 
     bool getHoldOff(void) const
@@ -209,6 +209,7 @@ public:
     {
         if (rate <= 0.0) throw Pothos::InvalidArgumentException("WaveTrigger::setSweepRate()", "sweep rate must be positive");
         _sweepRate = rate;
+        _sweepTimeDelta = std::chrono::nanoseconds((long long)(1e9/_sweepRate));
     }
 
     double getSweepRate(void) const
@@ -250,26 +251,17 @@ public:
         if (mode == "AUTOMATIC")
         {
             _automaticMode = true;
-            _normalMode = false;
-            _oneShotMode = false;
+            _disabledMode = false;
         }
         else if (mode == "NORMAL")
         {
             _automaticMode = false;
-            _normalMode = true;
-            _oneShotMode = false;
+            _disabledMode = false;
         }
         else if (mode == "DISABLED")
         {
             _automaticMode = false;
-            _normalMode = false;
-            _oneShotMode = false;
-        }
-        else if (mode == "ONESHOT")
-        {
-            _automaticMode = false;
-            _normalMode = false;
-            _oneShotMode = true;
+            _disabledMode = true;
         }
         else
         {
@@ -306,64 +298,31 @@ public:
     void activate(void)
     {
         //reset state
+        _forwardDataPoints = false;
+        _holdOffRemaining = 0;
+
+        //its like we just triggered
+        _lastTriggerTime = std::chrono::high_resolution_clock::now();
     }
 
     void deactivate(void)
     {
+        return;
     }
 
-    void work(void)
+    void work(void);
+
+    void propagateLabels(const Pothos::InputPort *port)
     {
-
-        if (_dataPointsToForward == 0)
+        //We dont propagate labels...
+        //but they are forwarded as messages,
+        //where the upstream block may interpret some labels.
+        //as inline configuration such as sample rate.
+        auto outPort = this->output(0);
+        for (const auto &label : port->labels())
         {
-            //TODO check for timeout
-            //TODO forward labels
-            return this->sweepWork();
+            outPort->postMessage(label);
         }
-
-        //ensure the required number of elements is on each input
-        for (auto port : this->inputs())
-        {
-            const auto &buff = port->buffer();
-            if (buff.elements() < _dataPointsToForward)
-            {
-                port->setReserve(_dataPointsToForward*buff.dtype.size());
-                return;
-            }
-        }
-
-        //forward a packet for each port
-        for (auto port : this->inputs())
-        {
-            auto buff = port->buffer();
-            buff.length = _dataPointsToForward*buff.dtype.size();
-            Pothos::Packet packet;
-            packet.payload = buff;
-
-            //append new labels
-            for (const auto &inLabel : port->labels())
-            {
-                auto label = inLabel.toAdjusted(1, buff.dtype.size()); //bytes to elements
-                if (label.index >= buff.elements()) break;
-                packet.labels.push_back(label);
-            }
-
-            //set metadata
-            packet.metadata["index"] = Pothos::Object(port->index());
-            packet.metadata["offset"] = Pothos::Object(_triggerPositionOffset);
-
-            //produce packet and consume buffer
-            this->output(0)->postMessage(packet);
-            port->consume(buff.elements());
-        }
-
-        _dataPointsToForward = 0;
-    }
-
-    void propagateLabels(const Pothos::InputPort *)
-    {
-        //do not propagate labels
     }
 
     //! always use a circular buffer to avoid discontinuity over sliding window
@@ -379,7 +338,6 @@ private:
     bool searchTriggerPointComplex(const Pothos::BufferChunk &buff, const size_t numElems,  double &pos);
 
     void sweepWork(void);
-    void forwardDataPointsWork(void);
 
     //configuration settings
     size_t _dataPoints;
@@ -387,23 +345,94 @@ private:
     size_t _holdOff;
     size_t _channel;
     double _sweepRate;
+    std::chrono::high_resolution_clock::duration _sweepTimeDelta;
     std::string _slopeStr;
     bool _posSlope;
     bool _negSlope;
     std::string _modeStr;
     bool _automaticMode;
-    bool _normalMode;
-    bool _oneShotMode;
+    bool _disabledMode;
     double _level;
     size_t _position;
 
     //state tracking
-    size_t _oneshotNumShotsLeft;
-    size_t _dataPointsToForward;
+    bool _forwardDataPoints;
+    size_t _holdOffRemaining;
     double _triggerPositionOffset;
     std::chrono::high_resolution_clock::time_point _lastTriggerTime;
 };
 
+/***********************************************************************
+ * Entry point for work implementation
+ **********************************************************************/
+void WaveTrigger::work(void)
+{
+    auto outPort = this->output(0);
+
+    //forward messages and packets
+    for (auto port : this->inputs())
+    {
+        while (port->hasMessage())
+        {
+            auto msg = port->popMessage();
+            if (msg.type() == typeid(Pothos::Packet))
+            {
+                auto pkt = msg.extract<Pothos::Packet>();
+                pkt.metadata["index"] = Pothos::Object(port->index());
+                outPort->postMessage(pkt);
+            }
+            else
+            {
+                outPort->postMessage(msg);
+            }
+        }
+    }
+
+    //trigger search mode
+    if (not _forwardDataPoints) return this->sweepWork();
+
+    //forward a packet for each port
+    for (auto port : this->inputs())
+    {
+        //ensure the required number of elements is on each input
+        const auto &buff = port->buffer();
+        if (buff.elements() < _dataPoints)
+        {
+            port->setReserve(_dataPoints*buff.dtype.size());
+            return;
+        }
+
+        //truncate buffer to the requested number of points
+        Pothos::Packet packet;
+        packet.payload = buff;
+        packet.payload.length = _dataPoints*buff.dtype.size();
+
+        //append new labels
+        for (const auto &inLabel : port->labels())
+        {
+            auto label = inLabel.toAdjusted(1, buff.dtype.size()); //bytes to elements
+            if (label.index >= packet.payload.elements()) break;
+            packet.labels.push_back(label);
+        }
+
+        //set metadata
+        packet.metadata["index"] = Pothos::Object(port->index());
+        packet.metadata["offset"] = Pothos::Object(_triggerPositionOffset);
+
+        //produce packet and consume buffer
+        outPort->postMessage(packet);
+        port->consume(packet.payload.length);
+    }
+
+    //reset for next sweep
+    for (auto port : this->inputs()) port->setReserve(0);
+    _forwardDataPoints = false;
+    _holdOffRemaining = _holdOff;
+}
+
+/***********************************************************************
+ * Search for the trigger point
+ **********************************************************************/
 void WaveTrigger::sweepWork(void)
 {
     const auto trigPort = this->input(_channel);
@@ -412,7 +441,7 @@ void WaveTrigger::sweepWork(void)
     //require the minimum amount leaving room for a window/history of _position
     //and an extra trailing element that isnt consumed for the slope search
     size_t numElems = trigBuff.elements();
-    if (numElems <= _position)
+    if (numElems <= _position+1)
     {
         //+1 after position, +1 for slope search
         trigPort->setReserve((_position+1+1)*trigBuff.dtype.size());
@@ -424,27 +453,52 @@ void WaveTrigger::sweepWork(void)
     {
         const auto &buff = port->buffer();
         numElems = std::min(numElems, buff.elements());
-        if (numElems > _position) continue;
+        if (numElems > _position+1) continue;
         //+1 after position, +1 for slope search
-        trigPort->setReserve((_position+1+1)*buff.dtype.size());
+        port->setReserve((_position+1+1)*buff.dtype.size());
         return;
     }
 
     //search for the trigger point (interpolated point result)
     //for complex data, we trigger on the absolute value
-    double foundPosition = 0.0;
     bool found = false;
-    if (trigBuff.dtype.isComplex())
+    double foundPosition = 0.0;
+    if (not _disabledMode and _holdOffRemaining == 0)
     {
-        found = this->searchTriggerPointComplex(trigBuff, numElems, foundPosition);
+        if (trigBuff.dtype.isComplex()) found = this->searchTriggerPointComplex(trigBuff, numElems, foundPosition);
+        else                            found = this->searchTriggerPointReal(trigBuff, numElems, foundPosition);
+
+        //no trigger? in automatic mode we can force one on timeout
+        if (not found and _automaticMode and (std::chrono::high_resolution_clock::now()-_lastTriggerTime) > _sweepTimeDelta)
+        {
+            found = true;
+            foundPosition = _position;
+        }
+    }
+
+    //determine how many elements to consume
+    size_t consumeElems = 0;
+    if (found)
+    {
+        consumeElems = size_t(foundPosition);
+    }
+    else if (_holdOffRemaining != 0)
+    {
+        consumeElems = std::min(numElems, _holdOffRemaining);
+        _holdOffRemaining -= consumeElems;
     }
     else
     {
-        found = this->searchTriggerPointReal(trigBuff, numElems, foundPosition);
+        consumeElems = numElems-_position-1;
     }
+    /*
+    std::cout << "found " << found << std::endl;
+    std::cout << "numElems " << numElems << std::endl;
+    std::cout << "consumeElems " << consumeElems << std::endl;
+    std::cout << "_holdOffRemaining " << _holdOffRemaining << std::endl;
+    //*/
 
-    //consume up to the discovered trigger position
-    size_t consumeElems = found?size_t(foundPosition):numElems-_position-1;
+    //consume from all ports, handle alignment mode
     for (auto port : this->inputs())
     {
         const auto &buff = port->buffer();
@@ -462,12 +516,16 @@ void WaveTrigger::sweepWork(void)
     //record the state when found
     if (found)
     {
-        _dataPointsToForward = _dataPoints;
+        _forwardDataPoints = true;
         _triggerPositionOffset = foundPosition-size_t(foundPosition);
         _lastTriggerTime = std::chrono::high_resolution_clock::now();
+        for (auto port : this->inputs()) port->setReserve(0);
     }
 }
 
+/***********************************************************************
+ * Various trigger search implementations to support real/complex
+ **********************************************************************/
 bool WaveTrigger::searchTriggerPointReal(const Pothos::BufferChunk &buff, const size_t numElems,  double &pos)
 {
     const auto trigBuff = buff.convert(typeid(float));
@@ -504,11 +562,6 @@ bool WaveTrigger::searchTriggerPointComplex(const Pothos::BufferChunk &buff, con
         }
     }
     return false;
-}
-
-void WaveTrigger::forwardDataPointsWork(void)
-{
-    
 }
 
 static Pothos::BlockRegistry registerWaveTrigger(
