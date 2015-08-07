@@ -21,8 +21,7 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
     _sampleRateWoAxisUnits(1.0),
     _numPoints(1024),
     _autoScale(false),
-    _rateLabelId("rxRate"),
-    _nextColorIndex(0)
+    _rateLabelId("rxRate")
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, widget));
