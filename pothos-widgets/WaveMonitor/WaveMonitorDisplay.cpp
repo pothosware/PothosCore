@@ -8,6 +8,7 @@
 #include <QResizeEvent>
 #include <qwt_plot.h>
 #include <qwt_plot_grid.h>
+#include <qwt_plot_curve.h>
 #include <qwt_legend.h>
 #include <QHBoxLayout>
 #include <iostream>
@@ -38,6 +39,8 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, enableXAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, enableYAxis));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setYAxisTitle));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setChannelLabel));
+    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setChannelStyle));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setRateLabelId));
     this->setupInput(0);
 
@@ -162,6 +165,65 @@ void WaveMonitorDisplay::handleUpdateAxis(void)
     this->handleZoomed(_zoomer->zoomBase()); //reload
 }
 
+void WaveMonitorDisplay::handleUpdateCurves(void)
+{
+    size_t count = 0;
+
+    for (auto &pair : _curves)
+    {
+        const auto &index = pair.first;
+        auto &curves = pair.second;
+        const auto &label = _channelLabels[index];
+        const auto &styleStr = _channelStyles[index];
+
+        Qt::PenStyle style(Qt::SolidLine);
+        if (styleStr == "LINE") style = Qt::SolidLine;
+        if (styleStr == "DASH") style = Qt::DashLine;
+        if (styleStr == "DOTS") style = Qt::DotLine;
+
+        qreal width = 1.0;
+        if (style != Qt::SolidLine) width += 0.5;
+
+        for (const auto &curvePair : curves)
+        {
+            const auto &curve = curvePair.second;
+            const auto color = pastelize(getDefaultCurveColor(count++));
+            curve->setPen(color, width, style);
+            curve->detach();
+            curve->attach(_mainPlot);
+            _mainPlot->updateChecked(curve.get());
+        }
+
+        if (label.isEmpty())
+        {
+            if (curves.size() == 1)
+            {
+                curves[0]->setTitle(QString("Ch%1").arg(index));
+            }
+            if (curves.size() == 2)
+            {
+                curves[0]->setTitle(QString("Re%1").arg(index));
+                curves[1]->setTitle(QString("Im%1").arg(index));
+            }
+        }
+        else
+        {
+            if (curves.size() == 1)
+            {
+                curves[0]->setTitle(label);
+            }
+            if (curves.size() == 2)
+            {
+                curves[0]->setTitle(label+"I");
+                curves[1]->setTitle(label+"Q");
+            }
+        }
+    }
+
+    if (count > 1) this->installLegend();
+    _mainPlot->replot();
+}
+
 void WaveMonitorDisplay::handleZoomed(const QRectF &rect)
 {
     //when zoomed all the way out, return to autoscale
@@ -174,6 +236,7 @@ void WaveMonitorDisplay::handleZoomed(const QRectF &rect)
 
 void WaveMonitorDisplay::installLegend(void)
 {
+    if (_mainPlot->legend() != nullptr) return;
     auto legend = new QwtLegend(_mainPlot);
     legend->setDefaultItemMode(QwtLegendData::Checkable);
     connect(legend, SIGNAL(checked(const QVariant &, bool, int)), this, SLOT(handleLegendChecked(const QVariant &, bool, int)));

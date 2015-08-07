@@ -68,6 +68,18 @@ public:
     void enableYAxis(const bool enb);
     void setYAxisTitle(const QString &title);
 
+    void setChannelLabel(const size_t ch, const QString &label)
+    {
+        _channelLabels[ch] = label;
+        QMetaObject::invokeMethod(this, "handleUpdateCurves", Qt::QueuedConnection);
+    }
+
+    void setChannelStyle(const size_t ch, const std::string &style)
+    {
+        _channelStyles[ch] = style;
+        QMetaObject::invokeMethod(this, "handleUpdateCurves", Qt::QueuedConnection);
+    }
+
     void setRateLabelId(const std::string &id)
     {
         _rateLabelId = id;
@@ -90,6 +102,7 @@ private slots:
     void handleLegendChecked(const QVariant &, bool, int);
     void handleSamples(const int index, const int curve, const Pothos::BufferChunk &buff, const std::vector<Pothos::Label> &labels);
     void handleUpdateAxis(void);
+    void handleUpdateCurves(void);
     void handleZoomed(const QRectF &rect);
 
 private:
@@ -102,6 +115,10 @@ private:
     bool _autoScale;
     std::vector<double> _yRange;
     std::string _rateLabelId;
+
+    //channel configs
+    std::map<size_t, QString> _channelLabels;
+    std::map<size_t, std::string> _channelStyles;
 
     //per-port data structs
     std::map<size_t, std::map<size_t, std::shared_ptr<QwtPlotCurve>>> _curves;

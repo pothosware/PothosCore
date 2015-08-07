@@ -74,6 +74,62 @@
  * |preview disable
  * |tab Axis
  *
+ * |param label0[Ch0 Label] The display label for channel 0.
+ * |default ""
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Channels
+ *
+ * |param style0[Ch0 Style] The curve style for channel 0.
+ * |default "LINE"
+ * |option [Line] "LINE"
+ * |option [Dash] "DASH"
+ * |option [Dots] "DOTS"
+ * |preview disable
+ * |tab Channels
+ *
+ * |param label1[Ch1 Label] The display label for channel 1.
+ * |default ""
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Channels
+ *
+ * |param style1[Ch1 Style] The curve style for channel 1.
+ * |default "LINE"
+ * |option [Line] "LINE"
+ * |option [Dash] "DASH"
+ * |option [Dots] "DOTS"
+ * |preview disable
+ * |tab Channels
+ *
+ * |param label2[Ch2 Label] The display label for channel 2.
+ * |default ""
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Channels
+ *
+ * |param style2[Ch2 Style] The curve style for channel 2.
+ * |default "LINE"
+ * |option [Line] "LINE"
+ * |option [Dash] "DASH"
+ * |option [Dots] "DOTS"
+ * |preview disable
+ * |tab Channels
+ *
+ * |param label3[Ch3 Label] The display label for channel 3.
+ * |default ""
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Channels
+ *
+ * |param style3[Ch3 Style] The curve style for channel 3.
+ * |default "LINE"
+ * |option [Line] "LINE"
+ * |option [Dash] "DASH"
+ * |option [Dots] "DOTS"
+ * |preview disable
+ * |tab Channels
+ *
  * |param rateLabelId[Rate Label ID] Labels with this ID can be used to set the sample rate.
  * To ignore sample rate labels, set this parameter to an empty string.
  * |default "rxRate"
@@ -94,6 +150,14 @@
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
+ * |setter setChannelLabel(0, label0)
+ * |setter setChannelStyle(0, style0)
+ * |setter setChannelLabel(1, label1)
+ * |setter setChannelStyle(1, style1)
+ * |setter setChannelLabel(2, label2)
+ * |setter setChannelStyle(2, style2)
+ * |setter setChannelLabel(3, label3)
+ * |setter setChannelStyle(3, style3)
  * |setter setRateLabelId(rateLabelId)
  **********************************************************************/
 class WaveMonitor : public Pothos::Topology

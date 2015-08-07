@@ -24,27 +24,12 @@ void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, co
         points[i] = QPointF(i/_sampleRateWoAxisUnits, samps[i]);
     }
 
-    //install legend for multiple channels
-    if (_curves.empty() and this->inputs().size() > 1) this->installLegend();
-
     //create curve if it doesnt exist
     auto &curve = _curves[index][whichCurve];
     if (not curve)
     {
-        curve.reset(new QwtPlotCurve(QString("Ch%1").arg(index)));
-        curve->attach(_mainPlot);
-        curve->setPen(pastelize(getDefaultCurveColor(_nextColorIndex++)));
-        //relabel curves
-        if (_curves[index].size() == 2)
-        {
-            _curves[index][0]->setTitle(QString("Re%1").arg(index));
-            _curves[index][1]->setTitle(QString("Im%1").arg(index));
-            //legend not installed with single input? well its complex...
-            if (this->inputs().size() == 1) this->installLegend();
-            _mainPlot->updateChecked(_curves[index][0].get());
-            _mainPlot->updateChecked(_curves[index][1].get());
-        }
-        _mainPlot->updateChecked(curve.get());
+        curve.reset(new QwtPlotCurve());
+        this->handleUpdateCurves();
     }
     curve->setSamples(points);
 
