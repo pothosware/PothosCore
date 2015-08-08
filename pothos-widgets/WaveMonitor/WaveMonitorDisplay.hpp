@@ -98,12 +98,14 @@ public:
 private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);
-    void handleSamples(const int index, const int curve, const Pothos::BufferChunk &buff, const std::vector<Pothos::Label> &labels, const qreal offset);
+    void handleSamples(const Pothos::Packet &pkt);
     void handleUpdateAxis(void);
     void handleUpdateCurves(void);
     void handleZoomed(const QRectF &rect);
 
 private:
+    std::shared_ptr<QwtPlotCurve> &getCurve(const size_t index, const size_t which);
+
     MyQwtPlot *_mainPlot;
     QwtPlotGrid *_plotGrid;
     QwtPlotZoomer *_zoomer;
@@ -121,5 +123,5 @@ private:
     //per-port data structs
     std::map<size_t, std::map<size_t, std::shared_ptr<QwtPlotCurve>>> _curves;
     std::map<size_t, std::vector<std::shared_ptr<QwtPlotMarker>>> _markers;
-    std::map<size_t, std::map<size_t, std::shared_ptr<std::atomic<size_t>>>> _queueDepth;
+    std::map<size_t, std::shared_ptr<std::atomic<size_t>>> _queueDepth;
 };

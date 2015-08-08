@@ -63,8 +63,7 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
     }
 
     //register types passed to gui thread from work
-    qRegisterMetaType<Pothos::BufferChunk>("Pothos::BufferChunk");
-    qRegisterMetaType<std::vector<Pothos::Label>>("std::vector<Pothos::Label>");
+    qRegisterMetaType<Pothos::Packet>("Pothos::Packet");
 }
 
 WaveMonitorDisplay::~WaveMonitorDisplay(void)
@@ -237,4 +236,15 @@ void WaveMonitorDisplay::handleLegendChecked(const QVariant &itemInfo, bool on, 
 {
     _mainPlot->infoToItem(itemInfo)->setVisible(on);
     _mainPlot->replot();
+}
+
+std::shared_ptr<QwtPlotCurve> &WaveMonitorDisplay::getCurve(const size_t index, const size_t which)
+{
+    auto &curve = _curves[index][which];
+    if (not curve)
+    {
+        curve.reset(new QwtPlotCurve());
+        this->handleUpdateCurves();
+    }
+    return curve;
 }

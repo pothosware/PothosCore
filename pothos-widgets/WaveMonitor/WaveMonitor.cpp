@@ -81,15 +81,6 @@
  * |preview disable
  * |tab Trigger
  *
- * |param triggerSweepRate[Sweep Rate] The rate of the trigger sweep.
- * In automatic mode, this rate sets the timer that forces a trigger event.
- * Or in the case of inadequate input after a trigger event,
- * this rate acts as a timeout to flush the available samples.
- * |units events/sec
- * |default 1.0
- * |preview disable
- * |tab Trigger
- *
  * |param triggerHoldOff[Hold Off] Hold off on subsequent trigger events for this many samples.
  * After a trigger event occurs, <em>hold off</em> disables trigger sweeping until
  * the specified number of samples has been consumed.
@@ -218,7 +209,6 @@
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
  * |setter setTriggerChannel(triggerChannel)
- * |setter setTriggerSweepRate(triggerSweepRate)
  * |setter setTriggerHoldOff(triggerHoldOff)
  * |setter setTriggerSlope(triggerSlope)
  * |setter setTriggerMode(triggerMode)
@@ -272,7 +262,6 @@ public:
         _topologyToTriggerSetter["setNumPoints"] = "setDataPoints";
         _topologyToTriggerSetter["setAlignment"] = "setAlignment";
         _topologyToTriggerSetter["setTriggerChannel"] = "setChannel";
-        _topologyToTriggerSetter["setTriggerSweepRate"] = "setSweepRate";
         _topologyToTriggerSetter["setTriggerHoldOff"] = "setHoldOff";
         _topologyToTriggerSetter["setTriggerSlope"] = "setSlope";
         _topologyToTriggerSetter["setTriggerMode"] = "setMode";
