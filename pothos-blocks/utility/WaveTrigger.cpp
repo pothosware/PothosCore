@@ -363,9 +363,10 @@ private:
     size_t _position;
 
     //state tracking
+    bool _triggerEventFromTimer;
     bool _forwardDataPoints;
     size_t _holdOffRemaining;
-    double _triggerPositionOffset;
+    double _triggerEventOffset;
     std::chrono::high_resolution_clock::time_point _lastTriggerTime;
 };
 
@@ -398,18 +399,20 @@ void WaveTrigger::work(void)
     //trigger search mode
     if (not _forwardDataPoints) return this->sweepWork();
 
+    //ensure the required number of elements is on each input
+    for (auto port : this->inputs())
+    {
+        const auto &buff = port->buffer();
+        if (buff.elements() >= _dataPoints) continue;
+        port->setReserve(_dataPoints*buff.dtype.size());
+        return;
+    }
+
     //forward a packet for each port
     for (auto port : this->inputs())
     {
-        //ensure the required number of elements is on each input
-        const auto &buff = port->buffer();
-        if (buff.elements() < _dataPoints)
-        {
-            port->setReserve(_dataPoints*buff.dtype.size());
-            return;
-        }
-
         //truncate buffer to the requested number of points
+        const auto &buff = port->buffer();
         Pothos::Packet packet;
         packet.payload = buff;
         packet.payload.length = _dataPoints*buff.dtype.size();
@@ -424,7 +427,13 @@ void WaveTrigger::work(void)
 
         //set metadata
         packet.metadata["index"] = Pothos::Object(port->index());
-        packet.metadata["offset"] = Pothos::Object(_triggerPositionOffset);
+        packet.metadata["offset"] = Pothos::Object(_triggerEventOffset);
+
+        //if the trigger point was found, record this in the metadata
+        if (not _triggerEventFromTimer and size_t(port->index()) == _channel)
+        {
+            packet.metadata["level"] = Pothos::Object(_level);
+        }
 
         //produce packet and consume buffer
         outPort->postMessage(packet);
@@ -469,17 +478,18 @@ void WaveTrigger::sweepWork(void)
     //search for the trigger point (interpolated point result)
     //for complex data, we trigger on the absolute value
     bool found = false;
-    double foundPosition = 0.0;
+    _triggerEventOffset = 0.0;
+    _triggerEventFromTimer = false;
     if (_holdOffRemaining == 0 and _triggerSearchEnabled)
     {
         if (trigBuff.dtype.isComplex())
         {
-            found = this->searchTriggerPointComplex(trigBuff, numElems, foundPosition);
+            found = this->searchTriggerPointComplex(trigBuff, numElems, _triggerEventOffset);
         }
 
         else if (_triggerSearchEnabled and not trigBuff.dtype.isComplex())
         {
-            found = this->searchTriggerPointReal(trigBuff, numElems, foundPosition);
+            found = this->searchTriggerPointReal(trigBuff, numElems, _triggerEventOffset);
         }
     }
 
@@ -487,14 +497,16 @@ void WaveTrigger::sweepWork(void)
     if (_holdOffRemaining == 0 and not found and _triggerTimerEnabled)
     {
         found = (std::chrono::high_resolution_clock::now()-_lastTriggerTime) > _sweepTimeDelta;
-        foundPosition = _position;
+        _triggerEventOffset = _position;
+        _triggerEventFromTimer = true;
     }
 
     //determine how many elements to consume
     size_t consumeElems = 0;
     if (found)
     {
-        consumeElems = size_t(foundPosition-_position);
+        consumeElems = size_t(_triggerEventOffset-_position);
+        _triggerEventOffset -= consumeElems;
     }
     else if (_holdOffRemaining != 0)
     {
@@ -531,7 +543,6 @@ void WaveTrigger::sweepWork(void)
     if (found)
     {
         _forwardDataPoints = true;
-        _triggerPositionOffset = foundPosition-size_t(foundPosition);
         _lastTriggerTime = std::chrono::high_resolution_clock::now();
         for (auto port : this->inputs()) port->setReserve(0);
     }

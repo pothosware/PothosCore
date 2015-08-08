@@ -23,6 +23,7 @@ void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
     //extract offset
     const auto offsetIt = packet.metadata.find("offset");
     auto offset = (offsetIt == packet.metadata.end())?0:offsetIt->second.convert<qreal>();
+    const auto offsetFrac = (offset-size_t(offset))/_sampleRateWoAxisUnits;
     offset /= _sampleRateWoAxisUnits;
 
     //extract and convert buffer
@@ -38,7 +39,7 @@ void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
         QVector<QPointF> pointsQ(buff.elements());
         for (int i = 0; i < pointsI.size(); i++)
         {
-            const auto x = i/_sampleRateWoAxisUnits-offset;
+            const auto x = i/_sampleRateWoAxisUnits-offsetFrac;
             pointsI[i] = QPointF(x, sampsI[i]);
             pointsQ[i] = QPointF(x, sampsQ[i]);
         }
@@ -52,7 +53,7 @@ void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
         QVector<QPointF> points(buff.elements());
         for (int i = 0; i < points.size(); i++)
         {
-            const auto x = i/_sampleRateWoAxisUnits-offset;
+            const auto x = i/_sampleRateWoAxisUnits-offsetFrac;
             points[i] = QPointF(x, samps[i]);
         }
         this->getCurve(index, 0)->setSamples(points);
@@ -68,8 +69,21 @@ void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
         marker->setLabel(MyMarkerLabel(QString::fromStdString(label.id)));
         marker->setLabelAlignment(Qt::AlignHCenter);
         const auto i = label.index + (label.width-1)/2.0;
-        marker->setXValue(i/_sampleRateWoAxisUnits-offset);
+        marker->setXValue(i/_sampleRateWoAxisUnits-offsetFrac);
         marker->setYValue(samps[label.index]);
+        marker->attach(_mainPlot);
+        markers.emplace_back(marker);
+    }
+
+    //create trigger marker when specified
+    if (packet.metadata.count("level") != 0)
+    {
+        const auto level = packet.metadata.at("level").convert<qreal>();
+        auto marker = new QwtPlotMarker();
+        marker->setLabel(_triggerMarkerLabel);
+        marker->setLabelAlignment(Qt::AlignHCenter);
+        marker->setXValue(offset-offsetFrac);
+        marker->setYValue(level);
         marker->attach(_mainPlot);
         markers.emplace_back(marker);
     }

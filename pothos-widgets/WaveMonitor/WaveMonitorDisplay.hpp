@@ -9,6 +9,7 @@
 #include <map>
 #include <atomic>
 #include <vector>
+#include <qwt_text.h>
 
 class MyQwtPlot;
 class QwtPlotGrid;
@@ -115,12 +116,14 @@ private:
     bool _autoScale;
     std::vector<double> _yRange;
     std::string _rateLabelId;
+    QwtText _triggerMarkerLabel;
 
     //channel configs
     std::map<size_t, QString> _channelLabels;
     std::map<size_t, std::string> _channelStyles;
 
     //per-port data structs
+    size_t _curveCount;
     std::map<size_t, std::map<size_t, std::shared_ptr<QwtPlotCurve>>> _curves;
     std::map<size_t, std::vector<std::shared_ptr<QwtPlotMarker>>> _markers;
     std::map<size_t, std::shared_ptr<std::atomic<size_t>>> _queueDepth;

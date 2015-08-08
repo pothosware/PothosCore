@@ -21,7 +21,8 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
     _sampleRateWoAxisUnits(1.0),
     _numPoints(1024),
     _autoScale(false),
-    _rateLabelId("rxRate")
+    _rateLabelId("rxRate"),
+    _curveCount(0)
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, widget));
@@ -64,6 +65,11 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
 
     //register types passed to gui thread from work
     qRegisterMetaType<Pothos::Packet>("Pothos::Packet");
+
+    //setup trigger marker label
+    _triggerMarkerLabel = MyMarkerLabel("T");
+    static const QColor orange("#FFA500");
+    _triggerMarkerLabel.setBackgroundBrush(QBrush(orange));
 }
 
 WaveMonitorDisplay::~WaveMonitorDisplay(void)
@@ -209,7 +215,6 @@ void WaveMonitorDisplay::handleUpdateCurves(void)
         }
     }
 
-    if (count > 1) this->installLegend();
     _mainPlot->replot();
 }
 
@@ -244,6 +249,7 @@ std::shared_ptr<QwtPlotCurve> &WaveMonitorDisplay::getCurve(const size_t index, 
     if (not curve)
     {
         curve.reset(new QwtPlotCurve());
+        if (_curveCount++ == 1) this->installLegend();
         this->handleUpdateCurves();
     }
     return curve;
