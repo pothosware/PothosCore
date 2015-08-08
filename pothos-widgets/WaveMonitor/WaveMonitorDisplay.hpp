@@ -30,8 +30,6 @@ public:
         return this;
     }
 
-    void setNumInputs(const size_t numInputs);
-
     //! set the plotter's title
     void setTitle(const QString &title);
 
@@ -100,7 +98,7 @@ public:
 private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);
-    void handleSamples(const int index, const int curve, const Pothos::BufferChunk &buff, const std::vector<Pothos::Label> &labels);
+    void handleSamples(const int index, const int curve, const Pothos::BufferChunk &buff, const std::vector<Pothos::Label> &labels, const qreal offset);
     void handleUpdateAxis(void);
     void handleUpdateCurves(void);
     void handleZoomed(const QRectF &rect);

@@ -5,6 +5,7 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <iostream>
+#include <map>
 
 /***********************************************************************
  * |PothosDoc Wave Monitor
@@ -73,6 +74,72 @@
  * |widget StringEntry()
  * |preview disable
  * |tab Axis
+ *
+ * |param triggerChannel[Channel] Which input channel to monitor for trigger events.
+ * |default 0
+ * |widget SpinBox(minimum=0)
+ * |preview disable
+ * |tab Trigger
+ *
+ * |param triggerSweepRate[Sweep Rate] The rate of the trigger sweep.
+ * In automatic mode, this rate sets the timer that forces a trigger event.
+ * Or in the case of inadequate input after a trigger event,
+ * this rate acts as a timeout to flush the available samples.
+ * |units events/sec
+ * |default 1.0
+ * |preview disable
+ * |tab Trigger
+ *
+ * |param triggerHoldOff[Hold Off] Hold off on subsequent trigger events for this many samples.
+ * After a trigger event occurs, <em>hold off</em> disables trigger sweeping until
+ * the specified number of samples has been consumed.
+ * |units samples
+ * |default 1024
+ * |preview disable
+ * |tab Trigger
+ *
+ * |param triggerSlope[Slope] The required slope of the trigger detection.
+ * <ul>
+ * <li>Positive slope means that the trigger will be activated when the level is rises above the specified trigger level.</li>
+ * <li>Negative slope means that the trigger will be activated when the level is falls below the specified trigger level.</li>
+ * <li>Level means that the trigger will be activated when the trigger level is detected, regardless of the slope.</li>
+ * </ul>
+ * |default "POS"
+ * |option [Positive] "POS"
+ * |option [Negative] "NEG"
+ * |option [Level] "LEVEL"
+ * |preview disable
+ * |tab Trigger
+ *
+ * |param triggerMode [Mode] The operational mode of the triggering system.
+ * <ul>
+ * <li>In automatic mode, the trigger event is forced by timer if none occurs.</li>
+ * <li>In normal mode, samples are only forwarded when a trigger event occurs.</li>
+ * <li>In periodic mode, there is no trigger search, the trigger event is forced by timer.</li>
+ * <li>In disabled mode, trigger sweeping is disabled and samples are not forwarded.</li>
+ * </ul>
+ * |default "AUTOMATIC"
+ * |option [Automatic] "AUTOMATIC"
+ * |option [Normal] "NORMAL"
+ * |option [Periodic] "PERIODIC"
+ * |option [Disabled] "DISABLED"
+ * |preview disable
+ * |tab Trigger
+ *
+ * |param triggerLevel [Level] The value of the input required for a trigger event.
+ * |default 0.5
+ * |widget DoubleSpinBox()
+ * |preview disable
+ * |tab Trigger
+ *
+ * |param triggerPosition [Position] The offset in samples before the trigger event.
+ * When the samples are forwarded to the output,
+ * the trigger event occurs <em>position</em> number of samples into the array.
+ * |units samples
+ * |default 128
+ * |widget SpinBox(minimum=0)
+ * |preview disable
+ * |tab Trigger
  *
  * |param label0[Ch0 Label] The display label for channel 0.
  * |default ""
@@ -150,6 +217,13 @@
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
+ * |setter setTriggerChannel(triggerChannel)
+ * |setter setTriggerSweepRate(triggerSweepRate)
+ * |setter setTriggerHoldOff(triggerHoldOff)
+ * |setter setTriggerSlope(triggerSlope)
+ * |setter setTriggerMode(triggerMode)
+ * |setter setTriggerLevel(triggerLevel)
+ * |setter setTriggerPosition(triggerPosition)
  * |setter setChannelLabel(0, label0)
  * |setter setChannelStyle(0, style0)
  * |setter setChannelLabel(1, label1)
@@ -174,29 +248,51 @@ public:
         _display->setName("Display");
 
         auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
-        _snooper = registry.callProxy("/blocks/stream_snooper");
-        _snooper.callVoid("setName", "Snooper");
+        _trigger = registry.callProxy("/blocks/wave_trigger");
+        _trigger.callVoid("setName", "Trigger");
 
         //register calls in this topology
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumInputs));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setDisplayRate));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumPoints));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setAlignment));
+
+        //display setters
+        _topologyToDisplaySetter["setTitle"] = "setTitle";
+        _topologyToDisplaySetter["setSampleRate"] = "setSampleRate";
+        _topologyToDisplaySetter["setNumPoints"] = "setNumPoints";
+        _topologyToDisplaySetter["setAutoScale"] = "setAutoScale";
+        _topologyToDisplaySetter["setYRange"] = "setYRange";
+        _topologyToDisplaySetter["enableXAxis"] = "enableXAxis";
+        _topologyToDisplaySetter["enableYAxis"] = "enableYAxis";
+        _topologyToDisplaySetter["setYAxisTitle"] = "setYAxisTitle";
+        _topologyToDisplaySetter["setChannelLabel"] = "setChannelLabel";
+        _topologyToDisplaySetter["setChannelStyle"] = "setChannelStyle";
+        _topologyToDisplaySetter["setRateLabelId"] = "setRateLabelId";
+
+        //trigger setters
+        _topologyToTriggerSetter["setDisplayRate"] = "setSweepRate";
+        _topologyToTriggerSetter["setNumPoints"] = "setDataPoints";
+        _topologyToTriggerSetter["setAlignment"] = "setAlignment";
+        _topologyToTriggerSetter["setTriggerChannel"] = "setChannel";
+        _topologyToTriggerSetter["setTriggerSweepRate"] = "setSweepRate";
+        _topologyToTriggerSetter["setTriggerHoldOff"] = "setHoldOff";
+        _topologyToTriggerSetter["setTriggerSlope"] = "setSlope";
+        _topologyToTriggerSetter["setTriggerMode"] = "setMode";
+        _topologyToTriggerSetter["setTriggerLevel"] = "setLevel";
+        _topologyToTriggerSetter["setTriggerPosition"] = "setPosition";
 
         //connect to internal display block
-        this->connect(this, "setTitle", _display, "setTitle");
-        this->connect(this, "setSampleRate", _display, "setSampleRate");
-        this->connect(this, "setNumPoints", _display, "setNumPoints");
-        this->connect(this, "setAutoScale", _display, "setAutoScale");
-        this->connect(this, "setYRange", _display, "setYRange");
-        this->connect(this, "enableXAxis", _display, "enableXAxis");
-        this->connect(this, "enableYAxis", _display, "enableYAxis");
-        this->connect(this, "setYAxisTitle", _display, "setYAxisTitle");
+        for (const auto &pair : _topologyToDisplaySetter)
+        {
+            this->connect(this, pair.first, _display, pair.second);
+        }
 
-        //connect to the internal snooper block
-        this->connect(this, "setDisplayRate", _snooper, "setTriggerRate");
-        this->connect(this, "setNumPoints", _snooper, "setChunkSize");
-        this->connect(this, "setAlignment", _snooper, "setAlignment");
+        //connect to the internal trigger block
+        for (const auto &pair : _topologyToTriggerSetter)
+        {
+            this->connect(this, pair.first, _trigger, pair.second);
+        }
+
+        //connect stream ports
+        this->connect(_trigger, 0, _display, 0);
     }
 
     Pothos::Object opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
@@ -208,40 +304,45 @@ public:
         }
         catch (const Pothos::BlockCallNotFound &){}
 
+        bool setterCalled = false;
+
+        //is this a display setter?
+        const auto _displaySetter = _topologyToDisplaySetter.find(name);
+        if (_displaySetter != _topologyToDisplaySetter.end())
+        {
+            _display->opaqueCallMethod(_displaySetter->second, inputArgs, numArgs);
+            setterCalled = true;
+        }
+
+        //is this a trigger setter?
+        const auto _triggerSetter = _topologyToTriggerSetter.find(name);
+        if (_triggerSetter != _topologyToTriggerSetter.end() and numArgs == 1)
+        {
+            _trigger.callVoid(_triggerSetter->second, _trigger.getEnvironment()->convertObjectToProxy(inputArgs[0]));
+            setterCalled = true;
+        }
+
+        if (setterCalled) return Pothos::Object();
+
         //forward everything else to display
         return _display->opaqueCallMethod(name, inputArgs, numArgs);
     }
 
     void setNumInputs(const size_t numInputs)
     {
-        _display->setNumInputs(numInputs);
-        _snooper.callVoid("setNumPorts", numInputs);
+        _trigger.callVoid("setNumPorts", numInputs);
         for (size_t i = 0; i < numInputs; i++)
         {
-            this->connect(this, i, _snooper, i);
-            this->connect(_snooper, i, _display, i);
+            this->connect(this, i, _trigger, i);
         }
     }
 
-    void setDisplayRate(const double rate)
-    {
-        _snooper.callVoid("setTriggerRate", rate);
-    }
-
-    void setNumPoints(const size_t num)
-    {
-        _snooper.callVoid("setChunkSize", num);
-        _display->setNumPoints(num);
-    }
-
-    void setAlignment(const bool enabled)
-    {
-        _snooper.callVoid("setAlignment", enabled);
-    }
-
 private:
-    Pothos::Proxy _snooper;
+    Pothos::Proxy _trigger;
     std::shared_ptr<WaveMonitorDisplay> _display;
+
+    std::map<std::string, std::string> _topologyToTriggerSetter;
+    std::map<std::string, std::string> _topologyToDisplaySetter;
 };
 
 /***********************************************************************

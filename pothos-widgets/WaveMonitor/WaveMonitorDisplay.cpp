@@ -25,7 +25,6 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
 {
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, widget));
-    this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setNumInputs));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setTitle));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitorDisplay, setNumPoints));
@@ -71,14 +70,6 @@ WaveMonitorDisplay::WaveMonitorDisplay(void):
 WaveMonitorDisplay::~WaveMonitorDisplay(void)
 {
     return;
-}
-
-void WaveMonitorDisplay::setNumInputs(const size_t numInputs)
-{
-    for (size_t i = this->inputs().size(); i < numInputs; i++)
-    {
-        this->setupInput(i, this->input(0)->dtype());
-    }
 }
 
 void WaveMonitorDisplay::setTitle(const QString &title)

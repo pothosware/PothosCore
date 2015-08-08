@@ -37,12 +37,6 @@
  * |option [Disable] false
  * |option [Enable] true
  *
- * |param holdOff[Hold Off] Hold off on subsequent trigger events for this many samples.
- * After a trigger event occurs, <em>hold off</em> disables trigger sweeping until
- * the specified number of samples has been consumed.
- * |units samples
- * |default 1024
- *
  * |param channel[Channel] Which input channel to monitor for trigger events.
  * |default 0
  * |widget SpinBox(minimum=0)
@@ -53,6 +47,12 @@
  * this rate acts as a timeout to flush the available samples.
  * |units events/sec
  * |default 1.0
+ *
+ * |param holdOff[Hold Off] Hold off on subsequent trigger events for this many samples.
+ * After a trigger event occurs, <em>hold off</em> disables trigger sweeping until
+ * the specified number of samples has been consumed.
+ * |units samples
+ * |default 1024
  *
  * |param slope[Slope] The required slope of the trigger detection.
  * <ul>
@@ -93,9 +93,9 @@
  * |initializer setNumPorts(numPorts)
  * |setter setDataPoints(dataPoints)
  * |setter setAlignment(alignment)
- * |setter setHoldOff(holdOff)
  * |setter setChannel(channel)
  * |setter setSweepRate(sweepRate)
+ * |setter setHoldOff(holdOff)
  * |setter setSlope(slope)
  * |setter setMode(mode)
  * |setter setLevel(level)
@@ -494,7 +494,7 @@ void WaveTrigger::sweepWork(void)
     size_t consumeElems = 0;
     if (found)
     {
-        consumeElems = size_t(foundPosition);
+        consumeElems = size_t(foundPosition-_position);
     }
     else if (_holdOffRemaining != 0)
     {
