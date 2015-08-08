@@ -69,11 +69,13 @@
  * <ul>
  * <li>In automatic mode, the trigger event is forced by timer if none occurs.</li>
  * <li>In normal mode, samples are only forwarded when a trigger event occurs.</li>
+ * <li>In periodic mode, there is no trigger search, the trigger event is forced by timer.</li>
  * <li>In disabled mode, trigger sweeping is disabled and samples are not forwarded.</li>
  * </ul>
  * |default "AUTOMATIC"
  * |option [Automatic] "AUTOMATIC"
  * |option [Normal] "NORMAL"
+ * |option [Periodic] "PERIODIC"
  * |option [Disabled] "DISABLED"
  *
  * |param level [Level] The value of the input required for a trigger event.
@@ -115,8 +117,8 @@ public:
         _sweepRate(1.0),
         _posSlope(false),
         _negSlope(false),
-        _automaticMode(false),
-        _disabledMode(false),
+        _triggerTimerEnabled(false),
+        _triggerSearchEnabled(false),
         _level(0.0),
         _position(0)
     {
@@ -250,18 +252,23 @@ public:
     {
         if (mode == "AUTOMATIC")
         {
-            _automaticMode = true;
-            _disabledMode = false;
+            _triggerTimerEnabled = true;
+            _triggerSearchEnabled = true;
         }
         else if (mode == "NORMAL")
         {
-            _automaticMode = false;
-            _disabledMode = false;
+            _triggerTimerEnabled = false;
+            _triggerSearchEnabled = true;
+        }
+        else if (mode == "PERIODIC")
+        {
+            _triggerTimerEnabled = true;
+            _triggerSearchEnabled = false;
         }
         else if (mode == "DISABLED")
         {
-            _automaticMode = false;
-            _disabledMode = true;
+            _triggerTimerEnabled = false;
+            _triggerSearchEnabled = false;
         }
         else
         {
@@ -350,8 +357,8 @@ private:
     bool _posSlope;
     bool _negSlope;
     std::string _modeStr;
-    bool _automaticMode;
-    bool _disabledMode;
+    bool _triggerTimerEnabled;
+    bool _triggerSearchEnabled;
     double _level;
     size_t _position;
 
@@ -463,17 +470,24 @@ void WaveTrigger::sweepWork(void)
     //for complex data, we trigger on the absolute value
     bool found = false;
     double foundPosition = 0.0;
-    if (not _disabledMode and _holdOffRemaining == 0)
+    if (_holdOffRemaining == 0 and _triggerSearchEnabled)
     {
-        if (trigBuff.dtype.isComplex()) found = this->searchTriggerPointComplex(trigBuff, numElems, foundPosition);
-        else                            found = this->searchTriggerPointReal(trigBuff, numElems, foundPosition);
-
-        //no trigger? in automatic mode we can force one on timeout
-        if (not found and _automaticMode and (std::chrono::high_resolution_clock::now()-_lastTriggerTime) > _sweepTimeDelta)
+        if (trigBuff.dtype.isComplex())
         {
-            found = true;
-            foundPosition = _position;
+            found = this->searchTriggerPointComplex(trigBuff, numElems, foundPosition);
         }
+
+        else if (_triggerSearchEnabled and not trigBuff.dtype.isComplex())
+        {
+            found = this->searchTriggerPointReal(trigBuff, numElems, foundPosition);
+        }
+    }
+
+    //no trigger? with the timer enabled we can force one
+    if (_holdOffRemaining == 0 and not found and _triggerTimerEnabled)
+    {
+        found = (std::chrono::high_resolution_clock::now()-_lastTriggerTime) > _sweepTimeDelta;
+        foundPosition = _position;
     }
 
     //determine how many elements to consume
