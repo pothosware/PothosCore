@@ -22,6 +22,7 @@
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 1.0
  * |units updates/sec
+ * |preview disable
  *
  * |param sampleRate[Sample Rate] The rate of the input elements.
  * |default 1e6
@@ -29,6 +30,7 @@
  *
  * |param numPoints[Num Points] The number of points per plot capture.
  * |default 256
+ * |preview disable
  *
  * |param align[Alignment] Ensure that multiple channels are aligned.
  * All channels must have matching sample rates when alignment is enabled.

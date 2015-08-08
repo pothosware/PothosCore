@@ -26,6 +26,7 @@
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0
  * |units updates/sec
+ * |preview disable
  *
  * |param sampleRate[Sample Rate] The rate of the input elements.
  * |default 1e6
@@ -35,6 +36,7 @@
  * This value controls the labeling of the horizontal access.
  * |default 0.0
  * |units Hz
+ * |preview valid
  *
  * |param numBins[Num FFT Bins] The number of bins per fourier transform.
  * |default 1024
@@ -43,6 +45,8 @@
  * |option 2048
  * |option 4096
  * |widget ComboBox(editable=true)
+ * |preview disable
+ * |tab FFT
  *
  * |param window[Window Type] The window function controls spectral leakage.
  * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
@@ -54,6 +58,8 @@
  * |option [Bartlett] "bartlett"
  * |option [Flat-top] "flattop"
  * |widget ComboBox(editable=true)
+ * |preview disable
+ * |tab FFT
  *
  * |param autoScale[Auto-Scale] Enable automatic scaling for the vertical axis.
  * |default false
