@@ -95,6 +95,7 @@
  * Hold-off is most useful when multiple trigger windows are used.
  * |units samples
  * |default 0
+ * |preview valid
  *
  * |param slope[Slope] The required slope of the trigger detection.
  * <ul>
@@ -121,15 +122,16 @@
  * |option [Disabled] "DISABLED"
  *
  * |param level [Level] The value of the input required for a trigger event.
- * |default 0.5
+ * |default 0.0
  * |widget DoubleSpinBox()
  *
  * |param position [Position] The offset in samples before the trigger event.
  * When the samples are forwarded to the output,
  * the trigger event occurs <em>position</em> number of samples into the array.
  * |units samples
- * |default 128
+ * |default 0
  * |widget SpinBox(minimum=0)
+ * |preview valid
  *
  * |factory /blocks/wave_trigger()
  * |initializer setNumPorts(numPorts)

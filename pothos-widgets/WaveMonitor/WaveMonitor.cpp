@@ -126,7 +126,7 @@
  * |tab Trigger
  *
  * |param triggerLevel [Level] The value of the input required for a trigger event.
- * |default 0.5
+ * |default 0.0
  * |widget DoubleSpinBox()
  * |preview disable
  * |tab Trigger
@@ -135,7 +135,7 @@
  * When the samples are forwarded to the output,
  * the trigger event occurs <em>position</em> number of samples into the array.
  * |units samples
- * |default 128
+ * |default 0
  * |widget SpinBox(minimum=0)
  * |preview disable
  * |tab Trigger
