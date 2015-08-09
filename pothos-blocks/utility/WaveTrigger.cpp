@@ -19,6 +19,42 @@
  * however its inputs, outputs, and configuration is well documented,
  * so it can be used in a variety of other situations if needed.
  *
+ * <h2>Packet format</h2>
+ * The output packet is a Pothos::Packet with metadata, labels, and payload.
+ *
+ * <h3>Metadata</h3>
+ * The following fields in the metadata dictionary are filled in.
+ * <ul>
+ * <li>"index" - which input port the packet came from</li>
+ * <li>"position" - the horizontal trigger position</li>
+ * <li>"level" - the configured level of the trigger</li>
+ * </ul>
+ *
+ * <h3>Labels</h3>
+ * Any labels that were associated with the buffer are included into the packet's label list.
+ * In addition, when the trigger position was found (a non timer event),
+ * a label with ID "T" will be added at the pre-configured trigger position,
+ *
+ * <h3>Payload</h3>
+ * The payload is the input buffer containing the specified number of points.
+ * The payload starts <em>position</em> number of samples before the trigger.
+ *
+ * <h2>Window operation</h2>
+ * Generally, output events are scheduled at the configured event rate.
+ * However, in some situations, it may be useful to see several trigger events
+ * in rapid succession. The window operation mode of the wave trigger block
+ * allows a configurable number of triggers to occur back-to-back.
+ *
+ * <h3>Window size</h3>
+ * The number of samples in the payload remains unchanged,
+ * however the number of samples per trigger event reduces to
+ * num points/num windows.
+ *
+ * <h3>Hold-off delay</h3>
+ * The delay between trigger windows is configured by the combination of
+ * the hold-off and the trigger position. Trigger search begins after
+ * the previous window + hold-off + trigger position.
+ *
  * |category /Utility
  *
  * |param numPorts[Num Ports] The number of input ports.
@@ -471,7 +507,7 @@ void WaveTrigger::work(void)
         if (firstWindow)
         {
             packet.metadata["index"] = Pothos::Object(port->index());
-            packet.metadata["offset"] = Pothos::Object(_triggerEventOffset);
+            packet.metadata["position"] = Pothos::Object(_triggerEventOffset);
             packet.metadata["level"] = Pothos::Object(_level);
         }
 

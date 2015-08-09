@@ -21,7 +21,7 @@ void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
     if (_queueDepth.at(index)->fetch_sub(1) != 1) return;
 
     //extract offset
-    const auto offsetIt = packet.metadata.find("offset");
+    const auto offsetIt = packet.metadata.find("position");
     const auto offset = (offsetIt == packet.metadata.end())?0:offsetIt->second.convert<qreal>();
     const auto offsetFrac = offset-size_t(offset);
 
