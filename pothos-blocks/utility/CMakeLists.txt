@@ -29,6 +29,7 @@ POTHOS_MODULE_UTIL(
         Evaluator.cpp
         Threshold.cpp
         Relabeler.cpp
+        WaveTrigger.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )
