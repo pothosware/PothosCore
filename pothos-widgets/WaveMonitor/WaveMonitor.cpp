@@ -81,6 +81,13 @@
  * |preview disable
  * |tab Trigger
  *
+ * |param triggerWindows[Windows] The number of trigger windows per output event.
+ * A single output event can be composed of multiple back-to-back trigger windows.
+ * |default 1
+ * |widget SpinBox(minimum=1)
+ * |preview disable
+ * |tab Trigger
+ *
  * |param triggerHoldOff[Hold Off] Hold-off subsequent trigger events for this many samples.
  * After a trigger event occurs, <em>hold off</em> disables trigger search until
  * the specified number of samples has been consumed on all input ports.
@@ -210,6 +217,7 @@
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
  * |setter setTriggerSource(triggerSource)
+ * |setter setTriggerWindows(triggerWindows)
  * |setter setTriggerHoldOff(triggerHoldOff)
  * |setter setTriggerSlope(triggerSlope)
  * |setter setTriggerMode(triggerMode)
@@ -260,9 +268,10 @@ public:
 
         //trigger setters
         _topologyToTriggerSetter["setDisplayRate"] = "setEventRate";
-        _topologyToTriggerSetter["setNumPoints"] = "setDataPoints";
+        _topologyToTriggerSetter["setNumPoints"] = "setNumPoints";
         _topologyToTriggerSetter["setAlignment"] = "setAlignment";
         _topologyToTriggerSetter["setTriggerSource"] = "setSource";
+        _topologyToTriggerSetter["setTriggerWindows"] = "setNumWindows";
         _topologyToTriggerSetter["setTriggerHoldOff"] = "setHoldOff";
         _topologyToTriggerSetter["setTriggerSlope"] = "setSlope";
         _topologyToTriggerSetter["setTriggerMode"] = "setMode";

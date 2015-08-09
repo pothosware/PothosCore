@@ -26,9 +26,21 @@
  * |widget SpinBox(minimum=1)
  * |preview disable
  *
- * |param dataPoints[Data Points] The number of elements to yield on each channel when triggered.
+ * |param numPoints[Num Points] The number of elements to yield on per output event.
  * |default 1024
  * |widget SpinBox(minimum=0)
+ *
+ * |param numWindows[Windows] The number of trigger windows per output event.
+ * A single output event can be composed of multiple back-to-back trigger windows.
+ * |default 1
+ * |widget SpinBox(minimum=1)
+ *
+ * |param eventRate[Event Rate] The rate of trigger detection and output events.
+ * This rate paces the activity of the trigger block to a displayable rate.
+ * Input samples are discarded in-between trigger search and output events.
+ * In automatic mode, this rate also sets the timer that forces a trigger event.
+ * |units events/sec
+ * |default 1.0
  *
  * |param alignment[Alignment] Synchronous or asynchronous multi-channel consumption pattern.
  * When in synchronous mode, work() consumes the same amount from all channels to preserve alignment.
@@ -40,13 +52,6 @@
  * |param source[Source] Which input channel to monitor for trigger events.
  * |default 0
  * |widget SpinBox(minimum=0)
- *
- * |param eventRate[Event Rate] The rate of trigger detection and output events.
- * This rate paces the activity of the trigger block to a displayable rate.
- * Input samples are discarded in-between trigger search and output events.
- * In automatic mode, this rate also sets the timer that forces a trigger event.
- * |units events/sec
- * |default 1.0
  *
  * |param holdOff[Hold Off] Hold-off subsequent trigger events for this many samples.
  * After a trigger event occurs, <em>hold off</em> disables trigger search until
@@ -92,10 +97,11 @@
  *
  * |factory /blocks/wave_trigger()
  * |initializer setNumPorts(numPorts)
- * |setter setDataPoints(dataPoints)
+ * |setter setNumPoints(numPoints)
+ * |setter setNumWindows(numWindows)
+ * |setter setEventRate(eventRate)
  * |setter setAlignment(alignment)
  * |setter setSource(source)
- * |setter setEventRate(eventRate)
  * |setter setHoldOff(holdOff)
  * |setter setSlope(slope)
  * |setter setMode(mode)
@@ -111,11 +117,12 @@ public:
     }
 
     WaveTrigger(void):
-        _dataPoints(0),
-        _alignment(true),
-        _holdOff(0),
-        _source(0),
+        _numPoints(0),
+        _numWindows(1),
         _eventRate(1.0),
+        _alignment(true),
+        _source(0),
+        _holdOff(0),
         _posSlope(false),
         _negSlope(false),
         _triggerTimerEnabled(false),
@@ -127,16 +134,18 @@ public:
         this->setupOutput(0);
 
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setNumPorts));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setDataPoints));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getDataPoints));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setNumPoints));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getNumPoints));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setNumWindows));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getNumWindows));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setEventRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getEventRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setAlignment));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getAlignment));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setHoldOff));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getHoldOff));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setSource));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getSource));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setEventRate));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getEventRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setSlope));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getSlope));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setMode));
@@ -147,11 +156,12 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getPosition));
 
         //initialization
-        this->setDataPoints(1024);
-        this->setAlignment(true);
-        this->setHoldOff(1024);
-        this->setSource(0);
+        this->setNumPoints(1024);
+        this->setNumWindows(1);
         this->setEventRate(1.0);
+        this->setAlignment(true);
+        this->setSource(0);
+        this->setHoldOff(1024);
         this->setSlope("POS");
         this->setMode("AUTOMATIC");
         this->setLevel(0.5);
@@ -163,15 +173,26 @@ public:
         for (size_t i = this->inputs().size(); i < numPorts; i++) this->setupInput(i);
     }
 
-    void setDataPoints(const size_t numElems)
+    void setNumPoints(const size_t numPoints)
     {
-        if (numElems == 0) throw Pothos::InvalidArgumentException("WaveTrigger::setDataPoints()", "num data points must be positive");
-        _dataPoints = numElems;
+        if (numPoints == 0) throw Pothos::InvalidArgumentException("WaveTrigger::setNumPoints()", "num points must be positive");
+        _numPoints = numPoints;
     }
 
-    size_t getDataPoints(void) const
+    size_t getNumPoints(void) const
     {
-        return _dataPoints;
+        return _numPoints;
+    }
+
+    void setNumWindows(const size_t numWindows)
+    {
+        if (_numWindows == 0) throw Pothos::InvalidArgumentException("WaveTrigger::setNumWindows()", "num windows must be positive");
+        _numWindows = numWindows;
+    }
+
+    size_t getNumWindows(void) const
+    {
+        return _numWindows;
     }
 
     void setAlignment(const bool enabled)
@@ -307,8 +328,11 @@ public:
     void activate(void)
     {
         //reset state
-        _forwardDataPoints = false;
+        _pointsRemaining = 0;
+        _windowsRemaining = 0;
         _holdOffRemaining = 0;
+        _packets.clear();
+        _packets.resize(this->inputs().size());
 
         //its like we just triggered
         _lastTriggerTime = std::chrono::high_resolution_clock::now();
@@ -349,11 +373,12 @@ private:
     void triggerWork(void);
 
     //configuration settings
-    size_t _dataPoints;
-    bool _alignment;
-    size_t _holdOff;
-    size_t _source;
+    size_t _numPoints;
+    size_t _numWindows;
     double _eventRate;
+    bool _alignment;
+    size_t _source;
+    size_t _holdOff;
     std::chrono::high_resolution_clock::duration _eventOffDuration;
     std::chrono::high_resolution_clock::duration _autoForceTimeout;
     std::string _slopeStr;
@@ -367,10 +392,12 @@ private:
 
     //state tracking
     bool _triggerEventFromTimer;
-    bool _forwardDataPoints;
+    size_t _pointsRemaining;
+    size_t _windowsRemaining;
     size_t _holdOffRemaining;
     double _triggerEventOffset;
     std::chrono::high_resolution_clock::time_point _lastTriggerTime;
+    std::vector<Pothos::Packet> _packets;
 };
 
 /***********************************************************************
@@ -400,52 +427,81 @@ void WaveTrigger::work(void)
     }
 
     //trigger search mode
-    if (not _forwardDataPoints) return this->triggerWork();
+    if (_pointsRemaining == 0) return this->triggerWork();
 
     //ensure the required number of elements is on each input
     for (auto port : this->inputs())
     {
         const auto &buff = port->buffer();
-        if (buff.elements() >= _dataPoints) continue;
-        port->setReserve(_dataPoints*buff.dtype.size());
+        if (buff.elements() >= _pointsRemaining) continue;
+        port->setReserve(_pointsRemaining*buff.dtype.size());
         return;
     }
+
+    //flags for first and last window
+    const bool firstWindow = (_windowsRemaining == _numWindows-1);
+    const bool lastWindow = (_windowsRemaining == 0);
 
     //forward a packet for each port
     for (auto port : this->inputs())
     {
+        auto &packet = _packets[port->index()];
+
         //truncate buffer to the requested number of points
-        const auto &buff = port->buffer();
-        Pothos::Packet packet;
-        packet.payload = buff;
-        packet.payload.length = _dataPoints*buff.dtype.size();
+        auto buff = port->buffer();
+        buff.length = _pointsRemaining*buff.dtype.size();
 
         //append new labels
         for (const auto &inLabel : port->labels())
         {
             auto label = inLabel.toAdjusted(1, buff.dtype.size()); //bytes to elements
-            if (label.index >= packet.payload.elements()) break;
+            if (label.index >= buff.elements()) break;
+            label.index += packet.payload.elements();
             packet.labels.push_back(label);
         }
-
-        //set metadata
-        packet.metadata["index"] = Pothos::Object(port->index());
-        packet.metadata["offset"] = Pothos::Object(_triggerEventOffset);
 
         //if the trigger point was found, record this in the metadata
         if (not _triggerEventFromTimer and size_t(port->index()) == _source)
         {
+            const auto index = _position+packet.payload.elements();
+            packet.labels.push_back(Pothos::Label("T", Pothos::Object(), index));
+        }
+
+        //set metadata on the first window
+        if (firstWindow)
+        {
+            packet.metadata["index"] = Pothos::Object(port->index());
+            packet.metadata["offset"] = Pothos::Object(_triggerEventOffset);
             packet.metadata["level"] = Pothos::Object(_level);
         }
 
-        //produce packet and consume buffer
-        outPort->postMessage(packet);
-        port->consume(packet.payload.length);
+        //append the buffer to the end of the packet
+        if (_numWindows == 1) packet.payload = buff;
+        else
+        {
+            if (not packet.payload)
+            {
+                packet.payload = Pothos::BufferChunk(buff.dtype, _numPoints);
+                packet.payload.length = 0;
+            }
+            std::memcpy((void *)packet.payload.getEnd(), buff.as<const void *>(), buff.length);
+            packet.payload.length += buff.length;
+        }
+
+        //produce the entire packet on the last window
+        if (lastWindow)
+        {
+            outPort->postMessage(packet);
+            packet = Pothos::Packet();
+        }
+
+        //consume from the input buffer
+        port->consume(buff.length);
     }
 
     //reset for next trigger
     for (auto port : this->inputs()) port->setReserve(0);
-    _forwardDataPoints = false;
+    _pointsRemaining = 0;
     _holdOffRemaining = _holdOff;
     _lastTriggerTime = std::chrono::high_resolution_clock::now();
 }
@@ -457,8 +513,12 @@ void WaveTrigger::triggerWork(void)
 {
     const auto trigPort = this->input(_source);
     const auto &trigBuff = trigPort->buffer();
+
+    //Search enabled when there are trigger windows left or the event time expired.
+    //This lets subsequent windows trigger back to back, otherwise wait on the timer.
+    //And regardless, the search is prevented by the specified hold off count.
     const auto timePassed = (std::chrono::high_resolution_clock::now()-_lastTriggerTime);
-    const bool searchEnabled = (timePassed > _eventOffDuration) and (_holdOffRemaining == 0);
+    const bool searchEnabled = ((_windowsRemaining > 0) or (timePassed > _eventOffDuration)) and (_holdOffRemaining == 0);
 
     //require the minimum amount leaving room for a window/history of _position
     //and an extra trailing element that isnt consumed for the slope search
@@ -554,7 +614,9 @@ void WaveTrigger::triggerWork(void)
     //record the state when found
     if (found)
     {
-        _forwardDataPoints = true;
+        if (_windowsRemaining == 0) _windowsRemaining = _numWindows;
+        _windowsRemaining--;
+        _pointsRemaining = _numPoints/_numWindows;
         for (auto port : this->inputs()) port->setReserve(0);
     }
 }
