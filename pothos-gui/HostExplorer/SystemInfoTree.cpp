@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "HostExplorer/SystemInfoTree.hpp"
@@ -19,7 +19,7 @@
 static InfoResult getInfo(const std::string &uriStr)
 {
     InfoResult info;
-    try
+    POTHOS_EXCEPTION_TRY
     {
         auto env = Pothos::RemoteClient(uriStr).makeEnvironment("managed");
         info.hostInfo = env->findProxy("Pothos/System/HostInfo").call<Pothos::System::HostInfo>("get");
@@ -28,7 +28,7 @@ static InfoResult getInfo(const std::string &uriStr)
         Poco::JSON::Parser p; p.parse(deviceInfo);
         info.deviceInfo = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
     }
-    catch (const Pothos::Exception &ex)
+    POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
         poco_error_f2(Poco::Logger::get("PothosGui.SystemInfoTree"), "Failed to query system info %s - %s", uriStr, ex.displayText());
     }
