@@ -75,17 +75,18 @@
  * |preview disable
  * |tab Axis
  *
- * |param triggerChannel[Channel] Which input channel to monitor for trigger events.
+ * |param triggerSource[Source] Which input channel to monitor for trigger events.
  * |default 0
  * |widget SpinBox(minimum=0)
  * |preview disable
  * |tab Trigger
  *
- * |param triggerHoldOff[Hold Off] Hold off on subsequent trigger events for this many samples.
- * After a trigger event occurs, <em>hold off</em> disables trigger sweeping until
- * the specified number of samples has been consumed.
+ * |param triggerHoldOff[Hold Off] Hold-off subsequent trigger events for this many samples.
+ * After a trigger event occurs, <em>hold off</em> disables trigger search until
+ * the specified number of samples has been consumed on all input ports.
+ * Hold-off is most useful when multiple trigger windows are used.
  * |units samples
- * |default 1024
+ * |default 0
  * |preview disable
  * |tab Trigger
  *
@@ -107,7 +108,7 @@
  * <li>In automatic mode, the trigger event is forced by timer if none occurs.</li>
  * <li>In normal mode, samples are only forwarded when a trigger event occurs.</li>
  * <li>In periodic mode, there is no trigger search, the trigger event is forced by timer.</li>
- * <li>In disabled mode, trigger sweeping is disabled and samples are not forwarded.</li>
+ * <li>In disabled mode, trigger search is disabled and samples are not forwarded.</li>
  * </ul>
  * |default "AUTOMATIC"
  * |option [Automatic] "AUTOMATIC"
@@ -208,7 +209,7 @@
  * |setter enableXAxis(enableXAxis)
  * |setter enableYAxis(enableYAxis)
  * |setter setYAxisTitle(yAxisTitle)
- * |setter setTriggerChannel(triggerChannel)
+ * |setter setTriggerSource(triggerSource)
  * |setter setTriggerHoldOff(triggerHoldOff)
  * |setter setTriggerSlope(triggerSlope)
  * |setter setTriggerMode(triggerMode)
@@ -258,10 +259,10 @@ public:
         _topologyToDisplaySetter["setRateLabelId"] = "setRateLabelId";
 
         //trigger setters
-        _topologyToTriggerSetter["setDisplayRate"] = "setSweepRate";
+        _topologyToTriggerSetter["setDisplayRate"] = "setEventRate";
         _topologyToTriggerSetter["setNumPoints"] = "setDataPoints";
         _topologyToTriggerSetter["setAlignment"] = "setAlignment";
-        _topologyToTriggerSetter["setTriggerChannel"] = "setChannel";
+        _topologyToTriggerSetter["setTriggerSource"] = "setSource";
         _topologyToTriggerSetter["setTriggerHoldOff"] = "setHoldOff";
         _topologyToTriggerSetter["setTriggerSlope"] = "setSlope";
         _topologyToTriggerSetter["setTriggerMode"] = "setMode";

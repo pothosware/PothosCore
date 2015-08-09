@@ -37,22 +37,23 @@
  * |option [Disable] false
  * |option [Enable] true
  *
- * |param channel[Channel] Which input channel to monitor for trigger events.
+ * |param source[Source] Which input channel to monitor for trigger events.
  * |default 0
  * |widget SpinBox(minimum=0)
  *
- * |param sweepRate[Sweep Rate] The rate of the trigger sweep.
- * In automatic mode, this rate sets the timer that forces a trigger event.
- * Or in the case of inadequate input after a trigger event,
- * this rate acts as a timeout to flush the available samples.
+ * |param eventRate[Event Rate] The rate of trigger detection and output events.
+ * This rate paces the activity of the trigger block to a displayable rate.
+ * Input samples are discarded in-between trigger search and output events.
+ * In automatic mode, this rate also sets the timer that forces a trigger event.
  * |units events/sec
  * |default 1.0
  *
- * |param holdOff[Hold Off] Hold off on subsequent trigger events for this many samples.
- * After a trigger event occurs, <em>hold off</em> disables trigger sweeping until
- * the specified number of samples has been consumed.
+ * |param holdOff[Hold Off] Hold-off subsequent trigger events for this many samples.
+ * After a trigger event occurs, <em>hold off</em> disables trigger search until
+ * the specified number of samples has been consumed on all input ports.
+ * Hold-off is most useful when multiple trigger windows are used.
  * |units samples
- * |default 1024
+ * |default 0
  *
  * |param slope[Slope] The required slope of the trigger detection.
  * <ul>
@@ -70,7 +71,7 @@
  * <li>In automatic mode, the trigger event is forced by timer if none occurs.</li>
  * <li>In normal mode, samples are only forwarded when a trigger event occurs.</li>
  * <li>In periodic mode, there is no trigger search, the trigger event is forced by timer.</li>
- * <li>In disabled mode, trigger sweeping is disabled and samples are not forwarded.</li>
+ * <li>In disabled mode, trigger search is disabled and samples are not forwarded.</li>
  * </ul>
  * |default "AUTOMATIC"
  * |option [Automatic] "AUTOMATIC"
@@ -93,8 +94,8 @@
  * |initializer setNumPorts(numPorts)
  * |setter setDataPoints(dataPoints)
  * |setter setAlignment(alignment)
- * |setter setChannel(channel)
- * |setter setSweepRate(sweepRate)
+ * |setter setSource(source)
+ * |setter setEventRate(eventRate)
  * |setter setHoldOff(holdOff)
  * |setter setSlope(slope)
  * |setter setMode(mode)
@@ -113,8 +114,8 @@ public:
         _dataPoints(0),
         _alignment(true),
         _holdOff(0),
-        _channel(0),
-        _sweepRate(1.0),
+        _source(0),
+        _eventRate(1.0),
         _posSlope(false),
         _negSlope(false),
         _triggerTimerEnabled(false),
@@ -132,10 +133,10 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getAlignment));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setHoldOff));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getHoldOff));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setChannel));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getChannel));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setSweepRate));
-        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getSweepRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setSource));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getSource));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setEventRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getEventRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setSlope));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getSlope));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setMode));
@@ -149,8 +150,8 @@ public:
         this->setDataPoints(1024);
         this->setAlignment(true);
         this->setHoldOff(1024);
-        this->setChannel(0);
-        this->setSweepRate(1.0);
+        this->setSource(0);
+        this->setEventRate(1.0);
         this->setSlope("POS");
         this->setMode("AUTOMATIC");
         this->setLevel(0.5);
@@ -196,27 +197,28 @@ public:
         return _holdOff;
     }
 
-    void setChannel(const size_t channel)
+    void setSource(const size_t channel)
     {
-        if (channel >= this->inputs().size()) throw Pothos::InvalidArgumentException("WaveTrigger::setChannel()", "channel out of range");
-        _channel = channel;
+        if (channel >= this->inputs().size()) throw Pothos::InvalidArgumentException("WaveTrigger::setSource()", "channel out of range");
+        _source = channel;
     }
 
-    bool getChannel(void) const
+    bool getSource(void) const
     {
-        return _channel;
+        return _source;
     }
 
-    void setSweepRate(const double rate)
+    void setEventRate(const double rate)
     {
-        if (rate <= 0.0) throw Pothos::InvalidArgumentException("WaveTrigger::setSweepRate()", "sweep rate must be positive");
-        _sweepRate = rate;
-        _sweepTimeDelta = std::chrono::nanoseconds((long long)(1e9/_sweepRate));
+        if (rate <= 0.0) throw Pothos::InvalidArgumentException("WaveTrigger::setEventRate()", "event rate must be positive");
+        _eventRate = rate;
+        _eventOffDuration = std::chrono::nanoseconds((long long)(1e9/_eventRate));
+        _autoForceTimeout = std::chrono::nanoseconds((long long)(1.5e9/_eventRate));
     }
 
-    double getSweepRate(void) const
+    double getEventRate(void) const
     {
-        return _sweepRate;
+        return _eventRate;
     }
 
     void setSlope(const std::string &slope)
@@ -344,15 +346,16 @@ private:
 
     bool searchTriggerPointComplex(const Pothos::BufferChunk &buff, const size_t numElems,  double &pos);
 
-    void sweepWork(void);
+    void triggerWork(void);
 
     //configuration settings
     size_t _dataPoints;
     bool _alignment;
     size_t _holdOff;
-    size_t _channel;
-    double _sweepRate;
-    std::chrono::high_resolution_clock::duration _sweepTimeDelta;
+    size_t _source;
+    double _eventRate;
+    std::chrono::high_resolution_clock::duration _eventOffDuration;
+    std::chrono::high_resolution_clock::duration _autoForceTimeout;
     std::string _slopeStr;
     bool _posSlope;
     bool _negSlope;
@@ -397,7 +400,7 @@ void WaveTrigger::work(void)
     }
 
     //trigger search mode
-    if (not _forwardDataPoints) return this->sweepWork();
+    if (not _forwardDataPoints) return this->triggerWork();
 
     //ensure the required number of elements is on each input
     for (auto port : this->inputs())
@@ -430,7 +433,7 @@ void WaveTrigger::work(void)
         packet.metadata["offset"] = Pothos::Object(_triggerEventOffset);
 
         //if the trigger point was found, record this in the metadata
-        if (not _triggerEventFromTimer and size_t(port->index()) == _channel)
+        if (not _triggerEventFromTimer and size_t(port->index()) == _source)
         {
             packet.metadata["level"] = Pothos::Object(_level);
         }
@@ -440,19 +443,22 @@ void WaveTrigger::work(void)
         port->consume(packet.payload.length);
     }
 
-    //reset for next sweep
+    //reset for next trigger
     for (auto port : this->inputs()) port->setReserve(0);
     _forwardDataPoints = false;
     _holdOffRemaining = _holdOff;
+    _lastTriggerTime = std::chrono::high_resolution_clock::now();
 }
 
 /***********************************************************************
  * Search for the trigger point
  **********************************************************************/
-void WaveTrigger::sweepWork(void)
+void WaveTrigger::triggerWork(void)
 {
-    const auto trigPort = this->input(_channel);
+    const auto trigPort = this->input(_source);
     const auto &trigBuff = trigPort->buffer();
+    const auto timePassed = (std::chrono::high_resolution_clock::now()-_lastTriggerTime);
+    const bool searchEnabled = (timePassed > _eventOffDuration) and (_holdOffRemaining == 0);
 
     //require the minimum amount leaving room for a window/history of _position
     //and an extra trailing element that isnt consumed for the slope search
@@ -478,26 +484,32 @@ void WaveTrigger::sweepWork(void)
     //search for the trigger point (interpolated point result)
     //for complex data, we trigger on the absolute value
     bool found = false;
-    _triggerEventOffset = 0.0;
+    _triggerEventOffset = _position;
     _triggerEventFromTimer = false;
-    if (_holdOffRemaining == 0 and _triggerSearchEnabled)
+    if (searchEnabled and _triggerSearchEnabled)
     {
         if (trigBuff.dtype.isComplex())
         {
             found = this->searchTriggerPointComplex(trigBuff, numElems, _triggerEventOffset);
         }
 
-        else if (_triggerSearchEnabled and not trigBuff.dtype.isComplex())
+        else
         {
             found = this->searchTriggerPointReal(trigBuff, numElems, _triggerEventOffset);
         }
+
+        //in automatic mode, a timeout can force a trigger
+        if (not found and _triggerTimerEnabled)
+        {
+            found = timePassed > _autoForceTimeout;
+            _triggerEventFromTimer = true;
+        }
     }
 
-    //no trigger? with the timer enabled we can force one
-    if (_holdOffRemaining == 0 and not found and _triggerTimerEnabled)
+    //in periodic mode, trigger as soon as the hold is off
+    else if (searchEnabled and not _triggerSearchEnabled)
     {
-        found = (std::chrono::high_resolution_clock::now()-_lastTriggerTime) > _sweepTimeDelta;
-        _triggerEventOffset = _position;
+        found = _triggerTimerEnabled;
         _triggerEventFromTimer = true;
     }
 
@@ -528,7 +540,7 @@ void WaveTrigger::sweepWork(void)
     for (auto port : this->inputs())
     {
         const auto &buff = port->buffer();
-        if (_alignment or _channel == size_t(port->index()))
+        if (_alignment or _source == size_t(port->index()))
         {
             port->consume(consumeElems*buff.dtype.size());
         }
@@ -543,7 +555,6 @@ void WaveTrigger::sweepWork(void)
     if (found)
     {
         _forwardDataPoints = true;
-        _lastTriggerTime = std::chrono::high_resolution_clock::now();
         for (auto port : this->inputs()) port->setReserve(0);
     }
 }
