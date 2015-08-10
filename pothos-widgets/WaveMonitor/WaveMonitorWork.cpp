@@ -20,10 +20,10 @@ void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
     const auto index = (indexIt == packet.metadata.end())?0:indexIt->second.convert<size_t>();
     if (_queueDepth.at(index)->fetch_sub(1) != 1) return;
 
-    //extract offset
-    const auto offsetIt = packet.metadata.find("position");
-    const auto offset = (offsetIt == packet.metadata.end())?0:offsetIt->second.convert<qreal>();
-    const auto offsetFrac = offset-size_t(offset);
+    //extract position
+    const auto positionIt = packet.metadata.find("position");
+    const auto position = (positionIt == packet.metadata.end())?0:positionIt->second.convert<qreal>();
+    const auto frac = position-size_t(position);
 
     //extract level
     const auto levelIt = packet.metadata.find("level");
@@ -42,7 +42,7 @@ void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
         QVector<QPointF> pointsQ(buff.elements());
         for (int i = 0; i < pointsI.size(); i++)
         {
-            const auto x = (i-offsetFrac)/_sampleRateWoAxisUnits;
+            const auto x = (i-frac)/_sampleRateWoAxisUnits;
             pointsI[i] = QPointF(x, sampsI[i]);
             pointsQ[i] = QPointF(x, sampsQ[i]);
         }
@@ -56,7 +56,7 @@ void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
         QVector<QPointF> points(buff.elements());
         for (int i = 0; i < points.size(); i++)
         {
-            const auto x = (i-offsetFrac)/_sampleRateWoAxisUnits;
+            const auto x = (i-frac)/_sampleRateWoAxisUnits;
             points[i] = QPointF(x, samps[i]);
         }
         this->getCurve(index, 0)->setSamples(points);
@@ -72,7 +72,7 @@ void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
         marker->setLabel(MyMarkerLabel(QString::fromStdString(label.id)));
         marker->setLabelAlignment(Qt::AlignHCenter);
         const auto i = label.index + (label.width-1)/2.0;
-        marker->setXValue((i-offsetFrac)/_sampleRateWoAxisUnits);
+        marker->setXValue((i-frac)/_sampleRateWoAxisUnits);
         marker->setYValue(samps[label.index]);
         marker->attach(_mainPlot);
         markers.emplace_back(marker);
