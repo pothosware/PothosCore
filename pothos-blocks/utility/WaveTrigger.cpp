@@ -684,7 +684,7 @@ bool WaveTrigger::searchTriggerPointReal(const Pothos::BufferChunk &buff, const 
 bool WaveTrigger::searchTriggerPointComplex(const Pothos::BufferChunk &buff, const size_t numElems,  double &pos)
 {
     const auto trigBuff = buff.convert(typeid(std::complex<float>));
-    const auto p = trigBuff.as<const float *>();
+    const auto p = trigBuff.as<const std::complex<float> *>();
 
     for (size_t i = _position; i < numElems-1; i++)
     {
