@@ -476,12 +476,14 @@ void FrameSync<Type>::work(void)
         if (_countSinceMax < _corrDurThresh) continue;
 
         //print summary
+        /*
         std::cout << "PEAK FOUND \n";
         std::cout << " _countSinceMax = " << _countSinceMax << std::endl;
         std::cout << " _maxCorrPeak = " << _maxCorrPeak << std::endl;
         std::cout << " _deltaFcMax = " << _deltaFcMax << std::endl;
         std::cout << " _phaseOffMax = " << _phaseOffMax << std::endl;
         std::cout << " _scaleAtMax = " << _scaleAtMax << std::endl;
+        //*/
 
         _maxCorrPeak = 0; //reset for next time
 
@@ -492,9 +494,11 @@ void FrameSync<Type>::work(void)
         if (length == 0) continue; //this is probably a false frame detection
 
         //print length results
+        /*
         std::cout << " length = " << length << std::endl;
         std::cout << " firstBit = " << firstBit << std::endl;
         std::cout << " sampOffset = " << (int(firstBit)-int(_syncWordWidth)) << std::endl;
+        //*/
 
         //Label width is specified based on the output mode.
         //Width may be divided down by an upstream time recovery block.
@@ -508,8 +512,10 @@ void FrameSync<Type>::work(void)
         _remainingPayload = length*_dataWidth;
         _phaseInc = _deltaFcMax;
         _phase = _phaseOffMax + _phaseInc*_countSinceMax;
+        /*
         std::cout << " _remainingHeader = " << _remainingHeader << std::endl;
         std::cout << " _remainingPayload = " << _remainingPayload << std::endl;
+        //*/
 
         //produce a phase offset label at the first payload index
         if (not _phaseOffsetId.empty()) outPort->postLabel(
