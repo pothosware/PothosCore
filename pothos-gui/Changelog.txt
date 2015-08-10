@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Extra try/catch for system info because JSON can throw
 - Hide message window tab bar until multiple tabs are used
 - Fix duplicate ID bug than can occur during handle paste
 - Fix enable handler for redundant events and widget objects

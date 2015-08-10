@@ -9,6 +9,7 @@
 #include <map>
 #include <atomic>
 #include <vector>
+#include <qwt_text.h>
 
 class MyQwtPlot;
 class QwtPlotGrid;
@@ -29,8 +30,6 @@ public:
     {
         return this;
     }
-
-    void setNumInputs(const size_t numInputs);
 
     //! set the plotter's title
     void setTitle(const QString &title);
@@ -68,6 +67,18 @@ public:
     void enableYAxis(const bool enb);
     void setYAxisTitle(const QString &title);
 
+    void setChannelLabel(const size_t ch, const QString &label)
+    {
+        _channelLabels[ch] = label;
+        QMetaObject::invokeMethod(this, "handleUpdateCurves", Qt::QueuedConnection);
+    }
+
+    void setChannelStyle(const size_t ch, const std::string &style)
+    {
+        _channelStyles[ch] = style;
+        QMetaObject::invokeMethod(this, "handleUpdateCurves", Qt::QueuedConnection);
+    }
+
     void setRateLabelId(const std::string &id)
     {
         _rateLabelId = id;
@@ -88,11 +99,14 @@ public:
 private slots:
     void installLegend(void);
     void handleLegendChecked(const QVariant &, bool, int);
-    void handleSamples(const int index, const int curve, const Pothos::BufferChunk &buff, const std::vector<Pothos::Label> &labels);
+    void handleSamples(const Pothos::Packet &pkt);
     void handleUpdateAxis(void);
+    void handleUpdateCurves(void);
     void handleZoomed(const QRectF &rect);
 
 private:
+    std::shared_ptr<QwtPlotCurve> &getCurve(const size_t index, const size_t which);
+
     MyQwtPlot *_mainPlot;
     QwtPlotGrid *_plotGrid;
     QwtPlotZoomer *_zoomer;
@@ -102,10 +116,15 @@ private:
     bool _autoScale;
     std::vector<double> _yRange;
     std::string _rateLabelId;
+    QwtText _triggerMarkerLabel;
+
+    //channel configs
+    std::map<size_t, QString> _channelLabels;
+    std::map<size_t, std::string> _channelStyles;
 
     //per-port data structs
+    size_t _curveCount;
     std::map<size_t, std::map<size_t, std::shared_ptr<QwtPlotCurve>>> _curves;
     std::map<size_t, std::vector<std::shared_ptr<QwtPlotMarker>>> _markers;
-    std::map<size_t, std::map<size_t, std::shared_ptr<std::atomic<size_t>>>> _queueDepth;
-    size_t _nextColorIndex;
+    std::map<size_t, std::shared_ptr<std::atomic<size_t>>> _queueDepth;
 };

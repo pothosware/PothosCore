@@ -21,9 +21,11 @@
  * |param displayRate[Display Rate] How often the plotter updates.
  * |default 10.0
  * |units updates/sec
+ * |preview disable
  *
  * |param numPoints[Num Points] The number of points per plot capture.
  * |default 1024
+ * |preview disable
  *
  * |param autoScale[Auto-Scale] Enable automatic scaling for the axes.
  * |default false

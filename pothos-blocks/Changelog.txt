@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Created wave trigger for waveform monitor back-end
 - Added labeled burst support to the FIR filter
 - Fix stream snooper label index adjustment logic
 - Support start label length in Stream to Packet

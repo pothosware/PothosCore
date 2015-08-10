@@ -3,6 +3,9 @@ This this the changelog file for the Pothos Widgets toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Wave viewer trigger options and use of wave trigger block
+- Support custom channel labels and style in wave viewer
+- Disable previews of redundant plotter parameters
 - Fix zoom selection box in waveform monitor display
 
 Release 0.2.0 (2015-06-17)

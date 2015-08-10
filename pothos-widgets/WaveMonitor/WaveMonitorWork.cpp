@@ -13,54 +13,75 @@
 /***********************************************************************
  * work functions
  **********************************************************************/
-void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, const Pothos::BufferChunk &buff, const std::vector<Pothos::Label> &labels)
+void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
 {
-    if (_queueDepth.at(index).at(whichCurve)->fetch_sub(1) != 1) return;
+    //extract index
+    const auto indexIt = packet.metadata.find("index");
+    const auto index = (indexIt == packet.metadata.end())?0:indexIt->second.convert<size_t>();
+    if (_queueDepth.at(index)->fetch_sub(1) != 1) return;
 
-    const auto samps = buff.as<const float *>();
-    QVector<QPointF> points(buff.elements());
-    for (int i = 0; i < points.size(); i++)
+    //extract position
+    const auto positionIt = packet.metadata.find("position");
+    const auto position = (positionIt == packet.metadata.end())?0:positionIt->second.convert<qreal>();
+    const auto frac = position-size_t(position);
+
+    //extract level
+    const auto levelIt = packet.metadata.find("level");
+    const auto level = (levelIt == packet.metadata.end())?0:levelIt->second.convert<qreal>();
+
+    //extract and convert buffer
+    const auto &buff = packet.payload;
+    Pothos::BufferChunk buffI, buffQ;
+    if (buff.dtype.isComplex())
     {
-        points[i] = QPointF(i/_sampleRateWoAxisUnits, samps[i]);
-    }
-
-    //install legend for multiple channels
-    if (_curves.empty() and this->inputs().size() > 1) this->installLegend();
-
-    //create curve if it doesnt exist
-    auto &curve = _curves[index][whichCurve];
-    if (not curve)
-    {
-        curve.reset(new QwtPlotCurve(QString("Ch%1").arg(index)));
-        curve->attach(_mainPlot);
-        curve->setPen(pastelize(getDefaultCurveColor(_nextColorIndex++)));
-        //relabel curves
-        if (_curves[index].size() == 2)
+        const auto outs = buff.convertComplex(typeid(float));
+        buffI = outs.first; buffQ = outs.second;
+        const auto sampsI = outs.first.as<const float *>();
+        const auto sampsQ = outs.second.as<const float *>();
+        QVector<QPointF> pointsI(buff.elements());
+        QVector<QPointF> pointsQ(buff.elements());
+        for (int i = 0; i < pointsI.size(); i++)
         {
-            _curves[index][0]->setTitle(QString("Re%1").arg(index));
-            _curves[index][1]->setTitle(QString("Im%1").arg(index));
-            //legend not installed with single input? well its complex...
-            if (this->inputs().size() == 1) this->installLegend();
-            _mainPlot->updateChecked(_curves[index][0].get());
-            _mainPlot->updateChecked(_curves[index][1].get());
+            const auto x = (i-frac)/_sampleRateWoAxisUnits;
+            pointsI[i] = QPointF(x, sampsI[i]);
+            pointsQ[i] = QPointF(x, sampsQ[i]);
         }
-        _mainPlot->updateChecked(curve.get());
+        this->getCurve(index, 0)->setSamples(pointsI);
+        this->getCurve(index, 1)->setSamples(pointsQ);
     }
-    curve->setSamples(points);
+    else
+    {
+        buffI = buff.convert(typeid(float));
+        const auto samps = buffI.as<const float *>();
+        QVector<QPointF> points(buff.elements());
+        for (int i = 0; i < points.size(); i++)
+        {
+            const auto x = (i-frac)/_sampleRateWoAxisUnits;
+            points[i] = QPointF(x, samps[i]);
+        }
+        this->getCurve(index, 0)->setSamples(points);
+    }
 
     //create markers from labels
     auto &markers = _markers[index];
-    if (whichCurve == 0) markers.clear(); //clear old markers
-    for (const auto &label : labels)
+    markers.clear(); //clear old markers
+    const auto samps = buffI.as<const float *>();
+    for (const auto &label : packet.labels)
     {
         auto marker = new QwtPlotMarker();
         marker->setLabel(MyMarkerLabel(QString::fromStdString(label.id)));
         marker->setLabelAlignment(Qt::AlignHCenter);
-        auto index = label.index + (label.width-1)/2.0;
-        marker->setXValue(index/_sampleRateWoAxisUnits);
+        const auto i = label.index + (label.width-1)/2.0;
+        marker->setXValue((i-frac)/_sampleRateWoAxisUnits);
         marker->setYValue(samps[label.index]);
         marker->attach(_mainPlot);
         markers.emplace_back(marker);
+        if (label.id == "T")
+        {
+            marker->setLabel(_triggerMarkerLabel);
+            marker->setXValue(i/_sampleRateWoAxisUnits);
+            marker->setYValue(level);
+        }
     }
 
     _mainPlot->replot();
@@ -68,58 +89,34 @@ void WaveMonitorDisplay::handleSamples(const int index, const int whichCurve, co
 
 void WaveMonitorDisplay::work(void)
 {
-    for (auto inPort : this->inputs())
+    auto inPort = this->input(0);
+
+    if (not inPort->hasMessage()) return;
+    const auto msg = inPort->popMessage();
+
+    //label-based messages have in-line commands
+    if (msg.type() == typeid(Pothos::Label))
     {
-        if (not inPort->hasMessage()) continue;
-        const auto msg = inPort->popMessage();
-
-        //label-based messages have in-line commands
-        if (msg.type() == typeid(Pothos::Label))
+        const auto &label = msg.convert<Pothos::Label>();
+        if (label.id == _rateLabelId and label.data.canConvert(typeid(double)))
         {
-            const auto &label = msg.convert<Pothos::Label>();
-            if (label.id == _rateLabelId and label.data.canConvert(typeid(double)))
-            {
-                this->setSampleRate(label.data.convert<double>());
-            }
+            this->setSampleRate(label.data.convert<double>());
         }
+    }
 
-        //packet-based messages have payloads to display
-        if (msg.type() == typeid(Pothos::Packet))
-        {
-            const auto &packet = msg.convert<Pothos::Packet>();
-            const auto &buff = packet.payload;
-            std::vector<Pothos::BufferChunk> floatBuffs;
+    //packet-based messages have payloads to display
+    if (msg.type() == typeid(Pothos::Packet))
+    {
+        const auto &packet = msg.convert<Pothos::Packet>();
+        const auto indexIt = packet.metadata.find("index");
+        const auto index = (indexIt == packet.metadata.end())?0:indexIt->second.convert<size_t>();
 
-            if (buff.dtype.isComplex())
-            {
-                floatBuffs.resize(2);
-                auto outs = buff.convertComplex(Pothos::DType(typeid(float)), buff.elements());
-                floatBuffs[0].append(outs.first);
-                floatBuffs[1].append(outs.second);
-            }
-            else
-            {
-                floatBuffs.resize(1);
-                auto out = buff.convert(Pothos::DType(typeid(float)), buff.elements());
-                floatBuffs[0].append(out);
-            }
+        //ensure that we have allocated depth counters (used to avoid displaying old data)
+        if (not _queueDepth[index]) _queueDepth[index].reset(new std::atomic<size_t>(0));
 
-            //ensure that we have allocated depth counters (used to avoid displaying old data)
-            if (not _queueDepth[inPort->index()][0]) _queueDepth[inPort->index()][0].reset(new std::atomic<size_t>(0));
-            if (not _queueDepth[inPort->index()][1]) _queueDepth[inPort->index()][1].reset(new std::atomic<size_t>(0));
-
-            _queueDepth[inPort->index()][0]->fetch_add(1);
-            QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
-                Q_ARG(int, inPort->index()), Q_ARG(int, 0),
-                Q_ARG(Pothos::BufferChunk, floatBuffs[0]),
-                Q_ARG(std::vector<Pothos::Label>, packet.labels));
-
-            const bool hasIm = floatBuffs.size() > 1;
-            if (hasIm) _queueDepth[inPort->index()][1]->fetch_add(1);
-            if (hasIm) QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
-                Q_ARG(int, inPort->index()), Q_ARG(int, 1),
-                Q_ARG(Pothos::BufferChunk, floatBuffs[1]),
-                Q_ARG(std::vector<Pothos::Label>, std::vector<Pothos::Label>()));
-        }
+        //send the entire packet into the qt domain for processing
+        _queueDepth[index]->fetch_add(1);
+        QMetaObject::invokeMethod(this, "handleSamples", Qt::QueuedConnection,
+            Q_ARG(Pothos::Packet, packet));
     }
 }
