@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.2.1 (pending)
 ==========================
 
+- Support custom multi-dest buffers when domain unspecified
 - JSON stats use block name from flattened hierarchy
 - Cache calls to get buffer manager implementations
 - Install buffer managers skips signal/slot ports

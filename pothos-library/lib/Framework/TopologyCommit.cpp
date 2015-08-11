@@ -95,7 +95,8 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
             for (const auto &otherDst : dsts)
             {
                 if (otherDst == dst) continue;
-                if (getBufferMode(otherDst, srcDomain, true) != "ABDICATE")
+                auto otherDstDomain = otherDst.obj.callProxy("input", otherDst.name).call<std::string>("domain");
+                if (getBufferMode(otherDst, srcDomain, true) != "ABDICATE" and not otherDstDomain.empty())
                 {
                     throw Pothos::Exception("Pothos::Topology::installBufferManagers", Poco::format("%s->%s\n"
                         "rectifyDomainFlows() logic does not /yet/ handle multiple destinations w/ custom buffer managers",
