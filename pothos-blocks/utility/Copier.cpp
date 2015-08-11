@@ -12,6 +12,7 @@
  * This block is used to bridge connections between incompatible domains.
  *
  * |category /Utility
+ * |keywords copier copy memcpy
  *
  * |factory /blocks/copier()
  **********************************************************************/
