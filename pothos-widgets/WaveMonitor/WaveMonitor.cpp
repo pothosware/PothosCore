@@ -116,12 +116,14 @@
  * |param triggerMode [Mode] The operational mode of the triggering system.
  * <ul>
  * <li>In automatic mode, the trigger event is forced by timer if none occurs.</li>
+ * <li>In semi-automatic mode, the trigger event is forced by timer after the first window.</li>
  * <li>In normal mode, samples are only forwarded when a trigger event occurs.</li>
  * <li>In periodic mode, there is no trigger search, the trigger event is forced by timer.</li>
  * <li>In disabled mode, trigger search is disabled and samples are not forwarded.</li>
  * </ul>
  * |default "AUTOMATIC"
  * |option [Automatic] "AUTOMATIC"
+ * |option [Semi-automatic] "SEMIAUTOMATIC"
  * |option [Normal] "NORMAL"
  * |option [Periodic] "PERIODIC"
  * |option [Disabled] "DISABLED"

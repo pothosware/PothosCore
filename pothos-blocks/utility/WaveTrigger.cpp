@@ -111,12 +111,14 @@
  * |param mode [Mode] The operational mode of the triggering system.
  * <ul>
  * <li>In automatic mode, the trigger event is forced by timer if none occurs.</li>
+ * <li>In semi-automatic mode, the trigger event is forced by timer after the first window.</li>
  * <li>In normal mode, samples are only forwarded when a trigger event occurs.</li>
  * <li>In periodic mode, there is no trigger search, the trigger event is forced by timer.</li>
  * <li>In disabled mode, trigger search is disabled and samples are not forwarded.</li>
  * </ul>
  * |default "AUTOMATIC"
  * |option [Automatic] "AUTOMATIC"
+ * |option [Semi-automatic] "SEMIAUTOMATIC"
  * |option [Normal] "NORMAL"
  * |option [Periodic] "PERIODIC"
  * |option [Disabled] "DISABLED"
@@ -164,6 +166,7 @@ public:
         _posSlope(false),
         _negSlope(false),
         _triggerTimerEnabled(false),
+        _triggerWindowTimerEnabled(false),
         _triggerSearchEnabled(false),
         _level(0.0),
         _position(0)
@@ -311,31 +314,16 @@ public:
 
     void setMode(const std::string &mode)
     {
-        if (mode == "AUTOMATIC")
-        {
-            _triggerTimerEnabled = true;
-            _triggerSearchEnabled = true;
-        }
-        else if (mode == "NORMAL")
-        {
-            _triggerTimerEnabled = false;
-            _triggerSearchEnabled = true;
-        }
-        else if (mode == "PERIODIC")
-        {
-            _triggerTimerEnabled = true;
-            _triggerSearchEnabled = false;
-        }
-        else if (mode == "DISABLED")
-        {
-            _triggerTimerEnabled = false;
-            _triggerSearchEnabled = false;
-        }
-        else
-        {
-            throw Pothos::InvalidArgumentException("WaveTrigger::setMode("+mode+")", "unknown mode setting");
-        }
+        if (mode == "AUTOMATIC"){}
+        else if (mode == "SEMIAUTOMATIC"){}
+        else if (mode == "NORMAL"){}
+        else if (mode == "PERIODIC"){}
+        else if (mode == "DISABLED"){}
+        else throw Pothos::InvalidArgumentException("WaveTrigger::setMode("+mode+")", "unknown mode setting");
         _modeStr = mode;
+        _triggerWindowTimerEnabled = (mode == "SEMIAUTOMATIC");
+        _triggerTimerEnabled       = (mode == "AUTOMATIC" or mode == "PERIODIC");
+        _triggerSearchEnabled      = (mode == "AUTOMATIC" or mode == "SEMIAUTOMATIC" or mode == "NORMAL");
     }
 
     std::string getMode(void) const
@@ -424,6 +412,7 @@ private:
     bool _negSlope;
     std::string _modeStr;
     bool _triggerTimerEnabled;
+    bool _triggerWindowTimerEnabled;
     bool _triggerSearchEnabled;
     double _level;
     size_t _position;
@@ -597,7 +586,8 @@ void WaveTrigger::triggerWork(void)
         }
 
         //in automatic mode, a timeout can force a trigger
-        if (not found and _triggerTimerEnabled)
+        //or in semi-automatic mode on subsequent windows
+        if (not found and (_triggerTimerEnabled or (_triggerWindowTimerEnabled and _windowsRemaining != 0)))
         {
             found = timePassed > _autoForceTimeout;
             _triggerEventFromTimer = true;
