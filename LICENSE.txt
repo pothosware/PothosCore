@@ -1,0 +1,39 @@
+########################################################################
+## Top level license file for Pothos data flow software suite
+########################################################################
+
+This repository is a meta-project for developing, building, and installing
+the main Pothos framework, core dependency libraries, and official toolkits.
+License files and source code are available in each project sub-directory.
+
+The core Pothos library, Pothos serialization support library,
+Poco C++ libraries, and official toolkits found in this repository
+are available under the Boost Software License - Version 1.0.
+
+Please note that Pothos toolkits that are NOT found in this repository,
+both official and unofficial, may have different licensing terms.
+
+Several external libraries have been included into this meta-project
+that are not licensed under the Boost Software License - Version 1.0,
+however are available under a permissive compatible software license.
+
+== muparserX
+Description: C++ mathematical expression evaluator library
+Homepage: http://articles.beltoforion.de/article.php?a=muparserx
+License: http://opensource.org/licenses/BSD-3-Clause
+Usage: Pothos util tookit expression parser support
+Source: pothos-util/muparserx/
+
+== Qwt
+Description: C++ plotting library based around Qt widgets
+Homepage: http://qwt.sourceforge.net/
+License: http://qwt.sourceforge.net/qwtlicense.html
+Usage: Pothos widgets toolkit plotter support
+Source: pothos-widgets/qwt/
+
+== qtcolorpicker
+Description: C++ drop-down color selection Qt widget
+Source: pothos-gui/qtcolorpicker
+License: GNU Lesser General Public License Usage
+Usage: Pothos GUI designer affinity color selection
+Source: pothos-widgets/qtcolorpicker/
