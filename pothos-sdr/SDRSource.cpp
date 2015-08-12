@@ -35,7 +35,16 @@ public:
         if (numElems == 0) return;
         const long timeoutUs = this->workInfo().maxTimeoutNs/1000;
         const auto &buffs = this->workInfo().outputPointers;
-        const int ret = _device->readStream(_stream, buffs.data(), numElems, flags, timeNs, timeoutUs);
+
+        //initial non-blocking read for all available samples that can fit into the buffer
+        int ret = _device->readStream(_stream, buffs.data(), numElems, flags, timeNs, 0);
+
+        //otherwise perform a blocking read on the single transfer unit size (in samples)
+        if (ret == SOAPY_SDR_TIMEOUT or ret == 0)
+        {
+            const auto minNumElems = std::min(numElems, _device->getStreamMTU(_stream));
+            ret = _device->readStream(_stream, buffs.data(), minNumElems, flags, timeNs, timeoutUs);
+        }
 
         //handle error
         if (ret <= 0)
