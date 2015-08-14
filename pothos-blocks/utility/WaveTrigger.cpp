@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm> //min/max
 #include <cstring> //memcpy
+#include <set>
 
 /***********************************************************************
  * |PothosDoc Wave Trigger
@@ -195,6 +196,7 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getLevel));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setPosition));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getPosition));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setIdsList));
 
         //initialization
         this->setNumPoints(1024);
@@ -351,6 +353,11 @@ public:
         return _position;
     }
 
+    void setIdsList(const std::vector<std::string> &ids)
+    {
+        _forwardIds = std::set<std::string>(ids.begin(), ids.end());
+    }
+
     void activate(void)
     {
         //reset state
@@ -380,6 +387,7 @@ public:
         auto outPort = this->output(0);
         for (const auto &label : port->labels())
         {
+            if (_forwardIds.find(label.id) == _forwardIds.end()) continue;
             outPort->postMessage(label);
         }
     }
@@ -416,6 +424,7 @@ private:
     bool _triggerSearchEnabled;
     double _level;
     size_t _position;
+    std::set<std::string> _forwardIds;
 
     //state tracking
     bool _triggerEventFromTimer;

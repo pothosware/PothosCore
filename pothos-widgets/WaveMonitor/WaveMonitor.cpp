@@ -257,6 +257,7 @@ public:
 
         //register calls in this topology
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setNumInputs));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveMonitor, setRateLabelId));
 
         //display setters
         _topologyToDisplaySetter["setTitle"] = "setTitle";
@@ -269,7 +270,6 @@ public:
         _topologyToDisplaySetter["setYAxisTitle"] = "setYAxisTitle";
         _topologyToDisplaySetter["setChannelLabel"] = "setChannelLabel";
         _topologyToDisplaySetter["setChannelStyle"] = "setChannelStyle";
-        _topologyToDisplaySetter["setRateLabelId"] = "setRateLabelId";
 
         //trigger setters
         _topologyToTriggerSetter["setDisplayRate"] = "setEventRate";
@@ -339,6 +339,12 @@ public:
         {
             this->connect(this, i, _trigger, i);
         }
+    }
+
+    void setRateLabelId(const std::string &id)
+    {
+        _display->setRateLabelId(id);
+        _trigger.callVoid("setIdsList", std::vector<std::string>(1, id));
     }
 
 private:
