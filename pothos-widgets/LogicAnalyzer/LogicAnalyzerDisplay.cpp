@@ -64,11 +64,6 @@ LogicAnalyzerDisplay::~LogicAnalyzerDisplay(void)
 
 void LogicAnalyzerDisplay::setNumInputs(const size_t numInputs)
 {
-    for (size_t i = this->inputs().size(); i < numInputs; i++)
-    {
-        this->setupInput(i, this->input(0)->dtype());
-    }
-
     _chLabel.resize(numInputs);
     _chBase.resize(numInputs, 10);
     _chData.resize(numInputs);
@@ -119,8 +114,11 @@ void LogicAnalyzerDisplay::populateChannel(const int channel, const Pothos::Pack
     }
 }
 
-void LogicAnalyzerDisplay::updateData(const int channel, const Pothos::Packet &packet)
+void LogicAnalyzerDisplay::updateData(const Pothos::Packet &packet)
 {
+    const auto indexIt = packet.metadata.find("index");
+    const auto channel = (indexIt == packet.metadata.end())?0:indexIt->second.convert<int>();
+
     //column count changed? new labels
     const size_t numElems = packet.payload.elements();
     const bool changed = _tableView->columnCount() != int(numElems);
@@ -180,7 +178,7 @@ void LogicAnalyzerDisplay::handleReplot(void)
         auto label = _chLabel.at(ch);
         if (label.isEmpty()) label = tr("Ch%1").arg(ch);
         _tableView->setVerticalHeaderItem(ch, new QTableWidgetItem(label));
-        this->updateData(ch, _chData.at(ch));
+        this->updateData(_chData.at(ch));
     }
 
     _tableView->resizeColumnsToContents();
@@ -188,27 +186,25 @@ void LogicAnalyzerDisplay::handleReplot(void)
 
 void LogicAnalyzerDisplay::work(void)
 {
-    for (auto inPort : this->inputs())
+    auto inPort = this->input(0);
+
+    if (not inPort->hasMessage()) return;
+    const auto msg = inPort->popMessage();
+
+    //label-based messages have in-line commands
+    if (msg.type() == typeid(Pothos::Label))
     {
-        if (not inPort->hasMessage()) continue;
-        const auto msg = inPort->popMessage();
-
-        //label-based messages have in-line commands
-        if (msg.type() == typeid(Pothos::Label))
+        const auto &label = msg.convert<Pothos::Label>();
+        if (label.id == _rateLabelId and label.data.canConvert(typeid(double)))
         {
-            const auto &label = msg.convert<Pothos::Label>();
-            if (label.id == _rateLabelId and label.data.canConvert(typeid(double)))
-            {
-                this->setSampleRate(label.data.convert<double>());
-            }
+            this->setSampleRate(label.data.convert<double>());
         }
+    }
 
-        //packet-based messages have payloads to display
-        if (msg.type() == typeid(Pothos::Packet))
-        {
-            const auto &packet = msg.convert<Pothos::Packet>();
-            QMetaObject::invokeMethod(this, "updateData", Qt::QueuedConnection,
-                Q_ARG(int, inPort->index()), Q_ARG(Pothos::Packet, packet));
-        }
+    //packet-based messages have payloads to display
+    if (msg.type() == typeid(Pothos::Packet))
+    {
+        const auto &packet = msg.convert<Pothos::Packet>();
+        QMetaObject::invokeMethod(this, "updateData", Qt::QueuedConnection, Q_ARG(Pothos::Packet, packet));
     }
 }

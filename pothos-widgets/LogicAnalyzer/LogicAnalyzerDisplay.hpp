@@ -26,7 +26,7 @@ public:
 
     size_t numInputs(void) const
     {
-        return this->inputs().size();
+        return _chData.size();
     }
 
     double sampleRate(void) const
@@ -77,7 +77,7 @@ public:
     void work(void);
 
 private slots:
-    void updateData(const int channel, const Pothos::Packet &);
+    void updateData(const Pothos::Packet &);
     void updateHeaders(void);
     void handleReplot(void);
 

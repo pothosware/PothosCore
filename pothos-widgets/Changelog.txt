@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Widgets toolkit.
 Release 0.2.1 (pending)
 ==========================
 
+- Switch from stream snooper to wave trigger all plotters
 - Wave viewer trigger options and use of wave trigger block
 - Support custom channel labels and style in wave viewer
 - Disable previews of redundant plotter parameters

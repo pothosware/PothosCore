@@ -32,8 +32,6 @@ public:
         return this;
     }
 
-    void setNumInputs(const size_t numInputs);
-
     //! set the plotter's title
     void setTitle(const QString &title);
 
@@ -55,11 +53,6 @@ public:
     void setAutoScale(const bool autoScale);
 
     QString title(void) const;
-
-    size_t numInputs(void) const
-    {
-        return this->inputs().size();
-    }
 
     double sampleRate(void) const
     {

@@ -33,7 +33,6 @@ PeriodogramDisplay::PeriodogramDisplay(void):
 
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, widget));
-    this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setNumInputs));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setTitle));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setSampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setCenterFrequency));
@@ -42,7 +41,6 @@ PeriodogramDisplay::PeriodogramDisplay(void):
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setReferenceLevel));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setDynamicRange));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setAutoScale));
-    this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, numInputs));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, title));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, centerFrequency));
@@ -88,11 +86,6 @@ PeriodogramDisplay::PeriodogramDisplay(void):
 PeriodogramDisplay::~PeriodogramDisplay(void)
 {
     return;
-}
-
-void PeriodogramDisplay::setNumInputs(const size_t numInputs)
-{
-    for (size_t i = this->inputs().size(); i < numInputs; i++) this->setupInput(i);
 }
 
 void PeriodogramDisplay::setTitle(const QString &title)

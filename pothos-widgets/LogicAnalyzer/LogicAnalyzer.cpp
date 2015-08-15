@@ -144,14 +144,16 @@ public:
         _display->setName("Display");
 
         auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
-        _snooper = registry.callProxy("/blocks/stream_snooper");
-        _snooper.callVoid("setName", "Snooper");
+        _trigger = registry.callProxy("/blocks/wave_trigger");
+        _trigger.callVoid("setName", "Trigger");
+        _trigger.callVoid("setMode", "PERIODIC");
 
         //register calls in this topology
         this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setNumInputs));
         this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setDisplayRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setNumPoints));
         this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setAlignment));
+        this->registerCall(this, POTHOS_FCN_TUPLE(LogicAnalyzer, setRateLabelId));
 
         //connect to internal display block
         this->connect(this, "setChannelLabel", _display, "setChannelLabel");
@@ -159,9 +161,12 @@ public:
         this->connect(this, "setXAxisMode", _display, "setXAxisMode");
 
         //connect to the internal snooper block
-        this->connect(this, "setDisplayRate", _snooper, "setTriggerRate");
-        this->connect(this, "setNumPoints", _snooper, "setChunkSize");
-        this->connect(this, "setAlignment", _snooper, "setAlignment");
+        this->connect(this, "setDisplayRate", _trigger, "setEventRate");
+        this->connect(this, "setNumPoints", _trigger, "setNumPoints");
+        this->connect(this, "setAlignment", _trigger, "setAlignment");
+
+        //connect stream ports
+        this->connect(_trigger, 0, _display, 0);
     }
 
     Pothos::Object opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
@@ -180,31 +185,38 @@ public:
     void setNumInputs(const size_t numInputs)
     {
         _display->setNumInputs(numInputs);
-        _snooper.callVoid("setNumPorts", numInputs);
+        _trigger.callVoid("setNumPorts", numInputs);
         for (size_t i = 0; i < numInputs; i++)
         {
-            this->connect(this, i, _snooper, i);
-            this->connect(_snooper, i, _display, i);
+            this->connect(this, i, _trigger, i);
         }
     }
 
     void setDisplayRate(const double rate)
     {
-        _snooper.callVoid("setTriggerRate", rate);
+        _trigger.callVoid("setEventRate", rate);
     }
 
     void setNumPoints(const size_t num)
     {
-        _snooper.callVoid("setChunkSize", num);
+        _trigger.callVoid("setNumPoints", num);
     }
 
     void setAlignment(const bool enabled)
     {
-        _snooper.callVoid("setAlignment", enabled);
+        _trigger.callVoid("setAlignment", enabled);
+    }
+
+    void setRateLabelId(const std::string &id)
+    {
+        _display->setRateLabelId(id);
+        std::vector<std::string> ids;
+        if (not id.empty()) ids.push_back(id);
+        _trigger.callVoid("setIdsList", ids);
     }
 
 private:
-    Pothos::Proxy _snooper;
+    Pothos::Proxy _trigger;
     std::shared_ptr<LogicAnalyzerDisplay> _display;
 };
 

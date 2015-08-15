@@ -135,11 +135,14 @@ public:
         _display->setName("Display");
 
         auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
-        _snooper = registry.callProxy("/blocks/stream_snooper");
-        _snooper.callVoid("setName", "Snooper");
+        _trigger = registry.callProxy("/blocks/wave_trigger");
+        _trigger.callVoid("setName", "Trigger");
+        _trigger.callVoid("setMode", "PERIODIC");
 
         //register calls in this topology
         this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setNumFFTBins));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setFreqLabelId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Spectrogram, setRateLabelId));
 
         //connect to internal display block
         this->connect(this, "setTitle", _display, "setTitle");
@@ -156,12 +159,12 @@ public:
         this->connect(_display, "frequencySelected", this, "frequencySelected");
 
         //connect to the internal snooper block
-        this->connect(_display, "updateRateChanged", _snooper, "setTriggerRate");
-        this->connect(this, "setNumFFTBins", _snooper, "setChunkSize");
+        this->connect(_display, "updateRateChanged", _trigger, "setEventRate");
+        this->connect(this, "setNumFFTBins", _trigger, "setNumPoints");
 
         //connect stream ports
-        this->connect(this, 0, _snooper, 0);
-        this->connect(_snooper, 0, _display, 0);
+        this->connect(this, 0, _trigger, 0);
+        this->connect(_trigger, 0, _display, 0);
     }
 
     Pothos::Object opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
@@ -179,13 +182,36 @@ public:
 
     void setNumFFTBins(const size_t num)
     {
-        _snooper.callVoid("setChunkSize", num);
+        _trigger.callVoid("setNumPoints", num);
         _display->setNumFFTBins(num);
     }
 
+    void setFreqLabelId(const std::string &id)
+    {
+        _display->setFreqLabelId(id);
+        _freqLabelId = id;
+        this->updateIdsList();
+    }
+
+    void setRateLabelId(const std::string &id)
+    {
+        _display->setRateLabelId(id);
+        _rateLabelId = id;
+        this->updateIdsList();
+    }
+
+    void updateIdsList(void)
+    {
+        std::vector<std::string> ids;
+        if (not _freqLabelId.empty()) ids.push_back(_freqLabelId);
+        if (not _rateLabelId.empty()) ids.push_back(_rateLabelId);
+        _trigger.callVoid("setIdsList", ids);
+    }
+
 private:
-    Pothos::Proxy _snooper;
+    Pothos::Proxy _trigger;
     std::shared_ptr<SpectrogramDisplay> _display;
+    std::string _freqLabelId, _rateLabelId;
 };
 
 /***********************************************************************

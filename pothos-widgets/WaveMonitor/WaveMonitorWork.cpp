@@ -17,7 +17,7 @@ void WaveMonitorDisplay::handleSamples(const Pothos::Packet &packet)
 {
     //extract index
     const auto indexIt = packet.metadata.find("index");
-    const auto index = (indexIt == packet.metadata.end())?0:indexIt->second.convert<size_t>();
+    const auto index = (indexIt == packet.metadata.end())?0:indexIt->second.convert<int>();
     if (_queueDepth.at(index)->fetch_sub(1) != 1) return;
 
     //extract position
@@ -109,7 +109,7 @@ void WaveMonitorDisplay::work(void)
     {
         const auto &packet = msg.convert<Pothos::Packet>();
         const auto indexIt = packet.metadata.find("index");
-        const auto index = (indexIt == packet.metadata.end())?0:indexIt->second.convert<size_t>();
+        const auto index = (indexIt == packet.metadata.end())?0:indexIt->second.convert<int>();
 
         //ensure that we have allocated depth counters (used to avoid displaying old data)
         if (not _queueDepth[index]) _queueDepth[index].reset(new std::atomic<size_t>(0));

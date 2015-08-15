@@ -344,7 +344,9 @@ public:
     void setRateLabelId(const std::string &id)
     {
         _display->setRateLabelId(id);
-        _trigger.callVoid("setIdsList", std::vector<std::string>(1, id));
+        std::vector<std::string> ids;
+        if (not id.empty()) ids.push_back(id);
+        _trigger.callVoid("setIdsList", ids);
     }
 
 private:

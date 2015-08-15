@@ -23,40 +23,43 @@ void PeriodogramDisplay::handlePowerBins(const int index, const std::valarray<fl
 
 void PeriodogramDisplay::work(void)
 {
-    for (auto inPort : this->inputs())
+    auto inPort = this->input(0);
+
+    if (not inPort->hasMessage()) return;
+    const auto msg = inPort->popMessage();
+
+    //label-based messages have in-line commands
+    if (msg.type() == typeid(Pothos::Label))
     {
-        if (not inPort->hasMessage()) continue;
-        const auto msg = inPort->popMessage();
-
-        //label-based messages have in-line commands
-        if (msg.type() == typeid(Pothos::Label))
+        const auto &label = msg.convert<Pothos::Label>();
+        if (label.id == _freqLabelId and label.data.canConvert(typeid(double)))
         {
-            const auto &label = msg.convert<Pothos::Label>();
-            if (label.id == _freqLabelId and label.data.canConvert(typeid(double)))
-            {
-                this->setCenterFrequency(label.data.convert<double>());
-            }
-            if (label.id == _rateLabelId and label.data.canConvert(typeid(double)))
-            {
-                this->setSampleRate(label.data.convert<double>());
-            }
+            this->setCenterFrequency(label.data.convert<double>());
         }
-
-        //packet-based messages have payloads to FFT
-        if (msg.type() == typeid(Pothos::Packet))
+        if (label.id == _rateLabelId and label.data.canConvert(typeid(double)))
         {
-            const auto &buff = msg.convert<Pothos::Packet>().payload;
-            auto floatBuff = buff.convert(Pothos::DType(typeid(std::complex<float>)), buff.elements());
-
-            //safe guard against FFT size changes, old buffers could still be in-flight
-            if (floatBuff.elements() != this->numFFTBins()) continue;
-
-            //power bins to points on the curve
-            CArray fftBins(floatBuff.as<const std::complex<float> *>(), this->numFFTBins());
-            const auto powerBins = fftPowerSpectrum(fftBins, _window.call<std::vector<double>>("window"), _window.call<double>("power"));
-            if (not _queueDepth[inPort->index()]) _queueDepth[inPort->index()].reset(new std::atomic<size_t>(0));
-            _queueDepth[inPort->index()]->fetch_add(1);
-            QMetaObject::invokeMethod(this, "handlePowerBins", Qt::QueuedConnection, Q_ARG(int, inPort->index()), Q_ARG(std::valarray<float>, powerBins));
+            this->setSampleRate(label.data.convert<double>());
         }
+    }
+
+    //packet-based messages have payloads to FFT
+    if (msg.type() == typeid(Pothos::Packet))
+    {
+        const auto &packet = msg.convert<Pothos::Packet>();
+        const auto indexIt = packet.metadata.find("index");
+        const auto index = (indexIt == packet.metadata.end())?0:indexIt->second.convert<int>();
+
+        const auto &buff = packet.payload;
+        auto floatBuff = buff.convert(Pothos::DType(typeid(std::complex<float>)), buff.elements());
+
+        //safe guard against FFT size changes, old buffers could still be in-flight
+        if (floatBuff.elements() != this->numFFTBins()) return;
+
+        //power bins to points on the curve
+        CArray fftBins(floatBuff.as<const std::complex<float> *>(), this->numFFTBins());
+        const auto powerBins = fftPowerSpectrum(fftBins, _window.call<std::vector<double>>("window"), _window.call<double>("power"));
+        if (not _queueDepth[index]) _queueDepth[index].reset(new std::atomic<size_t>(0));
+        _queueDepth[index]->fetch_add(1);
+        QMetaObject::invokeMethod(this, "handlePowerBins", Qt::QueuedConnection, Q_ARG(int, index), Q_ARG(std::valarray<float>, powerBins));
     }
 }

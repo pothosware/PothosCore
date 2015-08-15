@@ -85,8 +85,9 @@ public:
         _display->setName("Display");
 
         auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
-        _snooper = registry.callProxy("/blocks/stream_snooper");
-        _snooper.callVoid("setName", "Snooper");
+        _trigger = registry.callProxy("/blocks/wave_trigger");
+        _trigger.callVoid("setName", "Trigger");
+        _trigger.callVoid("setMode", "PERIODIC");
 
         //register calls in this topology
         this->registerCall(this, POTHOS_FCN_TUPLE(Constellation, setDisplayRate));
@@ -101,12 +102,12 @@ public:
         this->connect(this, "enableYAxis", _display, "enableYAxis");
 
         //connect to the internal snooper block
-        this->connect(this, "setDisplayRate", _snooper, "setTriggerRate");
-        this->connect(this, "setNumPoints", _snooper, "setChunkSize");
+        this->connect(this, "setDisplayRate", _trigger, "setEventRate");
+        this->connect(this, "setNumPoints", _trigger, "setNumPoints");
 
         //connect stream ports
-        this->connect(this, 0, _snooper, 0);
-        this->connect(_snooper, 0, _display, 0);
+        this->connect(this, 0, _trigger, 0);
+        this->connect(_trigger, 0, _display, 0);
     }
 
     Pothos::Object opaqueCallMethod(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs) const
@@ -124,16 +125,16 @@ public:
 
     void setDisplayRate(const double rate)
     {
-        _snooper.callVoid("setTriggerRate", rate);
+        _trigger.callVoid("setEventRate", rate);
     }
 
     void setNumPoints(const size_t num)
     {
-        _snooper.callVoid("setChunkSize", num);
+        _trigger.callVoid("setNumPoints", num);
     }
 
 private:
-    Pothos::Proxy _snooper;
+    Pothos::Proxy _trigger;
     std::shared_ptr<ConstellationDisplay> _display;
 };
 
