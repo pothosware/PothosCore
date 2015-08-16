@@ -136,6 +136,14 @@
  * |widget SpinBox(minimum=0)
  * |preview valid
  *
+ * |param labelId [Label ID] An optional label ID that causes a trigger event.
+ * Rather than an input level, an associated stream label can indicate a trigger event.
+ * The trigger label simply overrides the level-trigger, all other rules still apply.
+ * An empty label ID disables this feature.
+ * |default ""
+ * |widget StringEntry()
+ * |preview valid
+ *
  * |factory /blocks/wave_trigger()
  * |initializer setNumPorts(numPorts)
  * |setter setNumPoints(numPoints)
@@ -148,6 +156,7 @@
  * |setter setMode(mode)
  * |setter setLevel(level)
  * |setter setPosition(position)
+ * |setter setLabelId(labelId)
  **********************************************************************/
 class WaveTrigger : public Pothos::Block
 {
@@ -196,6 +205,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getLevel));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setPosition));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getPosition));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setLabelId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, getLabelId));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveTrigger, setIdsList));
 
         //initialization
@@ -353,6 +364,16 @@ public:
         return _position;
     }
 
+    void setLabelId(const std::string &id)
+    {
+        _labelId = id;
+    }
+
+    std::string getLabelId(void) const
+    {
+        return _labelId;
+    }
+
     void setIdsList(const std::vector<std::string> &ids)
     {
         _forwardIds = std::set<std::string>(ids.begin(), ids.end());
@@ -424,10 +445,11 @@ private:
     bool _triggerSearchEnabled;
     double _level;
     size_t _position;
+    std::string _labelId;
     std::set<std::string> _forwardIds;
 
     //state tracking
-    bool _triggerEventFromTimer;
+    bool _triggerEventFromLevel;
     size_t _pointsRemaining;
     size_t _windowsRemaining;
     size_t _holdOffRemaining;
@@ -497,7 +519,7 @@ void WaveTrigger::work(void)
         }
 
         //if the trigger point was found, record this in the metadata
-        if (not _triggerEventFromTimer and size_t(port->index()) == _source)
+        if (_triggerEventFromLevel and size_t(port->index()) == _source)
         {
             const auto index = _position+packet.payload.elements();
             packet.labels.push_back(Pothos::Label("T", Pothos::Object(), index));
@@ -581,17 +603,30 @@ void WaveTrigger::triggerWork(void)
     //for complex data, we trigger on the absolute value
     bool found = false;
     _triggerEventOffset = _position;
-    _triggerEventFromTimer = false;
+    _triggerEventFromLevel = false;
     if (searchEnabled and _triggerSearchEnabled)
     {
-        if (trigBuff.dtype.isComplex())
+        if (not _labelId.empty()) for (const auto &label : trigPort->labels())
         {
-            found = this->searchTriggerPointComplex(trigBuff, numElems, _triggerEventOffset);
+            if (label.id != _labelId) continue;
+            const auto index = label.toAdjusted(1, trigBuff.dtype.size()).index;
+            if (index < _position) continue;
+            if (index >= numElems-1) break;
+            found = true;
+            _triggerEventOffset = index;
+            break;
+        }
+
+        else if (trigBuff.dtype.isComplex())
+        {
+            found = this->searchTriggerPointComplex(trigBuff, numElems-1, _triggerEventOffset);
+            _triggerEventFromLevel = true;
         }
 
         else
         {
-            found = this->searchTriggerPointReal(trigBuff, numElems, _triggerEventOffset);
+            found = this->searchTriggerPointReal(trigBuff, numElems-1, _triggerEventOffset);
+            _triggerEventFromLevel = true;
         }
 
         //in automatic mode, a timeout can force a trigger
@@ -599,7 +634,6 @@ void WaveTrigger::triggerWork(void)
         if (not found and (_triggerTimerEnabled or (_triggerWindowTimerEnabled and _windowsRemaining != 0)))
         {
             found = timePassed > _autoForceTimeout;
-            _triggerEventFromTimer = true;
         }
     }
 
@@ -607,7 +641,6 @@ void WaveTrigger::triggerWork(void)
     else if (searchEnabled and not _triggerSearchEnabled)
     {
         found = _triggerTimerEnabled;
-        _triggerEventFromTimer = true;
     }
 
     //determine how many elements to consume
@@ -666,7 +699,7 @@ bool WaveTrigger::searchTriggerPointReal(const Pothos::BufferChunk &buff, const 
     const auto trigBuff = buff.convert(typeid(float));
     const auto p = trigBuff.as<const float *>();
 
-    for (size_t i = _position; i < numElems-1; i++)
+    for (size_t i = _position; i < numElems; i++)
     {
         const auto y0 = p[i];
         const auto y1 = p[i+1];
@@ -685,7 +718,7 @@ bool WaveTrigger::searchTriggerPointComplex(const Pothos::BufferChunk &buff, con
     const auto trigBuff = buff.convert(typeid(std::complex<float>));
     const auto p = trigBuff.as<const std::complex<float> *>();
 
-    for (size_t i = _position; i < numElems-1; i++)
+    for (size_t i = _position; i < numElems; i++)
     {
         const auto y0 = std::abs(p[i]);
         const auto y1 = std::abs(p[i+1]);

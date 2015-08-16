@@ -145,6 +145,15 @@
  * |preview disable
  * |tab Trigger
  *
+ * |param triggerLabelId [Label ID] An optional label ID that causes a trigger event.
+ * Rather than an input level, an associated stream label can indicate a trigger event.
+ * The trigger label simply overrides the level-trigger, all other rules still apply.
+ * An empty label ID disables this feature.
+ * |default ""
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Trigger
+ *
  * |param label0[Ch0 Label] The display label for channel 0.
  * |default ""
  * |widget StringEntry()
@@ -228,6 +237,7 @@
  * |setter setTriggerMode(triggerMode)
  * |setter setTriggerLevel(triggerLevel)
  * |setter setTriggerPosition(triggerPosition)
+ * |setter setTriggerLabelId(triggerLabelId)
  * |setter setChannelLabel(0, label0)
  * |setter setChannelStyle(0, style0)
  * |setter setChannelLabel(1, label1)
@@ -282,6 +292,7 @@ public:
         _topologyToTriggerSetter["setTriggerMode"] = "setMode";
         _topologyToTriggerSetter["setTriggerLevel"] = "setLevel";
         _topologyToTriggerSetter["setTriggerPosition"] = "setPosition";
+        _topologyToTriggerSetter["setTriggerLabelId"] = "setLabelId";
 
         //connect to internal display block
         for (const auto &pair : _topologyToDisplaySetter)
