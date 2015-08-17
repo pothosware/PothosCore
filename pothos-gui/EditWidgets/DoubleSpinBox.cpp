@@ -23,14 +23,13 @@ public:
 public slots:
     QString value(void) const
     {
-        //extract value as a string, in C locale format, preserving decimal points
-        //this allows the QDoubleSpinBox to support the user's locale setting
-        return QString::number(QDoubleSpinBox::value(), 'f', QDoubleSpinBox::decimals());
+        return _value;
     }
 
     void setValue(const QString &value)
     {
         QDoubleSpinBox::setValue(value.toDouble());
+        _value = value;
     }
 
 signals:
@@ -41,8 +40,15 @@ signals:
 private slots:
     void handleWidgetChanged(const QString &)
     {
+        //extract value as a string, in C locale format, preserving decimal points
+        //this allows the QDoubleSpinBox to support the user's locale setting
+        _value = QString::number(QDoubleSpinBox::value(), 'f', QDoubleSpinBox::decimals());
+
         emit this->widgetChanged();
     }
+
+private:
+    QString _value;
 };
 
 /***********************************************************************

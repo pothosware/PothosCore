@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -23,12 +23,13 @@ public:
 public slots:
     QString value(void) const
     {
-        return QSpinBox::text();
+        return _value;
     }
 
     void setValue(const QString &value)
     {
         QSpinBox::setValue(value.toInt());
+        _value = value;
     }
 
 signals:
@@ -39,8 +40,12 @@ signals:
 private slots:
     void handleWidgetChanged(const QString &)
     {
+        _value = QSpinBox::text();
         emit this->widgetChanged();
     }
+
+private:
+    QString _value;
 };
 
 /***********************************************************************
