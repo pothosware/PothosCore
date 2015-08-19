@@ -620,13 +620,13 @@ void WaveTrigger::triggerWork(void)
         else if (trigBuff.dtype.isComplex())
         {
             found = this->searchTriggerPointComplex(trigBuff, numElems-1, _triggerEventOffset);
-            _triggerEventFromLevel = true;
+            _triggerEventFromLevel = found;
         }
 
         else
         {
             found = this->searchTriggerPointReal(trigBuff, numElems-1, _triggerEventOffset);
-            _triggerEventFromLevel = true;
+            _triggerEventFromLevel = found;
         }
 
         //in automatic mode, a timeout can force a trigger
