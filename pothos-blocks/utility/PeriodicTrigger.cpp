@@ -19,6 +19,7 @@
  *
  * |param args Arguments to pass into the triggered signal.
  * |default []
+ * |preview valid
  *
  * |factory /blocks/periodic_trigger()
  * |setter setRate(rate)
