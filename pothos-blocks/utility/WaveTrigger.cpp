@@ -287,8 +287,8 @@ public:
     {
         if (rate <= 0.0) throw Pothos::InvalidArgumentException("WaveTrigger::setEventRate()", "event rate must be positive");
         _eventRate = rate;
-        _eventOffDuration = std::chrono::nanoseconds((long long)(1e9/_eventRate));
-        _autoForceTimeout = std::chrono::nanoseconds((long long)(1.5e9/_eventRate));
+        _eventOffDuration = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::nanoseconds((long long)(1e9/_eventRate)));
+        _autoForceTimeout = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::nanoseconds((long long)(1.5e9/_eventRate)));
     }
 
     double getEventRate(void) const
