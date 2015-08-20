@@ -656,12 +656,17 @@ void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, co
 
     //use the intentional phase transitions before the
     //length bits to determine the optimal sampling offset
+    //search from the middle of the last symbol to the frame end
     firstBit = _syncWordWidth + _dataWidth/2;
     RealType firstBitPeak = 0;
-    for (size_t i = _syncWordWidth-_dataWidth; i <= _syncWordWidth+_dataWidth; i++)
+    for (size_t i = _syncWordWidth-(_dataWidth*_symbolWidth/2); i < _frameWidth; i++)
     {
         auto bit = in[i]*std::polar<RealType>(scale, phaseOff + deltaFc*i)*sym;
-        if (bit.real() > firstBitPeak) continue;
+        if (bit.real() > firstBitPeak)
+        {
+            if (firstBitPeak == 0) continue; //before peak found
+            else break; //after peak found
+        }
         firstBit = i;
         firstBitPeak = bit.real();
     }
