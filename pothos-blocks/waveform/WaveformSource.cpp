@@ -168,7 +168,7 @@ private:
         else if (_wave == "SINE")
         {
             for (size_t i = 0; i < _table.size(); i++){
-                this->setElem(_table[i], std::pow(M_E, std::complex<double>(0, 2*M_PI*i/_table.size())));
+                this->setElem(_table[i], std::polar(1.0, 2*M_PI*i/_table.size()));
             }
         }
         else if (_wave == "RAMP")
