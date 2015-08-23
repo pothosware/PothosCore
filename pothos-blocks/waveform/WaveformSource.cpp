@@ -7,7 +7,8 @@
 #include <iostream>
 #include <complex>
 
-static const size_t waveTableSize = 4096;
+static const size_t defaultWaveTableSize = 4096;
+static const size_t minimumTableStepSize = 16;
 
 /***********************************************************************
  * |PothosDoc Waveform Source
@@ -47,21 +48,28 @@ static const size_t waveTableSize = 4096;
  * |default 0.0
  * |preview valid
  *
+ * |param res[Resolution] The resolution of the internal wave table (0.0 for automatic).
+ * When unspecified, the wave table size will be configured for the user's requested frequency.
+ * Specify a minimum resolution in Hz to fix the size of the wave table.
+ * |units Hz
+ * |default 0.0
+ * |preview valid
+ *
  * |factory /blocks/waveform_source(dtype)
  * |setter setSampleRate(rate)
  * |setter setWaveform(wave)
  * |setter setOffset(offset)
  * |setter setAmplitude(ampl)
  * |setter setFrequency(freq)
+ * |setter setResolution(res)
  **********************************************************************/
 template <typename Type>
 class WaveformSource : public Pothos::Block
 {
 public:
     WaveformSource(void):
-        _index(0), _step(0),
-        _rate(1.0), _freq(0.0),
-        _table(waveTableSize),
+        _index(0), _step(0), _mask(0),
+        _rate(1.0), _freq(0.0), _res(0.0),
         _offset(0.0), _scalar(1.0),
         _wave("CONST")
     {
@@ -76,6 +84,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, getFrequency));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, setSampleRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, getSampleRate));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, setResolution));
+        this->registerCall(this, POTHOS_FCN_TUPLE(WaveformSource<Type>, getResolution));
     }
 
     void activate(void)
@@ -89,7 +99,7 @@ public:
         auto out = outPort->buffer().template as<Type *>();
         for (size_t i = 0; i < outPort->elements(); i++)
         {
-            out[i] = _table[_index % waveTableSize];
+            out[i] = _table[_index & _mask];
             _index += _step;
         }
         outPort->produce(outPort->elements());
@@ -150,10 +160,46 @@ public:
         return _rate;
     }
 
+    void setResolution(const double &res)
+    {
+        _res = res;
+        this->updateStep();
+    }
+
+    double getResolution(void)
+    {
+        return _res;
+    }
+
 private:
     void updateStep(void)
     {
-        _step = size_t(std::llround((_freq/_rate)*_table.size()));
+        //This fraction (of a period) is used to determine table size efficacy.
+        //When specified, use the resolution, otherwise the user's frequency.
+        const auto frac = ((_res == 0.0)?_freq:_res)/_rate;
+
+        //loop for a table size that meets the minimum step
+        size_t numEntries = defaultWaveTableSize;
+        while (true)
+        {
+            const auto delta = std::llround(frac*numEntries);
+            if (frac == 0.0) break;
+            if (std::abs(delta) >= minimumTableStepSize) break;
+            numEntries *= 2;
+        }
+
+        //update mask: assumes power of 2
+        _mask = numEntries-1;
+
+        //update step: given ratio and table size
+        _step = size_t(std::llround((_freq/_rate)*numEntries));
+
+        //check for table size change and update
+        if (numEntries != _table.size())
+        {
+            _table.resize(numEntries);
+            this->updateTable();
+        }
     }
 
     void updateTable(void)
@@ -210,8 +256,10 @@ private:
 
     size_t _index;
     size_t _step;
+    size_t _mask;
     double _rate;
     double _freq;
+    double _res;
     std::vector<Type> _table;
     std::complex<double> _offset, _scalar;
     std::string _wave;
