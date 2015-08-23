@@ -293,7 +293,6 @@ public:
         _phase = 0;
         _phaseInc = 0;
         _remainingPayload = 0;
-        _remainingHeader = 0;
     }
 
 private:
@@ -337,8 +336,7 @@ private:
     RealType _phaseOffMax;
     RealType _scaleAtMax;
 
-    //track header and payload after frame found
-    size_t _remainingHeader;
+    //track payload after frame found
     size_t _remainingPayload;
 
     //calculated output offset corrections
@@ -358,22 +356,9 @@ void FrameSync<Type>::work(void)
     auto out = outPort->buffer().template as<Type *>();
 
     /***************************************************************
-     * A frame was found, consume remaining frame until payload
-     **************************************************************/
-    if (_remainingHeader != 0)
-    {
-        auto N = std::min(_remainingHeader, inPort->elements());
-        _phase += _phaseInc*N;
-        _remainingHeader -= N;
-        inPort->consume(N);
-        //if (_remainingHeader == 0) std::cout << "header consumed\n";
-        return;
-    }
-
-    /***************************************************************
      * Produce payload with no compensation
      **************************************************************/
-    else if (_remainingPayload != 0 and _outputModeRaw)
+    if (_remainingPayload != 0 and _outputModeRaw)
     {
         const auto N = std::min(_remainingPayload, this->workInfo().minElements);
 
@@ -490,15 +475,9 @@ void FrameSync<Type>::work(void)
         //now that the frame was found, process the length field
         //and determine sample offset (used in timing recovery mode)
         size_t firstBit, length;
-        this->processLenBits(in+i-_countSinceMax, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, length);
+        size_t frameOffset = i-_countSinceMax;
+        this->processLenBits(in+frameOffset, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, length);
         if (length == 0) continue; //this is probably a false frame detection
-
-        //print length results
-        /*
-        std::cout << " length = " << length << std::endl;
-        std::cout << " firstBit = " << firstBit << std::endl;
-        std::cout << " sampOffset = " << (int(firstBit)-int(_syncWordWidth)) << std::endl;
-        //*/
 
         //Label width is specified based on the output mode.
         //Width may be divided down by an upstream time recovery block.
@@ -508,12 +487,16 @@ void FrameSync<Type>::work(void)
 
         //initialize carrier recovery compensation for use in the
         //remaining header and payload sections of the work routine
-        _remainingHeader = firstBit+(NUM_LENGTH_BITS*_dataWidth)-_countSinceMax-labelWidth/2;
+        size_t payloadOffset = frameOffset + firstBit + (NUM_LENGTH_BITS*_dataWidth) + labelWidth/2;
         _remainingPayload = length*_dataWidth;
         _phaseInc = _deltaFcMax;
-        _phase = _phaseOffMax + _phaseInc*_countSinceMax;
+        _phase = _phaseOffMax + _phaseInc*_frameWidth;
         /*
-        std::cout << " _remainingHeader = " << _remainingHeader << std::endl;
+        std::cout << " length = " << length << std::endl;
+        std::cout << " firstBit = " << firstBit << std::endl;
+        std::cout << " sampOffset = " << (int(firstBit)-int(_syncWordWidth)) << std::endl;
+        std::cout << " frameOffset = " << frameOffset << std::endl;
+        std::cout << " payloadOffset = " << payloadOffset << std::endl;
         std::cout << " _remainingPayload = " << _remainingPayload << std::endl;
         //*/
 
@@ -533,7 +516,7 @@ void FrameSync<Type>::work(void)
             (length-1)*labelWidth, labelWidth));
 
         inPort->setReserve(0);
-        inPort->consume(i+1);
+        inPort->consume(payloadOffset);
         return;
     }
     inPort->consume(N);
