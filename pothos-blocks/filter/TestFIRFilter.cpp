@@ -28,6 +28,7 @@ static double filterToneGetRMS(
     auto filter = registry.callProxy("/blocks/fir_filter", "complex128", "COMPLEX");
     filter.callVoid("setDecimation", decim);
     filter.callVoid("setInterpolation", interp);
+    filter.callVoid("setWaitTaps", true);
 
     auto designer = registry.callProxy("/blocks/fir_designer");
     designer.callVoid("setSampleRate", (sampRate*interp)/decim);
@@ -39,17 +40,10 @@ static double filterToneGetRMS(
     auto probe = registry.callProxy("/blocks/stream_probe", "complex128");
     probe.callVoid("setMode", "RMS");
 
-    //propagate the taps
-    {
-        Pothos::Topology topology;
-        topology.connect(designer, "tapsChanged", filter, "setTaps");
-        topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
-    }
-
     //run the topology
     {
         Pothos::Topology topology;
+        topology.connect(designer, "tapsChanged", filter, "setTaps");
         topology.connect(waveSource, 0, finiteRelease, 0);
         topology.connect(finiteRelease, 0, filter, 0);
         topology.connect(filter, 0, probe, 0);
