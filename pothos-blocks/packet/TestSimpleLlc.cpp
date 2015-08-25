@@ -135,7 +135,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_simple_llc_harsh)
     macB.callVoid("setMacId", 0xB);
 
     //create dropper blocks for connection
-    const double dropChance = 0.1; //chance of dropping out of 1.0
+    const double dropChance = 0.05; //chance of dropping out of 1.0
     auto dropperA2B = registry.callProxy("/blocks/sporadic_dropper");
     dropperA2B.callVoid("setProbability", dropChance); //chance of drop
     auto dropperB2A = registry.callProxy("/blocks/sporadic_dropper");
