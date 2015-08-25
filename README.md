@@ -1,4 +1,8 @@
-# Communications libraries and blocks for Pothos
+# Communications libraries and blocks
+
+This communications toolkits provides DSP and higher level communications blocks
+such as filters, basic arithmetic, waveform generators, symbol manipulation,
+encoding/decoding, frame synchronization, error correction, and MAC layer support.
 
 ## Documentation
 
