@@ -218,6 +218,7 @@
  * |initializer setupDevice(deviceArgs)
  * |initializer setupStream(streamArgs)
  * |initializer setFrontendMap(frontendMap)
+ * |setter setClockRate(clockRate)
  * |setter setSampleRate(sampleRate)
  * |setter setAutoActivate(autoActivate)
  * |setter setFrequency(frequency, tuneArgs)
@@ -226,7 +227,6 @@
  * |setter setAntenna(antenna)
  * |setter setBandwidth(bandwidth)
  * |setter setDCOffsetMode(dcOffsetMode)
- * |setter setClockRate(clockRate)
  * |setter setClockSource(clockSource)
  * |setter setTimeSource(timeSource)
  **********************************************************************/
