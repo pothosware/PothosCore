@@ -4,8 +4,10 @@
 #include <Pothos/Object/Serialize.hpp>
 #include <Pothos/Object/Exception.hpp>
 
-#include <Pothos/archive/polymorphic_text_oarchive.hpp>
-#include <Pothos/archive/polymorphic_text_iarchive.hpp>
+//required define: portable only exported in pothos-serialization
+#define NO_EXPLICIT_TEMPLATE_INSTANTIATION
+#include <Pothos/archive/eos/portable_oarchive.hpp>
+#include <Pothos/archive/eos/portable_iarchive.hpp>
 
 #include <cassert>
 
@@ -13,7 +15,7 @@ std::ostream &Pothos::Object::serialize(std::ostream &os) const
 {
     try
     {
-        Pothos::archive::polymorphic_text_oarchive oa(os);
+        eos::polymorphic_portable_oarchive oa(os);
         oa << *this;
     }
     catch(const Pothos::archive::archive_exception &ex)
@@ -30,7 +32,7 @@ std::istream &Pothos::Object::deserialize(std::istream &is)
 
     try
     {
-        Pothos::archive::polymorphic_text_iarchive ia(is);
+        eos::polymorphic_portable_iarchive ia(is);
         ia >> *this;
     }
     catch(const Pothos::archive::archive_exception &ex)

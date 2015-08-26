@@ -1,5 +1,11 @@
 This this the changelog file for the Pothos Serialization library.
 
+Release 0.2.0 (pending)
+==========================
+
+- Imported potable binary archive support from EOS
+- Replaced DOS line endings with UNIX line endings
+
 Release 0.1.1 (2015-06-16)
 ==========================
 
