@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos SDR toolkit.
 
-Release 0.2.1 (pending)
+Release 0.2.1 (2015-08-26)
 ==========================
 
 - Set clock rate before sample rate in block description

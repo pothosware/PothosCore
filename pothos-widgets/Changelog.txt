@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos Widgets toolkit.
 
-Release 0.2.1 (pending)
+Release 0.2.1 (2015-08-26)
 ==========================
 
 - Switch from stream snooper to wave trigger all plotters

@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos Blocks toolkit.
 
-Release 0.2.1 (pending)
+Release 0.2.1 (2015-08-26)
 ==========================
 
 - Strategic resizing of the waveform source table

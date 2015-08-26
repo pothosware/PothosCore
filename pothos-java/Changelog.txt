@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos Java toolkit.
 
-Release 0.1.1 (pending)
+Release 0.1.1 (2015-08-26)
 ==========================
 
 - Added missing sstream include in TestJava.cpp unit test
