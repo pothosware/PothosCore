@@ -8,6 +8,7 @@
 #include <complex>
 
 static const size_t defaultWaveTableSize = 4096;
+static const size_t maxWaveTableSize = 1024*1024;
 static const size_t minimumTableStepSize = 16;
 
 /***********************************************************************
@@ -185,6 +186,8 @@ private:
             const auto delta = std::llround(frac*numEntries);
             if (frac == 0.0) break;
             if (std::abs(delta) >= minimumTableStepSize) break;
+            if (numEntries*2 > _table.max_size()) break;
+            if (numEntries*2 > maxWaveTableSize) break;
             numEntries *= 2;
         }
 
