@@ -164,6 +164,7 @@ list(APPEND POTHOS_SOURCES
     Proxy/Environment.cpp
     Proxy/Exception.cpp
 
+    Remote/RemoteProxyDatagram.cpp
     Remote/RemoteProxy.cpp
     Remote/RemoteProxyHandle.cpp
     Remote/Server.cpp
