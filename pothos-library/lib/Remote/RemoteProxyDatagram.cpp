@@ -62,13 +62,27 @@ public:
         os.flush();
     }
 
-    std::streamsize xsputn(const char *s, std::streamsize count)
+    void ensureSize(const std::streamsize count)
     {
         //resize temporary buffer to hold the msg
         while (size_t(_bytesWritten + count) > _payloadData.size())
         {
             _payloadData.resize(_payloadData.size()*2);
         }
+    }
+
+    int_type overflow(int_type c)
+    {
+        if (traits_type::eq_int_type(c, traits_type::eof())) return traits_type::eof();
+        const char_type t = traits_type::to_char_type(c);
+        this->ensureSize(1);
+        _payloadData[_bytesWritten++] = t;
+        return c;
+    }
+
+    std::streamsize xsputn(const char *s, std::streamsize count)
+    {
+        this->ensureSize(count);
 
         //append the message to the payload
         std::memcpy(_payloadData.data()+_bytesWritten, s, count);
@@ -79,7 +93,7 @@ public:
 
 private:
     std::streamsize _bytesWritten;
-    std::vector<char> _payloadData;
+    std::vector<char_type> _payloadData;
 };
 
 /***********************************************************************
@@ -126,15 +140,39 @@ public:
         data.deserialize(iser);
     }
 
+    int_type underflow(void)
+    {
+        if (this->showmanyc() == 0) return traits_type::eof();
+        const char c = _payloadData[_bytesRead];
+        return traits_type::to_int_type(c);
+    }
+
+    int_type uflow(void)
+    {
+        if (this->showmanyc() == 0) return traits_type::eof();
+        const char c = _payloadData[_bytesRead++];
+        return traits_type::to_int_type(c);
+    }
+
     std::streamsize showmanyc(void)
     {
         return _payloadData.size()-_bytesRead;
     }
 
+    int_type pbackfail(int_type c)
+    {
+        if (traits_type::eq_int_type(c, traits_type::eof())) return traits_type::eof();
+        if (_bytesRead == 0) return traits_type::eof(); //still at start
+        const char_type t = traits_type::to_char_type(c);
+        if (t != _payloadData[_bytesRead-1]) return traits_type::eof(); //wrong character
+        _bytesRead--;
+        return c;
+    }
+
     std::streamsize xsgetn(char *s, std::streamsize n)
     {
         const auto available = this->showmanyc();
-        if (available == 0) return EOF;
+        if (available == 0) return traits_type::eof();
         n = std::min<std::streamsize>(n, available);
         std::memcpy(s, _payloadData.data()+_bytesRead, n);
         _bytesRead += n;
@@ -143,7 +181,7 @@ public:
 
 private:
     std::streamsize _bytesRead;
-    std::vector<char> _payloadData;
+    std::vector<char_type> _payloadData;
 };
 
 /***********************************************************************
