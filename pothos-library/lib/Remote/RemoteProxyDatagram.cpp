@@ -94,25 +94,31 @@ public:
         //read the header
         PothosRPCHeader header;
         is.read((char *)&header, sizeof(header));
+        if (is.eof()) throw Pothos::IOException("recvDatagram()", "stream end");
+        if (not is) throw Pothos::IOException("recvDatagram()", "stream error");
 
         //parse the header
         if (Poco::ByteOrder::fromNetwork(header.headerWord) != PothosRPCHeaderWord)
         {
-            throw Pothos::Exception("recvDatagram::PRPCDatagramObuf()", "headerWord fail");
+            throw Pothos::IOException("recvDatagram()", "headerWord fail");
         }
         _payloadData.resize(Poco::ByteOrder::fromNetwork(header.payloadBytes));
 
         //read the payload
         is.read(_payloadData.data(), _payloadData.size());
+        if (is.eof()) throw Pothos::IOException("recvDatagram()", "stream end");
+        if (not is) throw Pothos::IOException("recvDatagram()", "stream error");
 
         //read the trailer
         PothosRPCTrailer trailer;
         is.read((char *)&trailer, sizeof(trailer));
+        if (is.eof()) throw Pothos::IOException("recvDatagram()", "stream end");
+        if (not is) throw Pothos::IOException("recvDatagram()", "stream error");
 
         //parse the trailer
         if (Poco::ByteOrder::fromNetwork(trailer.trailerWord) != PothosRPCTrailerWord)
         {
-            throw Pothos::Exception("recvDatagram::PRPCDatagramObuf()", "trailerWord fail");
+            throw Pothos::IOException("recvDatagram()", "trailerWord fail");
         }
 
         //deserialize from temporary buffer
