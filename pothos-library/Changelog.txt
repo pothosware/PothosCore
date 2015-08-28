@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.3.0 (pending)
 ==========================
 
+- Bumped API number to "0.3-0" for serialization changes
 - Re-implement RPC datagram format with embedded length
 - Switch to portable binary Object serialization from EOS
 
