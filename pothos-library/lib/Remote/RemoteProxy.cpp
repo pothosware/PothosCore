@@ -47,6 +47,8 @@ Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs
         {
             auto reply = it->second;
             tidToReply.erase(it);
+            lock.unlock();
+            isCond.notify_all();
             return reply;
         }
 
