@@ -103,6 +103,7 @@ list(APPEND Qt5_LIBRARIES PothosPlotterUtils)
 ########################################################################
 # Build plotter widgets
 ########################################################################
+add_subdirectory(QwtWidgets)
 add_subdirectory(WaveMonitor)
 add_subdirectory(Periodogram)
 add_subdirectory(Spectrogram)
