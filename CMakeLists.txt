@@ -6,7 +6,7 @@ project(Pothos)
 enable_language(CXX)
 enable_testing()
 
-set(Pothos_DIR ${PROJECT_SOURCE_DIR}/pothos-library/cmake)
+set(Pothos_DIR ${PROJECT_SOURCE_DIR}/library/cmake)
 set(POTHOS_IN_TREE_SOURCE_DIR ${PROJECT_SOURCE_DIR})
 
 #args to set the CMAKE_PREFIX_PATH environment variable
@@ -87,32 +87,32 @@ endif()
 ########################################################################
 # Build serialization library
 ########################################################################
-add_subdirectory(pothos-serialization)
+add_subdirectory(serialization)
 
 ########################################################################
 # Build main pothos library
 ########################################################################
-add_subdirectory(pothos-library)
+add_subdirectory(library)
 
 #########################################################################
 ## Build in-tree modules
 #########################################################################
 
 #ensure that local headers get precedent over installed headers
-include_directories(pothos-library/include)
+include_directories(library/include)
 include_directories(${Poco_INCLUDE_DIRS})
 
-add_subdirectory(pothos-gui)
-add_subdirectory(pothos-widgets)
-add_subdirectory(pothos-plotters)
-add_subdirectory(pothos-blocks)
-add_subdirectory(pothos-comms)
-add_subdirectory(pothos-python)
-add_subdirectory(pothos-java)
-add_subdirectory(pothos-util)
-add_subdirectory(pothos-opencl)
-add_subdirectory(pothos-sdr)
-add_subdirectory(pothos-audio)
+add_subdirectory(gui)
+add_subdirectory(widgets)
+add_subdirectory(plotters)
+add_subdirectory(blocks)
+add_subdirectory(comms)
+add_subdirectory(python)
+add_subdirectory(java)
+add_subdirectory(util)
+add_subdirectory(opencl)
+add_subdirectory(sdr)
+add_subdirectory(audio)
 
 #########################################################################
 # uninstall target
