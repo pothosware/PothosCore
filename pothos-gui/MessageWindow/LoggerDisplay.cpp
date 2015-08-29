@@ -1,9 +1,9 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MessageWindow/LoggerDisplay.hpp"
 #include "MessageWindow/LoggerChannel.hpp"
-#include <QTextEdit>
+#include <QPlainTextEdit>
 #include <QScrollBar>
 #include <QTimer>
 #include <Poco/DateTimeFormatter.h>
@@ -11,15 +11,17 @@
 
 static const long CHECK_MSGS_TIMEOUT_MS = 100;
 static const size_t MAX_MSGS_PER_TIMEOUT = 3;
+static const size_t MAX_HISTORY_MSGS = 4096;
 
 LoggerDisplay::LoggerDisplay(QWidget *parent):
     QStackedWidget(parent),
     _channel(new LoggerChannel(nullptr)),
-    _text(new QTextEdit(this)),
+    _text(new QPlainTextEdit(this)),
     _timer(new QTimer(this))
 {
     this->addWidget(_text);
     _text->setReadOnly(true);
+    _text->setMaximumBlockCount(MAX_HISTORY_MSGS);
 
     connect(_timer, SIGNAL(timeout(void)), this, SLOT(handleCheckMsgs(void)));
     _timer->start(CHECK_MSGS_TIMEOUT_MS);
@@ -69,10 +71,10 @@ void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
     auto body = QString::fromStdString(msg.getText()).toHtmlEscaped();
     if (body.count("\n") > 1) body = "<pre>"+body+"</pre>";
 
-    auto line = QString("<font color=\"%1\"><b>[%2] %3:</b></font> %4<br />").arg(
+    auto line = QString("<font color=\"%1\"><b>[%2] %3:</b></font> %4").arg(
         color, QString::fromStdString(timeStr),
         QString::fromStdString(msg.getSource()),
         body);
 
-    _text->insertHtml(line);
+    _text->appendHtml(line);
 }

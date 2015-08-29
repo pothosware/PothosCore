@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -8,7 +8,7 @@
 #include <Poco/AutoPtr.h>
 
 class LoggerChannel;
-class QTextEdit;
+class QPlainTextEdit;
 class QTimer;
 
 class LoggerDisplay : public QStackedWidget
@@ -25,6 +25,6 @@ private:
     void handleLogMessage(const Poco::Message &msg);
 
     Poco::AutoPtr<LoggerChannel> _channel;
-    QTextEdit *_text;
+    QPlainTextEdit *_text;
     QTimer *_timer;
 };
