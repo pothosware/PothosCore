@@ -1,12 +1,14 @@
 ########################################################################
-# Packet blocks module
+# Utility blocks module
 ########################################################################
 POTHOS_MODULE_UTIL(
-    TARGET PacketBlocks
+    TARGET UtilityBlocks
     SOURCES
-        PacketToStream.cpp
-        StreamToPacket.cpp
-        TestPacketBlocks.cpp
-    DESTINATION blocks
+        Delay.cpp
+        TestDelay.cpp
+        StreamProbe.cpp
+        Threshold.cpp
+        WaveTrigger.cpp
+    DESTINATION comms
     ENABLE_DOCS
 )

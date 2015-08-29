@@ -1,12 +1,11 @@
 ########################################################################
-# Packet blocks module
+# Waveform blocks module
 ########################################################################
 POTHOS_MODULE_UTIL(
-    TARGET PacketBlocks
+    TARGET WaveformBlocks
     SOURCES
-        PacketToStream.cpp
-        StreamToPacket.cpp
-        TestPacketBlocks.cpp
-    DESTINATION blocks
+        WaveformSource.cpp
+        NoiseSource.cpp
+    DESTINATION comms
     ENABLE_DOCS
 )

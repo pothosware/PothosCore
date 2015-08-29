@@ -1,12 +1,13 @@
 ########################################################################
-# Packet blocks module
+# Filter blocks module
 ########################################################################
 POTHOS_MODULE_UTIL(
-    TARGET PacketBlocks
+    TARGET FilterBlocks
     SOURCES
-        PacketToStream.cpp
-        StreamToPacket.cpp
-        TestPacketBlocks.cpp
-    DESTINATION blocks
+        FIRDesigner.cpp
+        FIRFilter.cpp
+        TestFIRFilter.cpp
+        EnvelopeDetector.cpp
+    DESTINATION comms
     ENABLE_DOCS
 )

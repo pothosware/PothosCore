@@ -3,14 +3,16 @@
 BRANCH=$1
 
 COMPONENTS="
-pothos-opencl
 pothos-widgets
+pothos-plotters
 pothos-gui
 pothos-library
 pothos-python
-pothos-util
 pothos-java
+pothos-util
+pothos-opencl
 pothos-blocks
+pothos-comms
 pothos-serialization
 pothos-sdr
 pothos-audio

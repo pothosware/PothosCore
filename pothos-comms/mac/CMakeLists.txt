@@ -2,11 +2,12 @@
 # Packet blocks module
 ########################################################################
 POTHOS_MODULE_UTIL(
-    TARGET PacketBlocks
+    TARGET MacBlocks
     SOURCES
-        PacketToStream.cpp
-        StreamToPacket.cpp
-        TestPacketBlocks.cpp
-    DESTINATION blocks
+        SimpleMac.cpp
+        TestSimpleMac.cpp
+        SimpleLlc.cpp
+        TestSimpleLlc.cpp
+    DESTINATION comms
     ENABLE_DOCS
 )
