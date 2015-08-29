@@ -1,0 +1,2 @@
+#intentionally packaging runtime support libraries along with plotter modules
+pothos-plotters: package-name-doesnt-match-sonames libPothosPlotterUtils0

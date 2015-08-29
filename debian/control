@@ -48,7 +48,9 @@ Depends:
     pothos-util,
     pothos-gui,
     pothos-widgets,
+    pothos-plotters,
     pothos-blocks,
+    pothos-comms,
     pothos-audio,
     pothos-sdr,
     pothos-python,
@@ -72,6 +74,14 @@ Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: core processing blocks
  The Pothos data-flow software suite.
 
+Package: pothos-comms
+Section: libs
+Architecture: any
+Pre-Depends: multiarch-support, ${misc:Pre-Depends}
+Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: communications blocks
+ The Pothos data-flow software suite.
+
 Package: pothos-gui
 Section: libs
 Architecture: any
@@ -90,7 +100,15 @@ Section: libs
 Architecture: any
 Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: graphical controls and plotter widgets
+Description: graphical control widgets
+ The Pothos data-flow software suite.
+
+Package: pothos-plotters
+Section: libs
+Architecture: any
+Pre-Depends: multiarch-support, ${misc:Pre-Depends}
+Depends: libpothos0 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: graphical plotter widgets
  The Pothos data-flow software suite.
 
 Package: pothos-python

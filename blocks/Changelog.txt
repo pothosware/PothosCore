@@ -1,5 +1,11 @@
 This this the changelog file for the Pothos Blocks toolkit.
 
+Release 0.3.0 (pending)
+==========================
+
+- Reorganized utility blocks into testers and stream
+- Moved communications blocks to pothos-comms toolkit
+
 Release 0.2.1 (2015-08-26)
 ==========================
 

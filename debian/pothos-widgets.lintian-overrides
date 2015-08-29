@@ -1,2 +1,0 @@
-#intentionally packaging runtime support libraries along with widget modules
-pothos-widgets: package-name-doesnt-match-sonames libPothosWidgetUtils0
