@@ -20,6 +20,7 @@
  *
  * |category /Digital
  * |category /Symbol
+ * |alias /blocks/bits_to_symbols
  *
  * |param N[Modulus] The number of bits per symbol.
  * |default 2
@@ -32,7 +33,7 @@
  * |option [LSBit] "LSBit"
  * |default "MSBit"
  *
- * |factory /blocks/bits_to_symbols()
+ * |factory /comms/bits_to_symbols()
  * |setter setModulus(N)
  * |setter setBitOrder(bitOrder)
  **********************************************************************/
@@ -165,4 +166,7 @@ protected:
 };
 
 static Pothos::BlockRegistry registerBitsToSymbols(
+    "/comms/bits_to_symbols", &BitsToSymbols::make);
+
+static Pothos::BlockRegistry registerBitsToSymbolsOldPath(
     "/blocks/bits_to_symbols", &BitsToSymbols::make);

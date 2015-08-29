@@ -38,6 +38,7 @@
  *
  * |category /Digital
  * |keywords bit symbol preamble frame
+ * |alias /blocks/preamble_framer
  *
  * |param preamble A vector of symbols representing the preamble.
  * The width of each preamble symbol must the intended input stream.
@@ -59,7 +60,7 @@
  * |default 0
  * |preview valid
  *
- * |factory /blocks/preamble_framer()
+ * |factory /comms/preamble_framer()
  * |setter setPreamble(preamble)
  * |setter setFrameStartId(frameStartId)
  * |setter setFrameEndId(frameEndId)
@@ -231,4 +232,7 @@ private:
  * registration
  **********************************************************************/
 static Pothos::BlockRegistry registerPreambleFramer(
+    "/comms/preamble_framer", &PreambleFramer::make);
+
+static Pothos::BlockRegistry registerPreambleFramerOldPath(
     "/blocks/preamble_framer", &PreambleFramer::make);

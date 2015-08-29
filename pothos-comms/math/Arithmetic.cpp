@@ -18,6 +18,7 @@
  *
  * |category /Math
  * |keywords math arithmetic add subtract multiply divide
+ * |alias /blocks/arithmetic
  *
  * |param dtype[Data Type] The data type used in the arithmetic.
  * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
@@ -44,7 +45,7 @@
  * |option [Ignored] \[\]
  * |preview disable
  *
- * |factory /blocks/arithmetic(dtype, operation)
+ * |factory /comms/arithmetic(dtype, operation)
  * |initializer setNumInputs(numInputs)
  * |initializer setPreload(preload)
  **********************************************************************/
@@ -191,4 +192,7 @@ static Pothos::Block *arithmeticFactory(const Pothos::DType &dtype, const std::s
 }
 
 static Pothos::BlockRegistry registerArithmetic(
+    "/comms/arithmetic", &arithmeticFactory);
+
+static Pothos::BlockRegistry registerArithmeticOldPath(
     "/blocks/arithmetic", &arithmeticFactory);

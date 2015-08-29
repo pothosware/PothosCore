@@ -21,6 +21,7 @@
  * |category /Digital
  * |category /Symbol
  * |keywords symbol slicer
+ * |alias /blocks/symbol_slicer
  *
  * |param dtype[Data Type] The input data type consumed by the slicer.
  * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
@@ -33,7 +34,7 @@
  * |option [BPSK] \[-1, 1\]
  * |option [QPSK] \[-1.0-1.0*j, -1.0+1.0*j, 1.0+1.0*j, 1.0-1.0*j\]
  *
- * |factory /blocks/symbol_slicer(dtype)
+ * |factory /comms/symbol_slicer(dtype)
  * |setter setMap(map)
  **********************************************************************/
 
@@ -123,5 +124,8 @@ static Pothos::Block *SymbolSlicerFactory(const Pothos::DType &dtype)
 }
 
 static Pothos::BlockRegistry registerSymbolSlicer(
+    "/comms/symbol_slicer", &SymbolSlicerFactory);
+
+static Pothos::BlockRegistry registerSymbolSlicerOldPath(
     "/blocks/symbol_slicer", &SymbolSlicerFactory);
 

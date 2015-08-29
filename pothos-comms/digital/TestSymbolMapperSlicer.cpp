@@ -8,14 +8,14 @@
 #include <iostream>
 #include <complex>
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_mapper_slicer_float)
+POTHOS_TEST_BLOCK("/comms/tests", test_symbol_mapper_slicer_float)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
 
     auto feeder = registry.callProxy("/blocks/feeder_source", "unsigned char");
-    auto mapper = registry.callProxy("/blocks/symbol_mapper", "float");
-    auto slicer = registry.callProxy("/blocks/symbol_slicer", "float");
+    auto mapper = registry.callProxy("/comms/symbol_mapper", "float");
+    auto slicer = registry.callProxy("/comms/symbol_slicer", "float");
     auto collector = registry.callProxy("/blocks/collector_sink", "unsigned char");
 
     static const float mapD[] = {-3, -1, 1, 3};
@@ -55,13 +55,13 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_mapper_slicer_float)
     collector.callVoid("verifyTestPlan", expected);
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_mapper_slicer_complex)
+POTHOS_TEST_BLOCK("/comms/tests", test_symbol_mapper_slicer_complex)
 {
     auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
 
     auto feeder = registry.callProxy("/blocks/feeder_source", Pothos::DType(typeid(unsigned char)));
-    auto mapper = registry.callProxy("/blocks/symbol_mapper", Pothos::DType(typeid(std::complex<float>)));
-    auto slicer = registry.callProxy("/blocks/symbol_slicer", Pothos::DType(typeid(std::complex<float>)));
+    auto mapper = registry.callProxy("/comms/symbol_mapper", Pothos::DType(typeid(std::complex<float>)));
+    auto slicer = registry.callProxy("/comms/symbol_slicer", Pothos::DType(typeid(std::complex<float>)));
     auto collector = registry.callProxy("/blocks/collector_sink", Pothos::DType(typeid(unsigned char)));
 
     std::vector<std::complex<float>> map;
@@ -104,13 +104,13 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_mapper_slicer_complex)
     collector.callVoid("verifyTestPlan", expected);
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_mapper_gray_code)
+POTHOS_TEST_BLOCK("/comms/tests", test_symbol_mapper_gray_code)
 {
     auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
 
     auto feeder = registry.callProxy("/blocks/feeder_source", Pothos::DType(typeid(unsigned char)));
-    auto encode = registry.callProxy("/blocks/symbol_mapper", Pothos::DType(typeid(int8_t)));
-    auto decode = registry.callProxy("/blocks/symbol_slicer", Pothos::DType(typeid(int8_t)));
+    auto encode = registry.callProxy("/comms/symbol_mapper", Pothos::DType(typeid(int8_t)));
+    auto decode = registry.callProxy("/comms/symbol_slicer", Pothos::DType(typeid(int8_t)));
     auto collector = registry.callProxy("/blocks/collector_sink", Pothos::DType(typeid(unsigned char)));
 
     std::vector<int> grayCode;

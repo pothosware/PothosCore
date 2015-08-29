@@ -45,6 +45,7 @@
  *
  * |category /Packet
  * |keywords LLC MAC packet
+ * |alias /blocks/simple_llc
  *
  * |param port[Port Number] The port number that this LLC will servicing.
  * The port number is 8-bits and should match the port of the remote LLC.
@@ -66,7 +67,7 @@
  * |param windowSize[Window Size] The number of packets allowed out before an acknowledgment is required.
  * |default 4
  *
- * |factory /blocks/simple_llc()
+ * |factory /comms/simple_llc()
  * |setter setPort(port)
  * |setter setRecipient(recipient)
  * |setter setResendTimeout(resendTimeout)
@@ -381,4 +382,7 @@ private:
 };
 
 static Pothos::BlockRegistry registerSimpleLlc(
+    "/comms/simple_llc", &SimpleLlc::make);
+
+static Pothos::BlockRegistry registerSimpleLlcOldPath(
     "/blocks/simple_llc", &SimpleLlc::make);

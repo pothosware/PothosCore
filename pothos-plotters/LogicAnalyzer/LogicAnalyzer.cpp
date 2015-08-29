@@ -145,7 +145,7 @@ public:
         _display->setName("Display");
 
         auto registry = remoteEnv->findProxy("Pothos/BlockRegistry");
-        _trigger = registry.callProxy("/blocks/wave_trigger");
+        _trigger = registry.callProxy("/comms/wave_trigger");
         _trigger.callVoid("setName", "Trigger");
         _trigger.callVoid("setMode", "PERIODIC");
 

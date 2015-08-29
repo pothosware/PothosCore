@@ -31,6 +31,7 @@
  *
  * |category /Digital
  * |keywords bit symbol preamble correlate
+ * |alias /blocks/preamble_correlator
  *
  * |param preamble A vector of symbols representing the preamble.
  * The width of each preamble symbol must the intended input stream.
@@ -43,7 +44,7 @@
  * |default "frameStart"
  * |widget StringEntry()
  *
- * |factory /blocks/preamble_correlator()
+ * |factory /comms/preamble_correlator()
  * |setter setPreamble(preamble)
  * |setter setThreshold(thresh)
  * |setter setFrameStartId(frameStartId)
@@ -162,4 +163,7 @@ private:
  * registration
  **********************************************************************/
 static Pothos::BlockRegistry registerPreambleCorrelator(
+    "/comms/preamble_correlator", &PreambleCorrelator::make);
+
+static Pothos::BlockRegistry registerPreambleCorrelatorOldPath(
     "/blocks/preamble_correlator", &PreambleCorrelator::make);

@@ -21,6 +21,7 @@ static const size_t minimumTableStepSize = 16;
  * |category /Sources
  * |category /Waveforms
  * |keywords cosine sine ramp square waveform source signal
+ * |alias /blocks/waveform_source
  *
  * |param dtype[Data Type] The data type produced by the waveform source.
  * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
@@ -56,7 +57,7 @@ static const size_t minimumTableStepSize = 16;
  * |default 0.0
  * |preview valid
  *
- * |factory /blocks/waveform_source(dtype)
+ * |factory /comms/waveform_source(dtype)
  * |setter setSampleRate(rate)
  * |setter setWaveform(wave)
  * |setter setOffset(offset)
@@ -286,4 +287,7 @@ static Pothos::Block *waveformSourceFactory(const Pothos::DType &dtype)
 }
 
 static Pothos::BlockRegistry registerWaveformSource(
+    "/comms/waveform_source", &waveformSourceFactory);
+
+static Pothos::BlockRegistry registerWaveformSourceOldPath(
     "/blocks/waveform_source", &waveformSourceFactory);

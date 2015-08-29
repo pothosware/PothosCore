@@ -7,7 +7,7 @@
 #include <Poco/JSON/Object.h>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_simple_llc)
+POTHOS_TEST_BLOCK("/comms/tests", test_simple_llc)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -18,11 +18,11 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_simple_llc)
     feederA.callVoid("setName", "feederA");
     auto collectorA = registry.callProxy("/blocks/collector_sink", "uint8");
     collectorA.callVoid("setName", "collectorA");
-    auto llcA = registry.callProxy("/blocks/simple_llc");
+    auto llcA = registry.callProxy("/comms/simple_llc");
     llcA.callVoid("setName", "llcA");
     llcA.callVoid("setRecipient", 0xB); //sends to size B
     llcA.callVoid("setPort", port);
-    auto macA = registry.callProxy("/blocks/simple_mac");
+    auto macA = registry.callProxy("/comms/simple_mac");
     macA.callVoid("setName", "macA");
     macA.callVoid("setMacId", 0xA);
 
@@ -31,11 +31,11 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_simple_llc)
     feederB.callVoid("setName", "feederB");
     auto collectorB = registry.callProxy("/blocks/collector_sink", "uint8");
     collectorB.callVoid("setName", "collectorB");
-    auto llcB = registry.callProxy("/blocks/simple_llc");
+    auto llcB = registry.callProxy("/comms/simple_llc");
     llcB.callVoid("setName", "llcB");
     llcB.callVoid("setRecipient", 0xA); //sends to size A
     llcB.callVoid("setPort", port);
-    auto macB = registry.callProxy("/blocks/simple_mac");
+    auto macB = registry.callProxy("/comms/simple_mac");
     macB.callVoid("setName", "macB");
     macB.callVoid("setMacId", 0xB);
 
@@ -102,7 +102,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_simple_llc)
         pktOutB0.payload.as<const unsigned char *>(), pktOutB0.payload.elements());
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_simple_llc_harsh)
+POTHOS_TEST_BLOCK("/comms/tests", test_simple_llc_harsh)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -113,11 +113,11 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_simple_llc_harsh)
     feederA.callVoid("setName", "feederA");
     auto collectorA = registry.callProxy("/blocks/collector_sink", "uint8");
     collectorA.callVoid("setName", "collectorA");
-    auto llcA = registry.callProxy("/blocks/simple_llc");
+    auto llcA = registry.callProxy("/comms/simple_llc");
     llcA.callVoid("setName", "llcA");
     llcA.callVoid("setRecipient", 0xB); //sends to size B
     llcA.callVoid("setPort", port);
-    auto macA = registry.callProxy("/blocks/simple_mac");
+    auto macA = registry.callProxy("/comms/simple_mac");
     macA.callVoid("setName", "macA");
     macA.callVoid("setMacId", 0xA);
 
@@ -126,11 +126,11 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_simple_llc_harsh)
     feederB.callVoid("setName", "feederB");
     auto collectorB = registry.callProxy("/blocks/collector_sink", "uint8");
     collectorB.callVoid("setName", "collectorB");
-    auto llcB = registry.callProxy("/blocks/simple_llc");
+    auto llcB = registry.callProxy("/comms/simple_llc");
     llcB.callVoid("setName", "llcB");
     llcB.callVoid("setRecipient", 0xA); //sends to size A
     llcB.callVoid("setPort", port);
-    auto macB = registry.callProxy("/blocks/simple_mac");
+    auto macB = registry.callProxy("/comms/simple_mac");
     macB.callVoid("setName", "macB");
     macB.callVoid("setMacId", 0xB);
 

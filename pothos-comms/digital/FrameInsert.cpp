@@ -33,6 +33,7 @@ static const size_t NUM_LENGTH_BITS = 16;
  *
  * |category /Digital
  * |keywords preamble frame sync
+ * |alias /blocks/frame_insert
  *
  * |param dtype[Data Type] The input data type consumed by the slicer.
  * |widget DTypeChooser(cfloat=1)
@@ -66,7 +67,7 @@ static const size_t NUM_LENGTH_BITS = 16;
  * |default 0
  * |preview valid
  *
- * |factory /blocks/frame_insert(dtype)
+ * |factory /comms/frame_insert(dtype)
  * |setter setPreamble(preamble)
  * |setter setSymbolWidth(symbolWidth)
  * |setter setFrameStartId(frameStartId)
@@ -311,4 +312,7 @@ static Pothos::Block *FrameInsertFactory(const Pothos::DType &dtype)
 }
 
 static Pothos::BlockRegistry registerFrameInsert(
+    "/comms/frame_insert", &FrameInsertFactory);
+
+static Pothos::BlockRegistry registerFrameInsertOldPath(
     "/blocks/frame_insert", &FrameInsertFactory);

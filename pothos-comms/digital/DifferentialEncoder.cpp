@@ -10,11 +10,12 @@
  * Implements the encoding part of: http://en.wikipedia.org/wiki/Differential_coding
  *
  * |category /Digital
+ * |alias /blocks/differential_encoder
  *
  * |param symbols Number of possible symbols encoded in a byte. 
  * |default 2
  *
- * |factory /blocks/differential_encoder()
+ * |factory /comms/differential_encoder()
  * |setter setSymbols(symbols)
  **********************************************************************/
 class DifferentialEncoder : public Pothos::Block
@@ -73,4 +74,7 @@ protected:
 };
 
 static Pothos::BlockRegistry registerDifferentialEncoder(
+    "/comms/differential_encoder", &DifferentialEncoder::make);
+
+static Pothos::BlockRegistry registerDifferentialEncoderOldPath(
     "/blocks/differential_encoder", &DifferentialEncoder::make);

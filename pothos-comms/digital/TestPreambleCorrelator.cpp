@@ -7,13 +7,13 @@
 #include <iostream>
 #include <complex>
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_preamble_correlator)
+POTHOS_TEST_BLOCK("/comms/tests", test_preamble_correlator)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
 
     auto feeder = registry.callProxy("/blocks/feeder_source", "unsigned char");
-    auto correlator = registry.callProxy("/blocks/preamble_correlator");
+    auto correlator = registry.callProxy("/comms/preamble_correlator");
     auto collector = registry.callProxy("/blocks/collector_sink", "unsigned char");
 
     static const unsigned char preambleD[] = {0, 1, 1, 1, 1, 0};

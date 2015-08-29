@@ -8,15 +8,15 @@
 #include <Poco/JSON/Object.h>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_framer_to_correlator)
+POTHOS_TEST_BLOCK("/comms/tests", test_framer_to_correlator)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
 
     auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
     auto generator = registry.callProxy("/blocks/packet_to_stream");
-    auto framer = registry.callProxy("/blocks/preamble_framer");
-    auto correlator = registry.callProxy("/blocks/preamble_correlator");
+    auto framer = registry.callProxy("/comms/preamble_framer");
+    auto correlator = registry.callProxy("/comms/preamble_correlator");
     auto deframer = registry.callProxy("/blocks/stream_to_packet");
     auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
 

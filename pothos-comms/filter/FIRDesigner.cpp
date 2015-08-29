@@ -18,6 +18,7 @@
  *
  * |category /Filter
  * |keywords fir filter taps highpass lowpass bandpass
+ * |alias /blocks/fir_designer
  *
  * |param type[Filter Type] The type of filter taps to generate.
  * |option [Low Pass] "LOW_PASS"
@@ -66,7 +67,7 @@
  * |param beta[Beta] For the root raised cosine filter, this is the excess bandwidth factor. For the Gaussian filter, this is BT, the bandwidth-time product.
  * |default 0.5
  *
- * |factory /blocks/fir_designer()
+ * |factory /comms/fir_designer()
  * |setter setFilterType(type)
  * |setter setWindowType(window)
  * |setter setSampleRate(sampRate)
@@ -274,4 +275,7 @@ void FIRDesigner::recalculate(void)
 }
 
 static Pothos::BlockRegistry registerFIRDesigner(
+    "/comms/fir_designer", &FIRDesigner::make);
+
+static Pothos::BlockRegistry registerFIRDesignerOldPath(
     "/blocks/fir_designer", &FIRDesigner::make);

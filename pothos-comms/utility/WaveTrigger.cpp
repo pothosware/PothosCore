@@ -57,6 +57,7 @@
  * the previous window + hold-off + trigger position.
  *
  * |category /Utility
+ * |alias /blocks/wave_trigger
  *
  * |param numPorts[Num Ports] The number of input ports.
  * |default 1
@@ -144,7 +145,7 @@
  * |widget StringEntry()
  * |preview valid
  *
- * |factory /blocks/wave_trigger()
+ * |factory /comms/wave_trigger()
  * |initializer setNumPorts(numPorts)
  * |setter setNumPoints(numPoints)
  * |setter setNumWindows(numWindows)
@@ -733,4 +734,7 @@ bool WaveTrigger::searchTriggerPointComplex(const Pothos::BufferChunk &buff, con
 }
 
 static Pothos::BlockRegistry registerWaveTrigger(
+    "/comms/wave_trigger", &WaveTrigger::make);
+
+static Pothos::BlockRegistry registerWaveTriggerOldPath(
     "/blocks/wave_trigger", &WaveTrigger::make);

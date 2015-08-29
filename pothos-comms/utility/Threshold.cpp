@@ -15,6 +15,7 @@
  *
  * |category /Utility
  * |keywords threshold activate level
+ * |alias /blocks/threshold
  *
  * |param dtype[Data Type] The data type for the input and output streams.
  * |widget DTypeChooser(float=1,int=1)
@@ -39,7 +40,7 @@
  * |widget StringEntry()
  * |preview valid
  *
- * |factory /blocks/threshold(dtype)
+ * |factory /comms/threshold(dtype)
  * |setter setActivationLevel(activationLevel)
  * |setter setDeactivationLevel(deactivationLevel)
  * |setter setActivationId(activationId)
@@ -172,4 +173,7 @@ static Pothos::Block *ThresholdFactory(const Pothos::DType &dtype)
     throw Pothos::InvalidArgumentException("ThresholdFactory("+dtype.toString()+")", "unsupported type");
 }
 static Pothos::BlockRegistry registerThreshold(
+    "/comms/threshold", &ThresholdFactory);
+
+static Pothos::BlockRegistry registerThresholdOldPath(
     "/blocks/threshold", &ThresholdFactory);

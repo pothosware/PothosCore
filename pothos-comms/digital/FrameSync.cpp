@@ -63,6 +63,7 @@ static const double CORR_DUR_PERCENT = 0.5;
  *
  * |category /Digital
  * |keywords preamble frame sync timing offset recover
+ * |alias /blocks/frame_sync
  *
  * |param dtype[Data Type] The input data type consumed by the slicer.
  * |widget DTypeChooser(cfloat=1)
@@ -118,7 +119,7 @@ static const double CORR_DUR_PERCENT = 0.5;
  * |preview valid
  * |tab Labels
  *
- * |factory /blocks/frame_sync(dtype)
+ * |factory /comms/frame_sync(dtype)
  * |setter setOutputMode(outputMode)
  * |setter setPreamble(preamble)
  * |setter setSymbolWidth(symbolWidth)
@@ -688,4 +689,7 @@ static Pothos::Block *FrameSyncFactory(const Pothos::DType &dtype)
 }
 
 static Pothos::BlockRegistry registerFrameSync(
+    "/comms/frame_sync", &FrameSyncFactory);
+
+static Pothos::BlockRegistry registerFrameSyncOldPath(
     "/blocks/frame_sync", &FrameSyncFactory);

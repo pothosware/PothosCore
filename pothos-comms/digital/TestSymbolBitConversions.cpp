@@ -9,7 +9,7 @@
 #include <Poco/JSON/Object.h>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_bit_conversions)
+POTHOS_TEST_BLOCK("/comms/tests", test_symbol_bit_conversions)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -24,10 +24,10 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_symbol_bit_conversions)
 
         //create the blocks
         auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
-        auto symsToBits = registry.callProxy("/blocks/symbols_to_bits");
+        auto symsToBits = registry.callProxy("/comms/symbols_to_bits");
         symsToBits.callProxy("setModulus", mod);
         symsToBits.callProxy("setBitOrder", order);
-        auto bitsToSyms = registry.callProxy("/blocks/bits_to_symbols");
+        auto bitsToSyms = registry.callProxy("/comms/bits_to_symbols");
         bitsToSyms.callProxy("setModulus", mod);
         bitsToSyms.callProxy("setBitOrder", order);
         auto collector = registry.callProxy("/blocks/collector_sink", "uint8");

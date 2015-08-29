@@ -21,6 +21,7 @@
  * |category /Digital
  * |category /Symbol
  * |keywords map symbol mapper
+ * |alias /blocks/symbol_mapper
  *
  * |param dtype[Data Type] The output data type produced by the mapper.
  * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
@@ -40,7 +41,7 @@
  * |option [4-bit Gray Code] \[0, 1, 3, 2, 6, 7, 5, 4, 12, 13, 15, 14, 10, 11, 9, 8\]
  * |widget ComboBox(editable=true)
  *
- * |factory /blocks/symbol_mapper(dtype)
+ * |factory /comms/symbol_mapper(dtype)
  * |setter setMap(map)
  **********************************************************************/
 template <typename OutType>
@@ -120,5 +121,8 @@ static Pothos::Block *SymbolMapperFactory(const Pothos::DType &dtype)
 }
 
 static Pothos::BlockRegistry registerSymbolMapper(
+    "/comms/symbol_mapper", &SymbolMapperFactory);
+
+static Pothos::BlockRegistry registerSymbolMapperOldPath(
     "/blocks/symbol_mapper", &SymbolMapperFactory);
 

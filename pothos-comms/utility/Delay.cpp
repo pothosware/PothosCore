@@ -14,11 +14,12 @@
  *
  * |category /Utility
  * |keywords delay time
+ * |alias /blocks/delay
  *
  * |param delay The delay in number of stream elements.
  * |default 0
  *
- * |factory /blocks/delay()
+ * |factory /comms/delay()
  * |setter setDelay(delay)
  **********************************************************************/
 class Delay : public Pothos::Block
@@ -91,4 +92,7 @@ private:
 };
 
 static Pothos::BlockRegistry registerDelay(
+    "/comms/delay", &Delay::make);
+
+static Pothos::BlockRegistry registerDelayOldPath(
     "/blocks/delay", &Delay::make);

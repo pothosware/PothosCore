@@ -34,6 +34,7 @@
  *
  * |category /Filter
  * |keywords fir filter taps highpass lowpass bandpass
+ * |alias /blocks/fir_filter
  *
  * |param dtype The data type of the input and output element stream.
  * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
@@ -82,7 +83,7 @@
  * |preview valid
  * |tab Labels
  *
- * |factory /blocks/fir_filter(dtype, tapsType)
+ * |factory /comms/fir_filter(dtype, tapsType)
  * |setter setTaps(taps)
  * |setter setDecimation(decim)
  * |setter setInterpolation(interp)
@@ -369,4 +370,7 @@ static Pothos::Block *FIRFilterFactory(const Pothos::DType &dtype, const std::st
     throw Pothos::InvalidArgumentException("FIRFilterFactory("+dtype.toString()+")", "unsupported types");
 }
 static Pothos::BlockRegistry registerFIRFilter(
+    "/comms/fir_filter", &FIRFilterFactory);
+
+static Pothos::BlockRegistry registerFIRFilterOldPath(
     "/blocks/fir_filter", &FIRFilterFactory);

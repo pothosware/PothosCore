@@ -19,6 +19,7 @@
  * or the mean (average value) over the last buffer.
  *
  * |category /Utility
+ * |alias /blocks/stream_probe
  *
  * |param dtype[Data Type] The data type consumed by the stream probe.
  * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
@@ -37,7 +38,7 @@
  * |param window How many elements to calculate over?
  * |default 1024
  *
- * |factory /blocks/stream_probe(dtype)
+ * |factory /comms/stream_probe(dtype)
  * |setter setMode(mode)
  * |setter setWindow(window)
  **********************************************************************/
@@ -141,4 +142,7 @@ static Pothos::Block *valueProbeFactory(const Pothos::DType &dtype)
 }
 
 static Pothos::BlockRegistry registerStreamProbe(
+    "/comms/stream_probe", &valueProbeFactory);
+
+static Pothos::BlockRegistry registerStreamProbeOldPath(
     "/blocks/stream_probe", &valueProbeFactory);

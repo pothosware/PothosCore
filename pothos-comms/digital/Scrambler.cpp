@@ -15,6 +15,7 @@
  *
  * |category /Digital
  * |keywords scrambler
+ * |alias /blocks/scrambler
  *
  * |param mode[Scrambler Mode]
  * |option [Additive] "additive"
@@ -27,7 +28,7 @@
  * |param seed[Seed]
  * |default 0x1
  *
- * |factory /blocks/scrambler()
+ * |factory /comms/scrambler()
  * |setter setPoly(poly)
  * |setter setMode(mode)
  * |setter setSeed(seed)
@@ -180,4 +181,7 @@ void Scrambler::work(void)
 }
 
 static Pothos::BlockRegistry registerScrambler(
+    "/comms/scrambler", &Scrambler::make);
+
+static Pothos::BlockRegistry registerScramblerOldPath(
     "/blocks/scrambler", &Scrambler::make);

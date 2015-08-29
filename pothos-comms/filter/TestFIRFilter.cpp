@@ -17,7 +17,7 @@ static double filterToneGetRMS(
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
 
-    auto waveSource = registry.callProxy("/blocks/waveform_source", "complex128");
+    auto waveSource = registry.callProxy("/comms/waveform_source", "complex128");
     waveSource.callVoid("setWaveform", "SINE");
     waveSource.callVoid("setFrequency", waveFreq);
     waveSource.callVoid("setSampleRate", sampRate);
@@ -25,19 +25,19 @@ static double filterToneGetRMS(
     auto finiteRelease = registry.callProxy("/blocks/finite_release");
     finiteRelease.callVoid("setTotalElements", 4096);
 
-    auto filter = registry.callProxy("/blocks/fir_filter", "complex128", "COMPLEX");
+    auto filter = registry.callProxy("/comms/fir_filter", "complex128", "COMPLEX");
     filter.callVoid("setDecimation", decim);
     filter.callVoid("setInterpolation", interp);
     filter.callVoid("setWaitTaps", true);
 
-    auto designer = registry.callProxy("/blocks/fir_designer");
+    auto designer = registry.callProxy("/comms/fir_designer");
     designer.callVoid("setSampleRate", (sampRate*interp)/decim);
     designer.callVoid("setFilterType", "COMPLEX_BAND_PASS");
     designer.callVoid("setFrequencyLower", waveFreq-0.1*sampRate);
     designer.callVoid("setFrequencyUpper", waveFreq+0.1*sampRate);
     designer.callVoid("setNumTaps", 100);
 
-    auto probe = registry.callProxy("/blocks/stream_probe", "complex128");
+    auto probe = registry.callProxy("/comms/stream_probe", "complex128");
     probe.callVoid("setMode", "RMS");
 
     //run the topology
@@ -54,7 +54,7 @@ static double filterToneGetRMS(
     return probe.call<double>("value");
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_fir_filter)
+POTHOS_TEST_BLOCK("/comms/tests", test_fir_filter)
 {
 
     for (size_t decim = 1; decim <= 3; decim++)

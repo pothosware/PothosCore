@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -6,13 +6,13 @@
 #include <Pothos/Proxy.hpp>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_arithmetic_add)
+POTHOS_TEST_BLOCK("/comms/tests", test_arithmetic_add)
 {
     auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
 
     auto feeder0 = registry.callProxy("/blocks/feeder_source", "int");
     auto feeder1 = registry.callProxy("/blocks/feeder_source", "int");
-    auto adder = registry.callProxy("/blocks/arithmetic", "int", "ADD");
+    auto adder = registry.callProxy("/comms/arithmetic", "int", "ADD");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //load feeder blocks
@@ -44,12 +44,12 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_arithmetic_add)
     for (int i = 0; i < 10; i++) POTHOS_TEST_EQUAL(pb[i], i+i+10);
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_arithmetic_feedback)
+POTHOS_TEST_BLOCK("/comms/tests", test_arithmetic_feedback)
 {
     auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
 
     auto feeder = registry.callProxy("/blocks/feeder_source", "int");
-    auto adder = registry.callProxy("/blocks/arithmetic", "int", "ADD");
+    auto adder = registry.callProxy("/comms/arithmetic", "int", "ADD");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //adder has a preload on input1 for feedback loop
@@ -85,14 +85,14 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_arithmetic_feedback)
     }
 }
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_inline_buffer)
+POTHOS_TEST_BLOCK("/comms/tests", test_inline_buffer)
 {
     auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
 
     auto feeder0 = registry.callProxy("/blocks/feeder_source", "int");
     auto feeder1 = registry.callProxy("/blocks/feeder_source", "int");
     auto copier = registry.callProxy("/blocks/copier");
-    auto adder = registry.callProxy("/blocks/arithmetic", "int", "ADD");
+    auto adder = registry.callProxy("/comms/arithmetic", "int", "ADD");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //load feeder blocks

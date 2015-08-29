@@ -7,7 +7,7 @@
 #include <Poco/JSON/Object.h>
 #include <iostream>
 
-POTHOS_TEST_BLOCK("/blocks/tests", test_simple_mac)
+POTHOS_TEST_BLOCK("/comms/tests", test_simple_mac)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -15,7 +15,7 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_simple_mac)
     //create test blocks
     auto feeder = registry.callProxy("/blocks/feeder_source", "uint8");
     auto collector = registry.callProxy("/blocks/collector_sink", "uint8");
-    auto mac = registry.callProxy("/blocks/simple_mac");
+    auto mac = registry.callProxy("/comms/simple_mac");
     const unsigned short macId = std::rand() & 0xffff;
     mac.callVoid("setMacId", macId);
 

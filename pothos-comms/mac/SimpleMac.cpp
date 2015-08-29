@@ -36,13 +36,14 @@
  *
  * |category /Packet
  * |keywords MAC PHY packet
+ * |alias /blocks/simple_mac
  *
  * |param macId[MAC ID] A 16-bit address of the MAC interface.
  * This address is used as the sender ID for outgoing PHY packets,
  * and is used to check the recipient ID for incoming PHY packets.
  * |default 0
  *
- * |factory /blocks/simple_mac()
+ * |factory /comms/simple_mac()
  * |setter setMacId(macId)
  **********************************************************************/
 class SimpleMac : public Pothos::Block
@@ -185,4 +186,7 @@ private:
 };
 
 static Pothos::BlockRegistry registerSimpleMac(
+    "/comms/simple_mac", &SimpleMac::make);
+
+static Pothos::BlockRegistry registerSimpleMacOldPath(
     "/blocks/simple_mac", &SimpleMac::make);

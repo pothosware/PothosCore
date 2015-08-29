@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -20,6 +20,7 @@ static const size_t waveTableSize = 4096;
  * |category /Sources
  * |category /Waveforms
  * |keywords noise random source pseudorandom gaussian
+ * |alias /blocks/noise_source
  *
  * |param dtype[Data Type] The data type produced by the noise source.
  * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
@@ -53,7 +54,7 @@ static const size_t waveTableSize = 4096;
  * </ul>
  * |default 1.0
  *
- * |factory /blocks/noise_source(dtype)
+ * |factory /comms/noise_source(dtype)
  * |setter setWaveform(wave)
  * |setter setOffset(offset)
  * |setter setAmplitude(ampl)
@@ -257,4 +258,7 @@ static Pothos::Block *noiseSourceFactory(const Pothos::DType &dtype)
 }
 
 static Pothos::BlockRegistry registerNoiseSource(
+    "/comms/noise_source", &noiseSourceFactory);
+
+static Pothos::BlockRegistry registerNoiseSourceOldPath(
     "/blocks/noise_source", &noiseSourceFactory);

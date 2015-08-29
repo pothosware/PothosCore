@@ -20,6 +20,7 @@
  *
  * |category /Filter
  * |keywords filter envelope attack decay sustain release lookahead
+ * |alias /blocks/envelope_detector
  *
  * |param dtype[Input Type] The data type of the input stream.
  * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
@@ -42,7 +43,7 @@
  * |default 10
  * |units samples
  *
- * |factory /blocks/envelope_detector(dtype)
+ * |factory /comms/envelope_detector(dtype)
  * |setter setAttack(attack)
  * |setter setRelease(release)
  * |setter setLookahead(lookahead)
@@ -182,4 +183,7 @@ static Pothos::Block *EnvelopeDetectorFactory(const Pothos::DType &dtype)
     throw Pothos::InvalidArgumentException("EnvelopeDetectorFactory("+dtype.toString()+")", "unsupported type");
 }
 static Pothos::BlockRegistry registerEnvelopeDetector(
+    "/comms/envelope_detector", &EnvelopeDetectorFactory);
+
+static Pothos::BlockRegistry registerEnvelopeDetectorOldPath(
     "/blocks/envelope_detector", &EnvelopeDetectorFactory);

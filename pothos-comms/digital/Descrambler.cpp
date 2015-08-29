@@ -15,6 +15,7 @@
  *
  * |category /Digital
  * |keywords descrambler
+ * |alias /blocks/descrambler
  *
  * |param mode[Descrambler Mode]
  * |option [Additive] "additive"
@@ -27,7 +28,7 @@
  * |param seed[Seed]
  * |default 0x1
  *
- * |factory /blocks/descrambler()
+ * |factory /comms/descrambler()
  * |setter setPoly(poly)
  * |setter setMode(mode)
  * |setter setSeed(seed)
@@ -180,4 +181,7 @@ void Descrambler::work(void)
 }
 
 static Pothos::BlockRegistry registerDescrambler(
+    "/comms/descrambler", &Descrambler::make);
+
+static Pothos::BlockRegistry registerDescramblerOldPath(
     "/blocks/descrambler", &Descrambler::make);
