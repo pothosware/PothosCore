@@ -1,0 +1,11 @@
+This this the changelog file for the Pothos Java toolkit.
+
+Release 0.1.1 (2015-08-26)
+==========================
+
+- Added missing sstream include in TestJava.cpp unit test
+
+Release 0.1.0 (2015-12-21)
+==========================
+
+This is the first public release of the Pothos Java toolkit.
