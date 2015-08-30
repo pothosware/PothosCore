@@ -1,0 +1,295 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\sample\example.cpp" />
+    <ClCompile Include="..\..\sample\timer.cpp" />
+    <ClCompile Include="..\..\parser\mpFuncCmplx.cpp">
+      <Filter>src\functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpFuncCommon.cpp">
+      <Filter>src\functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpFuncMatrix.cpp">
+      <Filter>src\functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpFuncNonCmplx.cpp">
+      <Filter>src\functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpFuncStr.cpp">
+      <Filter>src\functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpOprtBinAssign.cpp">
+      <Filter>src\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpOprtBinCommon.cpp">
+      <Filter>src\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpOprtCmplx.cpp">
+      <Filter>src\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpOprtIndex.cpp">
+      <Filter>src\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpOprtMatrix.cpp">
+      <Filter>src\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpOprtNonCmplx.cpp">
+      <Filter>src\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpOprtPostfixCommon.cpp">
+      <Filter>src\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpICallback.cpp">
+      <Filter>src\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpIfThenElse.cpp">
+      <Filter>src\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpIOprt.cpp">
+      <Filter>src\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpIPackage.cpp">
+      <Filter>src\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpIToken.cpp">
+      <Filter>src\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpIValReader.cpp">
+      <Filter>src\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpIValue.cpp">
+      <Filter>src\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpPackageCmplx.cpp">
+      <Filter>src\packages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpPackageCommon.cpp">
+      <Filter>src\packages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpPackageMatrix.cpp">
+      <Filter>src\packages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpPackageNonCmplx.cpp">
+      <Filter>src\packages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpPackageStr.cpp">
+      <Filter>src\packages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpPackageUnit.cpp">
+      <Filter>src\packages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpTest.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpParser.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpParserBase.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpParserMessageProvider.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpRPN.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpScriptTokens.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpTokenReader.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpValueCache.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpValue.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpValReader.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpVariable.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parser\mpError.cpp">
+      <Filter>src\parser</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\parser\mpFuncCmplx.h">
+      <Filter>src\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpFuncCommon.h">
+      <Filter>src\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpFuncMatrix.h">
+      <Filter>src\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpFuncNonCmplx.h">
+      <Filter>src\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpFuncStr.h">
+      <Filter>src\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpOprtBinAssign.h">
+      <Filter>src\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpOprtBinCommon.h">
+      <Filter>src\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpOprtCmplx.h">
+      <Filter>src\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpOprtIndex.h">
+      <Filter>src\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpOprtMatrix.h">
+      <Filter>src\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpOprtNonCmplx.h">
+      <Filter>src\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpOprtPostfixCommon.h">
+      <Filter>src\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpICallback.h">
+      <Filter>src\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpIfThenElse.h">
+      <Filter>src\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpIOprt.h">
+      <Filter>src\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpIPackage.h">
+      <Filter>src\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpIPrecedence.h">
+      <Filter>src\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpIToken.h">
+      <Filter>src\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpIValReader.h">
+      <Filter>src\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpIValue.h">
+      <Filter>src\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpPackageCmplx.h">
+      <Filter>src\packages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpPackageCommon.h">
+      <Filter>src\packages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpPackageMatrix.h">
+      <Filter>src\packages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpPackageNonCmplx.h">
+      <Filter>src\packages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpPackageStr.h">
+      <Filter>src\packages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpPackageUnit.h">
+      <Filter>src\packages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpDefines.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpFwdDecl.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpTest.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpTypes.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpMatrix.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpMatrixError.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpParser.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpParserBase.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpParserMessageProvider.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpRPN.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpScriptTokens.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpStack.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpTokenReader.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpValueCache.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpValue.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpValReader.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpVariable.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\utGeneric.h">
+      <Filter>src\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\suSortPred.h">
+      <Filter>src\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpError.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parser\mpCompat.h">
+      <Filter>src\parser</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="doc">
+      <UniqueIdentifier>{d2303569-610a-4b7a-9f1d-6246be718e55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{20843597-1f2e-400d-88df-a6f3286d764a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\framework">
+      <UniqueIdentifier>{aedbf7e3-01f8-4613-ba20-6fd818258278}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\packages">
+      <UniqueIdentifier>{8d62ac14-2f07-40c0-a35c-1f510a5f466f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\operators">
+      <UniqueIdentifier>{c3e840ff-eb3e-41a9-9234-517d94372ec1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\functions">
+      <UniqueIdentifier>{c1945759-96b5-4690-8660-ee3e17a008f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\parser">
+      <UniqueIdentifier>{3ad843ee-3456-4870-bc80-d5c62edfd677}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\utils">
+      <UniqueIdentifier>{a7106887-ab70-456d-89e8-23d2f7455c85}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\License.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\..\Readme.txt">
+      <Filter>doc</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E202E8A6-284D-4AD9-A465-B11267571619}</ProjectGuid>
+    <RootNamespace>muparserx</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../../parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4481</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>true</AssemblyDebug>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>../../parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\parser\mpParserMessageProvider.cpp" />
+    <ClCompile Include="..\..\sample\example.cpp" />
+    <ClCompile Include="..\..\sample\timer.cpp" />
+    <ClCompile Include="..\..\parser\mpFuncCmplx.cpp" />
+    <ClCompile Include="..\..\parser\mpFuncCommon.cpp" />
+    <ClCompile Include="..\..\parser\mpFuncMatrix.cpp" />
+    <ClCompile Include="..\..\parser\mpFuncNonCmplx.cpp" />
+    <ClCompile Include="..\..\parser\mpFuncStr.cpp" />
+    <ClCompile Include="..\..\parser\mpOprtBinAssign.cpp" />
+    <ClCompile Include="..\..\parser\mpOprtBinCommon.cpp" />
+    <ClCompile Include="..\..\parser\mpOprtPostfixCommon.cpp" />
+    <ClCompile Include="..\..\parser\mpOprtCmplx.cpp" />
+    <ClCompile Include="..\..\parser\mpOprtIndex.cpp" />
+    <ClCompile Include="..\..\parser\mpOprtMatrix.cpp" />
+    <ClCompile Include="..\..\parser\mpOprtNonCmplx.cpp" />
+    <ClCompile Include="..\..\parser\mpError.cpp" />
+    <ClCompile Include="..\..\parser\mpICallback.cpp" />
+    <ClCompile Include="..\..\parser\mpIfThenElse.cpp" />
+    <ClCompile Include="..\..\parser\mpIOprt.cpp" />
+    <ClCompile Include="..\..\parser\mpIPackage.cpp" />
+    <ClCompile Include="..\..\parser\mpIToken.cpp" />
+    <ClCompile Include="..\..\parser\mpIValReader.cpp" />
+    <ClCompile Include="..\..\parser\mpIValue.cpp" />
+    <ClCompile Include="..\..\parser\mpParser.cpp" />
+    <ClCompile Include="..\..\parser\mpParserBase.cpp" />
+    <ClCompile Include="..\..\parser\mpRPN.cpp" />
+    <ClCompile Include="..\..\parser\mpScriptTokens.cpp" />
+    <ClCompile Include="..\..\parser\mpTest.cpp" />
+    <ClCompile Include="..\..\parser\mpTokenReader.cpp" />
+    <ClCompile Include="..\..\parser\mpValReader.cpp" />
+    <ClCompile Include="..\..\parser\mpValue.cpp" />
+    <ClCompile Include="..\..\parser\mpValueCache.cpp" />
+    <ClCompile Include="..\..\parser\mpVariable.cpp" />
+    <ClCompile Include="..\..\parser\mpPackageCmplx.cpp" />
+    <ClCompile Include="..\..\parser\mpPackageCommon.cpp" />
+    <ClCompile Include="..\..\parser\mpPackageMatrix.cpp" />
+    <ClCompile Include="..\..\parser\mpPackageNonCmplx.cpp" />
+    <ClCompile Include="..\..\parser\mpPackageStr.cpp" />
+    <ClCompile Include="..\..\parser\mpPackageUnit.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\parser\mpCompat.h" />
+    <ClInclude Include="..\..\parser\mpFuncCmplx.h" />
+    <ClInclude Include="..\..\parser\mpFuncCommon.h" />
+    <ClInclude Include="..\..\parser\mpFuncMatrix.h" />
+    <ClInclude Include="..\..\parser\mpFuncNonCmplx.h" />
+    <ClInclude Include="..\..\parser\mpFuncStr.h" />
+    <ClInclude Include="..\..\parser\mpOprtBinAssign.h" />
+    <ClInclude Include="..\..\parser\mpOprtBinCommon.h" />
+    <ClInclude Include="..\..\parser\mpOprtPostfixCommon.h" />
+    <ClInclude Include="..\..\parser\mpOprtCmplx.h" />
+    <ClInclude Include="..\..\parser\mpOprtIndex.h" />
+    <ClInclude Include="..\..\parser\mpOprtMatrix.h" />
+    <ClInclude Include="..\..\parser\mpOprtNonCmplx.h" />
+    <ClInclude Include="..\..\parser\mpParserMessageProvider.h" />
+    <ClInclude Include="..\..\parser\suSortPred.h" />
+    <ClInclude Include="..\..\parser\utGeneric.h" />
+    <ClInclude Include="..\..\parser\mpDefines.h" />
+    <ClInclude Include="..\..\parser\mpError.h" />
+    <ClInclude Include="..\..\parser\mpFwdDecl.h" />
+    <ClInclude Include="..\..\parser\mpICallback.h" />
+    <ClInclude Include="..\..\parser\mpIfThenElse.h" />
+    <ClInclude Include="..\..\parser\mpIOprt.h" />
+    <ClInclude Include="..\..\parser\mpIPackage.h" />
+    <ClInclude Include="..\..\parser\mpIPrecedence.h" />
+    <ClInclude Include="..\..\parser\mpIToken.h" />
+    <ClInclude Include="..\..\parser\mpIValReader.h" />
+    <ClInclude Include="..\..\parser\mpIValue.h" />
+    <ClInclude Include="..\..\parser\mpMatrix.h" />
+    <ClInclude Include="..\..\parser\mpMatrixError.h" />
+    <ClInclude Include="..\..\parser\mpParser.h" />
+    <ClInclude Include="..\..\parser\mpParserBase.h" />
+    <ClInclude Include="..\..\parser\mpRPN.h" />
+    <ClInclude Include="..\..\parser\mpScriptTokens.h" />
+    <ClInclude Include="..\..\parser\mpStack.h" />
+    <ClInclude Include="..\..\parser\mpTest.h" />
+    <ClInclude Include="..\..\parser\mpTokenReader.h" />
+    <ClInclude Include="..\..\parser\mpTypes.h" />
+    <ClInclude Include="..\..\parser\mpValReader.h" />
+    <ClInclude Include="..\..\parser\mpValue.h" />
+    <ClInclude Include="..\..\parser\mpValueCache.h" />
+    <ClInclude Include="..\..\parser\mpVariable.h" />
+    <ClInclude Include="..\..\parser\mpPackageCmplx.h" />
+    <ClInclude Include="..\..\parser\mpPackageCommon.h" />
+    <ClInclude Include="..\..\parser\mpPackageMatrix.h" />
+    <ClInclude Include="..\..\parser\mpPackageNonCmplx.h" />
+    <ClInclude Include="..\..\parser\mpPackageStr.h" />
+    <ClInclude Include="..\..\parser\mpPackageUnit.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\License.txt" />
+    <Text Include="..\..\Readme.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
