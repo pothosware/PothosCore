@@ -69,6 +69,10 @@ if (QWT_FOUND)
 
 else (QWT_FOUND)
 
+    if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/qwt/src)
+        message(FATAL_ERROR "Qwt submodule not configured (git submodule init && git submodule update)")
+    endif ()
+
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/qwt/src)
     file(GLOB QWT_SOURCES "qwt/src/*.cpp")
     add_library(PothosQwt SHARED ${QWT_SOURCES})
