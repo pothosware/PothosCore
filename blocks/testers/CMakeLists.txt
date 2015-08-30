@@ -10,6 +10,12 @@ POTHOS_MODULE_UTIL(
         TestSetThreadPool.cpp
         FeederSource.cpp
         CollectorSink.cpp
+        BlackHole.cpp
+        FiniteRelease.cpp
+        InfiniteSource.cpp
+        SporadicDropper.cpp
+        SporadicLabeler.cpp
+        VectorSource.cpp
     DESTINATION blocks
     ENABLE_DOCS
 )

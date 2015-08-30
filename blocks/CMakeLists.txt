@@ -21,13 +21,10 @@ endif()
 ########################################################################
 # Build blocks modules
 ########################################################################
-add_subdirectory(math)
 add_subdirectory(file)
-add_subdirectory(filter)
-add_subdirectory(utility)
-add_subdirectory(network)
+add_subdirectory(stream)
 add_subdirectory(packet)
+add_subdirectory(event)
+add_subdirectory(network)
 add_subdirectory(serialize)
 add_subdirectory(testers)
-add_subdirectory(waveform)
-add_subdirectory(digital)

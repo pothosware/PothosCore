@@ -37,7 +37,7 @@ static const char *KERNEL_SOURCE =
 "}"
 ;
 
-POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel)
+POTHOS_TEST_BLOCK("/opencl/tests", test_opencl_kernel)
 {
     auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
     auto collector = registry.callProxy("/blocks/collector_sink", "float32");
@@ -83,7 +83,7 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel)
     for (int i = 0; i < 10; i++) POTHOS_TEST_EQUAL(pb[i], float(i+i+10));
 }
 
-POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel_back_to_back)
+POTHOS_TEST_BLOCK("/opencl/tests", test_opencl_kernel_back_to_back)
 {
     auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
     auto collector = registry.callProxy("/blocks/collector_sink", "float32");
@@ -144,7 +144,7 @@ POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel_back_to_back)
     for (int i = 0; i < 10; i++) POTHOS_TEST_EQUAL(pb[i], float(i+i+10+i+20));
 }
 
-POTHOS_TEST_BLOCK("/blocks/opencl/tests", test_opencl_kernel_middle_man)
+POTHOS_TEST_BLOCK("/opencl/tests", test_opencl_kernel_middle_man)
 {
     auto registry = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");

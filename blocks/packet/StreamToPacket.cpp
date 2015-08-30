@@ -53,6 +53,7 @@
  * until an end of frame label is encountered.
  *
  * |category /Packet
+ * |category /Convert
  * |keywords packet message datagram
  * |alias /blocks/label_deframer
  *

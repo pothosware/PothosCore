@@ -48,8 +48,8 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
     )
 
     list(APPEND Pothos_INCLUDE_DIRS
-        ${POTHOS_IN_TREE_SOURCE_DIR}/pothos-library/include
-        ${POTHOS_IN_TREE_SOURCE_DIR}/pothos-serialization/include
+        ${POTHOS_IN_TREE_SOURCE_DIR}/library/include
+        ${POTHOS_IN_TREE_SOURCE_DIR}/serialization/include
         ${Poco_INCLUDE_DIRS}
     )
 

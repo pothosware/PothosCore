@@ -60,7 +60,6 @@ set(SOURCES
     DeviceInfoUtils.cpp
     DocUtils.cpp
     TestDocUtils.cpp
-    WindowFunction.cpp
 )
 
 POTHOS_MODULE_UTIL(

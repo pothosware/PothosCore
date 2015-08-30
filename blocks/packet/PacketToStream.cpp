@@ -32,6 +32,7 @@
  * will be the element count times the label width (which accounts for rate increases).
  *
  * |category /Packet
+ * |category /Convert
  * |keywords packet message datagram
  *
  * |param frameStartId[Frame Start ID] The label ID to mark the first element from each payload.

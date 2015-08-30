@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -6,6 +6,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Object/Containers.hpp>
 #include <mutex>
+#include <condition_variable>
 
 class RemoteProxyHandle;
 
@@ -75,6 +76,8 @@ public:
 
     std::mutex osMutex;
     std::mutex isMutex;
+    std::condition_variable isCond;
+    bool isBlocking;
     std::map<size_t, Pothos::ObjectKwargs> tidToReply;
 };
 

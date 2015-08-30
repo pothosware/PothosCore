@@ -36,7 +36,7 @@ def add_to_includes(includes, path):
     for boost_include in get_boost_includes(path):
         if boost_include not in includes:
             includes.add(boost_include)
-            add_to_includes(includes, os.path.join(sys.argv[1], boost_include))
+            add_to_includes(includes, os.path.join(boost_dir, boost_include))
 
 def rename_path(s):
     if 'boost/archive' in s:
@@ -76,18 +76,30 @@ def rename_file(src, dst):
 
 if __name__ == '__main__':
     includes = set()
-    for cpp in walk_r(os.path.join(sys.argv[1], 'libs/serialization/src/'), '*.*'):
-        rename_file(cpp, os.path.join(sys.argv[2], 'lib', os.path.basename(cpp)))
+
+    boost_dir, eos_dir, dest_dir = sys.argv[1:]
+
+    for hpp in walk_r(os.path.join(eos_dir, 'eos'), '*.*'):
+        rename_file(hpp, os.path.join(dest_dir, 'include/Pothos/archive/eos', os.path.basename(hpp)))
+        add_to_includes(includes, hpp)
+
+    for cpp in ['libs/program_options/src/convert.cpp', 'libs/program_options/src/utf8_codecvt_facet.cpp']:
+        cpp = os.path.join(boost_dir, cpp)
+        rename_file(cpp, os.path.join(dest_dir, 'lib', 'po_'+os.path.basename(cpp)))
+        add_to_includes(includes, cpp)
+
+    for cpp in walk_r(os.path.join(boost_dir, 'libs/serialization/src/'), '*.*'):
+        rename_file(cpp, os.path.join(dest_dir, 'lib', os.path.basename(cpp)))
         add_to_includes(includes, cpp)
 
     for sub in ['serialization', 'mpl', 'archive']:
-        for hdr in walk_r(os.path.join(sys.argv[1], 'boost', sub), '*.*'):
+        for hdr in walk_r(os.path.join(boost_dir, 'boost', sub), '*.*'):
             new_name = hdr.split(sub+'/', 1)[1]
-            rename_file(hdr, os.path.join(sys.argv[2], 'include', 'boost', sub, new_name))
+            rename_file(hdr, os.path.join(dest_dir, 'include', 'boost', sub, new_name))
 
     for inc in includes:
 
-        rename_file(os.path.join(sys.argv[1], inc), os.path.join(sys.argv[2], 'include', inc))
+        rename_file(os.path.join(boost_dir, inc), os.path.join(dest_dir, 'include', inc))
 
         #print inc
     print len(includes)

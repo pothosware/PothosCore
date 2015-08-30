@@ -24,41 +24,73 @@ Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs
     auto reqArgs = reqArgs_;
     reqArgs["tid"] = Pothos::Object(tid);
 
-    try
+    //send request object over output stream
+    POTHOS_EXCEPTION_TRY
     {
-        //send request object over output stream
-        {
-            std::lock_guard<std::mutex> lock(osMutex);
-            sendDatagram(os, reqArgs);
-        }
-
-        //wait for reply object
-        while (true)
-        {
-            std::lock_guard<std::mutex> lock(isMutex);
-
-            //is there a reply in the cache?
-            auto it = tidToReply.find(tid);
-            if (it != tidToReply.end())
-            {
-                auto reply = it->second;
-                tidToReply.erase(it);
-                return reply;
-            }
-
-            //otherwise wait on input stream
-            const auto replyArgs = recvDatagram(is);
-            const auto replyTid = replyArgs.at("tid").convert<size_t>();
-            if (replyTid == tid) return replyArgs;
-            tidToReply[replyTid] = replyArgs;
-        }
+        std::lock_guard<std::mutex> lock(osMutex);
+        sendDatagram(os, reqArgs);
     }
-    catch (const Poco::IOException &ex)
+    POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
-        std::lock_guard<std::mutex> lock(isMutex);
-        tidToReply.erase(tid);
         connectionActive = false;
-        throw Pothos::IOException("RemoteProxyEnvironment::transact()", ex.message());
+        throw Pothos::IOException("RemoteProxyEnvironment::sendDatagram()", ex.message());
+    }
+
+    //wait for reply object
+    while (true)
+    {
+        std::unique_lock<std::mutex> lock(isMutex);
+
+        //is there a reply in the cache?
+        auto it = tidToReply.find(tid);
+        if (it != tidToReply.end())
+        {
+            auto reply = it->second;
+            tidToReply.erase(it);
+            lock.unlock();
+            isCond.notify_all();
+            return reply;
+        }
+
+        //a thread is blocking on the input stream wait here
+        if (isBlocking)
+        {
+            isCond.wait(lock);
+            continue; //reply may be available, return to loop start
+        }
+
+        //Mark blocking and unlock while waiting on the input stream
+        //so that other threads can access the reply cache or wait.
+        isBlocking = true;
+        lock.unlock();
+        Pothos::ObjectKwargs replyArgs;
+        POTHOS_EXCEPTION_TRY
+        {
+            replyArgs = recvDatagram(is);
+        }
+        POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
+        {
+            isBlocking = false;
+            isCond.notify_all();
+            connectionActive = false;
+            throw Pothos::IOException("RemoteProxyEnvironment::recvDatagram()", ex.message());
+        }
+        lock.lock();
+        isBlocking = false;
+
+        //this is our thread ID, reply args
+        const auto replyTid = replyArgs.at("tid").convert<size_t>();
+        if (replyTid == tid)
+        {
+            lock.unlock();
+            isCond.notify_all();
+            return replyArgs;
+        }
+
+        //otherwise store to the reply cache
+        tidToReply[replyTid] = replyArgs;
+        lock.unlock();
+        isCond.notify_all();
     }
 }
 
@@ -66,7 +98,7 @@ RemoteProxyEnvironment::RemoteProxyEnvironment(
     std::istream &is, std::ostream &os,
     const std::string &name, const Pothos::ProxyEnvironmentArgs &args
 ):
-    is(is), os(os), name(name), connectionActive(true)
+    is(is), os(os), name(name), connectionActive(true), isBlocking(false)
 {
     //create request
     Pothos::ObjectKwargs req;
