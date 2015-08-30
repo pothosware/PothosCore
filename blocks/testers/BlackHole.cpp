@@ -9,6 +9,7 @@
  * The black hole block consumes all input provided on port 0.
  * This block is primarily used for testing purposes.
  *
+ * |category /Testers
  * |category /Sinks
  * |keywords sink null black
  *

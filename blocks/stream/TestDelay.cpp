@@ -13,7 +13,7 @@ static void delayBlockTestCase(const int delayVal)
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
     auto feeder = registry.callProxy("/blocks/feeder_source", "int");
-    auto delay = registry.callProxy("/comms/delay");
+    auto delay = registry.callProxy("/blocks/delay");
     auto collector = registry.callProxy("/blocks/collector_sink", "int");
 
     //setup
@@ -36,7 +36,7 @@ static void delayBlockTestCase(const int delayVal)
     POTHOS_TEST_EQUAL(buff1.elements(), size_t(100-delayVal));
 }
 
-POTHOS_TEST_BLOCK("/comms/tests", test_delay)
+POTHOS_TEST_BLOCK("/blocks/tests", test_delay)
 {
     delayBlockTestCase(0);
     delayBlockTestCase(10);

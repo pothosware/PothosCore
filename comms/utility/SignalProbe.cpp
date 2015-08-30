@@ -8,10 +8,10 @@
 #include <algorithm> //min/max
 
 /***********************************************************************
- * |PothosDoc Stream Probe
+ * |PothosDoc Signal Probe
  *
- * The stream probe block records the last calculation from a stream of elements.
- * The stream probe has a slot called "probeValue" will will cause
+ * The signal probe block records the last calculation from a stream of elements.
+ * The signal probe has a slot called "probeValue" will will cause
  * a signal named "valueTriggered" to emit the most recent value.
  *
  * The calculation for value can be, the last seen value,
@@ -19,6 +19,8 @@
  * or the mean (average value) over the last buffer.
  *
  * |category /Utility
+ * |category /Event
+ * |keywords rms average mean
  * |alias /blocks/stream_probe
  *
  * |param dtype[Data Type] The data type consumed by the stream probe.
@@ -38,25 +40,25 @@
  * |param window How many elements to calculate over?
  * |default 1024
  *
- * |factory /comms/stream_probe(dtype)
+ * |factory /comms/signal_probe(dtype)
  * |setter setMode(mode)
  * |setter setWindow(window)
  **********************************************************************/
 template <typename Type>
-class StreamProbe : public Pothos::Block
+class SignalProbe : public Pothos::Block
 {
 public:
-    StreamProbe(void):
+    SignalProbe(void):
         _value(0),
         _mode("VALUE"),
         _window(1024)
     {
         this->setupInput(0, typeid(Type));
-        this->registerCall(this, POTHOS_FCN_TUPLE(StreamProbe, value));
-        this->registerCall(this, POTHOS_FCN_TUPLE(StreamProbe, setMode));
-        this->registerCall(this, POTHOS_FCN_TUPLE(StreamProbe, getMode));
-        this->registerCall(this, POTHOS_FCN_TUPLE(StreamProbe, setWindow));
-        this->registerCall(this, POTHOS_FCN_TUPLE(StreamProbe, getWindow));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SignalProbe, value));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SignalProbe, setMode));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SignalProbe, getMode));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SignalProbe, setWindow));
+        this->registerCall(this, POTHOS_FCN_TUPLE(SignalProbe, getWindow));
         this->registerProbe("value");
         this->input(0)->setReserve(1);
     }
@@ -130,8 +132,8 @@ private:
 static Pothos::Block *valueProbeFactory(const Pothos::DType &dtype)
 {
     #define ifTypeDeclareFactory(type) \
-        if (dtype == Pothos::DType(typeid(type))) return new StreamProbe<type>(); \
-        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new StreamProbe<std::complex<type>>();
+        if (dtype == Pothos::DType(typeid(type))) return new SignalProbe<type>(); \
+        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new SignalProbe<std::complex<type>>();
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
     ifTypeDeclareFactory(int64_t);
@@ -141,8 +143,8 @@ static Pothos::Block *valueProbeFactory(const Pothos::DType &dtype)
     throw Pothos::InvalidArgumentException("valueProbeFactory("+dtype.toString()+")", "unsupported type");
 }
 
-static Pothos::BlockRegistry registerStreamProbe(
-    "/comms/stream_probe", &valueProbeFactory);
+static Pothos::BlockRegistry registerSignalProbe(
+    "/comms/signal_probe", &valueProbeFactory);
 
-static Pothos::BlockRegistry registerStreamProbeOldPath(
+static Pothos::BlockRegistry registerSignalProbeOldPath(
     "/blocks/stream_probe", &valueProbeFactory);

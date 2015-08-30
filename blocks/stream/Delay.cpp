@@ -12,14 +12,13 @@
  * The implementation passively forwards inputs to outputs,
  * without incuring any memory copying overhead.
  *
- * |category /Utility
+ * |category /Stream
  * |keywords delay time
- * |alias /blocks/delay
  *
  * |param delay The delay in number of stream elements.
  * |default 0
  *
- * |factory /comms/delay()
+ * |factory /blocks/delay()
  * |setter setDelay(delay)
  **********************************************************************/
 class Delay : public Pothos::Block
@@ -92,7 +91,4 @@ private:
 };
 
 static Pothos::BlockRegistry registerDelay(
-    "/comms/delay", &Delay::make);
-
-static Pothos::BlockRegistry registerDelayOldPath(
     "/blocks/delay", &Delay::make);

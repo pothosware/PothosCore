@@ -18,7 +18,7 @@
  * The input slots are user-defined. The output signal is named "triggered".
  * The arguments from the input slots must be primitive types.
  *
- * |category /Utility
+ * |category /Event
  * |keywords signal slot eval expression
  * |alias /blocks/transform_signal
  *

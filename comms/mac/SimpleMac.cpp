@@ -34,7 +34,7 @@
  *  where the metadata has the "sender" field set to the remote destination MAC.</li>
  * </ul>
  *
- * |category /Packet
+ * |category /MAC
  * |keywords MAC PHY packet
  * |alias /blocks/simple_mac
  *

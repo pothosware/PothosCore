@@ -11,7 +11,8 @@
  * The copier block copies all data from input port 0 to the output port 0.
  * This block is used to bridge connections between incompatible domains.
  *
- * |category /Utility
+ * |category /Stream
+ * |category /Convert
  * |keywords copier copy memcpy
  *
  * |factory /blocks/copier()

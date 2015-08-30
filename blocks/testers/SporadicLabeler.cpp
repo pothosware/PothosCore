@@ -12,8 +12,10 @@
  * to output port 0 while randomly inserts labels at irregular intervals.
  * This block is mainly used for testing other blocks that deal with labels.
  *
- * |category /Utility
- * |keywords random insert
+ * |category /Testers
+ * |category /Random
+ * |category /Labels
+ * |keywords random insert labels
  *
  * |param probability The probability of a label being associated with a random element.
  * A probability of 1 would mean every element, a probability of 0 would mean never.

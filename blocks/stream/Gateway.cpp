@@ -10,7 +10,7 @@
  * This block forwards input port 0 to the output port 0 without copying.
  * This block is mainly used for testing and debug purposes.
  *
- * |category /Utility
+ * |category /Stream
  * |keywords forward drop back pressure
  *
  * |param mode The handling mode for input data on port 0.

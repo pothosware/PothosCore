@@ -43,7 +43,7 @@
  * <li><b>dataOut</b> - This port produces a packet of user data.</li>
  * </ul>
  *
- * |category /Packet
+ * |category /MAC
  * |keywords LLC MAC packet
  * |alias /blocks/simple_llc
  *

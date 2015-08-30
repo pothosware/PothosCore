@@ -12,7 +12,8 @@
  * to output port 0 while randomly dropping entire buffers or messages.
  * This block is mainly used for recovery tolerance testing.
  *
- * |category /Utility
+ * |category /Testers
+ * |category /Random
  * |keywords random drop
  *
  * |param probability The probability of an input being dropped.

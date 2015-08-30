@@ -16,7 +16,7 @@
  * This rate limitation is an approximation at best.
  * This block is mainly used for simulation purposes.
  *
- * |category /Utility
+ * |category /Stream
  * |keywords pacer time
  *
  * |param rate[Data Rate] The rate of elements or messages through the block.

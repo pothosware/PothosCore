@@ -14,7 +14,8 @@
  * specifies the output data type, and the block tries to convert.
  * Input is consumed on input port 0 and produced on output port 0.
  *
- * |category /Utility
+ * |category /Stream
+ * |category /Convert
  *
  * |param dtype[Data Type] The output data type.
  * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1,uint=1,cuint=1)

@@ -4,9 +4,7 @@
 POTHOS_MODULE_UTIL(
     TARGET UtilityBlocks
     SOURCES
-        Delay.cpp
-        TestDelay.cpp
-        StreamProbe.cpp
+        SignalProbe.cpp
         Threshold.cpp
         WaveTrigger.cpp
     DESTINATION comms

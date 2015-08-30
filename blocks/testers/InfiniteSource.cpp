@@ -17,7 +17,7 @@
  * is the fact that buffers and message tokens have a limited resource pool
  * that is only replenished by the consumption by downstream consumers.
  *
- * |category /Utility
+ * |category /Testers
  * |category /Sources
  * |keywords test
  *

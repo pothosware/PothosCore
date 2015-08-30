@@ -23,7 +23,8 @@
  * The user doesn't want to use the output of the mathematical transform,
  * instead they want the associated labels annotating the original signal.
  *
- * |category /Utility
+ * |category /Stream
+ * |category /Labels
  * |keywords stream label
  *
  * |param keepPrimary[Keep Primary] How to handle labels from the primary input port.

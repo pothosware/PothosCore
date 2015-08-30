@@ -13,7 +13,7 @@
  * The vector source block creates a stream of elements from a user-specified list.
  * The primary use of this block is to test and debug other blocks.
  *
- * |category /Utility
+ * |category /Testers
  * |category /Sources
  * |keywords test
  *

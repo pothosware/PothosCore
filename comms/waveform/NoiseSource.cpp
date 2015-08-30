@@ -19,6 +19,7 @@ static const size_t waveTableSize = 4096;
  *
  * |category /Sources
  * |category /Waveforms
+ * |category /Random
  * |keywords noise random source pseudorandom gaussian
  * |alias /blocks/noise_source
  *

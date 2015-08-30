@@ -17,7 +17,7 @@
  * The count resets and the flow resumes when the block is re-activated
  * or when the total element count is reset.
  *
- * |category /Utility
+ * |category /Testers
  *
  * |param total[Total Elements] The total number of elements to allow through the block.
  * |default 1024

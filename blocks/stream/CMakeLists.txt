@@ -7,6 +7,8 @@ POTHOS_MODULE_UTIL(
         Converter.cpp
         TestConverter.cpp
         Copier.cpp
+        Delay.cpp
+        TestDelay.cpp
         DynamicRouter.cpp
         Pacer.cpp
         Relabeler.cpp
