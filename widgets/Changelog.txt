@@ -1,0 +1,36 @@
+This this the changelog file for the Pothos Widgets toolkit.
+
+Release 0.3.0 (pending)
+==========================
+
+- Reorganized control widgets into the top level directory
+- Moved plotters and qwt widgets to pothos-plotters toolkit
+
+Release 0.2.1 (2015-08-26)
+==========================
+
+- Switch from stream snooper to wave trigger all plotters
+- Wave viewer trigger options and use of wave trigger block
+- Support custom channel labels and style in wave viewer
+- Disable previews of redundant plotter parameters
+- Fix zoom selection box in waveform monitor display
+
+Release 0.2.0 (2015-06-17)
+==========================
+
+- Auto-scale for wave monitor Y axis
+- Added push button control widget
+- Added logic analyzer display plotter block
+- Use installed Qwt if found and version >= 6.1
+
+Release 0.1.1 (2015-06-16)
+==========================
+
+- Fix null object error when RadioGroup is not toggled
+- Updated internal Qwt to version 6.1.2
+- Display plotters replot() after legend checkbox change
+
+Release 0.1.0 (2014-12-21)
+==========================
+
+This is the first public release of the Pothos Widgets toolkit.

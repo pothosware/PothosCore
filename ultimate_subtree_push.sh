@@ -3,19 +3,21 @@
 BRANCH=$1
 
 COMPONENTS="
-pothos-opencl
-pothos-widgets
-pothos-gui
-pothos-library
-pothos-python
-pothos-util
-pothos-java
-pothos-blocks
-pothos-serialization
-pothos-sdr
-pothos-audio
+widgets
+plotters
+gui
+library
+python
+java
+util
+opencl
+blocks
+comms
+serialization
+sdr
+audio
 "
 
 for PREFIX in $COMPONENTS; do
-    git subtree push --prefix=${PREFIX} git@github.com:pothosware/${PREFIX}.git ${BRANCH}
+    git subtree push --prefix=${PREFIX} git@github.com:pothosware/pothos-${PREFIX}.git ${BRANCH}
 done

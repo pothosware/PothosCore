@@ -1,2 +1,2 @@
 #intentionally packaging serialization library along with main runtime library
-libpothos0: package-name-doesnt-match-sonames libPothos0.2.0 libPothosSerialization0
+libpothos0: package-name-doesnt-match-sonames libPothos0.3.0 libPothosSerialization0
