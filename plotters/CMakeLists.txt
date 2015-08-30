@@ -33,6 +33,17 @@ foreach(comp Widgets Concurrent OpenGL Svg PrintSupport)
 endforeach(comp)
 
 ########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_PLOTTERS "Enable Pothos Plotters component" ON "ENABLE_LIBRARY;${Qt5Enables}" OFF)
+add_feature_info(Plotters ENABLE_PLOTTERS "Graphical plotter widgets for the GUI")
+if (NOT ENABLE_PLOTTERS)
+    return()
+endif()
+
+########################################################################
 # Qwt setup
 ########################################################################
 find_package(Qwt)
@@ -72,17 +83,6 @@ else (QWT_FOUND)
     list(APPEND Qt5_LIBRARIES PothosQwt)
 
 endif (QWT_FOUND)
-
-########################################################################
-## Feature registration
-########################################################################
-include(FeatureSummary)
-include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_PLOTTERS "Enable Pothos Plotters component" ON "ENABLE_LIBRARY;${Qt5Enables};QWT_FOUND" OFF)
-add_feature_info(Plotters ENABLE_PLOTTERS "Graphical plotter widgets for the GUI")
-if (NOT ENABLE_PLOTTERS)
-    return()
-endif()
 
 ########################################################################
 # plotter utils library
