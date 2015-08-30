@@ -1,3 +1,6 @@
 [submodule "poco154"]
 	path = poco154
 	url = https://github.com/pocoproject/poco.git
+[submodule "plotters/qwt"]
+	path = plotters/qwt
+	url = https://github.com/osakared/qwt.git
