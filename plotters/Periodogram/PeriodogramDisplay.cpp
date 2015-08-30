@@ -29,7 +29,7 @@ PeriodogramDisplay::PeriodogramDisplay(void):
     _averageFactor(0.0)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
-    _window = env->findProxy("Pothos/Util/WindowFunction").callProxy("new");
+    _window = env->findProxy("Pothos/Comms/WindowFunction").callProxy("new");
 
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, widget));

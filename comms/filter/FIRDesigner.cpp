@@ -96,7 +96,7 @@ public:
         _numTaps(50)
     {
         auto env = Pothos::ProxyEnvironment::make("managed");
-        _window = env->findProxy("Pothos/Util/WindowFunction").callProxy("new");
+        _window = env->findProxy("Pothos/Comms/WindowFunction").callProxy("new");
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setFilterType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, filterType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setWindowType));

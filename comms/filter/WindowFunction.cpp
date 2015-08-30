@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Config.hpp>
@@ -191,4 +191,4 @@ static auto managedWindowFunction = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(WindowFunction, setSize))
     .registerMethod(POTHOS_FCN_TUPLE(WindowFunction, power))
     .registerMethod(POTHOS_FCN_TUPLE(WindowFunction, window))
-    .commit("Pothos/Util/WindowFunction");
+    .commit("Pothos/Comms/WindowFunction");
