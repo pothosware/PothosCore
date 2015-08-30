@@ -4,3 +4,4 @@
 [submodule "plotters/qwt"]
 	path = plotters/qwt
 	url = https://github.com/osakared/qwt.git
+	branch = tags/qwt-6.1.2
