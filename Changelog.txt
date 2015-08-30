@@ -1,0 +1,80 @@
+This this the changelog file for the Pothos Blocks toolkit.
+
+Release 0.2.1 (2015-08-26)
+==========================
+
+- Strategic resizing of the waveform source table
+- Created bursty modulation framer and sync blocks
+- Created wave trigger for waveform monitor back-end
+- Added labeled burst support to the FIR filter
+- Fix stream snooper label index adjustment logic
+- Support start label length in Stream to Packet
+- Added wait taps active mode to FIR filter block
+- Added element count to labels in Packet to Stream
+- Added missing setGain to FIR Designer setter list
+- Fix finite release block output buffer truncation
+- Stream snooper buffer accumulator optimization
+- Fixed typo in delay block description markup
+- Fix stream snooper alignment mode time trigger
+- Network blocks support jumbo sized transfers
+- Fix stream snooper disable propagate labels
+- Rename transform signal/slots block to evaluator
+- Created stream relabeler utility block
+- Created threshold labeler utility block
+- Created envelope detector filter block
+- Packet to/from stream blocks support frame labels
+- Fixed sporadic dropper to set the label width
+- Added simple LLC block for logical link control
+- Created sporadic dropper for reliability testing
+- Fix feeder element generator to support unsigned
+- Feeder+collector blocks support packets in test plan
+- Support packet payloads for symbol conversion blocks
+- Added multiple option to Feeder source test plan
+- Added symbols to bytes conversion block
+- Added preamble framer block to frame a symbol stream
+- Preamble correlator supports arbitrary symbol widths
+- Style and documentation changes for digital blocks
+
+Release 0.2.0 (2015-06-17)
+==========================
+
+New packet blocks:
+
+- Added link layer control block
+- Added media access control block
+- Added label deframer block
+
+New digital blocks:
+
+- Added scrambler block
+- Added descrambler block
+- Added symbol mapper block
+- Added bits to symbols block
+- Added bytes to symbols block
+- Added symbols to bits block
+- Added symbol slicer block
+- Added preamble correlator block
+- Added differential encoder block
+- Added differential decoder block
+
+New utility blocks:
+
+- Created transform signal/slots utility block
+- Created vector source block for testing
+- Created infinite source block for benchmarks
+
+File
+
+- Added data type specification to file source
+
+Misc
+
+- Added sample rate param to waveform source
+- Pacer block produces rxRate label on change
+- Added synchronous alignment option to snooper
+- Added unit test for JSON Topology feature
+
+Release 0.1.0 (2014-12-21)
+==========================
+
+This is the first public release of the Pothos Blocks toolkit.
