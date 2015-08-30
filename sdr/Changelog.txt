@@ -1,0 +1,32 @@
+This this the changelog file for the Pothos SDR toolkit.
+
+Release 0.2.1 (2015-08-26)
+==========================
+
+- Set clock rate before sample rate in block description
+- SDR Source non-blocking read low throughput optimization
+- Created TX burst timer block for transmit demos
+- SDR Sink consumes available input on writeStream error
+- SDR Sink skips out of range labels to fix EOB problem
+
+Release 0.2.0 (2015-06-17)
+==========================
+
+- Preserve the ordering of setters during initialization
+- Use cached tune arguments when unspecified by slot
+- Support arbitrary value types in key/value parameters
+- Added multi-channel alignment block for MIMO applications
+- Added random dropper block for testing overflow recovery
+- Make use of the label width for the SDR Sink end of burst
+
+Release 0.1.1 (2015-06-16)
+==========================
+
+- Fix possible device pointer leak in destructor
+- Allow frequency setting of 0.0 Hz to be used
+- Fixed the label index interpretation for the SDR Sink
+
+Release 0.1.0 (2014-12-21)
+==========================
+
+This is the first public release of the Pothos SDR toolkit.
