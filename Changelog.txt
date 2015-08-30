@@ -1,0 +1,51 @@
+This this the changelog file for the Pothos C++ library.
+
+Release 0.2.1 (2015-08-26)
+==========================
+
+- Fix buffer accumulator require circular optimization
+- Support custom multi-dest buffers when domain unspecified
+- JSON stats use block name from flattened hierarchy
+- Cache calls to get buffer manager implementations
+- Install buffer managers skips signal/slot ports
+- Default propagate labels now skips signal ports
+- Support alias paths in block description markup
+- Fixed workInfo element counts to exclude signals/slots
+- Fixed integer parser failure in named ports setup
+- Allow work() operation with unused output ports
+- Created new test suite macro for array equality
+- WorkerActor push downstream only when data available
+- Fix Topology::waitInactive() activity checker
+- Fix input port buffer accumulator total counter
+- Implement SoapySDRConfigVersion.cmake version check
+
+Release 0.2.0 (2015-06-17)
+==========================
+
+- Support /usr/local module installs when root is /usr
+- Support POTHOS_PLUGIN_PATH environment variable
+- Support using system installed version of Poco
+- Serialization switched to portable text archive
+- Topology waitInactive() support for infinite timeout
+- PothosUtil --print-tree renamed to --plugin-tree
+- PothosUtil --self-tests-at combined with --self-tests
+- Fixed automatic port deletion upon disconnection
+- Threading overhaul and performance improvements
+- Topology factory from JSON description
+- Topology supports pass-through flows
+
+Release 0.1.1 (2015-06-16)
+==========================
+
+- Fix temporary file cleanup for unix circular buffer
+- Support openSuSE for automatic LIB_SUFFIX detection logic
+- Pothos build utils set library paths in unix environment
+- Added serialization for built-in proxy container types
+- Fixed circular buffer push front condition when non-empty
+- Fixed Topology::waitInactive() false positive condition
+- Fixed usage of managed buffers for message back-pressure
+
+Release 0.1.0 (2014-12-21)
+==========================
+
+This is the first public release of the Pothos C++ library.
