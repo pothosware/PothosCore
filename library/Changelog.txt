@@ -8,6 +8,11 @@ Release 0.3.0 (pending)
 - Re-implement RPC datagram format with embedded length
 - Switch to portable binary Object serialization from EOS
 
+Release 0.2.2 (pending)
+==========================
+
+- Fixed Pothos Util doc parse bug in use of seekg()
+
 Release 0.2.1 (2015-08-26)
 ==========================
 
