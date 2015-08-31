@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.2.2 (pending)
+==========================
+
+- Fixed Pothos Util doc parse bug in use of seekg()
+
 Release 0.2.1 (2015-08-26)
 ==========================
 

@@ -133,12 +133,18 @@ static std::vector<CodeBlock> extractContiguousBlocks(std::istream &is)
     std::vector<CodeBlock> contiguousCommentBlocks;
     CodeBlock currentCodeBlock;
     size_t lineNo = 0;
+    std::string partial, line;
 
     bool inMultiLineComment = false;
     while (is.good() and not is.eof())
     {
-        lineNo++; //starts at 1
-        std::string line; std::getline(is, line);
+        if (not partial.empty()) line = partial;
+        else
+        {
+            lineNo++; //starts at 1
+            std::getline(is, line);
+        }
+        partial.clear();
         if (line.empty()) continue;
 
         const std::string lineTrim = Poco::trimLeft(line);
@@ -157,7 +163,7 @@ static std::vector<CodeBlock> extractContiguousBlocks(std::istream &is)
         {
             inMultiLineComment = false;
             currentCodeBlock.push_back(CodeLine(line.substr(0, closeMulti), lineNo));
-            is.seekg(is.tellg() + std::streamoff(closeMulti+2-int(line.size())));
+            partial = line.substr(closeMulti+2);
         }
         else if (inMultiLineComment)
         {
