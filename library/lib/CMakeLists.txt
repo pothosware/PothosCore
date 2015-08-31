@@ -1,4 +1,13 @@
 ########################################################################
+## Feature registration
+########################################################################
+cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY" OFF)
+add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos development and runtime libraries")
+if (NOT ENABLE_LIBRARY_LIB)
+    return()
+endif()
+
+########################################################################
 # Module file extension - Loader.in.cpp
 ########################################################################
 if (WIN32)
