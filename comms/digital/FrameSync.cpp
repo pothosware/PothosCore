@@ -503,18 +503,15 @@ void FrameSync<Type>::work(void)
 
         //produce a phase offset label at the first payload index
         if (not _phaseOffsetId.empty()) outPort->postLabel(
-            Pothos::Label(_phaseOffsetId, Pothos::Object(_phase),
-            0, labelWidth));
+            Pothos::Label(_phaseOffsetId, _phase, 0, labelWidth));
 
         //produce a start of frame label at the first payload index
         if (not _frameStartId.empty()) outPort->postLabel(
-            Pothos::Label(_frameStartId, Pothos::Object(length),
-            0, labelWidth));
+            Pothos::Label(_frameStartId, length, 0, labelWidth));
 
         //produce an end of frame label at the last payload index
         if (not _frameEndId.empty()) outPort->postLabel(
-            Pothos::Label(_frameEndId, Pothos::Object(length),
-            (length-1)*labelWidth, labelWidth));
+            Pothos::Label(_frameEndId, length, (length-1)*labelWidth, labelWidth));
 
         inPort->setReserve(0);
         inPort->consume(payloadOffset);
