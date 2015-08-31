@@ -116,13 +116,13 @@ public:
         //post start of frame label
         if (not _frameStartId.empty())
         {
-            outputPort->postLabel(Pothos::Label(_frameStartId, Pothos::Object(packet.payload.elements()), 0, packet.payload.dtype.size()));
+            outputPort->postLabel(Pothos::Label(_frameStartId, packet.payload.elements(), 0, packet.payload.dtype.size()));
         }
 
         //post end of frame label
         if (not _frameEndId.empty())
         {
-            outputPort->postLabel(Pothos::Label(_frameEndId, Pothos::Object(packet.payload.elements()), packet.payload.length-1, packet.payload.dtype.size()));
+            outputPort->postLabel(Pothos::Label(_frameEndId, packet.payload.elements(), packet.payload.length-1, packet.payload.dtype.size()));
         }
 
         //post the payload
