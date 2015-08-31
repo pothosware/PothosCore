@@ -101,6 +101,11 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
 endif ()
 
 ########################################################################
+## Toolkits using the FeatureSummary macro may depend on ENABLE_LIBRARY
+########################################################################
+set(ENABLE_LIBRARY TRUE)
+
+########################################################################
 ## Determine root installation path
 ########################################################################
 if (UNIX)

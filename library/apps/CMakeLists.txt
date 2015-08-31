@@ -1,4 +1,15 @@
 ########################################################################
+## Feature registration
+########################################################################
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_LIBRARY_APPS "Enable Pothos Library.Apps component" ON "ENABLE_LIBRARY" OFF)
+add_feature_info("  Apps" ENABLE_LIBRARY_APPS "Utility application for Pothos library")
+if (NOT ENABLE_LIBRARY_APPS)
+    return()
+endif()
+
+########################################################################
 # Local includes
 ########################################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

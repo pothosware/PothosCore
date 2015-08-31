@@ -2,8 +2,7 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.9)
-project(PothosOpenCL)
-enable_language(CXX)
+project(PothosOpenCL CXX)
 
 find_package(Pothos CONFIG REQUIRED)
 

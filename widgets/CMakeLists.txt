@@ -2,11 +2,9 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.9)
-project(PothosWidgets)
-enable_language(CXX)
+project(PothosWidgets CXX)
 
 find_package(Pothos CONFIG REQUIRED)
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 ########################################################################
 # QT5 devel setup

@@ -1,4 +1,13 @@
 ########################################################################
+## Feature registration
+########################################################################
+cmake_dependent_option(ENABLE_COMMS_DIGITAL "Enable Pothos Comms.Digital component" ON "ENABLE_COMMS" OFF)
+add_feature_info("  Digital" ENABLE_COMMS_DIGITAL "Digital byte, bit, and symbol operators")
+if (NOT ENABLE_COMMS_DIGITAL)
+    return()
+endif()
+
+########################################################################
 # Digital blocks module
 ########################################################################
 if(MSVC)

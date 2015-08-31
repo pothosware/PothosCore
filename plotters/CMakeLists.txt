@@ -2,8 +2,7 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.9)
-project(PothosPlotters)
-enable_language(CXX)
+project(PothosPlotters CXX)
 
 find_package(Pothos CONFIG REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -39,9 +38,6 @@ include(FeatureSummary)
 include(CMakeDependentOption)
 cmake_dependent_option(ENABLE_PLOTTERS "Enable Pothos Plotters component" ON "ENABLE_LIBRARY;${Qt5Enables}" OFF)
 add_feature_info(Plotters ENABLE_PLOTTERS "Graphical plotter widgets for the GUI")
-if (NOT ENABLE_PLOTTERS)
-    return()
-endif()
 
 ########################################################################
 # Qwt setup
@@ -67,7 +63,7 @@ if (QWT_FOUND)
     message(STATUS "QWT_INCLUDE_DIRS: ${QWT_INCLUDE_DIRS}")
     message(STATUS "QWT_LIBRARIES: ${QWT_LIBRARIES}")
 
-else (QWT_FOUND)
+elseif (ENABLE_PLOTTERS)
 
     set(QWT_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/qwt-6.1.2/src)
 
@@ -93,6 +89,8 @@ endif (QWT_FOUND)
 ########################################################################
 # plotter utils library
 ########################################################################
+if (ENABLE_PLOTTERS)
+
 file(GLOB PLOTTER_UTILS_SOURCES "PlotterUtils/*.cpp")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/PlotterUtils)
 add_library(PothosPlotterUtils SHARED ${PLOTTER_UTILS_SOURCES})
@@ -106,12 +104,14 @@ install(TARGETS PothosPlotterUtils
 )
 list(APPEND Qt5_LIBRARIES PothosPlotterUtils)
 
+endif (ENABLE_PLOTTERS)
+
 ########################################################################
 # Build plotter widgets
 ########################################################################
-add_subdirectory(QwtWidgets)
-add_subdirectory(WaveMonitor)
-add_subdirectory(Periodogram)
-add_subdirectory(Spectrogram)
 add_subdirectory(Constellation)
 add_subdirectory(LogicAnalyzer)
+add_subdirectory(Periodogram)
+add_subdirectory(QwtWidgets)
+add_subdirectory(Spectrogram)
+add_subdirectory(WaveMonitor)

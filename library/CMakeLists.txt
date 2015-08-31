@@ -2,9 +2,7 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.9)
-project(PothosLibrary)
-enable_language(CXX)
-enable_testing()
+project(PothosLibrary CXX)
 
 find_package(Pothos CONFIG REQUIRED)
 

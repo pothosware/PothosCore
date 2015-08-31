@@ -2,8 +2,7 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.9)
-project(PothosJava)
-enable_language(CXX)
+project(PothosJava CXX)
 
 find_package(Pothos CONFIG REQUIRED)
 

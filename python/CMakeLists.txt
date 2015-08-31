@@ -2,8 +2,7 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.9)
-project(PothosPython)
-enable_language(CXX)
+project(PothosPython CXX)
 
 find_package(Pothos CONFIG REQUIRED)
 list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)

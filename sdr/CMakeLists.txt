@@ -2,8 +2,7 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.9)
-project(PothosSDR)
-enable_language(CXX)
+project(PothosSDR CXX)
 
 find_package(Pothos CONFIG REQUIRED)
 
