@@ -7,7 +7,7 @@
  * Moving average delay line processing unit.
  * \see http://www.digitalsignallabs.com/dcblock.pdf (figure 3b)
  */
-template <typename Type>
+template <typename Type, typename AccType>
 class MovingAverage
 {
 public:
@@ -38,14 +38,15 @@ public:
     Type operator()(const Type &x)
     {
         //process this cycle
-        const auto b0 = (x - this->front()) + b1;
+        const auto a0 = x - this->front();
+        const auto b0 = AccType(a0) + b1;
 
         //stash into hist
         b1 = b0;
         hist.pop_front();
         hist.push_back(x);
 
-        return b0/D;
+        return Type(b0/D);
     }
 
     //! Access the oldest input in the history.
@@ -55,7 +56,7 @@ public:
     }
 
 private:
-    Type D;
-    Type b1;
+    AccType D;
+    AccType b1;
     Pothos::Util::RingDeque<Type> hist;
 };

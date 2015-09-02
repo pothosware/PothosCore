@@ -100,13 +100,13 @@ public:
         //remove DC from each point
         for (size_t i = 0; i < N; i++)
         {
-            auto x_i = in[i];
+            auto y = in[i];
 
             //advance the filters
-            for (auto &f : _filters) x_i = Type(f(x_i));
+            for (auto &f : _filters) y = f(y);
 
             //output delayed input minus the dc level
-            out[i] = Type(_filters[0].front()) - x_i;
+            out[i] = _filters[0].front() - y;
         }
 
         inPort->consume(N);
@@ -123,7 +123,7 @@ private:
 
     size_t _averageSize;
     size_t _cascadeSize;
-    std::vector<MovingAverage<AccType>> _filters;
+    std::vector<MovingAverage<Type, AccType>> _filters;
 };
 
 /***********************************************************************
