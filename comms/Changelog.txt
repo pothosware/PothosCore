@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Comms toolkit.
 Release 0.1.0 (pending)
 ==========================
 
+- Added DC removal block with moving average implementation
 - Moved windowing functions from the util toolkit to filter/
 - Created mac directory for packet-based MAC layers blocks
 - Moved communications blocks from pothos-blocks toolkit
