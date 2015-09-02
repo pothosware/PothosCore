@@ -13,6 +13,7 @@ endif()
 POTHOS_MODULE_UTIL(
     TARGET FilterBlocks
     SOURCES
+        DCRemoval.cpp
         FIRDesigner.cpp
         FIRFilter.cpp
         TestFIRFilter.cpp
