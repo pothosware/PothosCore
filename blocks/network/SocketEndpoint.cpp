@@ -412,7 +412,7 @@ bool PothosPacketSocketEndpoint::isReady(void)
 /***********************************************************************
  * initiate open transactions
  **********************************************************************/
-void PothosPacketSocketEndpoint::openComms(void)
+void PothosPacketSocketEndpoint::openComms(const std::chrono::high_resolution_clock::duration &timeout)
 {
     Pothos::BufferChunk buffer(1024);
     uint16_t type = 0;
@@ -432,7 +432,7 @@ void PothosPacketSocketEndpoint::openComms(void)
     }
 
     //loop until timeout (we will exit before timeout under normal conditions)
-    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(100);
+    const auto exitTime = std::chrono::high_resolution_clock::now() + timeout;
     while (std::chrono::high_resolution_clock::now() < exitTime)
     {
         if (_impl->state == EP_STATE_ESTABLISHED) break;
@@ -451,7 +451,7 @@ void PothosPacketSocketEndpoint::openComms(void)
 /***********************************************************************
  * initiate close transactions
  **********************************************************************/
-void PothosPacketSocketEndpoint::closeComms(void)
+void PothosPacketSocketEndpoint::closeComms(const std::chrono::high_resolution_clock::duration &timeout)
 {
     if (_impl->state == EP_STATE_CLOSED) return;
 
@@ -474,7 +474,7 @@ void PothosPacketSocketEndpoint::closeComms(void)
     }
 
     //loop until timeout (we will exit before timeout under normal conditions)
-    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(100);
+    const auto exitTime = std::chrono::high_resolution_clock::now() + timeout;
     while (std::chrono::high_resolution_clock::now() < exitTime)
     {
         if (_impl->state == EP_STATE_CLOSED) break;

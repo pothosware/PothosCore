@@ -44,12 +44,12 @@ public:
     /*!
      * Perform the communication initialization handshake.
      */
-    void openComms(void);
+    void openComms(const std::chrono::high_resolution_clock::duration &timeout = std::chrono::milliseconds(100));
 
     /*!
      * Perform the communication shutdown handshake.
      */
-    void closeComms(void);
+    void closeComms(const std::chrono::high_resolution_clock::duration &timeout = std::chrono::milliseconds(100));
 
     /*!
      * Is the endpoint ready for communication?
