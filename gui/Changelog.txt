@@ -5,6 +5,11 @@ Release 0.3.0 (pending)
 
 - Switch logger display to QPlainTextEdit for performance
 
+Release 0.2.2 (pending)
+==========================
+
+- Fix QApplication exit error by giving QSettings a parent
+
 Release 0.2.1 (2015-08-26)
 ==========================
 
