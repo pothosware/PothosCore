@@ -119,6 +119,12 @@ static const double CORR_DUR_PERCENT = 0.5;
  * |preview valid
  * |tab Labels
  *
+ * |param verboseMode[Verbose Mode] Enable debug verbose when frames are discovered.
+ * |default false
+ * |preview disable
+ * |option [Enable] true
+ * |option [Disable] false
+ *
  * |factory /comms/frame_sync(dtype)
  * |setter setOutputMode(outputMode)
  * |setter setPreamble(preamble)
@@ -128,6 +134,7 @@ static const double CORR_DUR_PERCENT = 0.5;
  * |setter setFrameEndId(frameEndId)
  * |setter setPhaseOffsetID(phaseOffsetID)
  * |setter setInputThreshold(inputThreshold)
+ * |setter setVerboseMode(verboseMode)
  **********************************************************************/
 template <typename Type>
 class FrameSync : public Pothos::Block
@@ -145,7 +152,8 @@ public:
         _dataWidth(0),
         _syncWordWidth(0),
         _frameWidth(0),
-        _inputThreshold(0)
+        _inputThreshold(0),
+        _verbose(false)
     {
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
@@ -165,6 +173,7 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getPhaseOffsetID));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setInputThreshold));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getInputThreshold));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setVerboseMode));
 
         this->setOutputMode("RAW");
         this->setSymbolWidth(20); //initial update
@@ -270,6 +279,11 @@ public:
         return _inputThreshold;
     }
 
+    void setVerboseMode(const bool enb)
+    {
+        _verbose = enb;
+    }
+
     void work(void);
 
     void propagateLabels(const Pothos::InputPort *port)
@@ -329,6 +343,7 @@ private:
     size_t _corrMagThresh; //minimum required correlation magnitude threshold
     size_t _corrDurThresh; //minimum required correlation duration threshold
     RealType _inputThreshold; //minimum required input activation threshold
+    bool _verbose;
 
     //values at last max correlation peak
     size_t _maxCorrPeak;
@@ -462,14 +477,15 @@ void FrameSync<Type>::work(void)
         if (_countSinceMax < _corrDurThresh) continue;
 
         //print summary
-        /*
-        std::cout << "PEAK FOUND \n";
-        std::cout << " _countSinceMax = " << _countSinceMax << std::endl;
-        std::cout << " _maxCorrPeak = " << _maxCorrPeak << std::endl;
-        std::cout << " _deltaFcMax = " << _deltaFcMax << std::endl;
-        std::cout << " _phaseOffMax = " << _phaseOffMax << std::endl;
-        std::cout << " _scaleAtMax = " << _scaleAtMax << std::endl;
-        //*/
+        if (_verbose)
+        {
+            std::cout << "PEAK FOUND \n";
+            std::cout << " countSinceMax = " << _countSinceMax << std::endl;
+            std::cout << " maxCorrPeak = " << _maxCorrPeak << std::endl;
+            std::cout << " deltaFcMax = " << _deltaFcMax << std::endl;
+            std::cout << " phaseOffMax = " << _phaseOffMax << std::endl;
+            std::cout << " scaleAtMax = " << _scaleAtMax << std::endl;
+        }
 
         _maxCorrPeak = 0; //reset for next time
 
@@ -492,14 +508,16 @@ void FrameSync<Type>::work(void)
         _remainingPayload = length*_dataWidth;
         _phaseInc = _deltaFcMax;
         _phase = _phaseOffMax + _phaseInc*_frameWidth;
-        /*
-        std::cout << " length = " << length << std::endl;
-        std::cout << " firstBit = " << firstBit << std::endl;
-        std::cout << " sampOffset = " << (int(firstBit)-int(_syncWordWidth)) << std::endl;
-        std::cout << " frameOffset = " << frameOffset << std::endl;
-        std::cout << " payloadOffset = " << payloadOffset << std::endl;
-        std::cout << " _remainingPayload = " << _remainingPayload << std::endl;
-        //*/
+        if (_verbose)
+        {
+            std::cout << "FRAME VALID \n";
+            std::cout << " length = " << length << std::endl;
+            std::cout << " firstBit = " << firstBit << std::endl;
+            std::cout << " sampOffset = " << (int(firstBit)-int(_syncWordWidth)) << std::endl;
+            std::cout << " frameOffset = " << frameOffset << std::endl;
+            std::cout << " payloadOffset = " << payloadOffset << std::endl;
+            std::cout << " remainingPayload = " << _remainingPayload << std::endl;
+        }
 
         //produce a phase offset label at the first payload index
         if (not _phaseOffsetId.empty()) outPort->postLabel(
