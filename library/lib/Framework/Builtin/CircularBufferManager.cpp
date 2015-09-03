@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -56,7 +56,7 @@ public:
         _bytesToPop += numBytes;
 
         //re-use the buffer for small consumes
-        if (this->front().length >= numBytes*2)
+        if (_bytesToPop*2 < _bufferSize)
         {
             auto buff = this->front();
             buff.address += numBytes;

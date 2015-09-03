@@ -11,6 +11,7 @@ Release 0.3.0 (pending)
 Release 0.2.2 (pending)
 ==========================
 
+- Fixed Buffer manager reuse on small consume logic
 - Fixed Pothos Util doc parse bug in use of seekg()
 
 Release 0.2.1 (2015-08-26)
