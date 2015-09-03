@@ -87,6 +87,7 @@ int main(int argc, char **argv)
         std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr));
         mainWindow->show();
         getSplashScreen()->finish(mainWindow.get());
+        getSettings().setParent(mainWindow.get());
 
         //begin application execution
         return app.exec();

@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos GUI toolkit.
 
+Release 0.2.2 (pending)
+==========================
+
+- Fix QApplication exit error by giving QSettings a parent
+
 Release 0.2.1 (2015-08-26)
 ==========================
 
