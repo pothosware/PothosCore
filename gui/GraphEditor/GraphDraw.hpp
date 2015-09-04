@@ -22,6 +22,9 @@ public:
 
     GraphObjectList getGraphObjects(const int selectionFlags = ~0);
 
+    //! True if any graph widget has focus
+    bool graphWidgetHasFocus(void);
+
     /*!
      * Describe the selected objects in words.
      * This will be used with the event reporting.
