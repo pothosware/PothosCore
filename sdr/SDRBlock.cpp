@@ -132,6 +132,7 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
 
     //gpio
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setGpioConfig));
+    this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getGpioValue));
 
     //probes
     this->registerProbe("getSampleRate");
@@ -146,6 +147,7 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerProbe("getSensor");
     this->registerProbe("getSensors");
     this->registerProbe("getGpioBanks");
+    this->registerProbe("getGpioValue");
 }
 
 static std::mutex &getMutex(void)
