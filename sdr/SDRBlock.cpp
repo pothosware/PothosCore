@@ -637,12 +637,20 @@ std::string SDRBlock::getSensor(const std::string &name) const
 
 std::vector<std::string> SDRBlock::getSensors(const size_t chan) const
 {
+    #ifdef SOAPY_SDR_API_HAS_CHANNEL_SENSORS
     return _device->listSensors(_direction, chan);
+    #else
+    return std::vector<std::string>();
+    #endif
 }
 
 std::string SDRBlock::getSensor(const size_t chan, const std::string &name) const
 {
+    #ifdef SOAPY_SDR_API_HAS_CHANNEL_SENSORS
     return _device->readSensor(_direction, chan, name);
+    #else
+    return "";
+    #endif
 }
 
 /*******************************************************************
@@ -674,6 +682,7 @@ void SDRBlock::setGpioConfig(const Pothos::ObjectKwargs &config)
 
 void SDRBlock::setGpioConfigBank(const std::string &bank, const Pothos::ObjectKwargs &config)
 {
+    #ifdef SOAPY_SDR_API_HAS_MASKED_GPIO
     const auto dirIt = config.find("dir");
     const auto maskIt = config.find("mask");
     const auto valueIt = config.find("value");
@@ -701,6 +710,7 @@ void SDRBlock::setGpioConfigBank(const std::string &bank, const Pothos::ObjectKw
     {
         _device->writeGPIO(bank, valueIt->second.convert<unsigned>(), maskIt->second.convert<unsigned>());
     }
+    #endif //SOAPY_SDR_API_HAS_MASKED_GPIO
 }
 
 unsigned SDRBlock::getGpioValue(const std::string &bank) const
