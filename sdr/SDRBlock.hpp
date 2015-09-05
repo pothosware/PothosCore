@@ -412,6 +412,69 @@ public:
     }
 
     /*******************************************************************
+     * GPIO
+     ******************************************************************/
+    std::vector<std::string> getGpioBanks(void) const
+    {
+        return _device->listGPIOBanks();
+    }
+
+    void setGpioConfig(const Pothos::ObjectKwargs &config)
+    {
+        //nested maps represent each bank
+        for (const auto &pair : config)
+        {
+            if (pair.second.canConvert(typeid(Pothos::ObjectKwargs)))
+            {
+                setGpioConfigBank(pair.first, pair.second.convert<Pothos::ObjectKwargs>());
+            }
+        }
+
+        //when a bank name is specified in the config
+        const auto bankIt = config.find("bank");
+        if (bankIt != config.end())
+        {
+            setGpioConfigBank(bankIt->second.convert<std::string>(), config);
+        }
+    }
+
+    void setGpioConfigBank(const std::string &bank, const Pothos::ObjectKwargs &config)
+    {
+        const auto dirIt = config.find("dir");
+        const auto maskIt = config.find("mask");
+        const auto valueIt = config.find("value");
+
+        //set data direction without mask
+        if (dirIt != config.end() and maskIt == config.end())
+        {
+            _device->writeGPIODir(bank, dirIt->second.convert<unsigned>());
+        }
+
+        //set data direction with mask
+        if (dirIt != config.end() and maskIt != config.end())
+        {
+            _device->writeGPIODir(bank, dirIt->second.convert<unsigned>(), maskIt->second.convert<unsigned>());
+        }
+
+        //set GPIO value without mask
+        if (valueIt != config.end() and maskIt == config.end())
+        {
+            _device->writeGPIO(bank, valueIt->second.convert<unsigned>());
+        }
+
+        //set valueIt value with mask
+        if (dirIt != config.end() and maskIt != config.end())
+        {
+            _device->writeGPIO(bank, valueIt->second.convert<unsigned>(), maskIt->second.convert<unsigned>());
+        }
+    }
+
+    unsigned getGpioValue(const std::string &bank) const
+    {
+        return _device->readGPIO(bank);
+    }
+
+    /*******************************************************************
      * Streaming implementation
      ******************************************************************/
     virtual void activate(void);

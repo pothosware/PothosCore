@@ -118,6 +118,7 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setCommandTime));
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getSensor));
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getSensors));
+    this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setGpioConfig));
 
     //probes
     this->registerProbe("getSampleRate");
