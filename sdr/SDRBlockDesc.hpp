@@ -217,7 +217,7 @@
  * |param gpioConfig[GPIO Config] An optional configuration for the GPIO banks.
  * The default GPIO configuration of the device can be modified
  * by an optional dictionary containing the following arguments:
- * {"BANK":"EXTERNAL", "DDR":0x1f, "MASK":0x1f, "OUT":0x05}
+ * {"bank":"EXTERNAL", "dir":0x1f, "mask":0x1f, "value":0x05}
  * |default {}
  * |preview valid
  * |tab GPIO
