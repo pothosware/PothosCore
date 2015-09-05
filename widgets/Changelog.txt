@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Widgets toolkit.
 Release 0.3.0 (pending)
 ==========================
 
+- Added integer formatter base to the TextDisplay widget
 - Reorganized control widgets into the top level directory
 - Moved plotters and qwt widgets to pothos-plotters toolkit
 
