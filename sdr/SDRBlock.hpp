@@ -198,7 +198,7 @@ public:
 
     void setGpioConfig(const Pothos::ObjectKwargs &config);
 
-    void setGpioConfigBank(const std::string &bank, const Pothos::ObjectKwargs &config);
+    void setGpioConfig(const Pothos::ObjectVector &config);
 
     unsigned getGpioValue(const std::string &bank) const;
 

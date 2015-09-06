@@ -131,7 +131,8 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerCallable("getSensor", Pothos::Callable::make<const std::string &>(&SDRBlock::getSensor).bind(std::ref(*this), 0));
 
     //gpio
-    this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setGpioConfig));
+    this->registerCallable("setGpioConfig", Pothos::Callable::make<const Pothos::ObjectKwargs &>(&SDRBlock::setGpioConfig).bind(std::ref(*this), 0));
+    this->registerCallable("setGpioConfig", Pothos::Callable::make<const Pothos::ObjectVector &>(&SDRBlock::setGpioConfig).bind(std::ref(*this), 0));
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getGpioValue));
 
     //probes
@@ -665,29 +666,17 @@ std::vector<std::string> SDRBlock::getGpioBanks(void) const
 
 void SDRBlock::setGpioConfig(const Pothos::ObjectKwargs &config)
 {
-    //nested maps represent each bank
-    for (const auto &pair : config)
-    {
-        if (pair.second.canConvert(typeid(Pothos::ObjectKwargs)))
-        {
-            setGpioConfigBank(pair.first, pair.second.convert<Pothos::ObjectKwargs>());
-        }
-    }
-
-    //when a bank name is specified in the config
     const auto bankIt = config.find("bank");
-    if (bankIt != config.end())
-    {
-        setGpioConfigBank(bankIt->second.convert<std::string>(), config);
-    }
-}
-
-void SDRBlock::setGpioConfigBank(const std::string &bank, const Pothos::ObjectKwargs &config)
-{
-    #ifdef SOAPY_SDR_API_HAS_MASKED_GPIO
     const auto dirIt = config.find("dir");
     const auto maskIt = config.find("mask");
     const auto valueIt = config.find("value");
+
+    //check and extract bank
+    if (bankIt == config.end()) throw Pothos::InvalidArgumentException(
+        "SDRBlock::setGpioConfig()", "bank name missing");
+    const auto bank = bankIt->second.convert<std::string>();
+
+    #ifdef SOAPY_SDR_API_HAS_MASKED_GPIO
 
     //set data direction without mask
     if (dirIt != config.end() and maskIt == config.end())
@@ -707,12 +696,24 @@ void SDRBlock::setGpioConfigBank(const std::string &bank, const Pothos::ObjectKw
         _device->writeGPIO(bank, valueIt->second.convert<unsigned>());
     }
 
-    //set valueIt value with mask
-    if (dirIt != config.end() and maskIt != config.end())
+    //set GPIO value with mask
+    if (valueIt != config.end() and maskIt != config.end())
     {
         _device->writeGPIO(bank, valueIt->second.convert<unsigned>(), maskIt->second.convert<unsigned>());
     }
+
     #endif //SOAPY_SDR_API_HAS_MASKED_GPIO
+}
+
+void SDRBlock::setGpioConfig(const Pothos::ObjectVector &config)
+{
+    for (const auto &entry : config)
+    {
+        if (not entry.canConvert(typeid(Pothos::ObjectKwargs)))
+            throw Pothos::InvalidArgumentException(
+            "SDRBlock::setGpioConfig()", "invalid list entry");
+        this->setGpioConfig(entry.convert<Pothos::ObjectKwargs>());
+    }
 }
 
 unsigned SDRBlock::getGpioValue(const std::string &bank) const
