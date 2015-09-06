@@ -131,6 +131,7 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerCallable("getSensor", Pothos::Callable::make<const std::string &>(&SDRBlock::getSensor).bind(std::ref(*this), 0));
 
     //gpio
+    this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getGpioBanks));
     this->registerCallable("setGpioConfig", Pothos::Callable::make<const Pothos::ObjectKwargs &>(&SDRBlock::setGpioConfig).bind(std::ref(*this), 0));
     this->registerCallable("setGpioConfig", Pothos::Callable::make<const Pothos::ObjectVector &>(&SDRBlock::setGpioConfig).bind(std::ref(*this), 0));
     this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, getGpioValue));
@@ -738,6 +739,7 @@ void SDRBlock::emitActivationSignals(void)
     this->callVoid("getTimeSourcesTriggered", this->getTimeSources());
     this->callVoid("getHardwareTimeTriggered", this->getHardwareTime());
     this->callVoid("getSensorsTriggered", this->getSensors());
+    this->callVoid("getGpioBanksTriggered", this->getGpioBanks());
     for (size_t i = 0; i < _channels.size(); i++)
     {
         const auto chanStr = std::to_string(i);
