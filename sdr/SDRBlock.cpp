@@ -666,6 +666,8 @@ std::vector<std::string> SDRBlock::getGpioBanks(void) const
 
 void SDRBlock::setGpioConfig(const Pothos::ObjectKwargs &config)
 {
+    if (config.empty()) return; //empty configs ok
+
     const auto bankIt = config.find("bank");
     const auto dirIt = config.find("dir");
     const auto maskIt = config.find("mask");
