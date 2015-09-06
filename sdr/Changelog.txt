@@ -1,5 +1,11 @@
 This this the changelog file for the Pothos SDR toolkit.
 
+Release 0.3.0 (pending)
+==========================
+
+- Added support for GPIO bank config and readback
+- Added support for per-channel sensors querying
+
 Release 0.2.1 (2015-08-26)
 ==========================
 
