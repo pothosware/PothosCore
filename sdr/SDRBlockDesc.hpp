@@ -214,6 +214,14 @@
  * |tab Clocking
  * |widget StringEntry()
  *
+ * |param gpioConfig[GPIO Config] An optional configuration for the GPIO banks.
+ * The default GPIO configuration of the device can be modified
+ * by an optional dictionary containing the following arguments:
+ * {"bank":"EXTERNAL", "dir":0x1f, "mask":0x1f, "value":0x05}
+ * |default {}
+ * |preview valid
+ * |tab GPIO
+ *
  * |factory @PATH@(dtype, channels)
  * |initializer setupDevice(deviceArgs)
  * |initializer setupStream(streamArgs)
@@ -229,4 +237,5 @@
  * |setter setDCOffsetMode(dcOffsetMode)
  * |setter setClockSource(clockSource)
  * |setter setTimeSource(timeSource)
+ * |setter setGpioConfig(gpioConfig)
  **********************************************************************/

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -24,10 +24,20 @@
  * |widget StringEntry()
  * |preview disable
  *
+ * |param base [Base] The base used for integer formatting.
+ * |default 10
+ * |option [Binary] 2
+ * |option [Octal] 8
+ * |option [Decimal] 10
+ * |option [Hex] 16
+ * |preview disable
+ * |widget ComboBox(editable=true)
+ *
  * |mode graphWidget
  * |factory /widgets/text_display()
  * |setter setTitle(title)
  * |setter setFormatStr(formatStr)
+ * |setter setBase(base)
  **********************************************************************/
 class TextDisplay : public QLabel, public Pothos::Block
 {
@@ -39,12 +49,14 @@ public:
         return new TextDisplay();
     }
 
-    TextDisplay(void)
+    TextDisplay(void):
+        _base(10)
     {
         this->setFormatStr("%1");
         this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, widget));
         this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setTitle));
         this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setFormatStr));
+        this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setBase));
         this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setStringValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setFloatValue));
         this->registerCall(this, POTHOS_FCN_TUPLE(TextDisplay, setComplexValue));
@@ -69,6 +81,11 @@ public:
         this->update();
     }
 
+    void setBase(const size_t base)
+    {
+        _base = base;
+    }
+
     void setStringValue(const QString &value)
     {
         _valueStr = _formatStr.arg(value.toHtmlEscaped());
@@ -89,7 +106,7 @@ public:
 
     void setIntValue(const int value)
     {
-        _valueStr = _formatStr.arg(value);
+        _valueStr = _formatStr.arg(value, 0, _base);
         this->update();
     }
 
@@ -101,6 +118,7 @@ private:
         QMetaObject::invokeMethod(this, "setText", Qt::QueuedConnection, Q_ARG(QString, text));
     }
 
+    size_t _base;
     QString _title;
     QString _valueStr;
     QString _formatStr;
