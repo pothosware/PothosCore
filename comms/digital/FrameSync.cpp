@@ -66,10 +66,13 @@
  * |preview disable
  *
  * |param outputMode[Output Mode] The output mode for payload symbols.
+ * The debug output option produces the complete frame
+ * including preamble with only phase correction applied.
  * |default "RAW"
  * |option [Raw symbols] "RAW"
  * |option [Phase correction] "PHASE"
  * |option [Timing recovery] "TIMING"
+ * |option [Debug preamble] "DEBUG"
  *
  * |param preamble A vector of symbols representing the preamble.
  * |default [1, 1, -1]
@@ -185,10 +188,12 @@ public:
         if (mode == "RAW"){}
         else if (mode == "PHASE"){}
         else if (mode == "TIMING"){}
+        else if (mode == "DEBUG"){}
         else throw Pothos::InvalidArgumentException("FrameSync::setOutputMode("+mode+")", "unknown output mode");
         _outputModeRaw = (mode == "RAW");
-        _outputModePhase = (mode == "PHASE");
+        _outputModePhase = (mode == "PHASE") | (mode == "DEBUG");
         _outputModeTiming = (mode == "TIMING");
+        _outputModeDebug = (mode == "DEBUG");
         _outputModeStr = mode;
     }
 
@@ -325,6 +330,7 @@ private:
     bool _outputModeRaw;
     bool _outputModePhase;
     bool _outputModeTiming;
+    bool _outputModeDebug;
 
     //configuration
     std::string _frameStartId;
@@ -429,13 +435,18 @@ void FrameSync<Type>::work(void)
 
     /***************************************************************
      * Correlation search for a new frame
+     * The minimum requirement for the frame search
+     * includes the frame width plus the correlation duration.
+     * Therefore, when the peak is found, the entire frame
+     * will be located within the same input buffer.
      **************************************************************/
-    if (inPort->elements() < _frameWidth)
+    const size_t requireMin = _frameWidth + _corrDurThresh;
+    if (inPort->elements() < requireMin)
     {
-        inPort->setReserve(_frameWidth);
+        inPort->setReserve(requireMin);
         return;
     }
-    const auto N = inPort->elements()-_frameWidth+1;
+    const auto N = inPort->elements()-requireMin+1;
 
     for (size_t i = 0; i < N; i++)
     {
@@ -511,7 +522,14 @@ void FrameSync<Type>::work(void)
             std::cout << " sampOffset = " << (int(firstBit)-int(_syncWordWidth)) << std::endl;
             std::cout << " frameOffset = " << frameOffset << std::endl;
             std::cout << " payloadOffset = " << payloadOffset << std::endl;
-            std::cout << " remainingPayload = " << _remainingPayload << std::endl;
+        }
+
+        //adjust for the debug mode
+        if (_outputModeDebug)
+        {
+            _phase -= _phaseInc*_frameWidth;
+            _remainingPayload += _frameWidth;
+            payloadOffset -= _frameWidth;
         }
 
         //produce a phase offset label at the first payload index

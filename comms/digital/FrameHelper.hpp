@@ -12,6 +12,7 @@ static const double CORR_DUR_PERCENT = 0.5;
 
 /***********************************************************************
  * Encode a 4 bit word into a 8 bits with parity
+ * https://en.wikipedia.org/wiki/Hamming_code
  **********************************************************************/
 static inline void encodeHamming84(const unsigned char x, char *b)
 {
