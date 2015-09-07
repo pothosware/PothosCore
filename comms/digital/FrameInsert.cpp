@@ -1,14 +1,13 @@
 // Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "FrameHelper.hpp"
 #include <Pothos/Framework.hpp>
 #include <cstring> //memcpy
 #include <iostream>
 #include <algorithm> //min/max
 #include <complex>
 #include <cstdint>
-
-static const size_t NUM_LENGTH_BITS = 16;
 
 /***********************************************************************
  * |PothosDoc Frame Insert
@@ -199,29 +198,28 @@ public:
                 headBuff.length = headElems*sizeof(Type);
                 if (headBuff.length != 0) outputPort->postBuffer(headBuff);
 
-                //load the length word
+                //fill the preamble buffer
                 Pothos::BufferChunk newPreambleBuff(typeid(Type), _preambleBuff.elements());
                 std::memcpy(newPreambleBuff.as<void *>(), _preambleBuff.as<const void *>(), _preambleBuff.length);
                 auto p = newPreambleBuff.as<Type *>() + _syncWordWidth;
+
+                //encode the header field into bits
+                char headerBits[NUM_HEADER_BITS];
+                size_t length = 0;
                 if (label.data.canConvert(typeid(size_t)))
                 {
-                    const auto sym = _preamble.back();
-                    const size_t len = label.data.template convert<size_t>()*label.width;
-                    //std::cout << "sent length " << len << std::endl;
-                    //first two length bits contain phase transition to detect timing
-                    *p++ = -sym;
-                    *p++ = +sym;
-                    for (int i = NUM_LENGTH_BITS-3; i >= 0; i--)
-                    {
-                        *p++ = (((1 << i) & len) != 0)?+sym:-sym;
-                    }
+                    length = label.data.template convert<size_t>()*label.width;
+                }
+                encodeHeaderWord(headerBits, length);
 
-                    //adjust the output label's length for the entire frame including padding
-                    outLabel.data = Pothos::Object(size_t(len+_preambleBuff.elements()+_paddingBuff.elements()));
-                    outLabel.width = 1;
+                //encode header fields as BPSK into the preamble buffer
+                const auto sym = _preamble.back();
+                for (size_t i = 0; i < NUM_HEADER_BITS; i++)
+                {
+                    *p++ = (headerBits[i] != 0)?+sym:-sym;
                 }
 
-                //post the buffer
+                //post the preamble buffer
                 outputPort->postBuffer(newPreambleBuff);
 
                 //remove header from the remaining buffer
@@ -276,7 +274,7 @@ private:
     void updatePreambleBuffer(void)
     {
         _syncWordWidth = _symbolWidth*_preamble.size();
-        _preambleBuff = Pothos::BufferChunk(typeid(Type), _syncWordWidth+NUM_LENGTH_BITS);
+        _preambleBuff = Pothos::BufferChunk(typeid(Type), _syncWordWidth+NUM_HEADER_BITS);
 
         auto p = _preambleBuff.as<Type *>();
         std::memset(p, 0, _preambleBuff.length);

@@ -1,18 +1,13 @@
 // Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "FrameHelper.hpp"
 #include <Pothos/Framework.hpp>
 #include <cstring> //memcpy
 #include <iostream>
 #include <algorithm> //min/max
 #include <complex>
 #include <cstdint>
-
-static const size_t NUM_LENGTH_BITS = 16;
-
-//percent of sync word to declare peak found
-static const double CORR_MAG_PERCENT = 0.7;
-static const double CORR_DUR_PERCENT = 0.5;
 
 /***********************************************************************
  * |PothosDoc Frame Sync
@@ -315,12 +310,12 @@ private:
     void processEnvelope(const Type *in, RealType &scale);
     void processFreqSync(const Type *in, RealType &deltaFc);
     void processSyncWord(const Type *in, const RealType &deltaFc, const RealType &scale, RealType &phaseOff, size_t &corrPeak);
-    void processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, size_t &length);
+    void processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, size_t &length);
 
     void updateSettings(void)
     {
         _syncWordWidth = _symbolWidth*_dataWidth*_preamble.size();
-        _frameWidth = _syncWordWidth+(NUM_LENGTH_BITS*_dataWidth);
+        _frameWidth = _syncWordWidth+(NUM_HEADER_BITS*_dataWidth);
         _corrMagThresh = size_t(_syncWordWidth*CORR_MAG_PERCENT);
         _corrDurThresh = size_t(_syncWordWidth*CORR_DUR_PERCENT);
     }
@@ -493,7 +488,7 @@ void FrameSync<Type>::work(void)
         //and determine sample offset (used in timing recovery mode)
         size_t firstBit, length;
         size_t frameOffset = i-_countSinceMax;
-        this->processLenBits(in+frameOffset, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, length);
+        this->processHeaderBits(in+frameOffset, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, length);
         if (length == 0) continue; //this is probably a false frame detection
 
         //Label width is specified based on the output mode.
@@ -504,7 +499,7 @@ void FrameSync<Type>::work(void)
 
         //initialize carrier recovery compensation for use in the
         //remaining header and payload sections of the work routine
-        size_t payloadOffset = frameOffset + firstBit + (NUM_LENGTH_BITS*_dataWidth) + labelWidth/2;
+        size_t payloadOffset = frameOffset + firstBit + (NUM_HEADER_BITS*_dataWidth) + labelWidth/2;
         _remainingPayload = length*_dataWidth;
         _phaseInc = _deltaFcMax;
         _phase = _phaseOffMax + _phaseInc*_frameWidth;
@@ -645,7 +640,7 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
  * Process the length bits to get a symbol count
  **********************************************************************/
 template <typename Type>
-void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, size_t &length)
+void FrameSync<Type>::processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, size_t &length)
 {
     firstBit = 0;
     length = 0;
@@ -653,8 +648,8 @@ void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, co
     //the last preamble symbol is used to encode the phase shifts
     const auto sym = std::conj(_preamble.back());
 
-    //use the intentional phase transitions before the
-    //length bits to determine the optimal sampling offset
+    //use the intentional phase transition at the header start
+    //to determine the optimal sampling offset to decode BPSK
     //search from the middle of the last symbol to the frame end
     firstBit = _syncWordWidth + _dataWidth/2;
     RealType firstBitPeak = 0;
@@ -673,21 +668,23 @@ void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, co
     //never found the peak, probably not a frame
     if (firstBitPeak == 0) return;
 
-    //offsets to sampling index of length bits
-    auto lenBits = in + firstBit;
+    //offsets to sampling index of header bits
+    auto headerSyms = in + firstBit;
     RealType freqCorr = phaseOff + deltaFc*(firstBit);
 
+    //decode from BPSK into header field bits
     //the bit value is the phase difference with the last symbol
-    for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
+    char headerBits[NUM_HEADER_BITS];
+    for (size_t i = 0; i < NUM_HEADER_BITS; i++)
     {
-        auto bit = (*lenBits)*std::polar<RealType>(scale, freqCorr)*sym;
-        if (bit.real() > 0) length |= (1 << i);
+        auto bit = (*headerSyms)*std::polar<RealType>(scale, freqCorr)*sym;
+        headerBits[i] = (bit.real() > 0)?1:0;
         freqCorr += deltaFc*_dataWidth;
-        lenBits += _dataWidth;
+        headerSyms += _dataWidth;
     }
 
-    //top two bits used for timing sync
-    length &= 0x3fff;
+    //decode the bits into header fields
+    decodeHeaderWord(headerBits, length);
 }
 
 /***********************************************************************
