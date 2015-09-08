@@ -455,12 +455,8 @@ void FrameSync<Type>::work(void)
 
     /***************************************************************
      * Correlation search for a new frame
-     * The minimum requirement for the frame search
-     * includes the frame width plus the correlation duration.
-     * Therefore, when the peak is found, the entire frame
-     * will be located within the same input buffer.
      **************************************************************/
-    const size_t requireMin = _frameWidth + _corrDurThresh;
+    const size_t requireMin = _frameWidth;
     if (inPort->elements() < requireMin)
     {
         inPort->setReserve(requireMin);
