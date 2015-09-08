@@ -1,14 +1,13 @@
 // Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "FrameHelper.hpp"
 #include <Pothos/Framework.hpp>
 #include <cstring> //memcpy
 #include <iostream>
 #include <algorithm> //min/max
 #include <complex>
 #include <cstdint>
-
-static const size_t NUM_LENGTH_BITS = 16;
 
 /***********************************************************************
  * |PothosDoc Frame Insert
@@ -47,6 +46,10 @@ static const size_t NUM_LENGTH_BITS = 16;
  * |option [Barker Code 4] \[1, 1, -1, 1\]
  * |option [Barker Code 5] \[1, 1, 1, -1, 1\]
  *
+ * |param headerId [Header ID] a unique 8-bit ID that will be encoded into the frame header.
+ * The frame sync at the receiver uses this ID to reject unrecognized frames.
+ * |default 0x55
+ *
  * |param symbolWidth [Symbol Width] The number of samples per preamble symbol.
  * Each symbol in the preamble will be duplicated by the specified symbol width.
  * Note: this is not the same as the samples per symbol used in data modulation,
@@ -69,6 +72,7 @@ static const size_t NUM_LENGTH_BITS = 16;
  *
  * |factory /comms/frame_insert(dtype)
  * |setter setPreamble(preamble)
+ * |setter setHeaderId(headerId)
  * |setter setSymbolWidth(symbolWidth)
  * |setter setFrameStartId(frameStartId)
  * |setter setFrameEndId(frameEndId)
@@ -84,6 +88,7 @@ public:
     }
 
     FrameInsert(void):
+        _headerId(0),
         _symbolWidth(0),
         _syncWordWidth(0)
     {
@@ -91,6 +96,8 @@ public:
         this->setupOutput(0, typeid(Type), this->uid()); //unique domain because of buffer forwarding
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameInsert, setPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameInsert, getPreamble));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameInsert, setHeaderId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameInsert, getHeaderId));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameInsert, setSymbolWidth));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameInsert, getSymbolWidth));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameInsert, setFrameStartId));
@@ -100,6 +107,7 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameInsert, setPaddingSize));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameInsert, getPaddingSize));
 
+        this->setHeaderId(0x55); //initial update
         this->setSymbolWidth(20); //initial update
         this->setPreamble(std::vector<Type>(1, 1)); //initial update
         this->setFrameStartId("frameStart"); //initial update
@@ -116,6 +124,16 @@ public:
     std::vector<Type> getPreamble(void) const
     {
         return _preamble;
+    }
+
+    void setHeaderId(const unsigned char id)
+    {
+        _headerId = id;
+    }
+
+    unsigned char getHeaderId(void) const
+    {
+        return _headerId;
     }
 
     void setSymbolWidth(const size_t width)
@@ -199,29 +217,28 @@ public:
                 headBuff.length = headElems*sizeof(Type);
                 if (headBuff.length != 0) outputPort->postBuffer(headBuff);
 
-                //load the length word
+                //fill the preamble buffer
                 Pothos::BufferChunk newPreambleBuff(typeid(Type), _preambleBuff.elements());
                 std::memcpy(newPreambleBuff.as<void *>(), _preambleBuff.as<const void *>(), _preambleBuff.length);
                 auto p = newPreambleBuff.as<Type *>() + _syncWordWidth;
+
+                //encode the header field into bits
+                char headerBits[NUM_HEADER_BITS];
+                size_t length = 0;
                 if (label.data.canConvert(typeid(size_t)))
                 {
-                    const auto sym = _preamble.back();
-                    const size_t len = label.data.template convert<size_t>()*label.width;
-                    //std::cout << "sent length " << len << std::endl;
-                    //first two length bits contain phase transition to detect timing
-                    *p++ = -sym;
-                    *p++ = +sym;
-                    for (int i = NUM_LENGTH_BITS-3; i >= 0; i--)
-                    {
-                        *p++ = (((1 << i) & len) != 0)?+sym:-sym;
-                    }
+                    length = label.data.template convert<size_t>()*label.width;
+                }
+                encodeHeaderWord(headerBits, _headerId, length);
 
-                    //adjust the output label's length for the entire frame including padding
-                    outLabel.data = Pothos::Object(size_t(len+_preambleBuff.elements()+_paddingBuff.elements()));
-                    outLabel.width = 1;
+                //encode header fields as BPSK into the preamble buffer
+                const auto sym = _preamble.back();
+                for (size_t i = 0; i < NUM_HEADER_BITS; i++)
+                {
+                    *p++ = (headerBits[i] != 0)?+sym:-sym;
                 }
 
-                //post the buffer
+                //post the preamble buffer
                 outputPort->postBuffer(newPreambleBuff);
 
                 //remove header from the remaining buffer
@@ -276,7 +293,7 @@ private:
     void updatePreambleBuffer(void)
     {
         _syncWordWidth = _symbolWidth*_preamble.size();
-        _preambleBuff = Pothos::BufferChunk(typeid(Type), _syncWordWidth+NUM_LENGTH_BITS);
+        _preambleBuff = Pothos::BufferChunk(typeid(Type), _syncWordWidth+NUM_HEADER_BITS);
 
         auto p = _preambleBuff.as<Type *>();
         std::memset(p, 0, _preambleBuff.length);
@@ -292,6 +309,7 @@ private:
     std::string _frameStartId;
     std::string _frameEndId;
     std::vector<Type> _preamble;
+    unsigned char _headerId;
     size_t _symbolWidth;
     size_t _syncWordWidth;
     Pothos::BufferChunk _preambleBuff;

@@ -1,18 +1,13 @@
 // Copyright (c) 2015-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "FrameHelper.hpp"
 #include <Pothos/Framework.hpp>
 #include <cstring> //memcpy
 #include <iostream>
 #include <algorithm> //min/max
 #include <complex>
 #include <cstdint>
-
-static const size_t NUM_LENGTH_BITS = 16;
-
-//percent of sync word to declare peak found
-static const double CORR_MAG_PERCENT = 0.7;
-static const double CORR_DUR_PERCENT = 0.5;
 
 /***********************************************************************
  * |PothosDoc Frame Sync
@@ -71,10 +66,13 @@ static const double CORR_DUR_PERCENT = 0.5;
  * |preview disable
  *
  * |param outputMode[Output Mode] The output mode for payload symbols.
+ * The debug output option produces the complete frame
+ * including preamble with only phase correction applied.
  * |default "RAW"
  * |option [Raw symbols] "RAW"
  * |option [Phase correction] "PHASE"
  * |option [Timing recovery] "TIMING"
+ * |option [Debug preamble] "DEBUG"
  *
  * |param preamble A vector of symbols representing the preamble.
  * |default [1, 1, -1]
@@ -82,6 +80,10 @@ static const double CORR_DUR_PERCENT = 0.5;
  * |option [Barker Code 3] \[1, 1, -1\]
  * |option [Barker Code 4] \[1, 1, -1, 1\]
  * |option [Barker Code 5] \[1, 1, 1, -1, 1\]
+ *
+ * |param headerId [Header ID] the expected 8-bit check ID decoded from the frame header.
+ * The frame sync uses this ID to compare and to reject unrecognized frames.
+ * |default 0x55
  *
  * |param symbolWidth [Symbol Width] The number of samples per preamble symbol.
  * This value should correspond to the symbol width used in the frame inserter block.
@@ -128,6 +130,7 @@ static const double CORR_DUR_PERCENT = 0.5;
  * |factory /comms/frame_sync(dtype)
  * |setter setOutputMode(outputMode)
  * |setter setPreamble(preamble)
+ * |setter setHeaderId(headerId)
  * |setter setSymbolWidth(symbolWidth)
  * |setter setDataWidth(dataWidth)
  * |setter setFrameStartId(frameStartId)
@@ -148,6 +151,7 @@ public:
     }
 
     FrameSync(void):
+        _headerId(0),
         _symbolWidth(0),
         _dataWidth(0),
         _syncWordWidth(0),
@@ -161,6 +165,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getOutputMode));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getPreamble));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setHeaderId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getHeaderId));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setSymbolWidth));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getSymbolWidth));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setDataWidth));
@@ -175,7 +181,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getInputThreshold));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setVerboseMode));
 
-        this->setOutputMode("RAW");
+        this->setHeaderId(0x55); //initial update
+        this->setOutputMode("RAW"); //initial update
         this->setSymbolWidth(20); //initial update
         this->setDataWidth(4); //initial update
         this->setPreamble(std::vector<Type>(1, 1)); //initial update
@@ -190,10 +197,12 @@ public:
         if (mode == "RAW"){}
         else if (mode == "PHASE"){}
         else if (mode == "TIMING"){}
+        else if (mode == "DEBUG"){}
         else throw Pothos::InvalidArgumentException("FrameSync::setOutputMode("+mode+")", "unknown output mode");
         _outputModeRaw = (mode == "RAW");
-        _outputModePhase = (mode == "PHASE");
+        _outputModePhase = (mode == "PHASE") | (mode == "DEBUG");
         _outputModeTiming = (mode == "TIMING");
+        _outputModeDebug = (mode == "DEBUG");
         _outputModeStr = mode;
     }
 
@@ -212,6 +221,16 @@ public:
     std::vector<Type> getPreamble(void) const
     {
         return _preamble;
+    }
+
+    void setHeaderId(const unsigned char id)
+    {
+        _headerId = id;
+    }
+
+    unsigned char getHeaderId(void) const
+    {
+        return _headerId;
     }
 
     void setSymbolWidth(const size_t width)
@@ -315,12 +334,12 @@ private:
     void processEnvelope(const Type *in, RealType &scale);
     void processFreqSync(const Type *in, RealType &deltaFc);
     void processSyncWord(const Type *in, const RealType &deltaFc, const RealType &scale, RealType &phaseOff, size_t &corrPeak);
-    void processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, size_t &length);
+    void processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, unsigned char &id, size_t &length);
 
     void updateSettings(void)
     {
         _syncWordWidth = _symbolWidth*_dataWidth*_preamble.size();
-        _frameWidth = _syncWordWidth+(NUM_LENGTH_BITS*_dataWidth);
+        _frameWidth = _syncWordWidth+(NUM_HEADER_BITS*_dataWidth);
         _corrMagThresh = size_t(_syncWordWidth*CORR_MAG_PERCENT);
         _corrDurThresh = size_t(_syncWordWidth*CORR_DUR_PERCENT);
     }
@@ -330,12 +349,14 @@ private:
     bool _outputModeRaw;
     bool _outputModePhase;
     bool _outputModeTiming;
+    bool _outputModeDebug;
 
     //configuration
     std::string _frameStartId;
     std::string _frameEndId;
     std::string _phaseOffsetId;
     std::vector<Type> _preamble;
+    unsigned char _headerId; //unique id to check frame
     size_t _symbolWidth; //width of a preamble symbol
     size_t _dataWidth; //width of a data dymbol
     size_t _syncWordWidth; //preamble sync portion width
@@ -435,12 +456,13 @@ void FrameSync<Type>::work(void)
     /***************************************************************
      * Correlation search for a new frame
      **************************************************************/
-    if (inPort->elements() < _frameWidth)
+    const size_t requireMin = _frameWidth;
+    if (inPort->elements() < requireMin)
     {
-        inPort->setReserve(_frameWidth);
+        inPort->setReserve(requireMin);
         return;
     }
-    const auto N = inPort->elements()-_frameWidth+1;
+    const auto N = inPort->elements()-requireMin+1;
 
     for (size_t i = 0; i < N; i++)
     {
@@ -493,7 +515,18 @@ void FrameSync<Type>::work(void)
         //and determine sample offset (used in timing recovery mode)
         size_t firstBit, length;
         size_t frameOffset = i-_countSinceMax;
-        this->processLenBits(in+frameOffset, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, length);
+        unsigned char id = 0;
+        this->processHeaderBits(in+frameOffset, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, id, length);
+
+        //print summary
+        if (_verbose)
+        {
+            std::cout << "HEADER DECODE \n";
+            std::cout << " length = " << length << std::endl;
+            std::cout << " header id = 0x" << std::hex << int(id) << std::dec << std::endl;
+        }
+
+        if (id != _headerId) continue; //reject unknown id
         if (length == 0) continue; //this is probably a false frame detection
 
         //Label width is specified based on the output mode.
@@ -504,19 +537,25 @@ void FrameSync<Type>::work(void)
 
         //initialize carrier recovery compensation for use in the
         //remaining header and payload sections of the work routine
-        size_t payloadOffset = frameOffset + firstBit + (NUM_LENGTH_BITS*_dataWidth) + labelWidth/2;
+        size_t payloadOffset = frameOffset + firstBit + (NUM_HEADER_BITS*_dataWidth) + labelWidth/2;
         _remainingPayload = length*_dataWidth;
         _phaseInc = _deltaFcMax;
         _phase = _phaseOffMax + _phaseInc*_frameWidth;
         if (_verbose)
         {
             std::cout << "FRAME VALID \n";
-            std::cout << " length = " << length << std::endl;
             std::cout << " firstBit = " << firstBit << std::endl;
             std::cout << " sampOffset = " << (int(firstBit)-int(_syncWordWidth)) << std::endl;
             std::cout << " frameOffset = " << frameOffset << std::endl;
             std::cout << " payloadOffset = " << payloadOffset << std::endl;
-            std::cout << " remainingPayload = " << _remainingPayload << std::endl;
+        }
+
+        //adjust for the debug mode
+        if (_outputModeDebug)
+        {
+            _phase -= _phaseInc*_frameWidth;
+            _remainingPayload += _frameWidth;
+            payloadOffset -= _frameWidth;
         }
 
         //produce a phase offset label at the first payload index
@@ -645,7 +684,7 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
  * Process the length bits to get a symbol count
  **********************************************************************/
 template <typename Type>
-void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, size_t &length)
+void FrameSync<Type>::processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, unsigned char &id, size_t &length)
 {
     firstBit = 0;
     length = 0;
@@ -653,8 +692,8 @@ void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, co
     //the last preamble symbol is used to encode the phase shifts
     const auto sym = std::conj(_preamble.back());
 
-    //use the intentional phase transitions before the
-    //length bits to determine the optimal sampling offset
+    //use the intentional phase transition at the header start
+    //to determine the optimal sampling offset to decode BPSK
     //search from the middle of the last symbol to the frame end
     firstBit = _syncWordWidth + _dataWidth/2;
     RealType firstBitPeak = 0;
@@ -673,21 +712,23 @@ void FrameSync<Type>::processLenBits(const Type *in, const RealType &deltaFc, co
     //never found the peak, probably not a frame
     if (firstBitPeak == 0) return;
 
-    //offsets to sampling index of length bits
-    auto lenBits = in + firstBit;
+    //offsets to sampling index of header bits
+    auto headerSyms = in + firstBit;
     RealType freqCorr = phaseOff + deltaFc*(firstBit);
 
+    //decode from BPSK into header field bits
     //the bit value is the phase difference with the last symbol
-    for (int i = NUM_LENGTH_BITS-1; i >= 0; i--)
+    char headerBits[NUM_HEADER_BITS];
+    for (size_t i = 0; i < NUM_HEADER_BITS; i++)
     {
-        auto bit = (*lenBits)*std::polar<RealType>(scale, freqCorr)*sym;
-        if (bit.real() > 0) length |= (1 << i);
+        auto bit = (*headerSyms)*std::polar<RealType>(scale, freqCorr)*sym;
+        headerBits[i] = (bit.real() > 0)?1:0;
         freqCorr += deltaFc*_dataWidth;
-        lenBits += _dataWidth;
+        headerSyms += _dataWidth;
     }
 
-    //top two bits used for timing sync
-    length &= 0x3fff;
+    //decode the bits into header fields
+    decodeHeaderWord(headerBits, id, length);
 }
 
 /***********************************************************************
