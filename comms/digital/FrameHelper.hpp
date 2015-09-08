@@ -4,7 +4,7 @@
 #include <Pothos/Config.hpp>
 #include <cstddef> //size_t
 
-#define NUM_HEADER_BITS (2 + (12*2))
+#define NUM_HEADER_BITS (2 + (8*2) + (12*2))
 
 //percent of sync word to declare peak found
 static const double CORR_MAG_PERCENT = 0.7;
@@ -79,11 +79,15 @@ static inline unsigned char decodeHamming84(const char *b, bool &error)
  * Encode header data fields into a bit-buffer
  * The frame inserter will encode the bit-buffer as BPSK
  **********************************************************************/
-static inline void encodeHeaderWord(char *bits, const size_t length)
+static inline void encodeHeaderWord(char *bits, const unsigned char id, const size_t length)
 {
     //insert time sync
     *bits++ = 0;
     *bits++ = 1;
+
+    //encode id
+    encodeHamming84((id >> 0) & 0xf, bits+=8);
+    encodeHamming84((id >> 4) & 0xf, bits+=8);
 
     //encode length
     encodeHamming84((length >> 0) & 0xf, bits+=8);
@@ -95,16 +99,23 @@ static inline void encodeHeaderWord(char *bits, const size_t length)
  * Decode header data fields from a bit-buffer
  * The frame sync will decode BPSK into the bit-buffer
  **********************************************************************/
-static inline void decodeHeaderWord(const char *bits, size_t &length)
+static inline void decodeHeaderWord(const char *bits, unsigned char &id, size_t &length)
 {
+    bool error = false;
+
     //skip time sync
     bits+=2;
 
+    //decode id
+    id = 0;
+    id |= decodeHamming84(bits+=8, error) << 0;
+    id |= decodeHamming84(bits+=8, error) << 4;
+
     //decode length
     length = 0;
-    bool error = false;
     length |= decodeHamming84(bits+=8, error) << 0;
     length |= decodeHamming84(bits+=8, error) << 4;
     length |= decodeHamming84(bits+=8, error) << 8;
+
     if (error) length = 0; //clear length when error cant be corrected
 }

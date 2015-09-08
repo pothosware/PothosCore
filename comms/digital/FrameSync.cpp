@@ -81,6 +81,10 @@
  * |option [Barker Code 4] \[1, 1, -1, 1\]
  * |option [Barker Code 5] \[1, 1, 1, -1, 1\]
  *
+ * |param headerId [Header ID] the expected 8-bit check ID decoded from the frame header.
+ * The frame sync uses this ID to compare and to reject unrecognized frames.
+ * |default 0x55
+ *
  * |param symbolWidth [Symbol Width] The number of samples per preamble symbol.
  * This value should correspond to the symbol width used in the frame inserter block.
  * |default 20
@@ -126,6 +130,7 @@
  * |factory /comms/frame_sync(dtype)
  * |setter setOutputMode(outputMode)
  * |setter setPreamble(preamble)
+ * |setter setHeaderId(headerId)
  * |setter setSymbolWidth(symbolWidth)
  * |setter setDataWidth(dataWidth)
  * |setter setFrameStartId(frameStartId)
@@ -146,6 +151,7 @@ public:
     }
 
     FrameSync(void):
+        _headerId(0),
         _symbolWidth(0),
         _dataWidth(0),
         _syncWordWidth(0),
@@ -159,6 +165,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getOutputMode));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setPreamble));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getPreamble));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setHeaderId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getHeaderId));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setSymbolWidth));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getSymbolWidth));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setDataWidth));
@@ -173,7 +181,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, getInputThreshold));
         this->registerCall(this, POTHOS_FCN_TUPLE(FrameSync, setVerboseMode));
 
-        this->setOutputMode("RAW");
+        this->setHeaderId(0x55); //initial update
+        this->setOutputMode("RAW"); //initial update
         this->setSymbolWidth(20); //initial update
         this->setDataWidth(4); //initial update
         this->setPreamble(std::vector<Type>(1, 1)); //initial update
@@ -212,6 +221,16 @@ public:
     std::vector<Type> getPreamble(void) const
     {
         return _preamble;
+    }
+
+    void setHeaderId(const unsigned char id)
+    {
+        _headerId = id;
+    }
+
+    unsigned char getHeaderId(void) const
+    {
+        return _headerId;
     }
 
     void setSymbolWidth(const size_t width)
@@ -315,7 +334,7 @@ private:
     void processEnvelope(const Type *in, RealType &scale);
     void processFreqSync(const Type *in, RealType &deltaFc);
     void processSyncWord(const Type *in, const RealType &deltaFc, const RealType &scale, RealType &phaseOff, size_t &corrPeak);
-    void processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, size_t &length);
+    void processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, unsigned char &id, size_t &length);
 
     void updateSettings(void)
     {
@@ -337,6 +356,7 @@ private:
     std::string _frameEndId;
     std::string _phaseOffsetId;
     std::vector<Type> _preamble;
+    unsigned char _headerId; //unique id to check frame
     size_t _symbolWidth; //width of a preamble symbol
     size_t _dataWidth; //width of a data dymbol
     size_t _syncWordWidth; //preamble sync portion width
@@ -499,7 +519,18 @@ void FrameSync<Type>::work(void)
         //and determine sample offset (used in timing recovery mode)
         size_t firstBit, length;
         size_t frameOffset = i-_countSinceMax;
-        this->processHeaderBits(in+frameOffset, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, length);
+        unsigned char id = 0;
+        this->processHeaderBits(in+frameOffset, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, id, length);
+
+        //print summary
+        if (_verbose)
+        {
+            std::cout << "HEADER DECODE \n";
+            std::cout << " length = " << length << std::endl;
+            std::cout << " header id = 0x" << std::hex << int(id) << std::dec << std::endl;
+        }
+
+        if (id != _headerId) continue; //reject unknown id
         if (length == 0) continue; //this is probably a false frame detection
 
         //Label width is specified based on the output mode.
@@ -517,7 +548,6 @@ void FrameSync<Type>::work(void)
         if (_verbose)
         {
             std::cout << "FRAME VALID \n";
-            std::cout << " length = " << length << std::endl;
             std::cout << " firstBit = " << firstBit << std::endl;
             std::cout << " sampOffset = " << (int(firstBit)-int(_syncWordWidth)) << std::endl;
             std::cout << " frameOffset = " << frameOffset << std::endl;
@@ -658,7 +688,7 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
  * Process the length bits to get a symbol count
  **********************************************************************/
 template <typename Type>
-void FrameSync<Type>::processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, size_t &length)
+void FrameSync<Type>::processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, unsigned char &id, size_t &length)
 {
     firstBit = 0;
     length = 0;
@@ -702,7 +732,7 @@ void FrameSync<Type>::processHeaderBits(const Type *in, const RealType &deltaFc,
     }
 
     //decode the bits into header fields
-    decodeHeaderWord(headerBits, length);
+    decodeHeaderWord(headerBits, id, length);
 }
 
 /***********************************************************************
