@@ -224,12 +224,15 @@ public:
 
                 //encode the header field into bits
                 char headerBits[NUM_HEADER_BITS];
-                size_t length = 0;
+                FrameHeaderFields headerFields;
+                headerFields.id = _headerId;
+                headerFields.length = 0;
                 if (label.data.canConvert(typeid(size_t)))
                 {
-                    length = label.data.template convert<size_t>()*label.width;
+                    headerFields.length = label.data.template convert<size_t>()*label.width;
                 }
-                encodeHeaderWord(headerBits, _headerId, length);
+                headerFields.chksum = headerFields.doChecksum();
+                encodeHeaderWord(headerBits, headerFields);
 
                 //encode header fields as BPSK into the preamble buffer
                 const auto sym = _preamble.back();

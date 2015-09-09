@@ -3,12 +3,56 @@
 
 #include <Pothos/Config.hpp>
 #include <cstddef> //size_t
+#include <cstdint>
 
-#define NUM_HEADER_BITS (2 + (8*2) + (12*2))
+//! The exact number of bits when header fields are encoded
+#define NUM_HEADER_BITS (2 + (8+12+8)*2)
 
 //percent of sync word to declare peak found
 static const double CORR_MAG_PERCENT = 0.7;
 static const double CORR_DUR_PERCENT = 0.5;
+
+/***********************************************************************
+ * Simple 8-bit checksum routine
+ **********************************************************************/
+static inline uint8_t checksum8(const uint8_t *p, const size_t len)
+{
+    uint8_t acc = 0;
+    for (size_t i = 0; i < len; i++)
+    {
+        acc = (acc >> 1) + ((acc & 0x1) << 7); //rotate
+        acc += p[i]; //add
+    }
+    return acc;
+}
+
+/***********************************************************************
+ * Struct used for encoding header fields
+ * These fields are encoded after the phase sync portion
+ **********************************************************************/
+struct FrameHeaderFields
+{
+    FrameHeaderFields(void):
+        id(0),
+        length(0),
+        chksum(0),
+        error(false)
+    {}
+
+    uint8_t id;
+    uint16_t length;
+    uint8_t chksum;
+    bool error;
+
+    uint8_t doChecksum(void) const
+    {
+        uint8_t bytes[3];
+        bytes[0] = id;
+        bytes[1] = length & 0xff;
+        bytes[2] = length >> 8;
+        return checksum8(bytes, sizeof(bytes));
+    }
+};
 
 /***********************************************************************
  * Encode a 4 bit word into a 8 bits with parity
@@ -79,43 +123,50 @@ static inline unsigned char decodeHamming84(const char *b, bool &error)
  * Encode header data fields into a bit-buffer
  * The frame inserter will encode the bit-buffer as BPSK
  **********************************************************************/
-static inline void encodeHeaderWord(char *bits, const unsigned char id, const size_t length)
+static inline void encodeHeaderWord(char *bits, const FrameHeaderFields &hdr)
 {
     //insert time sync
     *bits++ = 0;
     *bits++ = 1;
 
     //encode id
-    encodeHamming84((id >> 0) & 0xf, bits+=8);
-    encodeHamming84((id >> 4) & 0xf, bits+=8);
+    encodeHamming84(hdr.id >> 0, bits+0);
+    encodeHamming84(hdr.id >> 4, bits+8);
 
     //encode length
-    encodeHamming84((length >> 0) & 0xf, bits+=8);
-    encodeHamming84((length >> 4) & 0xf, bits+=8);
-    encodeHamming84((length >> 8) & 0xf, bits+=8);
+    encodeHamming84(hdr.length >> 0, bits+16);
+    encodeHamming84(hdr.length >> 4, bits+24);
+    encodeHamming84(hdr.length >> 8, bits+32);
+
+    //encode checksum
+    encodeHamming84(hdr.chksum >> 0, bits+40);
+    encodeHamming84(hdr.chksum >> 4, bits+48);
 }
 
 /***********************************************************************
  * Decode header data fields from a bit-buffer
  * The frame sync will decode BPSK into the bit-buffer
  **********************************************************************/
-static inline void decodeHeaderWord(const char *bits, unsigned char &id, size_t &length)
+static inline void decodeHeaderWord(const char *bits, FrameHeaderFields &hdr)
 {
-    bool error = false;
+    hdr.error = false;
 
     //skip time sync
     bits+=2;
 
     //decode id
-    id = 0;
-    id |= decodeHamming84(bits+=8, error) << 0;
-    id |= decodeHamming84(bits+=8, error) << 4;
+    hdr.id = 0;
+    hdr.id |= uint8_t(decodeHamming84(bits+0, hdr.error)) << 0;
+    hdr.id |= uint8_t(decodeHamming84(bits+8, hdr.error)) << 4;
 
     //decode length
-    length = 0;
-    length |= decodeHamming84(bits+=8, error) << 0;
-    length |= decodeHamming84(bits+=8, error) << 4;
-    length |= decodeHamming84(bits+=8, error) << 8;
+    hdr.length = 0;
+    hdr.length |= uint16_t(decodeHamming84(bits+16, hdr.error)) << 0;
+    hdr.length |= uint16_t(decodeHamming84(bits+24, hdr.error)) << 4;
+    hdr.length |= uint16_t(decodeHamming84(bits+32, hdr.error)) << 8;
 
-    if (error) length = 0; //clear length when error cant be corrected
+    //decode checksum
+    hdr.chksum = 0;
+    hdr.chksum |= uint8_t(decodeHamming84(bits+40, hdr.error)) << 0;
+    hdr.chksum |= uint8_t(decodeHamming84(bits+48, hdr.error)) << 4;
 }

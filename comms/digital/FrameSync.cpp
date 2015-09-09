@@ -334,7 +334,7 @@ private:
     void processEnvelope(const Type *in, RealType &scale);
     void processFreqSync(const Type *in, RealType &deltaFc);
     void processSyncWord(const Type *in, const RealType &deltaFc, const RealType &scale, RealType &phaseOff, size_t &corrPeak);
-    void processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, unsigned char &id, size_t &length);
+    void processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, FrameHeaderFields &headerFields);
 
     void updateSettings(void)
     {
@@ -513,21 +513,25 @@ void FrameSync<Type>::work(void)
 
         //now that the frame was found, process the length field
         //and determine sample offset (used in timing recovery mode)
-        size_t firstBit, length;
+        size_t firstBit = 0;
         size_t frameOffset = i-_countSinceMax;
-        unsigned char id = 0;
-        this->processHeaderBits(in+frameOffset, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, id, length);
+        FrameHeaderFields headerFields;
+        this->processHeaderBits(in+frameOffset, _deltaFcMax, _scaleAtMax, _phaseOffMax, firstBit, headerFields);
 
         //print summary
         if (_verbose)
         {
             std::cout << "HEADER DECODE \n";
-            std::cout << " length = " << length << std::endl;
-            std::cout << " header id = 0x" << std::hex << int(id) << std::dec << std::endl;
+            std::cout << " length = " << headerFields.length << std::endl;
+            std::cout << " src id = 0x" << std::hex << int(headerFields.id) << std::dec << std::endl;
+            std::cout << " chksum = 0x" << std::hex << int(headerFields.chksum) << std::dec << std::endl;
         }
 
-        if (id != _headerId) continue; //reject unknown id
-        if (length == 0) continue; //this is probably a false frame detection
+        if (headerFields.error) continue; //error correction not possible
+        if (headerFields.chksum != headerFields.doChecksum()) continue; //checksum failed
+        if (headerFields.id != _headerId) continue; //reject unknown id
+        if (headerFields.length == 0) continue; //length not provided
+        const size_t length = headerFields.length;
 
         //Label width is specified based on the output mode.
         //Width may be divided down by an upstream time recovery block.
@@ -538,7 +542,7 @@ void FrameSync<Type>::work(void)
         //initialize carrier recovery compensation for use in the
         //remaining header and payload sections of the work routine
         size_t payloadOffset = frameOffset + firstBit + (NUM_HEADER_BITS*_dataWidth) + labelWidth/2;
-        _remainingPayload = length*_dataWidth;
+        _remainingPayload = headerFields.length*_dataWidth;
         _phaseInc = _deltaFcMax;
         _phase = _phaseOffMax + _phaseInc*_frameWidth;
         if (_verbose)
@@ -684,10 +688,9 @@ void FrameSync<Type>::processSyncWord(const Type *in, const RealType &deltaFc, c
  * Process the length bits to get a symbol count
  **********************************************************************/
 template <typename Type>
-void FrameSync<Type>::processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, unsigned char &id, size_t &length)
+void FrameSync<Type>::processHeaderBits(const Type *in, const RealType &deltaFc, const RealType &scale, const RealType &phaseOff, size_t &firstBit, FrameHeaderFields &headerFields)
 {
     firstBit = 0;
-    length = 0;
 
     //the last preamble symbol is used to encode the phase shifts
     const auto sym = std::conj(_preamble.back());
@@ -728,7 +731,7 @@ void FrameSync<Type>::processHeaderBits(const Type *in, const RealType &deltaFc,
     }
 
     //decode the bits into header fields
-    decodeHeaderWord(headerBits, id, length);
+    decodeHeaderWord(headerBits, headerFields);
 }
 
 /***********************************************************************
