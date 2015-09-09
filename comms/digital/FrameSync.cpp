@@ -542,6 +542,8 @@ void FrameSync<Type>::work(void)
         //initialize carrier recovery compensation for use in the
         //remaining header and payload sections of the work routine
         size_t payloadOffset = frameOffset + firstBit + (NUM_HEADER_BITS*_dataWidth) + labelWidth/2;
+        size_t labelStart = 0;
+        size_t labelEnd = (length-1)*labelWidth;
         _remainingPayload = headerFields.length*_dataWidth;
         _phaseInc = _deltaFcMax;
         _phase = _phaseOffMax + _phaseInc*_frameWidth;
@@ -557,22 +559,25 @@ void FrameSync<Type>::work(void)
         //adjust for the debug mode
         if (_outputModeDebug)
         {
-            _phase -= _phaseInc*_frameWidth;
-            _remainingPayload += _frameWidth;
-            payloadOffset -= _frameWidth;
+            const size_t backup = std::min(payloadOffset, _frameWidth);
+            labelStart += backup;
+            labelEnd += backup;
+            _phase -= _phaseInc*backup;
+            _remainingPayload += backup;
+            payloadOffset -= backup;
         }
 
         //produce a phase offset label at the first payload index
         if (not _phaseOffsetId.empty()) outPort->postLabel(
-            Pothos::Label(_phaseOffsetId, _phase, 0, labelWidth));
+            Pothos::Label(_phaseOffsetId, _phase, labelStart, labelWidth));
 
         //produce a start of frame label at the first payload index
         if (not _frameStartId.empty()) outPort->postLabel(
-            Pothos::Label(_frameStartId, length, 0, labelWidth));
+            Pothos::Label(_frameStartId, length, labelStart, labelWidth));
 
         //produce an end of frame label at the last payload index
         if (not _frameEndId.empty()) outPort->postLabel(
-            Pothos::Label(_frameEndId, length, (length-1)*labelWidth, labelWidth));
+            Pothos::Label(_frameEndId, length, labelEnd, labelWidth));
 
         inPort->setReserve(0);
         inPort->consume(payloadOffset);
