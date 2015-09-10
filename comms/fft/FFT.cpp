@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <complex>
 #include <cmath>
-//#include "kissfft.hh"
+#include "kissfft.hh"
 
 /***********************************************************************
  * |PothosDoc FFT
@@ -20,36 +20,61 @@
  * |default "complex_float64"
  * |preview disable
  *
- * |factory /comms/fft(dtype)
+ * |param numBins[Num FFT Bins] The number of bins per fourier transform.
+ * |default 1024
+ * |option 512
+ * |option 1024
+ * |option 2048
+ * |option 4096
+ * |widget ComboBox(editable=true)
+ *
+ * |param inverse[Inverse FFT] The option to perform the inverse for forward FFT.
+ * |option [Forward] false
+ * |option [Inverse] true
+ * |default false
+ *
+ * |factory /comms/fft(dtype, numBins, inverse)
  **********************************************************************/
 template <typename Type>
 class FFT : public Pothos::Block
 {
 public:
-    FFT(void)//:
-    //    _kissfft(1024, false)
+    FFT(const size_t numBins, const bool inverse):
+        _numBins(numBins),
+        _inverse(inverse),
+        _kissfft(_numBins, _inverse)
     {
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
+        this->input(0)->setReserve(_numBins);
     }
 
     void work(void)
     {
         auto inPort = this->input(0);
         auto outPort = this->output(0);
+
+        _kissfft.transform(
+            inPort->buffer().template as<const Type *>(),
+            outPort->buffer().template as<Type *>());
+
+        inPort->consume(_numBins);
+        outPort->produce(_numBins);
     }
 
 private:
-    //kissfft<typename Type::value_type> _kissfft;
+    const size_t _numBins;
+    const bool _inverse;
+    kissfft<typename Type::value_type> _kissfft;
 };
 
 /***********************************************************************
  * registration
  **********************************************************************/
-static Pothos::Block *FFTFactory(const Pothos::DType &dtype)
+static Pothos::Block *FFTFactory(const Pothos::DType &dtype, const size_t numBins, const bool inverse)
 {
     #define ifTypeDeclareFactory__(Type) \
-        if (dtype == Pothos::DType(typeid(Type))) return new FFT<Type>();
+        if (dtype == Pothos::DType(typeid(Type))) return new FFT<Type>(numBins, inverse);
     #define ifTypeDeclareFactory(Type) \
         ifTypeDeclareFactory__(std::complex<Type>)
     ifTypeDeclareFactory(double);

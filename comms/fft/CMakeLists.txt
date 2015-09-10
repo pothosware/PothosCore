@@ -14,8 +14,9 @@ POTHOS_MODULE_UTIL(
     TARGET FFTBlocks
     SOURCES
         FFT.cpp
-        FFTImplFloat32.cpp
-        FFTImplInt16.cpp
+        TestFFT.cpp
+        #FFTImplFloat32.cpp
+        #FFTImplInt16.cpp
     DESTINATION comms
     ENABLE_DOCS
 )

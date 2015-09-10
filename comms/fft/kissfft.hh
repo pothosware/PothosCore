@@ -12,9 +12,10 @@ struct traits
     typedef std::complex<scalar_type> cpx_type;
     void fill_twiddles( std::complex<T_scalar> * dst ,int nfft,bool inverse)
     {
-        T_scalar phinc =  (inverse?2:-2)* acos( (T_scalar) -1)  / nfft;
+        double phinc =  (inverse?2:-2)* acos( (double) -1)  / nfft;
         for (int i=0;i<nfft;++i)
-            dst[i] = exp( std::complex<T_scalar>(0,i*phinc) );
+        //TODO fixed point needs scalar
+            dst[i] = exp( std::complex<double>(0,i*phinc) );
     }
 
     void prepare(
