@@ -10,10 +10,20 @@ endif()
 ########################################################################
 # Filter blocks module
 ########################################################################
+
+#The templated c++ implementation only handles floats.
+#We use the C implementation to handle the fixed point,
+#however only one integer type can be compiled at once.
+#We assume that complex int16 will be the most useful.
+
+#add_definitions(-DFIXED_POINT=32)
+add_definitions(-DFIXED_POINT=16)
+
 POTHOS_MODULE_UTIL(
     TARGET FFTBlocks
     SOURCES
         FFT.cpp
+        kiss_fft.c
         TestFFT.cpp
     DESTINATION comms
     ENABLE_DOCS
