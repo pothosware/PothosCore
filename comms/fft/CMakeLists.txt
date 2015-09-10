@@ -15,8 +15,6 @@ POTHOS_MODULE_UTIL(
     SOURCES
         FFT.cpp
         TestFFT.cpp
-        #FFTImplFloat32.cpp
-        #FFTImplInt16.cpp
     DESTINATION comms
     ENABLE_DOCS
 )

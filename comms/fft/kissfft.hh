@@ -266,7 +266,11 @@ class kissfft
             cpx_type * twiddles = &_twiddles[0];
             cpx_type t;
             int Norig = _nfft;
+            #ifdef _MSC_VER
+            cpx_type *scratchbuf = (cpx_type *)alloca(p*sizeof(cpx_type));
+            #else
             cpx_type scratchbuf[p];
+            #endif
 
             for ( u=0; u<m; ++u ) {
                 k=u;

@@ -10,7 +10,8 @@
 /***********************************************************************
  * |PothosDoc FFT
  *
- * TODO
+ * Perform a Fast Fourier Transform on input port 0
+ * and produce the FFT result to output port 0.
  *
  * |category /FFT
  * |keywords dft fft fast fourier transform
