@@ -37,73 +37,49 @@ POTHOS_TEST_BLOCK("/comms/tests", test_fft_float)
     source.callVoid("setElements", input);
     source.callVoid("setMode", "ONCE");
     auto collector = registry.callProxy("/blocks/collector_sink", dtype);
-    auto fft = registry.callProxy("/comms/fft", dtype, 4, false);
+    auto fft = registry.callProxy("/comms/fft", dtype, input.size(), false);
 
     //run the topology
-    Pothos::Topology topology;
-    topology.connect(source, 0, fft, 0);
-    topology.connect(fft, 0, collector, 0);
-    topology.commit();
-    POTHOS_TEST_TRUE(topology.waitInactive());
+    {
+        Pothos::Topology topology;
+        topology.connect(source, 0, fft, 0);
+        topology.connect(fft, 0, collector, 0);
+        topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+    }
 
     //check the buffer
     auto buff = collector.call<Pothos::BufferChunk>("getBuffer");
-    POTHOS_TEST_EQUAL(buff.elements(), 4);
+    POTHOS_TEST_EQUAL(buff.elements(), result.size());
     auto pb = buff.as<const std::complex<float> *>();
-    POTHOS_TEST_EQUAL(buff.elements(), 4);
-    for (size_t i = 0; i < 4; i++)
+    for (size_t i = 0; i < buff.elements(); i++)
     {
-        std::cout << i << " expected " << result[i] << " actual " << pb[i] << std::endl;
+        std::cout << i << " FFT expected " << result[i] << " actual " << pb[i] << std::endl;
         POTHOS_TEST_TRUE(std::abs(pb[i].real()-result[i].real()) < 0.01);
         POTHOS_TEST_TRUE(std::abs(pb[i].imag()-result[i].imag()) < 0.01);
     }
-}
 
-POTHOS_TEST_BLOCK("/comms/tests", test_fft_short)
-{
-    auto env = Pothos::ProxyEnvironment::make("managed");
-    auto registry = env->findProxy("Pothos/BlockRegistry");
-
-    /*
-    numpy.fft.fft([(-4-6j), (-3+6j), 2j, (1-10j)])
-    array([ -6. -8.j,  12. -4.j,  -2. +0.j, -20.-12.j])
-    */
-
-    std::vector<std::complex<float>> input;
-    input.emplace_back(-4, -6);
-    input.emplace_back(-3, 6);
-    input.emplace_back(0, 2);
-    input.emplace_back(1, -10);
-
-    std::vector<std::complex<short>> result;
-    result.emplace_back(-6, -8);
-    result.emplace_back(12, -4);
-    result.emplace_back(-2, 0);
-    result.emplace_back(-20, -12);
-
-    //create blocks
-    const auto dtype = Pothos::DType(typeid(std::complex<short>));
-    auto source = registry.callProxy("/blocks/vector_source", dtype);
-    source.callVoid("setElements", input);
+    //perform the ifft and check the result
+    source.callVoid("setElements", result);
     source.callVoid("setMode", "ONCE");
-    auto collector = registry.callProxy("/blocks/collector_sink", dtype);
-    auto fft = registry.callProxy("/comms/fft", dtype, 4, false);
-
-    //run the topology
-    Pothos::Topology topology;
-    topology.connect(source, 0, fft, 0);
-    topology.connect(fft, 0, collector, 0);
-    topology.commit();
-    POTHOS_TEST_TRUE(topology.waitInactive());
+    collector.callVoid("clear");
+    auto ifft = registry.callProxy("/comms/fft", dtype, result.size(), true);
+    {
+        Pothos::Topology topology;
+        topology.connect(source, 0, ifft, 0);
+        topology.connect(ifft, 0, collector, 0);
+        topology.commit();
+        POTHOS_TEST_TRUE(topology.waitInactive());
+    }
 
     //check the buffer
-    auto buff = collector.call<Pothos::BufferChunk>("getBuffer");
-    POTHOS_TEST_EQUAL(buff.elements(), 4);
-    auto pb = buff.as<const std::complex<short> *>();
-    POTHOS_TEST_EQUAL(buff.elements(), 4);
-    //POTHOS_TEST_EQUALA(pb, result.data(), 4);
-    for (size_t i = 0; i < 4; i++)
+    buff = collector.call<Pothos::BufferChunk>("getBuffer");
+    POTHOS_TEST_EQUAL(buff.elements(), input.size());
+    pb = buff.as<const std::complex<float> *>();
+    for (size_t i = 0; i < buff.elements(); i++)
     {
-        std::cout << pb[i] << std::endl;
+        std::cout << i << " IFFT expected " << input[i] << " actual " << pb[i] << std::endl;
+        POTHOS_TEST_TRUE(std::abs(pb[i].real()-input[i].real()*input.size()) < 0.01);
+        POTHOS_TEST_TRUE(std::abs(pb[i].imag()-input[i].imag()*input.size()) < 0.01);
     }
 }

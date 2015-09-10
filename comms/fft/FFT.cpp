@@ -17,7 +17,7 @@
  * |keywords dft fft fast fourier transform
  *
  * |param dtype[Data Type] The data type of the input and output element stream.
- * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
+ * |widget DTypeChooser(cfloat=1)
  * |default "complex_float64"
  * |preview disable
  *
@@ -80,10 +80,6 @@ static Pothos::Block *FFTFactory(const Pothos::DType &dtype, const size_t numBin
         ifTypeDeclareFactory__(std::complex<Type>)
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
-    //ifTypeDeclareFactory(int64_t);
-    //ifTypeDeclareFactory(int32_t);
-    ifTypeDeclareFactory(int16_t);
-    //ifTypeDeclareFactory(int8_t);
     throw Pothos::InvalidArgumentException("FFTFactory("+dtype.toString()+")", "unsupported type");
 }
 static Pothos::BlockRegistry registerFFT(
