@@ -6,6 +6,12 @@
 #include <math.h>
 #include <string.h>
 
+#ifdef _MSC_VER
+typedef long long int64_t;
+typedef int int32_t;
+typedef short int16_t;
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
