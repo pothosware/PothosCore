@@ -134,7 +134,7 @@ std::string Pothos::System::Logger::startSyslogListener(void)
     {
         //find an available udp port
         Poco::Net::DatagramSocket sock;
-        sock.bind(Poco::Net::SocketAddress("0.0.0.0:0"));
+        sock.bind(Poco::Net::SocketAddress("[::]:0"));
         const auto port = sock.address().port();
         sock.close();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EnvironmentEval.hpp"
@@ -69,9 +69,9 @@ void EnvironmentEval::update(void)
 
 HostProcPair EnvironmentEval::getHostProcFromConfig(const QString &zoneName, const Poco::JSON::Object::Ptr &config)
 {
-    if (zoneName == "gui") return HostProcPair("gui://localhost", "gui");
+    if (zoneName == "gui") return HostProcPair("gui://[::1]", "gui");
 
-    auto hostUri = config?config->getValue<std::string>("hostUri"):"tcp://localhost";
+    auto hostUri = config?config->getValue<std::string>("hostUri"):"tcp://[::1]";
     auto processName = config?config->getValue<std::string>("processName"):"";
     return HostProcPair(hostUri, processName);
 }
@@ -84,7 +84,7 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
 
     //connect to the remote host and spawn a server
     auto serverEnv = Pothos::RemoteClient(hostUri).makeEnvironment("managed");
-    auto serverHandle = serverEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://0.0.0.0", false/*noclose*/);
+    auto serverHandle = serverEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://[::]", false/*noclose*/);
 
     //construct the uri for the new server
     auto actualPort = serverHandle.call<std::string>("getActualPort");

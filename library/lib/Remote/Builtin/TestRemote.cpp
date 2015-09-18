@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -130,9 +130,9 @@ POTHOS_TEST_BLOCK("/proxy/remote/tests", test_inception)
     auto env = Pothos::ProxyEnvironment::make("managed");
 
     //spawn server and connect
-    auto serverHandle1 = env->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://0.0.0.0");
+    auto serverHandle1 = env->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://[::]");
     auto actualPort1 = serverHandle1.call<std::string>("getActualPort");
-    auto clientHandle1 = env->findProxy("Pothos/RemoteClient").callProxy("new", "tcp://localhost:"+actualPort1);
+    auto clientHandle1 = env->findProxy("Pothos/RemoteClient").callProxy("new", "tcp://[::1]:"+actualPort1);
 
     //create a remote environment
     auto &ios = clientHandle1.call<std::iostream &>("getIoStream");
@@ -140,9 +140,9 @@ POTHOS_TEST_BLOCK("/proxy/remote/tests", test_inception)
 
     //now the remove env can make a new server
     //which can now be connected to locally
-    auto serverHandle2 = remoteEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://0.0.0.0");
+    auto serverHandle2 = remoteEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://[::]");
     auto actualPort2 = serverHandle2.call<std::string>("getActualPort");
-    auto clientHandle2 = env->findProxy("Pothos/RemoteClient").callProxy("new", "tcp://localhost:"+actualPort2);
+    auto clientHandle2 = env->findProxy("Pothos/RemoteClient").callProxy("new", "tcp://[::1]:"+actualPort2);
 }
 
 //! A thread to handle remote proxy requests
@@ -174,8 +174,8 @@ POTHOS_TEST_BLOCK("/proxy/remote/tests", test_remote)
 
 POTHOS_TEST_BLOCK("/proxy/remote/tests", test_server)
 {
-    Pothos::RemoteServer server("tcp://0.0.0.0");
-    Pothos::RemoteClient client("tcp://localhost:"+server.getActualPort());
+    Pothos::RemoteServer server("tcp://[::]");
+    Pothos::RemoteClient client("tcp://[::1]:"+server.getActualPort());
     auto env = Pothos::RemoteClient::makeEnvironment(client.getIoStream(), "managed");
     std::cout << "Env peering address " << env->getPeeringAddress() << std::endl;
 }

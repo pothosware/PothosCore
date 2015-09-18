@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -106,7 +106,7 @@ void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
     Pothos::init();
 
     //parse the URI
-    const std::string defaultUri = "tcp://0.0.0.0:"+Pothos::RemoteServer::getLocatorPort();
+    const std::string defaultUri = "tcp://[::]:"+Pothos::RemoteServer::getLocatorPort();
     Poco::URI uri(uriStr.empty()?defaultUri:uriStr);
     const std::string &host = uri.getHost();
     const std::string &port = std::to_string(uri.getPort());
