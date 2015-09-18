@@ -22,8 +22,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
     #force a compile-time error when symbols are missing
-    set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
-    set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--no-undefined")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--no-undefined")
 
     #these warnings are caused by static warnings used throughout the code
     add_compile_options(-Wno-unused-local-typedefs)
@@ -43,6 +43,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     #The stdlib flag setting supports c++11 library features.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
 
+endif()
+
+if(APPLE)
+    #fixes issue with duplicate module registry when using application bundle
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flat_namespace")
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -flat_namespace")
 endif()
 
 if(MSVC)
