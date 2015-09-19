@@ -32,6 +32,7 @@ public:
 
     SporadicDropper(void):
         _gen(_rd()),
+        _randomProb(0.0, 1.0),
         _probability(0.0)
     {
         this->setupInput(0);
@@ -58,7 +59,7 @@ public:
         auto outputPort = this->output(0);
 
         //calculate if a drop will occur
-        const bool drop = (std::generate_canonical<double, 10>(_gen) <= _probability);
+        const bool drop = (_randomProb(_gen) <= _probability);
 
         //randomly drop the input message if available
         if (inputPort->hasMessage())
@@ -85,7 +86,7 @@ public:
 private:
     std::random_device _rd;
     std::mt19937 _gen;
-    std::uniform_int_distribution<size_t> _randomId;
+    std::uniform_real_distribution<double> _randomProb;
 
     double _probability;
 };
