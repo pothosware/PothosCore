@@ -39,6 +39,7 @@ public:
 
     SporadicLabeler(void):
         _gen(_rd()),
+        _randomProb(0.0, 1.0),
         _probability(0.0)
     {
         this->setupInput(0);
@@ -92,7 +93,7 @@ public:
 
             for (size_t i = 0; i < inputPort->elements(); i++)
             {
-                if (std::generate_canonical<double, 10>(_gen) <= _probability)
+                if (_randomProb(_gen) <= _probability)
                 {
                     Pothos::Label label;
                     label.index = i;
@@ -108,6 +109,7 @@ private:
     std::random_device _rd;
     std::mt19937 _gen;
     std::uniform_int_distribution<size_t> _randomId;
+    std::uniform_real_distribution<double> _randomProb;
 
     double _probability;
     std::vector<std::string> _ids;
