@@ -5,6 +5,11 @@ Release 0.3.0 (pending)
 
 - Moved windowing functions into communications toolkit
 
+Release 0.2.1 (pending)
+==========================
+
+- Specify full permission-safe object path for CL compile
+
 Release 0.2.0 (2015-06-17)
 ==========================
 
