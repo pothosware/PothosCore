@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -12,8 +12,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_network_topology)
 {
     //spawn a server and client
     std::cout << "create proxy server\n";
-    Pothos::RemoteServer server("tcp://0.0.0.0");
-    Pothos::RemoteClient client("tcp://localhost:"+server.getActualPort());
+    Pothos::RemoteServer server("tcp://[::]");
+    Pothos::RemoteClient client("tcp://[::1]:"+server.getActualPort());
 
     //local and remote block registries
     auto remoteReg = client.makeEnvironment("managed")->findProxy("Pothos/BlockRegistry");

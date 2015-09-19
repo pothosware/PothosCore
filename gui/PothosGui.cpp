@@ -65,13 +65,13 @@ int main(int argc, char **argv)
         postStatusMessage("Launching scratch process...");
         try
         {
-            Pothos::RemoteClient client("tcp://localhost");
+            Pothos::RemoteClient client("tcp://[::1]");
         }
         catch (const Pothos::RemoteClientError &)
         {
-            server = Pothos::RemoteServer("tcp://localhost:"+Pothos::RemoteServer::getLocatorPort());
+            server = Pothos::RemoteServer("tcp://[::1]:"+Pothos::RemoteServer::getLocatorPort());
             //TODO make server background so it does not close with process
-            Pothos::RemoteClient client("tcp://localhost"); //now it should connect to the new server
+            Pothos::RemoteClient client("tcp://[::1]"); //now it should connect to the new server
         }
     }
     catch (const Pothos::Exception &ex)

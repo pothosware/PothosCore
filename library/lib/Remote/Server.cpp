@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Remote.hpp>
@@ -127,7 +127,7 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr, const bool closePi
     //Store an open connection within this server wrapper.
     {
         Poco::URI uri(uriStr);
-        uri.setHost("localhost");
+        uri.setHost("::1");
         uri.setPort(std::atoi(this->getActualPort().c_str()));
         _impl->client = RemoteClient(uri.toString());
     }

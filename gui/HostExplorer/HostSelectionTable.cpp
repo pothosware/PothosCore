@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //get settings
@@ -59,7 +59,7 @@ void NodeInfo::update(void)
 static QStringList getHostUriList(void)
 {
     auto uris = getSettings().value("HostExplorer/uris").toStringList();
-    uris.push_front("tcp://localhost");
+    uris.push_front("tcp://[::1]");
 
     //sanitize duplicates
     QStringList noDups;

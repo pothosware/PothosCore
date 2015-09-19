@@ -15,14 +15,14 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
     auto env = Pothos::ProxyEnvironment::make("managed")->findProxy("Pothos/BlockRegistry");
 
     //create server
-    auto server_uri = Poco::format("%s://0.0.0.0", scheme);
+    auto server_uri = Poco::format("%s://[::]", scheme);
     std::cout << "make server " << server_uri << std::endl;
     auto server = env.callProxy(
         (serverIsSource)?"/blocks/network_source":"/blocks/network_sink",
         server_uri, "BIND");
 
     //create client
-    auto client_uri = Poco::format("%s://localhost:%s", scheme, server.call<std::string>("getActualPort"));
+    auto client_uri = Poco::format("%s://[::1]:%s", scheme, server.call<std::string>("getActualPort"));
     std::cout << "make client " << client_uri << std::endl;
     auto client = env.callProxy(
         (serverIsSource)?"/blocks/network_sink":"/blocks/network_source",
