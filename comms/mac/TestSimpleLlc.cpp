@@ -117,6 +117,8 @@ POTHOS_TEST_BLOCK("/comms/tests", test_simple_llc_harsh)
     llcA.callVoid("setName", "llcA");
     llcA.callVoid("setRecipient", 0xB); //sends to size B
     llcA.callVoid("setPort", port);
+    llcA.callVoid("setResendTimeout", 0.1);
+    llcA.callVoid("setExpireTimeout", 1.0);
     auto macA = registry.callProxy("/comms/simple_mac");
     macA.callVoid("setName", "macA");
     macA.callVoid("setMacId", 0xA);
@@ -130,6 +132,8 @@ POTHOS_TEST_BLOCK("/comms/tests", test_simple_llc_harsh)
     llcB.callVoid("setName", "llcB");
     llcB.callVoid("setRecipient", 0xA); //sends to size A
     llcB.callVoid("setPort", port);
+    llcB.callVoid("setResendTimeout", 0.1);
+    llcB.callVoid("setExpireTimeout", 1.0);
     auto macB = registry.callProxy("/comms/simple_mac");
     macB.callVoid("setName", "macB");
     macB.callVoid("setMacId", 0xB);
@@ -181,7 +185,9 @@ POTHOS_TEST_BLOCK("/comms/tests", test_simple_llc_harsh)
 
     //check the results
     std::cout << "llcA resend count " << llcA.call<unsigned long long>("getResendCount") << std::endl;
+    std::cout << "llcA expired count " << llcA.call<unsigned long long>("getExpiredCount") << std::endl;
     std::cout << "llcB resend count " << llcB.call<unsigned long long>("getResendCount") << std::endl;
+    std::cout << "llcB expired count " << llcB.call<unsigned long long>("getExpiredCount") << std::endl;
     POTHOS_TEST_EQUAL(llcA.call<unsigned long long>("getExpiredCount"), 0);
     POTHOS_TEST_EQUAL(llcB.call<unsigned long long>("getExpiredCount"), 0);
     collectorA.callVoid("verifyTestPlan", expectedB2A);
