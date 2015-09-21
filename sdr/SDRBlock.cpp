@@ -8,7 +8,6 @@
 #include <Poco/Logger.h>
 #include <mutex>
 #include <cassert>
-#include <iostream>
 
 SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::vector<size_t> &chs):
     _autoActivate(true),
@@ -306,7 +305,6 @@ void SDRBlock::forwardStatusLoop(void)
     int flags = 0;
     long long timeNs = 0;
 
-        std::cout << "forwardStatusLoop thread\n";
     while (this->isActive() and _enableStatus)
     {
         ret = _device->readStreamStatus(_stream, chanMask, flags, timeNs);
@@ -325,17 +323,14 @@ void SDRBlock::forwardStatusLoop(void)
         //but only after reporting this to "status" signal
         if (ret == SOAPY_SDR_NOT_SUPPORTED) return;
     }
-        std::cout << " DONE forwardStatusLoop thread\n";
 }
 
 void SDRBlock::configureStatusThread(void)
 {
-        std::cout << "configureStatusThread\n";
     //ensure thread is running
     if (this->isActive() and _enableStatus)
     {
         if (_statusMonitor.joinable()) return;
-        std::cout << "_statusMonitor START thread\n";
         _statusMonitor = std::thread(&SDRBlock::forwardStatusLoop, this);
     }
 
@@ -343,7 +338,6 @@ void SDRBlock::configureStatusThread(void)
     else
     {
         if (not _statusMonitor.joinable()) return;
-        std::cout << "_statusMonitor STOP thread\n";
         _statusMonitor.join();
     }
 }
