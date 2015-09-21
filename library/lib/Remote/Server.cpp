@@ -127,8 +127,7 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr, const bool closePi
     //Store an open connection within this server wrapper.
     {
         Poco::URI uri(uriStr);
-        uri.setHost("::1");
-        uri.setPort(std::atoi(this->getActualPort().c_str()));
+        uri.setPort(std::stoul(this->getActualPort()));
         _impl->client = RemoteClient(uri.toString());
     }
 }
