@@ -138,6 +138,7 @@ std::string Pothos::System::Logger::startSyslogListener(void)
         sock.close();
 
         //create a new listener and feed it the root channel
+        //FIXME syslog listener always binds to IPv4...
         listener = new Poco::Net::RemoteSyslogListener(port);
         listener->addChannel(Poco::Logger::get("").getChannel());
         listener->open();

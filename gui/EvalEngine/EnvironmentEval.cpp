@@ -6,6 +6,7 @@
 #include <Pothos/Remote.hpp>
 #include <Pothos/System/Logger.hpp>
 #include <Poco/URI.h>
+#include <Poco/Net/SocketAddress.h>
 #include <Poco/Logger.h>
 #include <sstream>
 
@@ -96,13 +97,23 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
     client.holdRef(Pothos::Object(serverHandle));
     auto env = client.makeEnvironment("managed");
 
-    //setup log delivery from the server process
-    const auto syslogListenPort = Pothos::System::Logger::startSyslogListener();
-    const auto serverAddr = env->getPeeringAddress() + ":" + syslogListenPort;
-    env->findProxy("Pothos/System/Logger").callVoid("startSyslogForwarding", serverAddr);
+    //determine log delivery address
+    //FIXME syslog listener doesn't support IPv6, special precautions taken:
     const auto logSource = (not _zoneName.isEmpty())? _zoneName.toStdString() : newHostUri.getHost();
+    const auto syslogListenPort = Pothos::System::Logger::startSyslogListener();
+    Poco::Net::SocketAddress serverAddr(env->getPeeringAddress(), syslogListenPort);
+    if (serverAddr.host().isLoopback()) serverAddr = Poco::Net::SocketAddress("localhost", syslogListenPort);
+    if (serverAddr.family() == Poco::Net::IPAddress::IPv6)
+    {
+        poco_warning_f1(Poco::Logger::get("PothosGui.EnvironmentEval.make"),
+            "Log forwarding not supported over IPv6: %s", logSource);
+        return env;
+    }
+
+    //setup log delivery from the server process
+    env->findProxy("Pothos/System/Logger").callVoid("startSyslogForwarding", serverAddr.toString());
     env->findProxy("Pothos/System/Logger").callVoid("forwardStdIoToLogging", logSource);
-    serverHandle.callVoid("startSyslogForwarding", serverAddr, logSource);
+    serverHandle.callVoid("startSyslogForwarding", serverAddr.toString(), logSource);
 
     return env;
 }
