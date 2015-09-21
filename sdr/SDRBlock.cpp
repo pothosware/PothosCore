@@ -3,6 +3,9 @@
 
 #include "SDRBlock.hpp"
 #include <SoapySDR/Version.hpp>
+#ifdef SOAPY_SDR_API_HAS_ERR_TO_STR
+#include <SoapySDR/Errors.hpp>
+#endif //SOAPY_SDR_API_HAS_ERR_TO_STR
 #include <Poco/SingletonHolder.h>
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
@@ -312,9 +315,13 @@ void SDRBlock::forwardStatusLoop(void)
 
         Pothos::ObjectKwargs status;
         status["ret"] = Pothos::Object(ret);
-        status["chanMask"] = Pothos::Object(chanMask);
+        if (chanMask != 0) status["chanMask"] = Pothos::Object(chanMask);
         status["flags"] = Pothos::Object(flags);
-        status["timeNs"] = Pothos::Object(timeNs);
+        if ((flags & SOAPY_SDR_HAS_TIME) != 0) status["timeNs"] = Pothos::Object(timeNs);
+        if ((flags & SOAPY_SDR_END_BURST) != 0) status["endBurst"];
+        #ifdef SOAPY_SDR_API_HAS_ERR_TO_STR
+        if (ret != 0) status["error"] = Pothos::Object(SoapySDR::errToStr(ret));
+        #endif //SOAPY_SDR_API_HAS_ERR_TO_STR
 
         //emit the status signal
         this->callVoid("status", status);

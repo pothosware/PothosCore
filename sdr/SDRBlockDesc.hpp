@@ -124,6 +124,17 @@
  * however the specifics are hardware dependent.
  * Typically, users will enable stream status on the sink block
  * to catch underflow and time error indications.
+ *
+ * The signal will emit a keyword dictionary (Pothos::Kwargs) with the following keys:
+ * <ul>
+ * <li>ret - the return value (0 or error code)</li>
+ * <li>chanMask - mask of channels involved (present when non-zero)</li>
+ * <li>flags - the associated flags</li>
+ * <li>timeNs - the time in nanoseconds (present when HAS_TIME flag is set)</li>
+ * <li>endBurst - end of burst indicator (present when END_BURST flag is set)</li>
+ * <li>error - the error code as a string (present when ret != 0)</li>
+ * </ul>
+ *
  * |default false
  * |option [On] true
  * |option [Off] false
