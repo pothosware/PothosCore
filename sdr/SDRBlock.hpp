@@ -5,6 +5,7 @@
 #include <Pothos/Object/Containers.hpp>
 #include <SoapySDR/Device.hpp>
 #include <future>
+#include <thread>
 
 class SDRBlock : public Pothos::Block
 {
@@ -36,6 +37,12 @@ public:
     void setAutoActivate(const bool autoActivate);
 
     void streamControl(const std::string &what, const long long timeNs, const size_t numElems);
+
+    void setEnableStatus(const bool enable);
+
+    void forwardStatusLoop(void);
+
+    void configureStatusThread(void);
 
     /*******************************************************************
      * Frontend map
@@ -232,6 +239,9 @@ protected:
     const std::vector<size_t> _channels;
     SoapySDR::Device *_device;
     SoapySDR::Stream *_stream;
+
+    bool _enableStatus;
+    std::thread _statusMonitor;
 
     std::vector<std::pair<std::string, Pothos::ObjectVector>> _cachedArgs;
     std::shared_future<SoapySDR::Device *> _deviceFuture;

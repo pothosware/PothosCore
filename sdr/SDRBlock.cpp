@@ -8,6 +8,7 @@
 #include <Poco/Logger.h>
 #include <mutex>
 #include <cassert>
+#include <iostream>
 
 SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::vector<size_t> &chs):
     _autoActivate(true),
@@ -16,6 +17,7 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     _channels(chs.empty()?std::vector<size_t>(1, 0):chs),
     _device(nullptr),
     _stream(nullptr),
+    _enableStatus(false),
     _pendingLabels(_channels.size())
 {
     assert(not _channels.empty());
@@ -35,6 +37,7 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerCallable("streamControl", Pothos::Callable(&SDRBlock::streamControl).bind(std::ref(*this), 0)); //3 arg version
     this->registerCallable("streamControl", Pothos::Callable(&SDRBlock::streamControl).bind(std::ref(*this), 0).bind(0, 3)); //2 arg version
     this->registerCallable("streamControl", Pothos::Callable(&SDRBlock::streamControl).bind(std::ref(*this), 0).bind(0, 2).bind(0, 3)); //1 arg version
+    this->registerCall(this, POTHOS_FCN_TUPLE(SDRBlock, setEnableStatus));
 
     //channels -- called by setters
     this->registerCallable("setFrequency", Pothos::Callable::make<const double, void>(&SDRBlock::setFrequency).bind(std::ref(*this), 0));
@@ -150,6 +153,9 @@ SDRBlock::SDRBlock(const int direction, const Pothos::DType &dtype, const std::v
     this->registerProbe("getSensors");
     this->registerProbe("getGpioBanks");
     this->registerProbe("getGpioValue");
+
+    //status
+    this->registerSignal("status");
 }
 
 static std::mutex &getMutex(void)
@@ -160,6 +166,9 @@ static std::mutex &getMutex(void)
 
 SDRBlock::~SDRBlock(void)
 {
+    //stop the status thread if enabled
+    this->setEnableStatus(false);
+
     //close the stream, the stream should be stopped by deactivate
     //but this actually cleans up and frees the stream object
     if (_stream != nullptr) _device->closeStream(_stream);
@@ -282,6 +291,61 @@ void SDRBlock::streamControl(const std::string &what, const long long timeNs, co
     if (what == "DEACTIVATE")        r = _device->deactivateStream(_stream, 0, timeNs);
     if (what == "DEACTIVATE_AT")     r = _device->deactivateStream(_stream, SOAPY_SDR_HAS_TIME, timeNs);
     if (r != 0) throw Pothos::Exception("SDRBlock::streamControl("+what+")", "de/activateStream returned " + std::to_string(r));
+}
+
+void SDRBlock::setEnableStatus(const bool enable)
+{
+    _enableStatus = enable;
+    this->configureStatusThread();
+}
+
+void SDRBlock::forwardStatusLoop(void)
+{
+    int ret = 0;
+    size_t chanMask = 0;
+    int flags = 0;
+    long long timeNs = 0;
+
+        std::cout << "forwardStatusLoop thread\n";
+    while (this->isActive() and _enableStatus)
+    {
+        ret = _device->readStreamStatus(_stream, chanMask, flags, timeNs);
+        if (ret == SOAPY_SDR_TIMEOUT) continue;
+
+        Pothos::ObjectKwargs status;
+        status["ret"] = Pothos::Object(ret);
+        status["chanMask"] = Pothos::Object(chanMask);
+        status["flags"] = Pothos::Object(flags);
+        status["timeNs"] = Pothos::Object(timeNs);
+
+        //emit the status signal
+        this->callVoid("status", status);
+
+        //exit the thread if stream status is not supported
+        //but only after reporting this to "status" signal
+        if (ret == SOAPY_SDR_NOT_SUPPORTED) return;
+    }
+        std::cout << " DONE forwardStatusLoop thread\n";
+}
+
+void SDRBlock::configureStatusThread(void)
+{
+        std::cout << "configureStatusThread\n";
+    //ensure thread is running
+    if (this->isActive() and _enableStatus)
+    {
+        if (_statusMonitor.joinable()) return;
+        std::cout << "_statusMonitor START thread\n";
+        _statusMonitor = std::thread(&SDRBlock::forwardStatusLoop, this);
+    }
+
+    //ensure thread is stopped
+    else
+    {
+        if (not _statusMonitor.joinable()) return;
+        std::cout << "_statusMonitor STOP thread\n";
+        _statusMonitor.join();
+    }
 }
 
 /*******************************************************************
@@ -776,10 +840,16 @@ void SDRBlock::activate(void)
     }
 
     this->emitActivationSignals();
+
+    //status forwarder start
+    this->configureStatusThread();
 }
 
 void SDRBlock::deactivate(void)
 {
+    //status forwarder shutdown
+    this->configureStatusThread();
+
     const int ret = _device->deactivateStream(_stream);
     if (ret != 0) throw Pothos::Exception("SDRBlock::activate()", "deactivateStream returned " + std::to_string(ret));
 }
