@@ -61,12 +61,11 @@ struct PothosPacketSocketEndpointInterfaceTcp : PothosPacketSocketEndpointInterf
     {
         if (server)
         {
-            this->serverSock.bind(addr);
-            this->serverSock.listen(1/*only one client expected*/);
+            this->serverSock = Poco::Net::ServerSocket(addr, 1/*only one client expected*/);
         }
         else
         {
-            this->clientSock.connect(addr);
+            this->clientSock = Poco::Net::StreamSocket(addr);
             this->clientSock.setNoDelay(true);
             this->connected = true;
         }
@@ -158,7 +157,7 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
     {
         if (server)
         {
-            this->serverSock = makeSocket();
+            this->serverSock = makeSocket(addr.af());
             if (UDT::ERROR == UDT::bind(this->serverSock, addr.addr(), addr.length()))
             {
                 throw Pothos::RuntimeException("UDT::bind("+addr.toString()+")", UDT::getlasterror().getErrorMessage());
@@ -167,7 +166,7 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
         }
         else
         {
-            this->clientSock = makeSocket();
+            this->clientSock = makeSocket(addr.af());
             if (UDT::ERROR == UDT::connect(this->clientSock, addr.addr(), addr.length()))
             {
                 throw Pothos::RuntimeException("UDT::connect("+addr.toString()+")", UDT::getlasterror().getErrorMessage());
@@ -176,9 +175,9 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
         }
     }
 
-    static UDTSOCKET makeSocket(void)
+    static UDTSOCKET makeSocket(const int af)
     {
-        UDTSOCKET sock = UDT::socket(AF_INET, SOCK_STREAM, 0);
+        UDTSOCKET sock = UDT::socket(af, SOCK_STREAM, 0);
         //Arbitrary buffer size limit in OSX that must be set on the socket,
         //or UDT will try to set one that is too large and fail bind/connect.
         #if POCO_OS == POCO_OS_MAC_OS_X
