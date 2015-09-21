@@ -118,6 +118,18 @@
  * |tab Streaming
  * |preview disable
  *
+ * |param enableStatus[Enable Status] Enable reading stream status messages.
+ * Stream status messages will be read from the device and forwarded to the "status" event signal.
+ * Both receive and transmit streams are capable of producing stream status messages,
+ * however the specifics are hardware dependent.
+ * Typically, users will enable stream status on the sink block
+ * to catch underflow and time error indications.
+ * |default false
+ * |option [On] true
+ * |option [Off] false
+ * |tab Streaming
+ * |preview valid
+ *
  * |param frontendMap[Frontend map] Specify the mapping of stream channels to RF frontends.
  * The format of the mapping is implementation-specific.
  * |default ""
@@ -238,4 +250,5 @@
  * |setter setClockSource(clockSource)
  * |setter setTimeSource(timeSource)
  * |setter setGpioConfig(gpioConfig)
+ * |setter setEnableStatus(enableStatus)
  **********************************************************************/

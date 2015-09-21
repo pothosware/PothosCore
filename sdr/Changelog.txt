@@ -3,6 +3,7 @@ This this the changelog file for the Pothos SDR toolkit.
 Release 0.3.0 (pending)
 ==========================
 
+- Added report stream status forwarding to signal
 - Added support for GPIO bank config and readback
 - Added support for per-channel sensors querying
 
