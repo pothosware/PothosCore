@@ -24,7 +24,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     if(HAS_STD_CXX11)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     else(HAS_STD_CXX11)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std-c++0x")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
     endif()
 
     #force a compile-time error when symbols are missing
