@@ -8,6 +8,11 @@
 #ifdef HAVE_LIBNUMA
 #include <numa.h>
 #endif
+#include <cerrno> //errno
+
+#ifdef __APPLE__
+#include <thread>
+#endif
 
 std::string ThreadEnvironment::setPriority(const double prio)
 {
@@ -25,13 +30,21 @@ std::string ThreadEnvironment::setPriority(const double prio)
     struct sched_param param;
     std::memset(&param, 0, sizeof(param));
     param.sched_priority = minPrio + int(prio * (maxPrio-minPrio));
+    #ifdef __APPLE__
+    if (pthread_setschedparam(pthread_self(), policy, &param) != 0) return strerror(errno);
+    #else
     if (sched_setscheduler(0, policy, &param) != 0) return strerror(errno);
+    #endif
 
     return "";
 }
 
 std::string ThreadEnvironment::setCPUAffinity(const std::vector<size_t> &affinity)
 {
+    #ifdef __APPLE__
+    return "sched_setaffinity() not available";
+    #else
+
     //create cpu bit set
     cpu_set_t *cpusetp = CPU_ALLOC(Poco::Environment::processorCount());
     if (cpusetp == nullptr) return "CPU_ALLOC";
@@ -48,6 +61,7 @@ std::string ThreadEnvironment::setCPUAffinity(const std::vector<size_t> &affinit
     CPU_FREE(cpusetp);
 
     return errorMsg;
+    #endif
 }
 
 std::string ThreadEnvironment::setNodeAffinity(const std::vector<size_t> &affinity)
