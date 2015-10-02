@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.2.2 (pending)
 ==========================
 
+- Buffer accumulator pop all front-most consumed buffers
 - Fixed Buffer manager reuse on small consume logic
 - Fixed Pothos Util doc parse bug in use of seekg()
 
