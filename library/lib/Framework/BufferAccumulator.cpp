@@ -180,6 +180,9 @@ void Pothos::BufferAccumulator::pop(const size_t numBytes)
     //clear the pool buffer state when the queue size shrinks
     if (_impl->inPoolBuffer and queueSize != queue.size()) _impl->inPoolBuffer = false;
 
+    //pop all of the front-most consumed buffers
+    while (not queue.empty() and queue.front().length == 0) queue.pop_front();
+
     //never let the queue become empty -- hold an empty buffer
     if (queue.empty()) queue.push_front(BufferChunk());
 }
