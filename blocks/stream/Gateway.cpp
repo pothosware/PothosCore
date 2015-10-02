@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
@@ -49,8 +49,9 @@ public:
         _backupMode = false;
         _dropMode = false;
         if (mode == "FORWARD") _forwardMode = true;
-        if (mode == "BACKUP") _backupMode = true;
-        if (mode == "DROP") _dropMode = true;
+        else if (mode == "BACKUP") _backupMode = true;
+        else if (mode == "DROP") _dropMode = true;
+        else throw Pothos::InvalidArgumentException("Gateway::setMode("+mode+")", "unknown mode");
     }
 
     std::string getMode(void) const
