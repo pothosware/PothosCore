@@ -17,6 +17,7 @@ add_feature_info(Comms ENABLE_COMMS "A collection of DSP/communications blocks")
 ########################################################################
 # Build subdirectories
 ########################################################################
+add_subdirectory(demod)
 add_subdirectory(digital)
 add_subdirectory(fft)
 add_subdirectory(filter)
