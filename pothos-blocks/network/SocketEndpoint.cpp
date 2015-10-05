@@ -691,13 +691,13 @@ void PothosPacketSocketEndpoint::Impl::recv(uint16_t &flags, uint16_t &type, Pot
     if ((flags & PothosPacketFlagFlo) != 0 and buffer.length >= sizeof(uint64_t))
     {
         const uint64_t totalN = buffer.as<const uint64_t *>()[0];
-        this->lastFlowMsgRecv = Poco::ByteOrder::fromNetwork(totalN);
+        this->lastFlowMsgRecv = Poco::ByteOrder::fromNetwork(Poco::UInt64(totalN));
     }
 
     //deal with flow control (outgoing)
     if (this->totalBytesRecv > this->lastFlowMsgSent + this->flowControlWindowBytes()/8)
     {
-        const uint64_t totalN = Poco::ByteOrder::toNetwork(this->totalBytesRecv);
+        const uint64_t totalN = Poco::ByteOrder::toNetwork(Poco::UInt64(this->totalBytesRecv));
         this->send(PothosPacketFlagFlo, 0, &totalN, sizeof(totalN));
         this->lastFlowMsgSent = this->totalBytesRecv;
     }
