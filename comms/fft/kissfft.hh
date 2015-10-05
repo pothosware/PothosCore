@@ -3,6 +3,10 @@
 #include <complex>
 #include <vector>
 
+#ifdef HAS_ALLOCA_H
+#include <alloca.h>
+#endif //HAS_ALLOCA_H
+
 namespace kissfft_utils {
 
 template <typename T_scalar>
@@ -265,7 +269,7 @@ class kissfft
             cpx_type * twiddles = &_twiddles[0];
             cpx_type t;
             int Norig = _nfft;
-            #ifdef _MSC_VER
+            #if defined(_MSC_VER) || defined(HAS_ALLOCA_H)
             cpx_type *scratchbuf = (cpx_type *)alloca(p*sizeof(cpx_type));
             #else
             cpx_type scratchbuf[p];

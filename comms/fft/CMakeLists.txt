@@ -19,6 +19,12 @@ endif()
 #add_definitions(-DFIXED_POINT=32)
 add_definitions(-DFIXED_POINT=16)
 
+include(CheckIncludeFiles)
+CHECK_INCLUDE_FILES(alloca.h HAS_ALLOCA_H)
+if(HAS_ALLOCA_H)
+    add_definitions(-DHAS_ALLOCA_H)
+endif(HAS_ALLOCA_H)
+
 POTHOS_MODULE_UTIL(
     TARGET FFTBlocks
     SOURCES
