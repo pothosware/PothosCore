@@ -85,7 +85,7 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
 
     //connect to the remote host and spawn a server
     auto serverEnv = Pothos::RemoteClient(hostUri).makeEnvironment("managed");
-    auto serverHandle = serverEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://[::]", false/*noclose*/);
+    auto serverHandle = serverEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://[::1]", false/*noclose*/);
 
     //construct the uri for the new server
     auto actualPort = serverHandle.call<std::string>("getActualPort");
