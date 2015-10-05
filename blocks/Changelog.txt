@@ -10,6 +10,7 @@ Release 0.3.0 (pending)
 Release 0.2.2 (pending)
 ==========================
 
+- Type casts in SocketEndpoint for using 64-bit Poco::ByteOrder
 - Sporadic blocks replace generate_canonical because of MSVC bug
 
 Release 0.2.1 (2015-08-26)
