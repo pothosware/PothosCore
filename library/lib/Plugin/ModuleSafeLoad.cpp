@@ -19,7 +19,7 @@
 struct LoaderCacheNamedMutex : Poco::NamedMutex
 {
     LoaderCacheNamedMutex(void):
-        Poco::NamedMutex("pothos_loader_cache_mutex")
+        Poco::NamedMutex("pothos_load_cache")
     {}
 };
 

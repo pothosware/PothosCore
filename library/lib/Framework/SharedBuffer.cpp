@@ -40,7 +40,7 @@ Pothos::SharedBuffer::SharedBuffer(const size_t address, const size_t length, co
 struct CircBuffNamedMutex : Poco::NamedMutex
 {
     CircBuffNamedMutex(void):
-        Poco::NamedMutex("pothos_circular_buffer_mutex")
+        Poco::NamedMutex("pothos_circ_buff")
     {}
 };
 
