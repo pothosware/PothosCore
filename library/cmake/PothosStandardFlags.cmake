@@ -43,13 +43,10 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-
-    #C++11 is a required language feature for this project
-    #The stdlib flag setting supports c++11 library features.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-
-endif()
+#enable c++11 extensions for OSX
+if (APPLE)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wc++11-extensions")
+endif(APPLE)
 
 if(APPLE)
     #fixes issue with duplicate module registry when using application bundle

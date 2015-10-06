@@ -15,16 +15,6 @@ if (CMAKE_PREFIX_PATH)
 endif (CMAKE_PREFIX_PATH)
 
 ########################################################################
-# Clang required flag because only libc++ supports C++11.
-# Poco must be built with this flag when using clang.
-# Mixing versions of the stdlib would cause ABI errors.
-########################################################################
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    #The stdlib flag setting supports c++11 library features.
-    set(CMAKE_CXX_FLAGS "-stdlib=libc++")
-endif()
-
-########################################################################
 # POCO dependency - search for Poco or build if not found
 ########################################################################
 include(${Pothos_DIR}/SetupPoco.cmake)
