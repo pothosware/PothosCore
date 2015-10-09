@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.3.0 (pending)
 ==========================
 
+- Use requestTermination in server and fix destructor throw
 - RemoteProxyEnvironment reply cache check without blocking
 - Bumped API number to "0.3-0" for serialization changes
 - Re-implement RPC datagram format with embedded length

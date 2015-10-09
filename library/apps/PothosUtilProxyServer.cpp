@@ -44,8 +44,8 @@ public:
         _numConnections--;
         if (_numConnections == 0 and _requireActive)
         {
-            std::cerr << "Proxy server: No active connections - killing server" << std::endl;
-            Poco::Process::kill(Poco::Process::id());
+            std::cerr << "Proxy server: No active connections - terminating" << std::endl;
+            Poco::Process::requestTermination(Poco::Process::id());
         }
     }
 

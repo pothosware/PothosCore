@@ -31,7 +31,7 @@ struct Pothos::RemoteServer::Impl
     ~Impl(void)
     {
         client = RemoteClient(); //reset
-        Poco::Process::kill(ph);
+        Poco::Process::requestTermination(ph.id());
         outPipe.close();
         errPipe.close();
         if (outThread.joinable()) outThread.join();
