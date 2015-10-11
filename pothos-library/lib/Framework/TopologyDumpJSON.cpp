@@ -173,6 +173,7 @@ static bool flattenDump(Poco::JSON::Object::Ptr &topObj)
     }
 
     //set new flat data into the top object
+    topObj = new Poco::JSON::Object();
     topObj->set("blocks", flatBlocksObj);
     topObj->set("connections", flatConnsArray);
     return hierFound;
