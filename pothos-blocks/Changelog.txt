@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.2.2 (pending)
 ==========================
 
+- Fix undefined usage of std::polar() in FIR taps generator
 - Type casts in SocketEndpoint for using 64-bit Poco::ByteOrder
 - Sporadic blocks replace generate_canonical because of MSVC bug
 
