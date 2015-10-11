@@ -31,6 +31,13 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     _actionMap(getActionMap()),
     _menuMap(getMenuMap())
 {
+    #ifdef __APPLE__
+    //enable the menu bar - since its not showing up as the global menu
+    this->menuBar()->setNativeMenuBar(false);
+    //enable the title bar - otherwise its invisible
+    this->setUnifiedTitleAndToolBarOnMac(true);
+    #endif //__APPLE__
+
     postStatusMessage(tr("Creating main window..."));
     getObjectMap()["mainWindow"] = this;
 
