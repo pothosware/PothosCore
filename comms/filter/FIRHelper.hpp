@@ -160,7 +160,7 @@ static inline std::vector<std::complex<double>> _toComplexTaps(const std::vector
 
     for (size_t n = 0; n < taps.size(); n++)
     {
-        complexTaps[n] = std::polar(taps[n], n*lambda);
+        complexTaps[n] = taps[n]*std::polar(1.0, n*lambda);
     }
 
     return complexTaps;
