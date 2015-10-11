@@ -8,6 +8,7 @@
 #include <QMap>
 #include <QIcon>
 
+class QWidget;
 class QAction;
 class QMenu;
 class QSplashScreen;
