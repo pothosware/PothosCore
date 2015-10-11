@@ -39,7 +39,9 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 ########################################################################
 if (POTHOS_IN_TREE_SOURCE_DIR)
 
-    set(POTHOS_ROOT ${CMAKE_INSTALL_PREFIX})
+    if(NOT POTHOS_ROOT)
+        set(POTHOS_ROOT ${CMAKE_INSTALL_PREFIX})
+    endif(NOT POTHOS_ROOT)
 
     list(APPEND Pothos_LIBRARIES
         Pothos

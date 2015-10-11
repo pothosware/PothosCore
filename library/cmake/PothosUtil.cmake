@@ -87,6 +87,8 @@ function(POTHOS_MODULE_UTIL)
 
     #determine user-specified or automatic install prefix
     if (MODULE_PREFIX)
+    elseif (POTHOS_IN_TREE_SOURCE_DIR)
+        set(MODULE_PREFIX ${CMAKE_INSTALL_PREFIX})
     elseif ("${POTHOS_ROOT}" STREQUAL "/usr")
         set(MODULE_PREFIX ${CMAKE_INSTALL_PREFIX})
     else()
