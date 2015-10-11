@@ -7,6 +7,7 @@
 #include <Poco/SingletonHolder.h>
 #include <QSplashScreen>
 #include <QApplication>
+#include <QFormLayout>
 
 QMap<QString, QAction *> &getActionMap(void)
 {
@@ -67,4 +68,14 @@ QSplashScreen *getSplashScreen(void)
         splash = new QSplashScreen(pixmap);
     }
     return splash;
+}
+
+QFormLayout *makeFormLayout(QWidget *parent)
+{
+    auto layout = new QFormLayout(parent);
+    layout->setRowWrapPolicy(QFormLayout::DontWrapRows);
+    layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    layout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
+    layout->setLabelAlignment(Qt::AlignLeft);
+    return layout;
 }

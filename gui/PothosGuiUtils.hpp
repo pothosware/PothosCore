@@ -11,6 +11,7 @@
 class QAction;
 class QMenu;
 class QSplashScreen;
+class QFormLayout;
 
 //! global settings
 QSettings &getSettings(void);
@@ -29,3 +30,6 @@ void postStatusMessage(const QString &msg);
 
 //! get global splash screen
 QSplashScreen *getSplashScreen(void);
+
+//! make a form layout with consistent style across platforms
+QFormLayout *makeFormLayout(QWidget *parent = nullptr);

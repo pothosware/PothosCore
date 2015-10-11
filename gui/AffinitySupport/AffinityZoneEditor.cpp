@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //node uris
@@ -37,7 +37,7 @@ AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
     this->setStyleSheet("QGroupBox{font-weight: bold;}");
 
     //setup layout
-    auto formLayout = new QFormLayout(this);
+    auto formLayout = makeFormLayout(this);
     this->setLayout(formLayout);
 
     //color picker

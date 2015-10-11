@@ -45,7 +45,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     auto blockDesc = block->getBlockDesc();
 
     //master layout for this widget
-    _formLayout = new QFormLayout(this);
+    _formLayout = makeFormLayout(this);
 
     //title
     {
@@ -73,7 +73,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         const auto tabName = _block->getParamDesc(propKey)->optValue<std::string>("tab", "");
         if (_paramLayouts.count(tabName) != 0) continue;
         auto tab = new QWidget(propertiesTabs);
-        _paramLayouts[tabName] = new QFormLayout(tab);
+        _paramLayouts[tabName] = makeFormLayout(tab);
         propertiesTabs->addTab(tab, tabName.empty()? tr("Default") : QString::fromStdString(tabName));
     }
 

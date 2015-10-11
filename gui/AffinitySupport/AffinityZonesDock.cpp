@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //make icon theme
@@ -38,6 +38,7 @@ AffinityZonesDock::AffinityZonesDock(QWidget *parent):
     //editors area
     {
         mainLayout->addWidget(_editorsTabs);
+        _editorsTabs->setDocumentMode(true);
         _editorsTabs->setTabsClosable(true);
         _editorsTabs->setMovable(true);
         _editorsTabs->setUsesScrollButtons(true);

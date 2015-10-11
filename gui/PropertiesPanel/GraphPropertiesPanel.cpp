@@ -23,9 +23,9 @@
 GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent):
     QWidget(parent),
     _graphEditor(editor),
-    _formLayout(new QFormLayout(this)),
+    _formLayout(makeFormLayout(this)),
     _varNameEntry(new QLineEdit(this)),
-    _varsFormLayout(new QFormLayout()),
+    _varsFormLayout(makeFormLayout()),
     _varsAddButton(new QToolButton(this)),
     _varsRemoveButton(new QToolButton(this)),
     _varsMoveUpButton(new QToolButton(this)),
