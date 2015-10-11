@@ -43,6 +43,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     _evalEngine(new EvalEngine(this)),
     _isTopologyActive(false)
 {
+    this->setDocumentMode(true);
     this->setMovable(true);
     this->setUsesScrollButtons(true);
     this->setTabPosition(QTabWidget::West);
