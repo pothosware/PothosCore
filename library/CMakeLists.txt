@@ -28,6 +28,13 @@ endif()
 
 set(POTHOS_VERSION "${POTHOS_LIBVER}-${POTHOS_EXTVER}")
 
+#POTHOS_ROOT is compiled into the library to locate the install base.
+#By default, the POTHOS_ROOT is set to the CMAKE_INSTALL_PREFIX.
+#However users may overload this by specifying -DPOTHOS_ROOT=<path>.
+if(NOT POTHOS_ROOT)
+    file(TO_CMAKE_PATH ${CMAKE_INSTALL_PREFIX} POTHOS_ROOT)
+endif(NOT POTHOS_ROOT)
+
 ########################################################################
 ## Feature registration
 ########################################################################
