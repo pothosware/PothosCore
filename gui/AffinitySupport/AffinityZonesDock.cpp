@@ -38,7 +38,6 @@ AffinityZonesDock::AffinityZonesDock(QWidget *parent):
     //editors area
     {
         mainLayout->addWidget(_editorsTabs);
-        _editorsTabs->setDocumentMode(true);
         _editorsTabs->setTabsClosable(true);
         _editorsTabs->setMovable(true);
         _editorsTabs->setUsesScrollButtons(true);
