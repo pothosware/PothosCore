@@ -235,6 +235,16 @@ endforeach(source)
 set(POTHOS_SOURCES ${__POTHOS_SOURCES})
 
 ########################################################################
+# Extract SOVERSION
+########################################################################
+file(READ "${PROJECT_SOURCE_DIR}/include/Pothos/System/Version.hpp" version_hpp)
+string(REGEX MATCH "\\#define POTHOS_ABI_VERSION \"([0-9]+\\.[0-9]+-[0-9]+)\"" POTHOS_ABI_VERSION_MATCHES "${version_hpp}")
+if(NOT POTHOS_ABI_VERSION_MATCHES)
+    message(FATAL_ERROR "Failed to extract version number from Version.hpp")
+endif(NOT POTHOS_ABI_VERSION_MATCHES)
+set(POTHOS_SOVER "${CMAKE_MATCH_1}")
+
+########################################################################
 # Build library
 ########################################################################
 if(MSVC)
@@ -244,6 +254,7 @@ endif(MSVC)
 add_library(Pothos SHARED ${POTHOS_SOURCES})
 list(REMOVE_ITEM Pothos_LIBRARIES Pothos) #cant link to self
 target_link_libraries(Pothos ${Pothos_LIBRARIES})
+set_target_properties(Pothos PROPERTIES SOVERSION ${POTHOS_SOVER})
 set_target_properties(Pothos PROPERTIES VERSION ${POTHOS_LIBVER})
 set_target_properties(Pothos PROPERTIES DEFINE_SYMBOL "POTHOS_DLL_EXPORTS")
 
