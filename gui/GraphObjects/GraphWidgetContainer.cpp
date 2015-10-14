@@ -19,7 +19,9 @@ public:
     MySizeGrip(QWidget *parent):
         QSizeGrip(parent)
     {
-        return;
+        #ifdef __APPLE__
+        this->setFixedSize(10,10);
+        #endif //__APPLE__
     }
 
 signals:
