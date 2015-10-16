@@ -8,7 +8,7 @@
   |  Y Y  \  |  /    |     / __ \|  | \/\___ \\  ___/|  | \/     \ 
   |__|_|  /____/|____|    (____  /__|  /____  >\___  >__| /___/\  \
         \/                     \/           \/     \/           \_/
-                                       Copyright (C) 2013 Ingo Berg
+                                       Copyright (C) 2015 Ingo Berg
                                        All rights reserved.
 
   muParserX - A C++ math parser library with array and string support
@@ -62,7 +62,7 @@
 #endif
 
 /** \brief A macro containing the version of muParserX. */
-#define MUP_PARSER_VERSION _T("3.0.5 (2015-03-22; release version)")
+#define MUP_PARSER_VERSION _T("4.0.1 (2015-10-15)")
 
 /** \brief A macro for setting the parser namespace. */
 #define MUP_NAMESPACE_START namespace mup {
@@ -73,7 +73,7 @@
 /** \brief Floating point type used by the parser. */
 #define MUP_FLOAT_TYPE double
 
-#define MUP_INT_TYPE int 
+#define MUP_INT_TYPE int
 
 /** \brief Verifies whether a given condition is met.
 	
@@ -86,8 +86,8 @@
         {                                         \
         stringstream_type ss;                     \
         ss << _T("Assertion \"") _T(#COND) _T("\" failed: ") \
-            << __FILE__ << _T(" line ")           \
-            << __LINE__ << _T(".");               \
+           << __FILE__ << _T(" line ")           \
+           << __LINE__ << _T(".");               \
         throw ParserError( ss.str() );            \
         }
 

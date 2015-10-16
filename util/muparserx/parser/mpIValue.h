@@ -70,7 +70,7 @@ MUP_NAMESPACE_START
     virtual IValue* AsIValue();
     virtual Value* AsValue() = 0;
 
-    virtual IValue& operator=(int_type val) = 0;
+//    virtual IValue& operator=(int_type val) = 0;
     virtual IValue& operator=(float_type val) = 0;
     virtual IValue& operator=(string_type val) = 0;
     virtual IValue& operator=(bool_type val) = 0;

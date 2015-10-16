@@ -45,7 +45,7 @@ MUP_NAMESPACE_START
 
     /** \brief Test cases for unit testing the parser framework.
 
-      (C) 2014 Ingo Berg
+      (C) 2015 Ingo Berg
     */
     class ParserTester // final
     {
@@ -67,6 +67,7 @@ MUP_NAMESPACE_START
         int TestComplex();
         int TestScript();
 		int TestValReader();
+        int TestIssueReports();
 
         void Assessment(int a_iNumErr) const;
         void Abort() const;

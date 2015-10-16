@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Util toolkit.
 Release 0.3.0 (pending)
 ==========================
 
+- Updated internal copy of muparserx to v4.0.1
 - Moved windowing functions into communications toolkit
 
 Release 0.2.1 (pending)

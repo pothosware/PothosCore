@@ -502,7 +502,7 @@ MUP_NAMESPACE_START
                 if (m_nSynFlags & noIO)
                   throw ecUNEXPECTED_SQR_BRACKET;
 
-                m_nSynFlags  = noIC | noIO | noOPT | noPFX | noBC | noNEWLINE | noCBC;
+                m_nSynFlags  = noIC | noIO | noOPT | noPFX | noBC | noNEWLINE | noCBC | noCOMMA;
                 m_nNumIndex++;
                 a_Tok = ptr_tok_type(new GenericToken((ECmdCode)i, pOprtDef[i]));
                 break;
@@ -524,7 +524,7 @@ MUP_NAMESPACE_START
 			  if (m_nSynFlags & noVAL)
 				  throw ecUNEXPECTED_CURLY_BRACKET;
 
-              m_nSynFlags = noCBC | noIC | noIO | noOPT | noPFX | noBC | noNEWLINE;
+              m_nSynFlags = noCBC | noIC | noIO | noOPT | noPFX | noBC | noNEWLINE | noCOMMA;
 			  m_nNumCurly++;
 			  a_Tok = ptr_tok_type(new GenericToken((ECmdCode)i, pOprtDef[i]));
 			  break;
@@ -574,25 +574,23 @@ MUP_NAMESPACE_START
     bool bRet(false);
     try
     {
-      // <ibg 2014-05-24/> added semicolon; only for test purposes! will be removed again!
-      if (m_sExpr[m_nPos] == '\n' /*|| m_sExpr[m_nPos] == ';'*/)
-      // </ibg>
+      if (m_sExpr[m_nPos] == '\n')
       {
         // Check if all brackets were closed
         if ( m_nSynFlags & noNEWLINE )
-          throw ecUNEXPECTED_NEWLINE;
+            throw ecUNEXPECTED_NEWLINE;
 
         if (m_nNumBra>0)
-          throw ecMISSING_PARENS;
+            throw ecMISSING_PARENS;
 
         if (m_nNumIndex>0)
-          throw ecMISSING_SQR_BRACKET;
+            throw ecMISSING_SQR_BRACKET;
 
 		if (m_nNumCurly>0)
 			throw ecMISSING_CURLY_BRACKET;
 		
 		if (m_nNumIfElse>0)
-          throw(ecMISSING_ELSE_CLAUSE);
+            throw(ecMISSING_ELSE_CLAUSE);
 
         m_nPos++;
         m_nSynFlags = sfSTART_OF_LINE;
@@ -628,6 +626,9 @@ MUP_NAMESPACE_START
 
         if (m_nNumBra>0)
           throw ecMISSING_PARENS;
+
+        if (m_nNumCurly>0)
+            throw ecMISSING_CURLY_BRACKET;
 
         if (m_nNumIndex>0)
           throw ecMISSING_SQR_BRACKET;

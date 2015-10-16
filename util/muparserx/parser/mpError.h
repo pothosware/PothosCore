@@ -101,7 +101,7 @@ MUP_NAMESPACE_START
 
   //---------------------------------------------------------------------------
   /** \brief Error class of the parser. 
-      \author Ingo Berg
+      \author IngecMISSINGo Berg
 
     Part of the math parser package.
   */

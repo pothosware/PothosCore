@@ -62,7 +62,7 @@ MUP_NAMESPACE_START
 
     explicit Value(char_type cType = 'v');
 
-    Value(int_type val);
+//    Value(int_type val);
     Value(bool_type val);
     Value(float_type val);
     Value(string_type val);
@@ -83,7 +83,7 @@ MUP_NAMESPACE_START
     virtual IValue& At(int nRow, int nCol = 0);
     virtual IValue& At(const IValue &row, const IValue &col);
 
-    virtual IValue& operator=(int_type a_iVal);
+//    virtual IValue& operator=(int_type a_iVal);
     virtual IValue& operator=(float_type a_fVal);
     virtual IValue& operator=(string_type a_sVal);
     virtual IValue& operator=(bool val);
@@ -124,13 +124,10 @@ MUP_NAMESPACE_START
 
     cmplx_type   m_val;    ///< Member variable for storing the value of complex, float, int and boolean values
     string_type *m_psVal;  ///< Variable for storing a string value
-    matrix_type  *m_pvVal;  ///< A Vector for storing array variable content
+    matrix_type *m_pvVal;  ///< A Vector for storing array variable content
     char_type    m_cType;  ///< A byte indicating the type os the represented value
     EFlags       m_iFlags; ///< Additional flags
     ValueCache  *m_pCache; ///< Pointer to the Value Cache
-
-//    int m_nCols;    ///< Number of columns in this value (for matrices)
-//    int m_nRows;    ///< Number of Rows in this value (for matrices)
 
     void CheckType(char_type a_cType) const;
     void Assign(const Value &a_Val);

@@ -68,11 +68,14 @@ static Pothos::Object mupValueToObject(mup::IValue &val)
  **********************************************************************/
 static mup::Value objectToMupValue(const Pothos::Object &obj)
 {
+    //workaround: integer overload removed from mup::Value
+    #define mupValueInt(x) mup::Value(mup::float_type(x))
+
     //types that the parser library specifically typedefs
     if (obj.type() == typeid(mup::string_type)) return mup::Value(obj.extract<mup::string_type>());
     if (obj.type() == typeid(mup::float_type)) return mup::Value(obj.extract<mup::float_type>());
     if (obj.type() == typeid(mup::bool_type)) return mup::Value(obj.extract<mup::bool_type>());
-    if (obj.type() == typeid(mup::int_type)) return mup::Value(obj.extract<mup::int_type>());
+    if (obj.type() == typeid(mup::int_type)) return mupValueInt(obj.extract<mup::int_type>());
     if (obj.type() == typeid(mup::cmplx_type)) return mup::Value(obj.extract<mup::cmplx_type>());
 
     //other numeric types
@@ -82,7 +85,7 @@ static mup::Value objectToMupValue(const Pothos::Object &obj)
         if (dtype.isComplex()) return mup::Value(obj.convert<mup::cmplx_type>());
         if (dtype.isFloat()) return mup::Value(obj.convert<mup::float_type>());
         //types that fit into the parser's integer type, otherwise use floating point
-        if (dtype.size() <= sizeof(mup::int_type)) return mup::Value(obj.convert<mup::int_type>());
+        if (dtype.size() <= sizeof(mup::int_type)) return mupValueInt(obj.convert<mup::int_type>());
         else return mup::Value(obj.convert<mup::float_type>());
     }
     catch (...) {}

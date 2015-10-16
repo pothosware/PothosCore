@@ -197,7 +197,7 @@ MUP_NAMESPACE_START
         a_iPos += (int)(2 + nPos);
     }
 
-    a_val = (int)iVal;
+    a_val = (float_type)iVal;
     return true;
   }
 
@@ -244,7 +244,7 @@ MUP_NAMESPACE_START
     if (i>iBits)
       throw ParserError(_T("Binary to integer conversion error (overflow)."));
 
-    a_Val = (int)(iVal >> (iBits-i) );
+    a_Val = (float_type)((int)(iVal >> (iBits-i) ));
     a_iPos += i+2;
 
     return true;

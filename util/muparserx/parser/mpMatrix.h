@@ -248,7 +248,7 @@ MUP_NAMESPACE_START
         {
           for (int n=0; n<rhs.m_nCols; ++n)
           {
-            T buf = 0;
+            T buf = 0.0;
             for (int i=0; i<m_nCols; ++i)
             {
               buf += At(m, i) * rhs.At(i, n);
