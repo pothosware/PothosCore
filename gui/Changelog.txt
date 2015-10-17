@@ -13,6 +13,7 @@ Release 0.3.0 (pending)
 Release 0.2.2 (pending)
 ==========================
 
+- Fix empty signal slot connection to display text label
 - Fix QApplication exit error by giving QSettings a parent
 
 Release 0.2.1 (2015-08-26)
