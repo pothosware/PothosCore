@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos Java toolkit.
 
+Release 0.2.0 (pending)
+==========================
+
+- Added Java version check >= 1.7 for CMakeLists.txt
+
 Release 0.1.2 (pending)
 ==========================
 
