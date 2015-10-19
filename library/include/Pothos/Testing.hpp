@@ -36,23 +36,23 @@
  * \endcode
  */
 #define POTHOS_TEST_BLOCK(path, name) \
-struct name : Pothos::TestingBase \
-{ \
-    void runTestsImpl(void); \
-    void runTestsImpl_(void); \
-}; \
-pothos_static_block(name) \
-{ \
-    std::shared_ptr<Pothos::TestingBase> testObj(new name()); \
-    Pothos::PluginRegistry::add(Pothos::Plugin( \
-        Pothos::PluginPath(path).join(#name), Pothos::Object(testObj))); \
-} \
-void name::runTestsImpl(void) \
-{ \
-    POTHOS_TEST_CHECKPOINT(); \
-    this->runTestsImpl_(); \
-} \
-void name::runTestsImpl_(void)
+    POTHOS_STATIC_FIXTURE_DECL void name ## Runner(void); \
+    template <Pothos::Detail::InitFcn runner> \
+    struct name : Pothos::TestingBase \
+    { \
+        void runTestsImpl(void) \
+        { \
+            POTHOS_TEST_CHECKPOINT(); \
+            runner(); \
+        } \
+    }; \
+    pothos_static_block(name) \
+    { \
+        std::shared_ptr<Pothos::TestingBase> testObj(new name<name ## Runner>()); \
+        Pothos::PluginRegistry::add(Pothos::Plugin( \
+            Pothos::PluginPath(path).join(#name), Pothos::Object(testObj))); \
+    } \
+    POTHOS_STATIC_FIXTURE_DECL void name ## Runner(void)
 
 //! Checkpoint macro to track last successful line executed
 #define POTHOS_TEST_CHECKPOINT() \

@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.3.0 (pending)
 ==========================
 
+- Fixed text fixture symbol declaration for OSX
 - Set library SOVERSION using POTHOS_ABI_VERSION
 - Use requestTermination in server and fix destructor throw
 - RemoteProxyEnvironment reply cache check without blocking
