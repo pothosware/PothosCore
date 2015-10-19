@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2013 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "JavaProxy.hpp"
@@ -145,7 +145,7 @@ Pothos::Proxy JavaProxyHandle::call(const std::string &name, const Pothos::Proxy
             return self.callProxy("class").callProxy("getField", name.substr(colon+1)).callProxy("get", self);
         }
         else throw Pothos::ProxyHandleCallError(
-            "PythonProxyHandle::call("+name+")", "unknown operation");
+            "JavaProxyHandle::call("+name+")", "unknown operation");
     }
 
     /*******************************************************************
