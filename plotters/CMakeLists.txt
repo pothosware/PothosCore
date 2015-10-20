@@ -46,6 +46,11 @@ find_package(Qwt)
 
 add_definitions(-DQWT_DLL)
 
+if (QWT_FOUND AND NOT QWT_VERSION_STRING)
+    message(WARNING "Failed to extract QWT_VERSION_STRING from ${QWT_INCLUDE_DIRS} - using built-in Qwt")
+    set(QWT_FOUND FALSE)
+endif()
+
 if (QWT_FOUND)
     message(STATUS "QWT_VERSION_STRING: ${QWT_VERSION_STRING}")
     if (QWT_VERSION_STRING LESS "6.1")
