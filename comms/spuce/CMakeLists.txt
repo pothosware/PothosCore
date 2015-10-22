@@ -7,7 +7,6 @@ enable_language(CXX)
 
 # Add path to spuce to include path
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/..")
-add_definitions(" -fPIC  ")
 
 SET(FILT_SRCS  
 	filters/butterworth_iir.cpp
@@ -18,6 +17,5 @@ SET(FILT_SRCS
 	filters/iir_coeff.cpp
 )
 
-add_library(spucelib ${FILT_SRCS})
-
-	
+add_library(spucelib STATIC ${FILT_SRCS})
+set_property(TARGET spucelib PROPERTY POSITION_INDEPENDENT_CODE TRUE)
