@@ -1,5 +1,6 @@
 // Copyright (c) 2015 Tony Kirke. License MIT  (http://www.opensource.org/licenses/mit-license.php)
 //! \author Tony Kirke
+#define _USE_MATH_DEFINES
 #include <spuce/filters/elliptic_iir.h>
 #include <cmath>
 #include <cfloat>
