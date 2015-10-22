@@ -10,8 +10,7 @@ namespace spuce {
 //! \ingroup functions iir
 iir_coeff* design_iir(const std::string& iir_type, const std::string& filt_type,
 											int order, float_type fcd,
-                      float_type ripple = 0.1, float_type stopattn = 60,
-											float_type bw = 0.1) {
+                      float_type ripple = 0.1, float_type stopattn = 60) {
   iir_coeff* filt = new iir_coeff(order);
   if (filt_type == "LOW_PASS") {
     filt->set_type(filter_type::low);
@@ -26,7 +25,7 @@ iir_coeff* design_iir(const std::string& iir_type, const std::string& filt_type,
   } else if (iir_type == "chebyshev") {
     chebyshev_iir(*filt, fcd, ripple);
   } else if (iir_type == "elliptic") {
-    elliptic_iir(*filt, fcd, ripple, stopattn, bw);
+    elliptic_iir(*filt, fcd, ripple, stopattn);
   } else {
     std::cout << "Unknown iir type\n";
   }

@@ -56,17 +56,11 @@ using namespace spuce;
  * |default 0.1
  * |units dB
  *
- * |param freqUpper[Upper Freq] The upper transition frequency.
- * This parameter is only used for elliptic filters
- * |default 8000
- * |units Hz
- *
  * |factory /comms/iir_designer()
  * |setter setFilterType(type)
  * |setter setIIRType(iir)
  * |setter setSampleRate(sampRate)
  * |setter setFrequencyLower(freqLower)
- * |setter setFrequencyUpper(freqUpper)
  * |setter setOrder(order)
  * |setter setRipple(ripple)
  * |setter setStopBandAtten(stopBandAtten)
@@ -80,7 +74,6 @@ class IIRDesigner : public Pothos::Block {
         _IIRType("butterworth"),
         _sampRate(1.0),
         _freqLower(0.1),
-        _freqUpper(0.2),
         _stopBandAtten(0.1),
         _ripple(0.1),
         _order(4) {
@@ -93,8 +86,6 @@ class IIRDesigner : public Pothos::Block {
     this->registerCall(this, POTHOS_FCN_TUPLE(IIRDesigner, sampleRate));
     this->registerCall(this, POTHOS_FCN_TUPLE(IIRDesigner, setFrequencyLower));
     this->registerCall(this, POTHOS_FCN_TUPLE(IIRDesigner, frequencyLower));
-    this->registerCall(this, POTHOS_FCN_TUPLE(IIRDesigner, setFrequencyUpper));
-    this->registerCall(this, POTHOS_FCN_TUPLE(IIRDesigner, frequencyUpper));
     this->registerCall(this, POTHOS_FCN_TUPLE(IIRDesigner, setOrder));
     this->registerCall(this, POTHOS_FCN_TUPLE(IIRDesigner, order));
     this->registerCall(this, POTHOS_FCN_TUPLE(IIRDesigner, setRipple));
@@ -133,13 +124,6 @@ class IIRDesigner : public Pothos::Block {
 
   double frequencyLower(void) const { return _freqLower; }
 
-  void setFrequencyUpper(const double freq) {
-    _freqUpper = freq;
-    this->recalculate();
-  }
-
-  double frequencyUpper(void) const { return _freqUpper; }
-
   void setOrder(const size_t num) {
     _order = num;
     this->recalculate();
@@ -168,7 +152,6 @@ class IIRDesigner : public Pothos::Block {
   std::string _IIRType;
   double _sampRate;
   double _freqLower;
-  double _freqUpper;
   double _stopBandAtten;
   double _ripple;
   size_t _order;
@@ -182,17 +165,11 @@ void IIRDesigner::recalculate(void) {
   if (_sampRate <= 0) Pothos::Exception("IIRDesigner()", "sample rate must be positive");
   if (_freqLower <= 0) Pothos::Exception("IIRDesigner()", "lower frequency must be positive");
   if (_freqLower >= _sampRate / 2) Pothos::Exception("IIRDesigner()", "lower frequency Nyquist fail");
-  if (_filterType == "HIGH_PASS" || _filterType == "BAND_PASS" || _filterType == "BAND_STOP" ||
-      _filterType == "COMPLEX_BAND_PASS" || _filterType == "COMPLEX_BAND_STOP") {
-    if (_freqUpper <= 0) Pothos::Exception("IIRDesigner()", "upper frequency must be positive");
-    if (_freqUpper >= _sampRate / 2) Pothos::Exception("IIRDesigner()", "upper frequency Nyquist fail");
-    if (_freqUpper <= _freqLower) Pothos::Exception("IIRDesigner()", "upper frequency <= lower frequency");
-  }
 
   // generate the filter design
   iir_coeff* filt = design_iir(_IIRType, _filterType, _order,
 															 _freqLower/_sampRate, _ripple,
-															 _stopBandAtten, _freqUpper/_sampRate);
+															 _stopBandAtten);
 	if (filt == nullptr) {
 		throw Pothos::InvalidArgumentException("IIRDesigner(" + _filterType + "," + _IIRType + ")", "unknown filter or band type");
   }
@@ -201,7 +178,7 @@ void IIRDesigner::recalculate(void) {
 	std::vector<double> b = filt->get_b();
 	std::vector<double> a = filt->get_a();
 	// Group together feed forward and feed back taps into 1 vector for transferring to IIR filter
-	for (int i=0;i<a.size();i++) b.push_back(a[i]);
+	for (size_t i=0;i<a.size();i++) b.push_back(a[i]);
 
 	delete filt;
 	this->callVoid("tapsChanged", b);
