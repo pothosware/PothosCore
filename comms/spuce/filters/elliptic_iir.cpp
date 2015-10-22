@@ -6,14 +6,13 @@
 #define MACHEP 2.0 * FLT_MIN
 using namespace std;
 namespace spuce {
-void elliptic_iir(iir_coeff& filt, float_type fcd, float_type ripple, float_type stopattn, float_type bw) {
+void elliptic_iir(iir_coeff& filt, float_type fcd, float_type ripple, float_type stopattn) {
   float_type m1, m2;
   float_type a, m, Kk1, Kpk1, k, wr, fstp, Kk, u;
   const float_type ten = 10.0;
   auto order = filt.getOrder();
   float_type epi = pow(ten, (ripple / ten));
   epi = sqrt(epi - 1.0);
-	float_type fstop = fcd + bw;
   //! wca - pre-warped angular frequency
   float_type wca  = tan(M_PI * fcd);
   float_type wc  =  (filt.get_type()==filter_type::low) ? tan(M_PI * fcd) : tan(M_PI*(0.5-fcd));
@@ -38,7 +37,7 @@ void elliptic_iir(iir_coeff& filt, float_type fcd, float_type ripple, float_type
   k = 1.0 / wr;
   m = k * k;
   Kk = ellpk(m);
-  u = lamda_plane(k, m, order, epi);
+  u = lamda_plane(m, order, epi);
   s_plane(filt, order, u, m, k, Kk, wc);
 
   filt.bilinear();
@@ -48,7 +47,7 @@ void elliptic_iir(iir_coeff& filt, float_type fcd, float_type ripple, float_type
   if (!filt.isOdd()) filt.apply_gain(gain);
 }
 //! get roots in Lamda plane
-float_type lamda_plane(float_type k, float_type m, int n, float_type eps) {
+float_type lamda_plane(float_type m, int n, float_type eps) {
   float_type m1;
   float_type Kk;
   float_type Kpk;

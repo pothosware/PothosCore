@@ -12,28 +12,28 @@
 namespace spuce {
 std::vector<float_type> iir_coeff::get_a() const {
   std::vector<float_type> p;
-  for (int i = 0; i < a_tf.size(); i++) { p.push_back(a_tf[i]); }
+  for (size_t i = 0; i < a_tf.size(); i++) { p.push_back(a_tf[i]); }
   return p;
 }
 std::vector<float_type> iir_coeff::get_b() const {
   std::vector<float_type> p;
-  for (int i = 0; i < b_tf.size(); i++) { p.push_back(b_tf[i]); }
+  for (size_t i = 0; i < b_tf.size(); i++) { p.push_back(b_tf[i]); }
   return p;
 }
 void iir_coeff::print() const {
   std::cout << "A = {";
-  for (int i = 0; i < a_tf.size(); i++) { std::cout << a_tf[i] << " "; }
+  for (size_t i = 0; i < a_tf.size(); i++) { std::cout << a_tf[i] << " "; }
   std::cout << "}\n";
   std::cout << "B = {";
-  for (int i = 0; i < b_tf.size(); i++) { std::cout << b_tf[i] << " "; }
+  for (size_t i = 0; i < b_tf.size(); i++) { std::cout << b_tf[i] << " "; }
   std::cout << "}\n";
 }
 void iir_coeff::print_pz() const {
   std::cout << "zeros = {";
-  for (int i = 0; i < zeros.size(); i++) { std::cout << zeros[i] << " "; }
+  for (size_t i = 0; i < zeros.size(); i++) { std::cout << zeros[i] << " "; }
   std::cout << "}\n";
   std::cout << "poles = {";
-  for (int i = 0; i < poles.size(); i++) { std::cout << poles[i] << " "; }
+  for (size_t i = 0; i < poles.size(); i++) { std::cout << poles[i] << " "; }
   std::cout << "}\n";
   std::cout << "gain = " << getGain() << "\n";
 }
@@ -44,7 +44,7 @@ int iir_coeff::getOrder(void) const { return order; }
 int iir_coeff::getN2(void) const { return n2; }
 float_type iir_coeff::getGain(void) const { return gain; }
 void iir_coeff::apply_gain(float_type g) {
-    for (int i=0;i<b_tf.size();i++) {
+    for (size_t i=0;i<b_tf.size();i++) {
         b_tf[i] *= g;
     }
 }
@@ -82,7 +82,6 @@ void iir_coeff::convert_to_ab() {
   float_type hpf_z_gain = 0;
   float_type hpf_p_gain = 0;
   float_type z_gain = 0;
-  float_type p_gain = 0;
   gain = (float_type)1.0;
 
   z_root_to_ab(zeros);
@@ -92,7 +91,6 @@ void iir_coeff::convert_to_ab() {
   hpf_gain = 1.0;
 
   z_root_to_ab(poles);
-  p_gain = gain;
   hpf_p_gain = hpf_gain;
   gain /= z_gain;
   if (odd) gain *= 0.5 * (1.0 - real(poles[0]));

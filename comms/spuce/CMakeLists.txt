@@ -7,6 +7,7 @@ enable_language(CXX)
 
 # Add path to spuce to include path
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/..")
+add_definitions(" -fPIC  ")
 
 SET(FILT_SRCS  
 	filters/butterworth_iir.cpp
