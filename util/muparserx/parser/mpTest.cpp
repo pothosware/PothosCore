@@ -157,8 +157,31 @@ int ParserTester::TestIssueReports()
     iNumErr += ThrowTest(_T("0M[,1][0/1M[0M]M]"), ecUNEXPECTED_COMMA);
 
     // Github Issue 57:
-    iNumErr += ThrowTest(_T("{?{{{{:44"), ecMISSING_CURLY_BRACKET);
+    iNumErr += ThrowTest(_T("{?{{{{:44"), ecUNEXPECTED_CONDITIONAL);
 
+    // Github Issue 60
+    iNumErr += ThrowTest(_T("0<01?1=:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1<:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1>:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1-:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1-:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1-:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1-:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1-:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1+:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1*:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1/:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1&:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1<<:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("0<01?1>>:1"), ecMISPLACED_COLON);
+    iNumErr += ThrowTest(_T("{ ? 0 : 7m}-{7, -00007m}-{7M}"), ecUNEXPECTED_CONDITIONAL);
+    iNumErr += ThrowTest(_T("{ { { ? 2 }, 7:2 }*7m }"), ecUNEXPECTED_CONDITIONAL);
+
+    // Not too happy about the undefined code, but better than a crash of an assertion at runtime
+    iNumErr += ThrowTest(_T("{0<0?0,0:0<0}"), ecUNDEFINED);
+
+    // Github Issue 63
+    iNumErr += ThrowTest(_T("0<0-0--eye()"), ecINVALID_NUMBER_OF_PARAMETERS);
 
     Assessment(iNumErr);
     return iNumErr;
@@ -302,6 +325,10 @@ int ParserTester::TestMatrix()
     iNumErr += ThrowTest(_T("m1-va"), ecMATRIX_DIMENSION_MISMATCH);
     iNumErr += ThrowTest(_T("va*m1"), ecMATRIX_DIMENSION_MISMATCH);
     iNumErr += ThrowTest(_T("va+eye(2)"), ecMATRIX_DIMENSION_MISMATCH);
+
+    // Issue 63:
+    iNumErr += ThrowTest(_T("0-0-eye()"), ecINVALID_NUMBER_OF_PARAMETERS);
+
     iNumErr += ThrowTest(_T("m1[1]"), ecINDEX_DIMENSION);
     iNumErr += ThrowTest(_T("m1[1,2,3]"), ecINDEX_DIMENSION);
     iNumErr += ThrowTest(_T("va[1,2]"), ecINDEX_OUT_OF_BOUNDS); // va has 1 column, 3 rows -> the coulumn index is referencing the third column
@@ -327,8 +354,8 @@ int ParserTester::TestMatrix()
     // ones
     Value ones_3(3, 1.0);
     Value ones_3x3(3, 3, 1.0);
-    iNumErr += ThrowTest(_T("ones(1,2,3)"), ecEVAL);
-    iNumErr += ThrowTest(_T("ones()"), ecEVAL);
+    iNumErr += ThrowTest(_T("ones(1,2,3)"), ecINVALID_NUMBER_OF_PARAMETERS);
+    iNumErr += ThrowTest(_T("ones()"), ecINVALID_NUMBER_OF_PARAMETERS);
     iNumErr += EqnTest(_T("ones(1,1)"), 1.0, true);
     iNumErr += EqnTest(_T("ones(1)"), 1.0, true);
     iNumErr += EqnTest(_T("ones(3,3)"), ones_3x3, true);
@@ -341,12 +368,14 @@ int ParserTester::TestMatrix()
     iNumErr += EqnTest(_T("size(ones(3))"), size_3x3, true);  // check return value dimension
 
     // zeros
+    iNumErr += ThrowTest(_T("zeros()"), ecINVALID_NUMBER_OF_PARAMETERS);
     iNumErr += EqnTest(_T("size(zeros(3,3))"), size_3x3, true);  // check return value dimension
     iNumErr += EqnTest(_T("size(zeros(1,3))"), size_1x3, true);  // check return value dimension
     iNumErr += EqnTest(_T("size(zeros(3,1))"), size_3x1, true);  // check return value dimension
     iNumErr += EqnTest(_T("size(zeros(3))"), size_3x3, true);  // check return value dimension
 
     // eye
+    iNumErr += ThrowTest(_T("eye()"), ecINVALID_NUMBER_OF_PARAMETERS);
     iNumErr += EqnTest(_T("size(eye(3,3))"), size_3x3, true);  // check return value dimension
     iNumErr += EqnTest(_T("size(eye(1,3))"), size_1x3, true);  // check return value dimension
     iNumErr += EqnTest(_T("size(eye(3,1))"), size_3x1, true);  // check return value dimension
@@ -1097,7 +1126,7 @@ int ParserTester::TestIfElse()
     float_type a = 1;
 
     // Test error detection
-    iNumErr += ThrowTest(_T(": 2"), ecUNEXPECTED_CONDITIONAL);
+    iNumErr += ThrowTest(_T(": 2"), ecMISPLACED_COLON);
     iNumErr += ThrowTest(_T("? 1 : 2"), ecUNEXPECTED_CONDITIONAL);
     iNumErr += ThrowTest(_T("(a<b) ? (b<c) ? 1 : 2"), ecMISSING_ELSE_CLAUSE);
     iNumErr += ThrowTest(_T("(a<b) ? 1"), ecMISSING_ELSE_CLAUSE);

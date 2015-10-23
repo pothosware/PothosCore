@@ -29,9 +29,11 @@
 #                                                                       #
 #########################################################################
 
-V4.0.1 (20151015)
+V4.0.4 (20151015)
 -----------------
+
 Bugfixes:
+  - Issue 59, 60, 61, 63: Various segfaults/assertions for unexpected input        
   - Issue 55, 56, 57, 58: Various issued related to a failure to detect 
                           missing brackets.
 

@@ -52,7 +52,7 @@ OprtStrAdd::OprtStrAdd()
 //-----------------------------------------------------------------------------------------------
 void OprtStrAdd::Eval(ptr_val_type& ret, const ptr_val_type *arg, int argc)
 {
-    assert(argc == 2);
+    MUP_VERIFY(argc == 2);
     string_type a = arg[0]->GetString();
     string_type b = arg[1]->GetString();
     *ret = a + b;
@@ -251,7 +251,7 @@ OprtAnd::OprtAnd()
 //-----------------------------------------------------------------------------------------------
 void OprtAnd::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int num)
 {
-    assert(num == 2);
+    MUP_VERIFY(num == 2);
 
     if (!a_pArg[0]->IsScalar())
         throw ParserError(ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'i', 1));
@@ -296,7 +296,7 @@ OprtOr::OprtOr()
 //-----------------------------------------------------------------------------------------------
 void OprtOr::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int num)
 {
-    assert(num == 2);
+    MUP_VERIFY(num == 2);
 
     if (!a_pArg[0]->IsScalar())
         throw ParserError(ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'i', 1));
@@ -341,7 +341,7 @@ OprtLOr::OprtLOr(const char_type *szIdent)
 //-----------------------------------------------------------------------------------------------
 void OprtLOr::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int num)
 {
-    assert(num == 2);
+    MUP_VERIFY(num == 2);
     *ret = a_pArg[0]->GetBool() || a_pArg[1]->GetBool();
 }
 
@@ -370,7 +370,7 @@ OprtLAnd::OprtLAnd(const char_type *szIdent)
 //-----------------------------------------------------------------------------------------------
 void OprtLAnd::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int num)
 {
-    assert(num == 2);
+    MUP_VERIFY(num == 2);
     *ret = a_pArg[0]->GetBool() && a_pArg[1]->GetBool();
 }
 
@@ -399,7 +399,7 @@ OprtShl::OprtShl()
 //-----------------------------------------------------------------------------------------------
 void OprtShl::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int num)
 {
-    assert(num == 2);
+    MUP_VERIFY(num == 2);
 
     if (!a_pArg[0]->IsScalar())
         throw ParserError(ErrorContext(ecTYPE_CONFLICT_FUN, GetExprPos(), GetIdent(), a_pArg[0]->GetType(), 'i', 1));
@@ -457,7 +457,7 @@ OprtShr::OprtShr()
 //-----------------------------------------------------------
 void OprtShr::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int num)
 {
-    assert(num == 2);
+    MUP_VERIFY(num == 2);
 
     if (!a_pArg[0]->IsScalar())
         throw ParserError(ErrorContext(ecTYPE_CONFLICT_FUN, GetExprPos(), GetIdent(), a_pArg[0]->GetType(), 'i', 1));

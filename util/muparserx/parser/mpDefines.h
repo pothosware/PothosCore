@@ -62,7 +62,7 @@
 #endif
 
 /** \brief A macro containing the version of muParserX. */
-#define MUP_PARSER_VERSION _T("4.0.1 (2015-10-15)")
+#define MUP_PARSER_VERSION _T("4.0.4 (2015-10-17)")
 
 /** \brief A macro for setting the parser namespace. */
 #define MUP_NAMESPACE_START namespace mup {
@@ -81,14 +81,14 @@
   This macro is used for implementing asserts. Unlike MUP_ASSERT, MUP_VERIFY 
   will not be removed in release builds.
 */
-#define MUP_VERIFY(COND)                          \
-        if (!(COND))                              \
-        {                                         \
-        stringstream_type ss;                     \
+#define MUP_VERIFY(COND)                         \
+        if (!(COND))                             \
+        {                                        \
+        stringstream_type ss;                    \
         ss << _T("Assertion \"") _T(#COND) _T("\" failed: ") \
            << __FILE__ << _T(" line ")           \
            << __LINE__ << _T(".");               \
-        throw ParserError( ss.str() );            \
+        throw ParserError( ss.str() );           \
         }
 
 #if defined(_DEBUG)
@@ -100,11 +100,9 @@
           bool MSG=false;  \
           assert(MSG);
 
-  #define MUP_ASSERT MUP_VERIFY
   #define MUP_LEAKAGE_REPORT
 #else
   #define MUP_FAIL(MSG)
-  #define MUP_ASSERT(COND)
   #define MUP_TOK_CAST(TYPE, POINTER)  static_cast<TYPE>(POINTER);
 #endif
 

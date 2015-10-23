@@ -622,28 +622,6 @@ int_type Value::GetInteger() const
 //---------------------------------------------------------------------------
 float_type Value::GetFloat() const
 {
-    /*
-        if (!IsScalar() && m_cType!='b')
-        {
-        ErrorContext err;
-        err.Errc  = ecTYPE_CONFLICT;
-        err.Type1 = m_cType;
-        err.Type2 = 'c';
-
-        if (GetIdent().length())
-        {
-        err.Ident = GetIdent();
-        }
-        else
-        {
-        stringstream_type ss;
-        ss << *this;
-        err.Ident = ss.str();
-        }
-
-        throw ParserError(err);
-        }
-        */
     return m_val.real();
 }
 

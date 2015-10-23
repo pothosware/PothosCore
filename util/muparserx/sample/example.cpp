@@ -881,7 +881,7 @@ void Calc()
 
       if (sLine==_T("dbg"))
       {
-        sLine   = _T("2147483648");
+        sLine   = _T("{?{{{{:44");
         mup::console() << sLine << endl;
       }
 

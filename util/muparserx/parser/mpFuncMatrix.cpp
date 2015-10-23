@@ -68,7 +68,7 @@ FunMatrixOnes::~FunMatrixOnes()
 //-----------------------------------------------------------------------
 void FunMatrixOnes::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int argc)
 {
-    if (argc < 0 || argc>2)
+    if (argc < 1 || argc>2)
     {
         ErrorContext err;
         err.Errc = ecINVALID_NUMBER_OF_PARAMETERS;
@@ -119,7 +119,7 @@ FunMatrixZeros::~FunMatrixZeros()
 //-----------------------------------------------------------------------
 void FunMatrixZeros::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int argc)
 {
-    if (argc < 0 || argc>2)
+    if (argc < 1 || argc>2)
     {
         ErrorContext err;
         err.Errc = ecINVALID_NUMBER_OF_PARAMETERS;
@@ -170,7 +170,7 @@ FunMatrixEye::~FunMatrixEye()
 //-----------------------------------------------------------------------
 void FunMatrixEye::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int argc)
 {
-    if (argc < 0 || argc>2)
+    if (argc < 1 || argc>2)
     {
         ErrorContext err;
         err.Errc = ecINVALID_NUMBER_OF_PARAMETERS;
