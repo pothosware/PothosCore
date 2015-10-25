@@ -71,11 +71,11 @@ MUP_NAMESPACE_START
     else if (tok->AsICallback())
     {
       ICallback *pFun = tok->AsICallback();
-      MUP_ASSERT(pFun);
+      MUP_VERIFY(pFun);
       m_nStackPos -= pFun->GetArgsPresent() - 1;
     }
 
-    MUP_ASSERT(m_nStackPos>=0);
+    MUP_VERIFY(m_nStackPos>=0);
     m_nMaxStackPos = std::max(m_nStackPos, m_nMaxStackPos);
   }
   

@@ -67,7 +67,7 @@ MUP_NAMESPACE_START
     virtual IValue& operator=(const Value &val);
     virtual IValue& operator=(const matrix_type &val);
     virtual IValue& operator=(const cmplx_type &val);
-    virtual IValue& operator=(int_type val);
+//    virtual IValue& operator=(int_type val);
     virtual IValue& operator=(float_type val);
     virtual IValue& operator=(string_type val);
     virtual IValue& operator=(bool_type val);

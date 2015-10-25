@@ -85,12 +85,12 @@ MUP_NAMESPACE_START
     return *this;
   }
 
-  //-----------------------------------------------------------------------------------------------
-  IValue& Variable::operator=(int_type val)
-  {
-    assert(m_pVal);
-    return m_pVal->operator=(val);
-  }
+  ////-----------------------------------------------------------------------------------------------
+  //IValue& Variable::operator=(int_type val)
+  //{
+  //  assert(m_pVal);
+  //  return m_pVal->operator=(val);
+  //}
 
   //-----------------------------------------------------------------------------------------------
   IValue& Variable::operator=(float_type val)

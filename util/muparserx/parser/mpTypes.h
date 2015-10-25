@@ -107,7 +107,7 @@ typedef std::complex<float_type> cmplx_type;
 
       This must be bool! The only reason for this typedef is that I need the name bool_type
       for a preprocessor macro definition to avoid inconsistent naming of the macro parameters.
-  */
+*/
 typedef bool bool_type;
 
 /** \brief The parsers underlying matrix type. */
@@ -119,9 +119,7 @@ typedef MUP_STRING_TYPE string_type;
 /** \brief Character type of the parser. */
 typedef string_type::value_type char_type;
 
-typedef std::basic_stringstream<char_type,
-std::char_traits<char_type>,
-std::allocator<char_type> > stringstream_type;
+typedef std::basic_stringstream<char_type, std::char_traits<char_type>, std::allocator<char_type> > stringstream_type;
 
 /** \brief Type of a vector holding pointers to value reader objects. */
 typedef std::vector<IValueReader*> readervec_type;
