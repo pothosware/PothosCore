@@ -1,5 +1,6 @@
 // Copyright (c) 2015 Tony Kirke. License MIT  (http://www.opensource.org/licenses/mit-license.php)
 //! \author Tony Kirke
+#define _USE_MATH_DEFINES
 #include <spuce/typedefs.h>
 #include <spuce/dsp_functions/fliplr.h>
 #include <spuce/dsp_functions/convolve.h>
@@ -35,18 +36,31 @@ void iir_coeff::print_pz() const {
   std::cout << "poles = {";
   for (size_t i = 0; i < poles.size(); i++) { std::cout << poles[i] << " "; }
   std::cout << "}\n";
-  std::cout << "gain = " << getGain() << "\n";
 }
 
 int iir_coeff::isOdd(void) const { return odd; }
 int iir_coeff::getOrder(void) const { return order; }
-	//int iir_coeff::getState(void) const { return state; }
+// int iir_coeff::getState(void) const { return state; }
 int iir_coeff::getN2(void) const { return n2; }
 float_type iir_coeff::getGain(void) const { return gain; }
 void iir_coeff::apply_gain(float_type g) {
-    for (size_t i=0;i<b_tf.size();i++) {
-        b_tf[i] *= g;
-    }
+  for (size_t i = 0; i < b_tf.size(); i++) { b_tf[i] *= g; }
+}
+// Doesn't change filter_type or center frequency, but loses all other info
+void iir_coeff::resize(long ord) {
+  order = ord;
+  gain = hpf_gain = 1.0;
+  n2 = (order + 1) / 2;
+  odd = (order % 2);
+  poles.resize(n2);
+  zeros.resize(n2);
+  a_tf.resize(ord + 1);
+  b_tf.resize(ord + 1);
+  for (int j = 0; j < n2; j++) {
+    poles[j] = std::complex<float_type>(0.0, 0.0);
+    zeros[j] = std::complex<float_type>(0.0, 0.0);
+  }
+  state = filter_state::s0;  // un-initialized
 }
 iir_coeff::iir_coeff(long ord, filter_type lp)
     : poles((ord + 1) / 2), zeros((ord + 1) / 2), a_tf(ord + 1), b_tf(ord + 1), lpf(lp) {
@@ -54,30 +68,95 @@ iir_coeff::iir_coeff(long ord, filter_type lp)
   order = ord;
   n2 = (order + 1) / 2;
   odd = (order % 2);
+  c0 = 0;  // Put at fs/4
   for (int j = 0; j < n2; j++) {
     poles[j] = std::complex<float_type>(0.0, 0.0);
     zeros[j] = std::complex<float_type>(0.0, 0.0);
   }
   state = filter_state::s0;  // un-initialized
-  //tf_state = 0;
-  //ap_state = 0;
+  // tf_state = 0;
+  // ap_state = 0;
 }
 //! Destructor
 iir_coeff::~iir_coeff() {}
 // bilinear
 void iir_coeff::bilinear() {
   hpf_gain = 1.0;
-  if (odd) {
-    hpf_gain = 1.0 + real(poles[0]);
-    zeros[0] = ((float_type)1.0 - zeros[0]) / ((float_type)1.0 + zeros[0]);
-    poles[0] = ((float_type)1.0 - poles[0]) / ((float_type)1.0 + poles[0]);
-  }
-  for (int j = odd; j < n2; j++) {
+  if (odd) hpf_gain = 1.0 + real(poles[0]);
+  for (int j = 0; j < n2; j++) {
     zeros[j] = ((float_type)1.0 - zeros[j]) / ((float_type)1.0 + zeros[j]);
     poles[j] = ((float_type)1.0 - poles[j]) / ((float_type)1.0 + poles[j]);
   }
   state = filter_state::s2;  // in Z-domain now!
 }
+void iir_coeff::set_bandpass_gain() {
+  float_type gain = freqz_mag(0.5 * M_PI - get_center());
+  apply_gain(1.0 / gain);
+}
+
+void iir_coeff::make_band(float_type c0) {
+  std::vector<std::complex<float_type> > old_poles;
+  std::vector<std::complex<float_type> > old_zeros;
+
+  for (int i = 0; i < poles.size(); i++) {
+    old_poles.push_back(poles[i]);
+    old_zeros.push_back(zeros[i]);
+  }
+
+  int was_odd = isOdd();
+
+  resize(2 * getOrder());
+
+  float q = -1;
+  // q should be 1 for bandpass,- 1 for bandstop
+  if (lpf == filter_type::bandpass) q = 1;
+
+  int k = 0;
+  // For Original odd order filters, skip the 1st pole/zero
+  for (int j = was_odd; j < was_odd + n2 / 2; j++) {
+    std::complex<float_type> pi = -old_poles[j];
+    std::complex<float_type> zi = -old_zeros[j];
+    std::complex<float_type> p0 = c0 * (1.0 + q * pi);
+    std::complex<float_type> z0 = c0 * (1.0 + q * zi);
+    poles[k] = 0.5 * (p0 + sqrt(p0 * p0 - 4 * q * pi));
+    poles[k + n2 / 2] = (c0 - poles[k]) / (1.0 - c0 * poles[k]);
+    zeros[k] = 0.5 * (z0 + sqrt(z0 * z0 - 4 * q * zi));
+    zeros[k + n2 / 2] = (c0 - zeros[k]) / (1.0 - c0 * zeros[k]);
+    k++;
+  }
+
+  // Convert from poles/zeros to transfer function (except 1st pole/zero for odd original size)
+  convert_to_ab();
+
+  // if originally even, we are done, otherwise
+  if (was_odd) {
+    // Resize a_tf,b_tf (for now) by removing last 2 elements
+    a_tf.pop_back();
+    a_tf.pop_back();
+    b_tf.pop_back();
+    b_tf.pop_back();
+    // Actual polynomials will be real only
+    std::vector<float_type> p = {1, 0, 0};
+    // For bandpass zeros are always like this, even for different center frequencies!!!
+    std::vector<float_type> z = {1, 0, -1};
+    // Page 29, 111, 112
+    if (lpf != filter_type::bandpass) {
+      z[1] = -2 * c0;
+      z[2] = 1;
+    }
+    std::complex<float_type> p0h = -old_poles[0];
+    std::complex<float_type> p0h_s = c0 * (1 + q * p0h);
+    std::complex<float_type> p0p = 0.5 * (p0h_s + sqrt(p0h_s * p0h_s - 4 * q * p0h));
+    // std::complex<float_type> p0m = 0.5*(p0h_s - sqrt(p0h_s*p0h_s - 4*q*p0h));
+
+    p[1] = -2 * real(p0p);
+    p[2] = std::real(norm(p0p));
+    // Adds back last two elements with new convolved result
+    b_tf = convolve(z, b_tf);
+    a_tf = convolve(p, a_tf);
+  }
+}
+
 void iir_coeff::convert_to_ab() {
   float_type hpf_z_gain = 0;
   float_type hpf_p_gain = 0;
@@ -103,7 +182,6 @@ void iir_coeff::convert_to_ab() {
   b_tf = p2_to_poly(zeros);
   // Apply gain to b coefficents
   apply_gain(gain);
-  
 }
 void iir_coeff::ab_to_tf() {
   a_tf = p2_to_poly(poles);
@@ -138,7 +216,7 @@ std::vector<float_type> iir_coeff::pz_to_poly(const std::vector<std::complex<flo
     m += 2;
     for (int i = 0; i < m; i++) p[i] = tf[i];
   }
-  //tf_state = 1;
+  // tf_state = 1;
   return (tf);
 }
 // Takes 'n' 2nd order polynomials of the form 1+a*z + b*z^2
@@ -282,7 +360,7 @@ void iir_coeff::pz_to_ap() {
   // Save these coefficients for transfer to IIR implemented as
   // allpass sections
 
-  //ap_state = 1;
+  // ap_state = 1;
   state = filter_state::s4;
 }
 float_type iir_coeff::max_abs_coeff() {

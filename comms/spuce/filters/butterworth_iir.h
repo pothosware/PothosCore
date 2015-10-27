@@ -8,5 +8,5 @@ namespace spuce {
 //! \author Tony Kirke,  Copyright(c) 2001
 //! \ingroup functions iir
 void butterworth_iir(iir_coeff& filt, float_type fcd, float_type amax);
-void butterworth_s(iir_coeff& filt, float_type wp, long n, long n2);
+void butterworth_s(iir_coeff& filt, float_type wp, long n);
 }  // namespace spuce

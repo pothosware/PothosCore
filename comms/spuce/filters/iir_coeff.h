@@ -15,10 +15,12 @@ class iir_coeff {
  public:
   //! ord = Filter order
   iir_coeff(long ord = 1, filter_type lp = filter_type::low);
+	void resize(long ord);
   //! Destructor
   ~iir_coeff();
   //! Do bilinear transformation
   void bilinear();
+	void make_band(float_type c0);
   void convert_to_ab();
   void z_root_to_ab(std::vector<std::complex<float_type> >& z);
   void pz_to_ap();
@@ -45,6 +47,9 @@ class iir_coeff {
   std::vector<float_type> get_b() const;
   filter_type get_type(void) const { return lpf; }
   void set_type(filter_type t) { lpf = t; }
+	void set_center(float_type c) { c0 = cos(c*M_PI); }
+	void set_bandpass_gain();
+	float_type get_center() { return c0;}
   void print() const;
   void print_pz() const;
 
@@ -53,6 +58,7 @@ class iir_coeff {
   std::vector<std::complex<float_type> > poles;
   std::vector<std::complex<float_type> > zeros;
   float_type gain;
+	float_type c0;
   float_type hpf_gain;
   long n2;
   long odd;

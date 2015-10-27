@@ -18,6 +18,7 @@ template <class Numeric> class fir_coeff {
   //! Set tap weights
   void settap(long i, Numeric tap) { coeff[i] = tap; }
   Numeric gettap(long i) { return (coeff[i]); }
+  long number_of_taps() const { return (num_taps); }
   //! Get sum of coefficients
   Numeric coeff_sum() {
     int i;

@@ -43,9 +43,9 @@ template <class Numeric, class Coeff = float_type> class iir_df {
 		auto size = taps.size()/2;
 		zeros.set_size(size);
 		poles.set_size(size-1);
-    for (auto i = 0; i < size; i++) { zeros.settap(i, taps[i]); }
+    for (size_t i = 0; i < size; i++) { zeros.settap(i, taps[i]); }
 		// Skip 1st feedback and negate the rest
-    for (auto i = 0; i < size-1; i++) { poles.settap(i, -taps[i+size+1]); }
+    for (size_t i = 0; i < size-1; i++) { poles.settap(i, -taps[i+size+1]); }
 		
 		//		print();
 		

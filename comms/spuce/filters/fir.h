@@ -65,14 +65,14 @@ template <class Numeric, class Coeff = float_type> class fir {
     }
   }
   //! Constructor
-  fir(fir_coeff<Coeff> C) : coeff(C.num_taps), z(C.num_taps) {
+  fir(fir_coeff<Coeff> C) : coeff(C.number_of_taps()), z(C.number_of_taps()) {
     int i;
-    int n = num_taps = C.num_taps;
+    int n = num_taps = C.number_of_taps();
     if (n > 0) {
       coeff.resize(n);
       z.resize(n);
       for (i = 0; i < n; i++) z[i] = (Numeric)0;
-      for (i = 0; i < n; i++) coeff[i] = C.coeff[i];
+      for (i = 0; i < n; i++) coeff[i] = C.gettap(i);
     }
   }
   void set_coeffs(fir_coeff<Coeff> C) {
