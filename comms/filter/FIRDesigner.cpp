@@ -6,6 +6,7 @@
 #include <Pothos/Proxy.hpp>
 #include <complex>
 #include <iostream>
+#include <spuce/filters/remez_fir.h>
 
 /***********************************************************************
  * |PothosDoc FIR Designer
@@ -260,6 +261,23 @@ void FIRDesigner::recalculate(void)
     else if (_filterType == "COMPLEX_BAND_STOP") complexTaps = designCBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
     else if (_filterType == "ROOT_RAISED_COSINE") taps = designRRC(_numTaps, _sampRate, _freqLower, _beta);
     else if (_filterType == "GAUSSIAN") taps = designGaussian(_numTaps, _sampRate, _freqLower, _beta);
+    else if (_filterType == "REMEZ") {
+			std::vector<spuce::float_type> bands(4);
+			std::vector<spuce::float_type> des(4);
+			std::vector<spuce::float_type> weights(4);
+			spuce::remez_fir Remz;
+			weights[0] = 1.0;
+			weights[1] = 1.0; ///stop_weight;
+			bands[0] = 0;
+			bands[1] = _freqLower/_sampRate;
+			bands[2] = _freqUpper/_sampRate;
+			bands[3] = 0.5;
+			des[0] = 1.0;
+			des[1] = 0.0;
+			taps.resize(_numTaps);
+			bool ok = Remz.remez(taps, _numTaps, 2, bands, des, weights, 1);
+			if (!ok) throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "problem with input parameters");
+		}
     else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
 
 

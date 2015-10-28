@@ -1,6 +1,7 @@
 #pragma once
 // Copyright (c) 2015 Tony Kirke. License MIT  (http://www.opensource.org/licenses/mit-license.php)
 #include <vector>
+#include <spuce/typedefs.h>
 #define BANDPASS 1
 #define DIFFERENTIATOR 2
 #define HILBERT 3

@@ -34,7 +34,7 @@ iir_coeff* design_iir(const std::string& iir_type, const std::string& filt_type,
   } else if (iir_type == "chebyshev") {
     chebyshev_iir(*filt, fcd, ripple);
   } else if (iir_type == "chebyshev2") {
-    chebyshev2_iir(*filt, fcd, ripple);
+    chebyshev2_iir(*filt, fcd, stopattn);
   } else if (iir_type == "elliptic") {
     elliptic_iir(*filt, fcd, ripple, stopattn);
   } else {

@@ -29,6 +29,7 @@ using namespace spuce;
  * |default "butterworth"
  * |option [Butterworth] "butterworth"
  * |option [Chebyshev] "chebyshev"
+ * |option [Chebyshev2] "chebyshev2"
  * |option [Elliptic] "elliptic"
  * |widget ComboBox(editable=true)
  *
