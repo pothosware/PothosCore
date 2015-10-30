@@ -98,7 +98,7 @@ void iir_coeff::make_band(float_type c0) {
   std::vector<std::complex<float_type> > old_poles;
   std::vector<std::complex<float_type> > old_zeros;
 
-  for (int i = 0; i < poles.size(); i++) {
+  for (size_t i = 0; i < poles.size(); i++) {
     old_poles.push_back(poles[i]);
     old_zeros.push_back(zeros[i]);
   }

@@ -13,7 +13,7 @@
 
 void print_std_vector(const std::vector<double>& x, std::string n) {
 	std::cout << n << " ";
-	for (int i=0;i<x.size();i++) std::cout << x[i] << " ";
+	for (size_t i=0;i<x.size();i++) std::cout << x[i] << " ";
 	std::cout << "\n";
 }
 
