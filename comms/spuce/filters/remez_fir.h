@@ -2,12 +2,10 @@
 // Copyright (c) 2015 Tony Kirke.  Boost Software License - Version 1.0  (http://www.opensource.org/licenses/BSL-1.0)
 #include <vector>
 #include <spuce/typedefs.h>
-#define GRIDDENSITY 16
-#define MAXITERATIONS 40
 namespace spuce {
 
-	enum class remez_type {BANDPASS,DIFFERENTIATOR,HILBERT};
-	enum class remez_symmetry {POSITIVE,NEGATIVE}; 
+enum class remez_type {BANDPASS,DIFFERENTIATOR,HILBERT};
+enum class remez_symmetry {POSITIVE,NEGATIVE}; 
 //!-------------------------------------------------
 //! \file
 //! \brief template Remez_fir class

@@ -30,6 +30,7 @@
  * |option [Complex Band Stop] "COMPLEX_BAND_STOP"
  * |option [Root Raised Cosine] "ROOT_RAISED_COSINE"
  * |option [Gaussian] "GAUSSIAN"
+ * |option [Remez] "REMEZ"
  *
  * |param window[Window Type] The window function controls passband ripple.
  * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
@@ -57,7 +58,7 @@
  * |units Hz
  *
  * |param freqUpper[Upper Freq] The upper transition frequency.
- * This parameter is only used for band pass and band reject filters.
+ * This parameter is used for band pass and band reject filters and also the stopband frequency for Remez filters
  * |default 2000
  * |units Hz
  *
@@ -68,6 +69,9 @@
  * |param beta[Beta] For the root raised cosine filter, this is the excess bandwidth factor. For the Gaussian filter, this is BT, the bandwidth-time product.
  * |default 0.5
  *
+ * |param weight[Weight] For the Remez filter. This is the weight for stopband attenuation vs passband ripple.
+ * |default 100.0
+ *
  * |factory /comms/fir_designer()
  * |setter setFilterType(type)
  * |setter setWindowType(window)
@@ -76,6 +80,7 @@
  * |setter setFrequencyUpper(freqUpper)
  * |setter setNumTaps(numTaps)
  * |setter setBeta(beta)
+ * |setter setWeight(weight)
  * |setter setGain(gain)
  **********************************************************************/
 class FIRDesigner : public Pothos::Block
@@ -94,6 +99,7 @@ public:
         _freqLower(0.1),
         _freqUpper(0.2),
         _beta(0.5),
+				_weight(100.0),
         _numTaps(50)
     {
         auto env = Pothos::ProxyEnvironment::make("managed");
@@ -112,6 +118,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, numTaps));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setBeta));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, beta));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setWeight));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, weight));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setGain));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, gain));
         this->registerSignal("tapsChanged");
@@ -196,6 +204,17 @@ public:
     {
         return _beta;
     }
+	
+    void setWeight(const double w)
+    {
+        _weight = w;
+        this->recalculate();
+    }
+
+    double weight(void) const
+    {
+        return _weight;
+    }
 
     void setGain(const double gain)
     {
@@ -224,6 +243,7 @@ private:
     double _freqLower;
     double _freqUpper;
     double _beta;
+    double _weight;
     size_t _numTaps;
     Pothos::Proxy _window;
 };
@@ -237,8 +257,8 @@ void FIRDesigner::recalculate(void)
     if (_sampRate <= 0) Pothos::Exception("FIRDesigner()", "sample rate must be positive");
     if (_freqLower <= 0) Pothos::Exception("FIRDesigner()", "lower frequency must be positive");
     if (_freqLower >= _sampRate/2) Pothos::Exception("FIRDesigner()", "lower frequency Nyquist fail");
-    if (   _filterType == "HIGH_PASS" || _filterType == "BAND_PASS" || _filterType == "BAND_STOP"
-        || _filterType == "COMPLEX_BAND_PASS" || _filterType == "COMPLEX_BAND_STOP")
+    if ( _filterType == "HIGH_PASS" || _filterType == "BAND_PASS" || _filterType == "BAND_STOP"
+				 || _filterType == "COMPLEX_BAND_PASS" || _filterType == "COMPLEX_BAND_STOP" || _filterType == "REMEZ")
     {
         if (_freqUpper <= 0) Pothos::Exception("FIRDesigner()", "upper frequency must be positive");
         if (_freqUpper >= _sampRate/2) Pothos::Exception("FIRDesigner()", "upper frequency Nyquist fail");
@@ -267,7 +287,7 @@ void FIRDesigner::recalculate(void)
 			std::vector<spuce::float_type> weights(4);
 			spuce::remez_fir Remz;
 			weights[0] = 1.0;
-			weights[1] = 50.0;
+			weights[1] = _weight;
 			bands[0] = 0;
 			bands[1] = _freqLower/_sampRate;
 			bands[2] = _freqUpper/_sampRate;
@@ -275,8 +295,13 @@ void FIRDesigner::recalculate(void)
 			des[0] = 1.0;
 			des[1] = 0.0;
 			taps.resize(_numTaps);
-			bool ok = Remz.remez(taps, _numTaps, 2, bands, des, weights, spuce::remez_type::BANDPASS);
-			if (!ok) throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "problem with input parameters");
+			//std::cout << " freqLower = " << _freqLower/_sampRate << " upper = " << _freqUpper/_sampRate << " numTaps = " << _numTaps << "\n";
+			try {
+				Remz.remez(taps, _numTaps, 2, bands, des, weights, spuce::remez_type::BANDPASS);
+			}
+			catch (const std::runtime_error& error) {
+				throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+"):"+error.what(), "problem with input parameters");
+			}
 		}
     else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
 

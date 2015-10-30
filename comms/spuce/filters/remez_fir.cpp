@@ -7,15 +7,19 @@
 #include <spuce/filters/remez_fir.h>
 #include <spuce/filters/fir_inv_dft.h>
 
+#define MAXITERATIONS 40
+#define GRIDDENSITY 16
 
-//#define DUMP(x) print_std_vector(x,#x)
+#ifndef USE_DEBUG
 #define DUMP(x) 
-
+#else
+#define DUMP(x) print_std_vector(x,#x)
 void print_std_vector(const std::vector<double>& x, std::string n) {
 	std::cout << n << " ";
 	for (size_t i=0;i<x.size();i++) std::cout << x[i] << " ";
 	std::cout << "\n";
 }
+#endif
 
 namespace spuce {
 /********************
@@ -56,8 +60,7 @@ bool remez_fir::remez(std::vector<float_type>& filt, int numtaps, int numband, s
   }
   if (symmetry == remez_symmetry::NEGATIVE) gridSize--;
   if (gridSize < 1) {
-    std::cout << "Gridsize issue in Remez\n";
-    ok = false;
+		throw std::runtime_error("Gridsize issue in Remez");
   }
 
 	DUMP(des);
@@ -124,9 +127,7 @@ bool remez_fir::remez(std::vector<float_type>& filt, int numtaps, int numband, s
   }
   // end Remez Exchange algorithm
   if (iter == MAXITERATIONS) {
-    std::cout << "Reached maximum iteration count.\n";
-    std::cout << "Results may be bad\n";
-    ok = false;
+		throw std::runtime_error("Reached maximum iteration count. Results may be bad");
   }
 
 
