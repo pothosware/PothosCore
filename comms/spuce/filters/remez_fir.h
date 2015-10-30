@@ -1,15 +1,12 @@
 #pragma once
-// Copyright (c) 2015 Tony Kirke. License MIT  (http://www.opensource.org/licenses/mit-license.php)
+// Copyright (c) 2015 Tony Kirke.  Boost Software License - Version 1.0  (http://www.opensource.org/licenses/BSL-1.0)
 #include <vector>
-#include <spuce/typedefs.h>
-#define BANDPASS 1
-#define DIFFERENTIATOR 2
-#define HILBERT 3
-#define NEGATIVE 0
-#define POSITIVE 1
 #define GRIDDENSITY 16
 #define MAXITERATIONS 40
 namespace spuce {
+
+	enum class remez_type {BANDPASS,DIFFERENTIATOR,HILBERT};
+	enum class remez_symmetry {POSITIVE,NEGATIVE}; 
 //!-------------------------------------------------
 //! \file
 //! \brief template Remez_fir class
@@ -40,7 +37,7 @@ class remez_fir {
   static void createDenseGrid(int r, int numtaps, int numband, std::vector<float_type>& bands,
                               const std::vector<float_type>& des, const std::vector<float_type>& weight, int gridSize,
                               std::vector<float_type>& grid, std::vector<float_type>& d, std::vector<float_type>& w,
-                              int symmetry);
+                              remez_symmetry symmetry);
 
   static std::vector<float_type> calc_d(int r, const std::vector<float_type>& x);
   static std::vector<float_type> calc_y(int r, const std::vector<int>& ext, const std::vector<float_type>& des,
@@ -52,6 +49,6 @@ class remez_fir {
 
  public:
   static bool remez(std::vector<float_type>& filt, int n, int numband, std::vector<float_type>& bands,
-                    const std::vector<float_type>& des, const std::vector<float_type>& weight, int type);
+                    const std::vector<float_type>& des, const std::vector<float_type>& weight, remez_type type);
 };
 }  // namespace spuce

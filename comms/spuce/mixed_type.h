@@ -1,6 +1,6 @@
 #pragma once
+// Copyright (c) 2015 Tony Kirke.  Boost Software License - Version 1.0  (http://www.opensource.org/licenses/BSL-1.0)
 #include <cstdint>
-// Copyright (c) 2015 Tony Kirke. License MIT  (http://www.opensource.org/licenses/mit-license.php)
 namespace spuce {
 //! \file
 //! \brief Determine resultant type when mixing two types in math operations

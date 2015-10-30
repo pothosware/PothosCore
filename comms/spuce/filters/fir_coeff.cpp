@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Tony Kirke. License MIT  (http://www.opensource.org/licenses/mit-license.php)
+// Copyright (c) 2015 Tony Kirke.  Boost Software License - Version 1.0  (http://www.opensource.org/licenses/BSL-1.0)
 //! \author Tony Kirke
 #include <spuce/filters/fir_coeff.h>
 #include <fstream>

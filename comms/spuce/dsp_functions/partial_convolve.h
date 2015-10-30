@@ -1,5 +1,5 @@
 #pragma once
-// Copyright (c) 2015 Tony Kirke. License MIT  (http://www.opensource.org/licenses/mit-license.php)
+// Copyright (c) 2015 Tony Kirke.  Boost Software License - Version 1.0  (http://www.opensource.org/licenses/BSL-1.0)
 #include <vector>
 namespace spuce {
 //! \file

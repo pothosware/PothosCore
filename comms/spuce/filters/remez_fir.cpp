@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Tony Kirke. License MIT  (http://www.opensource.org/licenses/mit-license.php)
+// Copyright (c) 2015 Tony Kirke.  Boost Software License - Version 1.0  (http://www.opensource.org/licenses/BSL-1.0)
 //! \author Tony Kirke
 #define _USE_MATH_DEFINES
 #include <spuce/typedefs.h>
@@ -6,6 +6,17 @@
 #include <iostream>
 #include <spuce/filters/remez_fir.h>
 #include <spuce/filters/fir_inv_dft.h>
+
+
+//#define DUMP(x) print_std_vector(x,#x)
+#define DUMP(x) 
+
+void print_std_vector(const std::vector<double>& x, std::string n) {
+	std::cout << n << " ";
+	for (int i=0;i<x.size();i++) std::cout << x[i] << " ";
+	std::cout << "\n";
+}
+
 namespace spuce {
 /********************
  * remez
@@ -29,26 +40,30 @@ namespace spuce {
  * std::vector<float_type> filt    - Impulse response of final filter [numtaps]
  *************************************************************************/
 bool remez_fir::remez(std::vector<float_type>& filt, int numtaps, int numband, std::vector<float_type>& bands,
-                      const std::vector<float_type>& des, const std::vector<float_type>& weight, int type) {
+                      const std::vector<float_type>& des, const std::vector<float_type>& weight, remez_type type) {
   bool ok = true;
   float_type c;
   int i;
   int iter;
-  int symmetry = (type == BANDPASS) ? POSITIVE : NEGATIVE;
+  remez_symmetry symmetry = (type == remez_type::BANDPASS) ? remez_symmetry::POSITIVE : remez_symmetry::NEGATIVE;
   int r = numtaps / 2;  // number of extrema
-  if ((numtaps % 2 != 0) && (symmetry == POSITIVE)) r++;
+  if ((numtaps % 2 != 0) && (symmetry == remez_symmetry::POSITIVE)) r++;
 
   // Predict dense grid size in advance for array sizes
   int gridSize = 0;
   for (i = 0; i < numband; i++) {
     gridSize += (int)floor(0.5 + 2 * r * GRIDDENSITY * (bands[2 * i + 1] - bands[2 * i]));
   }
-  if (symmetry == NEGATIVE) gridSize--;
+  if (symmetry == remez_symmetry::NEGATIVE) gridSize--;
   if (gridSize < 1) {
     std::cout << "Gridsize issue in Remez\n";
     ok = false;
   }
 
+	DUMP(des);
+	DUMP(bands);
+	DUMP(weight);
+	
   std::vector<float_type> grid(gridSize);
   std::vector<float_type> d(gridSize);
   std::vector<float_type> w(gridSize);
@@ -66,14 +81,14 @@ bool remez_fir::remez(std::vector<float_type>& filt, int numtaps, int numband, s
   for (i = 0; i <= r; i++) ext[i] = i * (gridSize - 1) / r;
 
   // For Differentiator: (fix grid)
-  if (type == DIFFERENTIATOR) {
+  if (type == remez_type::DIFFERENTIATOR) {
     for (i = 0; i < gridSize; i++)
       if (d[i] > 0.0001) w[i] /= grid[i];
   }
 
   // For odd or Negative symmetry filters, alter the
   // d[] and w[] according to Parks McClellan
-  if (symmetry == POSITIVE) {
+  if (symmetry == remez_symmetry::POSITIVE) {
     if (numtaps % 2 == 0) {
       for (i = 0; i < gridSize; i++) {
         c = cos(M_PI * grid[i]);
@@ -90,6 +105,10 @@ bool remez_fir::remez(std::vector<float_type>& filt, int numtaps, int numband, s
     }
   }
 
+	DUMP(grid);
+	DUMP(d);
+	DUMP(w);
+	
   // Perform the Remez Exchange algorithm
   for (iter = 0; iter < MAXITERATIONS; iter++) {
     // calc x
@@ -110,6 +129,8 @@ bool remez_fir::remez(std::vector<float_type>& filt, int numtaps, int numband, s
     ok = false;
   }
 
+
+	
   for (i = 0; i <= r; i++) x[i] = cos(2*M_PI * grid[ext[i]]);
   ad = calc_d(r, x);
   y = calc_y(r, ext, d, w, ad);
@@ -118,7 +139,7 @@ bool remez_fir::remez(std::vector<float_type>& filt, int numtaps, int numband, s
   // Sampling.  If odd or Negative symmetry, fix the taps
   // according to Parks McClellan
   for (i = 0; i <= numtaps / 2; i++) {
-    if (symmetry == POSITIVE) {
+    if (symmetry == remez_symmetry::POSITIVE) {
       if (numtaps % 2 != 0)
         c = 1;
       else
@@ -132,7 +153,7 @@ bool remez_fir::remez(std::vector<float_type>& filt, int numtaps, int numband, s
     taps[i] = gee((float_type)i / numtaps, r, ad, x, y) * c;
   }
   // Frequency sampling design with calculated taps
-  if (symmetry == POSITIVE)
+  if (symmetry == remez_symmetry::POSITIVE)
     filt = inv_dft_symmetric(taps, numtaps);
   else
     filt = inv_dft(taps, numtaps);
@@ -146,13 +167,13 @@ bool remez_fir::remez(std::vector<float_type>& filt, int numtaps, int numband, s
 void remez_fir::createDenseGrid(int r, int numtaps, int numband, std::vector<float_type>& bands,
                                 const std::vector<float_type>& des, const std::vector<float_type>& weight, int gridSize,
                                 std::vector<float_type>& grid, std::vector<float_type>& d, std::vector<float_type>& w,
-                                int symmetry) {
+                                remez_symmetry symmetry) {
   float_type lowf, highf;
   float_type delf = 0.5 / (GRIDDENSITY * r);
 
   // For differentiator, hilbert,
   //  symmetry is odd and grid[0] = max(delf, band[0])
-  if ((symmetry == NEGATIVE) && (delf > bands[0])) bands[0] = delf;
+  if ((symmetry == remez_symmetry::NEGATIVE) && (delf > bands[0])) bands[0] = delf;
 
   int j = 0;
   int k, i;
@@ -173,13 +194,13 @@ void remez_fir::createDenseGrid(int r, int numtaps, int numband, std::vector<flo
 
   // Similar to above, if odd symmetry, last grid point can't be .5
   // - but, if there are even taps, leave the last grid point at .5
-  if ((symmetry == NEGATIVE) && (grid[gridSize - 1] > (0.5 - delf)) && ((numtaps % 2) != 0)) {
+  if ((symmetry == remez_symmetry::NEGATIVE) && (grid[gridSize - 1] > (0.5 - delf)) && ((numtaps % 2) != 0)) {
     grid[gridSize - 1] = 0.5 - delf;
   }
 }
 // Dee function in Parks & Burrus
 std::vector<float_type> remez_fir::calc_d(int r, const std::vector<float_type>& x) {
-  std::vector<float_type> d(r);
+  std::vector<float_type> d(r+1);
   int i, j, k;
   float_type denom, xi;
   int ld = (r - 1) / 15 + 1;
@@ -197,7 +218,7 @@ std::vector<float_type> remez_fir::calc_d(int r, const std::vector<float_type>& 
 }
 std::vector<float_type> remez_fir::calc_y(int r, const std::vector<int>& ext, const std::vector<float_type>& d,
                                           const std::vector<float_type>& w, const std::vector<float_type>& ad) {
-  std::vector<float_type> y(r);
+  std::vector<float_type> y(r+1);
   float_type sign, dev, denom, numer;
   int i;
 
