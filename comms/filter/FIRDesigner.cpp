@@ -30,6 +30,7 @@
  * |option [Complex Band Stop] "COMPLEX_BAND_STOP"
  * |option [Root Raised Cosine] "ROOT_RAISED_COSINE"
  * |option [Gaussian] "GAUSSIAN"
+ * |option [Remez] "REMEZ"
  *
  * |param window[Window Type] The window function controls passband ripple.
  * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
@@ -267,7 +268,7 @@ void FIRDesigner::recalculate(void)
 			std::vector<spuce::float_type> weights(4);
 			spuce::remez_fir Remz;
 			weights[0] = 1.0;
-			weights[1] = 1.0; ///stop_weight;
+			weights[1] = 50.0;
 			bands[0] = 0;
 			bands[1] = _freqLower/_sampRate;
 			bands[2] = _freqUpper/_sampRate;
@@ -275,7 +276,7 @@ void FIRDesigner::recalculate(void)
 			des[0] = 1.0;
 			des[1] = 0.0;
 			taps.resize(_numTaps);
-			bool ok = Remz.remez(taps, _numTaps, 2, bands, des, weights, 1);
+			bool ok = Remz.remez(taps, _numTaps, 2, bands, des, weights, spuce::remez_type::BANDPASS);
 			if (!ok) throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "problem with input parameters");
 		}
     else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");

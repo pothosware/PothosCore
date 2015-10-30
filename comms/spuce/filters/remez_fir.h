@@ -1,6 +1,7 @@
 #pragma once
 // Copyright (c) 2015 Tony Kirke.  Boost Software License - Version 1.0  (http://www.opensource.org/licenses/BSL-1.0)
 #include <vector>
+#include <spuce/typedefs.h>
 #define GRIDDENSITY 16
 #define MAXITERATIONS 40
 namespace spuce {
