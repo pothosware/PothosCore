@@ -30,7 +30,6 @@
  * |option [Complex Band Stop] "COMPLEX_BAND_STOP"
  * |option [Root Raised Cosine] "ROOT_RAISED_COSINE"
  * |option [Gaussian] "GAUSSIAN"
- * |option [Remez] "REMEZ"
  *
  * |param window[Window Type] The window function controls passband ripple.
  * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
