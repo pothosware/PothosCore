@@ -32,13 +32,13 @@ if (POCO_FOUND AND POCO_Util_FOUND AND POCO_Net_FOUND AND POCO_XML_FOUND AND POC
     )
     message(STATUS "Poco_INCLUDE_DIRS: ${Poco_INCLUDE_DIRS}")
     message(STATUS "Poco_LIBRARIES: ${Poco_LIBRARIES}")
-endif()
 
-########################################################################
-# Link with the thread library
-########################################################################
-if (POCO_FOUND AND UNIX)
-    set(CMAKE_THREAD_PREFER_PTHREAD ON)
-    find_package(Threads)
-    list(APPEND Poco_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+    ########################################################################
+    # Link with the thread library
+    ########################################################################
+    if (UNIX)
+        set(CMAKE_THREAD_PREFER_PTHREAD ON)
+        find_package(Threads)
+        list(APPEND Poco_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+    endif()
 endif()
