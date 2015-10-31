@@ -68,7 +68,9 @@ iir_coeff::iir_coeff(long ord, filter_type lp)
   order = ord;
   n2 = (order + 1) / 2;
   odd = (order % 2);
-  c0 = 0;  // Put at fs/4
+  // Put at fs/4
+  center_freq = 0.25;
+  c0 = cos(center_freq*2*M_PI); 
   for (int j = 0; j < n2; j++) {
     poles[j] = std::complex<float_type>(0.0, 0.0);
     zeros[j] = std::complex<float_type>(0.0, 0.0);
@@ -90,11 +92,14 @@ void iir_coeff::bilinear() {
   state = filter_state::s2;  // in Z-domain now!
 }
 void iir_coeff::set_bandpass_gain() {
-  float_type gain = freqz_mag(0.5 * M_PI - get_center());
+  double w = 2.0*M_PI*get_center();
+  float_type gain = freqz_mag(w);
   apply_gain(1.0 / gain);
 }
 
-void iir_coeff::make_band(float_type c0) {
+void iir_coeff::make_band(float_type c) {
+  center_freq = c;
+  c0 = cos(center_freq*2*M_PI); 
   std::vector<std::complex<float_type> > old_poles;
   std::vector<std::complex<float_type> > old_zeros;
 

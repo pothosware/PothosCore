@@ -20,7 +20,7 @@ class iir_coeff {
   ~iir_coeff();
   //! Do bilinear transformation
   void bilinear();
-	void make_band(float_type c0);
+  void make_band(float_type center);
   void convert_to_ab();
   void z_root_to_ab(std::vector<std::complex<float_type> >& z);
   void pz_to_ap();
@@ -41,15 +41,15 @@ class iir_coeff {
   float_type getGain(void) const;
   int getOrder(void) const;
   int getN2(void) const;
-	//  int getState(void) const;
+  //  int getState(void) const;
   int isOdd(void) const;
   std::vector<float_type> get_a() const;
   std::vector<float_type> get_b() const;
   filter_type get_type(void) const { return lpf; }
   void set_type(filter_type t) { lpf = t; }
-	void set_center(float_type c) { c0 = cos(c*M_PI); }
-	void set_bandpass_gain();
-	float_type get_center() { return c0;}
+  void set_center(float_type c) { center_freq = c; c0 = cos(2*M_PI*c); }
+  void set_bandpass_gain();
+  float_type get_center() { return center_freq;}
   void print() const;
   void print_pz() const;
 
@@ -58,7 +58,8 @@ class iir_coeff {
   std::vector<std::complex<float_type> > poles;
   std::vector<std::complex<float_type> > zeros;
   float_type gain;
-	float_type c0;
+  float_type c0;
+  float_type center_freq;
   float_type hpf_gain;
   long n2;
   long odd;

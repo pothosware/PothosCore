@@ -121,7 +121,6 @@ std::vector<float_type> cheby(long nf, long n, long ieo, float_type dp, float_ty
         - xn = nf-1
   */
   std::vector<float_type> w(nf);
-  float_type coshin(float_type x);
   float_type xn = nf - 1;
   float_type fnf = nf;
   float_type alpha = (x0 + 1.) / 2.;
@@ -188,7 +187,6 @@ void chebc(float_type nf, float_type dp, float_type df, float_type n, float_type
   //
   float_type xn;
   float_type c1, c0, c2, x;
-  float_type coshin(float_type x);
   if (nf == 0) {
     // dp,df specified, determine nf
     c1 = coshin((1. + dp) / dp);

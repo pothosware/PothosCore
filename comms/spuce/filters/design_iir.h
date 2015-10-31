@@ -10,9 +10,9 @@ namespace spuce {
 //! \author Tony Kirke
 //! \ingroup functions iir
 iir_coeff* design_iir(const std::string& iir_type, const std::string& filt_type,
-											int order, float_type fcd,
+					  int order, float_type fcd,
                       float_type ripple = 0.1, float_type stopattn = 60,
-											float_type c0 = 0.0) {
+					  float_type center_freq = 0.25) {
   iir_coeff* filt = new iir_coeff(order);
   if (filt_type == "LOW_PASS") {
     filt->set_type(filter_type::low);
@@ -27,7 +27,7 @@ iir_coeff* design_iir(const std::string& iir_type, const std::string& filt_type,
   }
 
 	// Only used by bandpass/bandstop
-	filt->set_center(c0);
+	filt->set_center(center_freq);
 	
   if (iir_type == "butterworth") {
     butterworth_iir(*filt, fcd, 3.0);

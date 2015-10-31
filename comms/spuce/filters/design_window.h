@@ -23,8 +23,8 @@ std::vector<float_type> design_window(const std::string& fir_type, int order, fl
 
 	// Normalize DC response to 1.0
 	float_type sum = 0;
-	for (int i=0;i<win.size();i++) sum += win[i];
-	for (int i=0;i<win.size();i++) win[i] /= sum;
+	for (size_t i=0;i<win.size();i++) sum += win[i];
+	for (size_t i=0;i<win.size();i++) win[i] /= sum;
 	return win;
 }
 }  // namespace spuce
