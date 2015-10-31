@@ -9,6 +9,7 @@
 #include <numa.h>
 #endif
 #include <cerrno> //errno
+#include <cstring> //strerror
 
 #ifdef __APPLE__
 #include <thread>
