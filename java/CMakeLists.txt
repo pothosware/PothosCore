@@ -23,12 +23,17 @@ endif(Java_VERSION)
 ########################################################################
 ## Find JNI
 ########################################################################
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(JNI)
 
+message(STATUS "JAVA_HOME: $ENV{JAVA_HOME}")
 message(STATUS "JNI_FOUND: ${JNI_FOUND}")
 message(STATUS "JNI_INCLUDE_DIRS: ${JNI_INCLUDE_DIRS}")
 message(STATUS "JNI_LIBRARIES: ${JNI_LIBRARIES}")
+
+if(NOT JNI_FOUND AND "$ENV{JAVA_HOME}" STREQUAL "")
+    message(WARNING "JNI not found, you may have to set JAVA_HOME\n"
+    "Example: export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64")
+endif()
 
 ########################################################################
 ## Feature registration
