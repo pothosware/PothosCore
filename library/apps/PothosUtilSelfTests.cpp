@@ -68,7 +68,7 @@ static bool spawnSelfTestOneProcess(const std::string &path)
         Pothos::System::getPothosUtilExecutablePath(),
         args, nullptr, &outPipe, &outPipe, env));
 
-    std::future<std::string> verboseFuture(std::async(std::launch::async, &collectVerbose, std::ref(outPipe)));
+    std::future<std::string> verboseFuture(std::async(std::launch::async, &collectVerbose, outPipe));
     const bool ok = (ph.wait() == success);
     std::cout << ((ok)? "success!" : "FAIL!") << std::endl;
 
