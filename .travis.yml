@@ -12,6 +12,10 @@ dist: trusty
 language: cpp
 compiler: gcc
 
+# use python packages from apt
+virtualenv:
+  system_site_packages: true
+
 env:
   global:
     - INSTALL_PREFIX=/usr/local
@@ -29,8 +33,6 @@ install:
   # update apt for regular dependencies
   - sudo add-apt-repository main
   - sudo add-apt-repository universe
-  - sudo add-apt-repository restricted
-  - sudo add-apt-repository multiverse
   - sudo apt-get update
 
   # install development dependencies
