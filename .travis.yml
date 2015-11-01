@@ -12,10 +12,6 @@ dist: trusty
 language: cpp
 compiler: gcc
 
-# use python packages from apt
-python:
-  - "2.7_with_system_site_packages"
-
 env:
   global:
     - INSTALL_PREFIX=/usr/local
@@ -71,6 +67,8 @@ script:
   # setup environment paths
   - export LD_LIBRARY_PATH=${INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}
   - export PATH=${INSTALL_PREFIX}/bin:${PATH}
+  - export PYTHONPATH=/usr/lib/python2.7/dist-packages:${PYTHONPATH}
+  - export PYTHONPATH=${INSTALL_PREFIX}/lib/python2.7/dist-packages:${PYTHONPATH}
 
   # basic test for command line utility
   - PothosUtil --system-info
