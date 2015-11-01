@@ -253,16 +253,16 @@ void FIRDesigner::recalculate(void)
     if (not this->isActive()) return;
 
     //check for error
-    if (_numTaps == 0) Pothos::Exception("FIRDesigner()", "num taps must be positive");
-    if (_sampRate <= 0) Pothos::Exception("FIRDesigner()", "sample rate must be positive");
-    if (_freqLower <= 0) Pothos::Exception("FIRDesigner()", "lower frequency must be positive");
-    if (_freqLower >= _sampRate/2) Pothos::Exception("FIRDesigner()", "lower frequency Nyquist fail");
+    if (_numTaps == 0) throw Pothos::Exception("FIRDesigner()", "num taps must be positive");
+    if (_sampRate <= 0) throw Pothos::Exception("FIRDesigner()", "sample rate must be positive");
+    if (_freqLower <= 0) throw Pothos::Exception("FIRDesigner()", "lower frequency must be positive");
+    if (_freqLower >= _sampRate/2) throw Pothos::Exception("FIRDesigner()", "lower frequency Nyquist fail");
     if ( _filterType == "HIGH_PASS" || _filterType == "BAND_PASS" || _filterType == "BAND_STOP"
 				 || _filterType == "COMPLEX_BAND_PASS" || _filterType == "COMPLEX_BAND_STOP" || _filterType == "REMEZ")
     {
-        if (_freqUpper <= 0) Pothos::Exception("FIRDesigner()", "upper frequency must be positive");
-        if (_freqUpper >= _sampRate/2) Pothos::Exception("FIRDesigner()", "upper frequency Nyquist fail");
-        if (_freqUpper <= _freqLower) Pothos::Exception("FIRDesigner()", "upper frequency <= lower frequency");
+        if (_freqUpper <= 0) throw Pothos::Exception("FIRDesigner()", "upper frequency must be positive");
+        if (_freqUpper >= _sampRate/2) throw Pothos::Exception("FIRDesigner()", "upper frequency Nyquist fail");
+        if (_freqUpper <= _freqLower) throw Pothos::Exception("FIRDesigner()", "upper frequency <= lower frequency");
     }
 
     //generate the window
