@@ -26,10 +26,15 @@ branches:
     - master
 
 install:
+  # update apt for regular dependencies
+  - sudo add-apt-repository main
+  - sudo add-apt-repository universe
+  - sudo add-apt-repository restricted
+  - sudo add-apt-repository multiverse
+  - sudo apt-get update
+
   # install development dependencies
-  # No numa dev on dist trusty? E: Unable to locate package libnuma-dev
-  #- sudo apt-get install -qq libnuma-dev cmake
-  - sudo apt-get install -qq cmake
+  - sudo apt-get install -qq libnuma-dev cmake
 
   # install audio support dependencies
   - sudo apt-get install -qq portaudio19-dev libjack-jackd2-dev
