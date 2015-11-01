@@ -11,7 +11,9 @@
 #include <Poco/String.h>
 #include <iostream>
 #include <sstream>
-#include <thread>
+#include <vector>
+#include <future>
+#include <algorithm> //max
 
 struct SelfTestResults
 {
@@ -19,10 +21,11 @@ struct SelfTestResults
     std::vector<std::string> testsFailed;
 };
 
-static void collectVerbose(const Poco::Pipe &pipe, std::string &out)
+static std::string collectVerbose(const Poco::Pipe &pipe)
 {
+    size_t maxLen = 0;
     Poco::PipeInputStream is(pipe);
-    std::stringstream ss;
+    std::vector<std::string> lines;
     try
     {
         std::string line;
@@ -30,11 +33,20 @@ static void collectVerbose(const Poco::Pipe &pipe, std::string &out)
         {
             std::getline(is, line);
             if (line.empty()) continue;
-            ss << "  | " << line << std::endl;
+            maxLen = std::max(maxLen, line.length());
+            lines.push_back(line);
         }
     }
     catch (...){}
-    out = Poco::trimRight(ss.str());
+    std::ostringstream ss;
+    ss << " +-" << std::string(maxLen, '-') << "-+" << std::endl;
+    for (const auto &line : lines)
+    {
+        const size_t padLen = maxLen-line.length();
+        ss << " | " << line << std::string(padLen, ' ') << " |" << std::endl;
+    }
+    ss << " +-" << std::string(maxLen, '-') << "-+" << std::endl;
+    return ss.str();
 }
 
 static bool spawnSelfTestOneProcess(const std::string &path)
@@ -56,20 +68,13 @@ static bool spawnSelfTestOneProcess(const std::string &path)
         Pothos::System::getPothosUtilExecutablePath(),
         args, nullptr, &outPipe, &outPipe, env));
 
-    std::string verbose;
-    std::thread verboseThread(std::bind(&collectVerbose, std::ref(outPipe), std::ref(verbose)));
-
+    std::future<std::string> verboseFuture(std::async(std::launch::async, &collectVerbose, std::ref(outPipe)));
     const bool ok = (ph.wait() == success);
     std::cout << ((ok)? "success!" : "FAIL!") << std::endl;
 
     outPipe.close();
-    verboseThread.join();
-    if (not ok)
-    {
-        std::cout << "  +---------------------------------------------------------------------------+" << std::endl;
-        std::cout << verbose << std::endl;
-        std::cout << "  +---------------------------------------------------------------------------+" << std::endl;
-    }
+    verboseFuture.wait();
+    if (not ok) std::cout << verboseFuture.get();
 
     return ok;
 }
@@ -106,7 +111,7 @@ void PothosUtilBase::selfTestOne(const std::string &, const std::string &path)
 
     auto plugin = Pothos::PluginRegistry::get(path);
     auto test = plugin.getObject().extract<std::shared_ptr<Pothos::TestingBase>>();
-    std::cout << "Testing " << plugin.getPath().toString() << "... " << std::endl;
+    std::cout << "Testing " << plugin.getPath().toString() << "..." << std::endl;
     try
     {
         test->runTests();
