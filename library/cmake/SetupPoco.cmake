@@ -20,8 +20,22 @@ endif()
 message(STATUS "PocoConfig not found - trying with FindPoco")
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
 find_package(Poco)
-set(Poco_FOUND ${POCO_FOUND})
-if (POCO_FOUND)
+if (POCO_FOUND AND POCO_Util_FOUND AND POCO_Net_FOUND AND POCO_XML_FOUND AND POCO_JSON_FOUND)
+    ########################################################################
+    # Check version >= 1.5.4
+    ########################################################################
+    FILE (READ "${POCO_INCLUDE_DIRS}/Poco/Version.h" Poco_VERSION)
+    set(_ws "[ \r\t\n^$]+")
+    STRING (REGEX REPLACE "^.*#define${_ws}POCO_VERSION${_ws}(0x[0-9a-fA-F]*)${_ws}.*$" "\\1" POCO_VERSION "${Poco_VERSION}")
+    set(_ws)
+    if ("${POCO_VERSION}" LESS 0x01050400)
+        return()
+    endif()
+
+    ########################################################################
+    # Set variables
+    ########################################################################
+    set(Poco_FOUND 1)
     set(Poco_INCLUDE_DIRS ${POCO_INCLUDE_DIRS})
     set(Poco_LIBRARIES
         ${POCO_LIBRARIES}
@@ -32,13 +46,13 @@ if (POCO_FOUND)
     )
     message(STATUS "Poco_INCLUDE_DIRS: ${Poco_INCLUDE_DIRS}")
     message(STATUS "Poco_LIBRARIES: ${Poco_LIBRARIES}")
-endif()
 
-########################################################################
-# Link with the thread library
-########################################################################
-if (POCO_FOUND AND UNIX)
-    set(CMAKE_THREAD_PREFER_PTHREAD ON)
-    find_package(Threads)
-    list(APPEND Poco_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+    ########################################################################
+    # Link with the thread library
+    ########################################################################
+    if (UNIX)
+        set(CMAKE_THREAD_PREFER_PTHREAD ON)
+        find_package(Threads)
+        list(APPEND Poco_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+    endif()
 endif()

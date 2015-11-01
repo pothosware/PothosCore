@@ -23,7 +23,7 @@ set(POCO_DIR poco154)
 
 if (NOT Poco_FOUND)
 
-    message(STATUS "Poco not found - using built-in Poco")
+    message(STATUS "Poco >= 1.5.4 not found - using built-in Poco")
 
     if (NOT EXISTS ${PROJECT_SOURCE_DIR}/${POCO_DIR}/CMakeLists.txt)
         message(FATAL_ERROR "poco submodule not configured (git submodule init && git submodule update)")
@@ -56,7 +56,7 @@ if (NOT Poco_FOUND)
     set(CMAKE_BINARY_DIR ${PROJECT_BINARY_DIR})
     set(CMAKE_MODULE_PATH ${POTHOS_MODULE_PATH})
 
-    list(APPEND Poco_INCLUDE_DIRS
+    set(Poco_INCLUDE_DIRS
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Foundation/include
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Util/include
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/XML/include
@@ -64,7 +64,7 @@ if (NOT Poco_FOUND)
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/JSON/include
     )
 
-    list(APPEND Poco_LIBRARIES
+    set(Poco_LIBRARIES
         PocoFoundation
         PocoUtil
         PocoXML
