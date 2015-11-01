@@ -17,6 +17,7 @@ POTHOS_MODULE_UTIL(
         TestPeriodicTrigger.cpp
         MessageToSignal.cpp
         SlotToMessage.cpp
+        LabelToMessage.cpp
         TestSignalsAndSlots.cpp
         Evaluator.cpp
     DESTINATION blocks
