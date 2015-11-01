@@ -6,39 +6,42 @@
 ## * run the self tests after install
 ########################################################################
 
+sudo: required
+dist: trusty
+
 language: cpp
+compiler: gcc
 
 env:
   global:
     - INSTALL_PREFIX=/usr/local
+    - SOAPY_SDR_BRANCH=master
   matrix:
     - BUILD_TYPE=Debug
     - BUILD_TYPE=Release
-
-compiler: gcc
 
 # whitelist
 branches:
   only:
     - master
 
-before_install:
-  # install a newer cmake since at this time Travis only has version 2.8.7
-  - sudo add-apt-repository -y ppa:kalakris/cmake
-  # install a gcc 4.8 since we need C++11 support (http://gearchicken.com/wordpress/?p=105)
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -qq
-
 install:
+  # install development dependencies
   - sudo apt-get install -qq libnuma-dev cmake
 
-  # We want to compile with g++ 4.8 when rather than the default g++
-  - sudo apt-get install -qq gcc-4.8 g++-4.8
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
+  # install audio support dependencies
+  - sudo apt-get install -qq portaudio19-dev libjack-jackd2-dev
 
-  # pothos-python required python dev and numpy
+  # install graphics support dependencies
+  - sudo apt-get install -qq qtbase5-dev libqt5svg5-dev
+
+  # install python support dependencies
   - sudo apt-get install -qq python-dev python-numpy
+
+  # install poco and qwt development files from ppa
+  - sudo add-apt-repository -y ppa:pothosware/support
+  - sudo apt-get update
+  - sudo apt-get install -qq libpoco-dev-min libqwt-qt5-dev
 
   # install SoapySDR from source
   - git clone https://github.com/pothosware/SoapySDR.git
@@ -48,11 +51,6 @@ install:
   - cmake ../ -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
   - make && sudo make install
   - popd
-
-  # install poco tar.gz with debs inside
-  - wget http://www.joshknows.com/download/Poco_1.6.0_x64_lin.tar.gz
-  - tar -xzvf Poco_1.6.0_x64_lin.tar.gz
-  - sudo dpkg -i Poco_1.6.0_x64_lin/*.deb
 
 script:
   - mkdir build && cd build
