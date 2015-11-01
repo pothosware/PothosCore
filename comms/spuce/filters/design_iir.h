@@ -26,8 +26,8 @@ iir_coeff* design_iir(const std::string& iir_type, const std::string& filt_type,
     std::cout << "Unsupported band type :" << filt_type << "\n";
   }
 
-	// Only used by bandpass/bandstop
-	filt->set_center(center_freq);
+  // Only used by bandpass/bandstop
+  filt->set_center(center_freq);
 	
   if (iir_type == "butterworth") {
     butterworth_iir(*filt, fcd, 3.0);

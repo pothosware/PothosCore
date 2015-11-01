@@ -180,23 +180,28 @@ void IIRDesigner::recalculate(void) {
   if (not this->isActive()) return;
   double bw;
   double center_frequency = 0.25;
-  
+
   // check for error
-  if (_order == 0) Pothos::Exception("IIRDesigner()", "order must be positive");
-  if (_sampRate <= 0) Pothos::Exception("IIRDesigner()", "sample rate must be positive");
-  if (_freqLower <= 0) Pothos::Exception("IIRDesigner()", "lower frequency must be positive");
-  if (_freqLower >= _sampRate / 2) Pothos::Exception("IIRDesigner()", "lower frequency Nyquist fail");
+  if (_order == 0) throw Pothos::Exception("IIRDesigner()", "order must be positive");
+  if (_sampRate <= 0) throw Pothos::Exception("IIRDesigner()", "sample rate must be positive");
+  if (_freqLower <= 0) throw Pothos::Exception("IIRDesigner()", "lower frequency must be positive");
+  if (_freqLower >= _sampRate / 2) throw Pothos::Exception("IIRDesigner()", "lower frequency Nyquist fail");
 
   if ( _filterType == "BAND_PASS" || _filterType == "BAND_STOP") {
-	if (_freqUpper <= 0) Pothos::Exception("IIRDesigner()", "upper frequency must be positive");
-	if (_freqUpper >= _sampRate/2) Pothos::Exception("IIRDesigner()", "upper frequency Nyquist fail");
-	if (_freqUpper <= _freqLower) Pothos::Exception("IIRDesigner()", "upper frequency <= lower frequency");
+	if (_freqUpper <= 0) throw Pothos::Exception("IIRDesigner()", "upper frequency must be positive");
+	if (_freqUpper >= _sampRate/2) throw Pothos::Exception("IIRDesigner()", "upper frequency Nyquist fail");
 	bw = 0.5*(_freqUpper - _freqLower)/_sampRate;
 	center_frequency = 0.5*(_freqUpper + _freqLower)/_sampRate; // Should be sqrt(w1*w2) ?
+	if (_freqUpper <= _freqLower) {
+	  throw Pothos::Exception("IIRDesigner()", "upper frequency <= lower frequency");
+	} else if (bw < 0.001) {
+	  throw Pothos::Exception("IIRDesigner()", " bandpass bandwidth too small < 0.001");
+	}
   } else {
 	bw = _freqLower/_sampRate;
   }
 
+  
   // generate the filter design
   iir_coeff* filt = design_iir(_IIRType, _filterType, _order, bw, _ripple,
 							   _stopBandAtten, center_frequency);

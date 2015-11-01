@@ -12,7 +12,7 @@ namespace spuce {
 //! \author Tony Kirke
 //!  \ingroup double_templates iir
 template <class Numeric, class Coeff = float_type> class iir_df {
- public:
+public:
 	//  iir_df<Numeric, Coeff>() { ; }
   iir_df<Numeric, Coeff>(const int order=1) : poles(order), zeros(order + 1) {
     for (auto i = 0; i < order + 1; i++) zeros.settap(i,1.0);
@@ -38,17 +38,14 @@ template <class Numeric, class Coeff = float_type> class iir_df {
     zeros.reset();
   }
   void set_taps(const std::vector<double>& taps) {
-		// Divide vector in half, 1st half are feedforward, 2nd half feedback
-		assert(taps.size() != 0);
-		auto size = taps.size()/2;
-		zeros.set_size(size);
-		poles.set_size(size-1);
+	// Divide vector in half, 1st half are feedforward, 2nd half feedback
+	assert(taps.size() != 0);
+	auto size = taps.size()/2;
+	zeros.set_size(size);
+	poles.set_size(size-1);
     for (size_t i = 0; i < size; i++) { zeros.settap(i, taps[i]); }
-		// Skip 1st feedback and negate the rest
+	// Skip 1st feedback and negate the rest
     for (size_t i = 0; i < size-1; i++) { poles.settap(i, -taps[i+size+1]); }
-		
-		//		print();
-		
   }
   int order(void) { return zeros.number_of_taps(); }
   Numeric clock(Numeric in) { return (update(in)); }

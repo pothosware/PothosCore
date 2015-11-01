@@ -16,7 +16,7 @@ namespace spuce {
 template <class Numeric> class fir_coeff {
  public:
   //! Set tap weights
-  void settap(long i, Numeric tap) { coeff[i] = tap; }
+  void settap(size_t i, Numeric tap) { coeff[i] = tap; }
   Numeric gettap(long i) { return (coeff[i]); }
   long number_of_taps() const { return (num_taps); }
   //! Get sum of coefficients
@@ -33,12 +33,11 @@ template <class Numeric> class fir_coeff {
   //! Constructor
   fir_coeff(long n) : coeff(n), num_taps(n) { set_size(n); }
   //! Set size of Filter
-  void set_size(long n) {
-    int i;
-    num_taps = n;
+  void set_size(size_t n) {
+    num_taps = (long)n;
     if (n > 0) {
       coeff.resize(n);
-      for (i = 0; i < n; i++) coeff[i] = (Numeric)0;
+      for (size_t i = 0; i < n; i++) coeff[i] = (Numeric)0;
     }
   }
   long get_size(void) { return (num_taps); }
@@ -59,15 +58,14 @@ template <class Numeric> class fir_coeff {
   }
   template <class N> friend std::vector<N> get_taps(fir_coeff<N> x);
   void settap(std::vector<Numeric> z) {
-    for (int i = 0; i < num_taps; i++) coeff[i] = z[i];
+    for (size_t i = 0; i < num_taps; i++) coeff[i] = z[i];
   }
   // Get frequency response at freq
   float_type freqz_mag(float_type freq) {
-    int i;
     std::complex<float_type> z(1, 0);
     std::complex<float_type> z_inc = std::complex<float_type>(cos(freq), sin(freq));
     std::complex<float_type> nom(0);
-    for (i = 0; i < num_taps; i++) {
+    for (size_t i = 0; i < num_taps; i++) {
       nom += z * (std::complex<float_type>(coeff[i]));
       z *= z_inc;
     }
