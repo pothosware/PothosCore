@@ -56,7 +56,7 @@ if (NOT Poco_FOUND OR "${Poco_VERSION}" LESS 0x01050400)
     set(CMAKE_BINARY_DIR ${PROJECT_BINARY_DIR})
     set(CMAKE_MODULE_PATH ${POTHOS_MODULE_PATH})
 
-    list(APPEND Poco_INCLUDE_DIRS
+    set(Poco_INCLUDE_DIRS
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Foundation/include
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Util/include
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/XML/include
@@ -64,7 +64,7 @@ if (NOT Poco_FOUND OR "${Poco_VERSION}" LESS 0x01050400)
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/JSON/include
     )
 
-    list(APPEND Poco_LIBRARIES
+    set(Poco_LIBRARIES
         PocoFoundation
         PocoUtil
         PocoXML
