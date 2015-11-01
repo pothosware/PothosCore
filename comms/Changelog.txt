@@ -3,6 +3,8 @@ This this the changelog file for the Pothos Comms toolkit.
 Release 0.1.0 (pending)
 ==========================
 
+- Fixed FIR Filter Designer input validation checks
+- Added IIR Filter and IIR Filter Designer block
 - Created templated frequency demodulator block
 - Created templated Fast Fourier Transform block
 - Expanded header in frame sync including error correction

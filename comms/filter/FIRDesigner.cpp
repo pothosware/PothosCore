@@ -252,16 +252,25 @@ void FIRDesigner::recalculate(void)
 {
     if (not this->isActive()) return;
 
+    const bool isComplex = _filterType.find("COMPLEX") != std::string::npos;
+
     //check for error
     if (_numTaps == 0) throw Pothos::Exception("FIRDesigner()", "num taps must be positive");
     if (_sampRate <= 0) throw Pothos::Exception("FIRDesigner()", "sample rate must be positive");
-    if (_freqLower <= 0) throw Pothos::Exception("FIRDesigner()", "lower frequency must be positive");
-    if (_freqLower >= _sampRate/2) throw Pothos::Exception("FIRDesigner()", "lower frequency Nyquist fail");
-    if ( _filterType == "HIGH_PASS" || _filterType == "BAND_PASS" || _filterType == "BAND_STOP"
-				 || _filterType == "COMPLEX_BAND_PASS" || _filterType == "COMPLEX_BAND_STOP" || _filterType == "REMEZ")
+    if (isComplex and _freqLower <= -_sampRate/2) throw Pothos::Exception("FIRDesigner()", "lower frequency below Nyquist range");
+    if (not isComplex and _freqLower <= 0) throw Pothos::Exception("FIRDesigner()", "lower frequency must be positive");
+    if (_freqLower >= _sampRate/2) throw Pothos::Exception("FIRDesigner()", "lower frequency above Nyquist range");
+
+    //check upper freq only when its used
+    if (_filterType == "BAND_PASS" or
+        _filterType == "BAND_STOP" or
+        _filterType == "COMPLEX_BAND_PASS" or
+        _filterType == "COMPLEX_BAND_STOP" or
+        _filterType == "REMEZ")
     {
-        if (_freqUpper <= 0) throw Pothos::Exception("FIRDesigner()", "upper frequency must be positive");
-        if (_freqUpper >= _sampRate/2) throw Pothos::Exception("FIRDesigner()", "upper frequency Nyquist fail");
+        if (isComplex and _freqUpper <= -_sampRate/2) throw Pothos::Exception("FIRDesigner()", "upper frequency below Nyquist range");
+        if (not isComplex and _freqUpper <= 0) throw Pothos::Exception("FIRDesigner()", "upper frequency must be positive");
+        if (_freqUpper >= _sampRate/2) throw Pothos::Exception("FIRDesigner()", "upper frequency above Nyquist range");
         if (_freqUpper <= _freqLower) throw Pothos::Exception("FIRDesigner()", "upper frequency <= lower frequency");
     }
 
