@@ -12,10 +12,6 @@ dist: trusty
 language: cpp
 compiler: gcc
 
-# use python packages from apt
-virtualenv:
-  system_site_packages: true
-
 env:
   global:
     - INSTALL_PREFIX=/usr/local
@@ -30,27 +26,27 @@ branches:
     - master
 
 install:
-  # update apt for regular dependencies
+  # regular ubuntu packages
   - sudo add-apt-repository main
   - sudo add-apt-repository universe
+
+  # poco and qwt development files from ppa
+  - sudo add-apt-repository -y ppa:pothosware/support
+
+  # update after package changes
   - sudo apt-get update
 
   # install development dependencies
-  - sudo apt-get install -qq libnuma-dev cmake
+  - sudo apt-get install -qq libnuma-dev cmake libpoco-dev-min
 
   # install audio support dependencies
   - sudo apt-get install -qq portaudio19-dev libjack-jackd2-dev
 
   # install graphics support dependencies
-  - sudo apt-get install -qq qtbase5-dev libqt5svg5-dev
+  - sudo apt-get install -qq qtbase5-dev libqt5svg5-dev libqwt-qt5-dev
 
   # install python support dependencies
   - sudo apt-get install -qq python-dev python-numpy
-
-  # install poco and qwt development files from ppa
-  - sudo add-apt-repository -y ppa:pothosware/support
-  - sudo apt-get update
-  - sudo apt-get install -qq libpoco-dev-min libqwt-qt5-dev
 
   # install SoapySDR from source
   - git clone https://github.com/pothosware/SoapySDR.git
@@ -63,7 +59,7 @@ install:
 
 script:
   - mkdir build && cd build
-  - cmake ../ -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+  - cmake ../ -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DPYTHON_EXECUTABLE=/usr/bin/python
   - make -j2
   - sudo make install
 
