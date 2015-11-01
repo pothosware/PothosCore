@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -26,6 +26,19 @@ Pothos::TestingBase::~TestingBase(void)
     return;
 }
 
+/*!
+ * The special report exception thrown by report on errors
+ * so that the test handler will know its an intentional exit.
+ */
+struct TestingReportError : Pothos::Exception
+{
+    TestingReportError(const std::string &what):
+        Pothos::Exception(what)
+    {
+        return;
+    }
+};
+
 static Pothos::TestingBase *testInProgress = nullptr;
 static int lastLine = 0;
 static std::string lastFile;
@@ -48,6 +61,15 @@ void Pothos::TestingBase::runTests(void)
     }
     POTHOS_EXCEPTION_CATCH(const Exception &ex)
     {
+        try
+        {
+            dynamic_cast<const TestingReportError &>(ex);
+            throw;
+        }
+        catch (const std::bad_cast &)
+        {
+            //unknown, report a new error
+        }
         this->report("Unexpected error after last checkpoint", "runTests()", ex.displayText(), lastLine, lastFile);
     }
     testInProgress = nullptr;
@@ -66,15 +88,15 @@ void Pothos::TestingBase::report(
 
     //format an informational message
     std::string testMessage = Poco::format(
-        "%s:%d -- %s", Poco::Path(file).getFileName(), line, message);
+        "%s:%d\n  %s", Poco::Path(file).getFileName(), line, message);
     if (error.empty())
     {
         poco_information(Poco::Logger::get("Pothos.Testing"), testMessage);
     }
     else
     {
-        testMessage += "; Error: " + error;
+        testMessage += "\n  " + error;
         poco_information(Poco::Logger::get("Pothos.Testing"), testMessage);
-        throw Exception("Pothos::Testing " + testMessage);
+        throw TestingReportError("Pothos::Testing " + testMessage);
     }
 }

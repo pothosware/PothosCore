@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2013 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -23,4 +23,5 @@ void PothosUtilBase::loadModule(const std::string &, const std::string &path)
     {
         Pothos::PluginModule module(unquote(path));
     }
+    std::cout << "success!" << std::endl;
 }

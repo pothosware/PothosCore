@@ -78,13 +78,14 @@
 //! Test if statement is true
 #define POTHOS_TEST_TRUE(statement) \
 { \
-    __POTHOS_TEST_ASSERT(#statement, statement) \
+    __POTHOS_TEST_ASSERT("assert true " #statement, statement); \
 }
 
 //! Test if an equality operation is true
 #define POTHOS_TEST_EQUAL(lhs, rhs) \
 { \
-    __POTHOS_TEST_ASSERT(Pothos::TestingBase::current().toString(lhs) + \
+    __POTHOS_TEST_ASSERT( \
+        "assert equal " + Pothos::TestingBase::current().toString(lhs) + \
         " == " + Pothos::TestingBase::current().toString(rhs), (lhs) == (rhs)); \
 }
 

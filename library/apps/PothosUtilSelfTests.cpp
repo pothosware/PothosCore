@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -7,13 +7,35 @@
 #include <Pothos/System/Paths.hpp>
 #include <Poco/Process.h>
 #include <Poco/Pipe.h>
+#include <Poco/PipeStream.h>
+#include <Poco/String.h>
 #include <iostream>
+#include <sstream>
+#include <thread>
 
 struct SelfTestResults
 {
     std::vector<std::string> testsPassed;
     std::vector<std::string> testsFailed;
 };
+
+static void collectVerbose(const Poco::Pipe &pipe, std::string &out)
+{
+    Poco::PipeInputStream is(pipe);
+    std::stringstream ss;
+    try
+    {
+        std::string line;
+        while (is.good())
+        {
+            std::getline(is, line);
+            if (line.empty()) continue;
+            ss << "  | " << line << std::endl;
+        }
+    }
+    catch (...){}
+    out = Poco::trimRight(ss.str());
+}
 
 static bool spawnSelfTestOneProcess(const std::string &path)
 {
@@ -29,16 +51,26 @@ static bool spawnSelfTestOneProcess(const std::string &path)
 
     //launch
     Poco::Process::Env env;
-    Poco::Pipe outPipe, errPipe; //no fwd stdio
+    Poco::Pipe outPipe; //no fwd stdio
     Poco::ProcessHandle ph(Poco::Process::launch(
         Pothos::System::getPothosUtilExecutablePath(),
-        args, nullptr, &outPipe, &errPipe, env));
+        args, nullptr, &outPipe, &outPipe, env));
 
-    outPipe.close();
-    errPipe.close();
+    std::string verbose;
+    std::thread verboseThread(std::bind(&collectVerbose, std::ref(outPipe), std::ref(verbose)));
 
     const bool ok = (ph.wait() == success);
     std::cout << ((ok)? "success!" : "FAIL!") << std::endl;
+
+    outPipe.close();
+    verboseThread.join();
+    if (not ok)
+    {
+        std::cout << "  +---------------------------------------------------------------------------+" << std::endl;
+        std::cout << verbose << std::endl;
+        std::cout << "  +---------------------------------------------------------------------------+" << std::endl;
+    }
+
     return ok;
 }
 
@@ -57,7 +89,6 @@ static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults 
             else
             {
                 results.testsFailed.push_back(path.toString());
-                std::cout << std::endl;
             }
         }
     }
@@ -79,11 +110,10 @@ void PothosUtilBase::selfTestOne(const std::string &, const std::string &path)
     try
     {
         test->runTests();
-        std::cout << "success!\n";
+        std::cout << "success!" << std::endl;
     }
     catch(...)
     {
-        std::cout << "FAIL!\n";
         throw;
     }
 }
