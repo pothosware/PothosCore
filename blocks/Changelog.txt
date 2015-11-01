@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.3.0 (pending)
 ==========================
 
+- Created label to message event block
 - Added timeout param for socket endpoint open/close
 - Reorganized utility blocks into testers and stream
 - Moved communications blocks to pothos-comms toolkit
