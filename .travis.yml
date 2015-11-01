@@ -27,7 +27,9 @@ branches:
 
 install:
   # install development dependencies
-  - sudo apt-get install -qq libnuma-dev cmake
+  # No numa dev on dist trusty? E: Unable to locate package libnuma-dev
+  #- sudo apt-get install -qq libnuma-dev cmake
+  - sudo apt-get install -qq cmake
 
   # install audio support dependencies
   - sudo apt-get install -qq portaudio19-dev libjack-jackd2-dev
