@@ -199,6 +199,7 @@ list(APPEND POTHOS_SOURCES
     Util/TypeInfo.cpp
     Util/Compiler.cpp
     Util/EvalInterface.cpp
+    Util/Network.cpp
 )
 
 if(WIN32)

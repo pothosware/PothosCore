@@ -6,6 +6,7 @@
 #include <Pothos/Init.hpp>
 #include <Pothos/Remote.hpp>
 #include <Pothos/System.hpp>
+#include <Pothos/Util/Network.hpp>
 #include <Poco/Logger.h>
 #include <QMessageBox>
 #include <QApplication>
@@ -65,13 +66,13 @@ int main(int argc, char **argv)
         postStatusMessage("Launching scratch process...");
         try
         {
-            Pothos::RemoteClient client("tcp://[::1]");
+            Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr());
         }
         catch (const Pothos::RemoteClientError &)
         {
-            server = Pothos::RemoteServer("tcp://[::1]:"+Pothos::RemoteServer::getLocatorPort());
+            server = Pothos::RemoteServer("tcp://"+Pothos::Util::getLoopbackAddr(Pothos::RemoteServer::getLocatorPort()));
             //TODO make server background so it does not close with process
-            Pothos::RemoteClient client("tcp://[::1]"); //now it should connect to the new server
+            Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr()); //now it should connect to the new server
         }
     }
     catch (const Pothos::Exception &ex)

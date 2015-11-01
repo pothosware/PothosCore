@@ -6,6 +6,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote.hpp>
 #include <Pothos/Managed.hpp>
+#include <Pothos/Util/Network.hpp>
 #include <Poco/Pipe.h>
 #include <Poco/PipeStream.h>
 #include <Poco/URI.h>
@@ -130,9 +131,9 @@ POTHOS_TEST_BLOCK("/proxy/remote/tests", test_inception)
     auto env = Pothos::ProxyEnvironment::make("managed");
 
     //spawn server and connect
-    auto serverHandle1 = env->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://[::]");
+    auto serverHandle1 = env->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://"+Pothos::Util::getWildcardAddr());
     auto actualPort1 = serverHandle1.call<std::string>("getActualPort");
-    auto clientHandle1 = env->findProxy("Pothos/RemoteClient").callProxy("new", "tcp://[::1]:"+actualPort1);
+    auto clientHandle1 = env->findProxy("Pothos/RemoteClient").callProxy("new", "tcp://"+Pothos::Util::getLoopbackAddr(actualPort1));
 
     //create a remote environment
     auto &ios = clientHandle1.call<std::iostream &>("getIoStream");
@@ -140,9 +141,9 @@ POTHOS_TEST_BLOCK("/proxy/remote/tests", test_inception)
 
     //now the remove env can make a new server
     //which can now be connected to locally
-    auto serverHandle2 = remoteEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://[::]");
+    auto serverHandle2 = remoteEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://"+Pothos::Util::getWildcardAddr());
     auto actualPort2 = serverHandle2.call<std::string>("getActualPort");
-    auto clientHandle2 = env->findProxy("Pothos/RemoteClient").callProxy("new", "tcp://[::1]:"+actualPort2);
+    auto clientHandle2 = env->findProxy("Pothos/RemoteClient").callProxy("new", "tcp://"+Pothos::Util::getLoopbackAddr(actualPort2));
 }
 
 //! A thread to handle remote proxy requests
@@ -174,8 +175,8 @@ POTHOS_TEST_BLOCK("/proxy/remote/tests", test_remote)
 
 POTHOS_TEST_BLOCK("/proxy/remote/tests", test_server)
 {
-    Pothos::RemoteServer server("tcp://[::]");
-    Pothos::RemoteClient client("tcp://[::1]:"+server.getActualPort());
+    Pothos::RemoteServer server("tcp://"+Pothos::Util::getWildcardAddr());
+    Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr(server.getActualPort()));
     auto env = Pothos::RemoteClient::makeEnvironment(client.getIoStream(), "managed");
     std::cout << "Env peering address " << env->getPeeringAddress() << std::endl;
 }

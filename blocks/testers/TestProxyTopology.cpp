@@ -5,6 +5,7 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote.hpp>
+#include <Pothos/Util/Network.hpp>
 #include <Poco/JSON/Object.h>
 #include <iostream>
 
@@ -57,8 +58,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
 {
     //spawn a server and client
     std::cout << "create proxy server\n";
-    Pothos::RemoteServer server("tcp://[::]");
-    Pothos::RemoteClient client("tcp://[::1]:"+server.getActualPort());
+    Pothos::RemoteServer server("tcp://"+Pothos::Util::getWildcardAddr());
+    Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr(server.getActualPort()));
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto envRemote = client.makeEnvironment("managed");
 

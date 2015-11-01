@@ -4,6 +4,7 @@
 #include "PothosUtil.hpp"
 #include <Pothos/Init.hpp>
 #include <Pothos/Remote.hpp>
+#include <Pothos/Util/Network.hpp>
 #include <Poco/Net/ServerSocket.h>
 #include <Poco/Net/SocketStream.h>
 #include <Poco/Net/TCPServer.h>
@@ -106,7 +107,7 @@ void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
     Pothos::init();
 
     //parse the URI
-    const std::string defaultUri = "tcp://[::]:"+Pothos::RemoteServer::getLocatorPort();
+    const std::string defaultUri = "tcp://"+Pothos::Util::getWildcardAddr(Pothos::RemoteServer::getLocatorPort());
     Poco::URI uri(uriStr.empty()?defaultUri:uriStr);
     const std::string &host = uri.getHost();
     const std::string &port = std::to_string(uri.getPort());
