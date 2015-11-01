@@ -42,3 +42,11 @@ if (POCO_FOUND AND POCO_Util_FOUND AND POCO_Net_FOUND AND POCO_XML_FOUND AND POC
         list(APPEND Poco_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
     endif()
 endif()
+
+if (Poco_FOUND)
+    FILE (READ "${Poco_INCLUDE_DIRS}/Poco/Version.h" Poco_VERSION)
+    set(_ws "[ \r\t\n^$]+")
+    STRING (REGEX REPLACE "^.*#define${_ws}POCO_VERSION${_ws}(0x[0-9a-fA-F]*)${_ws}.*$" "\\1" Poco_VERSION "${Poco_VERSION}")
+    set(_ws)
+    message(STATUS "Poco_VERSION: ${Poco_VERSION}")
+endif()

@@ -21,9 +21,9 @@ include(${Pothos_DIR}/SetupPoco.cmake)
 
 set(POCO_DIR poco154)
 
-if (NOT Poco_FOUND)
+if (NOT Poco_FOUND OR "${Poco_VERSION}" LESS 0x01050400)
 
-    message(STATUS "Poco not found - using built-in Poco")
+    message(STATUS "Poco >= 1.5.4 not found - using built-in Poco")
 
     if (NOT EXISTS ${PROJECT_SOURCE_DIR}/${POCO_DIR}/CMakeLists.txt)
         message(FATAL_ERROR "poco submodule not configured (git submodule init && git submodule update)")
