@@ -21,7 +21,7 @@ include(${Pothos_DIR}/SetupPoco.cmake)
 
 set(POCO_DIR poco154)
 
-if (NOT Poco_FOUND OR "${Poco_VERSION}" LESS 0x01050400)
+if (NOT Poco_FOUND)
 
     message(STATUS "Poco >= 1.5.4 not found - using built-in Poco")
 
