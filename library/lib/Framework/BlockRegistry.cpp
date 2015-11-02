@@ -92,7 +92,6 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     {
         auto element = factory.opaqueCall(args, numArgs).extract<Pothos::Block *>();
         if (element->getName().empty()) element->setName(path); //a better name
-        element->holdRef(Pothos::Object(plugin.getModule()));
         return Pothos::Object(std::shared_ptr<Pothos::Block>(element));
     }
 
@@ -101,7 +100,6 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     {
         auto element = factory.opaqueCall(args, numArgs).extract<std::shared_ptr<Pothos::Block>>();
         if (element->getName().empty()) element->setName(path); //a better name
-        element->holdRef(Pothos::Object(plugin.getModule()));
         return Pothos::Object(element);
     }
 
@@ -110,7 +108,6 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     {
         auto element = factory.opaqueCall(args, numArgs).extract<Pothos::Topology *>();
         if (element->getName().empty()) element->setName(path); //a better name
-        element->holdRef(Pothos::Object(plugin.getModule()));
         return Pothos::Object(std::shared_ptr<Pothos::Topology>(element));
     }
 
@@ -119,7 +116,6 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     {
         auto element = factory.opaqueCall(args, numArgs).extract<std::shared_ptr<Pothos::Topology>>();
         if (element->getName().empty()) element->setName(path); //a better name
-        element->holdRef(Pothos::Object(plugin.getModule()));
         return Pothos::Object(element);
     }
 

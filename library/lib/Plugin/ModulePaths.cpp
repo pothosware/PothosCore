@@ -29,7 +29,7 @@ std::vector<std::string> Pothos::PluginModule::getPluginPaths(void) const
 void updatePluginAssociation(const std::string &action, const Pothos::Plugin &plugin)
 {
     Poco::RWLock::ScopedWriteLock lock(getModulePathsMutex());
-    auto &v = getModulePathsMap()[plugin.getModule().getFilePath()];
+    auto &v = getModulePathsMap()[plugin.getModulePath()];
     const auto &path = plugin.getPath().toString();
     if (action == "add")
     {

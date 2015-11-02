@@ -8,10 +8,10 @@ Pothos::Plugin::Plugin(void)
     return;
 }
 
-Pothos::Plugin::Plugin(const PluginPath &path, const Object &object, const PluginModule &module):
-    _module(module),
+Pothos::Plugin::Plugin(const PluginPath &path, const Object &object, const std::string &modulePath):
     _path(path),
-    _object(object)
+    _object(object),
+    _modulePath(modulePath)
 {
     return;
 }
@@ -26,9 +26,9 @@ const Pothos::Object &Pothos::Plugin::getObject(void) const
     return _object;
 }
 
-const Pothos::PluginModule &Pothos::Plugin::getModule(void) const
+const std::string &Pothos::Plugin::getModulePath(void) const
 {
-    return _module;
+    return _modulePath;
 }
 
 std::string Pothos::Plugin::toString(void) const
@@ -38,9 +38,9 @@ std::string Pothos::Plugin::toString(void) const
     {
         output += " {" + std::string(this->getObject().type().name()) + "}";
     }
-    if (not this->getModule().getFilePath().empty())
+    if (not this->getModulePath().empty())
     {
-        output += " [" + this->getModule().getFilePath() + "]";
+        output += " [" + this->getModulePath() + "]";
     }
     return output;
 }
@@ -52,6 +52,6 @@ static auto managedPlugin = Pothos::ManagedClass()
     .registerConstructor<Pothos::Plugin, const Pothos::PluginPath &, const Pothos::Object &>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Plugin, getPath))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Plugin, getObject))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Plugin, getModule))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Plugin, getModulePath))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Plugin, toString))
     .commit("Pothos/Plugin");
