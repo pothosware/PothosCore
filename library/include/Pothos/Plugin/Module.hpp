@@ -60,6 +60,9 @@ public:
 private:
     struct Impl;
     std::shared_ptr<Impl> _impl;
+
+    friend struct Impl;
+    static std::vector<std::string> getModulePluginPaths(const std::string &filePath);
 };
 
 } //namespace Pothos

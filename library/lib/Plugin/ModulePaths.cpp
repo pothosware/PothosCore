@@ -20,10 +20,10 @@ static ModulePathsMap &getModulePathsMap(void)
     return *sh.get();
 }
 
-std::vector<std::string> Pothos::PluginModule::getPluginPaths(void) const
+std::vector<std::string> Pothos::PluginModule::getModulePluginPaths(const std::string &filePath)
 {
     Poco::RWLock::ScopedReadLock lock(getModulePathsMutex());
-    return getModulePathsMap()[this->getFilePath()];
+    return getModulePathsMap()[filePath];
 }
 
 void updatePluginAssociation(const std::string &action, const Pothos::Plugin &plugin)

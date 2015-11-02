@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Paths.hpp>
+#include <Pothos/Plugin/Registry.hpp>
 #include <Pothos/Plugin/Module.hpp>
 #include <Pothos/Plugin/Exception.hpp>
 #include <Pothos/Object.hpp> //pulls in full Object implementation
@@ -62,6 +63,11 @@ struct Pothos::PluginModule::Impl
     {
         if (sharedLibrary.isLoaded())
         {
+            for (std::string pluginPath : getModulePluginPaths(this->path))
+            {
+                Pothos::PluginRegistry::remove(pluginPath);
+            }
+
             poco_information(Poco::Logger::get("Pothos.PluginModule.unload"), sharedLibrary.getPath());
             sharedLibrary.unload();
         }
@@ -102,6 +108,11 @@ std::string Pothos::PluginModule::getFilePath(void) const
 {
     if (not _impl) return "";
     return _impl->path;
+}
+
+std::vector<std::string> Pothos::PluginModule::getPluginPaths() const
+{
+    return getModulePluginPaths(this->getFilePath());
 }
 
 #include <Pothos/Managed.hpp>
