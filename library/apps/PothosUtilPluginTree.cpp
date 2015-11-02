@@ -24,7 +24,7 @@ static void printPluginTreeR(const Pothos::PluginPath &path)
 
 void PothosUtilBase::printPluginTree(const std::string &, const std::string &pluginPath)
 {
-    Pothos::init();
+    Pothos::ScopedInit init;
     printPluginTreeR(pluginPath.empty()?"/":pluginPath);
     std::cout << std::endl;
 }

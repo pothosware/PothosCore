@@ -104,7 +104,7 @@ void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
     std::cerr.setf(std::ios::unitbuf);
     std::clog.setf(std::ios::unitbuf);
 
-    Pothos::init();
+    Pothos::ScopedInit init;
 
     //parse the URI
     const std::string defaultUri = "tcp://"+Pothos::Util::getWildcardAddr(Pothos::RemoteServer::getLocatorPort());

@@ -58,9 +58,6 @@ int main(int argc, char **argv)
     Pothos::RemoteServer server;
     try
     {
-        postStatusMessage("Initializing Pothos plugins...");
-        Pothos::init();
-
         //try to talk to the server on localhost, if not there, spawn a custom one
         //make a server and node that is temporary with this process
         postStatusMessage("Launching scratch process...");
@@ -84,6 +81,9 @@ int main(int argc, char **argv)
 
     POTHOS_EXCEPTION_TRY
     {
+        postStatusMessage("Initializing Pothos plugins...");
+        Pothos::ScopedInit init;
+
         //create the main window for the GUI
         std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr));
         mainWindow->show();

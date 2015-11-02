@@ -13,7 +13,7 @@
 
 void PothosUtilBase::printDeviceInfo(void)
 {
-    Pothos::init();
+    Pothos::ScopedInit init;
 
     const auto deviceType = this->config().getString("deviceType");
     if (deviceType.empty())
