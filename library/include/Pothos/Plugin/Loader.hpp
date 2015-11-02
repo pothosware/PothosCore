@@ -9,7 +9,9 @@
 ///
 
 #pragma once
+#include <Pothos/Plugin/Module.hpp>
 #include <Pothos/Config.hpp>
+#include <vector>
 
 namespace Pothos {
 
@@ -19,8 +21,9 @@ public:
 
     /*!
      * Load all modules in the system install paths.
+     * They will not be unloaded so long as the returned vector is not destroyed.
      */
-    static void loadModules(void);
+    static std::vector<Pothos::PluginModule> loadModules(void);
 
 private:
     //! private constructor: we dont make PluginLoader instances
