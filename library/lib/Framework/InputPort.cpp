@@ -4,6 +4,15 @@
 #include <Pothos/Framework/InputPortImpl.hpp>
 #include "Framework/WorkerActor.hpp"
 
+/*!
+ * An arbitrary bound on the queue size to detect buggy situations
+ * where the downstream block is not consuming an input resource
+ * and an upstream block is able to produce without back-pressure.
+ * This should probably be a configurable system-wide value,
+ * but for now the detection itself is more valuable to have.
+ */
+static const size_t MaxQueueCapacity = 1024;
+
 Pothos::InputPort::InputPort(void):
     _actor(nullptr),
     _isSlot(false),
@@ -58,7 +67,17 @@ void Pothos::InputPort::asyncMessagesPush(const Pothos::Object &message, const P
 {
     assert(_actor != nullptr);
     std::lock_guard<Util::SpinLock> lock(_asyncMessagesLock);
-    if (_asyncMessages.full()) _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
+    if (_asyncMessages.full())
+    {
+        if (_asyncMessages.size() >= MaxQueueCapacity)
+        {
+            _asyncMessages.clear();
+            poco_error_f2(Poco::Logger::get("Pothos.InputPort.messages"),
+                "%s[%s] detected input message overflow condition",
+                _actor->block->getName(), this->name());
+        }
+        else _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
+    }
     _asyncMessages.push_back(std::make_pair(message, token));
     _actor->flagExternalChange();
 }
@@ -73,7 +92,17 @@ void Pothos::InputPort::slotCallsPush(const Pothos::Object &args, const Pothos::
 {
     assert(_actor != nullptr);
     std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
-    if (_slotCalls.full()) _slotCalls.set_capacity(_slotCalls.capacity()*2);
+    if (_slotCalls.full())
+    {
+        if (_slotCalls.size() >= MaxQueueCapacity)
+        {
+            _slotCalls.clear();
+            poco_error_f2(Poco::Logger::get("Pothos.InputPort.slots"),
+                "%s[%s] detected input slot overflow condition",
+                _actor->block->getName(), this->name());
+        }
+        else _slotCalls.set_capacity(_slotCalls.capacity()*2);
+    }
     _slotCalls.push_back(std::make_pair(args, token));
     _actor->flagExternalChange();
 }
