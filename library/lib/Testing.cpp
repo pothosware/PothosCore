@@ -63,8 +63,8 @@ void Pothos::TestingBase::runTests(void)
     {
         try
         {
-            dynamic_cast<const TestingReportError &>(ex);
-            throw;
+            const TestingReportError &reportError = dynamic_cast<const TestingReportError &>(ex);
+            throw reportError;
         }
         catch (const std::bad_cast &)
         {
