@@ -169,13 +169,13 @@ void Pothos::PluginRegistry::add(const Plugin &plugin_)
         if (root->hasPlugin)
         {
             const auto newModulePath = getActiveModuleLoading().getFilePath();
-            const auto currentModulePath = root->plugin.getModule().getFilePath();
+            const auto currentModulePath = root->plugin.getModulePath();
             throw Pothos::PluginRegistryError("Pothos::PluginRegistry::add("+path.toString()+")", Poco::format(
                 "plugin already registered\n\tLoading: %s, Conflicts: %s", newModulePath, currentModulePath));
         }
 
-        //store the plugin and attach the module
-        plugin = Plugin(plugin.getPath(), plugin.getObject(), getActiveModuleLoading());
+        //store the plugin
+        plugin = Plugin(plugin.getPath(), plugin.getObject(), getActiveModuleLoading().getFilePath());
         updatePluginAssociation("add", plugin);
         root->hasPlugin = true;
         root->plugin = plugin;
@@ -302,7 +302,7 @@ static void loadInfoDump(const Pothos::PluginPath &path, const RegistryEntry &en
         assert(path == entry.plugin.getPath());
         const auto &obj = entry.plugin.getObject();
         if (obj) dump.objectType = obj.toString();
-        dump.modulePath = entry.plugin.getModule().getFilePath();
+        dump.modulePath = entry.plugin.getModulePath();
     }
     for (const auto &name : entry.nodeNamesOrdered)
     {

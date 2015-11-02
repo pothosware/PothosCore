@@ -31,7 +31,7 @@ public:
      */
     Plugin(const PluginPath &path,
         const Object &object = Object(),
-        const PluginModule &module = PluginModule());
+        const std::string &modulePath = "");
 
     /*!
      * Create a plugin from components.
@@ -46,18 +46,16 @@ public:
     //! Get the object from the Plugin.
     const Object &getObject(void) const;
 
-    //! Get the Module from the Plugin.
-    const PluginModule &getModule(void) const;
+    //! Get the module path from the Plugin.
+    const std::string &getModulePath(void) const;
 
     //! String representation of plugin
     std::string toString(void) const;
 
 private:
-    PluginModule _module; //declared first, destroyed last
-    //-- since we must delete the Object before its containing module
-
     PluginPath _path;
     Object _object;
+    std::string _modulePath;
 };
 
 } //namespace Pothos

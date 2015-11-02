@@ -17,6 +17,8 @@ namespace Pothos {
 struct InitSingleton
 {
     InitSingleton(void);
+
+    std::vector<Pothos::PluginModule> loadedModules;
 };
 } //namespace Pothos
 
@@ -100,5 +102,5 @@ Pothos::InitSingleton::InitSingleton(void)
     ));
 
     //load the modules for plugin system
-    PluginLoader::loadModules();
+    loadedModules = PluginLoader::loadModules();
 }

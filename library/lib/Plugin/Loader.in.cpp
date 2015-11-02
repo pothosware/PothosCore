@@ -37,7 +37,7 @@ std::vector<Poco::Path> getModulePaths(const Poco::Path &path)
     return paths;
 }
 
-void Pothos::PluginLoader::loadModules(void)
+std::vector<Pothos::PluginModule> Pothos::PluginLoader::loadModules(void)
 {
     //the default search path
     std::vector<Poco::Path> searchPaths;
@@ -80,15 +80,18 @@ void Pothos::PluginLoader::loadModules(void)
     }
 
     //wait for completion of future module load
+    std::vector<Pothos::PluginModule> modules;
     for (auto &future : futures)
     {
         POTHOS_EXCEPTION_TRY
         {
-            future.get();
+            modules.push_back(future.get());
         }
         POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
         {
             poco_error(Poco::Logger::get("Pothos.PluginLoader.load"), ex.displayText());
         }
     }
+
+    return modules;
 }
