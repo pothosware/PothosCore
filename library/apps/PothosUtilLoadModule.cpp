@@ -3,6 +3,7 @@
 
 #include "PothosUtil.hpp"
 #include <Pothos/Plugin/Module.hpp>
+#include <Pothos/Plugin/Registry.hpp>
 #include <iostream>
 #include <cstdlib>
 
@@ -22,6 +23,10 @@ void PothosUtilBase::loadModule(const std::string &, const std::string &path)
     //this tests module load and unload -- could throw or cause abort
     {
         Pothos::PluginModule module(unquote(path));
+        for (std::string pluginPath : module.getPluginPaths())
+        {
+            Pothos::PluginRegistry::remove(pluginPath);
+        }
     }
     std::cout << "success!" << std::endl;
 }
