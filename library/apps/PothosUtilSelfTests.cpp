@@ -143,6 +143,8 @@ void PothosUtilBase::selfTests(const std::string &, const std::string &path)
         {
             std::cout << "  FAIL: " << *it << std::endl;
         }
+        std::cout << std::endl;
+        throw Pothos::Exception("Failures occurred in self test suite.");
     }
     std::cout << std::endl;
 }
