@@ -10,7 +10,7 @@
 
 void PothosUtilBase::runTopology(void)
 {
-    Pothos::init();
+    Pothos::ScopedInit init;
 
     //read the complete file into a string
     const auto path = this->config().getString("inputFile");

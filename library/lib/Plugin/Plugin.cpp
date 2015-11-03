@@ -1,15 +1,16 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin/Plugin.hpp>
 
-Pothos::Plugin::Plugin(void)
+Pothos::Plugin::Plugin(void):
+    _module(nullptr)
 {
     return;
 }
 
 Pothos::Plugin::Plugin(const PluginPath &path, const Object &object, const PluginModule &module):
-    _module(module),
+    _module(&module),
     _path(path),
     _object(object)
 {
@@ -28,7 +29,7 @@ const Pothos::Object &Pothos::Plugin::getObject(void) const
 
 const Pothos::PluginModule &Pothos::Plugin::getModule(void) const
 {
-    return _module;
+    return *_module;
 }
 
 std::string Pothos::Plugin::toString(void) const

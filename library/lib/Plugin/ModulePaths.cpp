@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin/Module.hpp>
@@ -20,10 +20,10 @@ static ModulePathsMap &getModulePathsMap(void)
     return *sh.get();
 }
 
-std::vector<std::string> Pothos::PluginModule::getPluginPaths(void) const
+std::vector<std::string> getPluginPaths(const Pothos::PluginModule &module)
 {
     Poco::RWLock::ScopedReadLock lock(getModulePathsMutex());
-    return getModulePathsMap()[this->getFilePath()];
+    return getModulePathsMap()[module.getFilePath()];
 }
 
 void updatePluginAssociation(const std::string &action, const Pothos::Plugin &plugin)

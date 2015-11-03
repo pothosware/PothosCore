@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Init.hpp>
@@ -23,6 +23,12 @@ struct InitSingleton
 static Pothos::InitSingleton &getInitSingleton(void)
 {
     static Poco::SingletonHolder<Pothos::InitSingleton> sh;
+    return *sh.get();
+}
+
+static std::vector<Pothos::PluginModule> &getLoadedModules(void)
+{
+    static Poco::SingletonHolder<std::vector<Pothos::PluginModule>> sh;
     return *sh.get();
 }
 
@@ -100,5 +106,20 @@ Pothos::InitSingleton::InitSingleton(void)
     ));
 
     //load the modules for plugin system
-    PluginLoader::loadModules();
+    getLoadedModules() = PluginLoader::loadModules();
+}
+
+void Pothos::deinit(void)
+{
+    getLoadedModules().clear();
+}
+
+Pothos::ScopedInit::ScopedInit(void)
+{
+    Pothos::init();
+}
+
+Pothos::ScopedInit::~ScopedInit(void)
+{
+    Pothos::deinit();
 }

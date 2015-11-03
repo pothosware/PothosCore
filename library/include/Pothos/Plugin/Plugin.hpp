@@ -4,7 +4,7 @@
 /// The plugin representation for the plugin registry.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -31,7 +31,7 @@ public:
      */
     Plugin(const PluginPath &path,
         const Object &object = Object(),
-        const PluginModule &module = PluginModule());
+        const PluginModule &module = PluginModule::null());
 
     /*!
      * Create a plugin from components.
@@ -53,9 +53,8 @@ public:
     std::string toString(void) const;
 
 private:
-    PluginModule _module; //declared first, destroyed last
-    //-- since we must delete the Object before its containing module
-
+    // This module owns the plugin, so its just a pointer.
+    const PluginModule *_module;
     PluginPath _path;
     Object _object;
 };

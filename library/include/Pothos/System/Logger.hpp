@@ -4,7 +4,7 @@
 /// API calls for logger control.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -38,6 +38,11 @@ public:
      * \param addr the log destination in host:port format
      */
     static void startSyslogForwarding(const std::string &addr);
+
+    /*!
+     * Stop all syslog forwarding setup by startSyslogForwarding().
+     */
+    static void stopSyslogForwarding(void);
 
     /*!
      * Redirect standard IO to the logging facility.

@@ -4,12 +4,14 @@
 /// The loader is responsible for loading runtime modules into the plugin registry.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Plugin/Module.hpp>
+#include <vector>
 
 namespace Pothos {
 
@@ -19,8 +21,11 @@ public:
 
     /*!
      * Load all modules in the system install paths.
+     * The caller should hold onto the module handles.
+     * Releasing the handles will unload the plugins.
+     * \return a list of loaded module handles
      */
-    static void loadModules(void);
+    static std::vector<PluginModule> loadModules(void);
 
 private:
     //! private constructor: we dont make PluginLoader instances

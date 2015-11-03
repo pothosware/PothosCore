@@ -4,7 +4,7 @@
 /// A PluginModule interacts with loadable library modules and the plugin registry.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -22,6 +22,9 @@ namespace Pothos {
 class POTHOS_API PluginModule
 {
 public:
+    //! A reference to a permanent empty module
+    static const PluginModule &null(void);
+
     /*!
      * Create a null PluginModule.
      */
@@ -34,6 +37,9 @@ public:
      * \param path the path to a loadable module on the file system
      */
     PluginModule(const std::string &path);
+
+    //! Plugin module destructor.
+    ~PluginModule(void);
 
     /*!
      * Test load this libray module within a separate process
@@ -55,7 +61,7 @@ public:
      * Get the paths that this module loaded into the plugin registry.
      * Each path is a string that represents a path in the registry.
      */
-    std::vector<std::string> getPluginPaths(void) const;
+    const std::vector<std::string> &getPluginPaths(void) const;
 
 private:
     struct Impl;

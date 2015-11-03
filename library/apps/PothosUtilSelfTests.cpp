@@ -107,7 +107,7 @@ static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults 
 
 void PothosUtilBase::selfTestOne(const std::string &, const std::string &path)
 {
-    Pothos::init();
+    Pothos::ScopedInit init;
 
     auto plugin = Pothos::PluginRegistry::get(path);
     auto test = plugin.getObject().extract<std::shared_ptr<Pothos::TestingBase>>();
@@ -125,7 +125,7 @@ void PothosUtilBase::selfTestOne(const std::string &, const std::string &path)
 
 void PothosUtilBase::selfTests(const std::string &, const std::string &path)
 {
-    Pothos::init();
+    Pothos::ScopedInit init;
 
     SelfTestResults results;
     runPluginSelfTestsR(path.empty()? "/" : path, results);
