@@ -166,6 +166,8 @@ public:
 private:
     void updateTable(void)
     {
+        if (not this->isActive()) return;
+
         if (_wave == "UNIFORM")
         {
             _uniform = std::uniform_real_distribution<>(_mean-_b, _mean+_b);
