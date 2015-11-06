@@ -33,14 +33,19 @@ if (NOT Poco_FOUND)
     #used by uninstall target and PothosConfig
     set(POCO_IN_TREE TRUE)
 
-    set(ENABLE_MONGODB OFF CACHE INTERNAL "")
-    set(ENABLE_PDF OFF CACHE INTERNAL "")
-    set(ENABLE_NETSSL OFF CACHE INTERNAL "")
-    set(ENABLE_CRYPTO OFF CACHE INTERNAL "")
-    set(ENABLE_DATA OFF CACHE INTERNAL "")
-    set(ENABLE_SEVENZIP OFF CACHE INTERNAL "")
-    set(ENABLE_ZIP OFF CACHE INTERNAL "")
-    set(ENABLE_APACHECONNECTOR OFF CACHE INTERNAL "")
+    #when in-tree poco is selected, default to a minimum build
+    #users can specify -DPOCO_MIN_BUILD=TRUE to enable full poco
+    option(POCO_MIN_BUILD "Minimum build for in-tree Poco" TRUE)
+    if(POCO_MIN_BUILD)
+        set(ENABLE_MONGODB OFF CACHE INTERNAL "")
+        set(ENABLE_PDF OFF CACHE INTERNAL "")
+        set(ENABLE_NETSSL OFF CACHE INTERNAL "")
+        set(ENABLE_CRYPTO OFF CACHE INTERNAL "")
+        set(ENABLE_DATA OFF CACHE INTERNAL "")
+        set(ENABLE_SEVENZIP OFF CACHE INTERNAL "")
+        set(ENABLE_ZIP OFF CACHE INTERNAL "")
+        set(ENABLE_APACHECONNECTOR OFF CACHE INTERNAL "")
+    endif()
 
     # Include the Pothos library config into the top level.
     # This brings in LIB_SUFFIX and RPATH settings for Poco.
