@@ -269,10 +269,6 @@ bool Pothos::WorkerActor::preWorkTasks(void)
 {
     const size_t BIG = (1 << 30);
 
-    bool allOutputsReady = true;
-    bool allInputsReady = true;
-    bool hasInputMessage = false;
-
     //////////////// output state calculation ///////////////////
     block->_workInfo.minOutElements = BIG;
     block->_workInfo.minAllOutElements = BIG;
@@ -280,6 +276,12 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     {
         auto &port = *entry.second;
         port._workEvents = 0;
+
+        //an empty token manager means that upstream blocks
+        //hold all of our message resources, we can't continue
+        if (port.tokenManagerEmpty()) return false;
+
+        //signal ports don't use buffers, skip the code below
         if (port.isSignal()) continue;
 
         //is it ok to use the read-before-write optimization?
@@ -308,8 +310,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         }
         port._buffer.dtype = port.dtype(); //always copy from port's dtype setting
         port._elements = port._buffer.elements();
-        if (port._elements == 0) allOutputsReady = false;
-        if (port.tokenManagerEmpty()) allOutputsReady = false;
+        if (port._elements == 0) return false;
         port._pendingElements = 0;
         if (port.index() != -1)
         {
@@ -321,6 +322,8 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     }
 
     //////////////// input state calculation ///////////////////
+    bool allInputsReady = true;
+    bool hasInputMessage = false;
     block->_workInfo.minInElements = BIG;
     block->_workInfo.minAllInElements = BIG;
     for (const auto &entry : this->inputs)
@@ -358,7 +361,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     //arbitrary time, but its small
     block->_workInfo.maxTimeoutNs = 1000000; //1 millisecond
 
-    return allOutputsReady and (allInputsReady or hasInputMessage);
+    return allInputsReady or hasInputMessage;
 }
 
 /***********************************************************************
