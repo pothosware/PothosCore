@@ -143,7 +143,7 @@ public:
     void setFrequency(const double &freq)
     {
         _freq = freq;
-        this->updateStep();
+        this->updateTable();
     }
 
     double getFrequency(void)
@@ -154,7 +154,7 @@ public:
     void setSampleRate(const double &rate)
     {
         _rate = rate;
-        this->updateStep();
+        this->updateTable();
     }
 
     double getSampleRate(void)
@@ -165,7 +165,7 @@ public:
     void setResolution(const double &res)
     {
         _res = res;
-        this->updateStep();
+        this->updateTable();
     }
 
     double getResolution(void)
@@ -174,8 +174,11 @@ public:
     }
 
 private:
-    void updateStep(void)
+
+    void updateTable(void)
     {
+        if (not this->isActive()) return;
+
         //This fraction (of a period) is used to determine table size efficacy.
         //When specified, use the resolution, otherwise the user's frequency.
         const auto frac = ((_res == 0.0)?_freq:_res)/_rate;
@@ -197,17 +200,14 @@ private:
 
         //update step: given ratio and table size
         _step = size_t(std::llround((_freq/_rate)*numEntries));
-
-        //check for table size change and update
-        if (numEntries != _table.size())
+        if (_step == 0 and _freq != 0.0)
         {
-            _table.resize(numEntries);
-            this->updateTable();
+            throw Pothos::InvalidArgumentException("WaveformSource::updateTable()", "step size not achievable");
         }
-    }
 
-    void updateTable(void)
-    {
+        //resize the table for the new number of entries
+        _table.resize(numEntries);
+
         if (_wave == "CONST")
         {
             for (size_t i = 0; i < _table.size(); i++)
