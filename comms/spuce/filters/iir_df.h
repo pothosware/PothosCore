@@ -12,7 +12,7 @@ namespace spuce {
 //! \author Tony Kirke
 //!  \ingroup double_templates iir
 template <class Numeric, class Coeff = float_type> class iir_df {
-public:
+ public:
 	//  iir_df<Numeric, Coeff>() { ; }
   iir_df<Numeric, Coeff>(const int order=1) : poles(order), zeros(order + 1) {
     for (auto i = 0; i < order + 1; i++) zeros.settap(i,1.0);
