@@ -7,7 +7,7 @@
 #include <spuce/filters/sinc_fir.h>
 namespace spuce {
 void sinc_fir(fir_coeff<float_type>& sincf, float_type f) {
-  int len = sincf.number_of_taps();
+  size_t len = sincf.number_of_taps();
 	std::vector<float_type> taps(len);
 	float_type sum=0;
 	for (size_t i = 0; i < len; i++) {

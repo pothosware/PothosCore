@@ -110,7 +110,6 @@ std::vector<float_type> hann(long nf) {
 std::vector<float_type> hanning(long nf) {
   std::vector<float_type> w(nf);
   // nf = filter length in samples
-  long even = (nf % 2) == 0;
   float_type xi;
   for (int i = 0; i < nf; i++) {
       xi = i+1;

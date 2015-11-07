@@ -22,7 +22,7 @@ std::vector<double> design_fir(const std::string& fir_type,
 	if (fir_type == "butterworth") {
 		butterworth_fir(filt, spb);
 	}	else if (fir_type == "gaussian") {
-		gaussian_fir(filt,bt,spb);
+		gaussian_fir(filt,bt);
 	}	else if (fir_type == "sinc") {
 		sinc_fir(filt,bt);
 	}	else if (fir_type == "remez") {
