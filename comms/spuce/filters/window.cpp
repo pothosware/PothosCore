@@ -71,6 +71,23 @@ float_type io(float_type x) {
   }
   return (e);
 }
+std::vector<float_type> rectangular(long nf) {
+    std::vector<float_type> w(nf);
+    for (int i = 0; i < nf; i++) w[i] = 1.0;
+    return (w);
+}
+std::vector<float_type> flattop(long nf)
+{
+	static const double a0 = 1.0, a1 = 1.93, a2 = 1.29, a3 = 0.388, a4=0.028;
+	std::vector<float_type> w(nf);
+	for (int i = 0; i < nf; i++) {
+		w[i] = a0	-a1*std::cos((2.0*M_PI*i)/(nf-1))
+			+a2*std::cos((4.0*M_PI*i)/(nf-1))
+			-a3*std::cos((6.0*M_PI*i)/(nf-1))
+			+a4*std::cos((8.0*M_PI*i)/(nf-1));
+	}
+	return w;
+}
 //!  \ingroup fir
 //! \brief hamming window \f$ w(n) = 0.54 - 0.46*cos( 2*\pi*n/(nf-1) )\f$
 std::vector<float_type> hamming(long nf) {

@@ -23,14 +23,12 @@ std::vector<float_type> design_window(const std::string& fir_type, int order, fl
 		win = bartlett(order);
 	} else if (fir_type == "chebyshev") {
 		win = cheby(order, beta);
+	} else if (fir_type == "flattop") {
+		win = flattop(order);
 	} else {
-		std::cout << "Invalid type " << fir_type << "\n";
+		win = rectangular(order);
 	}
 
-	// Normalize DC response to 1.0
-	float_type sum = 0;
-	for (size_t i=0;i<win.size();i++) sum += win[i];
-	for (size_t i=0;i<win.size();i++) win[i] /= sum;
 	return win;
 }
 }  // namespace spuce
