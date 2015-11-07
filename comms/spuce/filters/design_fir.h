@@ -1,6 +1,7 @@
 #pragma once
 // Copyright (c) 2015 Tony Kirke.  Boost Software License - Version 1.0  (http://www.opensource.org/licenses/BSL-1.0)
 #include <spuce/filters/butterworth_fir.h>
+#include <spuce/filters/sinc_fir.h>
 #include <spuce/filters/gaussian_fir.h>
 #include <spuce/filters/remez_fir.h>
 #include <spuce/filters/raised_cosine.h>
@@ -22,6 +23,8 @@ std::vector<double> design_fir(const std::string& fir_type,
 		butterworth_fir(filt, spb);
 	}	else if (fir_type == "gaussian") {
 		gaussian_fir(filt,bt,spb);
+	}	else if (fir_type == "sinc") {
+		sinc_fir(filt,bt);
 	}	else if (fir_type == "remez") {
 		std::vector<float_type> bands(4);
 		std::vector<float_type> des(4);

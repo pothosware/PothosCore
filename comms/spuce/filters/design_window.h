@@ -18,6 +18,7 @@ std::vector<float_type> design_window(const std::string& fir_type, int order, fl
 	} else if (fir_type == "blackman") {
 		win =  blackman(order);
 	} else if (fir_type == "kaiser") {
+		double kaiser_ripple = kaiser_beta(60.01);
 		win =  kaiser(order, beta);
 	} else if (fir_type == "bartlett") {
 		win = bartlett(order);

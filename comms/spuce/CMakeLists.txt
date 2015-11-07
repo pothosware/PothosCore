@@ -17,8 +17,17 @@ SET(FILT_SRCS
 	filters/fir_coeff.cpp
 	filters/iir_coeff.cpp
 	# FIR stuff
+	filters/gaussian_fir.cpp
+	filters/butterworth_fir.cpp
+	filters/raised_cosine_imp.cpp
+	filters/root_raised_cosine_imp.cpp
+	filters/remez_fir.cpp
+	filters/sinc_fir.cpp
 	filters/remez_fir.cpp
 	filters/fir_inv_dft.cpp
+	filters/transform_fir.cpp
+	# Window
+	filters/window.cpp
 )
 
 add_library(spucelib STATIC ${FILT_SRCS})

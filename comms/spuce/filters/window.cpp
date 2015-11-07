@@ -13,37 +13,31 @@ inline std::complex<float_type> expj(float_type x) { return (std::complex<float_
 inline float_type coshin(float_type x) { return (log(x + sqrt(x * x - 1.))); }
 
 void real_dft(std::vector<float_type>& y, int n) {
-  int j, l;
-  /*  n inverse dft length */
   std::vector<float_type> x(n);
 
   /*  calculate the w values recursively */
-  for (j = 0; j < n; j++) { x[j] = y[j]; }
+  for (int j = 0; j < n; j++) { x[j] = y[j]; }
 
   /*  start inverse fft */
-  for (l = 0; l < n; l++) {
+  for (int l = 0; l < n; l++) {
     y[l] = 0;
-    for (j = 0; j < n; j++) {
+    for (int j = 0; j < n; j++) {
       y[l] += x[j] * cos(TWOPI * l * j / (n));
     }
   }
 }
 
 void real_dft(std::vector<std::complex<float_type>>& y, int n) {
-  int j, l;
-  /*  n inverse dft length */
-  std::vector<std::complex<float_type> > x(n + 1);
+  std::vector<std::complex<float_type> > x(n);
 	std::complex<float_type> mult;
 
   /*  calculate the w values recursively */
-  for (j = 0; j < n; j++) {
-		x[j] = y[j];
-	}
+  for (int j = 0; j < n; j++) {	x[j] = y[j];}
 
   /*  start inverse fft */
-  for (l = 0; l < n; l++) {
+  for (int l = 0; l < n; l++) {
     y[l] = 0;
-    for (j = 0; j < n; j++) {
+    for (int j = 0; j < n; j++) {
       mult = x[j] * std::complex<float_type>(cos(TWOPI*l*j/n),sin(TWOPI*l*j/n));
       y[l] += mult;
     }
@@ -141,22 +135,22 @@ float_type kaiser_beta(float_type ripple) {
 	float_type A = -20.0*log10(ripple);
 	float_type beta = (A>50) ? (0.1102*(A-8.7)) : 
 		((A<=21) ? 0.0 : (0.5842*pow(A-21.0,0.4) + 0.07886*(A-21.0)));
-    return beta;
+	return beta;
 }
 //!  \ingroup fir
 //! \brief kaiser window
 std::vector<float_type> kaiser(long nf, float_type beta) {
-    // nf = filter length in samples
-    // beta = parameter of kaiser window
-    std::vector<float_type> w(nf);
-    float_type bes = 1.0 / io(beta);
-    for (int i = 0; i < nf; i++) {
-        float xi = i - nf/2.0 + 0.5;
+	// nf = filter length in samples
+	// beta = parameter of kaiser window
+	std::vector<float_type> w(nf);
+	float_type bes = 1.0 / io(beta);
+	for (int i = 0; i < nf; i++) {
+		float_type xi = i - nf/2.0 + 0.5;
 		float_type bm = (2.0*xi/(nf - 1));
-        float_type val = io(beta * sqrt(1. - bm*bm)) * bes;
-        w[i] = val;
-    }
-    return (w);
+		float_type val = io(beta * sqrt(1. - bm*bm)) * bes;
+		w[i] = val;
+	}
+	return (w);
 }
 float_type cheby_poly(int m, float_type a) {
 	float_type x;
