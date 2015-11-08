@@ -108,7 +108,7 @@ public:
     }
 
     FIRDesigner(void):
-			  _filterType("GAUSSIAN"),
+        _filterType("GAUSSIAN"),
         _bandType("LOW_PASS"),
         _windowType("hann"),
         _gain(1.0),
@@ -117,7 +117,7 @@ public:
         _freqUpper(0.2),
         _freqTrans(0.1),
         _beta(0.5),
-				_weight(100.0),
+        _weight(100.0),
         _numTaps(50)
     {
         auto env = Pothos::ProxyEnvironment::make("managed");
@@ -248,7 +248,7 @@ public:
     {
         return _beta;
     }
-	
+  
     void setWeight(const double w)
     {
         _weight = w;
@@ -299,7 +299,7 @@ void FIRDesigner::recalculate(void)
     if (not this->isActive()) return;
 
     const bool isComplex = _filterType.find("COMPLEX") != std::string::npos;
-		double center_frequency = 0.0;
+    double center_frequency = 0.0;
 
     //check for error
     if (_numTaps == 0) throw Pothos::Exception("FIRDesigner()", "num taps must be positive");
@@ -320,14 +320,14 @@ void FIRDesigner::recalculate(void)
         if (_freqUpper <= _freqLower) throw Pothos::Exception("FIRDesigner()", "upper frequency <= lower frequency");
     }
 
-		double filt_bw;
+    double filt_bw;
 
-		if (_bandType == "BAND_PASS" or
+    if (_bandType == "BAND_PASS" or
         _bandType == "BAND_STOP" or
         _bandType == "COMPLEX_BAND_PASS" or
         _bandType == "COMPLEX_BAND_STOP")
     {
-			center_frequency = 0.5*(_freqUpper + _freqLower)/_sampRate;
+      center_frequency = 0.5*(_freqUpper + _freqLower)/_sampRate;
       // Since bandpass/stop, 1/2 the band-pass filter bandwidth since double sided
       // Also bandwidth is absolute value
       filt_bw = std::abs(0.5*(_freqUpper - _freqLower)/_sampRate);
@@ -350,18 +350,18 @@ void FIRDesigner::recalculate(void)
       if (stop_freq >= _sampRate/2) {
         throw Pothos::Exception("FIRDesigner()", "Remez stopband frequency above Nyquist range");
       }
-			try {
+      try {
         // for Band_stop filter, flip the weight since using low-pass prototype
         if (_bandType == "BAND_STOP" or _bandType == "COMPLEX_BAND_STOP") {
           taps = design_fir("remez", _numTaps, filt_bw, stop_freq, 1.0/_weight);
         } else {
           taps = design_fir("remez", _numTaps, filt_bw, stop_freq, _weight);
         }
-			}
-			catch (const std::runtime_error& error) {
-				throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+"):"+error.what(), "problem with input parameters");
-			}
-		}
+      }
+      catch (const std::runtime_error& error) {
+        throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+"):"+error.what(), "problem with input parameters");
+      }
+    }
     else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
      
     //generate the window
@@ -369,21 +369,21 @@ void FIRDesigner::recalculate(void)
     _window.callVoid("setSize", _numTaps);
     auto window = _window.call<std::vector<double>>("window");
 
-		// Apply window
-		for (size_t i=0;i<_numTaps;i++) {
-			taps[i] *= window[i];
-		}
+    // Apply window
+    for (size_t i=0;i<_numTaps;i++) {
+      taps[i] *= window[i];
+    }
 
-		// Get center frequency if needed
-		if (_bandType == "BAND_PASS" or
+    // Get center frequency if needed
+    if (_bandType == "BAND_PASS" or
         _bandType == "BAND_STOP" or
         _bandType == "COMPLEX_BAND_PASS" or
         _bandType == "COMPLEX_BAND_STOP")
     {
-			center_frequency = (_freqUpper - _freqLower)/_sampRate;
+       center_frequency = (_freqUpper - _freqLower)/_sampRate;
     }
 		
-		// Transform Taps!!
+    // Transform Taps!!
     std::vector<std::complex<double>> complexTaps;
     if (_bandType == "HIGH_PASS") taps = transform_fir("HIGH_PASS", taps, center_frequency); 
     else if (_bandType == "BAND_PASS") taps = transform_fir("BAND_PASS", taps, center_frequency);
