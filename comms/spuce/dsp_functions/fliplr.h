@@ -9,7 +9,7 @@ namespace spuce {
 template <class T> std::vector<T> fliplr(const std::vector<T>& x) {
   auto N = x.size();
   std::vector<T> c(N);
-  for (int j = 0; j < N; j++) c[N - j] = x[j];
+  for (size_t j = 0; j < N; j++) c[N - j] = x[j];
   return (c);
 }
 }  // namespace spuce

@@ -4,8 +4,8 @@
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <complex>
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <spuce/filters/remez_fir.h>
 #include <spuce/filters/design_fir.h>
 #include <spuce/filters/transform_fir.h>
@@ -299,7 +299,7 @@ void FIRDesigner::recalculate(void)
 {
     if (not this->isActive()) return;
 
-    const bool isComplex = _filterType.find("COMPLEX") != std::string::npos;
+    const bool isComplex = _bandType.find("COMPLEX") != std::string::npos;
     double center_frequency = 0.0;
 
     //check for error

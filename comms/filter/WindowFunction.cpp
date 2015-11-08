@@ -61,11 +61,6 @@ private:
     void reload(void);
 };
 
-static double rectangular(const size_t, const size_t)
-{
-    return 1.0;
-}
-
 WindowFunction::WindowFunction(void):
     _win_type("hann"),
     _length(21),
