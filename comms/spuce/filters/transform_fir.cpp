@@ -30,18 +30,18 @@ std::vector<float_type> transform_fir(const std::string& band_type, const std::v
 		// First transform to band_pass, then subtract 1 from center tap
 		out = transform_fir("BAND_PASS", taps, f);
 		int mid_tap = (taps.size()-1)/2;
-		out[mid_tap] -= 1;
+    out[mid_tap] -= 1;
   } else {
     std::cout << "Unsupported band type :" << band_type << "\n";
   }
-	return out;
+  return out;
 }
 std::vector<std::complex<float_type>> transform_complex_fir(const std::string& band_type, const std::vector<float_type>& taps, float_type f) {
-	std::vector<std::complex<float_type>> out(taps.size());
+  std::vector<std::complex<float_type>> out(taps.size());
   if (band_type == "COMPLEX_BAND_PASS") {
 		// Modulate taps up to band center frequency
 		for (size_t i=0;i<taps.size();i++) {
-			double phase = -2.0*M_PI*f*i;
+			double phase = 2.0*M_PI*f*i;
 			out[i] = taps[i]*std::polar(1.0, phase);
 		}
   } else if (band_type == "COMPLEX_BAND_STOP") {
