@@ -374,15 +374,6 @@ void FIRDesigner::recalculate(void)
       taps[i] *= window[i];
     }
 
-    // Get center frequency if needed
-    if (_bandType == "BAND_PASS" or
-        _bandType == "BAND_STOP" or
-        _bandType == "COMPLEX_BAND_PASS" or
-        _bandType == "COMPLEX_BAND_STOP")
-    {
-       center_frequency = (_freqUpper - _freqLower)/_sampRate;
-    }
-		
     // Transform Taps!!
     std::vector<std::complex<double>> complexTaps;
     if (_bandType == "HIGH_PASS") taps = transform_fir("HIGH_PASS", taps, center_frequency); 
