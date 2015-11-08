@@ -32,3 +32,33 @@ SET(FILT_SRCS
 
 add_library(spucelib STATIC ${FILT_SRCS})
 set_property(TARGET spucelib PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+
+########################################################################
+# install spuce development files
+# (disabled for now, but other toolkits may use spuce in the future)
+########################################################################
+if (FALSE)
+install(
+    DIRECTORY .
+    DESTINATION include/spuce
+    PATTERN "*.h"
+)
+
+install(
+    DIRECTORY filters
+    DESTINATION include/spuce
+    PATTERN "*.h"
+)
+
+install(
+    DIRECTORY dsp_functions
+    DESTINATION include/spuce
+    PATTERN "*.h"
+)
+
+install(TARGETS spucelib
+    LIBRARY DESTINATION lib${LIB_SUFFIX} # .so file
+    ARCHIVE DESTINATION lib${LIB_SUFFIX} # .lib file
+    RUNTIME DESTINATION bin              # .dll file
+)
+endif()
