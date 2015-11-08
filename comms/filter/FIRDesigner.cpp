@@ -5,6 +5,7 @@
 #include <Pothos/Proxy.hpp>
 #include <complex>
 #include <iostream>
+#include <algorithm>
 #include <spuce/filters/remez_fir.h>
 #include <spuce/filters/design_fir.h>
 #include <spuce/filters/transform_fir.h>
