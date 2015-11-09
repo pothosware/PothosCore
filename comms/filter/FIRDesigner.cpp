@@ -3,6 +3,7 @@
 
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
+#include <Poco/Logger.h>
 #include <complex>
 #include <algorithm>
 #include <iostream>
@@ -23,7 +24,7 @@ using spuce::transform_complex_fir;
  * and can be connected to a FIR filter's set taps method.
  *
  * |category /Filter
- * |keywords fir filter taps highpass lowpass bandpass
+ * |keywords fir filter taps highpass lowpass bandpass remez
  * |alias /blocks/fir_designer
  *
  * |param type[Filter Type] The type of filter taps to generate.
@@ -33,7 +34,8 @@ using spuce::transform_complex_fir;
  * |option [Maxflat] "MAXFLAT"
  * |option [Gaussian] "GAUSSIAN"
  * |option [Remez] "REMEZ"
-
+ * |default "SINC"
+ *
  * |param band[Band Type] The band type of filter 
  * |option [Low Pass] "LOW_PASS"
  * |option [High Pass] "HIGH_PASS"
@@ -151,6 +153,25 @@ public:
 
     void setFilterType(const std::string &type)
     {
+        //---------- BEGIN backwards compatible support --------------//
+        if (
+            type == "LOW_PASS" or
+            type == "HIGH_PASS" or
+            type == "BAND_PASS" or
+            type == "BAND_STOP" or
+            type == "COMPLEX_BAND_PASS" or
+            type == "COMPLEX_BAND_STOP"
+        )
+        {
+            poco_warning_f1(Poco::Logger::get("FIRDesigner"),
+                "Filter type '%s' should now be used as a band type, with filter type set to 'SINC'", type);
+            _filterType = "SINC";
+            _bandType = type;
+            this->recalculate();
+            return;
+        }
+        //---------- END backwards compatible support --------------//
+
         _filterType = type;
         this->recalculate();
     }
