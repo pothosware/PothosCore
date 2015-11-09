@@ -75,6 +75,16 @@ template <class Numeric, class Coeff = float_type> class fir {
       for (i = 0; i < n; i++) coeff[i] = C.gettap(i);
     }
   }
+  fir(const std::vector<Coeff>& C) : coeff(C.size()), z(C.size()) {
+    int i;
+    int n = num_taps = C.size();
+    if (n > 0) {
+      coeff.resize(n);
+      z.resize(n);
+      for (i = 0; i < n; i++) z[i] = (Numeric)0;
+      for (i = 0; i < n; i++) coeff[i] = C[i];
+    }
+  }
   void set_coeffs(fir_coeff<Coeff> C) {
     int i;
     int n = num_taps = C.num_taps;

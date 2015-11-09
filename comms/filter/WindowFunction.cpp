@@ -14,9 +14,13 @@
 #include <functional>
 #include <cassert>
 
+#include <spuce/filters/design_window.h>
+using namespace spuce;
+
 ////////////////////////////////////////////////////////////////////////
 //Window function support:
 //https://en.wikipedia.org/wiki/Window_function
+// Window design is from spuce library
 ////////////////////////////////////////////////////////////////////////
 class WindowFunction
 {
@@ -49,80 +53,18 @@ public:
     void setSize(const size_t length);
 
 private:
-    std::function<double(const size_t, const size_t)> _calc;
+    std::string _win_type;
+    int _length;
+    double _atten;
     double _power;
     std::vector<double> _window;
     void reload(void);
 };
 
-static double rectangular(const size_t, const size_t)
-{
-    return 1.0;
-}
-
-static double hann(const size_t n, const size_t M)
-{
-    return 0.5 - 0.5*std::cos((2.0*M_PI*n)/(M-1));
-}
-
-static double hamming(const size_t n, const size_t M)
-{
-    return 0.54 - 0.46*std::cos((2.0*M_PI*n)/(M-1));
-}
-
-static double blackman(const size_t n, const size_t M)
-{
-    return 0.42 - 0.5*std::cos((2.0*M_PI*n)/M) + 0.08*std::cos((4.0*M_PI*n)/M);
-}
-
-static double bartlett(const size_t n, const size_t M)
-{
-    return (2.0/(M-1.0)) * (((M-1.0)/2.0) - std::abs(n - ((M-1.0)/2.0)));
-}
-
-static double flattop(const size_t n, const size_t M)
-{
-    static const double a0 = 1.0, a1 = 1.93, a2 = 1.29, a3 = 0.388, a4=0.028;
-    return a0
-        -a1*std::cos((2.0*M_PI*n)/(M-1))
-        +a2*std::cos((4.0*M_PI*n)/(M-1))
-        -a3*std::cos((6.0*M_PI*n)/(M-1))
-        +a4*std::cos((8.0*M_PI*n)/(M-1));
-}
-
-//http://www.labbookpages.co.uk/audio/firWindowing.html#code
-static double modZeroBessel(double x)
-{
-    int i;
-
-    double x_2 = x/2;
-    double num = 1;
-    double fact = 1;
-    double result = 1;
-
-    for (i=1 ; i<20 ; i++) {
-        num *= x_2 * x_2;
-        fact *= i;
-        result += num / (fact * fact);
-    //		printf("%f %f %f\n", num, fact, result);
-    }
-
-    return result;
-}
-
-//http://www.labbookpages.co.uk/audio/firWindowing.html#code
-static double kaiser(const size_t n, const size_t M, double beta)
-{
-    double m_2 = (double)(M-1) / 2.0;
-    double denom = modZeroBessel(beta);					// Denominator of Kaiser function
-
-    double val = ((n) - m_2) / m_2;
-    val = 1 - (val * val);
-    return modZeroBessel(beta * std::sqrt(val)) / denom;
-}
-
 WindowFunction::WindowFunction(void):
-    _calc(&hann),
+    _win_type("hann"),
+    _length(21),
+    _atten(60),
     _power(1.0f)
 {
     return;
@@ -149,38 +91,40 @@ void WindowFunction::setType(const std::string &type)
     if (name == "kaiser")
     {
         if (args->size() != 1) throw Pothos::InvalidArgumentException("WindowFunction("+type+")", "expects format: kaiser(beta)");
+        _atten = args->getElement<double>(0); // This is beta for kaiser
     }
+  	else if (name == "chebyshev")
+		{
+        if (args->size() != 1) throw Pothos::InvalidArgumentException("WindowFunction("+type+")", "expects format: chebyshev(atten)");
+				_atten = args->getElement<double>(0);
+		}
     else if (args->size() != 0) throw Pothos::InvalidArgumentException("WindowFunction("+type+")", name + " takes no arguments");
 
     //bind window function
-    if (name == "rectangular") _calc = &rectangular;
-    else if (name == "hann") _calc = &hann;
-    else if (name == "hamming") _calc = &hamming;
-    else if (name == "blackman") _calc = &blackman;
-    else if (name == "bartlett") _calc = &bartlett;
-    else if (name == "flattop") _calc = &flattop;
-    else if (name == "kaiser") _calc = std::bind(&kaiser, std::placeholders::_1, std::placeholders::_2, args->getElement<double>(0));
-    else throw Pothos::InvalidArgumentException("WindowFunction::setType("+type+")", "unknown window name");
+		_win_type = name;
+		_window = design_window(name, _length, _atten);
+
+		if (_window.size() == 0)
+			throw Pothos::InvalidArgumentException("WindowFunction::setType("+type+")", "unknown window name");
     this->reload();
 }
 
 void WindowFunction::setSize(const size_t length)
 {
     if (length == _window.size()) return;
-    _window.resize(length);
+		_length = length;
+		_window = design_window(_win_type, _length, _atten);
     this->reload();
 }
 
 void WindowFunction::reload(void)
 {
     _power = 0.0;
-    const auto length = _window.size();
-    for (size_t n = 0; n < length; n++)
+    for (size_t n = 0; n < _window.size(); n++)
     {
-        _window[n] = _calc(n, length);
         _power += _window[n]*_window[n];
     }
-    _power = std::sqrt(_power/length);
+    _power = std::sqrt(_power/_length);
 }
 
 #include <Pothos/Managed.hpp>
