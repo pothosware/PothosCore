@@ -28,6 +28,10 @@ using spuce::transform_complex_fir;
  * |alias /blocks/fir_designer
  *
  * |param type[Filter Type] The type of filter taps to generate.
+ * MAXFLAT is based on a set of equations that only allow some discrete cut-off frequencies and is non-linear phase.
+ * BOX-CAR/SINC is a truncated sin(x)/x impulse response
+ * ROOT_RAISED_COSINE and RAISED_COSINE are based on ideal (infinite) impulse responses and have an 'alpha' factor for excess bandwidth
+ * For GAUSSIAN, frequency lower specifies the time-bandwidth product.
  * |option [Root Raised Cosine] "ROOT_RAISED_COSINE"
  * |option [Raised Cosine] "RAISED_COSINE"
  * |option [Box-Car] "SINC"
@@ -83,7 +87,7 @@ using spuce::transform_complex_fir;
  * |default 51
  * |widget SpinBox(minimum=1)
  *
- * |param beta[Beta] For the root raised cosine filter, this is the excess bandwidth factor. For the Gaussian filter, this is BT, the bandwidth-time product.
+ * |param beta[Beta] For the root raised cosine filter, this is the excess bandwidth factor. 
  * |default 0.5
  *
  * |param weight[Weight] For the Remez filter. This is the weight for stopband attenuation vs passband ripple.
