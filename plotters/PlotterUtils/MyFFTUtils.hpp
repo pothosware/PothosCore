@@ -9,6 +9,7 @@
 #include <string>
 #include <cassert>
 #include <algorithm>
+#include <spuce/filters/design_window.h>
 
 ////////////////////////////////////////////////////////////////////////
 //FFT code can be found at:
@@ -59,31 +60,55 @@ inline void ifft(CArray& x)
 ////////////////////////////////////////////////////////////////////////
 //FFT Power spectrum
 ////////////////////////////////////////////////////////////////////////
-inline std::valarray<float> fftPowerSpectrum(CArray &fftBins, const std::vector<double> &window, const double windowPower)
+struct FFTPowerSpectrum
 {
-    //windowing
-    assert(window.size() == fftBins.size());
-    for (size_t n = 0; n < fftBins.size(); n++) fftBins[n] *= window[n];
-
-    //take fft
-    fft(fftBins);
-
-    //window and fft gain adjustment
-    const float gain_dB = 20*std::log10(fftBins.size()) + 20*std::log10(windowPower);
-
-    //power calculation
-    std::valarray<float> powerBins(fftBins.size());
-    for (size_t i = 0; i < fftBins.size(); i++)
+    void setWindowType(const std::string &windowType, const std::vector<double> &windowArgs)
     {
-        const float norm = std::max(std::norm(fftBins[i]), 1e-20f);
-        powerBins[i] = 10*std::log10(norm) - gain_dB;
+        _windowType = windowType;
+        _windowArgs = windowArgs;
+        _precomputedWindow.clear();
     }
 
-    //bin reorder
-    for (size_t i = 0; i < powerBins.size()/2; i++)
+    std::valarray<float> transform(CArray &fftBins)
     {
-        std::swap(powerBins[i], powerBins[i+powerBins.size()/2]);
+        //windowing
+        if (_precomputedWindow.size() != fftBins.size())
+        {
+            _precomputedWindow = spuce::design_window(_windowType, fftBins.size(), _windowArgs.empty()?0.0:_windowArgs.at(0));
+            _precomputedWindowPower = 0.0;
+            for (size_t n = 0; n < _precomputedWindow.size(); n++)
+            {
+                _precomputedWindowPower += _precomputedWindow[n]*_precomputedWindow[n];
+            }
+            _precomputedWindowPower = std::sqrt(_precomputedWindowPower/_precomputedWindow.size());
+        }
+        for (size_t n = 0; n < fftBins.size(); n++) fftBins[n] *= _precomputedWindow[n];
+
+        //take fft
+        fft(fftBins);
+
+        //window and fft gain adjustment
+        const float gain_dB = 20*std::log10(fftBins.size()) + 20*std::log10(_precomputedWindowPower);
+
+        //power calculation
+        std::valarray<float> powerBins(fftBins.size());
+        for (size_t i = 0; i < fftBins.size(); i++)
+        {
+            const float norm = std::max(std::norm(fftBins[i]), 1e-20f);
+            powerBins[i] = 10*std::log10(norm) - gain_dB;
+        }
+
+        //bin reorder
+        for (size_t i = 0; i < powerBins.size()/2; i++)
+        {
+            std::swap(powerBins[i], powerBins[i+powerBins.size()/2]);
+        }
+
+        return powerBins;
     }
 
-    return powerBins;
-}
+    std::string _windowType;
+    std::vector<double> _windowArgs;
+    std::vector<double> _precomputedWindow;
+    double _precomputedWindowPower;
+};

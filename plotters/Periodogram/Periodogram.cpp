@@ -3,6 +3,7 @@
 
 #include "PeriodogramDisplay.hpp"
 #include <Pothos/Framework.hpp>
+#include <Pothos/Proxy.hpp>
 #include <iostream>
 
 /***********************************************************************
@@ -49,8 +50,7 @@
  * |preview disable
  * |tab FFT
  *
- * |param window[Window Type] The window function controls spectral leakage.
- * Enter "Kaiser(beta)" to use the parameterized Kaiser window.
+ * |param window[Window Type] The window function controls passband ripple.
  * |default "hann"
  * |option [Rectangular] "rectangular"
  * |option [Hann] "hann"
@@ -58,7 +58,17 @@
  * |option [Blackman] "blackman"
  * |option [Bartlett] "bartlett"
  * |option [Flat-top] "flattop"
- * |widget ComboBox(editable=true)
+ * |option [Kaiser] "kaiser"
+ * |option [Chebyshev] "chebyshev"
+ * |preview disable
+ * |tab FFT
+ *
+ * |param windowArgs[Window Args] Optional window arguments (depends on window type).
+ * <ul>
+ * <li>When using the <i>Kaiser</i> window, specify [beta] to use the parameterized Kaiser window.</li>
+ * <li>When using the <i>Chebyshev</i> window, specify [atten] to use the Dolph-Chebyshev window with attenuation in dB.</li>
+ * </ul>
+ * |default []
  * |preview disable
  * |tab FFT
  *
@@ -134,7 +144,7 @@
  * |setter setSampleRate(sampleRate)
  * |setter setCenterFrequency(centerFreq)
  * |setter setNumFFTBins(numBins)
- * |setter setWindowType(window)
+ * |setter setWindowType(window, windowArgs)
  * |setter setAutoScale(autoScale)
  * |setter setReferenceLevel(refLevel)
  * |setter setDynamicRange(dynRange)

@@ -38,9 +38,6 @@ SpectrogramDisplay::SpectrogramDisplay(void):
     _freqLabelId("rxFreq"),
     _rateLabelId("rxRate")
 {
-    auto env = Pothos::ProxyEnvironment::make("managed");
-    _window = env->findProxy("Pothos/Comms/WindowFunction").callProxy("new");
-
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(SpectrogramDisplay, widget));
     this->registerCall(this, POTHOS_FCN_TUPLE(SpectrogramDisplay, setTitle));
@@ -132,12 +129,11 @@ void SpectrogramDisplay::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
     _plotRaster->setNumColumns(numBins);
-    _window.callVoid("setSize", numBins);
 }
 
-void SpectrogramDisplay::setWindowType(const std::string &windowType)
+void SpectrogramDisplay::setWindowType(const std::string &windowType, const std::vector<double> &windowArgs)
 {
-    _window.callVoid("setType", windowType);
+    _fftPowerSpectrum.setWindowType(windowType, windowArgs);
 }
 
 void SpectrogramDisplay::setTimeSpan(const double timeSpan)
