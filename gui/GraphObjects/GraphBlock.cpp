@@ -192,13 +192,36 @@ bool GraphBlock::getPropertyPreview(const QString &key) const
     if (it->second == "disable") return false;
     if (it->second == "valid") return isValid(this->getPropertyValue(key));
     if (it->second == "invalid") return not isValid(this->getPropertyValue(key));
+    if (it->second == "when")
+    {
+        //support the enum selection mode:
+        //There is no parameter evaluation going on here.
+        //A particular parameter, specified by the enum key,
+        //is compared against a list of arguments.
+        //A match means do the preview, otherwise hide it.
+        if (not _impl->propertiesPreviewArgs.at(key)) return true;
+        if (not _impl->propertiesPreviewKwargs.at(key)) return true;
+        if (not _impl->propertiesPreviewKwargs.at(key)->has("enum")) return true;
+        const auto eumParamKey = _impl->propertiesPreviewKwargs.at(key)->getValue<std::string>("enum");
+        auto eumParamValue = this->getPropertyValue(QString::fromStdString(eumParamKey)).toStdString();
+        for (const auto &arg : *_impl->propertiesPreviewArgs.at(key))
+        {
+            //note: Poco::Dynamic::Var::toString gives the JSON format
+            //which means that it includes the quotes if this is a string
+            if (Poco::Dynamic::Var::toString(arg) == eumParamValue) return true;
+        }
+        return false;
+    }
     return true;
 }
 
-void GraphBlock::setPropertyPreviewMode(const QString &key, const QString &value)
+void GraphBlock::setPropertyPreviewMode(const QString &key, const QString &value,
+    const Poco::JSON::Array::Ptr &args, const Poco::JSON::Object::Ptr &kwargs)
 {
     if (_impl->propertiesPreview[key] == value) return;
     _impl->propertiesPreview[key] = value;
+    _impl->propertiesPreviewArgs[key] = args;
+    _impl->propertiesPreviewKwargs[key] = kwargs;
     this->markChanged();
 }
 

@@ -35,9 +35,7 @@ set_property(TARGET spucelib PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 ########################################################################
 # install spuce development files
-# (disabled for now, but other toolkits may use spuce in the future)
 ########################################################################
-if (FALSE)
 install(
     DIRECTORY .
     DESTINATION include/spuce
@@ -61,4 +59,3 @@ install(TARGETS spucelib
     ARCHIVE DESTINATION lib${LIB_SUFFIX} # .lib file
     RUNTIME DESTINATION bin              # .dll file
 )
-endif()

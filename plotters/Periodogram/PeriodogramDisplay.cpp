@@ -28,9 +28,6 @@ PeriodogramDisplay::PeriodogramDisplay(void):
     _rateLabelId("rxRate"),
     _averageFactor(0.0)
 {
-    auto env = Pothos::ProxyEnvironment::make("managed");
-    _window = env->findProxy("Pothos/Comms/WindowFunction").callProxy("new");
-
     //setup block
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, widget));
     this->registerCall(this, POTHOS_FCN_TUPLE(PeriodogramDisplay, setTitle));
@@ -108,12 +105,11 @@ void PeriodogramDisplay::setCenterFrequency(const double freq)
 void PeriodogramDisplay::setNumFFTBins(const size_t numBins)
 {
     _numBins = numBins;
-    _window.callVoid("setSize", numBins);
 }
 
-void PeriodogramDisplay::setWindowType(const std::string &windowType)
+void PeriodogramDisplay::setWindowType(const std::string &windowType, const std::vector<double> &windowArgs)
 {
-    _window.callVoid("setType", windowType);
+    _fftPowerSpectrum.setWindowType(windowType, windowArgs);
 }
 
 void PeriodogramDisplay::setReferenceLevel(const double refLevel)

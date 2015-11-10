@@ -58,7 +58,7 @@ void SpectrogramDisplay::work(void)
 
         //power bins to points on the curve
         CArray fftBins(floatBuff.as<const std::complex<float> *>(), this->numFFTBins());
-        const auto powerBins = fftPowerSpectrum(fftBins, _window.call<std::vector<double>>("window"), _window.call<double>("power"));
+        const auto powerBins = _fftPowerSpectrum.transform(fftBins);
         this->appendBins(powerBins);
     }
 }

@@ -74,7 +74,9 @@ public:
     const std::string &getPropertyTypeStr(const QString &key) const;
 
     bool getPropertyPreview(const QString &key) const;
-    void setPropertyPreviewMode(const QString &key, const QString &value);
+    void setPropertyPreviewMode(const QString &key, const QString &value,
+        const Poco::JSON::Array::Ptr &args = Poco::JSON::Array::Ptr(),
+        const Poco::JSON::Object::Ptr &kwargs = Poco::JSON::Object::Ptr());
 
     void addInputPort(const QString &portKey);
     const QStringList &getInputPorts(void) const;

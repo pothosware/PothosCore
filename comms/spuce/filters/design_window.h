@@ -6,7 +6,7 @@ namespace spuce {
 //! \brief Design functions for window functions
 //! \author Tony Kirke
 //! \ingroup functions fir
-std::vector<float_type> design_window(const std::string& fir_type, int order, float_type beta=4) {
+inline std::vector<float_type> design_window(const std::string& fir_type, int order, float_type beta=4) {
 
 	std::vector<float_type> win;
 	if (fir_type == "hamming") {

@@ -58,7 +58,16 @@ void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
         if (param->has("preview"))
         {
             const auto prevMode = param->getValue<std::string>("preview");
-            this->setPropertyPreviewMode(key, QString::fromStdString(prevMode));
+
+            Poco::JSON::Array::Ptr args;
+            if (param->has("previewArgs") and param->isArray("previewArgs"))
+                args = param->getArray("previewArgs");
+
+            Poco::JSON::Object::Ptr kwargs;
+            if (param->has("previewKwargs") and param->isObject("previewKwargs"))
+                kwargs = param->getObject("previewKwargs");
+
+            this->setPropertyPreviewMode(key, QString::fromStdString(prevMode), args, kwargs);
         }
     }
 }

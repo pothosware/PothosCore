@@ -4,7 +4,6 @@
 #pragma once
 #include <qwt_math.h> //_USE_MATH_DEFINES
 #include <Pothos/Framework.hpp>
-#include <Pothos/Proxy.hpp>
 #include <QWidget>
 #include <memory>
 #include <map>
@@ -53,7 +52,7 @@ public:
     void setCenterFrequency(const double freq);
 
     void setNumFFTBins(const size_t numBins);
-    void setWindowType(const std::string &windowType);
+    void setWindowType(const std::string &, const std::vector<double> &);
     void setTimeSpan(const double timeSpan);
     void setReferenceLevel(const double refLevel);
     void setDynamicRange(const double dynRange);
@@ -133,7 +132,7 @@ private:
     QwtPlotZoomer *_zoomer;
     std::shared_ptr<QwtPlotSpectrogram> _plotSpect;
     MySpectrogramRasterData *_plotRaster;
-    Pothos::Proxy _window;
+    FFTPowerSpectrum _fftPowerSpectrum;
     double _lastUpdateRate;
     double _displayRate;
     double _sampleRate;
