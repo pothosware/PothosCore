@@ -7,8 +7,7 @@ if (NOT ENABLE_COMMS_FILTER)
     return()
 endif()
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/..")
-
+include_directories("${PROJECT_SOURCE_DIR}")
 
 ########################################################################
 # Filter blocks module
@@ -20,12 +19,11 @@ POTHOS_MODULE_UTIL(
         FIRDesigner.cpp
         IIRDesigner.cpp
         FIRFilter.cpp
-				IIRFilter.cpp
+	IIRFilter.cpp
         TestFIRFilter.cpp
         TestIIRFilter.cpp
         EnvelopeDetector.cpp
-        WindowFunction.cpp
-		DESTINATION comms
-		LIBRARIES spucelib
+	DESTINATION comms
+    LIBRARIES spucelib
     ENABLE_DOCS
 )
