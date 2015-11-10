@@ -33,6 +33,8 @@ struct GraphBlock::Impl
     std::map<QString, QString> propertiesValues;
     std::map<QString, QString> propertiesNames;
     std::map<QString, QString> propertiesPreview;
+    std::map<QString, Poco::JSON::Array::Ptr> propertiesPreviewArgs;
+    std::map<QString, Poco::JSON::Object::Ptr> propertiesPreviewKwargs;
     std::map<QString, QString> propertiesErrorMsg;
     std::map<QString, std::string> propertiesTypeStr;
 
