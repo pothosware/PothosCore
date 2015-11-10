@@ -32,6 +32,14 @@ foreach(comp Widgets Concurrent OpenGL Svg PrintSupport)
 endforeach(comp)
 
 ########################################################################
+# Find Spuce
+########################################################################
+find_package(Spuce)
+message(STATUS "SPUCE_FOUND: ${SPUCE_FOUND}")
+message(STATUS "SPUCE_INCLUDE_DIRS: ${SPUCE_INCLUDE_DIRS}")
+message(STATUS "SPUCE_LIBRARIES: ${SPUCE_LIBRARIES}")
+
+########################################################################
 ## Feature registration
 ########################################################################
 include(FeatureSummary)

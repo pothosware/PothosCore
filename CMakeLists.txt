@@ -97,9 +97,6 @@ add_subdirectory(library)
 include_directories(library/include)
 include_directories(${Poco_INCLUDE_DIRS})
 
-add_subdirectory(gui)
-add_subdirectory(widgets)
-add_subdirectory(plotters)
 add_subdirectory(blocks)
 add_subdirectory(comms)
 add_subdirectory(python)
@@ -108,6 +105,9 @@ add_subdirectory(util)
 add_subdirectory(opencl)
 add_subdirectory(sdr)
 add_subdirectory(audio)
+add_subdirectory(gui)
+add_subdirectory(widgets)
+add_subdirectory(plotters)
 
 #########################################################################
 # uninstall target
