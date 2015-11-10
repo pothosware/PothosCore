@@ -2,16 +2,17 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <Pothos/Proxy.hpp>
 #include <Poco/Logger.h>
 #include <complex>
 #include <algorithm>
 #include <iostream>
 #include <spuce/filters/remez_fir.h>
 #include <spuce/filters/design_fir.h>
+#include <spuce/filters/design_window.h>
 #include <spuce/filters/transform_fir.h>
 
 using spuce::design_fir;
+using spuce::design_window;
 using spuce::transform_fir;
 using spuce::transform_complex_fir;
 /***********************************************************************
@@ -28,10 +29,12 @@ using spuce::transform_complex_fir;
  * |alias /blocks/fir_designer
  *
  * |param type[Filter Type] The type of filter taps to generate.
- * MAXFLAT is based on a set of equations that only allow some discrete cut-off frequencies and is non-linear phase.
- * BOX-CAR/SINC is a truncated sin(x)/x impulse response
- * ROOT_RAISED_COSINE and RAISED_COSINE are based on ideal (infinite) impulse responses and have an 'alpha' factor for excess bandwidth
- * For GAUSSIAN, frequency lower specifies the time-bandwidth product.
+ * <ul>
+ * <li>MAXFLAT is based on a set of equations that only allow some discrete cut-off frequencies and is non-linear phase.</li>
+ * <li>BOX-CAR/SINC is a truncated sin(x)/x impulse response</li>
+ * <li>ROOT_RAISED_COSINE and RAISED_COSINE are based on ideal (infinite) impulse responses and have an 'alpha' factor for excess bandwidth</li>
+ * <li>For GAUSSIAN, frequency lower specifies the time-bandwidth product.</li>
+ * </ul>
  * |option [Root Raised Cosine] "ROOT_RAISED_COSINE"
  * |option [Raised Cosine] "RAISED_COSINE"
  * |option [Box-Car] "SINC"
@@ -49,8 +52,6 @@ using spuce::transform_complex_fir;
  * |option [Complex Band Stop] "COMPLEX_BAND_STOP"
  *
  * |param window[Window Type] The window function controls passband ripple.
- * Enter "kaiser(beta)" to use the parameterized Kaiser window.
- * Enter "chebyshev(atten)" to use the Dolph-Chebyshev window with attenuation in dB in parenthesis
  * |default "hann"
  * |option [Rectangular] "rectangular"
  * |option [Hann] "hann"
@@ -58,7 +59,18 @@ using spuce::transform_complex_fir;
  * |option [Blackman] "blackman"
  * |option [Bartlett] "bartlett"
  * |option [Flat-top] "flattop"
- * |widget ComboBox(editable=true)
+ * |option [Kaiser] "kaiser"
+ * |option [Chebyshev] "chebyshev"
+ * |tab Window
+ *
+ * |param windowArgs[Window Args] Optional window arguments (depends on window type).
+ * <ul>
+ * <li>When using the <i>Kaiser</i> window, specify [beta] to use the parameterized Kaiser window.</li>
+ * <li>When using the <i>Chebyshev</i> window, specify [atten] to use the Dolph-Chebyshev window with attenuation in dB.</li>
+ * </ul>
+ * |default []
+ * |preview valid
+ * |tab Window
  *
  * |param gain[Gain] The filter gain.
  * |default 1.0
@@ -84,6 +96,7 @@ using spuce::transform_complex_fir;
  * |default 1000
  * |units Hz
  * |preview when(enum=type, "REMEZ")
+ * |tab Remez
  *
  * |param numTaps[Num Taps] The number of filter taps -- or computational complexity of the filter.
  * |default 51
@@ -92,15 +105,18 @@ using spuce::transform_complex_fir;
  * |param beta[Beta] For the raised and root-raised cosine filter, this is the excess bandwidth factor.
  * |default 0.5
  * |preview when(enum=type, "RAISED_COSINE", "ROOT_RAISED_COSINE")
+ * |tab Cosine
  *
  * |param weight[Weight] For the Remez filter. This is the weight for stopband attenuation vs passband ripple.
  * |default 100.0
  * |preview when(enum=type, "REMEZ")
+ * |tab Remez
  *
  * |factory /comms/fir_designer()
  * |setter setFilterType(type)
  * |setter setBandType(band)
  * |setter setWindowType(window)
+ * |setter setWindowArgs(windowArgs)
  * |setter setSampleRate(sampRate)
  * |setter setFrequencyLower(freqLower)
  * |setter setFrequencyUpper(freqUpper)
@@ -131,14 +147,14 @@ public:
         _weight(100.0),
         _numTaps(50)
     {
-        auto env = Pothos::ProxyEnvironment::make("managed");
-        _window = env->findProxy("Pothos/Comms/WindowFunction").callProxy("new");
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setBandType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, bandType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setFilterType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, filterType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setWindowType));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, windowType));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setWindowArgs));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, windowArgs));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setSampleRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, sampleRate));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setFrequencyLower));
@@ -209,6 +225,17 @@ public:
     std::string windowType(void) const
     {
         return _windowType;
+    }
+
+    void setWindowArgs(const std::vector<double> &args)
+    {
+        _windowArgs = args;
+        this->recalculate();
+    }
+
+    std::vector<double> windowArgs(void) const
+    {
+        return _windowArgs;
     }
 
     void setSampleRate(const double rate)
@@ -313,6 +340,7 @@ private:
     std::string _filterType;
     std::string _bandType;
     std::string _windowType;
+    std::vector<double> _windowArgs;
     double _gain;
     double _sampRate;
     double _freqLower;
@@ -321,7 +349,6 @@ private:
     double _beta;
     double _weight;
     size_t _numTaps;
-    Pothos::Proxy _window;
 };
 
 void FIRDesigner::recalculate(void)
@@ -395,9 +422,7 @@ void FIRDesigner::recalculate(void)
     else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
      
     //generate the window
-    _window.callVoid("setType", _windowType);
-    _window.callVoid("setSize", _numTaps);
-    auto window = _window.call<std::vector<double>>("window");
+    const auto window = design_window(_windowType, _numTaps, _windowArgs.empty()?0.0:_windowArgs.at(0));
 
     // Apply window
     for (size_t i=0;i<_numTaps;i++) {
