@@ -40,7 +40,7 @@ using spuce::transform_complex_fir;
  * |option [Remez] "REMEZ"
  * |default "SINC"
  *
- * |param band[Band Type] The band type of filter 
+ * |param band[Band Type] The band type of filter
  * |option [Low Pass] "LOW_PASS"
  * |option [High Pass] "HIGH_PASS"
  * |option [Band Pass] "BAND_PASS"
@@ -78,20 +78,24 @@ using spuce::transform_complex_fir;
  * This parameter is used for band pass and band reject filters.
  * |default 2000
  * |units Hz
+ * |preview when(enum=band, "BAND_PASS", "BAND_STOP", "COMPLEX_BAND_PASS", "COMPLEX_BAND_STOP")
  *
  * |param freqTrans[Transition Freq] The transition bandwidth for Remez filters (only)
  * |default 1000
  * |units Hz
+ * |preview when(enum=type, "REMEZ")
  *
  * |param numTaps[Num Taps] The number of filter taps -- or computational complexity of the filter.
  * |default 51
  * |widget SpinBox(minimum=1)
  *
- * |param beta[Beta] For the root raised cosine filter, this is the excess bandwidth factor. 
+ * |param beta[Beta] For the raised and root-raised cosine filter, this is the excess bandwidth factor.
  * |default 0.5
+ * |preview when(enum=type, "RAISED_COSINE", "ROOT_RAISED_COSINE")
  *
  * |param weight[Weight] For the Remez filter. This is the weight for stopband attenuation vs passband ripple.
  * |default 100.0
+ * |preview when(enum=type, "REMEZ")
  *
  * |factory /comms/fir_designer()
  * |setter setFilterType(type)
