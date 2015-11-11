@@ -397,7 +397,7 @@ void FIRDesigner::recalculate(void)
     if (_filterType == "ROOT_RAISED_COSINE") taps = design_fir("rootraisedcosine", _numTaps, filt_bw, _beta);
     else if (_filterType == "RAISED_COSINE") taps = design_fir("raisedcosine", _numTaps, filt_bw, _beta);
     else if (_filterType == "GAUSSIAN") taps = design_fir("gaussian", _numTaps, filt_bw);
-    else if (_filterType == "SINC") taps = design_fir("sinc", _numTaps, filt_bw);
+    else if (_filterType == "SINC") taps = design_fir("sinc", _numTaps, filt_bw*2);
     else if (_filterType == "MAXFLAT") {
       filt_bw = std::max(filt_bw,0.02);
       taps = design_fir("butterworth", _numTaps, filt_bw);
