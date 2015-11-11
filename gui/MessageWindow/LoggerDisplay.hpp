@@ -9,6 +9,7 @@
 
 class LoggerChannel;
 class QPlainTextEdit;
+class QToolButton;
 class QTimer;
 
 class LoggerDisplay : public QStackedWidget
@@ -26,5 +27,8 @@ private:
 
     Poco::AutoPtr<LoggerChannel> _channel;
     QPlainTextEdit *_text;
+    QToolButton *_clearButton;
     QTimer *_timer;
+
+    void resizeEvent(QResizeEvent *e);
 };

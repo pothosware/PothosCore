@@ -1,10 +1,12 @@
 // Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "PothosGuiUtils.hpp" //makeIconFromTheme
 #include "MessageWindow/LoggerDisplay.hpp"
 #include "MessageWindow/LoggerChannel.hpp"
 #include <QPlainTextEdit>
 #include <QScrollBar>
+#include <QToolButton>
 #include <QTimer>
 #include <Poco/DateTimeFormatter.h>
 #include <iostream>
@@ -17,11 +19,17 @@ LoggerDisplay::LoggerDisplay(QWidget *parent):
     QStackedWidget(parent),
     _channel(new LoggerChannel(nullptr)),
     _text(new QPlainTextEdit(this)),
+    _clearButton(new QToolButton(_text)),
     _timer(new QTimer(this))
 {
     this->addWidget(_text);
     _text->setReadOnly(true);
     _text->setMaximumBlockCount(MAX_HISTORY_MSGS);
+    _text->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+    _clearButton->setIcon(makeIconFromTheme("edit-clear-list"));
+    _clearButton->setToolTip(tr("Clear message history"));
+    connect(_clearButton, SIGNAL(clicked(void)), _text, SLOT(clear(void)));
 
     connect(_timer, SIGNAL(timeout(void)), this, SLOT(handleCheckMsgs(void)));
     _timer->start(CHECK_MSGS_TIMEOUT_MS);
@@ -77,4 +85,10 @@ void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
         body);
 
     _text->appendHtml(line);
+}
+
+void LoggerDisplay::resizeEvent(QResizeEvent *e)
+{
+    _clearButton->move(_text->viewport()->width()-_clearButton->width(), 0);
+    return QStackedWidget::resizeEvent(e);
 }
