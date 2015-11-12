@@ -30,5 +30,7 @@ private:
     QToolButton *_clearButton;
     QTimer *_timer;
 
-    void resizeEvent(QResizeEvent *e);
+    void resizeEvent(QResizeEvent *event);
+    void enterEvent(QEvent *event);
+    void leaveEvent(QEvent *event);
 };

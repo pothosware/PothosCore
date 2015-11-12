@@ -27,6 +27,7 @@ LoggerDisplay::LoggerDisplay(QWidget *parent):
     _text->setMaximumBlockCount(MAX_HISTORY_MSGS);
     _text->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
+    _clearButton->hide();
     _clearButton->setIcon(makeIconFromTheme("edit-clear-list"));
     _clearButton->setToolTip(tr("Clear message history"));
     connect(_clearButton, SIGNAL(clicked(void)), _text, SLOT(clear(void)));
@@ -87,8 +88,21 @@ void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
     _text->appendHtml(line);
 }
 
-void LoggerDisplay::resizeEvent(QResizeEvent *e)
+void LoggerDisplay::resizeEvent(QResizeEvent *event)
 {
     _clearButton->move(_text->viewport()->width()-_clearButton->width(), 0);
-    return QStackedWidget::resizeEvent(e);
+    return QStackedWidget::resizeEvent(event);
+}
+
+void LoggerDisplay::enterEvent(QEvent *event)
+{
+    _clearButton->show();
+    _clearButton->move(_text->viewport()->width()-_clearButton->width(), 0);
+    return QStackedWidget::enterEvent(event);
+}
+
+void LoggerDisplay::leaveEvent(QEvent *event)
+{
+    _clearButton->hide();
+    return QStackedWidget::leaveEvent(event);
 }
