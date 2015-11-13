@@ -20,7 +20,7 @@ template <class Numeric, class Coeff = float_type> class fir {
   //! Set tap weights
   void settap(long i, Coeff tap) { coeff[i] = tap; }
   void settaps(fir_coeff<Coeff>& c) {
-    for (int i = 0; i < num_taps; i++) coeff[i] = c.coeff[i];
+    for (int i = 0; i < num_taps; i++) coeff[i] = c.gettap(i);
   }
   long number_of_taps() const { return (num_taps); }
   Coeff gettap(long i) { return (coeff[i]); }

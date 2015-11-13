@@ -19,11 +19,11 @@ POTHOS_MODULE_UTIL(
         FIRDesigner.cpp
         IIRDesigner.cpp
         FIRFilter.cpp
-	IIRFilter.cpp
+	      IIRFilter.cpp
         TestFIRFilter.cpp
         TestIIRFilter.cpp
         EnvelopeDetector.cpp
 	DESTINATION comms
-    LIBRARIES spucelib
+    LIBRARIES spuce
     ENABLE_DOCS
 )

@@ -13,7 +13,7 @@ void sinc_fir(fir_coeff<float_type>& sincf, float_type f) {
 	for (size_t i = 0; i < len; i++) {
 		double x = i - (len - 1.0) / 2.0;
 		if( x == 0.0 ) taps[i] = f;
-		else taps[i] = sin( x * f * M_PI) / (x * M_PI);
+		else taps[i] = sin( x * f * 2.0*M_PI) / (x * 2.0*M_PI);
 		sum += taps[i];
 	}
 	for (size_t i = 0; i <len; i++) sincf.settap(i,taps[i]/sum);

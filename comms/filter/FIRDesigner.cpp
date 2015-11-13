@@ -34,7 +34,7 @@ using spuce::transform_complex_fir;
  * <li>MAXFLAT is based on a set of equations that only allow some discrete cut-off frequencies and is non-linear phase.</li>
  * <li>BOX-CAR/SINC is a truncated sin(x)/x impulse response</li>
  * <li>ROOT_RAISED_COSINE and RAISED_COSINE are based on ideal (infinite) impulse responses and have an 'alpha' factor for excess bandwidth</li>
- * <li>For GAUSSIAN, frequency lower specifies the time-bandwidth product.</li>
+ * <li>For GAUSSIAN, Lower Freq specifies the time-bandwidth product.</li>
  * </ul>
  * |option [Root Raised Cosine] "ROOT_RAISED_COSINE"
  * |option [Raised Cosine] "RAISED_COSINE"
@@ -103,7 +103,7 @@ using spuce::transform_complex_fir;
  * |default 51
  * |widget SpinBox(minimum=1)
  *
- * |param beta[Beta] For the raised and root-raised cosine filter, this is the excess bandwidth factor.
+ * |param alpha[Alpha] For the raised and root-raised cosine filter, this is the excess bandwidth factor and can be from 0.0 to 1.0
  * |default 0.5
  * |preview when(enum=type, "RAISED_COSINE", "ROOT_RAISED_COSINE")
  * |tab Cosine
@@ -123,7 +123,7 @@ using spuce::transform_complex_fir;
  * |setter setFrequencyUpper(freqUpper)
  * |setter setFrequencyTrans(freqTrans)
  * |setter setNumTaps(numTaps)
- * |setter setBeta(beta)
+ * |setter setAlpha(alpha)
  * |setter setWeight(weight)
  * |setter setGain(gain)
  **********************************************************************/
@@ -144,7 +144,7 @@ public:
         _freqLower(0.1),
         _freqUpper(0.2),
         _freqTrans(0.1),
-        _beta(0.5),
+        _alpha(0.5),
         _weight(100.0),
         _numTaps(50)
     {
@@ -166,8 +166,8 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, frequencyTrans));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setNumTaps));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, numTaps));
-        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setBeta));
-        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, beta));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setAlpha));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, alpha));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setWeight));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, weight));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setGain));
@@ -296,15 +296,15 @@ public:
         return _numTaps;
     }
 
-    void setBeta(const double beta)
+    void setAlpha(const double alpha)
     {
-        _beta = beta;
+        _alpha = alpha;
         this->recalculate();
     }
 
-    double beta(void) const
+    double alpha(void) const
     {
-        return _beta;
+        return _alpha;
     }
   
     void setWeight(const double w)
@@ -347,7 +347,7 @@ private:
     double _freqLower;
     double _freqUpper;
     double _freqTrans;
-    double _beta;
+    double _alpha;
     double _weight;
     size_t _numTaps;
 };
@@ -357,6 +357,7 @@ void FIRDesigner::recalculate(void)
     if (not this->isActive()) return;
 
     const bool isComplex = _bandType.find("COMPLEX") != std::string::npos;
+    const bool isStop    = _bandType.find("STOP") != std::string::npos;
     double center_frequency = 0.0;
 
     //check for error
@@ -395,13 +396,17 @@ void FIRDesigner::recalculate(void)
 
     //generate the filter taps
     std::vector<double> taps;
-    if (_filterType == "ROOT_RAISED_COSINE") taps = design_fir("rootraisedcosine", _numTaps, filt_bw, _beta);
-    else if (_filterType == "RAISED_COSINE") taps = design_fir("raisedcosine", _numTaps, filt_bw, _beta);
+    if (_filterType == "ROOT_RAISED_COSINE") taps = design_fir("rootraisedcosine", _numTaps, filt_bw, _alpha);
+    else if (_filterType == "RAISED_COSINE") taps = design_fir("raisedcosine", _numTaps, filt_bw, _alpha);
     else if (_filterType == "GAUSSIAN") taps = design_fir("gaussian", _numTaps, filt_bw);
-    else if (_filterType == "SINC") taps = design_fir("sinc", _numTaps, filt_bw*2);
+    else if (_filterType == "SINC") taps = design_fir("sinc", _numTaps, filt_bw);
     else if (_filterType == "MAXFLAT") {
-      filt_bw = std::max(filt_bw,0.02);
-      taps = design_fir("butterworth", _numTaps, filt_bw);
+      if (isStop) {
+        throw Pothos::Exception("FIRDesigner()", "Can not use MAXFLAT as prototype for stop-band filter, please choose another type");
+      } else {
+        filt_bw = std::max(filt_bw,0.02);
+        taps = design_fir("butterworth", _numTaps, filt_bw);
+      }
     }
     else if (_filterType == "REMEZ") {
       double stop_freq = filt_bw + (_freqTrans/_sampRate);
@@ -439,6 +444,7 @@ void FIRDesigner::recalculate(void)
     else if (_bandType == "COMPLEX_BAND_STOP") complexTaps = transform_complex_fir("COMPLEX_BAND_STOP", taps, center_frequency);
 
     // Workaround some issues with the spuce pass-band transforms for now:
+    /*
     if (_filterType == "SINC")
     {
         if (_bandType == "LOW_PASS") taps = designLPF(_numTaps, _sampRate, _freqLower, window);
@@ -448,7 +454,8 @@ void FIRDesigner::recalculate(void)
         else if (_bandType == "COMPLEX_BAND_PASS") complexTaps = designCBPF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
         else if (_bandType == "COMPLEX_BAND_STOP") complexTaps = designCBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
     }
-
+    */
+    
     /* apply gain */
     std::transform(complexTaps.begin(), complexTaps.end(), complexTaps.begin(),
                    std::bind1st(std::multiplies<std::complex<double>>(),_gain));
