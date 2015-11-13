@@ -110,6 +110,10 @@ public:
     const QString &getAffinityZone(void) const;
     void setAffinityZone(const QString &zone);
 
+    //! get current edit tab (empty for no selection)
+    const QString &getActiveEditTab(void) const;
+    void setActiveEditTab(const QString &name);
+
 signals:
 
     //! Called by the evaluator when eval completed

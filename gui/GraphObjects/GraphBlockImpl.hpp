@@ -22,6 +22,7 @@ struct GraphBlock::Impl
     Poco::JSON::Array::Ptr inputDesc;
     Poco::JSON::Array::Ptr outputDesc;
     QString affinityZone;
+    QString activeEditTab;
 
     QStringList blockErrorMsgs;
 

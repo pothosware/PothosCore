@@ -329,6 +329,16 @@ void GraphBlock::setAffinityZone(const QString &zone)
     this->markChanged();
 }
 
+const QString &GraphBlock::getActiveEditTab(void) const
+{
+    return _impl->activeEditTab;
+}
+
+void GraphBlock::setActiveEditTab(const QString &name)
+{
+    _impl->activeEditTab = name;
+}
+
 QPainterPath GraphBlock::shape(void) const
 {
     QPainterPath path;
@@ -694,6 +704,10 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     obj->set("what", std::string("Block"));
     obj->set("path", this->getBlockDescPath());
     obj->set("affinityZone", this->getAffinityZone().toStdString());
+    if (not this->getActiveEditTab().isEmpty())
+    {
+        obj->set("activeEditTab", this->getActiveEditTab().toStdString());
+    }
 
     Poco::JSON::Array jPropsObj;
     for (const auto &propKey : this->getProperties())
@@ -722,6 +736,9 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
 
     if (obj->has("affinityZone")) this->setAffinityZone(
         QString::fromStdString(obj->getValue<std::string>("affinityZone")));
+
+    if (obj->has("activeEditTab")) this->setActiveEditTab(
+        QString::fromStdString(obj->getValue<std::string>("activeEditTab")));
 
     assert(properties);
     for (size_t i = 0; i < properties->size(); i++)
