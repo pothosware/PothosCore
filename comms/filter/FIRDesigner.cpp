@@ -390,6 +390,8 @@ void FIRDesigner::recalculate(void)
       // Since bandpass/stop, 1/2 the band-pass filter bandwidth since double sided
       // Also bandwidth is absolute value
       filt_bw = std::abs(0.5*(_freqUpper - _freqLower)/_sampRate);
+    } else if (_bandType == "HIGH_PASS") {
+      filt_bw = 0.5 - (_freqLower/_sampRate);
     } else {
       filt_bw = _freqLower/_sampRate;
     }
@@ -444,17 +446,13 @@ void FIRDesigner::recalculate(void)
     else if (_bandType == "COMPLEX_BAND_STOP") complexTaps = transform_complex_fir("COMPLEX_BAND_STOP", taps, center_frequency);
 
     // Workaround some issues with the spuce pass-band transforms for now:
-    /*
     if (_filterType == "SINC")
     {
-        if (_bandType == "LOW_PASS") taps = designLPF(_numTaps, _sampRate, _freqLower, window);
-        else if (_bandType == "HIGH_PASS") taps = designHPF(_numTaps, _sampRate, _freqLower, window);
-        else if (_bandType == "BAND_PASS") taps = designBPF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
+        if (_bandType == "BAND_PASS") taps = designBPF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
         else if (_bandType == "BAND_STOP") taps = designBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
         else if (_bandType == "COMPLEX_BAND_PASS") complexTaps = designCBPF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
         else if (_bandType == "COMPLEX_BAND_STOP") complexTaps = designCBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
     }
-    */
     
     /* apply gain */
     std::transform(complexTaps.begin(), complexTaps.end(), complexTaps.begin(),
