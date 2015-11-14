@@ -111,8 +111,8 @@ public:
     void setAffinityZone(const QString &zone);
 
     //! get current edit tab (empty for no selection)
-    const QString &getActiveEditTab(void) const;
-    void setActiveEditTab(const QString &name);
+    const std::string &getActiveEditTab(void) const;
+    void setActiveEditTab(const std::string &name);
 
 signals:
 
