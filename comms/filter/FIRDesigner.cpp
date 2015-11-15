@@ -369,10 +369,11 @@ void FIRDesigner::recalculate(void)
         _bandType == "COMPLEX_BAND_PASS" or
         _bandType == "COMPLEX_BAND_STOP")
     {
-        if (isComplex and _freqUpper <= -_sampRate/2) throw Pothos::Exception("FIRDesigner()", "upper frequency below Nyquist range");
-        if (not isComplex and _freqUpper <= 0) throw Pothos::Exception("FIRDesigner()", "upper frequency must be positive");
-        if (_freqUpper >= _sampRate/2) throw Pothos::Exception("FIRDesigner()", "upper frequency above Nyquist range");
-        if (_freqUpper <= _freqLower) throw Pothos::Exception("FIRDesigner()", "upper frequency <= lower frequency");
+      if ((_numTaps % 2) == 0) throw Pothos::Exception("FIRDesigner()", "Band pass or Band stop FIRs must have an odd number of taps");
+      if (isComplex and _freqUpper <= -_sampRate/2) throw Pothos::Exception("FIRDesigner()", "upper frequency below Nyquist range");
+      if (not isComplex and _freqUpper <= 0) throw Pothos::Exception("FIRDesigner()", "upper frequency must be positive");
+      if (_freqUpper >= _sampRate/2) throw Pothos::Exception("FIRDesigner()", "upper frequency above Nyquist range");
+      if (_freqUpper <= _freqLower) throw Pothos::Exception("FIRDesigner()", "upper frequency <= lower frequency");
     }
 
 
