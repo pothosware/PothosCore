@@ -6,16 +6,13 @@
 #include <complex>
 #include <algorithm>
 #include <iostream>
-#include <spuce/filters/remez_fir.h>
 #include <spuce/filters/design_fir.h>
 #include <spuce/filters/design_window.h>
-#include <spuce/filters/transform_fir.h>
 #include "FIRHelper.hpp"
 
 using spuce::design_fir;
+using spuce::design_complex_fir;
 using spuce::design_window;
-using spuce::transform_fir;
-using spuce::transform_complex_fir;
 /***********************************************************************
  * |PothosDoc FIR Designer
  *
@@ -358,7 +355,6 @@ void FIRDesigner::recalculate(void)
 
     const bool isComplex = _bandType.find("COMPLEX") != std::string::npos;
     const bool isStop    = _bandType.find("STOP") != std::string::npos;
-    double center_frequency = 0.0;
 
     //check for error
     if (_numTaps == 0) throw Pothos::Exception("FIRDesigner()", "num taps must be positive");
@@ -379,87 +375,65 @@ void FIRDesigner::recalculate(void)
         if (_freqUpper <= _freqLower) throw Pothos::Exception("FIRDesigner()", "upper frequency <= lower frequency");
     }
 
-    double filt_bw;
 
-    if (_bandType == "BAND_PASS" or
-        _bandType == "BAND_STOP" or
-        _bandType == "COMPLEX_BAND_PASS" or
-        _bandType == "COMPLEX_BAND_STOP")
-    {
-      center_frequency = 0.5*(_freqUpper + _freqLower)/_sampRate;
-      // Since bandpass/stop, 1/2 the band-pass filter bandwidth since double sided
-      // Also bandwidth is absolute value
-      filt_bw = std::abs(0.5*(_freqUpper - _freqLower)/_sampRate);
-    } else if (_bandType == "HIGH_PASS") {
-      filt_bw = 0.5 - (_freqLower/_sampRate);
-    } else {
-      filt_bw = _freqLower/_sampRate;
+    if (_filterType == "MAXFLAT") {
+      if (isStop) {
+        throw Pothos::Exception("FIRDesigner()", "Can not use MAXFLAT as prototype for stop-band filter, please choose another type");
+      }
+    } else if (_filterType == "REMEZ") {
+      _alpha = _weight;
     }
+
+    std::string filt_type = _filterType;
+    // Convert to lowercase for design_fir
+    std::transform(filt_type.begin(), filt_type.end(), filt_type.begin(), ::tolower);
 
     //generate the filter taps
     std::vector<double> taps;
-    if (_filterType == "ROOT_RAISED_COSINE") taps = design_fir("rootraisedcosine", _numTaps, filt_bw, _alpha);
-    else if (_filterType == "RAISED_COSINE") taps = design_fir("raisedcosine", _numTaps, filt_bw, _alpha);
-    else if (_filterType == "GAUSSIAN") taps = design_fir("gaussian", _numTaps, filt_bw);
-    else if (_filterType == "SINC") taps = design_fir("sinc", _numTaps, filt_bw);
-    else if (_filterType == "MAXFLAT") {
-      if (isStop) {
-        throw Pothos::Exception("FIRDesigner()", "Can not use MAXFLAT as prototype for stop-band filter, please choose another type");
-      } else {
-        filt_bw = std::max(filt_bw,0.02);
-        taps = design_fir("butterworth", _numTaps, filt_bw);
-      }
-    }
-    else if (_filterType == "REMEZ") {
-      double stop_freq = filt_bw + (_freqTrans/_sampRate);
-      if (stop_freq >= _sampRate/2) {
-        throw Pothos::Exception("FIRDesigner()", "Remez stopband frequency above Nyquist range");
-      }
-      try {
-        // for Band_stop filter, flip the weight since using low-pass prototype
-        if (_bandType == "BAND_STOP" or _bandType == "COMPLEX_BAND_STOP") {
-          taps = design_fir("remez", _numTaps, filt_bw, stop_freq, 1.0/_weight);
-        } else {
-          taps = design_fir("remez", _numTaps, filt_bw, stop_freq, _weight);
-        }
-      }
-      catch (const std::runtime_error& error) {
-        throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+"):"+error.what(), "problem with input parameters");
-      }
-    }
-    else throw Pothos::InvalidArgumentException("FIRDesigner("+_filterType+")", "unknown filter type");
-     
-    //generate the window
-    const auto window = design_window(_windowType, _numTaps, _windowArgs.empty()?0.0:_windowArgs.at(0));
-
-    // Apply window
-    for (size_t i=0;i<_numTaps;i++) {
-      taps[i] *= window[i];
-    }
-
-    // Transform Taps!!
     std::vector<std::complex<double>> complexTaps;
-    if (_bandType == "HIGH_PASS") taps = transform_fir("HIGH_PASS", taps, center_frequency); 
-    else if (_bandType == "BAND_PASS") taps = transform_fir("BAND_PASS", taps, center_frequency);
-    else if (_bandType == "BAND_STOP") taps = transform_fir("BAND_STOP", taps, center_frequency);
-    else if (_bandType == "COMPLEX_BAND_PASS") complexTaps = transform_complex_fir("COMPLEX_BAND_PASS", taps, center_frequency);
-    else if (_bandType == "COMPLEX_BAND_STOP") complexTaps = transform_complex_fir("COMPLEX_BAND_STOP", taps, center_frequency);
-
-    // Workaround some issues with the spuce pass-band transforms for now:
-    if (_filterType == "SINC")
-    {
-        if (_bandType == "BAND_PASS") taps = designBPF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
-        else if (_bandType == "BAND_STOP") taps = designBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
-        else if (_bandType == "COMPLEX_BAND_PASS") complexTaps = designCBPF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
-        else if (_bandType == "COMPLEX_BAND_STOP") complexTaps = designCBSF(_numTaps, _sampRate, _freqLower, _freqUpper, window);
+    try {
+      if ((_bandType == "COMPLEX_BAND_PASS") || (_bandType == "COMPLEX_BAND_STOP")) {
+        std::cout << "Calling design_complex_fir " << filt_type << " with " << _bandType << "\n";
+        complexTaps = design_complex_fir(filt_type, _bandType, _numTaps, _freqLower/_sampRate, _freqUpper/_sampRate, _alpha);
+      } else {
+        taps = design_fir(filt_type, _bandType, _numTaps, _freqLower/_sampRate, _freqUpper/_sampRate, _alpha);
+      }
     }
-    
+    /*
+    catch (const std::runtime_error error) {
+        throw Pothos::InvalidArgumentException("Problem with creating taps for FIRDesigner("+_filterType+"/"+_bandType+"):"+error.what(), "problem with input parameters?");
+    }
+    */
+    catch (...) {
+      std::cout << "Other problem with creating taps\n";
+    }
+      
+    //generate the window
+    try {
+      const auto window = design_window(_windowType, _numTaps, _windowArgs.empty()?0.0:_windowArgs.at(0));
+
+      // Apply window
+      for (size_t i=0;i<_numTaps;i++) {
+        taps[i] *= window[i];
+      }
+    }
+    /*
+    catch (const std::runtime_error error) {
+        throw Pothos::InvalidArgumentException("Problem with creating window in FIRDesigner("+_filterType+"/"+_bandType+"):"+error.what(), "problem with input parameters?");
+    } 
+    */   
+    catch (...) {
+      std::cout << "Other problem with window\n";
+    }
+
+    std::cout << "Window done\n";
     /* apply gain */
     std::transform(complexTaps.begin(), complexTaps.end(), complexTaps.begin(),
                    std::bind1st(std::multiplies<std::complex<double>>(),_gain));
     std::transform(taps.begin(), taps.end(), taps.begin(),
                    std::bind1st(std::multiplies<double>(),_gain));
 
+    std::cout << "Emitting taps...........\n";
     //emit the taps
     if (not complexTaps.empty()) this->callVoid("tapsChanged", complexTaps);
     else if (not taps.empty()) this->callVoid("tapsChanged", taps);

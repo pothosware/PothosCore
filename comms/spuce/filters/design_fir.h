@@ -9,7 +9,15 @@ namespace spuce {
 //! \author Tony Kirke
 //! \ingroup functions fir
 std::vector<double> design_fir(const std::string& fir_type,
-															 int order, float_type fc,
+                               const std::string& band_type,
+															 int order, float_type fl, float_type fu,
                                float_type alpha_beta_stop_edge=0.1,
                                float_type weight=100.0);
+
+std::vector<std::complex<double> > design_complex_fir(const std::string& fir_type,
+                                                      const std::string& band_type,                               
+                                                      int order, float_type fl, float_type fu,
+                                                      float_type alpha_beta_stop_edge=0.1,
+                                                      float_type weight=100.0);
+
 }  // namespace spuce

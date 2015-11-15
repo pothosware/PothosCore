@@ -12,7 +12,12 @@ void root_raised_cosine_quantized(fir_coeff<T>& rcfir, float_type alpha, int rat
 template <class T> void root_raised_cosine(fir_coeff<T>& rcfir, float_type alpha, float_type rate) {
   int i;
   int num_taps = rcfir.number_of_taps();
-  double gain = 1.0 / rate;
+  float_type gain = 1.0 / rate;
+  float_type sum = 0;
+  for (i = 0; i < num_taps; i++) {
+    sum += (T)(gain * root_raised_cosine_imp(alpha, float_type(i), rate, num_taps));
+  }
+  gain /= sum;
   for (i = 0; i < num_taps; i++) {
     rcfir.settap(i,(T)(gain * root_raised_cosine_imp(alpha, float_type(i), rate, num_taps)));
   }

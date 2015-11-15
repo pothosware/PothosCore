@@ -57,8 +57,8 @@ template <class Numeric> class fir_coeff {
     std::cout << "\n";
   }
   template <class N> friend std::vector<N> get_taps(fir_coeff<N> x);
-  void settap(std::vector<Numeric> z) {
-    for (size_t i = 0; i < num_taps; i++) coeff[i] = z[i];
+  void set_taps(const std::vector<Numeric>& taps) {
+    for (size_t i = 0; i < num_taps; i++) coeff[i] = taps[i];
   }
   // Get frequency response at freq
   float_type freqz_mag(float_type freq) {

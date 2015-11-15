@@ -1,5 +1,6 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <stdexcept>
 #include <spuce/filters/transform_fir.h>
 #include <iostream>
 // Copyright (c) 2015 Tony Kirke.  Boost Software License - Version 1.0  (http://www.opensource.org/licenses/BSL-1.0)
@@ -23,8 +24,8 @@ std::vector<float_type> transform_fir(const std::string& band_type, const std::v
   } else if (band_type == "BAND_PASS") {
     // Modulate taps up to band center frequency
     for (size_t i=0;i<taps.size();i++) {
-      // Scale to restore center tap value & by 0.5 due to cosine multiplication
-      out[i] = cos(2.0*M_PI*f*i) * taps[i] / (0.5*cos(M_PI*f*(taps.size()-1)));
+      // Scale up by 2.0 due to cosine multiplication
+      out[i] = 2.0* cos(2.0*M_PI*f*(i-(taps.size()-1)/2.0)) * taps[i];
     }
   } else if (band_type == "BAND_STOP") {
     // First transform to band_pass, then negate and add 1 at center tap
@@ -32,8 +33,13 @@ std::vector<float_type> transform_fir(const std::string& band_type, const std::v
     for (size_t i=0;i<taps.size();i++) out[i] *= -1;
     size_t mid_tap = (taps.size()-1)/2;
     out[mid_tap] += 1;
+  } else if (band_type == "INVERSE") {
+    for (size_t i=0;i<taps.size();i++) out[i] = -taps[i];
+    size_t mid_tap = (taps.size()-1)/2;
+    out[mid_tap] += 1;
   } else {
-    std::cout << "Unsupported band type :" << band_type << "\n";
+    std::string err = "Unsupported band type in transform_fir :"+band_type;
+    throw std::runtime_error(err);
   }
   return out;
 }
@@ -42,7 +48,7 @@ std::vector<std::complex<float_type>> transform_complex_fir(const std::string& b
   if (band_type == "COMPLEX_BAND_PASS") {
     // Modulate taps up to band center frequency
     for (size_t i=0;i<taps.size();i++) {
-      double phase = 2.0*M_PI*f*i;
+      double phase = 2.0*M_PI*f*(i - (taps.size()-1)/2.0);
       out[i] = taps[i]*std::polar(1.0, phase);
     }
   } else if (band_type == "COMPLEX_BAND_STOP") {
@@ -51,7 +57,8 @@ std::vector<std::complex<float_type>> transform_complex_fir(const std::string& b
     size_t mid_tap = (taps.size()-1)/2;
     out[mid_tap] += 1;
   } else {
-    std::cout << "Unsupported band type :" << band_type << "\n";
+    std::string err = "Unsupported band type in transform_complex_fir :"+band_type;
+    throw std::runtime_error(err);
   }
   return out;
 }
