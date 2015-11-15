@@ -393,50 +393,33 @@ void FIRDesigner::recalculate(void)
     std::vector<std::complex<double>> complexTaps;
     try {
       if ((_bandType == "COMPLEX_BAND_PASS") || (_bandType == "COMPLEX_BAND_STOP")) {
-        std::cout << "Calling design_complex_fir " << filt_type << " with " << _bandType << "\n";
         complexTaps = design_complex_fir(filt_type, _bandType, _numTaps, _freqLower/_sampRate, _freqUpper/_sampRate, _alpha);
       } else {
         taps = design_fir(filt_type, _bandType, _numTaps, _freqLower/_sampRate, _freqUpper/_sampRate, _alpha);
       }
     }
-    /*
     catch (const std::runtime_error error) {
-        throw Pothos::InvalidArgumentException("Problem with creating taps for FIRDesigner("+_filterType+"/"+_bandType+"):"+error.what(), "problem with input parameters?");
-    }
-    */
-    catch (...) {
-      std::cout << "Other problem with creating taps\n";
+      throw Pothos::InvalidArgumentException("Problem with creating taps for FIRDesigner("+_filterType+"/"+_bandType+"):"+error.what(), "problem with input parameters?");
     }
       
-    //generate the window
-    try {
-      const auto window = design_window(_windowType, _numTaps, _windowArgs.empty()?0.0:_windowArgs.at(0));
 
-      // Apply window
-      for (size_t i=0;i<_numTaps;i++) {
-        taps[i] *= window[i];
-      }
-    }
-    /*
-    catch (const std::runtime_error error) {
-        throw Pothos::InvalidArgumentException("Problem with creating window in FIRDesigner("+_filterType+"/"+_bandType+"):"+error.what(), "problem with input parameters?");
-    } 
-    */   
-    catch (...) {
-      std::cout << "Other problem with window\n";
-    }
-
-    std::cout << "Window done\n";
     /* apply gain */
     std::transform(complexTaps.begin(), complexTaps.end(), complexTaps.begin(),
                    std::bind1st(std::multiplies<std::complex<double>>(),_gain));
     std::transform(taps.begin(), taps.end(), taps.begin(),
                    std::bind1st(std::multiplies<double>(),_gain));
 
-    std::cout << "Emitting taps...........\n";
-    //emit the taps
-    if (not complexTaps.empty()) this->callVoid("tapsChanged", complexTaps);
-    else if (not taps.empty()) this->callVoid("tapsChanged", taps);
+    //generate the window
+    const auto window = design_window(_windowType, _numTaps, _windowArgs.empty()?0.0:_windowArgs.at(0));
+
+    // Apply window & emit taps
+    if (not complexTaps.empty()) {
+      for (size_t i=0;i<_numTaps;i++) complexTaps[i] *= window[i];
+      this->callVoid("tapsChanged", complexTaps);
+    } else if (not taps.empty()) {
+      for (size_t i=0;i<_numTaps;i++) taps[i] *= window[i];
+      this->callVoid("tapsChanged", taps);
+    }
 }
 
 static Pothos::BlockRegistry registerFIRDesigner(
