@@ -76,5 +76,7 @@ private:
     QLabel *_evalTypesDesc;
     QFormLayout *_formLayout;
     std::map<std::string, QFormLayout *> _paramLayouts;
+    QTabWidget *_propertiesTabs;
+    std::map<QWidget *, std::string> _tabWidgetToTabName;
     QPointer<GraphBlock> _block;
 };

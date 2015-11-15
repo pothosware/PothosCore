@@ -40,6 +40,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     _jsonBlockDesc(nullptr),
     _evalTypesDesc(nullptr),
     _formLayout(nullptr),
+    _propertiesTabs(nullptr),
     _block(block)
 {
     auto blockDesc = block->getBlockDesc();
@@ -66,22 +67,33 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     }
 
     //create optional properties tabs
-    auto propertiesTabs = new QTabWidget(this);
-    _formLayout->addRow(propertiesTabs);
+    _propertiesTabs = new QTabWidget(this);
+    _formLayout->addRow(_propertiesTabs);
     for (const auto &propKey : _block->getProperties())
     {
         const auto tabName = _block->getParamDesc(propKey)->optValue<std::string>("tab", "");
         if (_paramLayouts.count(tabName) != 0) continue;
-        auto tab = new QWidget(propertiesTabs);
+        auto tab = new QWidget(_propertiesTabs);
         _paramLayouts[tabName] = makeFormLayout(tab);
-        propertiesTabs->addTab(tab, tabName.empty()? tr("Default") : QString::fromStdString(tabName));
+        _propertiesTabs->addTab(tab, tabName.empty()? tr("Default") : QString::fromStdString(tabName));
+        _tabWidgetToTabName[tab] = tabName;
+    }
+
+    //select the current active tab
+    for (const auto &pair : _tabWidgetToTabName)
+    {
+        if (pair.second == _block->getActiveEditTab())
+        {
+            _propertiesTabs->setCurrentWidget(pair.first);
+        }
     }
 
     //only one default tab? fall back to no tab widget
     if (_paramLayouts.size() == 1 and _paramLayouts.count("") == 1)
     {
         _paramLayouts[""] = _formLayout;
-        delete propertiesTabs;
+        delete _propertiesTabs;
+        _propertiesTabs = nullptr;
     }
 
     //properties
@@ -316,6 +328,13 @@ void BlockPropertiesPanel::handleCommit(void)
     if (_affinityZoneOriginal != _block->getAffinityZone()) propertiesModified.push_back(tr("Affinity Zone"));
 
     if (propertiesModified.empty()) return this->handleCancel();
+
+    //stash the latest active tab to restore for next open
+    if (_propertiesTabs != nullptr)
+    {
+        auto it = _tabWidgetToTabName.find(_propertiesTabs->currentWidget());
+        if (it != _tabWidgetToTabName.end()) _block->setActiveEditTab(it->second);
+    }
 
     //emit a new graph state event
     auto desc = (propertiesModified.size() == 1)? propertiesModified.front() : tr("properties");
