@@ -382,7 +382,7 @@ void FIRDesigner::recalculate(void)
         throw Pothos::Exception("FIRDesigner()", "Can not use MAXFLAT as prototype for stop-band filter, please choose another type");
       }
     } else if (_filterType == "REMEZ") {
-      _alpha = _weight;
+      _alpha = _freqTrans/_sampRate;
     }
 
     std::string filt_type = _filterType;
@@ -396,7 +396,7 @@ void FIRDesigner::recalculate(void)
       if ((_bandType == "COMPLEX_BAND_PASS") || (_bandType == "COMPLEX_BAND_STOP")) {
         complexTaps = design_complex_fir(filt_type, _bandType, _numTaps, _freqLower/_sampRate, _freqUpper/_sampRate, _alpha);
       } else {
-        taps = design_fir(filt_type, _bandType, _numTaps, _freqLower/_sampRate, _freqUpper/_sampRate, _alpha);
+        taps = design_fir(filt_type, _bandType, _numTaps, _freqLower/_sampRate, _freqUpper/_sampRate, _alpha, _weight);
       }
     }
     catch (const std::runtime_error error) {
