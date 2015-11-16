@@ -58,7 +58,7 @@ public:
         {
             auto in_i = in[i];
             auto diff = in_i * _prev;
-            auto angle = std::atan2(diff.real(), diff.imag());
+            auto angle = std::atan2(diff.imag(), diff.real());
             _prev = std::conj(in_i);
             out[i] = OutType(angle);
         }
