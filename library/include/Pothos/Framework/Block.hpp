@@ -225,8 +225,9 @@ public:
      * \param name the name of this input port
      * \param dtype the data type for elements
      * \param domain the expected memory domain
+     * \return a pointer to the new input port
      */
-    void setupInput(const std::string &name, const DType &dtype = "", const std::string &domain = "");
+    InputPort *setupInput(const std::string &name, const DType &dtype = "", const std::string &domain = "");
 
     /*!
      * Configure an input port with the given data type.
@@ -234,8 +235,9 @@ public:
      * \param index the index number of this input port
      * \param dtype the data type for elements
      * \param domain the expected memory domain
+     * \return a pointer to the new input port
      */
-    void setupInput(const size_t index, const DType &dtype = "", const std::string &domain = "");
+    InputPort *setupInput(const size_t index, const DType &dtype = "", const std::string &domain = "");
 
     /*!
      * Configure an output port with the given data type.
@@ -246,8 +248,9 @@ public:
      * \param name the name of this output port
      * \param dtype the data type for elements
      * \param domain the expected memory domain
+     * \return a pointer to the new output port
      */
-    void setupOutput(const std::string &name, const DType &dtype = "", const std::string &domain = "");
+    OutputPort *setupOutput(const std::string &name, const DType &dtype = "", const std::string &domain = "");
 
     /*!
      * Configure an output port with the given data type.
@@ -255,8 +258,9 @@ public:
      * \param index the index number of this output port
      * \param dtype the data type for elements
      * \param domain the expected memory domain
+     * \return a pointer to the new output port
      */
-    void setupOutput(const size_t index, const DType &dtype = "", const std::string &domain = "");
+    OutputPort *setupOutput(const size_t index, const DType &dtype = "", const std::string &domain = "");
 
     /*!
      * Export a function call on this block to set/get parameters.
@@ -271,6 +275,7 @@ public:
      * A signal is capable of emitting messages to a slot.
      * The name should not overlap with the name of an output port.
      * \param name the name of the signal
+     * \return a pointer to the new output port
      */
     void registerSignal(const std::string &name);
 
