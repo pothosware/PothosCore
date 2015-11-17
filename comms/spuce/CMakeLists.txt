@@ -22,6 +22,7 @@ SET(FILT_SRCS
 	filters/butterworth_fir.cpp
 	filters/raised_cosine_imp.cpp
 	filters/root_raised_cosine_imp.cpp
+	filters/remez_estimate.cpp
 	filters/remez_fir.cpp
 	filters/sinc_fir.cpp
 	filters/sinc_helper.cpp

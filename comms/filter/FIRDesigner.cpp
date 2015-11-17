@@ -6,6 +6,7 @@
 #include <complex>
 #include <algorithm>
 #include <iostream>
+#include <spuce/filters/remez_estimate.h>
 #include <spuce/filters/design_fir.h>
 #include <spuce/filters/design_window.h>
 #include "FIRHelper.hpp"
@@ -13,6 +14,10 @@
 using spuce::design_fir;
 using spuce::design_complex_fir;
 using spuce::design_window;
+using spuce::remez_estimate_num_taps;
+using spuce::remez_estimate_weight;
+using spuce::remez_estimate_bw;
+using spuce::remez_estimate_atten;
 /***********************************************************************
  * |PothosDoc FIR Designer
  *
@@ -90,7 +95,7 @@ using spuce::design_window;
  * |units Hz
  * |preview when(enum=band, "BAND_PASS", "BAND_STOP", "COMPLEX_BAND_PASS", "COMPLEX_BAND_STOP")
  *
- * |param freqTrans[Transition Freq] The transition bandwidth for Remez filters (only)
+ * |param transBw[Transition Bandwidth] The transition bandwidth for Remez filters (only)
  * |default 1000
  * |units Hz
  * |preview when(enum=type, "REMEZ")
@@ -105,8 +110,15 @@ using spuce::design_window;
  * |preview when(enum=type, "RAISED_COSINE", "ROOT_RAISED_COSINE")
  * |tab Cosine
  *
- * |param weight[Weight] For the Remez filter. This is the weight for stopband attenuation vs passband ripple.
- * |default 100.0
+ * |param stopDB[Attenuation] For the Remez filter. This is the desired stopband attenuation in dB.
+ * |default 60.0
+ * |units dB
+ * |preview when(enum=type, "REMEZ")
+ * |tab Remez
+ *
+ * |param passDB[Passband Ripple] For the Remez filter. This is the desired passband ripple in dB.
+ * |default 0.1
+ * |units dB
  * |preview when(enum=type, "REMEZ")
  * |tab Remez
  *
@@ -118,10 +130,11 @@ using spuce::design_window;
  * |setter setSampleRate(sampRate)
  * |setter setFrequencyLower(freqLower)
  * |setter setFrequencyUpper(freqUpper)
- * |setter setFrequencyTrans(freqTrans)
+ * |setter setBandwidthTrans(transBw)
  * |setter setNumTaps(numTaps)
  * |setter setAlpha(alpha)
- * |setter setWeight(weight)
+ * |setter setStopDB(stopDB)
+ * |setter setPassDB(passDB)
  * |setter setGain(gain)
  **********************************************************************/
 class FIRDesigner : public Pothos::Block
@@ -140,9 +153,11 @@ public:
         _sampRate(1.0),
         _freqLower(0.1),
         _freqUpper(0.2),
-        _freqTrans(0.1),
+        _transBw(0.1),
         _alpha(0.5),
         _weight(100.0),
+        _stopDB(60.0),
+        _passDB(100.0),
         _numTaps(50)
     {
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setBandType));
@@ -159,14 +174,16 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, frequencyLower));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setFrequencyUpper));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, frequencyUpper));
-        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setFrequencyTrans));
-        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, frequencyTrans));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setBandwidthTrans));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, bandwidthTrans));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setNumTaps));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, numTaps));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setAlpha));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, alpha));
-        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setWeight));
-        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, weight));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setStopDB));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, stopDB));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setPassDB));
+        this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, passDB));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setGain));
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, gain));
         this->registerSignal("tapsChanged");
@@ -269,15 +286,15 @@ public:
         return _freqUpper;
     }
   
-    void setFrequencyTrans(const double freq)
+    void setBandwidthTrans(const double freq)
     {
-        _freqTrans = freq;
+        _transBw = freq;
         this->recalculate();
     }
 
-    double frequencyTrans(void) const
+    double bandwidthTrans(void) const
     {
-        return _freqTrans;
+        return _transBw;
     }
 
     void setNumTaps(const size_t num)
@@ -304,15 +321,26 @@ public:
         return _alpha;
     }
   
-    void setWeight(const double w)
+    void setPassDB(const double w)
     {
-        _weight = w;
+        _passDB = w;
         this->recalculate();
     }
 
-    double weight(void) const
+    double passDB(void) const
     {
-        return _weight;
+        return _passDB;
+    }
+
+    void setStopDB(const double w)
+    {
+        _stopDB = w;
+        this->recalculate();
+    }
+
+    double stopDB(void) const
+    {
+        return _stopDB;
     }
 
     void setGain(const double gain)
@@ -343,9 +371,11 @@ private:
     double _sampRate;
     double _freqLower;
     double _freqUpper;
-    double _freqTrans;
+    double _transBw;
     double _alpha;
     double _weight;
+    double _stopDB;
+    double _passDB;
     size_t _numTaps;
 };
 
@@ -356,6 +386,7 @@ void FIRDesigner::recalculate(void)
     const bool isComplex = _bandType.find("COMPLEX") != std::string::npos;
     const bool isStop    = _bandType.find("STOP") != std::string::npos;
 
+    
     //check for error
     if (_numTaps == 0) throw Pothos::Exception("FIRDesigner()", "num taps must be positive");
     if (_sampRate <= 0) throw Pothos::Exception("FIRDesigner()", "sample rate must be positive");
@@ -382,7 +413,17 @@ void FIRDesigner::recalculate(void)
         throw Pothos::Exception("FIRDesigner()", "Can not use MAXFLAT as prototype for stop-band filter, please choose another type");
       }
     } else if (_filterType == "REMEZ") {
-      _alpha = _freqTrans/_sampRate;
+      _alpha = _transBw/_sampRate;
+      // This formula basically works if none of the passband or stopband frequencies are too close to 0 or 0.5
+      size_t num_taps_est = remez_estimate_num_taps(_alpha, _passDB, _stopDB);
+      if (num_taps_est > _numTaps) {
+        double max_atten = remez_estimate_atten(_numTaps, _alpha, _passDB);
+        double min_trans_bw = remez_estimate_bw(_numTaps, _passDB, _stopDB);
+        std::string err_msg = "Remez order not large enough to meet specification, either increase filter order to "+std::to_string(num_taps_est)+", decrease stopband attenuation to "+std::to_string(max_atten)+", increase transition bandwidth to "+std::to_string(min_trans_bw*_sampRate)+" or increase passband ripple";
+        poco_warning(Poco::Logger::get("FIRDesigner(Remez)"), err_msg);
+      }
+      _weight = remez_estimate_weight(_passDB, _stopDB);
+      //std::cout << "For " << _passDB << " and " << _stopDB << " weight = " << _weight << "\n";
     }
 
     std::string filt_type = _filterType;
