@@ -382,7 +382,8 @@ void BlockPropertiesPanel::handleDocTabChanged(int index)
             {
                 const auto typeStr = _block->getInputPortTypeStr(portKey);
                 if (not typeStr.empty()) output += QString("<li><b>%1</b> - %2</li>")
-                    .arg(portKey).arg(QString::fromStdString(typeStr).toHtmlEscaped());
+                    .arg(_block->getInputPortAlias(portKey).toHtmlEscaped())
+                    .arg(QString::fromStdString(typeStr).toHtmlEscaped());
             }
             output += "</ul>";
         }
@@ -394,7 +395,8 @@ void BlockPropertiesPanel::handleDocTabChanged(int index)
             {
                 const auto typeStr = _block->getOutputPortTypeStr(portKey);
                 if (not typeStr.empty()) output += QString("<li><b>%1</b> - %2</li>")
-                    .arg(portKey).arg(QString::fromStdString(typeStr).toHtmlEscaped());
+                    .arg(_block->getOutputPortAlias(portKey).toHtmlEscaped())
+                    .arg(QString::fromStdString(typeStr).toHtmlEscaped());
             }
             output += "</ul>";
         }

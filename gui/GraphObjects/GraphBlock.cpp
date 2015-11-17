@@ -250,9 +250,10 @@ const std::string &GraphBlock::getPropertyTypeStr(const QString &key) const
     return _impl->propertiesTypeStr[key];
 }
 
-void GraphBlock::addInputPort(const QString &portKey)
+void GraphBlock::addInputPort(const QString &portKey, const QString &portAlias)
 {
     _inputPorts.push_back(portKey);
+    _impl->inputPortsAliases[portKey] = portAlias;
     this->markChanged();
 }
 
@@ -261,15 +262,26 @@ const QStringList &GraphBlock::getInputPorts(void) const
     return _inputPorts;
 }
 
-void GraphBlock::addOutputPort(const QString &portKey)
+const QString &GraphBlock::getInputPortAlias(const QString &portKey) const
+{
+    return _impl->inputPortsAliases[portKey];
+}
+
+void GraphBlock::addOutputPort(const QString &portKey, const QString &portAlias)
 {
     _outputPorts.push_back(portKey);
+    _impl->outputPortsAliases[portKey] = portAlias;
     this->markChanged();
 }
 
 const QStringList &GraphBlock::getOutputPorts(void) const
 {
     return _outputPorts;
+}
+
+const QString &GraphBlock::getOutputPortAlias(const QString &portKey) const
+{
+    return _impl->outputPortsAliases[portKey];
 }
 
 void GraphBlock::addSlotPort(const QString &portKey)
@@ -484,7 +496,7 @@ void GraphBlock::renderStaticText(void)
         _impl->inputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
             .arg(getTextColor(true, _impl->inputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
-            .arg(_inputPorts[i].toHtmlEscaped()));
+            .arg(this->getInputPortAlias(_inputPorts[i]).toHtmlEscaped()));
     }
 
     _impl->outputPortsText.resize(_outputPorts.size());
@@ -493,7 +505,7 @@ void GraphBlock::renderStaticText(void)
         _impl->outputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
             .arg(getTextColor(true, _impl->outputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
-            .arg(_outputPorts[i].toHtmlEscaped()));
+            .arg(this->getOutputPortAlias(_outputPorts[i]).toHtmlEscaped()));
     }
 
     if (not getActionMap()["showPortNames"]->isChecked())
