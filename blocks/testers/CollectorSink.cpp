@@ -166,11 +166,11 @@ void CollectorSink::verifyTestPlanExpectedValues(const Poco::JSON::Object::Ptr &
         const auto value = expectedValues->getElement<int>(i);
         const auto actual = intBuffer.as<const int *>()[i];
         if (value != actual) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-            Poco::format("Value check for element %d: expected %d -> actual %d", int(i), value, actual));
+            Poco::format("Value check for element %z: expected %d -> actual %d", i, value, actual));
     }
 
     if (numActualElems != expectedValues->size()) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-        Poco::format("Check expected %d elements, actual %d elements", int(expectedValues->size()), int(numActualElems)));
+        Poco::format("Check expected %z elements, actual %z elements", expectedValues->size(), numActualElems));
 }
 
 /***********************************************************************
@@ -190,17 +190,17 @@ void CollectorSink::verifyTestPlanExpectedLabels(const Poco::JSON::Object::Ptr &
             "cant handle this label type: " + lbl.data.getTypeString());
         auto actual = lbl.data.extract<std::string>();
         if (lbl.width != 1) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-            Poco::format("Value check for label width %d: expected %d -> actual %d", int(i), int(1), int(lbl.width)));
+            Poco::format("Value check for label width %z: expected %d -> actual %z", i, int(1), lbl.width));
         if (lbl.index != index) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-            Poco::format("Value check for label index %d: expected %d -> actual %d", int(i), int(index), int(lbl.index)));
+            Poco::format("Value check for label index %z: expected %z -> actual %z", i, index, lbl.index));
         if (lbl.id != id) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-            Poco::format("Value check for label id %d: expected '%s' -> actual '%s'", int(i), id, lbl.id));
+            Poco::format("Value check for label id %z: expected '%s' -> actual '%s'", i, id, lbl.id));
         if (actual != value) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-            Poco::format("Value check for label data %d: expected '%s' -> actual '%s'", int(i), value, actual));
+            Poco::format("Value check for label data %z: expected '%s' -> actual '%s'", i, value, actual));
     }
 
     if (labels.size() != expectedLabels->size()) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-        Poco::format("Check expected %d labels, actual %d labels", int(expectedLabels->size()), int(labels.size())));
+        Poco::format("Check expected %z labels, actual %z labels", expectedLabels->size(), labels.size()));
 }
 
 /***********************************************************************
@@ -217,11 +217,11 @@ void CollectorSink::verifyTestPlanExpectedMessages(const Poco::JSON::Object::Ptr
             "cant handle this message type: " + msg.getTypeString());
         auto actual = msg.extract<std::string>();
         if (actual != value) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-            Poco::format("Value check for message %d: expected %s -> actual %s", int(i), value, actual));
+            Poco::format("Value check for message %z: expected %s -> actual %s", i, value, actual));
     }
 
     if (messages.size() != expectedMessages->size()) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-        Poco::format("Check expected %d messages, actual %d messages", int(expectedMessages->size()), int(messages.size())));
+        Poco::format("Check expected %z messages, actual %z messages", expectedMessages->size(), messages.size()));
 }
 
 
@@ -244,10 +244,10 @@ void CollectorSink::verifyTestPlanExpectedPackets(const Poco::JSON::Object::Ptr 
         catch (const Pothos::Exception &ex)
         {
             throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-                Poco::format("packet%d -- %s", int(i), ex.message()));
+                Poco::format("packet%z -- %s", i, ex.message()));
         }
     }
 
     if (packets.size() != expectedPackets->size()) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-        Poco::format("Check expected %d packets, actual %d packets", int(expectedPackets->size()), int(packets.size())));
+        Poco::format("Check expected %z packets, actual %z packets", expectedPackets->size(), packets.size()));
 }

@@ -46,7 +46,7 @@ Pothos::Object Pothos::Callable::opaqueCall(const Object *inputArgs, const size_
             if (numArgs <= inputArgsIndex)
             {
                 throw Pothos::CallableArgumentError("Pothos::Callable::call()", Poco::format(
-                    "expected input argument at %d", int(inputArgsIndex)));
+                    "expected input argument at %z", inputArgsIndex));
             }
             callArgs[i] = inputArgs[inputArgsIndex++];
         }
@@ -59,7 +59,7 @@ Pothos::Object Pothos::Callable::opaqueCall(const Object *inputArgs, const size_
         catch(const Pothos::ObjectConvertError &ex)
         {
             throw Pothos::CallableArgumentError("Pothos::Callable::call()", Poco::format(
-                "failed to convert arg%d\n%s", int(i), std::string(ex.displayText())));
+                "failed to convert arg%z\n%s", i, std::string(ex.displayText())));
         }
     }
 
@@ -94,12 +94,12 @@ const std::type_info &Pothos::Callable::type(const int argNo) const
     if (argNo < -1)
     {
         throw Pothos::CallableArgumentError("Pothos::Callable::type()", Poco::format(
-            "unexpected argNo %d", int(argNo)));
+            "unexpected argNo %d", argNo));
     }
     if (argNo >= int(this->getNumArgs()))
     {
         throw Pothos::CallableArgumentError("Pothos::Callable::type()", Poco::format(
-            "unexpected argNo %d but call takes %d arguments", int(argNo), int(this->getNumArgs())));
+            "unexpected argNo %d but call takes %z arguments", argNo, this->getNumArgs()));
     }
 
     if (argNo == -1) return _impl->type(-1);

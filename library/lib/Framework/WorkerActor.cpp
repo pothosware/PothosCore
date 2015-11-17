@@ -445,8 +445,8 @@ void Pothos::WorkerActor::postWorkTasks(void)
             {
                 if (buffer.length > buffer.getBuffer().getLength())
                 {
-                    poco_error_f4(Poco::Logger::get("Pothos.Block.produce"), "%s[%s] overproduced %d bytes, %d available",
-                        block->getName(), port.name(), int(buffer.length), int(buffer.getBuffer().getLength()));
+                    poco_error_f4(Poco::Logger::get("Pothos.Block.produce"), "%s[%s] overproduced %z bytes, %z available",
+                        block->getName(), port.name(), buffer.length, buffer.getBuffer().getLength());
                 }
                 else port.bufferManagerPop(buffer.length);
             }

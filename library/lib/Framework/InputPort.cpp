@@ -152,8 +152,8 @@ void Pothos::InputPort::bufferAccumulatorPop(const size_t numBytes)
 
     if (numBytes > _bufferAccumulator.getTotalBytesAvailable())
     {
-        poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %d bytes, %d available",
-            _actor->block->getName(), this->name(), int(numBytes), int(_bufferAccumulator.getTotalBytesAvailable()));
+        poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %z bytes, %z available",
+            _actor->block->getName(), this->name(), numBytes, _bufferAccumulator.getTotalBytesAvailable());
         return;
     }
 
