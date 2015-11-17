@@ -4,6 +4,7 @@
 #include "Framework/WorkerActor.hpp"
 #include "Framework/ThreadEnvironment.hpp"
 #include <Pothos/Object/Containers.hpp>
+#include <Pothos/Framework/InputPortImpl.hpp>
 #include <Pothos/Framework/OutputPortImpl.hpp>
 #include <Poco/String.h>
 
@@ -247,6 +248,7 @@ std::vector<Pothos::PortInfo> Pothos::Block::inputPortInfo(void)
     {
         PortInfo info;
         info.name = name;
+        info.alias = this->input(name)->alias();
         info.isSigSlot = this->input(name)->isSlot();
         info.dtype = this->input(name)->dtype();
         infos.push_back(info);
@@ -261,6 +263,7 @@ std::vector<Pothos::PortInfo> Pothos::Block::outputPortInfo(void)
     {
         PortInfo info;
         info.name = name;
+        info.alias = this->output(name)->alias();
         info.isSigSlot = this->output(name)->isSignal();
         info.dtype = this->output(name)->dtype();
         infos.push_back(info);

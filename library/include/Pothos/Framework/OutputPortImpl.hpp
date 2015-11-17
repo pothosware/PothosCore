@@ -22,6 +22,12 @@ inline const std::string &Pothos::OutputPort::name(void) const
     return _name;
 }
 
+inline const std::string &Pothos::OutputPort::alias(void) const
+{
+    if (_alias.empty()) return this->name();
+    return _alias;
+}
+
 inline const Pothos::DType &Pothos::OutputPort::dtype(void) const
 {
     return _dtype;

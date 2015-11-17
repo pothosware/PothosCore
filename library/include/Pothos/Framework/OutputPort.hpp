@@ -44,6 +44,9 @@ public:
     //! Get the string name identifier for this port.
     const std::string &name(void) const;
 
+    //! Get a displayable name for this port.
+    const std::string &alias(void) const;
+
     //! Get the data type information for this port.
     const DType &dtype(void) const;
 
@@ -165,6 +168,7 @@ private:
     bool _isSignal;
     int _index;
     std::string _name;
+    std::string _alias;
     DType _dtype;
 
     //state set in pre-work

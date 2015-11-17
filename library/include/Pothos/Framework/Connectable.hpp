@@ -4,7 +4,7 @@
 /// This file contains the connnectable interface for topology elements.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -27,6 +27,8 @@ public:
     PortInfo(void);
 
     std::string name; //!< The port name
+
+    std::string alias; //!< A displayable name
 
     bool isSigSlot; //!< Is signal or slot?
 
