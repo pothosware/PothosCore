@@ -155,9 +155,9 @@ public:
         _freqUpper(0.2),
         _transBw(0.1),
         _alpha(0.5),
-        _weight(100.0),
+        _weight(1.0),
         _stopDB(60.0),
-        _passDB(100.0),
+        _passDB(0.1),
         _numTaps(50)
     {
         this->registerCall(this, POTHOS_FCN_TUPLE(FIRDesigner, setBandType));
@@ -431,7 +431,6 @@ void FIRDesigner::recalculate(void)
             num_taps_est, max_atten, min_trans_bw*_sampRate/1e3);
       }
       _weight = remez_estimate_weight(_passDB, _stopDB);
-      //std::cout << "For " << _passDB << " and " << _stopDB << " weight = " << _weight << "\n";
     }
 
     std::string filt_type = _filterType;
@@ -443,7 +442,7 @@ void FIRDesigner::recalculate(void)
     std::vector<std::complex<double>> complexTaps;
     try {
       if ((_bandType == "COMPLEX_BAND_PASS") || (_bandType == "COMPLEX_BAND_STOP")) {
-        complexTaps = design_complex_fir(filt_type, _bandType, _numTaps, _freqLower/_sampRate, _freqUpper/_sampRate, _alpha);
+        complexTaps = design_complex_fir(filt_type, _bandType, _numTaps, _freqLower/_sampRate, _freqUpper/_sampRate, _alpha, _weight);
       } else {
         taps = design_fir(filt_type, _bandType, _numTaps, _freqLower/_sampRate, _freqUpper/_sampRate, _alpha, _weight);
       }
