@@ -1,6 +1,7 @@
 // Copyright (c) 2015 Tony Kirke.  Boost Software License - Version 1.0  (http://www.opensource.org/licenses/BSL-1.0)
 //! \author Tony Kirke
 #include <spuce/filters/remez_estimate.h>
+#include <algorithm>
 #include <vector>
 #include <iostream>
 namespace spuce {
