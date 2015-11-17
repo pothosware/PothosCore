@@ -422,8 +422,13 @@ void FIRDesigner::recalculate(void)
       if (num_taps_est > _numTaps) {
         double max_atten = remez_estimate_atten(_numTaps, _alpha, _passDB);
         double min_trans_bw = remez_estimate_bw(_numTaps, _passDB, _stopDB);
-        std::string err_msg = "Remez order not large enough to meet specification, either increase filter order to "+std::to_string(num_taps_est)+", decrease stopband attenuation to "+std::to_string(max_atten)+", increase transition bandwidth to "+std::to_string(min_trans_bw*_sampRate)+" or increase passband ripple";
-        poco_warning(Poco::Logger::get("FIRDesigner(Remez)"), err_msg);
+        poco_warning_f3(Poco::Logger::get("FIRDesigner.Remez"),
+            "Remez order not large enough to meet specification:\n"
+            "  - either increase filter order to %d taps,\n"
+            "  - decrease stopband attenuation to %g dB,\n"
+            "  - increase transition bandwidth to %g kHz,\n"
+            "  - or increase passband ripple.",
+            int(num_taps_est), max_atten, min_trans_bw*_sampRate/1e3);
       }
       _weight = remez_estimate_weight(_passDB, _stopDB);
       //std::cout << "For " << _passDB << " and " << _stopDB << " weight = " << _weight << "\n";
