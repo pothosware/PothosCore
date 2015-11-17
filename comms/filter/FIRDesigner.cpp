@@ -413,6 +413,9 @@ void FIRDesigner::recalculate(void)
         throw Pothos::Exception("FIRDesigner()", "Can not use MAXFLAT as prototype for stop-band filter, please choose another type");
       }
     } else if (_filterType == "REMEZ") {
+      if (_transBw <= 0) throw Pothos::Exception("FIRDesigner()","Transition Bandwidth must be > 0");
+      if (_passDB <= 0) throw Pothos::Exception("FIRDesigner()","Passband Attenuation must be > 0");
+      if (_stopDB <= 0) throw Pothos::Exception("FIRDesigner()","Stopband Attenuation must be > 0");
       _alpha = _transBw/_sampRate;
       // This formula basically works if none of the passband or stopband frequencies are too close to 0 or 0.5
       size_t num_taps_est = remez_estimate_num_taps(_alpha, _passDB, _stopDB);
