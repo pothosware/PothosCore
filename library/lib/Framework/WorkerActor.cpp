@@ -530,6 +530,7 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
         portStats->set("dtypeSize", Poco::UInt64(port.dtype().size()));
         portStats->set("dtypeMarkup", port.dtype().toMarkup());
         portStats->set("portName", name);
+        portStats->set("portAlias", port.alias());
         portStats->set("reserveElements", Poco::UInt64(port._reserveElements));
         {
             BufferChunk frontBuff; port.bufferAccumulatorFront(frontBuff);
@@ -563,6 +564,7 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
         portStats->set("dtypeSize", Poco::UInt64(port.dtype().size()));
         portStats->set("dtypeMarkup", port.dtype().toMarkup());
         portStats->set("portName", name);
+        portStats->set("portAlias", port.alias());
         {
             BufferChunk frontBuff; port.bufferManagerFront(frontBuff);
             portStats->set("frontBytes", Poco::UInt64(frontBuff.length));
