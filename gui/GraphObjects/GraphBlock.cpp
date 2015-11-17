@@ -18,6 +18,7 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm> //min/max
+#include <Poco/Logger.h>
 
 GraphBlock::GraphBlock(QObject *parent):
     GraphObject(parent),
@@ -731,7 +732,34 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
 
     //init the block with the description
     auto blockDesc = getBlockDescFromPath(path);
-    if (not blockDesc) throw Pothos::Exception("GraphBlock::deserialize()", "cant find block factory with path: '"+path+"'");
+
+    //Can't find the block description?
+    //Generate a pseudo description so that the block will appear
+    //in the editor with the same properties and connections.
+    if (not blockDesc)
+    {
+        blockDesc = Poco::JSON::Object::Ptr(new Poco::JSON::Object());
+        blockDesc->set("path", path);
+        blockDesc->set("name", obj->getValue<std::string>("id"));
+        blockDesc->set("args", Poco::JSON::Array::Ptr(new Poco::JSON::Array()));
+        blockDesc->set("calls", Poco::JSON::Array::Ptr(new Poco::JSON::Array()));
+
+        if (obj->has("properties") and obj->isArray("properties"))
+        {
+            auto blockParams = Poco::JSON::Array::Ptr(new Poco::JSON::Array());
+            blockDesc->set("params", blockParams);
+            const auto propsObj = obj->getArray("properties");
+            for (size_t i = 0; i < propsObj->size(); i++)
+            {
+                const auto propObj = propsObj->getObject(i);
+                auto paramObj = Poco::JSON::Object::Ptr(new Poco::JSON::Object());
+                paramObj->set("key", propObj->getValue<std::string>("key"));
+                blockParams->add(paramObj);
+            }
+        }
+        poco_error(Poco::Logger::get("PothosGui.GraphBlock.init"), "Cant find block factory with path: '"+path+"'");
+    }
+
     this->setBlockDesc(blockDesc);
 
     if (obj->has("affinityZone")) this->setAffinityZone(
