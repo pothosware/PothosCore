@@ -27,6 +27,17 @@ Pothos::OutputPort::~OutputPort(void)
     return;
 }
 
+const std::string &Pothos::OutputPort::alias(void) const
+{
+    if (_alias.empty()) return this->name();
+    return _alias;
+}
+
+void Pothos::OutputPort::setAlias(const std::string &alias)
+{
+    _alias = alias;
+}
+
 void Pothos::OutputPort::_postMessage(const Object &async)
 {
     const auto token = this->tokenManagerPop();

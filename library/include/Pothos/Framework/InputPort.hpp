@@ -47,6 +47,9 @@ public:
     //! Get a displayable name for this port.
     const std::string &alias(void) const;
 
+    //! Set the displayable alias for this port.
+    void setAlias(const std::string &alias);
+
     //! Get the data type information for this port.
     const DType &dtype(void) const;
 

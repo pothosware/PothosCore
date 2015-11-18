@@ -34,6 +34,17 @@ Pothos::InputPort::~InputPort(void)
     return;
 }
 
+const std::string &Pothos::InputPort::alias(void) const
+{
+    if (_alias.empty()) return this->name();
+    return _alias;
+}
+
+void Pothos::InputPort::setAlias(const std::string &alias)
+{
+    _alias = alias;
+}
+
 void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
 {
     assert(_actor != nullptr);
