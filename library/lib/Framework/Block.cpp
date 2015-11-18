@@ -4,6 +4,7 @@
 #include "Framework/WorkerActor.hpp"
 #include "Framework/ThreadEnvironment.hpp"
 #include <Pothos/Object/Containers.hpp>
+#include <Pothos/Framework/InputPortImpl.hpp>
 #include <Pothos/Framework/OutputPortImpl.hpp>
 #include <Poco/String.h>
 
@@ -92,30 +93,32 @@ bool Pothos::Block::isActive(void) const
     return _actor->activeState;
 }
 
-void Pothos::Block::setupInput(const std::string &name, const DType &dtype, const std::string &domain)
+Pothos::InputPort *Pothos::Block::setupInput(const std::string &name, const DType &dtype, const std::string &domain)
 {
     if (name.empty()) throw PortAccessError("Pothos::Block::setupInput()", "empty name");
     if (_namedInputs.count(name) > 0) throw PortAccessError("Pothos::Block::setupInput("+name+")", "already registered");
 
     _actor->allocateInput(name, dtype, domain);
+    return this->input(name);
 }
 
-void Pothos::Block::setupInput(const size_t index, const DType &dtype, const std::string &domain)
+Pothos::InputPort *Pothos::Block::setupInput(const size_t index, const DType &dtype, const std::string &domain)
 {
-    this->setupInput(std::to_string(index), dtype, domain);
+    return this->setupInput(std::to_string(index), dtype, domain);
 }
 
-void Pothos::Block::setupOutput(const std::string &name, const DType &dtype, const std::string &domain)
+Pothos::OutputPort *Pothos::Block::setupOutput(const std::string &name, const DType &dtype, const std::string &domain)
 {
     if (name.empty()) throw PortAccessError("Pothos::Block::setupOutput()", "empty name");
     if (_namedOutputs.count(name) > 0) throw PortAccessError("Pothos::Block::setupOutput("+name+")", "already registered");
 
     _actor->allocateOutput(name, dtype, domain);
+    return this->output(name);
 }
 
-void Pothos::Block::setupOutput(const size_t index, const DType &dtype, const std::string &domain)
+Pothos::OutputPort *Pothos::Block::setupOutput(const size_t index, const DType &dtype, const std::string &domain)
 {
-    this->setupOutput(std::to_string(index), dtype, domain);
+    return this->setupOutput(std::to_string(index), dtype, domain);
 }
 
 void Pothos::Block::registerCallable(const std::string &name, const Callable &call)
@@ -247,6 +250,7 @@ std::vector<Pothos::PortInfo> Pothos::Block::inputPortInfo(void)
     {
         PortInfo info;
         info.name = name;
+        info.alias = this->input(name)->alias();
         info.isSigSlot = this->input(name)->isSlot();
         info.dtype = this->input(name)->dtype();
         infos.push_back(info);
@@ -261,6 +265,7 @@ std::vector<Pothos::PortInfo> Pothos::Block::outputPortInfo(void)
     {
         PortInfo info;
         info.name = name;
+        info.alias = this->output(name)->alias();
         info.isSigSlot = this->output(name)->isSignal();
         info.dtype = this->output(name)->dtype();
         infos.push_back(info);

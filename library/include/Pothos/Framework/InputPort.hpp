@@ -44,6 +44,12 @@ public:
     //! Get the string name identifier for this port.
     const std::string &name(void) const;
 
+    //! Get a displayable name for this port.
+    const std::string &alias(void) const;
+
+    //! Set the displayable alias for this port.
+    void setAlias(const std::string &alias);
+
     //! Get the data type information for this port.
     const DType &dtype(void) const;
 
@@ -176,6 +182,7 @@ private:
     bool _isSlot;
     int _index;
     std::string _name;
+    std::string _alias;
     DType _dtype;
     std::string _domain;
 

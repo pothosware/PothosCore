@@ -78,11 +78,13 @@ public:
         const Poco::JSON::Array::Ptr &args = Poco::JSON::Array::Ptr(),
         const Poco::JSON::Object::Ptr &kwargs = Poco::JSON::Object::Ptr());
 
-    void addInputPort(const QString &portKey);
+    void addInputPort(const QString &portKey, const QString &portAlias);
     const QStringList &getInputPorts(void) const;
+    const QString &getInputPortAlias(const QString &portKey) const;
 
-    void addOutputPort(const QString &portKey);
+    void addOutputPort(const QString &portKey, const QString &portAlias);
     const QStringList &getOutputPorts(void) const;
+    const QString &getOutputPortAlias(const QString &portKey) const;
 
     void addSlotPort(const QString &portKey);
     const QStringList &getSlotPorts(void) const;
