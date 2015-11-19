@@ -17,6 +17,7 @@ POTHOS_MODULE_UTIL(
     SOURCES
         DCRemoval.cpp
         FIRDesigner.cpp
+        TestFIRDesigner.cpp
         IIRDesigner.cpp
         FIRFilter.cpp
 	      IIRFilter.cpp

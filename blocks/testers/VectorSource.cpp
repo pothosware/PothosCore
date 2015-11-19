@@ -97,7 +97,7 @@ public:
     {
         if (mode == "REPEAT") _repeat = true;
         else if (mode == "ONCE") _repeat = false;
-        else throw Pothos::Exception("VectorSource::setMode("+mode+")", "unknown mode");
+        else throw Pothos::InvalidArgumentException("VectorSource::setMode("+mode+")", "unknown mode");
     }
 
     void setStartId(const std::string &id)
