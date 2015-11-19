@@ -101,12 +101,12 @@ static bool testPoint(
 )
 {
     const double minPassLevel = -30.0; //arbitrary, could be calculated from powerBins
-    const double maxStopLevel = -50.0; //arbitrary, could be calculated from powerBins
+    const double maxStopLevel = -80.0; //arbitrary, could be calculated from powerBins
 
     const size_t index = size_t(powerBins.size()*((freq + sampRate/2)/sampRate));
     const double level = powerBins[index];
 
-    std::cout << " * Check " << (passCheck?"PASS":"STOP") << " @ " << freq/1e3 << " kHz (bin=" << index << ") -> " << level << " dB...\t";
+    std::cout << " * Check " << (passCheck?"PASS":"STOP") << " @ " << freq/1e3 << "kHz (bin=" << index << ") -> " << level << " dB...\t";
 
     if (passCheck and powerBins[index] > minPassLevel)
     {
@@ -130,14 +130,14 @@ static bool testPoint(
 static void testFIRDesignerResponse(
     const std::string &filterType,
     const std::string &bandType,
-    const double sampRate,
-    const double lowerFreq,
-    const double upperFreq,
-    const double fftSize,
+    const double sampRate = 1e6,
+    const double lowerFreq = 1.5e5,
+    const double upperFreq = 3.0e5,
+    const double fftSize = 1024,
     const double numTaps = 101)
 {
     std::cout << ">>> " << filterType << "::" << bandType
-        << "(rate=" << sampRate << ", low=" << lowerFreq << ", high=" << upperFreq << ") <<<" << std::endl;
+        << "(rate=" << sampRate/1e3 << "kHz, low=" << lowerFreq/1e3 << "kHz, high=" << upperFreq/1e3 << "kHz) <<<" << std::endl;
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
     const auto dtype = Pothos::DType(typeid(std::complex<double>));
@@ -238,9 +238,6 @@ static void testFIRDesignerResponse(
  **********************************************************************/
 POTHOS_TEST_BLOCK("/comms/tests", test_fir_designer)
 {
-    const double sampRate = 1e6;
-    const size_t fftSize = 1024;
-
     std::vector<std::string> filterTypes;
     filterTypes.push_back("SINC");
     filterTypes.push_back("MAXFLAT");
@@ -264,7 +261,7 @@ POTHOS_TEST_BLOCK("/comms/tests", test_fir_designer)
         {
             if (filterType == "MAXFLAT" and bandType == "BAND_STOP") continue;
             if (filterType == "MAXFLAT" and bandType == "COMPLEX_BAND_STOP") continue;
-            testFIRDesignerResponse(filterType, bandType, sampRate, 2e5, 3e5, fftSize);
+            testFIRDesignerResponse(filterType, bandType);
         }
     }
 }
