@@ -241,10 +241,10 @@ POTHOS_TEST_BLOCK("/comms/tests", test_fir_designer)
     std::vector<std::string> filterTypes;
     filterTypes.push_back("SINC");
     filterTypes.push_back("MAXFLAT");
-    //filterTypes.push_back("GAUSSIAN");
+    filterTypes.push_back("GAUSSIAN");
     filterTypes.push_back("REMEZ");
-    //filterTypes.push_back("ROOT_RAISED_COSINE");
-    //filterTypes.push_back("RAISED_COSINE");
+    filterTypes.push_back("ROOT_RAISED_COSINE");
+    filterTypes.push_back("RAISED_COSINE");
 
     std::vector<std::string> bandTypes;
     bandTypes.push_back("LOW_PASS");
@@ -259,8 +259,18 @@ POTHOS_TEST_BLOCK("/comms/tests", test_fir_designer)
     {
         for (const auto &bandType : bandTypes)
         {
-            if (filterType == "MAXFLAT" and bandType == "BAND_STOP") continue;
-            if (filterType == "MAXFLAT" and bandType == "COMPLEX_BAND_STOP") continue;
+            const bool isStop = bandType.find("STOP") != std::string::npos;
+            const bool isHigh = bandType.find("HIGH") != std::string::npos;
+
+            if (filterType == "MAXFLAT" and isStop) continue; //not possible
+
+            //FIXME: need to adjust the cutoff to get a nice pass and reject regions
+            if (filterType == "GAUSSIAN") continue;
+
+            //FIXME: possible issues with the level in the reject regions
+            if (filterType == "RAISED_COSINE" and (isStop or isHigh)) continue;
+            if (filterType == "ROOT_RAISED_COSINE" and (isStop or isHigh)) continue;
+
             testFIRDesignerResponse(filterType, bandType);
         }
     }
