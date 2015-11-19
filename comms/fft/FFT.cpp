@@ -75,6 +75,14 @@ public:
         kiss_fft_free(_fftFixedXX);
     }
 
+    //! Custom output buffer manager with slabs large enough for the fft result
+    Pothos::BufferManager::Sptr getOutputBufferManager(const std::string &, const std::string &)
+    {
+        Pothos::BufferManagerArgs args;
+        args.bufferSize = _numBins*sizeof(Type);
+        return Pothos::BufferManager::make("generic", args);
+    }
+
     void work(void)
     {
         auto inPort = this->input(0);
