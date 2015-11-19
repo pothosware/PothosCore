@@ -37,7 +37,7 @@ static double filterToneGetRMS(
     designer.callVoid("setFrequencyLower", waveFreq-0.1*sampRate);
     designer.callVoid("setFrequencyUpper", waveFreq+0.1*sampRate);
     designer.callVoid("setBandwidthTrans", waveFreq+0.1*sampRate);
-    designer.callVoid("setNumTaps", 100);
+    designer.callVoid("setNumTaps", 101);
 
     auto probe = registry.callProxy("/comms/signal_probe", "complex128");
     probe.callVoid("setMode", "RMS");
