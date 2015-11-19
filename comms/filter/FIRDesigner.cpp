@@ -94,7 +94,7 @@ using spuce::remez_estimate_atten;
  * |units Hz
  * |preview when(enum=band, "BAND_PASS", "BAND_STOP", "COMPLEX_BAND_PASS", "COMPLEX_BAND_STOP")
  *
- * |param transBw[Transition Bandwidth] The transition bandwidth for Remez filters (only)
+ * |param transBw[Transition Width] The transition bandwidth for Remez filters (only)
  * |default 1000
  * |units Hz
  * |preview when(enum=type, "REMEZ")
