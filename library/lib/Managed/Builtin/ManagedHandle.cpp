@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ManagedProxy.hpp"
@@ -119,7 +119,7 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         {
             throw Pothos::ProxyHandleCallError(
                 "ManagedProxyHandle::call("+name+")",
-                Poco::format("convert arg %d - %s", int(i), ex.displayText()));
+                Poco::format("convert arg %z - %s", i, ex.displayText()));
         }
     }
 

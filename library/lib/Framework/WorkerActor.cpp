@@ -257,7 +257,7 @@ void Pothos::WorkerActor::handleSlotCalls(InputPort &port)
         }
         POTHOS_EXCEPTION_CATCH(const Exception &ex)
         {
-            poco_error_f3(Poco::Logger::get("Pothos.Block.callSlot"), "%s[%s]: %s", block->getName(), port.name(), ex.displayText());
+            poco_error_f3(Poco::Logger::get("Pothos.Block.callSlot"), "%s[%s]: %s", block->getName(), port.alias(), ex.displayText());
         }
     }
 }
@@ -445,8 +445,8 @@ void Pothos::WorkerActor::postWorkTasks(void)
             {
                 if (buffer.length > buffer.getBuffer().getLength())
                 {
-                    poco_error_f4(Poco::Logger::get("Pothos.Block.produce"), "%s[%s] overproduced %d bytes, %d available",
-                        block->getName(), port.name(), int(buffer.length), int(buffer.getBuffer().getLength()));
+                    poco_error_f4(Poco::Logger::get("Pothos.Block.produce"), "%s[%s] overproduced %z bytes, %z available",
+                        block->getName(), port.alias(), buffer.length, buffer.getBuffer().getLength());
                 }
                 else port.bufferManagerPop(buffer.length);
             }
@@ -530,6 +530,7 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
         portStats->set("dtypeSize", Poco::UInt64(port.dtype().size()));
         portStats->set("dtypeMarkup", port.dtype().toMarkup());
         portStats->set("portName", name);
+        portStats->set("portAlias", port.alias());
         portStats->set("reserveElements", Poco::UInt64(port._reserveElements));
         {
             BufferChunk frontBuff; port.bufferAccumulatorFront(frontBuff);
@@ -563,6 +564,7 @@ Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
         portStats->set("dtypeSize", Poco::UInt64(port.dtype().size()));
         portStats->set("dtypeMarkup", port.dtype().toMarkup());
         portStats->set("portName", name);
+        portStats->set("portAlias", port.alias());
         {
             BufferChunk frontBuff; port.bufferManagerFront(frontBuff);
             portStats->set("frontBytes", Poco::UInt64(frontBuff.length));

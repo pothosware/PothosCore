@@ -38,8 +38,17 @@
  * |default ""
  * |widget FileEntry(mode=open)
  *
+ * |param rewind[Auto Rewind] Enable automatic file rewind.
+ * When rewind is enabled, the binary file source will stream from the beginning
+ * of the file after the end of file is reached.
+ * |default false
+ * |option [Disabled] false
+ * |option [Enabled] true
+ * |preview valid
+ *
  * |factory /blocks/binary_file_source(dtype)
  * |setter setFilePath(path)
+ * |setter setAutoRewind(rewind)
  **********************************************************************/
 class BinaryFileSource : public Pothos::Block
 {
@@ -50,10 +59,12 @@ public:
     }
 
     BinaryFileSource(const Pothos::DType &dtype):
-        _fd(-1)
+        _fd(-1),
+        _rewind(false)
     {
         this->setupOutput(0, dtype);
         this->registerCall(this, POTHOS_FCN_TUPLE(BinaryFileSource, setFilePath));
+        this->registerCall(this, POTHOS_FCN_TUPLE(BinaryFileSource, setAutoRewind));
     }
 
     void setFilePath(const std::string &path)
@@ -65,6 +76,11 @@ public:
             this->deactivate();
             this->activate();
         }
+    }
+
+    void setAutoRewind(const bool rewind)
+    {
+        _rewind = rewind;
     }
 
     void activate(void)
@@ -105,6 +121,7 @@ public:
         auto out0 = this->output(0);
         auto ptr = out0->buffer().as<void *>();
         auto r = read(_fd, ptr, out0->buffer().length);
+        if (r == 0 and _rewind) lseek(_fd, 0, SEEK_SET);
         if (r >= 0) out0->produce(size_t(r)/out0->dtype().size());
         else
         {
@@ -115,6 +132,7 @@ public:
 private:
     int _fd;
     std::string _path;
+    bool _rewind;
 };
 
 static Pothos::BlockRegistry registerBinaryFileSource(

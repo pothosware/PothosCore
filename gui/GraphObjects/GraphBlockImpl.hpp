@@ -39,12 +39,14 @@ struct GraphBlock::Impl
     std::map<QString, QString> propertiesErrorMsg;
     std::map<QString, std::string> propertiesTypeStr;
 
+    std::map<QString, QString> inputPortsAliases;
     std::vector<QStaticText> inputPortsText;
     std::vector<QRectF> inputPortRects;
     std::vector<QPointF> inputPortPoints;
     std::vector<QColor> inputPortColors;
     std::map<QString, std::string> inputPortTypeStr;
 
+    std::map<QString, QString> outputPortsAliases;
     std::vector<QStaticText> outputPortsText;
     std::vector<QRectF> outputPortRects;
     std::vector<QPointF> outputPortPoints;

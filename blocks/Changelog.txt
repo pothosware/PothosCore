@@ -3,6 +3,8 @@ This this the changelog file for the Pothos Blocks toolkit.
 Release 0.3.0 (pending)
 ==========================
 
+- Optional start and end labels for the vector source
+- Added rewind capability to binary file source
 - Created label to message event block
 - Added timeout param for socket endpoint open/close
 - Reorganized utility blocks into testers and stream

@@ -28,7 +28,7 @@ struct CodeLine
     size_t lineNo;
     std::string toString(void) const
     {
-        return Poco::format("%d:%s", int(lineNo), text);
+        return Poco::format("%z:%s", lineNo, text);
     }
 };
 

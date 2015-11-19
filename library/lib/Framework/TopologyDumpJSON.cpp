@@ -183,6 +183,7 @@ static Poco::JSON::Object::Ptr portInfoToObj(const Pothos::PortInfo &portInfo)
 {
     Poco::JSON::Object::Ptr infoObj(new Poco::JSON::Object());
     infoObj->set("name", portInfo.name);
+    infoObj->set("alias", portInfo.alias);
     infoObj->set("dtype", portInfo.dtype.toMarkup());
     infoObj->set("size", Poco::UInt64(portInfo.dtype.size()));
     infoObj->set("isSigSlot", portInfo.isSigSlot);

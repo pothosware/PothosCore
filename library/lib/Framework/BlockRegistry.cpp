@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Block.hpp>
@@ -84,8 +84,8 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     //check that the number of args match
     if (numArgs != factory.getNumArgs()) throw Pothos::InvalidArgumentException(
         "Pothos::BlockRegistry("+path+")", Poco::format(
-        "factory expected %d args, but got %d args",
-        int(factory.getNumArgs()), int(numArgs)));
+        "factory expected %z args, but got %z args",
+        factory.getNumArgs(), numArgs));
 
     //handle factories that return Block pointer types
     if (factory.type(-1) == typeid(Pothos::Block*))

@@ -90,7 +90,7 @@ public:
         for (size_t i = 0; i < numArgs; i++)
         {
             if (numArgs == 1) _varValues[it->second] = inputArgs[i];
-            else _varValues[Poco::format("%s%d", it->second, int(i))] = inputArgs[i];
+            else _varValues[Poco::format("%s%z", it->second, i)] = inputArgs[i];
         }
         _varsReady.insert(it->second);
 

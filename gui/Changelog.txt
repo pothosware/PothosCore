@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.3.0 (pending)
 ==========================
 
+- Support ghost blocks when description is missing
 - Save active edit tab in the block properties panel
 - Added clear button to log message window
 - Support conditional parameter preview mode

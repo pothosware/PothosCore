@@ -90,7 +90,7 @@
  * The vertical axis will display values from the ref level to ref level - dynamic range.
  * |default 100.0
  * |units dB
- * |widget DoubleSpinBox(minimum=10, maximum=150, step=10, decimals=1)
+ * |widget DoubleSpinBox(minimum=10, maximum=200, step=10, decimals=1)
  * |preview disable
  * |tab Axis
  *
@@ -136,6 +136,13 @@
  * |preview disable
  * |tab Labels
  *
+ * |param startLabelId[Start Label ID] Align captured input to the specified label ID.
+ * An empty label ID disables this feature.
+ * |default ""
+ * |widget StringEntry()
+ * |preview disable
+ * |tab Labels
+ *
  * |mode graphWidget
  * |factory /plotters/periodogram(remoteEnv)
  * |initializer setNumInputs(numInputs)
@@ -154,6 +161,7 @@
  * |setter setYAxisTitle(yAxisTitle)
  * |setter setFreqLabelId(freqLabelId)
  * |setter setRateLabelId(rateLabelId)
+ * |setter setStartLabelId(startLabelId)
  **********************************************************************/
 class Periodogram : public Pothos::Topology
 {
@@ -179,6 +187,7 @@ public:
         this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setNumFFTBins));
         this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setFreqLabelId));
         this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setRateLabelId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Periodogram, setStartLabelId));
 
         //connect to internal display block
         this->connect(this, "setTitle", _display, "setTitle");
@@ -249,6 +258,12 @@ public:
         _display->setRateLabelId(id);
         _rateLabelId = id;
         this->updateIdsList();
+    }
+
+    void setStartLabelId(const std::string &id)
+    {
+        _trigger.callVoid("setLabelId", id);
+        _trigger.callVoid("setMode", id.empty()?"PERIODIC":"NORMAL");
     }
 
     void updateIdsList(void)

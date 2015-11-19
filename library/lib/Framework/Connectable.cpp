@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Connectable.hpp>
@@ -69,6 +69,7 @@ template<class Archive>
 void serialize(Archive & ar, Pothos::PortInfo &t, const unsigned int)
 {
     ar & t.name;
+    ar & t.alias;
     ar & t.isSigSlot;
     ar & t.dtype;
 }

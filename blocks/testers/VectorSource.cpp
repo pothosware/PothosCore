@@ -32,9 +32,25 @@
  * |param elements Specify a list of elements to produce.
  * |default [1.0, 2.0, 3.0]
  *
+ * |param startId[Start ID] The label ID to mark the first element of the vector.
+ * An empty string (default) means that start of vector labels are not produced.
+ * |default ""
+ * |widget StringEntry()
+ * |preview valid
+ * |tab Labels
+ *
+ * |param endId[End ID] The label ID to mark the last element of the vector.
+ * An empty string (default) means that end of vector labels are not produced.
+ * |default ""
+ * |widget StringEntry()
+ * |preview valid
+ * |tab Labels
+ *
  * |factory /blocks/vector_source(dtype)
  * |setter setMode(mode)
  * |setter setElements(elements)
+ * |setter setStartId(startId)
+ * |setter setEndId(endId)
  **********************************************************************/
 class VectorSource : public Pothos::Block
 {
@@ -51,6 +67,8 @@ public:
         this->setupOutput(0, dtype);
         this->registerCall(this, POTHOS_FCN_TUPLE(VectorSource, setElements));
         this->registerCall(this, POTHOS_FCN_TUPLE(VectorSource, setMode));
+        this->registerCall(this, POTHOS_FCN_TUPLE(VectorSource, setStartId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(VectorSource, setEndId));
     }
 
     void setElements(const std::vector<std::complex<double>> &elems)
@@ -82,6 +100,16 @@ public:
         else throw Pothos::Exception("VectorSource::setMode("+mode+")", "unknown mode");
     }
 
+    void setStartId(const std::string &id)
+    {
+        _startId = id;
+    }
+
+    void setEndId(const std::string &id)
+    {
+        _endId = id;
+    }
+
     void activate(void)
     {
         _once = false;
@@ -97,7 +125,12 @@ public:
         auto outBuff = outPort->buffer();
 
         //begin the pending buffer again
-        if (_pending.length == 0) _pending = _elems;
+        if (_pending.length == 0)
+        {
+            _pending = _elems;
+            if (not _startId.empty()) outPort->postLabel(
+                Pothos::Label(_startId, _elems.elements(), 0));
+        }
 
         //copy into the output buffer
         const auto numElems = std::min(_pending.elements(), outPort->elements());
@@ -110,7 +143,12 @@ public:
         _pending.length -= numBytes;
 
         //completed the pending buffer
-        if (_pending.length == 0) _once = true;
+        if (_pending.length == 0)
+        {
+            _once = true;
+            if (not _endId.empty()) outPort->postLabel(
+                Pothos::Label(_endId, _elems.elements(), numElems-1));
+        }
     }
 
 private:
@@ -118,6 +156,8 @@ private:
     Pothos::BufferChunk _pending;
     bool _repeat;
     bool _once;
+    std::string _startId;
+    std::string _endId;
 };
 
 static Pothos::BlockRegistry registerVectorSource(
