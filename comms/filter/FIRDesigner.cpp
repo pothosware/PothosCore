@@ -300,8 +300,6 @@ public:
     void setNumTaps(const size_t num)
     {
         _numTaps = num;
-        //odd number of taps to center sync function
-        if ((_numTaps & 0x1) == 0) _numTaps++;
         this->recalculate();
     }
 
