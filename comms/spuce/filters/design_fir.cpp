@@ -39,10 +39,11 @@ std::vector<double> design_fir(const std::string& fir_type,
     remez_fir Remz;
 
     if ((band_type == "BAND_PASS") || (band_type == "BAND_STOP")) {
-      fl = (fu - fl);
+      filt_bw = 0.5*(fu - fl);
+    } else {
+      // For Remez keep bw = fl
+      filt_bw = fl;
     }
-    // For Remez keep bw = fl
-    filt_bw = fl;
     float_type stop_freq = alpha_beta_stop_edge + filt_bw;
     bands[0] = 0;
     bands[1] = filt_bw;
