@@ -1,6 +1,6 @@
 if(POTHOS_IN_TREE_SOURCE_DIR)
     set(SPUCE_INCLUDE_DIR ${POTHOS_IN_TREE_SOURCE_DIR}/comms)
-    set(SPUCE_LIBRARY spucelib)
+    set(SPUCE_LIBRARY spuce)
 else()
     find_path(
         SPUCE_INCLUDE_DIR spuce/typedefs.h
@@ -8,7 +8,7 @@ else()
         NO_DEFAULT_PATH
     )
     find_library(
-        SPUCE_LIBRARY spucelib spucelibd
+        SPUCE_LIBRARY spuce spucelibd
         PATHS ${POTHOS_ROOT}/lib${LIB_SUFFIX}
         NO_DEFAULT_PATH
     )

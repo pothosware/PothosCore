@@ -16,22 +16,27 @@ SET(FILT_SRCS
 	filters/find_roots.cpp
 	filters/fir_coeff.cpp
 	filters/iir_coeff.cpp
+  filters/design_iir.cpp
 	# FIR stuff
 	filters/gaussian_fir.cpp
 	filters/butterworth_fir.cpp
 	filters/raised_cosine_imp.cpp
 	filters/root_raised_cosine_imp.cpp
+	filters/remez_estimate.cpp
 	filters/remez_fir.cpp
 	filters/sinc_fir.cpp
+	filters/sinc_helper.cpp
 	filters/remez_fir.cpp
 	filters/fir_inv_dft.cpp
 	filters/transform_fir.cpp
+  filters/design_fir.cpp
 	# Window
 	filters/window.cpp
+  filters/design_window.cpp
 )
 
-add_library(spucelib STATIC ${FILT_SRCS})
-set_property(TARGET spucelib PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+add_library(spuce STATIC ${FILT_SRCS})
+set_property(TARGET spuce PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 ########################################################################
 # install spuce development files
@@ -54,7 +59,7 @@ install(
     PATTERN "*.h"
 )
 
-install(TARGETS spucelib
+install(TARGETS spuce
     LIBRARY DESTINATION lib${LIB_SUFFIX} # .so file
     ARCHIVE DESTINATION lib${LIB_SUFFIX} # .lib file
     RUNTIME DESTINATION bin              # .dll file

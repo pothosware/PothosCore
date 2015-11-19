@@ -41,7 +41,7 @@ class iir_coeff {
   float_type getGain(void) const;
   int getOrder(void) const;
   int getN2(void) const;
-  //  int getState(void) const;
+  bool calculate_biquad_coefficents();
   int isOdd(void) const;
   std::vector<float_type> get_a() const;
   std::vector<float_type> get_b() const;
@@ -54,7 +54,7 @@ class iir_coeff {
   void print_pz() const;
 
  private:
-	enum class filter_state {s0,s1,s2,s3,s4};
+	enum class filter_state {start,z_domain,z_domain_ab,z_domain_allpass};
   std::vector<std::complex<float_type> > poles;
   std::vector<std::complex<float_type> > zeros;
   float_type gain;
