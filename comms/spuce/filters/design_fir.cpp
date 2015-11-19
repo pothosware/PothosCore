@@ -154,7 +154,7 @@ std::vector<std::complex<double> > design_complex_fir(const std::string& fir_typ
     auto complex_taps = transform_complex_fir("COMPLEX_BAND_PASS", taps, center_frequency);
     return complex_taps;
   } else {
-    taps = design_fir(fir_type, "LOW_PASS", order, filt_bw, fu, alpha_beta_stop_edge, weight);
+    taps = design_fir(fir_type, "LOW_PASS", order, filt_bw, fu, alpha_beta_stop_edge, 1.0/weight);
     auto complex_taps = transform_complex_fir(band_type, taps, center_frequency);
     if ((fir_type == "maxflat") && (band_type == "COMPLEX_BAND_STOP")) {
       std::string err = "maxflat FIR as COMPLEX_BAND_STOP not supported\n";
