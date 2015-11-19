@@ -90,48 +90,38 @@ static void printFFTPowerSpectrum(
 /***********************************************************************
  * Test helpers
  **********************************************************************/
-static bool testPassPoint(
+#define PASS true
+#define STOP false
+
+static bool testPoint(
+    const bool passCheck,
     const std::vector<double> &powerBins,
     const double sampRate,
     const double freq
 )
 {
     const double minPassLevel = -30.0; //arbitrary, could be calculated from powerBins
-    const size_t index = size_t(powerBins.size()*((freq + sampRate/2)/sampRate));
-    std::cout << "Check pass level at " << freq/1e3 << " kHz, bin " << index << "...\t";
-    if (powerBins[index] > minPassLevel)
-    {
-        std::cout << "OK" << std::endl;
-        return true;
-    }
-    else
-    {
-        std::cout << "FAIL!" << std::endl;
-        std::cout << "  Actual level = " << powerBins[index] << " dB" << std::endl;
-        return false;
-    }
-}
+    const double maxStopLevel = -50.0; //arbitrary, could be calculated from powerBins
 
-static bool testStopPoint(
-    const std::vector<double> &powerBins,
-    const double sampRate,
-    const double freq
-)
-{
-    const double maxRejectLevel = -50.0; //arbitrary, could be calculated from powerBins
     const size_t index = size_t(powerBins.size()*((freq + sampRate/2)/sampRate));
-    std::cout << "Check stop level at " << freq/1e3 << " kHz, bin " << index << "...\t";
-    if (powerBins[index] < maxRejectLevel)
+    const double level = powerBins[index];
+
+    std::cout << " * Check " << (passCheck?"PASS":"STOP") << " @ " << freq/1e3 << " kHz (bin=" << index << ") -> " << level << " dB...\t";
+
+    if (passCheck and powerBins[index] > minPassLevel)
     {
         std::cout << "OK" << std::endl;
         return true;
     }
-    else
+
+    if (not passCheck and powerBins[index] < maxStopLevel)
     {
-        std::cout << "FAIL!" << std::endl;
-        std::cout << "  Actual level = " << powerBins[index] << " dB" << std::endl;
-        return false;
+        std::cout << "OK" << std::endl;
+        return true;
     }
+
+    std::cout << "FAIL!" << std::endl;
+    return false;
 }
 
 /***********************************************************************
@@ -143,8 +133,11 @@ static void testFIRDesignerResponse(
     const double sampRate,
     const double lowerFreq,
     const double upperFreq,
-    const double fftSize)
+    const double fftSize,
+    const double numTaps = 101)
 {
+    std::cout << ">>> " << filterType << "::" << bandType
+        << "(rate=" << sampRate << ", low=" << lowerFreq << ", high=" << upperFreq << ") <<<" << std::endl;
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
     const auto dtype = Pothos::DType(typeid(std::complex<double>));
@@ -170,7 +163,7 @@ static void testFIRDesignerResponse(
     designer.callVoid("setBandType", bandType);
     designer.callVoid("setFrequencyLower", lowerFreq);
     designer.callVoid("setFrequencyUpper", upperFreq);
-    designer.callVoid("setNumTaps", 100);
+    designer.callVoid("setNumTaps", numTaps);
 
     auto fft = registry.callProxy("/comms/fft", dtype, fftSize, false);
     auto collector = registry.callProxy("/blocks/collector_sink", dtype);
@@ -194,23 +187,48 @@ static void testFIRDesignerResponse(
     auto fftBins = buff.as<const std::complex<double> *>();
     const auto powerBins = fftPowerSpectrum(fftBins, fftSize);
     printFFTPowerSpectrum(powerBins);
-    std::cout << filterType << "::" << bandType
-        << "(rate=" << sampRate << ", low=" << lowerFreq << ", high=" << upperFreq << ")" << std::endl;
 
     //check based on band type
     if (bandType == "LOW_PASS")
     {
-        POTHOS_TEST_TRUE(testPassPoint(powerBins, sampRate, 0.0)); //middle of pass band
-        POTHOS_TEST_TRUE(testStopPoint(powerBins, sampRate, +(lowerFreq + sampRate/2)/2)); //middle of upper stop
-        POTHOS_TEST_TRUE(testStopPoint(powerBins, sampRate, -(lowerFreq + sampRate/2)/2)); //middle of lower stop
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, -(lowerFreq + sampRate/2)/2)); //middle of lower stop
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, 0.0)); //middle of pass band
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, +(lowerFreq + sampRate/2)/2)); //middle of upper stop
     }
     if (bandType == "HIGH_PASS")
     {
-        POTHOS_TEST_TRUE(testStopPoint(powerBins, sampRate, 0.0)); //middle of stop band
-        POTHOS_TEST_TRUE(testPassPoint(powerBins, sampRate, +(lowerFreq + sampRate/2)/2)); //middle of upper pass
-        POTHOS_TEST_TRUE(testPassPoint(powerBins, sampRate, -(lowerFreq + sampRate/2)/2)); //middle of lower pass
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, -(lowerFreq + sampRate/2)/2)); //middle of lower pass
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, 0.0)); //middle of stop band
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, +(lowerFreq + sampRate/2)/2)); //middle of upper pass
     }
-    //TODO other types here...
+    if (bandType == "BAND_PASS")
+    {
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, -(upperFreq + sampRate/2)/2)); //middle of lower stop
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, -(lowerFreq + upperFreq)/2)); //middle of lower pass
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, 0.0)); //middle of stop band
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, +(lowerFreq + upperFreq)/2)); //middle of upper pass
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, +(upperFreq + sampRate/2)/2)); //middle of upper stop
+    }
+    if (bandType == "BAND_STOP")
+    {
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, -(upperFreq + sampRate/2)/2)); //middle of lower pass
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, -(lowerFreq + upperFreq)/2)); //middle of lower stop
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, 0.0)); //middle of pass band
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, +(lowerFreq + upperFreq)/2)); //middle of upper stop
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, +(upperFreq + sampRate/2)/2)); //middle of upper pass
+    }
+    if (bandType == "COMPLEX_BAND_PASS")
+    {
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, (lowerFreq + -sampRate/2)/2)); //middle of lower stop
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, (lowerFreq + upperFreq)/2)); //middle of pass band
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, (upperFreq + sampRate/2)/2)); //middle of upper stop
+    }
+    if (bandType == "COMPLEX_BAND_STOP")
+    {
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, (lowerFreq + -sampRate/2)/2)); //middle of lower pass
+        POTHOS_TEST_TRUE(testPoint(STOP, powerBins, sampRate, (lowerFreq + upperFreq)/2)); //middle of stop band
+        POTHOS_TEST_TRUE(testPoint(PASS, powerBins, sampRate, (upperFreq + sampRate/2)/2)); //middle of upper pass
+    }
     std::cout << std::endl;
 }
 
@@ -229,12 +247,10 @@ POTHOS_TEST_BLOCK("/comms/tests", test_fir_designer)
     std::vector<std::string> bandTypes;
     bandTypes.push_back("LOW_PASS");
     bandTypes.push_back("HIGH_PASS");
-    /*
     bandTypes.push_back("BAND_PASS");
     bandTypes.push_back("BAND_STOP");
     bandTypes.push_back("COMPLEX_BAND_PASS");
     bandTypes.push_back("COMPLEX_BAND_STOP");
-    */
 
     //run through the test matrix
     for (const auto &filterType : filterTypes)
