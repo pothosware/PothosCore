@@ -133,8 +133,8 @@ static void testFIRDesignerResponse(
     const double sampRate = 1e6,
     const double lowerFreq = 1.5e5,
     const double upperFreq = 3.0e5,
-    const double fftSize = 1024,
-    const double numTaps = 101)
+    const size_t fftSize = 1024,
+    const size_t numTaps = 101)
 {
     std::cout << ">>> " << filterType << "::" << bandType
         << "(rate=" << sampRate/1e3 << "kHz, low=" << lowerFreq/1e3 << "kHz, high=" << upperFreq/1e3 << "kHz) <<<" << std::endl;
