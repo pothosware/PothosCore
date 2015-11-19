@@ -163,6 +163,7 @@ static void testFIRDesignerResponse(
     designer.callVoid("setBandType", bandType);
     designer.callVoid("setFrequencyLower", lowerFreq);
     designer.callVoid("setFrequencyUpper", upperFreq);
+    designer.callVoid("setBandwidthTrans", sampRate/20);
     designer.callVoid("setNumTaps", numTaps);
 
     auto fft = registry.callProxy("/comms/fft", dtype, fftSize, false);
@@ -242,7 +243,11 @@ POTHOS_TEST_BLOCK("/comms/tests", test_fir_designer)
 
     std::vector<std::string> filterTypes;
     filterTypes.push_back("SINC");
-    //TODO other types here....
+    filterTypes.push_back("MAXFLAT");
+    //filterTypes.push_back("GAUSSIAN");
+    filterTypes.push_back("REMEZ");
+    //filterTypes.push_back("ROOT_RAISED_COSINE");
+    //filterTypes.push_back("RAISED_COSINE");
 
     std::vector<std::string> bandTypes;
     bandTypes.push_back("LOW_PASS");
@@ -257,6 +262,8 @@ POTHOS_TEST_BLOCK("/comms/tests", test_fir_designer)
     {
         for (const auto &bandType : bandTypes)
         {
+            if (filterType == "MAXFLAT" and bandType == "BAND_STOP") continue;
+            if (filterType == "MAXFLAT" and bandType == "COMPLEX_BAND_STOP") continue;
             testFIRDesignerResponse(filterType, bandType, sampRate, 2e5, 3e5, fftSize);
         }
     }
