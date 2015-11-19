@@ -9,7 +9,6 @@
 #include <spuce/filters/remez_estimate.h>
 #include <spuce/filters/design_fir.h>
 #include <spuce/filters/design_window.h>
-#include "FIRHelper.hpp"
 
 using spuce::design_fir;
 using spuce::design_complex_fir;
