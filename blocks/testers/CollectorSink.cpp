@@ -192,7 +192,7 @@ void CollectorSink::verifyTestPlanExpectedLabels(const Poco::JSON::Object::Ptr &
         if (lbl.width != 1) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
             Poco::format("Value check for label width %z: expected %d -> actual %z", i, int(1), lbl.width));
         if (lbl.index != index) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
-            Poco::format("Value check for label index %z: expected %z -> actual %z", i, index, lbl.index));
+            Poco::format("Value check for label index %z: expected %z -> actual %z", i, index, size_t(lbl.index)));
         if (lbl.id != id) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
             Poco::format("Value check for label id %z: expected '%s' -> actual '%s'", i, id, lbl.id));
         if (actual != value) throw Pothos::AssertionViolationException("CollectorSink::verifyTestPlan()",
