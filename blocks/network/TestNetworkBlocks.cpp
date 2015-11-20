@@ -70,6 +70,11 @@ static void network_test_harness(const std::string &scheme, const bool serverIsS
     POTHOS_TEST_TRUE(topology.waitInactive());
     collector.callVoid("verifyTestPlan", expected);
 
+    //work around bug in poco 1.6.1:
+    //https://github.com/pocoproject/poco/issues/933
+    testPlan->remove("enablePackets");
+    testPlan->remove("enableBuffers");
+
     //test packets with labels and messages
     std::cout << "Packet based test" << std::endl;
     testPlan->set("enablePackets", true);
