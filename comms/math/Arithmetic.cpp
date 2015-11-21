@@ -130,6 +130,15 @@ public:
         output->produce(elems);
     }
 
+    void propagateLabels(const Pothos::InputPort *port)
+    {
+        //this is a feedback port, don't propagate labels from it
+        if (_preload.size() > port->index() and _preload[port->index()] > 0) return;
+
+        //otherwise implement the regular label propagation
+        Pothos::Block::propagateLabels(port);
+    }
+
     size_t getNumInlineBuffers(void) const
     {
         return _numInlineBuffers;
