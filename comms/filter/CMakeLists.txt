@@ -1,17 +1,17 @@
 ########################################################################
 ## Feature registration
 ########################################################################
-cmake_dependent_option(ENABLE_COMMS_FILTER "Enable Pothos Comms.Filter component" ON "ENABLE_COMMS" OFF)
+cmake_dependent_option(ENABLE_COMMS_FILTER "Enable Pothos Comms.Filter component" ON "ENABLE_COMMS;Spuce_FOUND" OFF)
 add_feature_info("  Filter" ENABLE_COMMS_FILTER "Digital filter and tap designer blocks")
 if (NOT ENABLE_COMMS_FILTER)
     return()
 endif()
 
-include_directories("${PROJECT_SOURCE_DIR}")
-
 ########################################################################
 # Filter blocks module
 ########################################################################
+include_directories(${Spuce_INCLUDE_DIRS})
+
 POTHOS_MODULE_UTIL(
     TARGET FilterBlocks
     SOURCES
@@ -20,11 +20,11 @@ POTHOS_MODULE_UTIL(
         TestFIRDesigner.cpp
         IIRDesigner.cpp
         FIRFilter.cpp
-	      IIRFilter.cpp
+        IIRFilter.cpp
         TestFIRFilter.cpp
         TestIIRFilter.cpp
         EnvelopeDetector.cpp
-	DESTINATION comms
-    LIBRARIES spuce
+    DESTINATION comms
+    LIBRARIES ${Spuce_LIBRARIES}
     ENABLE_DOCS
 )

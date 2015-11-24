@@ -1,7 +1,7 @@
 ########################################################################
 ## Feature registration
 ########################################################################
-cmake_dependent_option(ENABLE_PLOTTERS_SPECTROGRAM "Enable Pothos Plotters.Spectrogram component" ON "SPUCE_FOUND;ENABLE_PLOTTERS" OFF)
+cmake_dependent_option(ENABLE_PLOTTERS_SPECTROGRAM "Enable Pothos Plotters.Spectrogram component" ON "ENABLE_PLOTTERS;Spuce_FOUND" OFF)
 add_feature_info("  Spectrogram" ENABLE_PLOTTERS_SPECTROGRAM "Spectrogram frequency-domain FFT plotter")
 if (NOT ENABLE_PLOTTERS_SPECTROGRAM)
     return()
@@ -10,7 +10,7 @@ endif()
 ########################################################################
 # Build spectrogram plot module
 ########################################################################
-include_directories(${SPUCE_INCLUDE_DIRS})
+include_directories(${Spuce_INCLUDE_DIRS})
 
 POTHOS_MODULE_UTIL(
     TARGET Spectrogram
@@ -21,6 +21,6 @@ POTHOS_MODULE_UTIL(
     DOC_SOURCES Spectrogram.cpp
     LIBRARIES
         ${Qt5_LIBRARIES}
-        ${SPUCE_LIBRARIES}
+        ${Spuce_LIBRARIES}
     DESTINATION plotters
 )

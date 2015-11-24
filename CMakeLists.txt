@@ -80,6 +80,25 @@ if (NOT Poco_FOUND)
 endif()
 
 ########################################################################
+# Spuce dependency - use system spuce or submodule
+########################################################################
+find_package(Spuce CONFIG)
+
+if (NOT Spuce_FOUND)
+    message(STATUS "Spuce not found - using built-in Spuce")
+
+    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/spuce/CMakeLists.txt)
+        message(FATAL_ERROR "spuce submodule not configured (git submodule init && git submodule update)")
+    endif ()
+
+    set(SPUCE_IN_TREE TRUE)
+    set(Spuce_FOUND TRUE)
+    set(Spuce_VERSION "[submodule]")
+    set(Spuce_INCLUDE_DIRS ${PROJECT_SOURCE_DIR})
+    set(Spuce_LIBRARIES spuce)
+endif()
+
+########################################################################
 # Build serialization library
 ########################################################################
 add_subdirectory(serialization)
