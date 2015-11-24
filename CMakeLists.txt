@@ -91,6 +91,7 @@ if (NOT Spuce_FOUND)
         message(FATAL_ERROR "spuce submodule not configured (git submodule init && git submodule update)")
     endif ()
 
+    add_subdirectory(spuce)
     set(SPUCE_IN_TREE TRUE)
     set(Spuce_FOUND TRUE)
     set(Spuce_VERSION "[submodule]")
