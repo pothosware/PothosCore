@@ -99,15 +99,11 @@ static PyObject *PothosModuleError;
 /***********************************************************************
  * module setup
  **********************************************************************/
-#ifdef __GNUC__ //default visibility is hidden, append this attribute to export init module
-PyMODINIT_FUNC __attribute__ ((visibility ("default")))
-#else
-PyMODINIT_FUNC
-#endif
+extern "C" POTHOS_HELPER_DLL_EXPORT
 #if PY_MAJOR_VERSION >= 3
-PyInit_PothosModule(void)
+PyObject *PyInit_PothosModule(void)
 #else
-initPothosModule(void)
+void initPothosModule(void)
 #endif
 {
     initPyObjectUtilityConverters();
