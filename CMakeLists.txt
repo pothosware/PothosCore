@@ -95,7 +95,7 @@ if (NOT Spuce_FOUND)
     set(SPUCE_IN_TREE TRUE)
     set(Spuce_FOUND TRUE)
     set(Spuce_VERSION "[submodule]")
-    set(Spuce_INCLUDE_DIRS ${PROJECT_SOURCE_DIR})
+    set(Spuce_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/spuce)
     set(Spuce_LIBRARIES spuce)
 endif()
 
