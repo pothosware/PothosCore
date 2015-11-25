@@ -29,12 +29,6 @@ environment:
 # Operating system (build VM template)
 os: Windows Server 2012 R2
 
-# branches to build
-branches:
-  # whitelist
-  only:
-    - master
-
 before_build:
   # install SoapySDR from source
   #- git clone https://github.com/pothosware/SoapySDR.git
