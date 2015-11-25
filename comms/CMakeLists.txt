@@ -15,9 +15,18 @@ cmake_dependent_option(ENABLE_COMMS "Enable Pothos Comms component" ON "ENABLE_L
 add_feature_info(Comms ENABLE_COMMS "A collection of DSP/communications blocks")
 
 ########################################################################
+# Spuce library
+########################################################################
+if(NOT SPUCE_IN_TREE)
+    find_package(Spuce CONFIG)
+endif(NOT SPUCE_IN_TREE)
+message(STATUS "Spuce_FOUND: ${Spuce_FOUND} - ${Spuce_VERSION}")
+message(STATUS "Spuce_INCLUDE_DIRS: ${Spuce_INCLUDE_DIRS}")
+message(STATUS "Spuce_LIBRARIES: ${Spuce_LIBRARIES}")
+
+########################################################################
 # Build subdirectories
 ########################################################################
-add_subdirectory(spuce)
 add_subdirectory(demod)
 add_subdirectory(digital)
 add_subdirectory(fft)

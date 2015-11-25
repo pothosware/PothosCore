@@ -32,12 +32,14 @@ foreach(comp Widgets Concurrent OpenGL Svg PrintSupport)
 endforeach(comp)
 
 ########################################################################
-# Find Spuce
+# Spuce library
 ########################################################################
-find_package(Spuce)
-message(STATUS "SPUCE_FOUND: ${SPUCE_FOUND}")
-message(STATUS "SPUCE_INCLUDE_DIRS: ${SPUCE_INCLUDE_DIRS}")
-message(STATUS "SPUCE_LIBRARIES: ${SPUCE_LIBRARIES}")
+if(NOT SPUCE_IN_TREE)
+    find_package(Spuce CONFIG)
+endif(NOT SPUCE_IN_TREE)
+message(STATUS "Spuce_FOUND: ${Spuce_FOUND} - ${Spuce_VERSION}")
+message(STATUS "Spuce_INCLUDE_DIRS: ${Spuce_INCLUDE_DIRS}")
+message(STATUS "Spuce_LIBRARIES: ${Spuce_LIBRARIES}")
 
 ########################################################################
 ## Feature registration
