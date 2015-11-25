@@ -50,8 +50,8 @@ template <typename Type> class IIRFilter : public Pothos::Block {
     this->registerCall(this, POTHOS_FCN_TUPLE(IIRFilter, setTaps));
     this->registerCall(this, POTHOS_FCN_TUPLE(IIRFilter, setWaitTaps));
     this->registerCall(this, POTHOS_FCN_TUPLE(IIRFilter, getWaitTaps));
-	std::vector<double> taps = {0.0676, 0.135, 0.0676, 1, -1.142, 0.412};
-	this->setTaps(taps);  // initial update
+    const double taps[] = {0.0676, 0.135, 0.0676, 1, -1.142, 0.412};
+    this->setTaps(std::vector<double>(taps, taps+6)); // initial update
   }
 
   void setWaitTaps(const bool waitTaps) { _waitTapsMode = waitTaps; }
