@@ -60,7 +60,7 @@ install:
 
 script:
   - mkdir build && cd build
-  - cmake ../ -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DENABLE_PYTHON=OFF
+  - cmake ../ -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DPYTHON_EXECUTABLE=/usr/bin/python2 -DPython_ADDITIONAL_VERSIONS=2.7
   - make -j2
   - sudo make install
 
