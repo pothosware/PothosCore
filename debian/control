@@ -6,6 +6,7 @@ Build-Depends:
     debhelper (>= 9.0.0),
     cmake (>= 2.8.9),
     libpoco-dev (>= 1.6),
+    libspuce-dev,
     libnuma-dev [amd64 i386],
     qtbase5-dev, libqt5svg5-dev, libqt5opengl5-dev,
     libqwt-qt5-dev,
