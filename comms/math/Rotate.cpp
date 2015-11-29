@@ -2,64 +2,66 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
-#include <cstdint>
 #include <iostream>
 #include <complex>
+#include <cmath>
 #include <algorithm> //min/max
 
 /***********************************************************************
- * |PothosDoc Scale
+ * |PothosDoc Rotate
  *
- * Perform a multiply by scalar operation on every input element.
+ * Perform a complex phase rotation operation on every input element.
  *
- * out[n] = in[n] * factor
+ * out[n] = in[n] * exp(j*phase)
  *
  * |category /Math
- * |keywords math scale multiply factor gain
+ * |keywords math phase multiply
  *
  * |param dtype[Data Type] The data type used in the arithmetic.
- * |widget DTypeChooser(float=1,cfloat=1,int=1,cint=1)
+ * |widget DTypeChooser(cfloat=1)
  * |default "complex_float64"
  * |preview disable
  *
- * |param factor[Factor] The multiplication scale factor.
+ * |param phase[Phase] The phase rotation in radians.
+ * |units radians
  * |default 0.0
  *
- * |param labelId[Label ID] A optional label ID that can be used to change the scale factor.
- * Upstream blocks can pass a configurable scale factor along with the stream data.
- * The scale block searches input labels for an ID match and interprets the label data as the new scale factor.
+ * |param labelId[Label ID] A optional label ID that can be used to change the phase rotator.
+ * Upstream blocks can pass a configurable phase rotator along with the stream data.
+ * The rotate block searches input labels for an ID match and interprets the label data as the new phase rotator.
  * |preview valid
  * |default ""
  * |widget StringEntry()
  * |tab Labels
  *
- * |factory /comms/scale(dtype)
- * |setter setFactor(factor)
+ * |factory /comms/rotate(dtype)
+ * |setter setPhase(phase)
  * |setter setLabelId(labelId)
  **********************************************************************/
-template <typename Type, typename ScaleType>
-class Scale : public Pothos::Block
+template <typename Type>
+class Rotate : public Pothos::Block
 {
 public:
-    Scale(void):
-        _factor(0.0)
+    Rotate(void):
+        _phase(0.0)
     {
-        this->registerCall(this, POTHOS_FCN_TUPLE(Scale, setFactor));
-        this->registerCall(this, POTHOS_FCN_TUPLE(Scale, getFactor));
-        this->registerCall(this, POTHOS_FCN_TUPLE(Scale, setLabelId));
-        this->registerCall(this, POTHOS_FCN_TUPLE(Scale, getLabelId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Rotate, setPhase));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Rotate, getPhase));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Rotate, setLabelId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Rotate, getLabelId));
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
     }
 
-    void setFactor(const ScaleType factor)
+    void setPhase(const double phase)
     {
-        _factor = factor;
+        _phase = phase;
+        _phasor = Type(std::polar(1.0, phase));
     }
 
-    ScaleType getFactor(void) const
+    double getPhase(void) const
     {
-        return _factor;
+        return _phase;
     }
 
     void setLabelId(const std::string &id)
@@ -84,16 +86,16 @@ public:
         auto in = inPort->buffer().template as<const Type *>();
         auto out = outPort->buffer().template as<Type *>();
 
-        //check the labels for scale factors
+        //check the labels for rotation phase
         if (not _labelId.empty()) for (const auto &label : inPort->labels())
         {
             if (label.index >= elems) break; //ignore labels past input bounds
             if (label.id == _labelId)
             {
-                //only set scale-factor when the label is at the front
+                //only set scale-phase when the label is at the front
                 if (label.index == 0)
                 {
-                    this->setFactor(label.data.template convert<ScaleType>());
+                    this->setPhase(label.data.template convert<double>());
                 }
                 //otherwise stop processing before the next label
                 //on the next call, this label will be index 0
@@ -108,7 +110,7 @@ public:
         //perform scale operation
         for (size_t i = 0; i < elems; i++)
         {
-            out[i] = _factor*in[i];
+            out[i] = _phasor*in[i];
         }
 
         //produce and consume on 0th ports
@@ -117,28 +119,24 @@ public:
     }
 
 private:
-    ScaleType _factor;
+    double _phase;
+    Type _phasor;
     std::string _labelId;
 };
 
 /***********************************************************************
  * registration
  **********************************************************************/
-static Pothos::Block *scaleFactory(const Pothos::DType &dtype)
+static Pothos::Block *rotateFactory(const Pothos::DType &dtype)
 {
-    #define ifTypeDeclareFactory_(type, scaleType) \
-        if (dtype == Pothos::DType(typeid(type))) return new Scale<type, scaleType>();
+    #define ifTypeDeclareFactory_(type) \
+        if (dtype == Pothos::DType(typeid(type))) return new Rotate<type>();
     #define ifTypeDeclareFactory(type) \
-        ifTypeDeclareFactory_(type, type) \
-        ifTypeDeclareFactory_(std::complex<type>, type)
+        ifTypeDeclareFactory_(std::complex<type>)
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
-    ifTypeDeclareFactory(int64_t);
-    ifTypeDeclareFactory(int32_t);
-    ifTypeDeclareFactory(int16_t);
-    ifTypeDeclareFactory(int8_t);
-    throw Pothos::InvalidArgumentException("scaleFactory("+dtype.toString()+")", "unsupported type");
+    throw Pothos::InvalidArgumentException("rotateFactory("+dtype.toString()+")", "unsupported type");
 }
 
-static Pothos::BlockRegistry registerScale(
-    "/comms/scale", &scaleFactory);
+static Pothos::BlockRegistry registerRotate(
+    "/comms/rotate", &rotateFactory);

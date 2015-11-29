@@ -20,6 +20,7 @@ POTHOS_MODULE_UTIL(
         Arithmetic.cpp
         TestArithmeticBlocks.cpp
         Scale.cpp
+        Rotate.cpp
     DESTINATION comms
     ENABLE_DOCS
 )

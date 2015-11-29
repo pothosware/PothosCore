@@ -3,7 +3,8 @@ This this the changelog file for the Pothos Comms toolkit.
 Release 0.1.0 (pending)
 ==========================
 
-- Added multiply by a constant scalar math block
+- Added complex rotation block with label support
+- Added constant scalar block with label support
 - Fix propagateLabels() for arithmetic feedback loop
 - Waveform source error when step size not achievable
 - Fixed FIR Filter Designer input validation checks
