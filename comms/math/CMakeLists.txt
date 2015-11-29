@@ -19,6 +19,7 @@ POTHOS_MODULE_UTIL(
     SOURCES
         Arithmetic.cpp
         TestArithmeticBlocks.cpp
+        Scale.cpp
     DESTINATION comms
     ENABLE_DOCS
 )
