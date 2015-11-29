@@ -21,6 +21,7 @@ POTHOS_MODULE_UTIL(
         TestArithmeticBlocks.cpp
         Scale.cpp
         Rotate.cpp
+        TestRotate.cpp
     DESTINATION comms
     ENABLE_DOCS
 )
