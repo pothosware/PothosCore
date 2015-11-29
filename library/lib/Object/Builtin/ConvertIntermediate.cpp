@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Object/Builtin/ConvertCommonImpl.hpp"
@@ -17,4 +17,11 @@ pothos_static_block(pothosObjectRegisterConvertIntermediate)
     declare_number_conversion2(slong, sllong)
     declare_number_conversion2(float, double)
     declare_number_conversion2(cfloat, cdouble)
+
+    //integer based complex conversions
+    declare_number_conversion2(cschar, csllong)
+    declare_number_conversion2(csshort, csllong)
+    declare_number_conversion2(csint, csllong)
+    declare_number_conversion2(cslong, csllong)
+    declare_number_conversion2(csllong, cdouble)
 }

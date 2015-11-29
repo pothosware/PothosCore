@@ -20,13 +20,21 @@ std::string Pothos::Object::toString(void) const
     try
     {
         const Pothos::DType dtype(this->type());
-        if (dtype.isComplex())
+        if (dtype.isComplex() and dtype.isFloat())
         {
             const auto c = this->convert<std::complex<double>>();
             if (c.imag() == 0.0) return std::to_string(c.real());
             if (c.real() == 0.0) return std::to_string(c.imag())+"j";
             if (c.imag() < 0.0) return Poco::format("%f-%fj", c.real(), -c.imag());
             return Poco::format("%f+%fj", c.real(), c.imag());
+        }
+        if (dtype.isComplex())
+        {
+            const auto c = this->convert<std::complex<long long>>();
+            if (c.imag() == 0) return std::to_string(c.real());
+            if (c.real() == 0) return std::to_string(c.imag())+"j";
+            if (c.imag() < 0) return Poco::format("%s-%sj", std::to_string(c.real()), std::to_string(-c.imag()));
+            return Poco::format("%s+%sj", std::to_string(c.real()), std::to_string(c.imag()));
         }
         if (dtype.isFloat()) return std::to_string(this->convert<double>());
         if (dtype.isSigned()) return std::to_string(this->convert<long long>());
