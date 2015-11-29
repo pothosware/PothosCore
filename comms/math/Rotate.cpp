@@ -6,6 +6,25 @@
 #include <complex>
 #include <cmath>
 #include <algorithm> //min/max
+#include <type_traits>
+
+template <typename T>
+typename std::enable_if<std::is_floating_point<T>::value, std::complex<T>>::type
+cmult(const std::complex<T> &in0, const std::complex<T> &in1)
+{
+    return in0*in1;
+}
+
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value, std::complex<T>>::type
+cmult(const std::complex<T> &in0, const std::complex<T> &in1)
+{
+    typedef typename std::conditional<sizeof(T) == 1, int16_t,
+        typename std::conditional<sizeof(T) == 2, int32_t, int64_t>::type
+    >::type Bigger;
+    auto tmp = std::complex<Bigger>(in0)*std::complex<Bigger>(in1);
+    return std::complex<T>(tmp.real() >> ((sizeof(T)*8)-1), tmp.imag() >> ((sizeof(T)*8)-1));
+}
 
 /***********************************************************************
  * |PothosDoc Rotate
@@ -18,7 +37,7 @@
  * |keywords math phase multiply
  *
  * |param dtype[Data Type] The data type used in the arithmetic.
- * |widget DTypeChooser(cfloat=1)
+ * |widget DTypeChooser(cint=1, cfloat=1)
  * |default "complex_float64"
  * |preview disable
  *
@@ -56,7 +75,13 @@ public:
     void setPhase(const double phase)
     {
         _phase = phase;
-        _phasor = Type(std::polar(1.0, phase));
+        double scale = 1.0;
+        if (std::is_integral<typename Type::value_type>::value)
+        {
+            scale = std::ldexp(scale, (sizeof(typename Type::value_type)*8) - 1);
+            scale -= 1;
+        }
+        _phasor = Type(std::polar(scale, phase));
     }
 
     double getPhase(void) const
@@ -110,7 +135,7 @@ public:
         //perform scale operation
         for (size_t i = 0; i < elems; i++)
         {
-            out[i] = _phasor*in[i];
+            out[i] = cmult(_phasor, in[i]);
         }
 
         //produce and consume on 0th ports
@@ -135,6 +160,9 @@ static Pothos::Block *rotateFactory(const Pothos::DType &dtype)
         ifTypeDeclareFactory_(std::complex<type>)
     ifTypeDeclareFactory(double);
     ifTypeDeclareFactory(float);
+    ifTypeDeclareFactory(int32_t);
+    ifTypeDeclareFactory(int16_t);
+    ifTypeDeclareFactory(int8_t);
     throw Pothos::InvalidArgumentException("rotateFactory("+dtype.toString()+")", "unsupported type");
 }
 
