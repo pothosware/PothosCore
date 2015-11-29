@@ -27,8 +27,17 @@
  * |param factor[Factor] The multiplication scale factor.
  * |default 0.0
  *
+ * |param labelId[Label ID] A optional label ID that can be used to change the scale factor.
+ * Upstream blocks can pass a configurable scale factor along with the stream data.
+ * The scale block searches input labels for an ID match and interprets the label data as the new scale factor.
+ * |preview valid
+ * |default ""
+ * |widget StringEntry()
+ * |tab Labels
+ *
  * |factory /comms/scale(dtype)
  * |setter setFactor(factor)
+ * |setter setLabelId(labelId)
  **********************************************************************/
 template <typename Type, typename ScaleType>
 class Scale : public Pothos::Block
@@ -39,6 +48,8 @@ public:
     {
         this->registerCall(this, POTHOS_FCN_TUPLE(Scale, setFactor));
         this->registerCall(this, POTHOS_FCN_TUPLE(Scale, getFactor));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Scale, setLabelId));
+        this->registerCall(this, POTHOS_FCN_TUPLE(Scale, getLabelId));
         this->setupInput(0, typeid(Type));
         this->setupOutput(0, typeid(Type));
     }
@@ -53,6 +64,16 @@ public:
         return _factor;
     }
 
+    void setLabelId(const std::string &id)
+    {
+        _labelId = id;
+    }
+
+    std::string getLabelId(void) const
+    {
+        return _labelId;
+    }
+
     void work(void)
     {
         //number of elements to work with
@@ -64,6 +85,27 @@ public:
         auto outPort = this->output(0);
         auto in = inPort->buffer().template as<const Type *>();
         auto out = outPort->buffer().template as<Type *>();
+
+        //check the labels for scale factors
+        if (not _labelId.empty()) for (const auto &label : inPort->labels())
+        {
+            if (label.index >= elems) break; //ignore labels past input bounds
+            if (label.id == _labelId)
+            {
+                //only set scale-factor when the label is at the front
+                if (label.index == 0)
+                {
+                    this->setFactor(label.data.template convert<ScaleType>());
+                }
+                //otherwise stop processing before the next label
+                //on the next call, this label will be index 0
+                else
+                {
+                    elems = label.index;
+                    break;
+                }
+            }
+        }
 
         //perform scale operation
         for (size_t i = 0; i < elems; i++)
@@ -78,6 +120,7 @@ public:
 
 private:
     ScaleType _factor;
+    std::string _labelId;
 };
 
 /***********************************************************************
