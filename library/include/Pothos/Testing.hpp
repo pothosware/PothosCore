@@ -89,6 +89,14 @@
         " == " + Pothos::TestingBase::current().toString(rhs), (lhs) == (rhs)); \
 }
 
+//! Test if two values are equal within tolerance
+#define POTHOS_TEST_CLOSE(lhs, rhs, tol) \
+{ \
+    __POTHOS_TEST_ASSERT( \
+        "assert close " + Pothos::TestingBase::current().toString(lhs) + \
+        " ~= " + Pothos::TestingBase::current().toString(rhs), (std::abs((lhs) - (rhs)) <= (tol))); \
+}
+
 //! Test two vectors for equality
 #define POTHOS_TEST_EQUALV(lhs, rhs) \
 { \

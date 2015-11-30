@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.3.0 (pending)
 ==========================
 
+- Added POTHOS_TEST_CLOSE() for equality with tolerance
 - Support complex integer toString() and conversions
 - Added displayable port alias name to framework APIs
 - Support conditional preview mode in block description parser
