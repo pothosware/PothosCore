@@ -63,6 +63,7 @@ POTHOS_TEST_BLOCK("/comms/tests", test_rotate)
         const double phase = i*M_PI/2;
         testRotateTmpl<double>(phase);
         testRotateTmpl<float>(phase);
+        testRotateTmpl<int64_t>(phase);
         testRotateTmpl<int32_t>(phase);
         testRotateTmpl<int16_t>(phase);
         testRotateTmpl<int8_t>(phase);

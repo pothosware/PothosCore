@@ -20,7 +20,7 @@ typename std::enable_if<std::is_integral<T>::value, U>::type
 scale(const T &factor, const U &in)
 {
     auto tmp = factor*T(in);
-    return U(tmp >> ((sizeof(T)*4)-1));
+    return U(tmp >> (sizeof(T)*4));
 }
 
 template <typename T, typename U>
@@ -35,8 +35,8 @@ typename std::enable_if<std::is_integral<T>::value, std::complex<U>>::type
 scale(const T &factor, const std::complex<U> &in)
 {
     auto tmp = factor*std::complex<T>(in);
-    auto real = tmp.real() >> ((sizeof(T)*4)-1);
-    auto imag = tmp.imag() >> ((sizeof(T)*4)-1);
+    auto real = U(tmp.real() >> (sizeof(T)*4));
+    auto imag = U(tmp.imag() >> (sizeof(T)*4));
     return std::complex<U>(real, imag);
 }
 
@@ -91,7 +91,7 @@ public:
         double scale = 1.0;
         if (std::is_integral<Bigger>::value)
         {
-            scale = std::ldexp(scale, (sizeof(Bigger)*4) - 1);
+            scale = std::ldexp(scale, sizeof(Bigger)*4);
         }
         _factorScaled = Bigger(scale*_factor);
     }
@@ -173,6 +173,7 @@ static Pothos::Block *scaleFactory(const Pothos::DType &dtype)
         ifTypeDeclareFactory_(std::complex<type>, bigger)
     ifTypeDeclareFactory(double, double);
     ifTypeDeclareFactory(float, float);
+    ifTypeDeclareFactory(int64_t, int64_t);
     ifTypeDeclareFactory(int32_t, int64_t);
     ifTypeDeclareFactory(int16_t, int32_t);
     ifTypeDeclareFactory(int8_t, int16_t);

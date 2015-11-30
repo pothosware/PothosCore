@@ -63,6 +63,7 @@ POTHOS_TEST_BLOCK("/comms/tests", test_scale)
         const double factor = i/2.0-1.0;
         testScaleTmpl<double>(factor);
         testScaleTmpl<float>(factor);
+        testScaleTmpl<int64_t>(factor);
         testScaleTmpl<int32_t>(factor);
         testScaleTmpl<int16_t>(factor);
         testScaleTmpl<int8_t>(factor);

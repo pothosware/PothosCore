@@ -20,8 +20,8 @@ typename std::enable_if<std::is_integral<T>::value, std::complex<T>>::type
 rotate(const std::complex<T> &in0, const std::complex<T> &in1)
 {
     auto tmp = in0*in1;
-    auto real = tmp.real() >> ((sizeof(T)*4)-1);
-    auto imag = tmp.imag() >> ((sizeof(T)*4)-1);
+    auto real = T(tmp.real() >> (sizeof(T)*4));
+    auto imag = T(tmp.imag() >> (sizeof(T)*4));
     return std::complex<T>(real, imag);
 }
 
@@ -77,7 +77,7 @@ public:
         double scale = 1.0;
         if (std::is_integral<typename Type::value_type>::value)
         {
-            scale = std::ldexp(scale, (sizeof(typename Type::value_type)*8) - 1);
+            scale = std::ldexp(scale, sizeof(typename Bigger::value_type)*4);
         }
         _phasor = Bigger(std::polar(scale, phase));
     }
@@ -158,6 +158,7 @@ static Pothos::Block *rotateFactory(const Pothos::DType &dtype)
         ifTypeDeclareFactory_(std::complex<type>, std::complex<bigger>)
     ifTypeDeclareFactory(double, double);
     ifTypeDeclareFactory(float, float);
+    ifTypeDeclareFactory(int64_t, int64_t);
     ifTypeDeclareFactory(int32_t, int64_t);
     ifTypeDeclareFactory(int16_t, int32_t);
     ifTypeDeclareFactory(int8_t, int16_t);
