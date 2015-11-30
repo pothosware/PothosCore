@@ -12,33 +12,33 @@
 static const size_t NUM_POINTS = 13;
 
 template <typename Type>
-void testRotateTmpl(const double phase)
+void testScaleTmpl(const double factor)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
 
-    auto dtype = Pothos::DType(typeid(std::complex<Type>));
-    std::cout << "Testing rotate with type " << dtype.toString() << ", phase " << (phase/M_PI) << "*pi" << std::endl;
+    auto dtype = Pothos::DType(typeid(Type));
+    std::cout << "Testing scale with type " << dtype.toString() << ", factor " << factor << std::endl;
 
     auto feeder = registry.callProxy("/blocks/feeder_source", dtype);
-    auto rotate = registry.callProxy("/comms/rotate", dtype);
-    rotate.callVoid("setPhase", phase);
+    auto scale = registry.callProxy("/comms/scale", dtype);
+    scale.callVoid("setFactor", factor);
     auto collector = registry.callProxy("/blocks/collector_sink", dtype);
 
     //load the feeder
-    auto buffIn = Pothos::BufferChunk(typeid(std::complex<Type>), NUM_POINTS);
-    auto pIn = buffIn.as<std::complex<Type> *>();
+    auto buffIn = Pothos::BufferChunk(typeid(Type), NUM_POINTS);
+    auto pIn = buffIn.as<Type *>();
     for (size_t i = 0; i < buffIn.elements(); i++)
     {
-        pIn[i] = std::complex<Type>(Type(10*i), Type(-20*i));
+        pIn[i] = Type(10*i);
     }
     feeder.callProxy("feedBuffer", buffIn);
 
     //run the topology
     {
         Pothos::Topology topology;
-        topology.connect(feeder, 0, rotate, 0);
-        topology.connect(rotate, 0, collector, 0);
+        topology.connect(feeder, 0, scale, 0);
+        topology.connect(scale, 0, collector, 0);
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());
     }
@@ -46,25 +46,25 @@ void testRotateTmpl(const double phase)
     //check the collector
     auto buffOut = collector.call<Pothos::BufferChunk>("getBuffer");
     POTHOS_TEST_EQUAL(buffOut.elements(), buffIn.elements());
-    auto pOut = buffOut.as<const std::complex<Type> *>();
+    auto pOut = buffOut.as<const Type *>();
     for (size_t i = 0; i < buffOut.elements(); i++)
     {
-        const auto input = std::complex<double>(pIn[i].real(), pIn[i].imag());
-        const auto expected = std::complex<Type>(input * std::polar(1.0, phase));
+        const auto input = double(pIn[i]);
+        const auto expected = Type(input * factor);
         //allow up to an error of 1 because of fixed point truncation rounding
         POTHOS_TEST_CLOSE(pOut[i], expected, 1);
     }
 }
 
-POTHOS_TEST_BLOCK("/comms/tests", test_rotate)
+POTHOS_TEST_BLOCK("/comms/tests", test_scale)
 {
-    for (size_t i = 0; i < 4; i++)
+    for (size_t i = 0; i <= 4; i++)
     {
-        const double phase = i*M_PI/2;
-        testRotateTmpl<double>(phase);
-        testRotateTmpl<float>(phase);
-        testRotateTmpl<int32_t>(phase);
-        testRotateTmpl<int16_t>(phase);
-        testRotateTmpl<int8_t>(phase);
+        const double factor = i/2.0-1.0;
+        testScaleTmpl<double>(factor);
+        testScaleTmpl<float>(factor);
+        testScaleTmpl<int32_t>(factor);
+        testScaleTmpl<int16_t>(factor);
+        testScaleTmpl<int8_t>(factor);
     }
 }

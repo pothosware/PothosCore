@@ -20,6 +20,7 @@ POTHOS_MODULE_UTIL(
         Arithmetic.cpp
         TestArithmeticBlocks.cpp
         Scale.cpp
+        TestScale.cpp
         Rotate.cpp
         TestRotate.cpp
     DESTINATION comms

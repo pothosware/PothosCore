@@ -6,6 +6,39 @@
 #include <iostream>
 #include <complex>
 #include <algorithm> //min/max
+#include <type_traits>
+
+template <typename T, typename U>
+typename std::enable_if<std::is_floating_point<T>::value, U>::type
+scale(const T &factor, const U &in)
+{
+    return factor*in;
+}
+
+template <typename T, typename U>
+typename std::enable_if<std::is_integral<T>::value, U>::type
+scale(const T &factor, const U &in)
+{
+    auto tmp = factor*T(in);
+    return U(tmp >> ((sizeof(T)*4)-1));
+}
+
+template <typename T, typename U>
+typename std::enable_if<std::is_floating_point<T>::value, std::complex<U>>::type
+scale(const T &factor, const std::complex<U> &in)
+{
+    return factor*in;
+}
+
+template <typename T, typename U>
+typename std::enable_if<std::is_integral<T>::value, std::complex<U>>::type
+scale(const T &factor, const std::complex<U> &in)
+{
+    auto tmp = factor*std::complex<T>(in);
+    auto real = tmp.real() >> ((sizeof(T)*4)-1);
+    auto imag = tmp.imag() >> ((sizeof(T)*4)-1);
+    return std::complex<U>(real, imag);
+}
 
 /***********************************************************************
  * |PothosDoc Scale
@@ -37,7 +70,7 @@
  * |setter setFactor(factor)
  * |setter setLabelId(labelId)
  **********************************************************************/
-template <typename Type, typename ScaleType>
+template <typename Type, typename Bigger>
 class Scale : public Pothos::Block
 {
 public:
@@ -52,12 +85,18 @@ public:
         this->setupOutput(0, typeid(Type));
     }
 
-    void setFactor(const ScaleType factor)
+    void setFactor(const double factor)
     {
         _factor = factor;
+        double scale = 1.0;
+        if (std::is_integral<Bigger>::value)
+        {
+            scale = std::ldexp(scale, (sizeof(Bigger)*4) - 1);
+        }
+        _factorScaled = Bigger(scale*_factor);
     }
 
-    ScaleType getFactor(void) const
+    double getFactor(void) const
     {
         return _factor;
     }
@@ -93,7 +132,7 @@ public:
                 //only set scale-factor when the label is at the front
                 if (label.index == 0)
                 {
-                    this->setFactor(label.data.template convert<ScaleType>());
+                    this->setFactor(label.data.template convert<double>());
                 }
                 //otherwise stop processing before the next label
                 //on the next call, this label will be index 0
@@ -108,7 +147,7 @@ public:
         //perform scale operation
         for (size_t i = 0; i < elems; i++)
         {
-            out[i] = _factor*in[i];
+            out[i] = scale(_factorScaled, in[i]);
         }
 
         //produce and consume on 0th ports
@@ -117,7 +156,8 @@ public:
     }
 
 private:
-    ScaleType _factor;
+    double _factor;
+    Bigger _factorScaled;
     std::string _labelId;
 };
 
@@ -126,17 +166,16 @@ private:
  **********************************************************************/
 static Pothos::Block *scaleFactory(const Pothos::DType &dtype)
 {
-    #define ifTypeDeclareFactory_(type, scaleType) \
-        if (dtype == Pothos::DType(typeid(type))) return new Scale<type, scaleType>();
-    #define ifTypeDeclareFactory(type) \
-        ifTypeDeclareFactory_(type, type) \
-        ifTypeDeclareFactory_(std::complex<type>, type)
-    ifTypeDeclareFactory(double);
-    ifTypeDeclareFactory(float);
-    ifTypeDeclareFactory(int64_t);
-    ifTypeDeclareFactory(int32_t);
-    ifTypeDeclareFactory(int16_t);
-    ifTypeDeclareFactory(int8_t);
+    #define ifTypeDeclareFactory_(type, bigger) \
+        if (dtype == Pothos::DType(typeid(type))) return new Scale<type, bigger>();
+    #define ifTypeDeclareFactory(type, bigger) \
+        ifTypeDeclareFactory_(type, bigger) \
+        ifTypeDeclareFactory_(std::complex<type>, bigger)
+    ifTypeDeclareFactory(double, double);
+    ifTypeDeclareFactory(float, float);
+    ifTypeDeclareFactory(int32_t, int64_t);
+    ifTypeDeclareFactory(int16_t, int32_t);
+    ifTypeDeclareFactory(int8_t, int16_t);
     throw Pothos::InvalidArgumentException("scaleFactory("+dtype.toString()+")", "unsupported type");
 }
 

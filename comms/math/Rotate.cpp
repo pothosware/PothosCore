@@ -10,20 +10,19 @@
 
 template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value, std::complex<T>>::type
-cmult(const std::complex<T> &in0, const std::complex<T> &in1)
+rotate(const std::complex<T> &in0, const std::complex<T> &in1)
 {
     return in0*in1;
 }
 
 template <typename T>
 typename std::enable_if<std::is_integral<T>::value, std::complex<T>>::type
-cmult(const std::complex<T> &in0, const std::complex<T> &in1)
+rotate(const std::complex<T> &in0, const std::complex<T> &in1)
 {
-    typedef typename std::conditional<sizeof(T) == 1, int16_t,
-        typename std::conditional<sizeof(T) == 2, int32_t, int64_t>::type
-    >::type Bigger;
-    auto tmp = std::complex<Bigger>(in0)*std::complex<Bigger>(in1);
-    return std::complex<T>(tmp.real() >> ((sizeof(T)*8)-1), tmp.imag() >> ((sizeof(T)*8)-1));
+    auto tmp = in0*in1;
+    auto real = tmp.real() >> ((sizeof(T)*4)-1);
+    auto imag = tmp.imag() >> ((sizeof(T)*4)-1);
+    return std::complex<T>(real, imag);
 }
 
 /***********************************************************************
@@ -57,7 +56,7 @@ cmult(const std::complex<T> &in0, const std::complex<T> &in1)
  * |setter setPhase(phase)
  * |setter setLabelId(labelId)
  **********************************************************************/
-template <typename Type>
+template <typename Type, typename Bigger>
 class Rotate : public Pothos::Block
 {
 public:
@@ -79,9 +78,8 @@ public:
         if (std::is_integral<typename Type::value_type>::value)
         {
             scale = std::ldexp(scale, (sizeof(typename Type::value_type)*8) - 1);
-            scale -= 1;
         }
-        _phasor = Type(std::polar(scale, phase));
+        _phasor = Bigger(std::polar(scale, phase));
     }
 
     double getPhase(void) const
@@ -135,7 +133,7 @@ public:
         //perform scale operation
         for (size_t i = 0; i < elems; i++)
         {
-            out[i] = cmult(_phasor, in[i]);
+            out[i] = Type(rotate(_phasor, Bigger(in[i])));
         }
 
         //produce and consume on 0th ports
@@ -145,7 +143,7 @@ public:
 
 private:
     double _phase;
-    Type _phasor;
+    Bigger _phasor;
     std::string _labelId;
 };
 
@@ -154,15 +152,15 @@ private:
  **********************************************************************/
 static Pothos::Block *rotateFactory(const Pothos::DType &dtype)
 {
-    #define ifTypeDeclareFactory_(type) \
-        if (dtype == Pothos::DType(typeid(type))) return new Rotate<type>();
-    #define ifTypeDeclareFactory(type) \
-        ifTypeDeclareFactory_(std::complex<type>)
-    ifTypeDeclareFactory(double);
-    ifTypeDeclareFactory(float);
-    ifTypeDeclareFactory(int32_t);
-    ifTypeDeclareFactory(int16_t);
-    ifTypeDeclareFactory(int8_t);
+    #define ifTypeDeclareFactory_(type, bigger) \
+        if (dtype == Pothos::DType(typeid(type))) return new Rotate<type, bigger>();
+    #define ifTypeDeclareFactory(type, bigger) \
+        ifTypeDeclareFactory_(std::complex<type>, std::complex<bigger>)
+    ifTypeDeclareFactory(double, double);
+    ifTypeDeclareFactory(float, float);
+    ifTypeDeclareFactory(int32_t, int64_t);
+    ifTypeDeclareFactory(int16_t, int32_t);
+    ifTypeDeclareFactory(int8_t, int16_t);
     throw Pothos::InvalidArgumentException("rotateFactory("+dtype.toString()+")", "unsupported type");
 }
 
