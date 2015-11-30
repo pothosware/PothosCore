@@ -44,7 +44,7 @@
  * |setter setMode(mode)
  * |setter setWindow(window)
  **********************************************************************/
-template <typename Type>
+template <typename Type, typename Bigger>
 class SignalProbe : public Pothos::Block
 {
 public:
@@ -99,24 +99,24 @@ public:
         if (_mode == "VALUE") _value = x[N-1];
         else if (_mode == "RMS")
         {
-            Type mean = 0;
+            Bigger mean = 0;
             for (size_t n = 0; n < N; n++) mean += x[n];
             mean /= N;
 
             double accumulator = 0.0;
             for (size_t n = 0; n < N; n++)
             {
-                const auto v = std::abs(x[n]-mean);
+                const auto v = std::abs(Bigger(x[n])-mean);
                 accumulator += v*v;
             }
             _value = Type(std::sqrt(accumulator/N));
         }
         else if (_mode == "MEAN")
         {
-            Type mean = 0;
+            Bigger mean = 0;
             for (size_t n = 0; n < N; n++) mean += x[n];
             mean /= N;
-            _value = std::abs(mean);
+            _value = Type(mean);
         }
     }
 
@@ -131,15 +131,15 @@ private:
  **********************************************************************/
 static Pothos::Block *valueProbeFactory(const Pothos::DType &dtype)
 {
-    #define ifTypeDeclareFactory(type) \
-        if (dtype == Pothos::DType(typeid(type))) return new SignalProbe<type>(); \
-        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new SignalProbe<std::complex<type>>();
-    ifTypeDeclareFactory(double);
-    ifTypeDeclareFactory(float);
-    ifTypeDeclareFactory(int64_t);
-    ifTypeDeclareFactory(int32_t);
-    ifTypeDeclareFactory(int16_t);
-    ifTypeDeclareFactory(int8_t);
+    #define ifTypeDeclareFactory(type, bigger) \
+        if (dtype == Pothos::DType(typeid(type))) return new SignalProbe<type, bigger>(); \
+        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new SignalProbe<std::complex<type>, std::complex<bigger>>();
+    ifTypeDeclareFactory(double, double);
+    ifTypeDeclareFactory(float, float);
+    ifTypeDeclareFactory(int64_t, int64_t);
+    ifTypeDeclareFactory(int32_t, int64_t);
+    ifTypeDeclareFactory(int16_t, int32_t);
+    ifTypeDeclareFactory(int8_t, int16_t);
     throw Pothos::InvalidArgumentException("valueProbeFactory("+dtype.toString()+")", "unsupported type");
 }
 
