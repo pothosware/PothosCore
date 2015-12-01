@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <Pothos/Util/QFormat.hpp>
 #include <iostream>
 #include <complex>
 #include <cmath>
 #include <algorithm> //min/max
-#include "../FixedUtils.hpp"
+
+using Pothos::Util::fromQ;
+using Pothos::Util::floatToQ;
 
 /***********************************************************************
  * |PothosDoc Rotate
