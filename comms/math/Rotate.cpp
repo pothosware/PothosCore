@@ -6,24 +6,7 @@
 #include <complex>
 #include <cmath>
 #include <algorithm> //min/max
-#include <type_traits>
-
-template <typename T>
-typename std::enable_if<std::is_floating_point<T>::value, std::complex<T>>::type
-rotate(const std::complex<T> &in0, const std::complex<T> &in1)
-{
-    return in0*in1;
-}
-
-template <typename T>
-typename std::enable_if<std::is_integral<T>::value, std::complex<T>>::type
-rotate(const std::complex<T> &in0, const std::complex<T> &in1)
-{
-    auto tmp = in0*in1;
-    auto real = T(tmp.real() >> (sizeof(T)*4));
-    auto imag = T(tmp.imag() >> (sizeof(T)*4));
-    return std::complex<T>(real, imag);
-}
+#include "../FixedUtils.hpp"
 
 /***********************************************************************
  * |PothosDoc Rotate
@@ -56,7 +39,7 @@ rotate(const std::complex<T> &in0, const std::complex<T> &in1)
  * |setter setPhase(phase)
  * |setter setLabelId(labelId)
  **********************************************************************/
-template <typename Type, typename Bigger>
+template <typename Type, typename BiggerType>
 class Rotate : public Pothos::Block
 {
 public:
@@ -74,12 +57,7 @@ public:
     void setPhase(const double phase)
     {
         _phase = phase;
-        double scale = 1.0;
-        if (std::is_integral<typename Type::value_type>::value)
-        {
-            scale = std::ldexp(scale, sizeof(typename Bigger::value_type)*4);
-        }
-        _phasor = Bigger(std::polar(scale, phase));
+        _phasor = floatToQ<BiggerType>(std::polar(1.0, phase));
     }
 
     double getPhase(void) const
@@ -133,7 +111,8 @@ public:
         //perform scale operation
         for (size_t i = 0; i < elems; i++)
         {
-            out[i] = Type(rotate(_phasor, Bigger(in[i])));
+            const BiggerType tmp = _phasor*BiggerType(in[i]);
+            out[i] = fromQ<Type>(tmp);
         }
 
         //produce and consume on 0th ports
@@ -143,7 +122,7 @@ public:
 
 private:
     double _phase;
-    Bigger _phasor;
+    BiggerType _phasor;
     std::string _labelId;
 };
 
