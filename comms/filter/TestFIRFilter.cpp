@@ -8,6 +8,8 @@
 #include <iostream>
 
 static double filterToneGetRMS(
+    const Pothos::DType &dtype,
+    const double amplitude,
     const double sampRate,
     const double waveFreq,
     const size_t decim,
@@ -17,7 +19,8 @@ static double filterToneGetRMS(
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
 
-    auto waveSource = registry.callProxy("/comms/waveform_source", "complex128");
+    auto waveSource = registry.callProxy("/comms/waveform_source", dtype);
+    waveSource.callVoid("setAmplitude", amplitude);
     waveSource.callVoid("setWaveform", "SINE");
     waveSource.callVoid("setFrequency", waveFreq);
     waveSource.callVoid("setSampleRate", sampRate);
@@ -25,7 +28,7 @@ static double filterToneGetRMS(
     auto finiteRelease = registry.callProxy("/blocks/finite_release");
     finiteRelease.callVoid("setTotalElements", 4096);
 
-    auto filter = registry.callProxy("/comms/fir_filter", "complex128", "COMPLEX");
+    auto filter = registry.callProxy("/comms/fir_filter", dtype, "COMPLEX");
     filter.callVoid("setDecimation", decim);
     filter.callVoid("setInterpolation", interp);
     filter.callVoid("setWaitTaps", true);
@@ -39,7 +42,7 @@ static double filterToneGetRMS(
     designer.callVoid("setBandwidthTrans", waveFreq+0.1*sampRate);
     designer.callVoid("setNumTaps", 101);
 
-    auto probe = registry.callProxy("/comms/signal_probe", "complex128");
+    auto probe = registry.callProxy("/comms/signal_probe", dtype);
     probe.callVoid("setMode", "RMS");
 
     //run the topology
@@ -58,17 +61,25 @@ static double filterToneGetRMS(
 
 POTHOS_TEST_BLOCK("/comms/tests", test_fir_filter)
 {
+    std::vector<Pothos::DType> types;
+    types.push_back(Pothos::DType("complex_float64"));
+    types.push_back(Pothos::DType("complex_int16"));
 
-    for (size_t decim = 1; decim <= 3; decim++)
+    for (size_t i = 0; i < types.size(); i++)
     {
-        for (size_t interp = 1; interp <= 3; interp++)
+        std::cout << "Testing FIR filter on data type " << types[i].toString() << std::endl;
+        for (size_t decim = 1; decim <= 3; decim++)
         {
-            const double rate = 1e6;
-            const double freq = 30e3;
-            std::cout << "freq " << freq << " decim " << decim << " interp " << interp << std::flush;
-            auto rms = filterToneGetRMS(rate, freq, decim, interp);
-            std::cout << " RMS = " << rms << std::endl;
-            POTHOS_TEST_TRUE(rms > 0.1);
+            for (size_t interp = 1; interp <= 3; interp++)
+            {
+                const double amplitude = 1000;
+                const double rate = 1e6;
+                const double freq = 30e3;
+                std::cout << "freq " << freq << " decim " << decim << " interp " << interp << std::flush;
+                auto rms = filterToneGetRMS(types[i], amplitude, rate, freq, decim, interp);
+                std::cout << " RMS = " << rms << std::endl;
+                POTHOS_TEST_TRUE(rms > (0.1*amplitude));
+            }
         }
     }
 }

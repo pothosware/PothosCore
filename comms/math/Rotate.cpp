@@ -42,7 +42,7 @@ using Pothos::Util::floatToQ;
  * |setter setPhase(phase)
  * |setter setLabelId(labelId)
  **********************************************************************/
-template <typename Type, typename BiggerType>
+template <typename Type, typename QType>
 class Rotate : public Pothos::Block
 {
 public:
@@ -60,7 +60,7 @@ public:
     void setPhase(const double phase)
     {
         _phase = phase;
-        _phasor = floatToQ<BiggerType>(std::polar(1.0, phase));
+        _phasor = floatToQ<QType>(std::polar(1.0, phase));
     }
 
     double getPhase(void) const
@@ -114,7 +114,7 @@ public:
         //perform scale operation
         for (size_t i = 0; i < elems; i++)
         {
-            const BiggerType tmp = _phasor*BiggerType(in[i]);
+            const QType tmp = _phasor*QType(in[i]);
             out[i] = fromQ<Type>(tmp);
         }
 
@@ -125,7 +125,7 @@ public:
 
 private:
     double _phase;
-    BiggerType _phasor;
+    QType _phasor;
     std::string _labelId;
 };
 
@@ -134,10 +134,10 @@ private:
  **********************************************************************/
 static Pothos::Block *rotateFactory(const Pothos::DType &dtype)
 {
-    #define ifTypeDeclareFactory_(type, bigger) \
-        if (dtype == Pothos::DType(typeid(type))) return new Rotate<type, bigger>();
-    #define ifTypeDeclareFactory(type, bigger) \
-        ifTypeDeclareFactory_(std::complex<type>, std::complex<bigger>)
+    #define ifTypeDeclareFactory_(type, qtype) \
+        if (dtype == Pothos::DType(typeid(type))) return new Rotate<type, qtype>();
+    #define ifTypeDeclareFactory(type, qtype) \
+        ifTypeDeclareFactory_(std::complex<type>, std::complex<qtype>)
     ifTypeDeclareFactory(double, double);
     ifTypeDeclareFactory(float, float);
     ifTypeDeclareFactory(int64_t, int64_t);

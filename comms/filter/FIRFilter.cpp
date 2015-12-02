@@ -95,7 +95,7 @@ using Pothos::Util::floatToQ;
  * |setter setFrameStartId(frameStartId)
  * |setter setFrameEndId(frameEndId)
  **********************************************************************/
-template <typename InType, typename OutType, typename TapsType, typename BiggerType, typename BiggerTapsType>
+template <typename InType, typename OutType, typename TapsType, typename QType, typename QTapsType>
 class FIRFilter : public Pothos::Block
 {
 public:
@@ -288,10 +288,10 @@ public:
             for (size_t j = 0; j < L; j++)
             {
                 //convolution loop
-                BiggerType y_n = 0;
+                QType y_n = 0;
                 for (size_t k = 0; k < _interpTaps[j].size(); k++)
                 {
-                    y_n += _interpTaps[j][k] * BiggerType(x[n*M-k]);
+                    y_n += _interpTaps[j][k] * QType(x[n*M-k]);
                 }
                 y[j+n*L] = fromQ<OutType>(y_n);
             }
@@ -336,7 +336,7 @@ private:
             {
                 const auto i = j+k*L;
                 if (i >= _taps.size()) continue;
-                _interpTaps[j].push_back(floatToQ<BiggerTapsType>(_taps[i]));
+                _interpTaps[j].push_back(floatToQ<QTapsType>(_taps[i]));
             }
         }
 
@@ -345,7 +345,7 @@ private:
     }
 
     std::vector<TapsType> _taps;
-    std::vector<std::vector<BiggerTapsType>> _interpTaps;
+    std::vector<std::vector<QTapsType>> _interpTaps;
     size_t M, L, K, _inputRequire;
     bool _waitTapsMode;
     bool _waitTapsArmed;
@@ -359,12 +359,12 @@ private:
  **********************************************************************/
 static Pothos::Block *FIRFilterFactory(const Pothos::DType &dtype, const std::string &tapsType)
 {
-    #define ifTypeDeclareFactory__(Type, tapsTypeVal, TapsType, BiggerType, BiggerTapsType) \
-        if (dtype == Pothos::DType(typeid(Type)) and tapsType == tapsTypeVal) return new FIRFilter<Type, Type, TapsType, BiggerType, BiggerTapsType>();
-    #define ifTypeDeclareFactory(type, bigger) \
-        ifTypeDeclareFactory__(type, "REAL", double, bigger, bigger) \
-        ifTypeDeclareFactory__(std::complex<type>, "REAL", double, std::complex<bigger>, bigger) \
-        ifTypeDeclareFactory__(std::complex<type>, "COMPLEX", std::complex<double>, std::complex<bigger>, std::complex<bigger>)
+    #define ifTypeDeclareFactory__(Type, tapsTypeVal, TapsType, QType, QTapsType) \
+        if (dtype == Pothos::DType(typeid(Type)) and tapsType == tapsTypeVal) return new FIRFilter<Type, Type, TapsType, QType, QTapsType>();
+    #define ifTypeDeclareFactory(type, qtype) \
+        ifTypeDeclareFactory__(type, "REAL", double, qtype, qtype) \
+        ifTypeDeclareFactory__(std::complex<type>, "REAL", double, std::complex<qtype>, qtype) \
+        ifTypeDeclareFactory__(std::complex<type>, "COMPLEX", std::complex<double>, std::complex<qtype>, std::complex<qtype>)
     ifTypeDeclareFactory(double, double);
     ifTypeDeclareFactory(float, float);
     ifTypeDeclareFactory(int64_t, int64_t);

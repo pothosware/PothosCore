@@ -41,7 +41,7 @@ using Pothos::Util::floatToQ;
  * |setter setFactor(factor)
  * |setter setLabelId(labelId)
  **********************************************************************/
-template <typename Type, typename BiggerType, typename ScaleType>
+template <typename Type, typename QType, typename ScaleType>
 class Scale : public Pothos::Block
 {
 public:
@@ -113,7 +113,7 @@ public:
         //perform scale operation
         for (size_t i = 0; i < elems; i++)
         {
-            const BiggerType tmp = _factorScaled*BiggerType(in[i]);
+            const QType tmp = _factorScaled*QType(in[i]);
             out[i] = fromQ<Type>(tmp);
         }
 
@@ -133,11 +133,11 @@ private:
  **********************************************************************/
 static Pothos::Block *scaleFactory(const Pothos::DType &dtype)
 {
-    #define ifTypeDeclareFactory_(type, biggerType, scaleType) \
-        if (dtype == Pothos::DType(typeid(type))) return new Scale<type, biggerType, scaleType>();
-    #define ifTypeDeclareFactory(type, bigger) \
-        ifTypeDeclareFactory_(type, bigger, bigger) \
-        ifTypeDeclareFactory_(std::complex<type>, std::complex<bigger>, bigger)
+    #define ifTypeDeclareFactory_(type, qtype, scaleType) \
+        if (dtype == Pothos::DType(typeid(type))) return new Scale<type, qtype, scaleType>();
+    #define ifTypeDeclareFactory(type, qtype) \
+        ifTypeDeclareFactory_(type, qtype, qtype) \
+        ifTypeDeclareFactory_(std::complex<type>, std::complex<qtype>, qtype)
     ifTypeDeclareFactory(double, double);
     ifTypeDeclareFactory(float, float);
     ifTypeDeclareFactory(int64_t, int64_t);

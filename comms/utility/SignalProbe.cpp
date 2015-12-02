@@ -44,7 +44,7 @@
  * |setter setMode(mode)
  * |setter setWindow(window)
  **********************************************************************/
-template <typename Type, typename Bigger>
+template <typename Type, typename ProbeType>
 class SignalProbe : public Pothos::Block
 {
 public:
@@ -63,7 +63,7 @@ public:
         this->input(0)->setReserve(1);
     }
 
-    Type value(void)
+    ProbeType value(void)
     {
         return _value;
     }
@@ -99,29 +99,25 @@ public:
         if (_mode == "VALUE") _value = x[N-1];
         else if (_mode == "RMS")
         {
-            Bigger mean = 0;
-            for (size_t n = 0; n < N; n++) mean += x[n];
-            mean /= N;
-
             double accumulator = 0.0;
             for (size_t n = 0; n < N; n++)
             {
-                const auto v = std::abs(Bigger(x[n])-mean);
+                const double v = std::abs(x[n]);
                 accumulator += v*v;
             }
-            _value = Type(std::sqrt(accumulator/N));
+            _value = std::sqrt(accumulator/N);
         }
         else if (_mode == "MEAN")
         {
-            Bigger mean = 0;
+            ProbeType mean = 0;
             for (size_t n = 0; n < N; n++) mean += x[n];
             mean /= N;
-            _value = Type(mean);
+            _value = mean;
         }
     }
 
 private:
-    Type _value;
+    ProbeType _value;
     std::string _mode;
     size_t _window;
 };
@@ -131,15 +127,15 @@ private:
  **********************************************************************/
 static Pothos::Block *valueProbeFactory(const Pothos::DType &dtype)
 {
-    #define ifTypeDeclareFactory(type, bigger) \
-        if (dtype == Pothos::DType(typeid(type))) return new SignalProbe<type, bigger>(); \
-        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new SignalProbe<std::complex<type>, std::complex<bigger>>();
-    ifTypeDeclareFactory(double, double);
-    ifTypeDeclareFactory(float, float);
-    ifTypeDeclareFactory(int64_t, int64_t);
-    ifTypeDeclareFactory(int32_t, int64_t);
-    ifTypeDeclareFactory(int16_t, int32_t);
-    ifTypeDeclareFactory(int8_t, int16_t);
+    #define ifTypeDeclareFactory(type) \
+        if (dtype == Pothos::DType(typeid(type))) return new SignalProbe<type, double>(); \
+        if (dtype == Pothos::DType(typeid(std::complex<type>))) return new SignalProbe<std::complex<type>, std::complex<double>>();
+    ifTypeDeclareFactory(double);
+    ifTypeDeclareFactory(float);
+    ifTypeDeclareFactory(int64_t);
+    ifTypeDeclareFactory(int32_t);
+    ifTypeDeclareFactory(int16_t);
+    ifTypeDeclareFactory(int8_t);
     throw Pothos::InvalidArgumentException("valueProbeFactory("+dtype.toString()+")", "unsupported type");
 }
 
