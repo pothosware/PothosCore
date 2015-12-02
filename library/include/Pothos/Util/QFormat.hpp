@@ -25,39 +25,39 @@ namespace Util {
  *
  * \tparam T the output data type
  * \tparam U the input data type
- * \tparam n the number of fractional bits
  *
  * \param in the input number in Q format
+ * \param n the number of fractional bits
  * \return the output number
  * \{
  */
-template <typename T, typename U, int n = 0>
+template <typename T, typename U>
 typename std::enable_if<std::is_floating_point<U>::value, T>::type
-fromQ(const U &in)
+fromQ(const U &in, const int = 0)
 {
     return T(in);
 }
 
-template <typename T, typename U, int n = sizeof(U)*4>
+template <typename T, typename U>
 typename std::enable_if<std::is_integral<U>::value, T>::type
-fromQ(const U &in)
+fromQ(const U &in, const int n = sizeof(U)*4)
 {
     return T(in >> n);
 }
 
-template <typename T, typename U, int n = 0>
+template <typename T, typename U>
 typename std::enable_if<std::is_floating_point<U>::value, T>::type
-fromQ(const std::complex<U> &in)
+fromQ(const std::complex<U> &in, const int = 0)
 {
     return T(in);
 }
 
-template <typename T, typename U, int n = sizeof(U)*4>
+template <typename T, typename U>
 typename std::enable_if<std::is_integral<U>::value, T>::type
-fromQ(const std::complex<U> &in)
+fromQ(const std::complex<U> &in, const int n = sizeof(U)*4)
 {
-    auto real = fromQ<typename T::value_type, U, n>(in.real());
-    auto imag = fromQ<typename T::value_type, U, n>(in.imag());
+    auto real = fromQ<typename T::value_type, U>(in.real(), n);
+    auto imag = fromQ<typename T::value_type, U>(in.imag(), n);
     return T(real, imag);
 }
 
@@ -72,39 +72,39 @@ fromQ(const std::complex<U> &in)
  *
  * \tparam T the output data type
  * \tparam U the input data type
- * \tparam n the number of fractional bits
  *
  * \param in the input number
+ * \param n the number of fractional bits
  * \return the output number in Q format
  * \{
  */
-template <typename T, typename U, int n = 0>
+template <typename T, typename U>
 typename std::enable_if<std::is_floating_point<T>::value, T>::type
-floatToQ(const U &in)
+floatToQ(const U &in, const int = 0)
 {
     return T(in);
 }
 
-template <typename T, typename U, int n = sizeof(T)*4>
+template <typename T, typename U>
 typename std::enable_if<std::is_integral<T>::value, T>::type
-floatToQ(const U &in)
+floatToQ(const U &in, const int n = sizeof(T)*4)
 {
     return T(std::ldexp(in, n));
 }
 
-template <typename T, typename U, int n = 0>
+template <typename T, typename U>
 typename std::enable_if<std::is_floating_point<typename T::value_type>::value, T>::type
-floatToQ(const std::complex<U> &in)
+floatToQ(const std::complex<U> &in, const int = 0)
 {
     return T(in);
 }
 
-template <typename T, typename U, int n = sizeof(typename T::value_type)*4>
+template <typename T, typename U>
 typename std::enable_if<std::is_integral<typename T::value_type>::value, T>::type
-floatToQ(const std::complex<U> &in)
+floatToQ(const std::complex<U> &in, const int n = sizeof(typename T::value_type)*4)
 {
-    auto real = floatToQ<typename T::value_type, U, n>(in.real());
-    auto imag = floatToQ<typename T::value_type, U, n>(in.imag());
+    auto real = floatToQ<typename T::value_type, U>(in.real(), n);
+    auto imag = floatToQ<typename T::value_type, U>(in.imag(), n);
     return T(real, imag);
 }
 
