@@ -2,28 +2,14 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <Pothos/Util/QFormat.hpp>
 #include <iostream>
 #include <complex>
 #include <cmath>
 #include <algorithm> //min/max
-#include <type_traits>
 
-template <typename T>
-typename std::enable_if<std::is_floating_point<T>::value, std::complex<T>>::type
-rotate(const std::complex<T> &in0, const std::complex<T> &in1)
-{
-    return in0*in1;
-}
-
-template <typename T>
-typename std::enable_if<std::is_integral<T>::value, std::complex<T>>::type
-rotate(const std::complex<T> &in0, const std::complex<T> &in1)
-{
-    auto tmp = in0*in1;
-    auto real = T(tmp.real() >> (sizeof(T)*4));
-    auto imag = T(tmp.imag() >> (sizeof(T)*4));
-    return std::complex<T>(real, imag);
-}
+using Pothos::Util::fromQ;
+using Pothos::Util::floatToQ;
 
 /***********************************************************************
  * |PothosDoc Rotate
@@ -56,7 +42,7 @@ rotate(const std::complex<T> &in0, const std::complex<T> &in1)
  * |setter setPhase(phase)
  * |setter setLabelId(labelId)
  **********************************************************************/
-template <typename Type, typename Bigger>
+template <typename Type, typename QType>
 class Rotate : public Pothos::Block
 {
 public:
@@ -74,12 +60,7 @@ public:
     void setPhase(const double phase)
     {
         _phase = phase;
-        double scale = 1.0;
-        if (std::is_integral<typename Type::value_type>::value)
-        {
-            scale = std::ldexp(scale, sizeof(typename Bigger::value_type)*4);
-        }
-        _phasor = Bigger(std::polar(scale, phase));
+        _phasor = floatToQ<QType>(std::polar(1.0, phase));
     }
 
     double getPhase(void) const
@@ -133,7 +114,8 @@ public:
         //perform scale operation
         for (size_t i = 0; i < elems; i++)
         {
-            out[i] = Type(rotate(_phasor, Bigger(in[i])));
+            const QType tmp = _phasor*QType(in[i]);
+            out[i] = fromQ<Type>(tmp);
         }
 
         //produce and consume on 0th ports
@@ -143,7 +125,7 @@ public:
 
 private:
     double _phase;
-    Bigger _phasor;
+    QType _phasor;
     std::string _labelId;
 };
 
@@ -152,10 +134,10 @@ private:
  **********************************************************************/
 static Pothos::Block *rotateFactory(const Pothos::DType &dtype)
 {
-    #define ifTypeDeclareFactory_(type, bigger) \
-        if (dtype == Pothos::DType(typeid(type))) return new Rotate<type, bigger>();
-    #define ifTypeDeclareFactory(type, bigger) \
-        ifTypeDeclareFactory_(std::complex<type>, std::complex<bigger>)
+    #define ifTypeDeclareFactory_(type, qtype) \
+        if (dtype == Pothos::DType(typeid(type))) return new Rotate<type, qtype>();
+    #define ifTypeDeclareFactory(type, qtype) \
+        ifTypeDeclareFactory_(std::complex<type>, std::complex<qtype>)
     ifTypeDeclareFactory(double, double);
     ifTypeDeclareFactory(float, float);
     ifTypeDeclareFactory(int64_t, int64_t);

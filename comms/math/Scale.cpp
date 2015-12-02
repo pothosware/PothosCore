@@ -2,43 +2,14 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework.hpp>
+#include <Pothos/Util/QFormat.hpp>
 #include <cstdint>
 #include <iostream>
 #include <complex>
 #include <algorithm> //min/max
-#include <type_traits>
 
-template <typename T, typename U>
-typename std::enable_if<std::is_floating_point<T>::value, U>::type
-scale(const T &factor, const U &in)
-{
-    return factor*in;
-}
-
-template <typename T, typename U>
-typename std::enable_if<std::is_integral<T>::value, U>::type
-scale(const T &factor, const U &in)
-{
-    auto tmp = factor*T(in);
-    return U(tmp >> (sizeof(T)*4));
-}
-
-template <typename T, typename U>
-typename std::enable_if<std::is_floating_point<T>::value, std::complex<U>>::type
-scale(const T &factor, const std::complex<U> &in)
-{
-    return factor*in;
-}
-
-template <typename T, typename U>
-typename std::enable_if<std::is_integral<T>::value, std::complex<U>>::type
-scale(const T &factor, const std::complex<U> &in)
-{
-    auto tmp = factor*std::complex<T>(in);
-    auto real = U(tmp.real() >> (sizeof(T)*4));
-    auto imag = U(tmp.imag() >> (sizeof(T)*4));
-    return std::complex<U>(real, imag);
-}
+using Pothos::Util::fromQ;
+using Pothos::Util::floatToQ;
 
 /***********************************************************************
  * |PothosDoc Scale
@@ -70,7 +41,7 @@ scale(const T &factor, const std::complex<U> &in)
  * |setter setFactor(factor)
  * |setter setLabelId(labelId)
  **********************************************************************/
-template <typename Type, typename Bigger>
+template <typename Type, typename QType, typename ScaleType>
 class Scale : public Pothos::Block
 {
 public:
@@ -88,12 +59,7 @@ public:
     void setFactor(const double factor)
     {
         _factor = factor;
-        double scale = 1.0;
-        if (std::is_integral<Bigger>::value)
-        {
-            scale = std::ldexp(scale, sizeof(Bigger)*4);
-        }
-        _factorScaled = Bigger(scale*_factor);
+        _factorScaled = floatToQ<ScaleType>(_factor);
     }
 
     double getFactor(void) const
@@ -147,7 +113,8 @@ public:
         //perform scale operation
         for (size_t i = 0; i < elems; i++)
         {
-            out[i] = scale(_factorScaled, in[i]);
+            const QType tmp = _factorScaled*QType(in[i]);
+            out[i] = fromQ<Type>(tmp);
         }
 
         //produce and consume on 0th ports
@@ -157,7 +124,7 @@ public:
 
 private:
     double _factor;
-    Bigger _factorScaled;
+    ScaleType _factorScaled;
     std::string _labelId;
 };
 
@@ -166,11 +133,11 @@ private:
  **********************************************************************/
 static Pothos::Block *scaleFactory(const Pothos::DType &dtype)
 {
-    #define ifTypeDeclareFactory_(type, bigger) \
-        if (dtype == Pothos::DType(typeid(type))) return new Scale<type, bigger>();
-    #define ifTypeDeclareFactory(type, bigger) \
-        ifTypeDeclareFactory_(type, bigger) \
-        ifTypeDeclareFactory_(std::complex<type>, bigger)
+    #define ifTypeDeclareFactory_(type, qtype, scaleType) \
+        if (dtype == Pothos::DType(typeid(type))) return new Scale<type, qtype, scaleType>();
+    #define ifTypeDeclareFactory(type, qtype) \
+        ifTypeDeclareFactory_(type, qtype, qtype) \
+        ifTypeDeclareFactory_(std::complex<type>, std::complex<qtype>, qtype)
     ifTypeDeclareFactory(double, double);
     ifTypeDeclareFactory(float, float);
     ifTypeDeclareFactory(int64_t, int64_t);
