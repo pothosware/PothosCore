@@ -8,4 +8,3 @@
 [submodule "spuce"]
 	path = spuce
 	url = https://github.com/audiofilter/spuce.git
-	branch = master
