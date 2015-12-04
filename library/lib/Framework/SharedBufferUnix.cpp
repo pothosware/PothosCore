@@ -124,14 +124,12 @@ private:
         if (tmpFd >= 0)
         {
             close(tmpFd);
-            unlink(tmpFile.c_str());
         }
         tmpFd = -1;
     }
 
     const size_t _numBytes;
     void *virtualAddr2X;
-    std::string tmpFile;
     int tmpFd;
     void *mapPtr0;
     void *mapPtr1;
@@ -149,15 +147,15 @@ CircularBufferContainer::CircularBufferContainer(const size_t numBytes):
     /*******************************************************************
      * Step 1) open a temp file for physical memory
      ******************************************************************/
-    tmpFile = Poco::TemporaryFile::tempName();
+    Poco::TemporaryFile tmpFile;
     tmpFd = open(
-        tmpFile.c_str(),
+        tmpFile.path().c_str(),
         O_RDWR | O_CREAT | O_EXCL,
         S_IRUSR | S_IWUSR);
-    if (tmpFd < 0) this->errorOut("open("+ tmpFile +")");
+    if (tmpFd < 0) this->errorOut("open("+ tmpFile.path() +")");
 
     ret = ftruncate(tmpFd, numBytes*2);
-    if (ret != 0) this->errorOut("ftruncate("+ tmpFile +")");
+    if (ret != 0) this->errorOut("ftruncate("+ tmpFile.path() +")");
 
     /*******************************************************************
      * Step 2) find a 2X chunk of virtual memory
