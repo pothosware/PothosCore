@@ -1,9 +1,10 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Paths.hpp>
 #include <Pothos/Plugin/Module.hpp>
 #include <Pothos/Plugin/Exception.hpp>
+#include <Pothos/Util/FileLock.hpp>
 #include <Poco/Process.h>
 #include <Poco/Pipe.h>
 #include <Poco/File.h>
@@ -11,26 +12,10 @@
 #include <Poco/AutoPtr.h>
 #include <Poco/Util/PropertyFileConfiguration.h>
 #include <Poco/SingletonHolder.h>
-#include <Poco/NamedMutex.h>
+#include <mutex>
 
 /***********************************************************************
  * named mutex for cache protection
- **********************************************************************/
-struct LoaderCacheNamedMutex : Poco::NamedMutex
-{
-    LoaderCacheNamedMutex(void):
-        Poco::NamedMutex("pothos_load_cache")
-    {}
-};
-
-static Poco::NamedMutex &getLoaderCacheMutex(void)
-{
-    static Poco::SingletonHolder<LoaderCacheNamedMutex> sh;
-    return *sh.get();
-}
-
-/***********************************************************************
- * calls to interface with file cache
  **********************************************************************/
 //! The path used to cache the safe loads
 static std::string getModuleLoaderCachePath(void)
@@ -39,6 +24,23 @@ static std::string getModuleLoaderCachePath(void)
     path.append("ModuleLoader.cache");
     return path.toString();
 }
+
+struct LoaderCacheFileLock : public Pothos::Util::FileLock
+{
+    LoaderCacheFileLock(void):
+        Pothos::Util::FileLock(getModuleLoaderCachePath())
+    {}
+};
+
+static Pothos::Util::FileLock &getLoaderFileLock(void)
+{
+    static Poco::SingletonHolder<LoaderCacheFileLock> sh;
+    return *sh.get();
+}
+
+/***********************************************************************
+ * calls to interface with file cache
+ **********************************************************************/
 
 //! Get the string representation of a file's modification time
 static std::string getLastModifiedTimeStr(const std::string &path)
@@ -49,7 +51,7 @@ static std::string getLastModifiedTimeStr(const std::string &path)
 //! Was a previous safe-load of this module successful?
 static bool previousLoadWasSuccessful(const std::string &modulePath)
 {
-    Poco::NamedMutex::ScopedLock lock(getLoaderCacheMutex());
+    std::lock_guard<Pothos::Util::FileLock> lock(getLoaderFileLock());
     Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> cache(new Poco::Util::PropertyFileConfiguration());
     try {cache->load(getModuleLoaderCachePath());} catch(...){}
 
@@ -68,7 +70,7 @@ static bool previousLoadWasSuccessful(const std::string &modulePath)
 //! Mark that the safe load of this module was successful
 static void markCurrentLoadSuccessful(const std::string &modulePath)
 {
-    Poco::NamedMutex::ScopedLock lock(getLoaderCacheMutex());
+    std::lock_guard<Pothos::Util::FileLock> lock(getLoaderFileLock());
     Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> cache(new Poco::Util::PropertyFileConfiguration());
     try {cache->load(getModuleLoaderCachePath());} catch(...){}
 
