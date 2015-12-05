@@ -18,6 +18,7 @@ POTHOS_MODULE_UTIL(
     TARGET MathBlocks
     SOURCES
         Arithmetic.cpp
+        TestComparatorBlocks.cpp
         Comparator.cpp
         TestArithmeticBlocks.cpp
         Scale.cpp
