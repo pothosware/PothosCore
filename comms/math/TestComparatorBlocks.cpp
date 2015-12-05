@@ -69,8 +69,7 @@ void testComparatorTmpl(const double val, const std::string op_string)
         expected = (pIn0[i] == pIn1[i]);
       else if (op_string == "!=")
         expected = (pIn0[i] != pIn1[i]);
-      //allow up to an error of 1 because of fixed point truncation rounding
-      POTHOS_TEST_CLOSE(pOut[i], expected, 1);
+      POTHOS_TEST_EQUAL(pOut[i], expected);
     }
 }
 
