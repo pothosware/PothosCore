@@ -53,7 +53,7 @@ static double filterToneGetRMS(
         topology.connect(finiteRelease, 0, filter, 0);
         topology.connect(filter, 0, probe, 0);
         topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
+        POTHOS_TEST_TRUE(topology.waitInactive(0.01));
     }
 
     return probe.call<double>("value");

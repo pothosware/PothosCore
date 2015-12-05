@@ -87,7 +87,7 @@ POTHOS_TEST_BLOCK("/comms/tests", test_symbol_byte_conversions)
             testPlan->set("maxValue", (1 << mod) - 1);
             auto expected = feeder.callProxy("feedTestPlan", testPlan);
             topology.commit();
-            POTHOS_TEST_TRUE(topology.waitInactive());
+            POTHOS_TEST_TRUE(topology.waitInactive(0.01));
 
             std::cout << "verifyTestPlan path0..." << std::endl;
             collector0.callVoid("verifyTestPlan", expected);
@@ -108,7 +108,7 @@ POTHOS_TEST_BLOCK("/comms/tests", test_symbol_byte_conversions)
             testPlan->set("maxValue", (1 << mod) - 1);
             auto expected = feeder.callProxy("feedTestPlan", testPlan);
             topology.commit();
-            POTHOS_TEST_TRUE(topology.waitInactive());
+            POTHOS_TEST_TRUE(topology.waitInactive(0.01));
 
             std::cout << "verifyTestPlan path0..." << std::endl;
             collector0.callVoid("verifyTestPlan", expected);

@@ -177,7 +177,7 @@ static void testFIRDesignerResponse(
         topology.connect(filter, 0, fft, 0);
         topology.connect(fft, 0, collector, 0);
         topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
+        POTHOS_TEST_TRUE(topology.waitInactive(0.01));
     }
 
     //check the buffer

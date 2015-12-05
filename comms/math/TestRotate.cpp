@@ -40,7 +40,7 @@ void testRotateTmpl(const double phase)
         topology.connect(feeder, 0, rotate, 0);
         topology.connect(rotate, 0, collector, 0);
         topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
+        POTHOS_TEST_TRUE(topology.waitInactive(0.01));
     }
 
     //check the collector

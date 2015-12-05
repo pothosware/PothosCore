@@ -40,7 +40,7 @@ void testScaleTmpl(const double factor)
         topology.connect(feeder, 0, scale, 0);
         topology.connect(scale, 0, collector, 0);
         topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
+        POTHOS_TEST_TRUE(topology.waitInactive(0.01));
     }
 
     //check the collector

@@ -47,7 +47,7 @@ POTHOS_TEST_BLOCK("/comms/tests", test_symbol_bit_conversions)
         testPlan0->set("maxValue", (1 << mod) - 1);
         auto expected0 = feeder.callProxy("feedTestPlan", testPlan0);
         topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
+        POTHOS_TEST_TRUE(topology.waitInactive(0.01));
         collector.callVoid("verifyTestPlan", expected0);
 
         //create a test plan for packets
@@ -59,7 +59,7 @@ POTHOS_TEST_BLOCK("/comms/tests", test_symbol_bit_conversions)
         testPlan1->set("maxValue", (1 << mod) - 1);
         auto expected1 = feeder.callProxy("feedTestPlan", testPlan1);
         topology.commit();
-        POTHOS_TEST_TRUE(topology.waitInactive());
+        POTHOS_TEST_TRUE(topology.waitInactive(0.01));
         collector.callVoid("verifyTestPlan", expected1);
     }
 
