@@ -100,9 +100,11 @@ public:
         else if (_mode == "RMS")
         {
             double accumulator = 0.0;
+            ProbeType x_n;
             for (size_t n = 0; n < N; n++)
             {
-                const double v = std::abs(x[n]);
+                x_n = x[n];
+                const double v = std::abs(x_n);
                 accumulator += v*v;
             }
             _value = std::sqrt(accumulator/N);
