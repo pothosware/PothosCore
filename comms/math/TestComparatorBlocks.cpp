@@ -47,7 +47,6 @@ void testComparatorTmpl(const double val, const std::string op_string)
         topology.connect(comp, 0, collector, 0);
         topology.commit();
         POTHOS_TEST_TRUE(topology.waitInactive());
-        POTHOS_TEST_TRUE(topology.waitInactive());
     }
 
     //check the collector
