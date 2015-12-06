@@ -51,18 +51,19 @@ public:
         if (elems == 0) return;
 
         //get pointers to in and out buffer
-        auto inPort = this->input(0);
+        auto inPort0 = this->input(0);
+        auto inPort1 = this->input(1);
         auto outPort = this->output(0);
-        const std::vector<Pothos::InputPort *> &inputs = this->inputs();
-        auto in0 = inputs[0]->buffer().as<const Type *>();
-        auto in1 = inputs[1]->buffer().as<const Type *>();
+        auto in0 = inPort0->buffer().template as<const Type *>();
+        auto in1 = inPort1->buffer().template as<const Type *>();
         auto out = outPort->buffer().template as<char *>();
 
         //perform operation
         Operator(in0, in1, out, elems);
 
         //produce and consume on 0th ports
-        inPort->consume(elems);
+        inPort0->consume(elems);
+        inPort1->consume(elems);
         outPort->produce(elems);
     }
 };
