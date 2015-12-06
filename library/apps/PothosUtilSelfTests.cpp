@@ -13,6 +13,7 @@
 #include <sstream>
 #include <vector>
 #include <future>
+#include <cctype>
 #include <algorithm> //max
 
 struct SelfTestResults
@@ -32,6 +33,10 @@ static std::string collectVerbose(const Poco::Pipe &pipe)
         while (is.good())
         {
             std::getline(is, line);
+            while (not line.empty() and std::isspace(line.back()))
+            {
+                line.pop_back();
+            }
             if (line.empty()) continue;
             maxLen = std::max(maxLen, line.length());
             lines.push_back(line);
