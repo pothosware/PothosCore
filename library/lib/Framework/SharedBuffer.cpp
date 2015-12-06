@@ -4,8 +4,8 @@
 #include <Pothos/Framework/SharedBuffer.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Poco/SingletonHolder.h>
-#include <Poco/NamedMutex.h>
 #include <algorithm> //min/max
+#include <mutex>
 
 /***********************************************************************
  * shared buffer implementation
@@ -37,16 +37,9 @@ Pothos::SharedBuffer::SharedBuffer(const size_t address, const size_t length, co
 /***********************************************************************
  * circular buffer implementation
  **********************************************************************/
-struct CircBuffNamedMutex : Poco::NamedMutex
+static std::mutex &getCircMutex(void)
 {
-    CircBuffNamedMutex(void):
-        Poco::NamedMutex("pothos_circ_buff")
-    {}
-};
-
-static Poco::NamedMutex &getCircMutex(void)
-{
-    static Poco::SingletonHolder<CircBuffNamedMutex> sh;
+    static Poco::SingletonHolder<std::mutex> sh;
     return *sh.get();
 }
 
@@ -57,7 +50,7 @@ Pothos::SharedBuffer Pothos::SharedBuffer::makeCirc(const size_t numBytes, const
     const size_t numRetries = 7;
     for (size_t i = 0; i < numRetries; i++)
     {
-        Poco::NamedMutex::ScopedLock lock(getCircMutex());
+        std::lock_guard<std::mutex> lock(getCircMutex());
         try
         {
             SharedBuffer buff = SharedBuffer::makeCircUnprotected(numBytes, nodeAffinity);
