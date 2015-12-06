@@ -13,6 +13,15 @@
 #include <Poco/Util/PropertyFileConfiguration.h>
 #include <Poco/SingletonHolder.h>
 #include <mutex>
+#include <cctype>
+
+//! The path used to cache the safe loads
+static std::string getModuleLoaderCachePath(void)
+{
+    Poco::Path path(Pothos::System::getUserConfigPath());
+    path.append("ModuleLoader.cache");
+    return path.toString();
+}
 
 /***********************************************************************
  * named mutex for cache protection
@@ -20,15 +29,8 @@
 struct LoaderCacheFileLock : public Pothos::Util::FileLock
 {
     LoaderCacheFileLock(void):
-        Pothos::Util::FileLock(getModuleLoaderLockPath())
+        Pothos::Util::FileLock(getModuleLoaderCachePath()+".lock")
     {}
-
-    static std::string getModuleLoaderLockPath(void)
-    {
-        Poco::Path path(Pothos::System::getUserConfigPath());
-        path.append("ModuleLoader.lock");
-        return path.toString();
-    }
 };
 
 static Pothos::Util::FileLock &getLoaderFileLock(void)
@@ -46,25 +48,29 @@ static std::mutex &getLoaderMutex(void)
 /***********************************************************************
  * calls to interface with file cache
  **********************************************************************/
-//! The path used to cache the safe loads
-static std::string getModuleLoaderCachePath(void)
-{
-    Poco::Path path(Pothos::System::getUserConfigPath());
-    path.append("ModuleLoader.cache");
-    return path.toString();
-}
-
 //! Get the string representation of a file's modification time
 static std::string getLastModifiedTimeStr(const std::string &path)
 {
     return std::to_string(Poco::File(path).getLastModified().epochMicroseconds());
 }
 
+//! Escape PropertyFile keys, problem with slashes
+static std::string escape(const std::string &in)
+{
+    std::string out;
+    for (const auto ch : in)
+    {
+        if (std::isalnum(ch)) out.push_back(ch);
+        else out.push_back('_');
+    }
+    return out;
+}
+
 //! Was a previous safe-load of this module successful?
 static bool previousLoadWasSuccessful(const std::string &modulePath)
 {
     std::lock_guard<std::mutex> mutexLock(getLoaderMutex());
-    std::lock_guard<Pothos::Util::FileLock> lock(getLoaderFileLock());
+    std::lock_guard<Pothos::Util::FileLock> fileLock(getLoaderFileLock());
     Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> cache(new Poco::Util::PropertyFileConfiguration());
     try {cache->load(getModuleLoaderCachePath());} catch(...){}
 
@@ -72,8 +78,8 @@ static bool previousLoadWasSuccessful(const std::string &modulePath)
     {
         auto libTime = getLastModifiedTimeStr(Pothos::System::getPothosRuntimeLibraryPath());
         auto modTime = getLastModifiedTimeStr(modulePath);
-        auto cachedLibTime = cache->getString(Pothos::System::getPothosRuntimeLibraryPath());
-        auto cachedModTime = cache->getString(modulePath);
+        auto cachedLibTime = cache->getString(escape(Pothos::System::getPothosRuntimeLibraryPath()));
+        auto cachedModTime = cache->getString(escape(modulePath));
         return (libTime == cachedLibTime) and (modTime == cachedModTime);
     }
     catch (const Poco::NotFoundException &){}
@@ -84,14 +90,14 @@ static bool previousLoadWasSuccessful(const std::string &modulePath)
 static void markCurrentLoadSuccessful(const std::string &modulePath)
 {
     std::lock_guard<std::mutex> mutexLock(getLoaderMutex());
-    std::lock_guard<Pothos::Util::FileLock> lock(getLoaderFileLock());
+    std::lock_guard<Pothos::Util::FileLock> fileLock(getLoaderFileLock());
     Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> cache(new Poco::Util::PropertyFileConfiguration());
     try {cache->load(getModuleLoaderCachePath());} catch(...){}
 
     auto libTime = getLastModifiedTimeStr(Pothos::System::getPothosRuntimeLibraryPath());
     auto modTime = getLastModifiedTimeStr(modulePath);
-    cache->setString(Pothos::System::getPothosRuntimeLibraryPath(), libTime);
-    cache->setString(modulePath, modTime);
+    cache->setString(escape(Pothos::System::getPothosRuntimeLibraryPath()), libTime);
+    cache->setString(escape(modulePath), modTime);
     try {cache->save(getModuleLoaderCachePath());} catch(...){}
 }
 
