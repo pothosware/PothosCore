@@ -2,8 +2,7 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.9)
-project(PothosPython)
-enable_language(CXX)
+project(PothosPython CXX)
 
 find_package(Pothos CONFIG REQUIRED)
 list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
@@ -40,7 +39,7 @@ endif()
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_PYTHON "Enable Pothos Python component" ON "ENABLE_LIBRARY;PYTHONLIBS_FOUND;PYTHON_DEBUG_OK" OFF)
+cmake_dependent_option(ENABLE_PYTHON "Enable Pothos Python component" ON "ENABLE_LIBRARY;PYTHONLIBS_FOUND;PYTHON_DEBUG_OK;POTHOS_PYTHON_DIR" OFF)
 add_feature_info(Python ENABLE_PYTHON "Python bindings for the Pothos framework")
 if (NOT ENABLE_PYTHON)
     return()

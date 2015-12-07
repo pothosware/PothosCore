@@ -1,5 +1,11 @@
 This this the changelog file for the Pothos Python toolkit.
 
+Release 0.1.2 (pending)
+==========================
+
+- fix python module export (specifically gcc + python3)
+- added plugin event to unload plugins at unload time
+
 Release 0.1.1 (2015-06-16)
 ==========================
 

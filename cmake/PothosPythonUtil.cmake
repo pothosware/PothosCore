@@ -27,6 +27,10 @@ execute_process(
 file(TO_CMAKE_PATH "${POTHOS_PYTHON_DIR}" POTHOS_PYTHON_DIR)
 message(STATUS "POTHOS_PYTHON_DIR: \${prefix}/${POTHOS_PYTHON_DIR}")
 
+if(NOT POTHOS_PYTHON_DIR)
+    message(WARNING "Python: get_python_lib() extraction failed, skipping...")
+endif(NOT POTHOS_PYTHON_DIR)
+
 ########################################################################
 ## POTHOS_PYTHON_UTIL - build and install python modules for Pothos
 ##

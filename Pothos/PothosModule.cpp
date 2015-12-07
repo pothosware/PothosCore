@@ -30,6 +30,22 @@ static void initPyObjectUtilityConverters(void)
     }
 }
 
+static void handlePythonPluginEvent(const Pothos::Plugin &plugin, const std::string &event)
+{
+    if (event == "remove" and plugin.getPath() == Pothos::PluginPath("/proxy_helpers/python/pyobject_to_proxy"))
+    {
+        myPythonProxyEnv.reset();
+        myPyObjectToProxyFcn = PyObjectToProxyFcn();
+        Pothos::PluginRegistry::remove("/proxy/converters/python/proxy_to_pyproxy");
+    }
+    if (event == "remove" and plugin.getPath() == Pothos::PluginPath("/proxy_helpers/python/proxy_to_pyobject"))
+    {
+        myPythonProxyEnv.reset();
+        myProxyToPyObjectFcn = ProxyToPyObjectFcn();
+        Pothos::PluginRegistry::remove("/proxy/converters/python/pyproxy_to_proxy");
+    }
+}
+
 Pothos::Proxy PyObjectToProxy(PyObject *obj)
 {
     assert(obj != nullptr);
@@ -68,6 +84,7 @@ static Pothos::Proxy convertProxyToPyProxy(Pothos::ProxyEnvironment::Sptr env, c
 
 void registerPothosModuleConverters(void)
 {
+    Pothos::PluginRegistry::addCall("/proxy_helpers/python", &handlePythonPluginEvent);
     Pothos::PluginRegistry::addCall("/proxy/converters/python/proxy_to_pyproxy",
         &convertProxyToPyProxy);
     Pothos::PluginRegistry::add("/proxy/converters/python/pyproxy_to_proxy",
@@ -82,15 +99,11 @@ static PyObject *PothosModuleError;
 /***********************************************************************
  * module setup
  **********************************************************************/
-#ifdef __GNUC__ //default visibility is hidden, append this attribute to export init module
-PyMODINIT_FUNC __attribute__ ((visibility ("default")))
-#else
-PyMODINIT_FUNC
-#endif
+extern "C" POTHOS_HELPER_DLL_EXPORT
 #if PY_MAJOR_VERSION >= 3
-PyInit_PothosModule(void)
+PyObject *PyInit_PothosModule(void)
 #else
-initPothosModule(void)
+void initPothosModule(void)
 #endif
 {
     initPyObjectUtilityConverters();
