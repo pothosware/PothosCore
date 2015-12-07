@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos GUI toolkit.
 
-Release 0.2.2 (pending)
+Release 0.2.2 (2015-12-07)
 ==========================
 
 - Fix empty signal slot connection to display text label

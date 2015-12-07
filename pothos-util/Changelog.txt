@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos Util toolkit.
 
-Release 0.2.1 (pending)
+Release 0.2.1 (2015-12-07)
 ==========================
 
 - Specify full permission-safe object path for CL compile
