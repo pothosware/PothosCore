@@ -107,6 +107,11 @@ std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerAr
         args.push_back(filePath);
     }
 
+    //specify object output
+    const auto objPath = Poco::TemporaryFile::tempName() + ".obj";
+    tempFilesToCleanup.push_back(objPath);
+    args.push_back("/Fo"+objPath); //required: no space between option and argument
+
     //create temp out file
     const auto outPath = Poco::TemporaryFile::tempName() + Poco::SharedLibrary::suffix();
     tempFilesToCleanup.push_back(outPath);

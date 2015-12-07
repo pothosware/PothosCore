@@ -2,8 +2,7 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.9)
-project(PothosUtil)
-enable_language(CXX)
+project(PothosUtil CXX)
 
 find_package(Pothos CONFIG REQUIRED)
 
@@ -60,7 +59,6 @@ set(SOURCES
     DeviceInfoUtils.cpp
     DocUtils.cpp
     TestDocUtils.cpp
-    WindowFunction.cpp
 )
 
 POTHOS_MODULE_UTIL(

@@ -99,7 +99,7 @@ MUP_NAMESPACE_START
 			  throw ParserError(ErrorContext(ecINVALID_PARAMETER, -1, GetIdent()));
 		  }
 
-		  matrix_type m(a_iArgc, 1, 0);
+		  matrix_type m(a_iArgc, 1, 0.0);
 		  for (int i = 0; i < a_iArgc; ++i)
 		  {
 			  if (a_pArg[i]->GetDim() != 0)

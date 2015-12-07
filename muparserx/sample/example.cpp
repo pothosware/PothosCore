@@ -8,7 +8,7 @@
   |  Y Y  \  |  /    |     / __ \|  | \/\___ \\  ___/|  | \/     \ 
   |__|_|  /____/|____|    (____  /__|  /____  >\___  >__| /___/\  \
         \/                     \/           \/     \/           \_/
-                                       Copyright (C) 2013 Ingo Berg
+                                       Copyright (C) 2015 Ingo Berg
                                        All rights reserved.
 
   muparserx - A C++ math parser library with array and string support
@@ -191,7 +191,7 @@ public:
       }
     }
 
-    *ret = (int_type)vmap.size();
+    *ret = (float_type)vmap.size();
   }
 
   virtual const char_type* GetDesc() const
@@ -233,7 +233,7 @@ public:
         console() << _T("  ") << item->first << _T(" =  ") << (Value&)(*(item->second)) << _T("\n");
     }
 
-    *ret = (int_type)cmap.size();
+    *ret = (float_type)cmap.size();
   }
 
   virtual const char_type* GetDesc() const
@@ -414,7 +414,7 @@ public:
       }
     }
 
-    *ret = (int_type)fmap.size();
+    *ret = (float_type)fmap.size();
   }
 
   virtual const char_type* GetDesc() const
@@ -654,7 +654,7 @@ void Splash()
   console() << _T("  |__|_|  /____/|____|    (____  /__|  /____  >\\___  >__| /___/\\  \\\n");
   console() << _T("        \\/                     \\/           \\/     \\/           \\_/\n");
   console() << _T("  Version ") << ParserXBase::GetVersion() << _T("\n");
-  console() << _T("  Copyright (C) 2014 Ingo Berg");
+  console() << _T("  Copyright (C) 2015 Ingo Berg");
   console() << _T("\n\n");
   console() << _T("-------------------------------------------------------------------------\n\n");
   console() << _T( "Build configuration:\n\n");
@@ -785,24 +785,24 @@ void Calc()
 
   // Create a 3x3 matrix with zero elements
   Value m1(3, 3, 0);
-  m1.At(0, 0) = 1;
-  m1.At(1, 1) = 1;
-  m1.At(2, 2) = 1;
+  m1.At(0, 0) = 1.0;
+  m1.At(1, 1) = 1.0;
+  m1.At(2, 2) = 1.0;
 
   Value m2(3, 3, 0);
-  m2.At(0, 0) = 1;
-  m2.At(0, 1) = 2;
-  m2.At(0, 2) = 3;
-  m2.At(1, 0) = 4;
-  m2.At(1, 1) = 5;
-  m2.At(1, 2) = 6;
-  m2.At(2, 0) = 7;
-  m2.At(2, 1) = 8;
-  m2.At(2, 2) = 9;
+  m2.At(0, 0) = 1.0;
+  m2.At(0, 1) = 2.0;
+  m2.At(0, 2) = 3.0;
+  m2.At(1, 0) = 4.0;
+  m2.At(1, 1) = 5.0;
+  m2.At(1, 2) = 6.0;
+  m2.At(2, 0) = 7.0;
+  m2.At(2, 1) = 8.0;
+  m2.At(2, 2) = 9.0;
 
   Value val[5];
   val[0] = (float_type)1.1;
-  val[1] = 1;
+  val[1] = 1.0;
   val[2] = false;
   val[3] = _T("Hello");
   val[4] = _T("World");
@@ -811,11 +811,6 @@ void Calc()
   fVal[0] = (float_type)1.11;
   fVal[1] = (float_type)2.22;
   fVal[2] = (float_type)3.33;
-
-  Value iVal[3];
-  iVal[0] = 1;
-  iVal[1] = 2;
-  iVal[2] = 3;
 
   Value sVal[3];
   sVal[0] = _T("hello");
@@ -841,10 +836,6 @@ void Calc()
   parser.DefineVar(_T("a"),  Variable(&fVal[0]));
   parser.DefineVar(_T("b"),  Variable(&fVal[1]));
   parser.DefineVar(_T("c"),  Variable(&fVal[2]));
-
-  parser.DefineVar(_T("ia"), Variable(&iVal[0]));
-  parser.DefineVar(_T("ib"), Variable(&iVal[1]));
-  parser.DefineVar(_T("ic"), Variable(&iVal[2]));
 
   parser.DefineVar(_T("ca"), Variable(&cVal[0]));
   parser.DefineVar(_T("cb"), Variable(&cVal[1]));
@@ -874,8 +865,8 @@ void Calc()
 //  ParserXBase::EnableDebugDump(1, 0);
 #endif
 
-  Value x = 1;
-  Value y = std::complex<double>(0,1);
+  Value x = 1.0;
+  Value y = std::complex<double>(0, 1);
   parser.DefineVar(_T("x"), Variable(&x));
   parser.DefineVar(_T("y"), Variable(&y));
 
@@ -890,7 +881,7 @@ void Calc()
 
       if (sLine==_T("dbg"))
       {
-        sLine   = _T("sin(10*{3+1i,2+0.18}[0])");
+        sLine   = _T("{?{{{{:44");
         mup::console() << sLine << endl;
       }
 

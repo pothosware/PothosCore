@@ -71,16 +71,16 @@ MUP_NAMESPACE_START
                 if (cols == 1)
                 {
                     if (bArgIsVariable) 
-                        ret.Reset(new Variable(&(ret->At(*a_pArg[0], Value(0)))));
+                        ret.Reset(new Variable(&(ret->At(*a_pArg[0], Value(0.0)))));
                     else
-                        *ret = ret->At(*a_pArg[0], Value(0));
+                        *ret = ret->At(*a_pArg[0], Value(0.0));
                 }
                 else if (rows == 1)
                 {
                     if (bArgIsVariable) 
-                        ret.Reset(new Variable(&(ret->At(Value(0), *a_pArg[0]))));
+                        ret.Reset(new Variable(&(ret->At(Value(0.0), *a_pArg[0]))));
                     else
-                        *ret = ret->At(Value(0), *a_pArg[0]);
+                        *ret = ret->At(Value(0.0), *a_pArg[0]);
                 }
                 else
                 {

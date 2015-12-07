@@ -60,7 +60,7 @@ MUP_NAMESPACE_START
   void FunStrLen::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
     string_type str = a_pArg[0]->GetString();
-    *ret = (int)str.length();
+    *ret = (float_type)str.length();
   }
 
   //------------------------------------------------------------------------------

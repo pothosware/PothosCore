@@ -14,7 +14,8 @@
 #  e-mail:  muparserx@beltoforion.de                                    #
 #                                                                       #
 #  The code contains contributions made by the following people:        #
-#       	Martin Rotter                                           #
+#       	Martin Rotter (https://github.com/martinrotter)         #
+#               Josh Blum     (https://github.com/guruofquality)        #
 #                                                                       #
 #  This software is distributed under the terms of the                  #
 #  BSD - Clause 2 "Simplified" or "FreeBSD" Licence (BSD-2-Clause)      #
@@ -28,6 +29,24 @@
 #                                                                       #
 #########################################################################
 
+V4.0.4 (20151015)
+-----------------
+
+Bugfixes:
+  - Issue 59, 60, 61, 63: Various segfaults/assertions for unexpected input        
+  - Issue 55, 56, 57, 58: Various issued related to a failure to detect 
+                          missing brackets.
+
+V4.0.0 (20150622)
+-----------------
+
+API changes:
+  - removed value and variable constructors from integer types. There was 
+    some confusion about the extend of support for integers (see Issue 
+    #36). Internally muparserx is always using floating point values even 
+    when dealing with integer numbers. There is no point in the API 
+    pretending to have real integer support.
+
 V3.0.2 (20140531)
 -----------------
 
@@ -37,7 +56,8 @@ Syntax rule changes:
     contain such an operator. (This will prevent conflicts with variable names.)
   
 Bugfixes:
-  - untracked issuer: Identifiers of uninitialized variables could be lost in error messages.
+  - untracked issue: Identifiers of uninitialized variables could be lost in 
+    error messages.
   - Issue 33: Value::operator+= and Value::operator-= do not work properly
               when used with complex values. 
   
@@ -45,8 +65,9 @@ V3.0.1 (20140527)
 -----------------
 
 Bugfixes:
-  - untracked issue: Index operator did not work properly when applied to non variable types. 
-                     The bug only occured when used together with an assignment operator.
+  - untracked issue: Index operator did not work properly when applied to non 
+                     variable types. The bug only occured when used together 
+                     with an assignment operator.
   
 V3.0.0 (20140525)
 -----------------
@@ -54,19 +75,22 @@ V3.0.0 (20140525)
 Warning: The library requires a C++11 compliant compiler!
 
 Syntax rule changes:
-  - Curly brackets removed from unit postfix operator identifiers. (I need them for on the fly array construction)
+  - Curly brackets removed from unit postfix operator identifiers. (I need them 
+    for on the fly array construction)
   - in place array construction like: {1,2,3} to create a row vector
   - Comma can no longer be used to separate terms in an expression. 
   - '#' added for comments
   
 API Changes:
   - C++11 features introduced in the code
-  - Functions defining variables, constants, operators or functions will now throw an exception
-    if a a token with a similar identifier already exists. Their API changed to take a managed
-    pointer instead of a raw pointer.
+  - Functions defining variables, constants, operators or functions will now 
+    throw an exception if a a token with a similar identifier already exists. 
+    Their API changed to take a managed pointer instead of a raw pointer.
   - Hooks for customizing error messages added; German translations added
-  - Functions for undefining variables, constants, functions and operators added
-  - Functions for querying the presence of variables, constants, functions and operators added
+  - Functions for undefining variables, constants, functions and operators
+    added.
+  - Functions for querying the presence of variables, constants, functions and 
+    operators added.
 
 Changes:
   - added "zeros" function for creating matrices initialized to all zero added
@@ -82,7 +106,8 @@ Bugfixes:
   - Issue 20: Library crash when " " is calculated
   - Issue 23: min, max and sum functions return values when called without parameters
   - Issue 26: bugfixes for "<<" and ">>" operators.
-  - Issue 27: Querying multiple results of comma separated expressions did not work (multiple results are no longer supported)
+  - Issue 27: Querying multiple results of comma separated expressions did not work 
+              (multiple results are no longer supported)
   - Issue 31: m_nPosExpr incorrect value after Eval() or GetExprVar()
   - untracked issue: compiling with UNICODE did not work
   - untracked issue: Column number of matrices were not reported correctly
@@ -92,15 +117,18 @@ V2.1.6 (20121221; Mayan calendar doomsday edition)
 --------------------------------------------------
 
 Bugfixes:
-  - Issue 16: Wrong operator precedence. Some binary operators had incorrect precedence values.
-  - untracked issue: "Unexpected variable" errors could report incorrect expression positions
+  - Issue 16: Wrong operator precedence. Some binary operators had incorrect 
+              precedence values.
+  - untracked issue: "Unexpected variable" errors could report incorrect expression 
+                     positions
 
 V2.1.5 (20121102)
 -----------------
 
 Bugfixes:
   - Issue 13: Unpredictable behaviour when using backslash character in strings; 
-              Fixed by adding support for more escape sequences ("\n", "\r", "\t", "\"", "\\")
+              Fixed by adding support for more escape sequences ("\n", "\r", "\t", 
+              "\"", "\\")
 
 V2.1.4 (20121010)
 -----------------
