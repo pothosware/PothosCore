@@ -74,13 +74,17 @@ public:
     const std::string &getPropertyTypeStr(const QString &key) const;
 
     bool getPropertyPreview(const QString &key) const;
-    void setPropertyPreviewMode(const QString &key, const QString &value);
+    void setPropertyPreviewMode(const QString &key, const QString &value,
+        const Poco::JSON::Array::Ptr &args = Poco::JSON::Array::Ptr(),
+        const Poco::JSON::Object::Ptr &kwargs = Poco::JSON::Object::Ptr());
 
-    void addInputPort(const QString &portKey);
+    void addInputPort(const QString &portKey, const QString &portAlias);
     const QStringList &getInputPorts(void) const;
+    const QString &getInputPortAlias(const QString &portKey) const;
 
-    void addOutputPort(const QString &portKey);
+    void addOutputPort(const QString &portKey, const QString &portAlias);
     const QStringList &getOutputPorts(void) const;
+    const QString &getOutputPortAlias(const QString &portKey) const;
 
     void addSlotPort(const QString &portKey);
     const QStringList &getSlotPorts(void) const;
@@ -107,6 +111,10 @@ public:
     //! affinity zone support
     const QString &getAffinityZone(void) const;
     void setAffinityZone(const QString &zone);
+
+    //! get current edit tab (empty for no selection)
+    const std::string &getActiveEditTab(void) const;
+    void setActiveEditTab(const std::string &name);
 
 signals:
 

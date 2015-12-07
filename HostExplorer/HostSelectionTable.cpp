@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //get settings
@@ -15,6 +15,7 @@
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Pothos/System.hpp>
+#include <Pothos/Util/Network.hpp>
 #include <Poco/DateTimeFormatter.h>
 #include <Poco/SingletonHolder.h>
 #include <map>
@@ -59,7 +60,7 @@ void NodeInfo::update(void)
 static QStringList getHostUriList(void)
 {
     auto uris = getSettings().value("HostExplorer/uris").toStringList();
-    uris.push_front("tcp://localhost");
+    uris.push_front(QString::fromStdString("tcp://"+Pothos::Util::getLoopbackAddr()));
 
     //sanitize duplicates
     QStringList noDups;

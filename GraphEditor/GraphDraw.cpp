@@ -147,13 +147,34 @@ void GraphDraw::showEvent(QShowEvent *event)
 
 void GraphDraw::keyPressEvent(QKeyEvent *event)
 {
-    if (event->key() == Qt::Key_Plus) getActionMap()["increment"]->activate(QAction::Trigger);
-    if (event->key() == Qt::Key_Minus) getActionMap()["decrement"]->activate(QAction::Trigger);
-    if (event->key() == Qt::Key_Return) getActionMap()["objectProperties"]->activate(QAction::Trigger);
-    if (event->key() == Qt::Key_E) getActionMap()["enable"]->activate(QAction::Trigger);
-    if (event->key() == Qt::Key_D) getActionMap()["disable"]->activate(QAction::Trigger);
-    if (event->key() == Qt::Key_R) getActionMap()["reeval"]->activate(QAction::Trigger);
-    QGraphicsView::keyPressEvent(event);
+    //map a key-press to an action name
+    QString name;
+    switch(event->key())
+    {
+    case Qt::Key_Plus:     name = "increment"; break;
+    case Qt::Key_Minus:    name = "decrement"; break;
+    case Qt::Key_Return:   name = "objectProperties"; break;
+    case Qt::Key_E:        name = "enable"; break;
+    case Qt::Key_D:        name = "disable"; break;
+    case Qt::Key_R:        name = "reeval"; break;
+    case Qt::Key_Left:     name = "rotateLeft"; break;
+    case Qt::Key_Right:    name = "rotateRight"; break;
+    }
+
+    //default action is taken when nothing is selected
+    //or a graph widget has the focus or unmatched key.
+    if (
+        this->getObjectsSelected().isEmpty() or
+        this->graphWidgetHasFocus() or name.isEmpty())
+    {
+        QGraphicsView::keyPressEvent(event);
+    }
+
+    //otherwise trigger the action given by name
+    else
+    {
+        getActionMap()[name]->activate(QAction::Trigger);
+    }
 }
 
 void GraphDraw::updateEnabledActions(void)

@@ -31,6 +31,13 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     _actionMap(getActionMap()),
     _menuMap(getMenuMap())
 {
+    #ifdef __APPLE__
+    //enable the menu bar - since its not showing up as the global menu
+    this->menuBar()->setNativeMenuBar(false);
+    //enable the title bar - otherwise its invisible
+    this->setUnifiedTitleAndToolBarOnMac(true);
+    #endif //__APPLE__
+
     postStatusMessage(tr("Creating main window..."));
     getObjectMap()["mainWindow"] = this;
 
@@ -269,6 +276,8 @@ void PothosGuiMainWindow::createActions(void)
     _actionMap["selectAll"] = _selectAllAction;
 
     _objectPropertiesAction = new QAction(makeIconFromTheme("document-properties"), tr("&Object Properties"), this);
+    _objectPropertiesAction->setShortcut(Qt::Key_Return);
+    _objectPropertiesAction->setShortcutContext(Qt::WidgetShortcut); //disable shortcut, see GraphDraw::keyPressEvent()
     _actionMap["objectProperties"] = _objectPropertiesAction;
 
     _graphPropertiesAction = new QAction(makeIconFromTheme("document-properties"), tr("&Graph Properties"), this);
@@ -291,10 +300,12 @@ void PothosGuiMainWindow::createActions(void)
 
     _rotateLeftAction = new QAction(makeIconFromTheme("object-rotate-left"), tr("Rotate Left"), this);
     _rotateLeftAction->setShortcut(Qt::Key_Left);
+    _rotateLeftAction->setShortcutContext(Qt::WidgetShortcut); //disable shortcut, see GraphDraw::keyPressEvent()
     _actionMap["rotateLeft"] = _rotateLeftAction;
 
     _rotateRightAction = new QAction(makeIconFromTheme("object-rotate-right"), tr("Rotate Right"), this);
     _rotateRightAction->setShortcut(Qt::Key_Right);
+    _rotateRightAction->setShortcutContext(Qt::WidgetShortcut); //disable shortcut, see GraphDraw::keyPressEvent()
     _actionMap["rotateRight"] = _rotateRightAction;
 
     _zoomInAction = new QAction(makeIconFromTheme("zoom-in"), tr("Zoom in"), this);

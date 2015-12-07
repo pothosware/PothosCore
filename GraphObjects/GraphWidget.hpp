@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -23,6 +23,9 @@ public:
 
     void setGraphBlock(GraphBlock *block);
     GraphBlock *getGraphBlock(void) const;
+
+    //! True when the container widget has focus
+    bool containerHasFocus(void) const;
 
     QPainterPath shape(void) const;
 

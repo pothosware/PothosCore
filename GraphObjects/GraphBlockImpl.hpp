@@ -22,6 +22,7 @@ struct GraphBlock::Impl
     Poco::JSON::Array::Ptr inputDesc;
     Poco::JSON::Array::Ptr outputDesc;
     QString affinityZone;
+    std::string activeEditTab;
 
     QStringList blockErrorMsgs;
 
@@ -33,15 +34,19 @@ struct GraphBlock::Impl
     std::map<QString, QString> propertiesValues;
     std::map<QString, QString> propertiesNames;
     std::map<QString, QString> propertiesPreview;
+    std::map<QString, Poco::JSON::Array::Ptr> propertiesPreviewArgs;
+    std::map<QString, Poco::JSON::Object::Ptr> propertiesPreviewKwargs;
     std::map<QString, QString> propertiesErrorMsg;
     std::map<QString, std::string> propertiesTypeStr;
 
+    std::map<QString, QString> inputPortsAliases;
     std::vector<QStaticText> inputPortsText;
     std::vector<QRectF> inputPortRects;
     std::vector<QPointF> inputPortPoints;
     std::vector<QColor> inputPortColors;
     std::map<QString, std::string> inputPortTypeStr;
 
+    std::map<QString, QString> outputPortsAliases;
     std::vector<QStaticText> outputPortsText;
     std::vector<QRectF> outputPortRects;
     std::vector<QPointF> outputPortPoints;

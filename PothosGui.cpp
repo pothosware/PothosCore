@@ -6,6 +6,7 @@
 #include <Pothos/Init.hpp>
 #include <Pothos/Remote.hpp>
 #include <Pothos/System.hpp>
+#include <Pothos/Util/Network.hpp>
 #include <Poco/Logger.h>
 #include <QMessageBox>
 #include <QApplication>
@@ -57,21 +58,18 @@ int main(int argc, char **argv)
     Pothos::RemoteServer server;
     try
     {
-        postStatusMessage("Initializing Pothos plugins...");
-        Pothos::init();
-
         //try to talk to the server on localhost, if not there, spawn a custom one
         //make a server and node that is temporary with this process
         postStatusMessage("Launching scratch process...");
         try
         {
-            Pothos::RemoteClient client("tcp://localhost");
+            Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr());
         }
         catch (const Pothos::RemoteClientError &)
         {
-            server = Pothos::RemoteServer("tcp://localhost:"+Pothos::RemoteServer::getLocatorPort());
+            server = Pothos::RemoteServer("tcp://"+Pothos::Util::getLoopbackAddr(Pothos::RemoteServer::getLocatorPort()));
             //TODO make server background so it does not close with process
-            Pothos::RemoteClient client("tcp://localhost"); //now it should connect to the new server
+            Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr()); //now it should connect to the new server
         }
     }
     catch (const Pothos::Exception &ex)
@@ -83,10 +81,14 @@ int main(int argc, char **argv)
 
     POTHOS_EXCEPTION_TRY
     {
+        postStatusMessage("Initializing Pothos plugins...");
+        Pothos::ScopedInit init;
+
         //create the main window for the GUI
         std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr));
         mainWindow->show();
         getSplashScreen()->finish(mainWindow.get());
+        getSettings().setParent(mainWindow.get());
 
         //begin application execution
         return app.exec();

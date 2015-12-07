@@ -17,6 +17,7 @@
 GraphEditorTabs::GraphEditorTabs(QWidget *parent):
     QTabWidget(parent)
 {
+    this->setDocumentMode(true);
     this->setTabsClosable(true);
     this->setMovable(true);
     this->setUsesScrollButtons(true);

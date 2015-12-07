@@ -18,6 +18,7 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm> //min/max
+#include <Poco/Logger.h>
 
 GraphBlock::GraphBlock(QObject *parent):
     GraphObject(parent),
@@ -192,13 +193,36 @@ bool GraphBlock::getPropertyPreview(const QString &key) const
     if (it->second == "disable") return false;
     if (it->second == "valid") return isValid(this->getPropertyValue(key));
     if (it->second == "invalid") return not isValid(this->getPropertyValue(key));
+    if (it->second == "when")
+    {
+        //support the enum selection mode:
+        //There is no parameter evaluation going on here.
+        //A particular parameter, specified by the enum key,
+        //is compared against a list of arguments.
+        //A match means do the preview, otherwise hide it.
+        if (not _impl->propertiesPreviewArgs.at(key)) return true;
+        if (not _impl->propertiesPreviewKwargs.at(key)) return true;
+        if (not _impl->propertiesPreviewKwargs.at(key)->has("enum")) return true;
+        const auto eumParamKey = _impl->propertiesPreviewKwargs.at(key)->getValue<std::string>("enum");
+        auto eumParamValue = this->getPropertyValue(QString::fromStdString(eumParamKey)).toStdString();
+        for (const auto &arg : *_impl->propertiesPreviewArgs.at(key))
+        {
+            //note: Poco::Dynamic::Var::toString gives the JSON format
+            //which means that it includes the quotes if this is a string
+            if (Poco::Dynamic::Var::toString(arg) == eumParamValue) return true;
+        }
+        return false;
+    }
     return true;
 }
 
-void GraphBlock::setPropertyPreviewMode(const QString &key, const QString &value)
+void GraphBlock::setPropertyPreviewMode(const QString &key, const QString &value,
+    const Poco::JSON::Array::Ptr &args, const Poco::JSON::Object::Ptr &kwargs)
 {
     if (_impl->propertiesPreview[key] == value) return;
     _impl->propertiesPreview[key] = value;
+    _impl->propertiesPreviewArgs[key] = args;
+    _impl->propertiesPreviewKwargs[key] = kwargs;
     this->markChanged();
 }
 
@@ -226,9 +250,10 @@ const std::string &GraphBlock::getPropertyTypeStr(const QString &key) const
     return _impl->propertiesTypeStr[key];
 }
 
-void GraphBlock::addInputPort(const QString &portKey)
+void GraphBlock::addInputPort(const QString &portKey, const QString &portAlias)
 {
     _inputPorts.push_back(portKey);
+    _impl->inputPortsAliases[portKey] = portAlias;
     this->markChanged();
 }
 
@@ -237,15 +262,26 @@ const QStringList &GraphBlock::getInputPorts(void) const
     return _inputPorts;
 }
 
-void GraphBlock::addOutputPort(const QString &portKey)
+const QString &GraphBlock::getInputPortAlias(const QString &portKey) const
+{
+    return _impl->inputPortsAliases[portKey];
+}
+
+void GraphBlock::addOutputPort(const QString &portKey, const QString &portAlias)
 {
     _outputPorts.push_back(portKey);
+    _impl->outputPortsAliases[portKey] = portAlias;
     this->markChanged();
 }
 
 const QStringList &GraphBlock::getOutputPorts(void) const
 {
     return _outputPorts;
+}
+
+const QString &GraphBlock::getOutputPortAlias(const QString &portKey) const
+{
+    return _impl->outputPortsAliases[portKey];
 }
 
 void GraphBlock::addSlotPort(const QString &portKey)
@@ -304,6 +340,16 @@ void GraphBlock::setAffinityZone(const QString &zone)
     if (_impl->affinityZone == zone) return;
     _impl->affinityZone = zone;
     this->markChanged();
+}
+
+const std::string &GraphBlock::getActiveEditTab(void) const
+{
+    return _impl->activeEditTab;
+}
+
+void GraphBlock::setActiveEditTab(const std::string &name)
+{
+    _impl->activeEditTab = name;
 }
 
 QPainterPath GraphBlock::shape(void) const
@@ -450,7 +496,7 @@ void GraphBlock::renderStaticText(void)
         _impl->inputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
             .arg(getTextColor(true, _impl->inputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
-            .arg(_inputPorts[i].toHtmlEscaped()));
+            .arg(this->getInputPortAlias(_inputPorts[i]).toHtmlEscaped()));
     }
 
     _impl->outputPortsText.resize(_outputPorts.size());
@@ -459,7 +505,7 @@ void GraphBlock::renderStaticText(void)
         _impl->outputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
             .arg(getTextColor(true, _impl->outputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
-            .arg(_outputPorts[i].toHtmlEscaped()));
+            .arg(this->getOutputPortAlias(_outputPorts[i]).toHtmlEscaped()));
     }
 
     if (not getActionMap()["showPortNames"]->isChecked())
@@ -671,6 +717,10 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
     obj->set("what", std::string("Block"));
     obj->set("path", this->getBlockDescPath());
     obj->set("affinityZone", this->getAffinityZone().toStdString());
+    if (not this->getActiveEditTab().empty())
+    {
+        obj->set("activeEditTab", this->getActiveEditTab());
+    }
 
     Poco::JSON::Array jPropsObj;
     for (const auto &propKey : this->getProperties())
@@ -694,11 +744,41 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
 
     //init the block with the description
     auto blockDesc = getBlockDescFromPath(path);
-    if (not blockDesc) throw Pothos::Exception("GraphBlock::deserialize()", "cant find block factory with path: '"+path+"'");
+
+    //Can't find the block description?
+    //Generate a pseudo description so that the block will appear
+    //in the editor with the same properties and connections.
+    if (not blockDesc)
+    {
+        blockDesc = Poco::JSON::Object::Ptr(new Poco::JSON::Object());
+        blockDesc->set("path", path);
+        blockDesc->set("name", obj->getValue<std::string>("id"));
+        blockDesc->set("args", Poco::JSON::Array::Ptr(new Poco::JSON::Array()));
+        blockDesc->set("calls", Poco::JSON::Array::Ptr(new Poco::JSON::Array()));
+
+        if (obj->has("properties") and obj->isArray("properties"))
+        {
+            auto blockParams = Poco::JSON::Array::Ptr(new Poco::JSON::Array());
+            blockDesc->set("params", blockParams);
+            const auto propsObj = obj->getArray("properties");
+            for (size_t i = 0; i < propsObj->size(); i++)
+            {
+                const auto propObj = propsObj->getObject(i);
+                auto paramObj = Poco::JSON::Object::Ptr(new Poco::JSON::Object());
+                paramObj->set("key", propObj->getValue<std::string>("key"));
+                blockParams->add(paramObj);
+            }
+        }
+        poco_error(Poco::Logger::get("PothosGui.GraphBlock.init"), "Cant find block factory with path: '"+path+"'");
+    }
+
     this->setBlockDesc(blockDesc);
 
     if (obj->has("affinityZone")) this->setAffinityZone(
         QString::fromStdString(obj->getValue<std::string>("affinityZone")));
+
+    if (obj->has("activeEditTab")) this->setActiveEditTab(
+        obj->getValue<std::string>("activeEditTab"));
 
     assert(properties);
     for (size_t i = 0; i < properties->size(); i++)

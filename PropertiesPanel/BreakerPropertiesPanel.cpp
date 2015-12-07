@@ -1,6 +1,7 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "PothosGuiUtils.hpp" //make form layout
 #include "BreakerPropertiesPanel.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
@@ -23,7 +24,7 @@ BreakerPropertiesPanel::BreakerPropertiesPanel(GraphBreaker *breaker, QWidget *p
     _nodeNameLabel(nullptr)
 {
     //master layout for this widget
-    _formLayout = new QFormLayout(this);
+    _formLayout = makeFormLayout(this);
 
     //title
     {

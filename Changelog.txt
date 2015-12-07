@@ -1,5 +1,25 @@
 This this the changelog file for the Pothos GUI toolkit.
 
+Release 0.3.0 (pending)
+==========================
+
+- Support ghost blocks when description is missing
+- Save active edit tab in the block properties panel
+- Added clear button to log message window
+- Support conditional parameter preview mode
+- Fix for size grip in GraphWidgetContainer on OSX
+- Fixes for missing title bar and menu bar on OSX
+- Cross platform styler for instances of QFormLayout
+- Graph editor tabs setDocumentMode() for OSX appearance
+- Ignore key press events from graph widgets with focus
+- Switch logger display to QPlainTextEdit for performance
+
+Release 0.2.2 (2015-12-07)
+==========================
+
+- Fix empty signal slot connection to display text label
+- Fix QApplication exit error by giving QSettings a parent
+
 Release 0.2.1 (2015-08-26)
 ==========================
 

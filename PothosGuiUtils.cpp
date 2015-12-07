@@ -7,6 +7,7 @@
 #include <Poco/SingletonHolder.h>
 #include <QSplashScreen>
 #include <QApplication>
+#include <QFormLayout>
 
 QMap<QString, QAction *> &getActionMap(void)
 {
@@ -26,26 +27,17 @@ QMap<QString, QObject *> &getObjectMap(void)
     return *sh.get();
 }
 
-struct MySettings : QSettings
+QSettings &getSettings(void)
 {
-    MySettings(void):
-        QSettings(settingsPath(), QSettings::IniFormat)
-    {
-        return;
-    }
-
-    static QString settingsPath(void)
+    static QSettings *settings = nullptr;
+    if (settings == nullptr)
     {
         Poco::Path path(Pothos::System::getUserConfigPath());
         path.append("PothosGui.conf");
-        return QString::fromStdString(path.toString());
+        const auto settingsPath = QString::fromStdString(path.toString());
+        settings = new QSettings(settingsPath, QSettings::IniFormat);
     }
-};
-
-QSettings &getSettings(void)
-{
-    static Poco::SingletonHolder<MySettings> sh;
-    return *sh.get();
+    return *settings;
 }
 
 QString makeIconPath(const QString &name)
@@ -76,4 +68,14 @@ QSplashScreen *getSplashScreen(void)
         splash = new QSplashScreen(pixmap);
     }
     return splash;
+}
+
+QFormLayout *makeFormLayout(QWidget *parent)
+{
+    auto layout = new QFormLayout(parent);
+    layout->setRowWrapPolicy(QFormLayout::DontWrapRows);
+    layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    layout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
+    layout->setLabelAlignment(Qt::AlignLeft);
+    return layout;
 }

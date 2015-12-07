@@ -1,11 +1,13 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EnvironmentEval.hpp"
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote.hpp>
 #include <Pothos/System/Logger.hpp>
+#include <Pothos/Util/Network.hpp>
 #include <Poco/URI.h>
+#include <Poco/Net/SocketAddress.h>
 #include <Poco/Logger.h>
 #include <sstream>
 
@@ -69,9 +71,9 @@ void EnvironmentEval::update(void)
 
 HostProcPair EnvironmentEval::getHostProcFromConfig(const QString &zoneName, const Poco::JSON::Object::Ptr &config)
 {
-    if (zoneName == "gui") return HostProcPair("gui://localhost", "gui");
+    if (zoneName == "gui") return HostProcPair("gui://"+Pothos::Util::getLoopbackAddr(), "gui");
 
-    auto hostUri = config?config->getValue<std::string>("hostUri"):"tcp://localhost";
+    auto hostUri = config?config->getValue<std::string>("hostUri"):("tcp://"+Pothos::Util::getLoopbackAddr());
     auto processName = config?config->getValue<std::string>("processName"):"";
     return HostProcPair(hostUri, processName);
 }
@@ -84,7 +86,7 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
 
     //connect to the remote host and spawn a server
     auto serverEnv = Pothos::RemoteClient(hostUri).makeEnvironment("managed");
-    auto serverHandle = serverEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://0.0.0.0", false/*noclose*/);
+    auto serverHandle = serverEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://"+Pothos::Util::getLoopbackAddr(), false/*noclose*/);
 
     //construct the uri for the new server
     auto actualPort = serverHandle.call<std::string>("getActualPort");
@@ -96,13 +98,23 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
     client.holdRef(Pothos::Object(serverHandle));
     auto env = client.makeEnvironment("managed");
 
-    //setup log delivery from the server process
-    const auto syslogListenPort = Pothos::System::Logger::startSyslogListener();
-    const auto serverAddr = env->getPeeringAddress() + ":" + syslogListenPort;
-    env->findProxy("Pothos/System/Logger").callVoid("startSyslogForwarding", serverAddr);
+    //determine log delivery address
+    //FIXME syslog listener doesn't support IPv6, special precautions taken:
     const auto logSource = (not _zoneName.isEmpty())? _zoneName.toStdString() : newHostUri.getHost();
+    const auto syslogListenPort = Pothos::System::Logger::startSyslogListener();
+    Poco::Net::SocketAddress serverAddr(env->getPeeringAddress(), syslogListenPort);
+    if (serverAddr.host().isLoopback()) serverAddr = Poco::Net::SocketAddress("localhost", syslogListenPort);
+    if (serverAddr.family() == Poco::Net::IPAddress::IPv6)
+    {
+        poco_warning_f1(Poco::Logger::get("PothosGui.EnvironmentEval.make"),
+            "Log forwarding not supported over IPv6: %s", logSource);
+        return env;
+    }
+
+    //setup log delivery from the server process
+    env->findProxy("Pothos/System/Logger").callVoid("startSyslogForwarding", serverAddr.toString());
     env->findProxy("Pothos/System/Logger").callVoid("forwardStdIoToLogging", logSource);
-    serverHandle.callVoid("startSyslogForwarding", serverAddr, logSource);
+    serverHandle.callVoid("startSyslogForwarding", serverAddr.toString(), logSource);
 
     return env;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //action maps
@@ -183,6 +183,17 @@ GraphObjectList GraphDraw::getGraphObjects(const int selectionFlags)
         if (((selectionFlags & GRAPH_WIDGET) != 0) and (dynamic_cast<GraphWidget *>(o) != nullptr)) l.push_back(o);
     }
     return l;
+}
+
+bool GraphDraw::graphWidgetHasFocus(void)
+{
+    for (auto obj : this->getGraphObjects(GRAPH_WIDGET))
+    {
+        auto widget = dynamic_cast<GraphWidget *>(obj);
+        assert(widget != nullptr);
+        if (widget->containerHasFocus()) return true;
+    }
+    return false;
 }
 
 void GraphDraw::doClickSelection(const QPointF &point)

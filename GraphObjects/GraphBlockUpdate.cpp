@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphBlockImpl.hpp"
@@ -58,7 +58,16 @@ void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
         if (param->has("preview"))
         {
             const auto prevMode = param->getValue<std::string>("preview");
-            this->setPropertyPreviewMode(key, QString::fromStdString(prevMode));
+
+            Poco::JSON::Array::Ptr args;
+            if (param->has("previewArgs") and param->isArray("previewArgs"))
+                args = param->getArray("previewArgs");
+
+            Poco::JSON::Object::Ptr kwargs;
+            if (param->has("previewKwargs") and param->isObject("previewKwargs"))
+                kwargs = param->getObject("previewKwargs");
+
+            this->setPropertyPreviewMode(key, QString::fromStdString(prevMode), args, kwargs);
         }
     }
 }
@@ -81,8 +90,10 @@ void GraphBlock::setInputPortDesc(const Poco::JSON::Array::Ptr &inputDesc)
     {
         const auto &info = inputPortDesc.extract<Poco::JSON::Object::Ptr>();
         auto portKey = QString::fromStdString(info->getValue<std::string>("name"));
+        QString portAlias = portKey;
+        if (info->has("alias")) portAlias = QString::fromStdString(info->getValue<std::string>("alias"));
         if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSlotPort(portKey);
-        else this->addInputPort(portKey);
+        else this->addInputPort(portKey, portAlias);
         if (info->has("dtype")) this->setInputPortTypeStr(portKey, info->getValue<std::string>("dtype"));
     }
 }
@@ -105,8 +116,10 @@ void GraphBlock::setOutputPortDesc(const Poco::JSON::Array::Ptr &outputDesc)
     {
         const auto &info = outputPortDesc.extract<Poco::JSON::Object::Ptr>();
         auto portKey = QString::fromStdString(info->getValue<std::string>("name"));
+        QString portAlias = portKey;
+        if (info->has("alias")) portAlias = QString::fromStdString(info->getValue<std::string>("alias"));
         if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSignalPort(portKey);
-        else this->addOutputPort(portKey);
+        else this->addOutputPort(portKey, portAlias);
         if (info->has("dtype")) this->setOutputPortTypeStr(portKey, info->getValue<std::string>("dtype"));
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphWidget.hpp"
@@ -72,6 +72,12 @@ void GraphWidget::setGraphBlock(GraphBlock *block)
 GraphBlock *GraphWidget::getGraphBlock(void) const
 {
     return _impl->block;
+}
+
+bool GraphWidget::containerHasFocus(void) const
+{
+    auto fw = _impl->container->focusWidget();
+    return fw != nullptr and fw->hasFocus();
 }
 
 void GraphWidget::handleBlockDestroyed(QObject *)

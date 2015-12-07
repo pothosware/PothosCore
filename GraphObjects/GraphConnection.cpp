@@ -408,7 +408,7 @@ void GraphConnection::render(QPainter &painter)
         const auto &text = _impl->lineText;
         painter.translate((largestLine.p1() + largestLine.p2())/2.0);
         painter.rotate(int(largestLine.angle())%180);
-        const auto hs = this->getSigSlotPairs().size()/std::ceil(this->getSigSlotPairs().size()/2.0);
+        const auto hs = std::max(1.0, this->getSigSlotPairs().size()/std::ceil(this->getSigSlotPairs().size()/2.0));
         const QRectF textRect(QPointF(-text.size().width()/2, -text.size().height()/hs - GraphConnectionGirth), text.size());
         painter.drawStaticText(textRect.topLeft(), text);
         _impl->textRect = painter.worldTransform().mapRect(textRect);
