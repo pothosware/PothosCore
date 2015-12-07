@@ -1,5 +1,22 @@
 This this the changelog file for the Pothos Blocks toolkit.
 
+Release 0.3.0 (pending)
+==========================
+
+- Optional start and end labels for the vector source
+- Added rewind capability to binary file source
+- Created label to message event block
+- Added timeout param for socket endpoint open/close
+- Reorganized utility blocks into testers and stream
+- Moved communications blocks to pothos-comms toolkit
+
+Release 0.2.2 (2015-12-07)
+==========================
+
+- Fix undefined usage of std::polar() in FIR taps generator
+- Type casts in SocketEndpoint for using 64-bit Poco::ByteOrder
+- Sporadic blocks replace generate_canonical because of MSVC bug
+
 Release 0.2.1 (2015-08-26)
 ==========================
 

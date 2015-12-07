@@ -32,6 +32,7 @@
  * will be the element count times the label width (which accounts for rate increases).
  *
  * |category /Packet
+ * |category /Convert
  * |keywords packet message datagram
  *
  * |param frameStartId[Frame Start ID] The label ID to mark the first element from each payload.
@@ -115,13 +116,13 @@ public:
         //post start of frame label
         if (not _frameStartId.empty())
         {
-            outputPort->postLabel(Pothos::Label(_frameStartId, Pothos::Object(packet.payload.elements()), 0, packet.payload.dtype.size()));
+            outputPort->postLabel(Pothos::Label(_frameStartId, packet.payload.elements(), 0, packet.payload.dtype.size()));
         }
 
         //post end of frame label
         if (not _frameEndId.empty())
         {
-            outputPort->postLabel(Pothos::Label(_frameEndId, Pothos::Object(packet.payload.elements()), packet.payload.length-1, packet.payload.dtype.size()));
+            outputPort->postLabel(Pothos::Label(_frameEndId, packet.payload.elements(), packet.payload.length-1, packet.payload.dtype.size()));
         }
 
         //post the payload

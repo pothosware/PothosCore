@@ -1,10 +1,11 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
 #include <Pothos/Framework.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote.hpp>
+#include <Pothos/Util/Network.hpp>
 #include <Poco/JSON/Object.h>
 #include <iostream>
 
@@ -57,8 +58,8 @@ POTHOS_TEST_BLOCK("/blocks/tests", test_proxy_subtopology)
 {
     //spawn a server and client
     std::cout << "create proxy server\n";
-    Pothos::RemoteServer server("tcp://0.0.0.0");
-    Pothos::RemoteClient client("tcp://localhost:"+server.getActualPort());
+    Pothos::RemoteServer server("tcp://"+Pothos::Util::getWildcardAddr());
+    Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr(server.getActualPort()));
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto envRemote = client.makeEnvironment("managed");
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "SerializeCommon.hpp"
@@ -176,7 +176,7 @@ void Deserializer::handlePacket(const Pothos::BufferChunk &packetBuff)
     unpackBuffer(packetBuff, seq, sid, has_tsf, tsf, is_ext, payloadBuff);
 
     if (sid >= this->outputs().size()) throw Pothos::RangeException("Deserializer::handlePacket()",
-        Poco::format("packet has SID %d, but block has %d outputs", int(sid), int(this->outputs().size())));
+        Poco::format("packet has SID %z, but block has %z outputs", sid, this->outputs().size()));
     auto outputPort = this->output(sid);
 
     //handle buffs

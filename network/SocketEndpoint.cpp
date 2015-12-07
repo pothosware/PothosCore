@@ -61,12 +61,11 @@ struct PothosPacketSocketEndpointInterfaceTcp : PothosPacketSocketEndpointInterf
     {
         if (server)
         {
-            this->serverSock.bind(addr);
-            this->serverSock.listen(1/*only one client expected*/);
+            this->serverSock = Poco::Net::ServerSocket(addr, 1/*only one client expected*/);
         }
         else
         {
-            this->clientSock.connect(addr);
+            this->clientSock = Poco::Net::StreamSocket(addr);
             this->clientSock.setNoDelay(true);
             this->connected = true;
         }
@@ -158,7 +157,7 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
     {
         if (server)
         {
-            this->serverSock = makeSocket();
+            this->serverSock = makeSocket(addr.af());
             if (UDT::ERROR == UDT::bind(this->serverSock, addr.addr(), addr.length()))
             {
                 throw Pothos::RuntimeException("UDT::bind("+addr.toString()+")", UDT::getlasterror().getErrorMessage());
@@ -167,7 +166,7 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
         }
         else
         {
-            this->clientSock = makeSocket();
+            this->clientSock = makeSocket(addr.af());
             if (UDT::ERROR == UDT::connect(this->clientSock, addr.addr(), addr.length()))
             {
                 throw Pothos::RuntimeException("UDT::connect("+addr.toString()+")", UDT::getlasterror().getErrorMessage());
@@ -176,9 +175,9 @@ struct PothosPacketSocketEndpointInterfaceUdt : PothosPacketSocketEndpointInterf
         }
     }
 
-    static UDTSOCKET makeSocket(void)
+    static UDTSOCKET makeSocket(const int af)
     {
-        UDTSOCKET sock = UDT::socket(AF_INET, SOCK_STREAM, 0);
+        UDTSOCKET sock = UDT::socket(af, SOCK_STREAM, 0);
         //Arbitrary buffer size limit in OSX that must be set on the socket,
         //or UDT will try to set one that is too large and fail bind/connect.
         #if POCO_OS == POCO_OS_MAC_OS_X
@@ -412,7 +411,7 @@ bool PothosPacketSocketEndpoint::isReady(void)
 /***********************************************************************
  * initiate open transactions
  **********************************************************************/
-void PothosPacketSocketEndpoint::openComms(void)
+void PothosPacketSocketEndpoint::openComms(const std::chrono::high_resolution_clock::duration &timeout)
 {
     Pothos::BufferChunk buffer(1024);
     uint16_t type = 0;
@@ -432,7 +431,7 @@ void PothosPacketSocketEndpoint::openComms(void)
     }
 
     //loop until timeout (we will exit before timeout under normal conditions)
-    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(100);
+    const auto exitTime = std::chrono::high_resolution_clock::now() + timeout;
     while (std::chrono::high_resolution_clock::now() < exitTime)
     {
         if (_impl->state == EP_STATE_ESTABLISHED) break;
@@ -451,7 +450,7 @@ void PothosPacketSocketEndpoint::openComms(void)
 /***********************************************************************
  * initiate close transactions
  **********************************************************************/
-void PothosPacketSocketEndpoint::closeComms(void)
+void PothosPacketSocketEndpoint::closeComms(const std::chrono::high_resolution_clock::duration &timeout)
 {
     if (_impl->state == EP_STATE_CLOSED) return;
 
@@ -474,7 +473,7 @@ void PothosPacketSocketEndpoint::closeComms(void)
     }
 
     //loop until timeout (we will exit before timeout under normal conditions)
-    const auto exitTime = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(100);
+    const auto exitTime = std::chrono::high_resolution_clock::now() + timeout;
     while (std::chrono::high_resolution_clock::now() < exitTime)
     {
         if (_impl->state == EP_STATE_CLOSED) break;
@@ -691,13 +690,13 @@ void PothosPacketSocketEndpoint::Impl::recv(uint16_t &flags, uint16_t &type, Pot
     if ((flags & PothosPacketFlagFlo) != 0 and buffer.length >= sizeof(uint64_t))
     {
         const uint64_t totalN = buffer.as<const uint64_t *>()[0];
-        this->lastFlowMsgRecv = Poco::ByteOrder::fromNetwork(totalN);
+        this->lastFlowMsgRecv = Poco::ByteOrder::fromNetwork(Poco::UInt64(totalN));
     }
 
     //deal with flow control (outgoing)
     if (this->totalBytesRecv > this->lastFlowMsgSent + this->flowControlWindowBytes()/8)
     {
-        const uint64_t totalN = Poco::ByteOrder::toNetwork(this->totalBytesRecv);
+        const uint64_t totalN = Poco::ByteOrder::toNetwork(Poco::UInt64(this->totalBytesRecv));
         this->send(PothosPacketFlagFlo, 0, &totalN, sizeof(totalN));
         this->lastFlowMsgSent = this->totalBytesRecv;
     }
