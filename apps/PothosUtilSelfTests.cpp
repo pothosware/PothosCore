@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -7,13 +7,52 @@
 #include <Pothos/System/Paths.hpp>
 #include <Poco/Process.h>
 #include <Poco/Pipe.h>
+#include <Poco/PipeStream.h>
+#include <Poco/String.h>
 #include <iostream>
+#include <sstream>
+#include <vector>
+#include <future>
+#include <cctype>
+#include <algorithm> //max
 
 struct SelfTestResults
 {
     std::vector<std::string> testsPassed;
     std::vector<std::string> testsFailed;
 };
+
+static std::string collectVerbose(const Poco::Pipe &pipe)
+{
+    size_t maxLen = 0;
+    Poco::PipeInputStream is(pipe);
+    std::vector<std::string> lines;
+    try
+    {
+        std::string line;
+        while (is.good())
+        {
+            std::getline(is, line);
+            while (not line.empty() and std::isspace(line.back()))
+            {
+                line.pop_back();
+            }
+            if (line.empty()) continue;
+            maxLen = std::max(maxLen, line.length());
+            lines.push_back(line);
+        }
+    }
+    catch (...){}
+    std::ostringstream ss;
+    ss << " +-" << std::string(maxLen, '-') << "-+" << std::endl;
+    for (const auto &line : lines)
+    {
+        const size_t padLen = maxLen-line.length();
+        ss << " | " << line << std::string(padLen, ' ') << " |" << std::endl;
+    }
+    ss << " +-" << std::string(maxLen, '-') << "-+" << std::endl;
+    return ss.str();
+}
 
 static bool spawnSelfTestOneProcess(const std::string &path)
 {
@@ -29,16 +68,19 @@ static bool spawnSelfTestOneProcess(const std::string &path)
 
     //launch
     Poco::Process::Env env;
-    Poco::Pipe outPipe, errPipe; //no fwd stdio
+    Poco::Pipe outPipe; //no fwd stdio
     Poco::ProcessHandle ph(Poco::Process::launch(
         Pothos::System::getPothosUtilExecutablePath(),
-        args, nullptr, &outPipe, &errPipe, env));
+        args, nullptr, &outPipe, &outPipe, env));
 
-    outPipe.close();
-    errPipe.close();
-
+    std::future<std::string> verboseFuture(std::async(std::launch::async, &collectVerbose, outPipe));
     const bool ok = (ph.wait() == success);
     std::cout << ((ok)? "success!" : "FAIL!") << std::endl;
+
+    outPipe.close();
+    verboseFuture.wait();
+    if (not ok) std::cout << verboseFuture.get();
+
     return ok;
 }
 
@@ -57,7 +99,6 @@ static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults 
             else
             {
                 results.testsFailed.push_back(path.toString());
-                std::cout << std::endl;
             }
         }
     }
@@ -71,26 +112,25 @@ static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults 
 
 void PothosUtilBase::selfTestOne(const std::string &, const std::string &path)
 {
-    Pothos::init();
+    Pothos::ScopedInit init;
 
     auto plugin = Pothos::PluginRegistry::get(path);
     auto test = plugin.getObject().extract<std::shared_ptr<Pothos::TestingBase>>();
-    std::cout << "Testing " << plugin.getPath().toString() << "... " << std::endl;
+    std::cout << "Testing " << plugin.getPath().toString() << "..." << std::endl;
     try
     {
         test->runTests();
-        std::cout << "success!\n";
+        std::cout << "success!" << std::endl;
     }
     catch(...)
     {
-        std::cout << "FAIL!\n";
         throw;
     }
 }
 
 void PothosUtilBase::selfTests(const std::string &, const std::string &path)
 {
-    Pothos::init();
+    Pothos::ScopedInit init;
 
     SelfTestResults results;
     runPluginSelfTestsR(path.empty()? "/" : path, results);
@@ -108,6 +148,8 @@ void PothosUtilBase::selfTests(const std::string &, const std::string &path)
         {
             std::cout << "  FAIL: " << *it << std::endl;
         }
+        std::cout << std::endl;
+        throw Pothos::Exception("Failures occurred in self test suite.");
     }
     std::cout << std::endl;
 }

@@ -133,12 +133,12 @@ std::string Pothos::System::Logger::startSyslogListener(void)
     if (not listener)
     {
         //find an available udp port
-        Poco::Net::DatagramSocket sock;
-        sock.bind(Poco::Net::SocketAddress("0.0.0.0:0"));
+        Poco::Net::DatagramSocket sock(Poco::Net::SocketAddress("::", 0));
         const auto port = sock.address().port();
         sock.close();
 
         //create a new listener and feed it the root channel
+        //FIXME syslog listener always binds to IPv4...
         listener = new Poco::Net::RemoteSyslogListener(port);
         listener->addChannel(Poco::Logger::get("").getChannel());
         listener->open();
@@ -156,12 +156,22 @@ void Pothos::System::Logger::stopSyslogListener(void)
     listener = nullptr;
 }
 
+static Poco::AutoPtr<Poco::Net::RemoteSyslogChannel> forwarder;
+
 void Pothos::System::Logger::startSyslogForwarding(const std::string &addr)
 {
     std::lock_guard<std::mutex> lock(getSetupLoggerMutex());
-    Poco::AutoPtr<Poco::Channel> channel(new Poco::Net::RemoteSyslogChannel(addr, ""/*empty name*/));
-    Poco::Logger::get("").setChannel(channel);
+    forwarder = new Poco::Net::RemoteSyslogChannel(addr, ""/*empty name*/);
+    Poco::Logger::get("").setChannel(forwarder);
     Poco::Logger::get("").setLevel("trace"); //lowest level -> forward everything
+}
+
+void Pothos::System::Logger::stopSyslogForwarding(void)
+{
+    std::lock_guard<std::mutex> lock(getSetupLoggerMutex());
+    if (not forwarder) return;
+    forwarder->close();
+    forwarder = nullptr;
 }
 
 void Pothos::System::Logger::forwardStdIoToLogging(const std::string &source)
@@ -229,7 +239,9 @@ pothos_static_block(pothosLoggingInit)
 static auto managedSystemLogger = Pothos::ManagedClass()
     .registerClass<Pothos::System::Logger>()
     .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::System::Logger, startSyslogListener))
+    .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::System::Logger, stopSyslogListener))
     .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::System::Logger, startSyslogForwarding))
+    .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::System::Logger, stopSyslogForwarding))
     .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::System::Logger, forwardStdIoToLogging))
     .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::System::Logger, setupDefaultLogging))
     .commit("Pothos/System/Logger");

@@ -1,4 +1,13 @@
 ########################################################################
+## Feature registration
+########################################################################
+cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY" OFF)
+add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos development and runtime libraries")
+if (NOT ENABLE_LIBRARY_LIB)
+    return()
+endif()
+
+########################################################################
 # Module file extension - Loader.in.cpp
 ########################################################################
 if (WIN32)
@@ -164,6 +173,7 @@ list(APPEND POTHOS_SOURCES
     Proxy/Environment.cpp
     Proxy/Exception.cpp
 
+    Remote/RemoteProxyDatagram.cpp
     Remote/RemoteProxy.cpp
     Remote/RemoteProxyHandle.cpp
     Remote/Server.cpp
@@ -189,13 +199,16 @@ list(APPEND POTHOS_SOURCES
     Util/TypeInfo.cpp
     Util/Compiler.cpp
     Util/EvalInterface.cpp
+    Util/Network.cpp
 )
 
 if(WIN32)
     list(APPEND POTHOS_SOURCES Framework/SharedBufferWindows.cpp)
     list(APPEND POTHOS_SOURCES Framework/WindowsDelayLoadedSymbols.cpp)
+    list(APPEND POTHOS_SOURCES Util/FileLockWindows.cpp)
 elseif(UNIX)
     list(APPEND POTHOS_SOURCES Framework/SharedBufferUnix.cpp)
+    list(APPEND POTHOS_SOURCES Util/FileLockUnix.cpp)
 endif()
 
 ########################################################################
@@ -225,6 +238,16 @@ endforeach(source)
 set(POTHOS_SOURCES ${__POTHOS_SOURCES})
 
 ########################################################################
+# Extract SOVERSION
+########################################################################
+file(READ "${PROJECT_SOURCE_DIR}/include/Pothos/System/Version.hpp" version_hpp)
+string(REGEX MATCH "\\#define POTHOS_ABI_VERSION \"([0-9]+\\.[0-9]+-[0-9]+)\"" POTHOS_ABI_VERSION_MATCHES "${version_hpp}")
+if(NOT POTHOS_ABI_VERSION_MATCHES)
+    message(FATAL_ERROR "Failed to extract version number from Version.hpp")
+endif(NOT POTHOS_ABI_VERSION_MATCHES)
+set(POTHOS_SOVER "${CMAKE_MATCH_1}")
+
+########################################################################
 # Build library
 ########################################################################
 if(MSVC)
@@ -234,6 +257,7 @@ endif(MSVC)
 add_library(Pothos SHARED ${POTHOS_SOURCES})
 list(REMOVE_ITEM Pothos_LIBRARIES Pothos) #cant link to self
 target_link_libraries(Pothos ${Pothos_LIBRARIES})
+set_target_properties(Pothos PROPERTIES SOVERSION ${POTHOS_SOVER})
 set_target_properties(Pothos PROPERTIES VERSION ${POTHOS_LIBVER})
 set_target_properties(Pothos PROPERTIES DEFINE_SYMBOL "POTHOS_DLL_EXPORTS")
 

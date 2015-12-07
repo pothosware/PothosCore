@@ -3,6 +3,7 @@
 
 #include <Pothos/System/Paths.hpp>
 #include <Pothos/Plugin/Module.hpp>
+#include <Pothos/Plugin/Registry.hpp>
 #include <Pothos/Plugin/Exception.hpp>
 #include <Pothos/Object.hpp> //pulls in full Object implementation
 #include <Poco/SharedLibrary.h>
@@ -47,6 +48,8 @@ struct ErrorMessageDisableGuard
  **********************************************************************/
 void registrySetActiveModuleLoading(const Pothos::PluginModule &module);
 
+std::vector<std::string> getPluginPaths(const Pothos::PluginModule &module);
+
 static std::mutex &getModuleMutex(void)
 {
     static Poco::SingletonHolder<std::mutex> sh;
@@ -54,26 +57,24 @@ static std::mutex &getModuleMutex(void)
 }
 
 /***********************************************************************
- * Private implementation -- unloads library automatically
+ * Shared implementation for module data
  **********************************************************************/
 struct Pothos::PluginModule::Impl
 {
-    ~Impl(void)
-    {
-        if (sharedLibrary.isLoaded())
-        {
-            poco_information(Poco::Logger::get("Pothos.PluginModule.unload"), sharedLibrary.getPath());
-            sharedLibrary.unload();
-        }
-    }
-
     Poco::SharedLibrary sharedLibrary;
     std::string path;
+    std::vector<std::string> pluginPaths;
 };
 
 /***********************************************************************
  * Module implementation
  **********************************************************************/
+const Pothos::PluginModule &Pothos::PluginModule::null(void)
+{
+    static PluginModule nullModule;
+    return nullModule;
+}
+
 Pothos::PluginModule::PluginModule(void)
 {
     return;
@@ -91,6 +92,7 @@ Pothos::PluginModule::PluginModule(const std::string &path):
         ErrorMessageDisableGuard emdg;
         _impl->sharedLibrary.load(path);
         registrySetActiveModuleLoading(PluginModule());
+        _impl->pluginPaths = ::getPluginPaths(*this);
     }
     catch(const Poco::LibraryLoadException &ex)
     {
@@ -98,10 +100,29 @@ Pothos::PluginModule::PluginModule(const std::string &path):
     }
 }
 
+Pothos::PluginModule::~PluginModule(void)
+{
+    if (not _impl) return; //no private data
+    if (not _impl.unique()) return; //this is not the last copy
+    if (not _impl->sharedLibrary.isLoaded()) return; //module not loaded
+
+    poco_information(Poco::Logger::get("Pothos.PluginModule.unload"), _impl->sharedLibrary.getPath());
+    for (const auto &pluginPath : this->getPluginPaths())
+    {
+        PluginRegistry::remove(pluginPath);
+    }
+    _impl->sharedLibrary.unload();
+}
+
 std::string Pothos::PluginModule::getFilePath(void) const
 {
     if (not _impl) return "";
     return _impl->path;
+}
+
+const std::vector<std::string> &Pothos::PluginModule::getPluginPaths(void) const
+{
+    return _impl->pluginPaths;
 }
 
 #include <Pothos/Managed.hpp>

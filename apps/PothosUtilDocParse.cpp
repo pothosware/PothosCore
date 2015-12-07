@@ -28,7 +28,7 @@ struct CodeLine
     size_t lineNo;
     std::string toString(void) const
     {
-        return Poco::format("%d:%s", int(lineNo), text);
+        return Poco::format("%z:%s", lineNo, text);
     }
 };
 
@@ -133,12 +133,18 @@ static std::vector<CodeBlock> extractContiguousBlocks(std::istream &is)
     std::vector<CodeBlock> contiguousCommentBlocks;
     CodeBlock currentCodeBlock;
     size_t lineNo = 0;
+    std::string partial, line;
 
     bool inMultiLineComment = false;
     while (is.good() and not is.eof())
     {
-        lineNo++; //starts at 1
-        std::string line; std::getline(is, line);
+        if (not partial.empty()) line = partial;
+        else
+        {
+            lineNo++; //starts at 1
+            std::getline(is, line);
+        }
+        partial.clear();
         if (line.empty()) continue;
 
         const std::string lineTrim = Poco::trimLeft(line);
@@ -157,7 +163,7 @@ static std::vector<CodeBlock> extractContiguousBlocks(std::istream &is)
         {
             inMultiLineComment = false;
             currentCodeBlock.push_back(CodeLine(line.substr(0, closeMulti), lineNo));
-            is.seekg(is.tellg() + std::streamoff(closeMulti+2-int(line.size())));
+            partial = line.substr(closeMulti+2);
         }
         else if (inMultiLineComment)
         {
@@ -358,10 +364,30 @@ static Poco::JSON::Object parseCommentBlockForMarkup(const CodeBlock &commentBlo
             if (currentParam->has("preview")) throw Pothos::SyntaxException(
                 "Multiple occurrence of preview for param",
                 codeLine.toString());
-            if (payload != "disable" and payload != "enable" and payload != "valid" and payload != "invalid") throw Pothos::SyntaxException(
-                "Only supports enable/disable/valid/invalid as value for preview option of param",
+            Poco::RegularExpression::MatchVec fields;
+            Poco::RegularExpression("^\\s*(\\w+)(\\s*\\((.*)\\))?$").match(payload, 0, fields);
+            if (fields.empty()) throw Pothos::SyntaxException(
+                "Expected |preview previewType(args, )",
                 codeLine.toString());
-            currentParam->set("preview", payload);
+
+            assert(fields.size() == 2 or fields.size() == 4);
+            const std::string previewType = Poco::trim(payload.substr(fields[1].offset, fields[1].length));
+
+            if (previewType != "disable" and
+                previewType != "enable" and
+                previewType != "valid" and
+                previewType != "invalid" and
+                previewType != "when"
+            ) throw Pothos::SyntaxException(
+                "Only supports enable/disable/valid/invalid/when as value for preview option of param",
+                codeLine.toString());
+
+            currentParam->set("preview", previewType);
+            if (fields.size() == 4)
+            {
+                const std::string argsStr = Poco::trim(payload.substr(fields[3].offset, fields[3].length));
+                loadArgs(codeLine, *currentParam, argsStr, "previewArgs", "previewKwargs");
+            }
         }
         else if (instruction == "option" and state == "PARAM")
         {

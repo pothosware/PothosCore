@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -14,7 +14,9 @@ class GenericBufferManager :
     public std::enable_shared_from_this<GenericBufferManager>
 {
 public:
-    GenericBufferManager(void)
+    GenericBufferManager(void):
+        _bufferSize(0),
+        _bytesPopped(0)
     {
         return;
     }
@@ -22,6 +24,7 @@ public:
     void init(const Pothos::BufferManagerArgs &args)
     {
         Pothos::BufferManager::init(args);
+        _bufferSize = args.bufferSize;
         _readyBuffs.set_capacity(args.numBuffers);
         for (size_t i = 0; i < args.numBuffers; i++)
         {
@@ -40,10 +43,10 @@ public:
     void pop(const size_t numBytes)
     {
         assert(not _readyBuffs.empty());
+        _bytesPopped += numBytes;
 
         //re-use the buffer for small consumes
-        //length 0 buffers are always popped
-        if (this->front().length != 0 and this->front().length >= numBytes*2)
+        if (_bytesPopped*2 < _bufferSize)
         {
             auto buff = this->front();
             buff.address += numBytes;
@@ -52,6 +55,7 @@ public:
             return;
         }
 
+        _bytesPopped = 0;
         _readyBuffs.pop_front();
         if (_readyBuffs.empty()) this->setFrontBuffer(Pothos::BufferChunk::null());
         else this->setFrontBuffer(_readyBuffs.front());
@@ -66,6 +70,8 @@ public:
 
 private:
 
+    size_t _bufferSize;
+    size_t _bytesPopped;
     Pothos::Util::RingDeque<Pothos::ManagedBuffer> _readyBuffs;
 };
 

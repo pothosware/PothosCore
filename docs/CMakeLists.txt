@@ -12,11 +12,9 @@ endif()
 ########################################################################
 ## Feature registration
 ########################################################################
-include(FeatureSummary)
-include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_DOCS "Enable Pothos Docs component" ON "DOXYGEN_FOUND" OFF)
-add_feature_info(Docs ENABLE_DOCS "Doxygen generated docs for Pothos main library")
-if (NOT ENABLE_DOCS)
+cmake_dependent_option(ENABLE_LIBRARY_DOCS "Enable Pothos Library.Docs component" ON "ENABLE_LIBRARY;DOXYGEN_FOUND" OFF)
+add_feature_info("  Docs" ENABLE_LIBRARY_DOCS "Doxygen generated docs for Pothos library")
+if (NOT ENABLE_LIBRARY_DOCS)
     return()
 endif()
 

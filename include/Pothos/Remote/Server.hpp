@@ -4,7 +4,7 @@
 /// Remote access proxy server interface.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2015 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -30,7 +30,7 @@ public:
     /*!
      * Spawn a new process on this machine, that is running a proxy server on the given URI.
      * URI format: tcp://resolvable_hostname:optional_port
-     * A host address of 0.0.0.0 will bind the server to all interfaces.
+     * A host address of 0.0.0.0 or [::] will bind the server to all interfaces.
      * An unspecified port means that an available port will be automatically chosen.
      * \param uri a formatted string which tells the server what kind of service to run
      * \param closePipes true to close stdout/err pipes (keep open for syslog forwarding)

@@ -2,9 +2,7 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.9)
-project(PothosLibrary)
-enable_language(CXX)
-enable_testing()
+project(PothosLibrary CXX)
 
 find_package(Pothos CONFIG REQUIRED)
 
@@ -13,8 +11,8 @@ find_package(Pothos CONFIG REQUIRED)
 # packagers may specify -DPOTHOS_EXTVER="foo" to replace the git hash
 ########################################################################
 set(POTHOS_MAJOR_VERSION 0)
-set(POTHOS_MINOR_VERSION 2)
-set(POTHOS_PATCH_VERSION 1)
+set(POTHOS_MINOR_VERSION 3)
+set(POTHOS_PATCH_VERSION 0)
 set(POTHOS_LIBVER ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATCH_VERSION})
 
 if (NOT POTHOS_EXTVER)
@@ -30,6 +28,13 @@ endif()
 
 set(POTHOS_VERSION "${POTHOS_LIBVER}-${POTHOS_EXTVER}")
 
+#POTHOS_ROOT is compiled into the library to locate the install base.
+#By default, the POTHOS_ROOT is set to the CMAKE_INSTALL_PREFIX.
+#However users may overload this by specifying -DPOTHOS_ROOT=<path>.
+if(NOT POTHOS_ROOT)
+    file(TO_CMAKE_PATH ${CMAKE_INSTALL_PREFIX} POTHOS_ROOT)
+endif(NOT POTHOS_ROOT)
+
 ########################################################################
 ## Feature registration
 ########################################################################
@@ -37,38 +42,13 @@ include(FeatureSummary)
 include(CMakeDependentOption)
 cmake_dependent_option(ENABLE_LIBRARY "Enable Pothos Library component" ON "ENABLE_SERIALIZATION" OFF)
 add_feature_info(Library ENABLE_LIBRARY "The main library for all Pothos projects")
-if (NOT ENABLE_LIBRARY)
-    return()
-endif()
-
-########################################################################
-# Install cmake helper modules
-########################################################################
-configure_file(
-    ${PROJECT_SOURCE_DIR}/cmake/PothosConfigVersion.in.cmake
-    ${PROJECT_BINARY_DIR}/PothosConfigVersion.cmake
-@ONLY)
-
-install(
-    FILES
-        cmake/PothosConfig.cmake
-        cmake/PothosStandardFlags.cmake
-        cmake/PothosLibraryConfig.cmake
-        cmake/PothosUtil.cmake
-        ${PROJECT_BINARY_DIR}/PothosConfigVersion.cmake
-        #poco support
-        cmake/FindPkgMacros.cmake
-        cmake/FindPoco.cmake
-        cmake/SetupPoco.cmake
-    DESTINATION ${POTHOS_CMAKE_DIRECTORY}
-    COMPONENT pothos_devel
-)
 
 ########################################################################
 # Enter the subdirectory configuration
 ########################################################################
 add_subdirectory(include)
 add_subdirectory(lib)
+add_subdirectory(cmake)
 add_subdirectory(apps)
 add_subdirectory(docs)
 

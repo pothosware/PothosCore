@@ -22,7 +22,7 @@
  * And GCC can handle all possibilities: static, inline, and static inline.
  *
  * The specific reason for this implementation and its caveats
- * is becuase clang will cause symbol overlap for class and functions
+ * is because clang will cause symbol overlap for class and functions
  * with the same name across modules, even if they are not exported.
  */
 #if defined(__clang__)

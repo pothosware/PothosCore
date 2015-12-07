@@ -1,9 +1,10 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
 #include <Pothos/Init.hpp>
 #include <Pothos/Remote.hpp>
+#include <Pothos/Util/Network.hpp>
 #include <Poco/Net/ServerSocket.h>
 #include <Poco/Net/SocketStream.h>
 #include <Poco/Net/TCPServer.h>
@@ -44,8 +45,8 @@ public:
         _numConnections--;
         if (_numConnections == 0 and _requireActive)
         {
-            std::cerr << "Proxy server: No active connections - killing server" << std::endl;
-            Poco::Process::kill(Poco::Process::id());
+            std::cerr << "Proxy server: No active connections - terminating" << std::endl;
+            Poco::Process::requestTermination(Poco::Process::id());
         }
     }
 
@@ -103,10 +104,10 @@ void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
     std::cerr.setf(std::ios::unitbuf);
     std::clog.setf(std::ios::unitbuf);
 
-    Pothos::init();
+    Pothos::ScopedInit init;
 
     //parse the URI
-    const std::string defaultUri = "tcp://0.0.0.0:"+Pothos::RemoteServer::getLocatorPort();
+    const std::string defaultUri = "tcp://"+Pothos::Util::getWildcardAddr(Pothos::RemoteServer::getLocatorPort());
     Poco::URI uri(uriStr.empty()?defaultUri:uriStr);
     const std::string &host = uri.getHost();
     const std::string &port = std::to_string(uri.getPort());

@@ -39,7 +39,9 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 ########################################################################
 if (POTHOS_IN_TREE_SOURCE_DIR)
 
-    set(POTHOS_ROOT ${CMAKE_INSTALL_PREFIX})
+    if(NOT POTHOS_ROOT)
+        set(POTHOS_ROOT ${CMAKE_INSTALL_PREFIX})
+    endif(NOT POTHOS_ROOT)
 
     list(APPEND Pothos_LIBRARIES
         Pothos
@@ -48,8 +50,8 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
     )
 
     list(APPEND Pothos_INCLUDE_DIRS
-        ${POTHOS_IN_TREE_SOURCE_DIR}/pothos-library/include
-        ${POTHOS_IN_TREE_SOURCE_DIR}/pothos-serialization/include
+        ${POTHOS_IN_TREE_SOURCE_DIR}/library/include
+        ${POTHOS_IN_TREE_SOURCE_DIR}/serialization/include
         ${Poco_INCLUDE_DIRS}
     )
 
@@ -99,6 +101,11 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
 
     return()
 endif ()
+
+########################################################################
+## Toolkits using the FeatureSummary macro may depend on ENABLE_LIBRARY
+########################################################################
+set(ENABLE_LIBRARY TRUE)
 
 ########################################################################
 ## Determine root installation path

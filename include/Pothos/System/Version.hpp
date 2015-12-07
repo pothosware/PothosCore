@@ -15,7 +15,7 @@
 /*!
  * ABI Version Information - incremented when the abi is changed.
  */
-#define POTHOS_ABI_VERSION "0.2-4"
+#define POTHOS_ABI_VERSION "0.3-2"
 
 namespace Pothos {
 namespace System {

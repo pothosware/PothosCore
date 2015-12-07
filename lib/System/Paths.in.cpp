@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Paths.hpp>
@@ -12,8 +12,8 @@ std::string Pothos::System::getRootPath(void)
     if (Poco::Environment::has("POTHOS_ROOT"))
         return Poco::Path(Poco::Environment::get("POTHOS_ROOT")).absolute().toString();
 
-    //assume that the CMAKE paths are always in UNIX style
-    const Poco::Path configPrefix = Poco::Path("@CMAKE_INSTALL_PREFIX@", Poco::Path::PATH_UNIX);
+    //assume that the root path is always in UNIX style
+    const Poco::Path configPrefix = Poco::Path("@POTHOS_ROOT@", Poco::Path::PATH_UNIX);
     return configPrefix.absolute().toString();
 }
 

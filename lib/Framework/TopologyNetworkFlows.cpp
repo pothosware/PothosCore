@@ -1,10 +1,11 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
 #include <Pothos/System/HostInfo.hpp>
 #include <Pothos/Remote.hpp>
-#include <Poco/Format.h>
+#include <Poco/Net/SocketAddress.h>
+#include <Poco/URI.h>
 #include <future>
 
 /***********************************************************************
@@ -34,10 +35,13 @@ std::pair<Pothos::Proxy, Pothos::Proxy> createNetworkFlow(const Flow &flow)
     //create the bind and connect source and sink blocks
     auto bindIp = Pothos::RemoteClient::lookupIpFromNodeId(bindEnv->getNodeId());
     assert(not bindIp.empty());
-    netBind = bindEnv->findProxy("Pothos/BlockRegistry").callProxy(netBindPath, "tcp://"+bindIp, "BIND");
+    Poco::URI uri;
+    uri.setScheme("tcp");
+    uri.setHost(bindIp);
+    netBind = bindEnv->findProxy("Pothos/BlockRegistry").callProxy(netBindPath, uri.toString(), "BIND");
     auto connectPort = netBind.call<std::string>("getActualPort");
-    auto connectUri = Poco::format("tcp://%s:%s", bindIp, connectPort);
-    netConn = connEnv->findProxy("Pothos/BlockRegistry").callProxy(netConnPath, connectUri, "CONNECT");
+    uri.setPort(std::stoi(connectPort));
+    netConn = connEnv->findProxy("Pothos/BlockRegistry").callProxy(netConnPath, uri.toString(), "CONNECT");
 
     //return the pair of network blocks
     const auto name = flow.src.obj.call<std::string>("getName")+"["+flow.src.name+"]";

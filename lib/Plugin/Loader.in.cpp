@@ -12,18 +12,6 @@
 #include <Poco/File.h>
 #include <future>
 
-static void loadModuleAtPath(const std::string &path)
-{
-    try
-    {
-        Pothos::PluginModule::safeLoad(path);
-    }
-    catch(const Pothos::PluginModuleError &ex)
-    {
-        poco_error(Poco::Logger::get("Pothos.PluginLoader.load"), ex.displayText());
-    }
-}
-
 std::vector<Poco::Path> getModulePaths(const Poco::Path &path)
 {
     poco_information(Poco::Logger::get("Pothos.PluginLoader.load"), path.toString());
@@ -49,7 +37,7 @@ std::vector<Poco::Path> getModulePaths(const Poco::Path &path)
     return paths;
 }
 
-void Pothos::PluginLoader::loadModules(void)
+std::vector<Pothos::PluginModule> Pothos::PluginLoader::loadModules(void)
 {
     //the default search path
     std::vector<Poco::Path> searchPaths;
@@ -82,15 +70,27 @@ void Pothos::PluginLoader::loadModules(void)
     }
 
     //traverse the search paths and spawn futures
-    std::vector<std::future<void>> futures;
+    std::vector<std::future<Pothos::PluginModule>> futures;
     for (const auto &searchPath : searchPaths)
     {
         for (const auto &path : getModulePaths(searchPath.absolute()))
         {
-            futures.push_back(std::async(std::launch::async, &loadModuleAtPath, path.toString()));
+            futures.push_back(std::async(std::launch::async, &Pothos::PluginModule::safeLoad, path.toString()));
         }
     }
 
     //wait for completion of future module load
-    for (auto &future : futures) future.wait();
+    std::vector<PluginModule> modules;
+    for (auto &future : futures)
+    {
+        POTHOS_EXCEPTION_TRY
+        {
+            modules.push_back(future.get());
+        }
+        POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
+        {
+            poco_error(Poco::Logger::get("Pothos.PluginLoader.load"), ex.displayText());
+        }
+    }
+    return modules;
 }

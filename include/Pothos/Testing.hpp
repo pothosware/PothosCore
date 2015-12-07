@@ -36,23 +36,23 @@
  * \endcode
  */
 #define POTHOS_TEST_BLOCK(path, name) \
-struct name : Pothos::TestingBase \
-{ \
-    void runTestsImpl(void); \
-    void runTestsImpl_(void); \
-}; \
-pothos_static_block(name) \
-{ \
-    std::shared_ptr<Pothos::TestingBase> testObj(new name()); \
-    Pothos::PluginRegistry::add(Pothos::Plugin( \
-        Pothos::PluginPath(path).join(#name), Pothos::Object(testObj))); \
-} \
-void name::runTestsImpl(void) \
-{ \
-    POTHOS_TEST_CHECKPOINT(); \
-    this->runTestsImpl_(); \
-} \
-void name::runTestsImpl_(void)
+    POTHOS_STATIC_FIXTURE_DECL void name ## Runner(void); \
+    template <Pothos::Detail::InitFcn runner> \
+    struct name : Pothos::TestingBase \
+    { \
+        void runTestsImpl(void) \
+        { \
+            POTHOS_TEST_CHECKPOINT(); \
+            runner(); \
+        } \
+    }; \
+    pothos_static_block(name) \
+    { \
+        std::shared_ptr<Pothos::TestingBase> testObj(new name<name ## Runner>()); \
+        Pothos::PluginRegistry::add(Pothos::Plugin( \
+            Pothos::PluginPath(path).join(#name), Pothos::Object(testObj))); \
+    } \
+    POTHOS_STATIC_FIXTURE_DECL void name ## Runner(void)
 
 //! Checkpoint macro to track last successful line executed
 #define POTHOS_TEST_CHECKPOINT() \
@@ -78,14 +78,23 @@ void name::runTestsImpl_(void)
 //! Test if statement is true
 #define POTHOS_TEST_TRUE(statement) \
 { \
-    __POTHOS_TEST_ASSERT(#statement, statement) \
+    __POTHOS_TEST_ASSERT("assert true " #statement, statement); \
 }
 
 //! Test if an equality operation is true
 #define POTHOS_TEST_EQUAL(lhs, rhs) \
 { \
-    __POTHOS_TEST_ASSERT(Pothos::TestingBase::current().toString(lhs) + \
+    __POTHOS_TEST_ASSERT( \
+        "assert equal " + Pothos::TestingBase::current().toString(lhs) + \
         " == " + Pothos::TestingBase::current().toString(rhs), (lhs) == (rhs)); \
+}
+
+//! Test if two values are equal within tolerance
+#define POTHOS_TEST_CLOSE(lhs, rhs, tol) \
+{ \
+    __POTHOS_TEST_ASSERT( \
+        "assert close " + Pothos::TestingBase::current().toString(lhs) + \
+        " ~= " + Pothos::TestingBase::current().toString(rhs), (std::abs((lhs) - (rhs)) <= (tol))); \
 }
 
 //! Test two vectors for equality

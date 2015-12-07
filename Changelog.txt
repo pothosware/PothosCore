@@ -1,5 +1,34 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.3.0 (pending)
+==========================
+
+- Replaced NamedMutex use with FileLock and std::mutex
+- Added templated Q-format/fixed-point conversions
+- Added POTHOS_TEST_CLOSE() for equality with tolerance
+- Support complex integer toString() and conversions
+- Added displayable port alias name to framework APIs
+- Support conditional preview mode in block description parser
+- Applications can cleanup before exit with deinit()
+- Detection logic in input port for queue overflows
+- Added network utils for IPv6 with fall-back support
+- Improved error reporting and formatting for self tests
+- Fixed text fixture symbol declaration for OSX
+- Set library SOVERSION using POTHOS_ABI_VERSION
+- Use requestTermination in server and fix destructor throw
+- RemoteProxyEnvironment reply cache check without blocking
+- Bumped API number to "0.3-0" for serialization changes
+- Re-implement RPC datagram format with embedded length
+- Switch to portable binary Object serialization from EOS
+
+Release 0.2.2 (2015-12-07)
+==========================
+
+- Fix Topology::dumpJSON undefined JSON Object behavior
+- Buffer accumulator pop all front-most consumed buffers
+- Fixed Buffer manager reuse on small consume logic
+- Fixed Pothos Util doc parse bug in use of seekg()
+
 Release 0.2.1 (2015-08-26)
 ==========================
 

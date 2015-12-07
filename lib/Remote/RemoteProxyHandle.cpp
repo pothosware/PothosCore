@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "RemoteProxy.hpp"
@@ -47,7 +47,7 @@ Pothos::Proxy RemoteProxyHandle::call(const std::string &name, const Pothos::Pro
         catch(const std::exception &ex)
         {
             throw Pothos::ProxyHandleCallError("RemoteProxyHandle::call("+name+")",
-                Poco::format("convert arg %d - %s", int(i), std::string(ex.what())));
+                Poco::format("convert arg %z - %s", i, std::string(ex.what())));
         }
         req[std::to_string(i)] = Pothos::Object(handle->remoteID);
     }

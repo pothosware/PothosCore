@@ -4,6 +4,15 @@
 #include <Pothos/Framework/InputPortImpl.hpp>
 #include "Framework/WorkerActor.hpp"
 
+/*!
+ * An arbitrary bound on the queue size to detect buggy situations
+ * where the downstream block is not consuming an input resource
+ * and an upstream block is able to produce without back-pressure.
+ * This should probably be a configurable system-wide value,
+ * but for now the detection itself is more valuable to have.
+ */
+static const size_t MaxQueueCapacity = 1024;
+
 Pothos::InputPort::InputPort(void):
     _actor(nullptr),
     _isSlot(false),
@@ -23,6 +32,17 @@ Pothos::InputPort::InputPort(void):
 Pothos::InputPort::~InputPort(void)
 {
     return;
+}
+
+const std::string &Pothos::InputPort::alias(void) const
+{
+    if (_alias.empty()) return this->name();
+    return _alias;
+}
+
+void Pothos::InputPort::setAlias(const std::string &alias)
+{
+    _alias = alias;
 }
 
 void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
@@ -58,7 +78,17 @@ void Pothos::InputPort::asyncMessagesPush(const Pothos::Object &message, const P
 {
     assert(_actor != nullptr);
     std::lock_guard<Util::SpinLock> lock(_asyncMessagesLock);
-    if (_asyncMessages.full()) _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
+    if (_asyncMessages.full())
+    {
+        if (_asyncMessages.size() >= MaxQueueCapacity)
+        {
+            _asyncMessages.clear();
+            poco_error_f2(Poco::Logger::get("Pothos.InputPort.messages"),
+                "%s[%s] detected input message overflow condition",
+                _actor->block->getName(), this->alias());
+        }
+        else _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
+    }
     _asyncMessages.push_back(std::make_pair(message, token));
     _actor->flagExternalChange();
 }
@@ -73,7 +103,17 @@ void Pothos::InputPort::slotCallsPush(const Pothos::Object &args, const Pothos::
 {
     assert(_actor != nullptr);
     std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
-    if (_slotCalls.full()) _slotCalls.set_capacity(_slotCalls.capacity()*2);
+    if (_slotCalls.full())
+    {
+        if (_slotCalls.size() >= MaxQueueCapacity)
+        {
+            _slotCalls.clear();
+            poco_error_f2(Poco::Logger::get("Pothos.InputPort.slots"),
+                "%s[%s] detected input slot overflow condition",
+                _actor->block->getName(), this->alias());
+        }
+        else _slotCalls.set_capacity(_slotCalls.capacity()*2);
+    }
     _slotCalls.push_back(std::make_pair(args, token));
     _actor->flagExternalChange();
 }
@@ -113,7 +153,7 @@ void Pothos::InputPort::bufferAccumulatorPushNoLock(const BufferChunk &buffer_)
     else
     {
         poco_error_f4(Poco::Logger::get("Pothos.Block.inputBuffer"), "%s[%s] dropped '%s', expected '%s'",
-            _actor->block->getName(), this->name(), buffer.dtype.toString(), this->dtype().toString());
+            _actor->block->getName(), this->alias(), buffer.dtype.toString(), this->dtype().toString());
     }
 }
 
@@ -123,8 +163,8 @@ void Pothos::InputPort::bufferAccumulatorPop(const size_t numBytes)
 
     if (numBytes > _bufferAccumulator.getTotalBytesAvailable())
     {
-        poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %d bytes, %d available",
-            _actor->block->getName(), this->name(), int(numBytes), int(_bufferAccumulator.getTotalBytesAvailable()));
+        poco_error_f4(Poco::Logger::get("Pothos.Block.consume"), "%s[%s] overconsumed %z bytes, %z available",
+            _actor->block->getName(), this->alias(), numBytes, _bufferAccumulator.getTotalBytesAvailable());
         return;
     }
 

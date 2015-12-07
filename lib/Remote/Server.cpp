@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Remote.hpp>
@@ -8,6 +8,7 @@
 #include <Poco/Process.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/URI.h>
+#include <Poco/Net/SocketAddress.h>
 #include <Poco/String.h>
 #include <Poco/Message.h>
 #include <Poco/Net/RemoteSyslogChannel.h>
@@ -30,7 +31,7 @@ struct Pothos::RemoteServer::Impl
     ~Impl(void)
     {
         client = RemoteClient(); //reset
-        Poco::Process::kill(ph);
+        Poco::Process::requestTermination(ph.id());
         outPipe.close();
         errPipe.close();
         if (outThread.joinable()) outThread.join();
@@ -127,8 +128,17 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr, const bool closePi
     //Store an open connection within this server wrapper.
     {
         Poco::URI uri(uriStr);
-        uri.setHost("localhost");
-        uri.setPort(std::atoi(this->getActualPort().c_str()));
+        uri.setPort(std::stoul(this->getActualPort()));
+
+        //rewrite wildcard bind addresses into linklocal addresses
+        Poco::Net::SocketAddress serverAddr(uri.getHost(), uri.getPort());
+        if (serverAddr.host().isWildcard()) switch (serverAddr.family())
+        {
+        case Poco::Net::IPAddress::IPv4: uri.setHost("127.0.0.1"); break;
+        case Poco::Net::IPAddress::IPv6: uri.setHost("::1"); break;
+        default: break;
+        }
+
         _impl->client = RemoteClient(uri.toString());
     }
 }

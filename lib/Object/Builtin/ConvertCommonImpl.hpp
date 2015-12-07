@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2015 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -27,6 +27,11 @@ typedef unsigned long ulong;
 typedef signed long slong;
 typedef unsigned long long ullong;
 typedef signed long long sllong;
+typedef std::complex<signed char> cschar;
+typedef std::complex<signed short> csshort;
+typedef std::complex<signed int> csint;
+typedef std::complex<signed long> cslong;
+typedef std::complex<signed long long> csllong;
 typedef std::complex<float> cfloat;
 typedef std::complex<double> cdouble;
 
