@@ -6,7 +6,7 @@ Release 0.3.0 (pending)
 - Updated internal copy of muparserx to v4.0.4
 - Moved windowing functions into communications toolkit
 
-Release 0.2.1 (pending)
+Release 0.2.1 (2015-12-07)
 ==========================
 
 - Specify full permission-safe object path for CL compile

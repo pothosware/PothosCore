@@ -14,7 +14,7 @@ Release 0.3.0 (pending)
 - Ignore key press events from graph widgets with focus
 - Switch logger display to QPlainTextEdit for performance
 
-Release 0.2.2 (pending)
+Release 0.2.2 (2015-12-07)
 ==========================
 
 - Fix empty signal slot connection to display text label

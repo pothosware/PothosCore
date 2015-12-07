@@ -21,7 +21,7 @@ Release 0.3.0 (pending)
 - Re-implement RPC datagram format with embedded length
 - Switch to portable binary Object serialization from EOS
 
-Release 0.2.2 (pending)
+Release 0.2.2 (2015-12-07)
 ==========================
 
 - Fix Topology::dumpJSON undefined JSON Object behavior
