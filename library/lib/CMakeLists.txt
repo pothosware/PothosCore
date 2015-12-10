@@ -1,7 +1,19 @@
 ########################################################################
+# Serialization library
+########################################################################
+if(NOT PothosSerialization_IN_TREE)
+    find_package(PothosSerialization CONFIG)
+endif(NOT PothosSerialization_IN_TREE)
+message(STATUS "PothosSerialization_FOUND: ${PothosSerialization_FOUND} - ${PothosSerialization_VERSION}")
+message(STATUS "PothosSerialization_INCLUDE_DIRS: ${PothosSerialization_INCLUDE_DIRS}")
+message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}")
+
+list(APPEND Pothos_LIBRARIES ${PothosSerialization_LIBRARIES})
+
+########################################################################
 ## Feature registration
 ########################################################################
-cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY" OFF)
+cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND" OFF)
 add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos development and runtime libraries")
 if (NOT ENABLE_LIBRARY_LIB)
     return()
@@ -23,19 +35,7 @@ endif()
 ########################################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Pothos_INCLUDE_DIRS})
-
-########################################################################
-# Serialization library
-########################################################################
-if(NOT PothosSerialization_IN_TREE)
-    find_package(PothosSerialization CONFIG)
-endif(NOT PothosSerialization_IN_TREE)
-message(STATUS "PothosSerialization_FOUND: ${PothosSerialization_FOUND} - ${PothosSerialization_VERSION}")
-message(STATUS "PothosSerialization_INCLUDE_DIRS: ${PothosSerialization_INCLUDE_DIRS}")
-message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}")
-
 include_directories(${PothosSerialization_INCLUDE_DIRS})
-list(APPEND Pothos_LIBRARIES ${PothosSerialization_LIBRARIES})
 
 ########################################################################
 # NUMA info support

@@ -32,13 +32,14 @@ before_install:
 
   # poco and qwt development files from ppa
   - sudo add-apt-repository -y ppa:pothosware/support
+  - sudo add-apt-repository -y ppa:pothosware/framework
 
   # update after package changes
   - sudo apt-get update
 
 install:
   # install development dependencies
-  - sudo apt-get install -qq libnuma-dev cmake libpoco-dev-min
+  - sudo apt-get install -qq libnuma-dev cmake libpoco-dev-min libpothos-serialization-dev
 
   # install audio support dependencies
   - sudo apt-get install -qq portaudio19-dev libjack-jackd2-dev

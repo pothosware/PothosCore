@@ -40,7 +40,7 @@ endif(NOT POTHOS_ROOT)
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_LIBRARY "Enable Pothos Library component" ON "ENABLE_SERIALIZATION" OFF)
+cmake_dependent_option(ENABLE_LIBRARY "Enable Pothos Library component" ON "TRUE" OFF)
 add_feature_info(Library ENABLE_LIBRARY "The main library for all Pothos projects")
 
 ########################################################################
