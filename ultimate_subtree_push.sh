@@ -13,7 +13,6 @@ util
 opencl
 blocks
 comms
-serialization
 sdr
 audio
 "

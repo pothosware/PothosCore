@@ -25,6 +25,19 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Pothos_INCLUDE_DIRS})
 
 ########################################################################
+# Serialization library
+########################################################################
+if(NOT PothosSerialization_IN_TREE)
+    find_package(PothosSerialization CONFIG)
+endif(NOT PothosSerialization_IN_TREE)
+message(STATUS "PothosSerialization_FOUND: ${PothosSerialization_FOUND} - ${PothosSerialization_VERSION}")
+message(STATUS "PothosSerialization_INCLUDE_DIRS: ${PothosSerialization_INCLUDE_DIRS}")
+message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}")
+
+include_directories(${PothosSerialization_INCLUDE_DIRS})
+list(APPEND Pothos_LIBRARIES ${PothosSerialization_LIBRARIES})
+
+########################################################################
 # NUMA info support
 ########################################################################
 find_library(

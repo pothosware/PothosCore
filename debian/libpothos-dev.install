@@ -9,4 +9,3 @@ usr/share/cmake/Pothos/FindPoco.cmake
 usr/share/cmake/Pothos/SetupPoco.cmake
 usr/lib/*/pkgconfig
 usr/lib/*/libPothos.so
-usr/lib/*/libPothosSerialization.so

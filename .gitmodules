@@ -8,3 +8,6 @@
 [submodule "spuce"]
 	path = spuce
 	url = https://github.com/audiofilter/spuce.git
+[submodule "serialization"]
+	path = serialization
+	url = https://github.com/pothosware/pothos-serialization.git

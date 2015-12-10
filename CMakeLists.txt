@@ -102,7 +102,22 @@ endif()
 ########################################################################
 # Build serialization library
 ########################################################################
-add_subdirectory(serialization)
+find_package(PothosSerialization CONFIG)
+
+if (NOT PothosSerialization_FOUND)
+    message(STATUS "PothosSerialization not found - using built-in PothosSerialization")
+
+    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/serialization/CMakeLists.txt)
+        message(FATAL_ERROR "PothosSerialization submodule not configured (git submodule init && git submodule update)")
+    endif ()
+
+    add_subdirectory(serialization)
+    set(PothosSerialization_IN_TREE TRUE)
+    set(PothosSerialization_FOUND TRUE)
+    set(PothosSerialization_VERSION "[submodule]")
+    set(PothosSerialization_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/serialization/include)
+    set(PothosSerialization_LIBRARIES PothosSerialization)
+endif()
 
 ########################################################################
 # Build main pothos library

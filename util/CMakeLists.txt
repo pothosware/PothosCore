@@ -7,11 +7,21 @@ project(PothosUtil CXX)
 find_package(Pothos CONFIG REQUIRED)
 
 ########################################################################
+# Serialization library
+########################################################################
+if(NOT PothosSerialization_IN_TREE)
+    find_package(PothosSerialization CONFIG)
+endif(NOT PothosSerialization_IN_TREE)
+message(STATUS "PothosSerialization_FOUND: ${PothosSerialization_FOUND} - ${PothosSerialization_VERSION}")
+message(STATUS "PothosSerialization_INCLUDE_DIRS: ${PothosSerialization_INCLUDE_DIRS}")
+message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}")
+
+########################################################################
 ## Feature registration
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_UTILITY "Enable Pothos Util component" ON "ENABLE_LIBRARY" OFF)
+cmake_dependent_option(ENABLE_UTILITY "Enable Pothos Util component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND" OFF)
 add_feature_info(Utility ENABLE_UTILITY "Common utility modules shared by components")
 if (NOT ENABLE_UTILITY)
     return()
@@ -43,10 +53,13 @@ POTHOS_MODULE_UTIL(
 ########################################################################
 # JSON support (using POCO JSON)
 ########################################################################
+include_directories(${PothosSerialization_INCLUDE_DIRS})
+
 POTHOS_MODULE_UTIL(
     TARGET JSONSupport
     SOURCES JSONSerialization.cpp TestJSONSerialization.cpp
     DESTINATION util
+    LIBRARIES ${PothosSerialization_LIBRARIES}
 )
 
 ########################################################################

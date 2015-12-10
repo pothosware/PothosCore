@@ -45,18 +45,16 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
 
     list(APPEND Pothos_LIBRARIES
         Pothos
-        PothosSerialization
         ${Poco_LIBRARIES}
     )
 
     list(APPEND Pothos_INCLUDE_DIRS
         ${POTHOS_IN_TREE_SOURCE_DIR}/library/include
-        ${POTHOS_IN_TREE_SOURCE_DIR}/serialization/include
         ${Poco_INCLUDE_DIRS}
     )
 
     #a list of in-tree built libraries to generate a library path script
-    set(IN_TREE_LIBRARIES Pothos PothosSerialization)
+    set(IN_TREE_LIBRARIES Pothos)
     if (POCO_IN_TREE)
         list(APPEND IN_TREE_LIBRARIES ${Poco_LIBRARIES})
     endif()
@@ -175,19 +173,6 @@ if(NOT POTHOS_LIBRARY)
     message(FATAL_ERROR "cannot find Pothos library in ${POTHOS_ROOT}/lib${LIB_SUFFIX}")
 endif()
 list(APPEND Pothos_LIBRARIES ${POTHOS_LIBRARY})
-
-########################################################################
-## locate the Pothos Serialization library
-########################################################################
-find_library(
-    POTHOS_SERIALIZATION_LIBRARY PothosSerialization PothosSerializationd
-    PATHS ${POTHOS_ROOT}/lib${LIB_SUFFIX}
-    NO_DEFAULT_PATH
-)
-if(NOT POTHOS_LIBRARY)
-    message(FATAL_ERROR "cannot find PothosSerialization library in ${POTHOS_ROOT}/lib${LIB_SUFFIX}")
-endif()
-list(APPEND Pothos_LIBRARIES ${POTHOS_SERIALIZATION_LIBRARY})
 
 ########################################################################
 ## locate the Pothos includes

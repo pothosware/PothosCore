@@ -5,6 +5,7 @@ Maintainer: Josh Blum <josh@pothosware.com>
 Build-Depends:
     debhelper (>= 9.0.0),
     cmake (>= 2.8.9),
+    libpothos-serialization-dev,
     libpoco-dev (>= 1.6),
     libspuce-dev,
     libnuma-dev [amd64 i386],
