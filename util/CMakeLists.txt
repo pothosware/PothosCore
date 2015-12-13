@@ -39,28 +39,28 @@ get_filename_component(MUPARSERX_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/muparserx/par
 include_directories(${MUPARSERX_ROOT})
 file(GLOB MUPARSERX_SOURCES "${MUPARSERX_ROOT}/*.cpp")
 
-POTHOS_MODULE_UTIL(
-    TARGET EvalSupport
-    SOURCES
-        EvalEnvironment.cpp
-        EvalEnvironmentListParsers.cpp
-        TestEvalExpression.cpp
-        BlockEval.cpp
-        ${MUPARSERX_SOURCES}
-    DESTINATION util
-)
+#POTHOS_MODULE_UTIL(
+#    TARGET EvalSupport
+#    SOURCES
+#        EvalEnvironment.cpp
+#        EvalEnvironmentListParsers.cpp
+#        TestEvalExpression.cpp
+#        BlockEval.cpp
+#        ${MUPARSERX_SOURCES}
+#    DESTINATION util
+#)
 
 ########################################################################
 # JSON support (using POCO JSON)
 ########################################################################
 include_directories(${PothosSerialization_INCLUDE_DIRS})
 
-POTHOS_MODULE_UTIL(
-    TARGET JSONSupport
-    SOURCES JSONSerialization.cpp TestJSONSerialization.cpp
-    DESTINATION util
-    LIBRARIES ${PothosSerialization_LIBRARIES}
-)
+#POTHOS_MODULE_UTIL(
+#    TARGET JSONSupport
+#    SOURCES JSONSerialization.cpp TestJSONSerialization.cpp
+#    DESTINATION util
+#    LIBRARIES ${PothosSerialization_LIBRARIES}
+#)
 
 ########################################################################
 # Misc support (used by GUI)
@@ -74,19 +74,19 @@ set(SOURCES
     TestDocUtils.cpp
 )
 
-POTHOS_MODULE_UTIL(
-    TARGET MiscSupport
-    SOURCES ${SOURCES}
-    DESTINATION util
-)
+#POTHOS_MODULE_UTIL(
+#    TARGET MiscSupport
+#    SOURCES ${SOURCES}
+#    DESTINATION util
+#)
 
 ########################################################################
 # CPU device info for windows
 ########################################################################
-if (WIN32)
-POTHOS_MODULE_UTIL(
-    TARGET WindowsGetLogicalProcessorInfo
-    SOURCES WindowsGetLogicalProcessorInfo.cpp
-    DESTINATION util
-)
-endif()
+#if (WIN32)
+#POTHOS_MODULE_UTIL(
+#    TARGET WindowsGetLogicalProcessorInfo
+#    SOURCES WindowsGetLogicalProcessorInfo.cpp
+#    DESTINATION util
+#)
+#endif()

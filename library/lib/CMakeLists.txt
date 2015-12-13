@@ -185,6 +185,7 @@ list(APPEND POTHOS_SOURCES
     Proxy/Convert.cpp
     Proxy/Environment.cpp
     Proxy/Exception.cpp
+    Proxy/Builtin/ConvertContainers.cpp
 
     Remote/RemoteProxyDatagram.cpp
     Remote/RemoteProxy.cpp
@@ -213,12 +214,23 @@ list(APPEND POTHOS_SOURCES
     Util/Compiler.cpp
     Util/EvalInterface.cpp
     Util/Network.cpp
+
+    Util/Builtin/JSONSerialization.cpp
+    Util/Builtin/TestJSONSerialization.cpp
+    Util/Builtin/BlockEval.cpp
+    Util/Builtin/DeviceInfoUtils.cpp
+    Util/Builtin/DocUtils.cpp
+    Util/Builtin/TestDocUtils.cpp
+    Util/Builtin/EvalEnvironment.cpp
+    Util/Builtin/EvalEnvironmentListParsers.cpp
+    Util/Builtin/TestEvalExpression.cpp
 )
 
 if(WIN32)
     list(APPEND POTHOS_SOURCES Framework/SharedBufferWindows.cpp)
     list(APPEND POTHOS_SOURCES Framework/WindowsDelayLoadedSymbols.cpp)
     list(APPEND POTHOS_SOURCES Util/FileLockWindows.cpp)
+    list(APPEND POTHOS_SOURCES Util/Builtin/WindowsGetLogicalProcessorInfo.cpp)
 elseif(UNIX)
     list(APPEND POTHOS_SOURCES Framework/SharedBufferUnix.cpp)
     list(APPEND POTHOS_SOURCES Util/FileLockUnix.cpp)
