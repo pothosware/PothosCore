@@ -250,6 +250,26 @@ elseif(UNIX)
 endif()
 
 ########################################################################
+# Compiler support wrapper
+########################################################################
+list(APPEND POTHOS_SOURCES Util/Builtin/TestCompilerSupport.cpp)
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+    list(APPEND POTHOS_SOURCES Util/Builtin/GccCompilerSupport.cpp)
+endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    list(APPEND POTHOS_SOURCES Util/Builtin/ClangCompilerSupport.cpp)
+endif()
+
+if(MSVC)
+    get_filename_component(MSVC_INSTALL_PATH ${CMAKE_LINKER} PATH)
+    file(TO_NATIVE_PATH ${MSVC_INSTALL_PATH} MSVC_INSTALL_PATH)
+    string(REPLACE "\\" "\\\\" MSVC_INSTALL_PATH ${MSVC_INSTALL_PATH})
+    list(APPEND POTHOS_SOURCES Util/Builtin/MsvcCompilerSupport.in.cpp)
+endif(MSVC)
+
+########################################################################
 # Deal with *.in files in the sources list
 ########################################################################
 unset(__POTHOS_SOURCES)
