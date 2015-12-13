@@ -55,6 +55,7 @@ if (POCO_FOUND AND POCO_Util_FOUND AND POCO_Net_FOUND AND POCO_XML_FOUND AND POC
     ########################################################################
     if (UNIX)
         set(CMAKE_THREAD_PREFER_PTHREAD ON)
+        enable_language(C)
         find_package(Threads)
         list(APPEND Poco_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
     endif()
