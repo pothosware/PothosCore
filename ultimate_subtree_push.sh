@@ -8,8 +8,6 @@ plotters
 gui
 library
 python
-java
-opencl
 blocks
 comms
 sdr
