@@ -6,6 +6,9 @@ project(Pothos)
 enable_language(CXX)
 enable_testing()
 
+set(Pothos_DIR ${PROJECT_SOURCE_DIR}/cmake)
+set(POTHOS_IN_TREE_SOURCE_DIR ${PROJECT_SOURCE_DIR})
+
 #args to set the CMAKE_PREFIX_PATH environment variable
 if (CMAKE_PREFIX_PATH)
     set(ENV{CMAKE_PREFIX_PATH} ${CMAKE_PREFIX_PATH})
@@ -13,12 +16,41 @@ endif (CMAKE_PREFIX_PATH)
 
 # Include the Pothos library config into the top level.
 # This brings in LIB_SUFFIX and RPATH settings for submodules.
-include(${PROJECT_SOURCE_DIR}/library/cmake/PothosLibraryConfig.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/PothosLibraryConfig.cmake)
+
+########################################################################
+# gather version information
+# packagers may specify -DPOTHOS_EXTVER="foo" to replace the git hash
+########################################################################
+set(POTHOS_MAJOR_VERSION 0)
+set(POTHOS_MINOR_VERSION 3)
+set(POTHOS_PATCH_VERSION 0)
+set(POTHOS_LIBVER ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATCH_VERSION})
+
+if (NOT POTHOS_EXTVER)
+    include(${PROJECT_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake)
+    get_git_head_revision(GITREFSPEC GITHASH)
+    if (GITHASH)
+        string(SUBSTRING "${GITHASH}" 0 8 GITHASH)
+        set(POTHOS_EXTVER "g${GITHASH}")
+    else (GITHASH)
+        set(POTHOS_EXTVER "unknown")
+    endif (GITHASH)
+endif()
+
+set(POTHOS_VERSION "${POTHOS_LIBVER}-${POTHOS_EXTVER}")
+
+#POTHOS_ROOT is compiled into the library to locate the install base.
+#By default, the POTHOS_ROOT is set to the CMAKE_INSTALL_PREFIX.
+#However users may overload this by specifying -DPOTHOS_ROOT=<path>.
+if(NOT POTHOS_ROOT)
+    file(TO_CMAKE_PATH ${CMAKE_INSTALL_PREFIX} POTHOS_ROOT)
+endif(NOT POTHOS_ROOT)
 
 ########################################################################
 # POCO dependency - search for Poco or build if not found
 ########################################################################
-include(${PROJECT_SOURCE_DIR}/library/cmake/SetupPoco.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/SetupPoco.cmake)
 
 set(POCO_DIR poco154)
 
@@ -140,9 +172,22 @@ if (NOT PothosSerialization_FOUND)
 endif()
 
 ########################################################################
-# Build main pothos library
+## Feature registration
 ########################################################################
-add_subdirectory(library)
+include(FeatureSummary)
+include(CMakeDependentOption)
+cmake_dependent_option(ENABLE_LIBRARY "Enable Pothos Library component" ON "TRUE" OFF)
+add_feature_info(Library ENABLE_LIBRARY "The main library for all Pothos projects")
+
+########################################################################
+# Enter the subdirectory configuration
+########################################################################
+find_package(Pothos CONFIG REQUIRED)
+add_subdirectory(include)
+add_subdirectory(lib)
+add_subdirectory(cmake)
+add_subdirectory(apps)
+add_subdirectory(docs)
 
 #########################################################################
 ## Build in-tree modules
@@ -180,6 +225,7 @@ endif (POCO_IN_TREE)
 # print features summary
 #########################################################################
 include(FeatureSummary)
+message(STATUS "")
 message(STATUS "######################################################")
 message(STATUS "## Enabled features")
 message(STATUS "######################################################")
@@ -188,3 +234,4 @@ message(STATUS "######################################################")
 message(STATUS "## Disabled features")
 message(STATUS "######################################################")
 feature_summary(WHAT DISABLED_FEATURES)
+message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")

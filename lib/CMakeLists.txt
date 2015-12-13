@@ -28,7 +28,7 @@ list(APPEND Pothos_LIBRARIES ${muparserx_LIBRARIES})
 ## Feature registration
 ########################################################################
 cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND;muparserx_FOUND" OFF)
-add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos development and runtime libraries")
+add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos framework library v${POTHOS_VERSION}")
 if (NOT ENABLE_LIBRARY_LIB)
     return()
 endif()
