@@ -21,7 +21,7 @@ message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}"
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_UTILITY "Enable Pothos Util component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND" OFF)
+cmake_dependent_option(ENABLE_UTILITY "Enable Pothos Util component" ON "Pothos_FOUND;PothosSerialization_FOUND" OFF)
 add_feature_info(Utility ENABLE_UTILITY "Common utility modules shared by components")
 if (NOT ENABLE_UTILITY)
     return()

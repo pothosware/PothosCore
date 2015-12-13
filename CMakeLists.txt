@@ -6,9 +6,6 @@ project(Pothos)
 enable_language(CXX)
 enable_testing()
 
-set(Pothos_DIR ${PROJECT_SOURCE_DIR}/library/cmake)
-set(POTHOS_IN_TREE_SOURCE_DIR ${PROJECT_SOURCE_DIR})
-
 #args to set the CMAKE_PREFIX_PATH environment variable
 if (CMAKE_PREFIX_PATH)
     set(ENV{CMAKE_PREFIX_PATH} ${CMAKE_PREFIX_PATH})
@@ -17,7 +14,7 @@ endif (CMAKE_PREFIX_PATH)
 ########################################################################
 # POCO dependency - search for Poco or build if not found
 ########################################################################
-include(${Pothos_DIR}/SetupPoco.cmake)
+include(${PROJECT_SOURCE_DIR}/library/cmake/SetupPoco.cmake)
 
 set(POCO_DIR poco154)
 
@@ -49,7 +46,7 @@ if (NOT Poco_FOUND)
 
     # Include the Pothos library config into the top level.
     # This brings in LIB_SUFFIX and RPATH settings for Poco.
-    include(${Pothos_DIR}/PothosLibraryConfig.cmake)
+    include(${PROJECT_SOURCE_DIR}/library/cmake/PothosLibraryConfig.cmake)
 
     #set top level dirs, go into submodule, and restore
     set(POTHOS_MODULE_PATH ${CMAKE_MODULE_PATH})
@@ -76,6 +73,9 @@ if (NOT Poco_FOUND)
         PocoNet
         PocoJSON
     )
+
+    #ensure that local headers get precedent over installed headers
+    include_directories(${Poco_INCLUDE_DIRS})
 
 endif()
 
@@ -127,11 +127,6 @@ add_subdirectory(library)
 #########################################################################
 ## Build in-tree modules
 #########################################################################
-
-#ensure that local headers get precedent over installed headers
-include_directories(library/include)
-include_directories(${Poco_INCLUDE_DIRS})
-
 add_subdirectory(blocks)
 add_subdirectory(comms)
 add_subdirectory(python)

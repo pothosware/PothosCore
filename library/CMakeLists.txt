@@ -4,6 +4,8 @@
 cmake_minimum_required(VERSION 2.8.9)
 project(PothosLibrary CXX)
 
+set(Pothos_DIR ${PROJECT_SOURCE_DIR}/cmake  CACHE STRING "")
+set(POTHOS_IN_TREE_SOURCE_DIR ${PROJECT_SOURCE_DIR} CACHE STRING "")
 find_package(Pothos CONFIG REQUIRED)
 
 ########################################################################

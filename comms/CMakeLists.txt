@@ -11,7 +11,7 @@ find_package(Pothos CONFIG REQUIRED)
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_COMMS "Enable Pothos Comms component" ON "ENABLE_LIBRARY" OFF)
+cmake_dependent_option(ENABLE_COMMS "Enable Pothos Comms component" ON "Pothos_FOUND" OFF)
 add_feature_info(Comms ENABLE_COMMS "A collection of DSP/communications blocks")
 
 ########################################################################

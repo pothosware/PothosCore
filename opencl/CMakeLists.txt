@@ -21,7 +21,7 @@ message(STATUS "OPENCL_LIBRARIES: ${OPENCL_LIBRARIES}")
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_OPENCL "Enable Pothos OpenCL component" ON "ENABLE_LIBRARY;OPENCL_FOUND" OFF)
+cmake_dependent_option(ENABLE_OPENCL "Enable Pothos OpenCL component" ON "Pothos_FOUND;OPENCL_FOUND" OFF)
 add_feature_info(OpenCL ENABLE_OPENCL "Support for OpenCL-based processing blocks")
 if (NOT ENABLE_OPENCL)
     return()

@@ -40,7 +40,7 @@ endif()
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_JAVA "Enable Pothos Java component" ON "ENABLE_LIBRARY;Java_VERSION_OK;JNI_FOUND" OFF)
+cmake_dependent_option(ENABLE_JAVA "Enable Pothos Java component" ON "Pothos_FOUND;Java_VERSION_OK;JNI_FOUND" OFF)
 add_feature_info(Java ENABLE_JAVA "Java bindings for the Pothos framework")
 if (NOT ENABLE_JAVA)
     return()

@@ -6,12 +6,15 @@ set(INCLUDED_SETUP_POCO_CMAKE TRUE)
 ########################################################################
 # Find Poco with PocoConfig.cmake (installed copy)
 ########################################################################
-set(Poco_INCLUDE_DIRS "")
-find_package(Poco CONFIG COMPONENTS Foundation Util JSON XML Net)
-if (Poco_FOUND)
-    message(STATUS "Poco_DIR: ${Poco_DIR}")
-    message(STATUS "Poco_LIBRARIES: ${Poco_LIBRARIES}")
-    return()
+if("${CMAKE_VERSION}" VERSION_LESS "3.0.0")
+else()
+    set(Poco_INCLUDE_DIRS "")
+    find_package(Poco CONFIG COMPONENTS Foundation Util JSON XML Net)
+    if (Poco_FOUND)
+        message(STATUS "Poco_DIR: ${Poco_DIR}")
+        message(STATUS "Poco_LIBRARIES: ${Poco_LIBRARIES}")
+        return()
+    endif()
 endif()
 
 ########################################################################

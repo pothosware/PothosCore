@@ -11,7 +11,7 @@ find_package(Pothos CONFIG REQUIRED)
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_BLOCKS "Enable Pothos Blocks component" ON "ENABLE_LIBRARY" OFF)
+cmake_dependent_option(ENABLE_BLOCKS "Enable Pothos Blocks component" ON "Pothos_FOUND" OFF)
 add_feature_info(Blocks ENABLE_BLOCKS "A collection of general purpose blocks")
 
 ########################################################################

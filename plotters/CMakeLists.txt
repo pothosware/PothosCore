@@ -46,7 +46,7 @@ message(STATUS "Spuce_LIBRARIES: ${Spuce_LIBRARIES}")
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_PLOTTERS "Enable Pothos Plotters component" ON "ENABLE_LIBRARY;${Qt5Enables}" OFF)
+cmake_dependent_option(ENABLE_PLOTTERS "Enable Pothos Plotters component" ON "Pothos_FOUND;${Qt5Enables}" OFF)
 add_feature_info(Plotters ENABLE_PLOTTERS "Graphical plotter widgets for the GUI")
 
 ########################################################################
@@ -106,6 +106,7 @@ endif (QWT_FOUND)
 ########################################################################
 if (ENABLE_PLOTTERS)
 
+include_directories(${Pothos_INCLUDE_DIRS}) #include Pothos/Config.hpp
 file(GLOB PLOTTER_UTILS_SOURCES "PlotterUtils/*.cpp")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/PlotterUtils)
 add_library(PothosPlotterUtils SHARED ${PLOTTER_UTILS_SOURCES})

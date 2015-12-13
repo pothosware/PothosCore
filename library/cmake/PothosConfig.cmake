@@ -15,6 +15,7 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
 include(PothosStandardFlags) #compiler settings
 include(PothosLibraryConfig) #library settings
 include(PothosUtil) #utility functions
+include(SetupPoco) #find poco install
 
 ########################################################################
 # install directory for cmake files
@@ -49,7 +50,7 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
     )
 
     list(APPEND Pothos_INCLUDE_DIRS
-        ${POTHOS_IN_TREE_SOURCE_DIR}/library/include
+        ${POTHOS_IN_TREE_SOURCE_DIR}/include
         ${Poco_INCLUDE_DIRS}
     )
 
@@ -100,13 +101,11 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
     set(__POTHOS_UTIL_TARGET_NAME ${PROJECT_NAME}PothosUtil)
     add_custom_target(${__POTHOS_UTIL_TARGET_NAME} DEPENDS ${POTHOS_UTIL_EXE})
 
+    #ensure that local headers get precedent over installed headers
+    include_directories(${POTHOS_IN_TREE_SOURCE_DIR}/include)
+
     return()
 endif ()
-
-########################################################################
-## Toolkits using the FeatureSummary macro may depend on ENABLE_LIBRARY
-########################################################################
-set(ENABLE_LIBRARY TRUE)
 
 ########################################################################
 ## Determine root installation path
@@ -193,11 +192,16 @@ list(APPEND Pothos_INCLUDE_DIRS ${POTHOS_INCLUDE_DIR})
 ########################################################################
 ## locate the Poco libraries
 ########################################################################
-include(SetupPoco) #find poco install
-
 #try to use poco from the system install
 if (Poco_FOUND)
-    list(APPEND Pothos_LIBRARIES ${Poco_LIBRARIES})
+
+    if (Poco_LIBRARIES)
+        list(APPEND Pothos_LIBRARIES ${Poco_LIBRARIES})
+    endif (Poco_LIBRARIES)
+
+    if (Poco_INCLUDE_DIRS)
+        list(APPEND Pothos_INCLUDE_DIRS ${Poco_INCLUDE_DIRS})
+    endif (Poco_INCLUDE_DIRS)
 
 #otherwise use poco from the pothos install
 else (Poco_FOUND)

@@ -24,7 +24,7 @@ endif()
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_SDR "Enable Pothos SDR component" ON "ENABLE_LIBRARY;SoapySDR_FOUND" OFF)
+cmake_dependent_option(ENABLE_SDR "Enable Pothos SDR component" ON "Pothos_FOUND;SoapySDR_FOUND" OFF)
 add_feature_info(SDR ENABLE_SDR "SDR source and sink blocks for radio hardware")
 if (NOT ENABLE_SDR)
     return()
