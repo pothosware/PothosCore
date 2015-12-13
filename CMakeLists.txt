@@ -100,6 +100,26 @@ if (NOT Spuce_FOUND)
 endif()
 
 ########################################################################
+# muparserx dependency - use system muparserx or submodule
+########################################################################
+find_package(muparserx CONFIG)
+
+if (NOT muparserx_FOUND)
+    message(STATUS "muparserx not found - using built-in muparserx")
+
+    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/muparserx/CMakeLists.txt)
+        message(FATAL_ERROR "muparserx submodule not configured (git submodule init && git submodule update)")
+    endif ()
+
+    add_subdirectory(muparserx)
+    set(MUPARSERX_IN_TREE TRUE)
+    set(muparserx_FOUND TRUE)
+    set(muparserx_VERSION "[submodule]")
+    set(muparserx_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/muparserx/parser)
+    set(muparserx_LIBRARIES muparserx)
+endif()
+
+########################################################################
 # Build serialization library
 ########################################################################
 find_package(PothosSerialization CONFIG)

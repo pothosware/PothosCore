@@ -8,12 +8,26 @@ message(STATUS "PothosSerialization_FOUND: ${PothosSerialization_FOUND} - ${Poth
 message(STATUS "PothosSerialization_INCLUDE_DIRS: ${PothosSerialization_INCLUDE_DIRS}")
 message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}")
 
+list(APPEND Pothos_INCLUDE_DIRS ${PothosSerialization_INCLUDE_DIRS})
 list(APPEND Pothos_LIBRARIES ${PothosSerialization_LIBRARIES})
+
+########################################################################
+# muparserx library
+########################################################################
+if(NOT MUPARSERX_IN_TREE)
+    find_package(muparserx CONFIG)
+endif(NOT MUPARSERX_IN_TREE)
+message(STATUS "muparserx_FOUND: ${muparserx_FOUND} - ${muparserx_VERSION}")
+message(STATUS "muparserx_INCLUDE_DIRS: ${muparserx_INCLUDE_DIRS}")
+message(STATUS "muparserx_LIBRARIES: ${muparserx_LIBRARIES}")
+
+list(APPEND Pothos_INCLUDE_DIRS ${muparserx_INCLUDE_DIRS})
+list(APPEND Pothos_LIBRARIES ${muparserx_LIBRARIES})
 
 ########################################################################
 ## Feature registration
 ########################################################################
-cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND" OFF)
+cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND;muparserx_FOUND" OFF)
 add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos development and runtime libraries")
 if (NOT ENABLE_LIBRARY_LIB)
     return()
@@ -35,7 +49,6 @@ endif()
 ########################################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Pothos_INCLUDE_DIRS})
-include_directories(${PothosSerialization_INCLUDE_DIRS})
 
 ########################################################################
 # NUMA info support
