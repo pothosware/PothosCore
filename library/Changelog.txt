@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.3.0 (pending)
 ==========================
 
+- Absorbed the pothos-util toolkit into lib/Util
 - Replaced NamedMutex use with FileLock and std::mutex
 - Added templated Q-format/fixed-point conversions
 - Added POTHOS_TEST_CLOSE() for equality with tolerance
