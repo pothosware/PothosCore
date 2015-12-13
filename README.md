@@ -33,14 +33,14 @@ user may wish to build these toolkits alongside the framework
 library to simplfy the effort involved building from source.
 The following toolkits are available as git submodules:
 
-* audio
-* blocks
-* comms
-* gui
-* plotters
-* python
-* sdr
-* widgets
+* pothos-audio
+* pothos-blocks
+* pothos-comms
+* pothos-gui
+* pothos-plotters
+* pothos-python
+* pothos-sdr
+* pothos-widgets
 
 ## Building
 

@@ -28,7 +28,7 @@ list(APPEND Pothos_LIBRARIES ${muparserx_LIBRARIES})
 ## Feature registration
 ########################################################################
 cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND;muparserx_FOUND" OFF)
-add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos framework library v${POTHOS_VERSION}")
+add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos development and runtime libraries")
 if (NOT ENABLE_LIBRARY_LIB)
     return()
 endif()
@@ -303,7 +303,7 @@ string(REGEX MATCH "\\#define POTHOS_ABI_VERSION \"([0-9]+\\.[0-9]+-[0-9]+)\"" P
 if(NOT POTHOS_ABI_VERSION_MATCHES)
     message(FATAL_ERROR "Failed to extract version number from Version.hpp")
 endif(NOT POTHOS_ABI_VERSION_MATCHES)
-set(POTHOS_SOVER "${CMAKE_MATCH_1}")
+set(POTHOS_SOVER "${CMAKE_MATCH_1}" CACHE STRING "")
 
 ########################################################################
 # Build library

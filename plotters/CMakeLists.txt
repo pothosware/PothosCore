@@ -7,6 +7,11 @@ project(PothosPlotters CXX)
 find_package(Pothos CONFIG REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+#args to set the CMAKE_PREFIX_PATH environment variable
+if (CMAKE_PREFIX_PATH)
+    set(ENV{CMAKE_PREFIX_PATH} ${CMAKE_PREFIX_PATH})
+endif (CMAKE_PREFIX_PATH)
+
 ########################################################################
 # QT5 devel setup
 ########################################################################
