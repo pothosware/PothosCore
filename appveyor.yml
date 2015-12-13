@@ -56,6 +56,8 @@ build_script:
   - echo %PATH%
   - git submodule init spuce
   - git submodule update spuce
+  - git submodule init muparserx
+  - git submodule update muparserx
   - git submodule init serialization
   - git submodule update serialization
   - mkdir build && cd build

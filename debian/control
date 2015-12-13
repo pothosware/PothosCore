@@ -8,6 +8,7 @@ Build-Depends:
     libpothos-serialization-dev,
     libpoco-dev (>= 1.6),
     libspuce-dev,
+    libmuparserx-dev,
     libnuma-dev [amd64 i386],
     qtbase5-dev, libqt5svg5-dev, libqt5opengl5-dev,
     libqwt-qt5-dev,
