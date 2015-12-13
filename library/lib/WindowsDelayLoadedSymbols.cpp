@@ -78,3 +78,14 @@ LPVOID DL_MapViewOfFileExNuma(HANDLE hFileMappingObject, DWORD dwDesiredAccess, 
     if (not fcn) return MapViewOfFileEx(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap, lpBaseAddress);
     return fcn(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap, lpBaseAddress, nndPreferred);
 }
+
+/***********************************************************************
+ * get processor information
+ **********************************************************************/
+BOOL DL_GetLogicalProcessorInformationEx(LOGICAL_PROCESSOR_RELATIONSHIP RelationshipType, PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX Buffer, PDWORD ReturnedLength)
+{
+    typedef BOOL (WINAPI * GetLogicalProcessorInformationEx_t)(LOGICAL_PROCESSOR_RELATIONSHIP, PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX, PDWORD);
+    static auto fcn = (GetLogicalProcessorInformationEx_t)GetKernelProcAddress("GetLogicalProcessorInformationEx");
+    if (not fcn) return false;
+    return fcn(RelationshipType, Buffer, ReturnedLength);
+}
