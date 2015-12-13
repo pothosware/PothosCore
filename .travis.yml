@@ -30,7 +30,8 @@ before_install:
   - sudo add-apt-repository main
   - sudo add-apt-repository universe
 
-  # poco and qwt development files from ppa
+  # development files from ppa
+  - sudo add-apt-repository -y ppa:myriadrf/drivers
   - sudo add-apt-repository -y ppa:pothosware/support
   - sudo add-apt-repository -y ppa:pothosware/framework
 
@@ -39,7 +40,16 @@ before_install:
 
 install:
   # install development dependencies
-  - sudo apt-get install -qq libnuma-dev cmake libpoco-dev-min libpothos-serialization-dev
+  - sudo apt-get install -qq libnuma-dev cmake
+
+  # install development dependencies from drivers ppa
+  - sudo apt-get install -qq libspuce-dev libsoapysdr-dev
+
+  # install development dependencies from support ppa
+  - sudo apt-get install -qq libpoco-dev-min libmuparserx-dev
+
+  # install development dependencies from framework ppa
+  - sudo apt-get install -qq libpothos-serialization-dev
 
   # install audio support dependencies
   - sudo apt-get install -qq portaudio19-dev libjack-jackd2-dev

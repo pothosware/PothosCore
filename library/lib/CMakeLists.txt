@@ -8,12 +8,26 @@ message(STATUS "PothosSerialization_FOUND: ${PothosSerialization_FOUND} - ${Poth
 message(STATUS "PothosSerialization_INCLUDE_DIRS: ${PothosSerialization_INCLUDE_DIRS}")
 message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}")
 
+list(APPEND Pothos_INCLUDE_DIRS ${PothosSerialization_INCLUDE_DIRS})
 list(APPEND Pothos_LIBRARIES ${PothosSerialization_LIBRARIES})
+
+########################################################################
+# muparserx library
+########################################################################
+if(NOT MUPARSERX_IN_TREE)
+    find_package(muparserx CONFIG)
+endif(NOT MUPARSERX_IN_TREE)
+message(STATUS "muparserx_FOUND: ${muparserx_FOUND} - ${muparserx_VERSION}")
+message(STATUS "muparserx_INCLUDE_DIRS: ${muparserx_INCLUDE_DIRS}")
+message(STATUS "muparserx_LIBRARIES: ${muparserx_LIBRARIES}")
+
+list(APPEND Pothos_INCLUDE_DIRS ${muparserx_INCLUDE_DIRS})
+list(APPEND Pothos_LIBRARIES ${muparserx_LIBRARIES})
 
 ########################################################################
 ## Feature registration
 ########################################################################
-cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND" OFF)
+cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND;muparserx_FOUND" OFF)
 add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos development and runtime libraries")
 if (NOT ENABLE_LIBRARY_LIB)
     return()
@@ -35,7 +49,6 @@ endif()
 ########################################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Pothos_INCLUDE_DIRS})
-include_directories(${PothosSerialization_INCLUDE_DIRS})
 
 ########################################################################
 # NUMA info support
@@ -185,6 +198,7 @@ list(APPEND POTHOS_SOURCES
     Proxy/Convert.cpp
     Proxy/Environment.cpp
     Proxy/Exception.cpp
+    Proxy/Builtin/ConvertContainers.cpp
 
     Remote/RemoteProxyDatagram.cpp
     Remote/RemoteProxy.cpp
@@ -213,16 +227,47 @@ list(APPEND POTHOS_SOURCES
     Util/Compiler.cpp
     Util/EvalInterface.cpp
     Util/Network.cpp
+
+    Util/Builtin/JSONSerialization.cpp
+    Util/Builtin/TestJSONSerialization.cpp
+    Util/Builtin/BlockEval.cpp
+    Util/Builtin/DeviceInfoUtils.cpp
+    Util/Builtin/DocUtils.cpp
+    Util/Builtin/TestDocUtils.cpp
+    Util/Builtin/EvalEnvironment.cpp
+    Util/Builtin/EvalEnvironmentListParsers.cpp
+    Util/Builtin/TestEvalExpression.cpp
 )
 
 if(WIN32)
+    list(APPEND POTHOS_SOURCES WindowsDelayLoadedSymbols.cpp)
     list(APPEND POTHOS_SOURCES Framework/SharedBufferWindows.cpp)
-    list(APPEND POTHOS_SOURCES Framework/WindowsDelayLoadedSymbols.cpp)
     list(APPEND POTHOS_SOURCES Util/FileLockWindows.cpp)
+    list(APPEND POTHOS_SOURCES Util/Builtin/WindowsGetLogicalProcessorInfo.cpp)
 elseif(UNIX)
     list(APPEND POTHOS_SOURCES Framework/SharedBufferUnix.cpp)
     list(APPEND POTHOS_SOURCES Util/FileLockUnix.cpp)
 endif()
+
+########################################################################
+# Compiler support wrapper
+########################################################################
+list(APPEND POTHOS_SOURCES Util/Builtin/TestCompilerSupport.cpp)
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+    list(APPEND POTHOS_SOURCES Util/Builtin/GccCompilerSupport.cpp)
+endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    list(APPEND POTHOS_SOURCES Util/Builtin/ClangCompilerSupport.cpp)
+endif()
+
+if(MSVC)
+    get_filename_component(MSVC_INSTALL_PATH ${CMAKE_LINKER} PATH)
+    file(TO_NATIVE_PATH ${MSVC_INSTALL_PATH} MSVC_INSTALL_PATH)
+    string(REPLACE "\\" "\\\\" MSVC_INSTALL_PATH ${MSVC_INSTALL_PATH})
+    list(APPEND POTHOS_SOURCES Util/Builtin/MsvcCompilerSupport.in.cpp)
+endif(MSVC)
 
 ########################################################################
 # Deal with *.in files in the sources list

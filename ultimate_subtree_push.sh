@@ -9,7 +9,6 @@ gui
 library
 python
 java
-util
 opencl
 blocks
 comms

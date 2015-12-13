@@ -11,3 +11,6 @@
 [submodule "serialization"]
 	path = serialization
 	url = https://github.com/pothosware/pothos-serialization.git
+[submodule "muparserx"]
+	path = muparserx
+	url = https://github.com/pothosware/muparserx.git
