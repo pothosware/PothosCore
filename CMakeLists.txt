@@ -11,6 +11,10 @@ if (CMAKE_PREFIX_PATH)
     set(ENV{CMAKE_PREFIX_PATH} ${CMAKE_PREFIX_PATH})
 endif (CMAKE_PREFIX_PATH)
 
+# Include the Pothos library config into the top level.
+# This brings in LIB_SUFFIX and RPATH settings for submodules.
+include(${PROJECT_SOURCE_DIR}/library/cmake/PothosLibraryConfig.cmake)
+
 ########################################################################
 # POCO dependency - search for Poco or build if not found
 ########################################################################
@@ -43,10 +47,6 @@ if (NOT Poco_FOUND)
         set(ENABLE_ZIP OFF CACHE INTERNAL "")
         set(ENABLE_APACHECONNECTOR OFF CACHE INTERNAL "")
     endif()
-
-    # Include the Pothos library config into the top level.
-    # This brings in LIB_SUFFIX and RPATH settings for Poco.
-    include(${PROJECT_SOURCE_DIR}/library/cmake/PothosLibraryConfig.cmake)
 
     #set top level dirs, go into submodule, and restore
     set(POTHOS_MODULE_PATH ${CMAKE_MODULE_PATH})
