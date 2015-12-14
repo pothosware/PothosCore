@@ -11,5 +11,5 @@ Requires:
 Requires.private:
 Conflicts:
 Cflags: -I${includedir}
-Libs: -L${libdir} -lPothos
-Libs.private: -lPothosSerialization
+Libs: -L${libdir} -lPothos -lPothosSerialization
+Libs.private: @PC_LIBS_PRIVATE@

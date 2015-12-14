@@ -12,16 +12,6 @@ if (CMAKE_PREFIX_PATH)
 endif (CMAKE_PREFIX_PATH)
 
 ########################################################################
-# Serialization library
-########################################################################
-if(NOT PothosSerialization_IN_TREE)
-    find_package(PothosSerialization CONFIG)
-endif(NOT PothosSerialization_IN_TREE)
-message(STATUS "PothosSerialization_FOUND: ${PothosSerialization_FOUND} - ${PothosSerialization_VERSION}")
-message(STATUS "PothosSerialization_INCLUDE_DIRS: ${PothosSerialization_INCLUDE_DIRS}")
-message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}")
-
-########################################################################
 # QT5 devel setup
 ########################################################################
 #http://www.kdab.com/using-cmake-with-qt-5/
@@ -50,7 +40,7 @@ endforeach(comp)
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_WIDGETS "Enable Pothos Widgets component" ON "Pothos_FOUND;${Qt5Enables};PothosSerialization_FOUND" OFF)
+cmake_dependent_option(ENABLE_WIDGETS "Enable Pothos Widgets component" ON "Pothos_FOUND;${Qt5Enables}" OFF)
 add_feature_info(Widgets ENABLE_WIDGETS "Graphical control widgets for the GUI")
 if (NOT ENABLE_WIDGETS)
     return()
@@ -72,14 +62,11 @@ set(SOURCES
     MyDoubleSlider.cpp
 )
 
-include_directories(${PothosSerialization_INCLUDE_DIRS})
-
 POTHOS_MODULE_UTIL(
     TARGET ControlWidgets
     SOURCES ${SOURCES}
     LIBRARIES
         ${Qt5_LIBRARIES}
-        ${PothosSerialization_LIBRARIES}
     DESTINATION widgets
     ENABLE_DOCS
 )

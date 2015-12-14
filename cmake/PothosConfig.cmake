@@ -15,7 +15,47 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
 include(PothosStandardFlags) #compiler settings
 include(PothosLibraryConfig) #library settings
 include(PothosUtil) #utility functions
-include(SetupPoco) #find poco install
+
+########################################################################
+## locate the Poco development libraries
+########################################################################
+include(SetupPoco)
+
+if (Poco_FOUND)
+
+    message(STATUS "Poco_VERSION: ${Poco_VERSION}")
+    message(STATUS "Poco_INCLUDE_DIRS: ${Poco_INCLUDE_DIRS}")
+    message(STATUS "Poco_LIBRARIES: ${Poco_LIBRARIES}")
+
+    list(APPEND Pothos_LIBRARIES ${Poco_LIBRARIES})
+
+    if (Poco_INCLUDE_DIRS)
+        list(APPEND Pothos_INCLUDE_DIRS ${Poco_INCLUDE_DIRS})
+    endif (Poco_INCLUDE_DIRS)
+
+else (Poco_FOUND)
+    message(WARNING "Pothos projects require Poco libraries...")
+endif (Poco_FOUND)
+
+########################################################################
+## locate the Pothos Serialization library
+########################################################################
+if(NOT PothosSerialization_IN_TREE)
+    find_package(PothosSerialization CONFIG)
+endif(NOT PothosSerialization_IN_TREE)
+
+if (PothosSerialization_FOUND)
+
+    message(STATUS "PothosSerialization_VERSION: ${PothosSerialization_VERSION}")
+    message(STATUS "PothosSerialization_INCLUDE_DIRS: ${PothosSerialization_INCLUDE_DIRS}")
+    message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}")
+
+    list(APPEND Pothos_LIBRARIES ${PothosSerialization_LIBRARIES})
+    list(APPEND Pothos_INCLUDE_DIRS ${PothosSerialization_INCLUDE_DIRS})
+
+else (PothosSerialization_FOUND)
+    message(WARNING "Pothos projects require serialization libraries...")
+endif (PothosSerialization_FOUND)
 
 ########################################################################
 # install directory for cmake files
@@ -44,15 +84,8 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
         set(POTHOS_ROOT ${CMAKE_INSTALL_PREFIX})
     endif(NOT POTHOS_ROOT)
 
-    list(APPEND Pothos_LIBRARIES
-        Pothos
-        ${Poco_LIBRARIES}
-    )
-
-    list(APPEND Pothos_INCLUDE_DIRS
-        ${POTHOS_IN_TREE_SOURCE_DIR}/include
-        ${Poco_INCLUDE_DIRS}
-    )
+    list(INSERT Pothos_LIBRARIES 0 Pothos)
+    list(INSERT Pothos_INCLUDE_DIRS 0 ${POTHOS_IN_TREE_SOURCE_DIR}/include)
 
     #a list of in-tree built libraries to generate a library path script
     set(IN_TREE_LIBRARIES Pothos)
@@ -177,7 +210,7 @@ find_library(
 if(NOT POTHOS_LIBRARY)
     message(FATAL_ERROR "cannot find Pothos library in ${POTHOS_ROOT}/lib${LIB_SUFFIX}")
 endif()
-list(APPEND Pothos_LIBRARIES ${POTHOS_LIBRARY})
+list(INSERT Pothos_LIBRARIES 0 ${POTHOS_LIBRARY})
 
 ########################################################################
 ## locate the Pothos includes
@@ -190,33 +223,4 @@ find_path(
 if(NOT POTHOS_LIBRARY)
     message(FATAL_ERROR "cannot find Pothos includes in ${POTHOS_ROOT}/include")
 endif()
-list(APPEND Pothos_INCLUDE_DIRS ${POTHOS_INCLUDE_DIR})
-
-########################################################################
-## locate the Poco libraries
-########################################################################
-#try to use poco from the system install
-if (Poco_FOUND)
-
-    if (Poco_LIBRARIES)
-        list(APPEND Pothos_LIBRARIES ${Poco_LIBRARIES})
-    endif (Poco_LIBRARIES)
-
-    if (Poco_INCLUDE_DIRS)
-        list(APPEND Pothos_INCLUDE_DIRS ${Poco_INCLUDE_DIRS})
-    endif (Poco_INCLUDE_DIRS)
-
-#otherwise use poco from the pothos install
-else (Poco_FOUND)
-    foreach(lib Foundation JSON XML Util Net)
-        find_library(
-            POCO_${lib}_LIBRARY Poco${lib} Poco${lib}d
-            PATHS ${POTHOS_ROOT}/lib${LIB_SUFFIX}
-            NO_DEFAULT_PATH
-        )
-        if(NOT POCO_${lib}_LIBRARY)
-            message(FATAL_ERROR "cannot find POCO_${lib}_LIBRARY library in ${POTHOS_ROOT}/lib${LIB_SUFFIX}")
-        endif()
-        list(APPEND Pothos_LIBRARIES ${POCO_${lib}_LIBRARY})
-    endforeach(lib)
-endif (Poco_FOUND)
+list(INSERT Pothos_INCLUDE_DIRS 0 ${POTHOS_INCLUDE_DIR})
