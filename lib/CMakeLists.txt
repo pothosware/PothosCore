@@ -1,28 +1,23 @@
 ########################################################################
-# Serialization library
-########################################################################
-if(NOT PothosSerialization_IN_TREE)
-    find_package(PothosSerialization CONFIG)
-endif(NOT PothosSerialization_IN_TREE)
-message(STATUS "PothosSerialization_FOUND: ${PothosSerialization_FOUND} - ${PothosSerialization_VERSION}")
-message(STATUS "PothosSerialization_INCLUDE_DIRS: ${PothosSerialization_INCLUDE_DIRS}")
-message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}")
-
-list(APPEND Pothos_INCLUDE_DIRS ${PothosSerialization_INCLUDE_DIRS})
-list(APPEND Pothos_LIBRARIES ${PothosSerialization_LIBRARIES})
-
-########################################################################
 # muparserx library
 ########################################################################
 if(NOT MUPARSERX_IN_TREE)
     find_package(muparserx CONFIG)
 endif(NOT MUPARSERX_IN_TREE)
-message(STATUS "muparserx_FOUND: ${muparserx_FOUND} - ${muparserx_VERSION}")
-message(STATUS "muparserx_INCLUDE_DIRS: ${muparserx_INCLUDE_DIRS}")
-message(STATUS "muparserx_LIBRARIES: ${muparserx_LIBRARIES}")
 
-list(APPEND Pothos_INCLUDE_DIRS ${muparserx_INCLUDE_DIRS})
-list(APPEND Pothos_LIBRARIES ${muparserx_LIBRARIES})
+if (muparserx_FOUND)
+
+    message(STATUS "muparserx_VERSION: ${muparserx_VERSION}")
+    message(STATUS "muparserx_INCLUDE_DIRS: ${muparserx_INCLUDE_DIRS}")
+    message(STATUS "muparserx_LIBRARIES: ${muparserx_LIBRARIES}")
+
+    list(APPEND Pothos_INCLUDE_DIRS ${muparserx_INCLUDE_DIRS})
+    list(APPEND Pothos_LIBRARIES ${muparserx_LIBRARIES})
+    list(APPEND PC_LIBS_PRIVATE "-lmuparserx")
+
+else (muparserx_FOUND)
+    message(WARNING "Pothos library requires dependency muparserx...")
+endif (muparserx_FOUND)
 
 ########################################################################
 ## Feature registration
@@ -63,6 +58,7 @@ if(NUMA_LIBRARIES)
     add_definitions(-DHAVE_LIBNUMA)
     list(APPEND POTHOS_SOURCES System/NumaInfoLinux.cpp)
     list(APPEND Pothos_LIBRARIES ${NUMA_LIBRARIES})
+    list(APPEND PC_LIBS_PRIVATE "-lnuma")
 elseif(WIN32)
     list(APPEND POTHOS_SOURCES System/NumaInfoWindows.cpp)
 elseif(APPLE)
@@ -82,6 +78,7 @@ find_library(
 
 if (RT_LIBRARIES)
     list(APPEND Pothos_LIBRARIES ${RT_LIBRARIES})
+    list(APPEND PC_LIBS_PRIVATE "-lrt")
 endif()
 
 if(WIN32)
@@ -303,7 +300,7 @@ string(REGEX MATCH "\\#define POTHOS_ABI_VERSION \"([0-9]+\\.[0-9]+-[0-9]+)\"" P
 if(NOT POTHOS_ABI_VERSION_MATCHES)
     message(FATAL_ERROR "Failed to extract version number from Version.hpp")
 endif(NOT POTHOS_ABI_VERSION_MATCHES)
-set(POTHOS_SOVER "${CMAKE_MATCH_1}")
+set(POTHOS_SOVER "${CMAKE_MATCH_1}" CACHE STRING "")
 
 ########################################################################
 # Build library
@@ -331,6 +328,8 @@ add_definitions("-DPOTHOS_LIBRARY_NAME=\"$<TARGET_FILE_NAME:Pothos>\"")
 ########################################################################
 # Build pkg config file
 ########################################################################
+string(REPLACE ";" " " PC_LIBS_PRIVATE "${PC_LIBS_PRIVATE}")
+
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/Pothos.in.pc
     ${CMAKE_CURRENT_BINARY_DIR}/Pothos.pc

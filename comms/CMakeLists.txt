@@ -20,9 +20,14 @@ add_feature_info(Comms ENABLE_COMMS "A collection of DSP/communications blocks")
 if(NOT SPUCE_IN_TREE)
     find_package(Spuce CONFIG)
 endif(NOT SPUCE_IN_TREE)
-message(STATUS "Spuce_FOUND: ${Spuce_FOUND} - ${Spuce_VERSION}")
-message(STATUS "Spuce_INCLUDE_DIRS: ${Spuce_INCLUDE_DIRS}")
-message(STATUS "Spuce_LIBRARIES: ${Spuce_LIBRARIES}")
+
+if (Spuce_FOUND)
+    message(STATUS "Spuce_VERSION: ${Spuce_VERSION}")
+    message(STATUS "Spuce_INCLUDE_DIRS: ${Spuce_INCLUDE_DIRS}")
+    message(STATUS "Spuce_LIBRARIES: ${Spuce_LIBRARIES}")
+else (Spuce_FOUND)
+    message(WARNING "Spuce filter designer library not found...")
+endif (Spuce_FOUND)
 
 ########################################################################
 # Build subdirectories

@@ -6,7 +6,6 @@ COMPONENTS="
 widgets
 plotters
 gui
-library
 python
 blocks
 comms

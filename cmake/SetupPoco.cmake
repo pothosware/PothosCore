@@ -11,8 +11,6 @@ else()
     set(Poco_INCLUDE_DIRS "")
     find_package(Poco CONFIG COMPONENTS Foundation Util JSON XML Net)
     if (Poco_FOUND)
-        message(STATUS "Poco_DIR: ${Poco_DIR}")
-        message(STATUS "Poco_LIBRARIES: ${Poco_LIBRARIES}")
         return()
     endif()
 endif()
@@ -27,11 +25,11 @@ if (POCO_FOUND AND POCO_Util_FOUND AND POCO_Net_FOUND AND POCO_XML_FOUND AND POC
     ########################################################################
     # Check version >= 1.5.4
     ########################################################################
-    FILE (READ "${POCO_INCLUDE_DIRS}/Poco/Version.h" Poco_VERSION)
+    FILE (READ "${POCO_INCLUDE_DIRS}/Poco/Version.h" Poco_VERSION_H)
     set(_ws "[ \r\t\n^$]+")
-    STRING (REGEX REPLACE "^.*#define${_ws}POCO_VERSION${_ws}(0x[0-9a-fA-F]*)${_ws}.*$" "\\1" POCO_VERSION "${Poco_VERSION}")
+    STRING (REGEX REPLACE "^.*#define${_ws}POCO_VERSION${_ws}(0x[0-9a-fA-F]*)${_ws}.*$" "\\1" Poco_VERSION "${Poco_VERSION_H}")
     set(_ws)
-    if ("${POCO_VERSION}" LESS 0x01050400)
+    if ("${Poco_VERSION}" LESS 0x01050400)
         return()
     endif()
 
@@ -47,8 +45,6 @@ if (POCO_FOUND AND POCO_Util_FOUND AND POCO_Net_FOUND AND POCO_XML_FOUND AND POC
         ${POCO_XML_LIBRARIES}
         ${POCO_JSON_LIBRARIES}
     )
-    message(STATUS "Poco_INCLUDE_DIRS: ${Poco_INCLUDE_DIRS}")
-    message(STATUS "Poco_LIBRARIES: ${Poco_LIBRARIES}")
 
     ########################################################################
     # Link with the thread library
