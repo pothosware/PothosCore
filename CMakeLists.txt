@@ -193,14 +193,13 @@ cmake_dependent_option(ENABLE_TOOLKITS "Enable Pothos Toolkits components" ON "E
 add_feature_info(Toolkits ENABLE_TOOLKITS "Pothos data-flow software suite toolkits")
 
 if(ENABLE_TOOLKITS)
-    add_subdirectory(blocks)
-    add_subdirectory(comms)
-    add_subdirectory(python)
-    add_subdirectory(sdr)
-    add_subdirectory(audio)
-    add_subdirectory(gui)
-    add_subdirectory(widgets)
-    add_subdirectory(plotters)
+    foreach(subdir blocks comms python sdr audio gui widgets plotters)
+        if (EXISTS ${PROJECT_SOURCE_DIR}/${subdir}/CMakeLists.txt)
+            add_subdirectory(${subdir})
+        else()
+            message(WARNING "ENABLE_TOOLKITS: submodule ${subdir} not configured, skipping...")
+        endif()
+    endforeach(subdir)
 endif(ENABLE_TOOLKITS)
 
 ########################################################################
