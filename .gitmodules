@@ -1,6 +1,3 @@
-[submodule "poco154"]
-	path = poco154
-	url = https://github.com/pocoproject/poco.git
 [submodule "plotters/qwt-6.1.2"]
 	path = plotters/qwt-6.1.2
 	url = https://github.com/osakared/qwt.git
@@ -8,9 +5,16 @@
 [submodule "spuce"]
 	path = spuce
 	url = https://github.com/audiofilter/spuce.git
+	branch = master
 [submodule "serialization"]
 	path = serialization
 	url = https://github.com/pothosware/pothos-serialization.git
+	branch = master
 [submodule "muparserx"]
 	path = muparserx
 	url = https://github.com/beltoforion/muparserx.git
+	branch = master
+[submodule "poco"]
+	path = poco
+	url = https://github.com/pocoproject/poco.git
+	branch = poco-1.6.2

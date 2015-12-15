@@ -48,7 +48,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/PothosLibraryConfig.cmake)
 ########################################################################
 include(${PROJECT_SOURCE_DIR}/cmake/SetupPoco.cmake)
 
-set(POCO_DIR poco154)
+set(POCO_DIR poco)
 
 if (NOT Poco_FOUND)
 
