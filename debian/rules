@@ -21,4 +21,5 @@ override_dh_auto_configure:
 	dh_auto_configure -- \
 		-DLIB_SUFFIX="/$(DEB_HOST_MULTIARCH)" \
 		-DPOTHOS_EXTVER="$(DEB_VERSION_EXTVER)" \
-		-DCMAKE_SKIP_RPATH=TRUE
+		-DCMAKE_SKIP_RPATH=TRUE \
+		-DENABLE_TOOLKITS=OFF

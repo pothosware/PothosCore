@@ -1,2 +1,0 @@
-#intentionally packaging color picker library along with GUI executable
-pothos-gui: package-name-doesnt-match-sonames libPothosQtColorPicker0

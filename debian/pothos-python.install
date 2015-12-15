@@ -1,4 +1,0 @@
-usr/lib/*/Pothos/modules/proxy/environment/libPythonSupport.so
-usr/share/cmake/Pothos/PothosPython*
-usr/lib/python*
-usr/lib/*/Pothos/modules/PothosTestBlocks/libPythonTestBlocks.so

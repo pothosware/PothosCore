@@ -1,8 +1,0 @@
-#!/bin/sh
-set -e
-
-if [ "$1" = "remove" ]; then
-	/usr/share/Pothos/Desktop/uninstall
-fi
-
-#DEBHELPER#
