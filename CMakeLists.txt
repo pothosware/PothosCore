@@ -12,7 +12,7 @@ enable_testing()
 ########################################################################
 set(POTHOS_MAJOR_VERSION 0)
 set(POTHOS_MINOR_VERSION 3)
-set(POTHOS_PATCH_VERSION 0)
+set(POTHOS_PATCH_VERSION 1)
 set(POTHOS_LIBVER ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATCH_VERSION})
 
 if (NOT POTHOS_EXTVER)
@@ -55,7 +55,7 @@ if (NOT Poco_FOUND)
     message(STATUS "Poco >= 1.5.4 not found - using built-in Poco")
 
     if (NOT EXISTS ${PROJECT_SOURCE_DIR}/${POCO_DIR}/CMakeLists.txt)
-        message(FATAL_ERROR "poco submodule not configured (git submodule init && git submodule update)")
+        message(FATAL_ERROR "poco submodule not configured (git submodule update --init --recursive)")
     endif ()
 
     #mark that the in-tree poco build is used
@@ -116,7 +116,7 @@ if (NOT Spuce_FOUND)
     message(STATUS "Spuce not found - using built-in Spuce")
 
     if (NOT EXISTS ${PROJECT_SOURCE_DIR}/spuce/CMakeLists.txt)
-        message(FATAL_ERROR "spuce submodule not configured (git submodule init && git submodule update)")
+        message(FATAL_ERROR "spuce submodule not configured (git submodule update --init --recursive)")
     endif ()
 
     add_subdirectory(spuce)
@@ -136,7 +136,7 @@ if (NOT muparserx_FOUND)
     message(STATUS "muparserx not found - using built-in muparserx")
 
     if (NOT EXISTS ${PROJECT_SOURCE_DIR}/muparserx/CMakeLists.txt)
-        message(FATAL_ERROR "muparserx submodule not configured (git submodule init && git submodule update)")
+        message(FATAL_ERROR "muparserx submodule not configured (git submodule update --init --recursive)")
     endif ()
 
     add_subdirectory(muparserx)
@@ -156,7 +156,7 @@ if (NOT PothosSerialization_FOUND)
     message(STATUS "PothosSerialization not found - using built-in PothosSerialization")
 
     if (NOT EXISTS ${PROJECT_SOURCE_DIR}/serialization/CMakeLists.txt)
-        message(FATAL_ERROR "PothosSerialization submodule not configured (git submodule init && git submodule update)")
+        message(FATAL_ERROR "PothosSerialization submodule not configured (git submodule update --init --recursive)")
     endif ()
 
     add_subdirectory(serialization)

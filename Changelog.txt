@@ -1,5 +1,11 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.3.1 (pending)
+==========================
+
+- CMakeLists.txt use newer git submodule syntax
+- spuce submodule set to 0.4.2 release tag
+
 Release 0.3.0 (2015-12-16)
 ==========================
 

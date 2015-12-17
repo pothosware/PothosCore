@@ -54,12 +54,7 @@ before_build:
 build_script:
   - set PATH=C:/Program Files/Poco/bin;%PATH%
   - echo %PATH%
-  - git submodule init spuce
-  - git submodule update spuce
-  - git submodule init muparserx
-  - git submodule update muparserx
-  - git submodule init serialization
-  - git submodule update serialization
+  - git submodule update --init --recursive
   - mkdir build && cd build
   - cmake ../ -G "%GENERATOR%" -DCMAKE_INSTALL_PREFIX="%POTHOS_PREFIX%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DENABLE_SDR=OFF -DENABLE_WIDGETS=OFF -DENABLE_GUI=OFF -DENABLE_DOCS=OFF -DENABLE_PYTHON=OFF -DENABLE_BLOCKS=OFF -DENABLE_AUDIO=OFF
   - cmake --build . --config %CONFIGURATION%
