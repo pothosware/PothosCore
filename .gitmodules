@@ -14,3 +14,35 @@
 	path = poco
 	url = https://github.com/pocoproject/poco.git
 	branch = poco-1.6.2
+[submodule "plotters"]
+	path = plotters
+	url = https://github.com/pothosware/pothos-plotters.git
+	branch = master
+[submodule "widgets"]
+	path = widgets
+	url = https://github.com/pothosware/pothos-widgets.git
+	branch = master
+[submodule "gui"]
+	path = gui
+	url = https://github.com/pothosware/pothos-gui.git
+	branch = master
+[submodule "sdr"]
+	path = sdr
+	url = https://github.com/pothosware/pothos-sdr.git
+	branch = master
+[submodule "blocks"]
+	path = blocks
+	url = https://github.com/pothosware/pothos-blocks.git
+	branch = master
+[submodule "python"]
+	path = python
+	url = https://github.com/pothosware/pothos-python.git
+	branch = master
+[submodule "audio"]
+	path = audio
+	url = https://github.com/pothosware/pothos-audio.git
+	branch = master
+[submodule "comms"]
+	path = comms
+	url = https://github.com/pothosware/pothos-comms.git
+	branch = master
