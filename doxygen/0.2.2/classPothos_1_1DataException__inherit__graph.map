@@ -1,0 +1,8 @@
+<map id="Pothos::DataException" name="Pothos::DataException">
+<area shape="rect" id="node5" href="$classPothos_1_1CircularReferenceException.html" title="Pothos::CircularReference\lException" alt="" coords="780,5,956,46"/>
+<area shape="rect" id="node6" href="$classPothos_1_1DataFormatException.html" title="Pothos::DataFormatException" alt="" coords="769,71,967,97"/>
+<area shape="rect" id="node7" href="$classPothos_1_1SyntaxException.html" title="Pothos::SyntaxException" alt="" coords="783,121,953,148"/>
+<area shape="rect" id="node2" href="$classPothos_1_1RuntimeException.html" title="Pothos::RuntimeException" alt="" coords="336,71,515,97"/>
+<area shape="rect" id="node3" href="$classPothos_1_1Exception.html" title="Pothos::Exception" alt="" coords="158,71,287,97"/>
+<area shape="rect" id="node8" href="$classPothos_1_1PathSyntaxException.html" title="Pothos::PathSyntaxException" alt="" coords="1016,121,1213,148"/>
+</map>
