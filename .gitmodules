@@ -1,7 +1,3 @@
-[submodule "plotters/qwt-6.1.2"]
-	path = plotters/qwt-6.1.2
-	url = https://github.com/osakared/qwt.git
-	branch = tags/qwt-6.1.2
 [submodule "spuce"]
 	path = spuce
 	url = https://github.com/audiofilter/spuce.git
