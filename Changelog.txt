@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.3.0 (pending)
+Release 0.3.0 (2015-12-16)
 ==========================
 
 - Absorbed the pothos-util toolkit into lib/Util
