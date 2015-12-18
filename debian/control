@@ -43,6 +43,6 @@ Description: shared library
 Package: libpothos-dev
 Section: libdevel
 Architecture: any
-Depends: libpothos0.3-2 (= ${binary:Version}), ${misc:Depends}
+Depends: libpothos0.3-2 (= ${binary:Version}), ${misc:Depends}, pothos
 Description: development files
  The Pothos data-flow software suite.
