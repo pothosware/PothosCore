@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.3.1 (pending)
 ==========================
 
+- Restored pothos-all metapackage for convenience
 - Added pothos (runtime) to libpothos-dev Depends
 - Make spuce submodule optional as a dependency
 - CMakeLists.txt use newer git submodule syntax

@@ -18,16 +18,6 @@ Package: pothos
 Section: science
 Architecture: any
 Depends: libpothos0.3-2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Recommends:
-    pothos-util,
-    pothos-gui,
-    pothos-widgets,
-    pothos-plotters,
-    pothos-blocks,
-    pothos-comms,
-    pothos-audio,
-    pothos-sdr,
-    pothos-python
 Description: runtime application
  The Pothos data-flow software suite.
 
@@ -37,6 +27,9 @@ Architecture: any
 Multi-Arch: same
 Pre-Depends: multiarch-support, ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Provides: pothos-util
+Conflicts: pothos-util
+Replaces: pothos-util
 Description: shared library
  The Pothos data-flow software suite.
 
@@ -46,3 +39,20 @@ Architecture: any
 Depends: libpothos0.3-2 (= ${binary:Version}), ${misc:Depends}, pothos
 Description: development files
  The Pothos data-flow software suite.
+
+Package: pothos-all
+Section: libs
+Architecture: all
+Depends:
+    pothos,
+    pothos-gui,
+    pothos-widgets,
+    pothos-plotters,
+    pothos-blocks,
+    pothos-comms,
+    pothos-audio,
+    pothos-sdr,
+    pothos-python,
+    ${misc:Depends}
+Description: Meta package for all official toolkits
+ This is a metapackage for the most common Pothos toolkits.
