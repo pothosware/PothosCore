@@ -3,7 +3,7 @@
 
 #include "BlockEval.hpp"
 
-void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &blockDesc)
+void ProxyBlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &blockDesc)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
@@ -24,7 +24,7 @@ void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &block
     }
     catch (const Pothos::Exception &ex)
     {
-        throw Pothos::Exception("BlockEval factory("+path+")", ex);
+        throw Pothos::Exception("ProxyBlockEval factory("+path+")", ex);
     }
     _proxyBlock.callVoid("setName", id);
 
@@ -35,7 +35,7 @@ void BlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &block
     }
 }
 
-void BlockEval::handleCall(const Poco::JSON::Object::Ptr &callObj)
+void ProxyBlockEval::handleCall(const Poco::JSON::Object::Ptr &callObj)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     const auto callName = callObj->get("name").extract<std::string>();
@@ -51,11 +51,11 @@ void BlockEval::handleCall(const Poco::JSON::Object::Ptr &callObj)
     }
     catch (const Pothos::Exception &ex)
     {
-        throw Pothos::Exception("BlockEval call("+callName+")", ex);
+        throw Pothos::Exception("ProxyBlockEval call("+callName+")", ex);
     }
 }
 
-Pothos::Object BlockEval::lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
+Pothos::Object ProxyBlockEval::lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
 {
     //this is not an expression, but a native JSON type
     if (not arg.isString()) return _evalEnv->eval(arg.toString());
@@ -80,13 +80,13 @@ Pothos::Object BlockEval::lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
 
 #include <Pothos/Managed.hpp>
 
-static auto managedBlockEval = Pothos::ManagedClass()
-    .registerConstructor<BlockEval, const std::shared_ptr<EvalEnvironment> &>()
-    .registerMethod(POTHOS_FCN_TUPLE(BlockEval, applyConstant))
-    .registerMethod(POTHOS_FCN_TUPLE(BlockEval, removeConstant))
-    .registerMethod(POTHOS_FCN_TUPLE(BlockEval, evalProperty))
-    .registerMethod(POTHOS_FCN_TUPLE(BlockEval, setProperty))
-    .registerMethod(POTHOS_FCN_TUPLE(BlockEval, eval))
-    .registerMethod(POTHOS_FCN_TUPLE(BlockEval, handleCall))
-    .registerMethod(POTHOS_FCN_TUPLE(BlockEval, getProxyBlock))
+static auto managedProxyBlockEval = Pothos::ManagedClass()
+    .registerConstructor<ProxyBlockEval, const std::shared_ptr<EvalEnvironment> &>()
+    .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, applyConstant))
+    .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, removeConstant))
+    .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, evalProperty))
+    .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, setProperty))
+    .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, eval))
+    .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, handleCall))
+    .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, getProxyBlock))
     .commit("Pothos/Util/BlockEval");

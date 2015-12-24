@@ -11,10 +11,10 @@
 #include <vector>
 #include <map>
 
-class BlockEval
+class ProxyBlockEval
 {
 public:
-    BlockEval(const std::shared_ptr<EvalEnvironment> &env):
+    ProxyBlockEval(const std::shared_ptr<EvalEnvironment> &env):
         _evalEnv(env)
     {
         return;
