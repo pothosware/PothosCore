@@ -322,7 +322,8 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     }
 
     //////////////// input state calculation ///////////////////
-    bool allInputsReady = true;
+    bool hasBufferedPorts = false;
+    bool reserveReached = false;
     bool hasInputMessage = false;
     block->_workInfo.minInElements = BIG;
     block->_workInfo.minAllInElements = BIG;
@@ -335,13 +336,14 @@ bool Pothos::WorkerActor::preWorkTasks(void)
             this->handleSlotCalls(port);
             continue;
         }
+        hasBufferedPorts = true;
 
         //perform minimum reserve accumulator require to recover from possible element fragmentation
         const size_t requireElems = std::max<size_t>(1, port._reserveElements);
         port.bufferAccumulatorRequire(requireElems*port.dtype().size());
         port.bufferAccumulatorFront(port._buffer);
         port._elements = port._buffer.length/port.dtype().size();
-        if (port._elements < port._reserveElements) allInputsReady = false;
+        if (port._elements >= port._reserveElements) reserveReached = true;
         if (not port.asyncMessagesEmpty()) hasInputMessage = true;
         port._pendingElements = 0;
         port._labelIter = port._inlineMessages;
@@ -361,7 +363,11 @@ bool Pothos::WorkerActor::preWorkTasks(void)
     //arbitrary time, but its small
     block->_workInfo.maxTimeoutNs = 1000000; //1 millisecond
 
-    return allInputsReady or hasInputMessage;
+    //perform work when:
+    //1) at least one reserve was met,
+    //2) or a port has an input message,
+    //3) or there are buffered input ports
+    return reserveReached or hasInputMessage or (not hasBufferedPorts);
 }
 
 /***********************************************************************

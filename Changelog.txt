@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.3.1 (pending)
 ==========================
 
+- The reserve only prevents work when all ports fail
 - InputPort::setReserve() only bump for larger setting
 - Renamed BlockEval to fix symbol conflict with GUI
 - Restored pothos-all metapackage for convenience

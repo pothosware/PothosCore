@@ -133,10 +133,14 @@ public:
 
     /*!
      * Set a reserve requirement on this input port.
-     * A reserve requirement means that work() will not be called
-     * unless this input port has at least numElements available;
-     * An exception to this rule is when a message is available.
-     * By default, each input port has a reserve of zero elements.
+     * The reserve size ensures that when sufficient resources are available,
+     * the buffer will contain at least the specified number of elements.
+     * By default, each input port has a reserve of zero elements,
+     * which means that the input port's buffer may be any size,
+     * including empty, depending upon the available resources.
+     * Note that work() may still be called when the reserve is not met,
+     * because the scheduler will only prevent work() from being called
+     * when all ports fail to meet their respective reserve requirements.
      * \param numElements the number of elements to require
      */
     void setReserve(const size_t numElements);
