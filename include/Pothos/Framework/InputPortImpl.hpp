@@ -107,8 +107,10 @@ inline void Pothos::InputPort::removeLabel(const Label &label)
 
 inline void Pothos::InputPort::setReserve(const size_t numElements)
 {
+    //only mark this change when setting a larger reserve
+    if (numElements > _reserveElements) _workEvents++;
+
     _reserveElements = numElements;
-    _workEvents++;
 }
 
 inline bool Pothos::InputPort::asyncMessagesEmpty(void)
