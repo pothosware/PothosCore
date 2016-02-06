@@ -43,14 +43,18 @@ endif(NOT POTHOS_ROOT)
 # This brings in LIB_SUFFIX and RPATH settings for submodules.
 include(${PROJECT_SOURCE_DIR}/cmake/PothosLibraryConfig.cmake)
 
+include(FeatureSummary)
+include(CMakeDependentOption)
+
 ########################################################################
 # POCO C++ utility libraries
 ########################################################################
 include(${PROJECT_SOURCE_DIR}/cmake/SetupPoco.cmake)
+cmake_dependent_option(ENABLE_INTERNAL_POCO "Enable Poco C++ utility libraries" ON "NOT Poco_FOUND" OFF)
+add_feature_info(Poco ENABLE_INTERNAL_POCO "Build internal Poco C++ utility libraries")
 
 set(POCO_DIR poco)
-
-if (NOT Poco_FOUND)
+if (ENABLE_INTERNAL_POCO)
 
     message(STATUS "Poco >= 1.5.4 not found - using built-in Poco")
 
@@ -105,14 +109,16 @@ if (NOT Poco_FOUND)
     #ensure that local headers get precedent over installed headers
     include_directories(${Poco_INCLUDE_DIRS})
 
-endif()
+endif(ENABLE_INTERNAL_POCO)
 
 ########################################################################
 # Spuce filter design library
 ########################################################################
 find_package(Spuce CONFIG)
+cmake_dependent_option(ENABLE_INTERNAL_SPUCE "Enable Spuce filter design library" ON "NOT Spuce_FOUND" OFF)
+add_feature_info(Spuce ENABLE_INTERNAL_SPUCE "Build internal Spuce filter design library")
 
-if (NOT Spuce_FOUND)
+if (ENABLE_INTERNAL_SPUCE)
     message(STATUS "Spuce not found - using built-in Spuce")
 
     if (EXISTS ${PROJECT_SOURCE_DIR}/spuce/CMakeLists.txt)
@@ -126,14 +132,16 @@ if (NOT Spuce_FOUND)
         message(WARNING "spuce submodule not configured (git submodule update --init --recursive)")
     endif ()
 
-endif()
+endif(ENABLE_INTERNAL_SPUCE)
 
 ########################################################################
 # muparserx expression parser
 ########################################################################
 find_package(muparserx CONFIG)
+cmake_dependent_option(ENABLE_INTERNAL_MUPARSERX "Enable MuparserX expression parser" ON "NOT muparserx_FOUND" OFF)
+add_feature_info(MuparserX ENABLE_INTERNAL_MUPARSERX "Build internal MuparserX expression parser")
 
-if (NOT muparserx_FOUND)
+if (ENABLE_INTERNAL_MUPARSERX)
     message(STATUS "muparserx not found - using built-in muparserx")
 
     if (NOT EXISTS ${PROJECT_SOURCE_DIR}/muparserx/CMakeLists.txt)
@@ -146,14 +154,16 @@ if (NOT muparserx_FOUND)
     set(muparserx_VERSION "[submodule]")
     set(muparserx_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/muparserx/parser)
     set(muparserx_LIBRARIES muparserx)
-endif()
+endif(ENABLE_INTERNAL_MUPARSERX)
 
 ########################################################################
 # Pothos serialization library
 ########################################################################
 find_package(PothosSerialization CONFIG)
+cmake_dependent_option(ENABLE_INTERNAL_SERIALIZATION "Enable Serialization library" ON "NOT PothosSerialization_FOUND" OFF)
+add_feature_info(Serialization ENABLE_INTERNAL_SERIALIZATION "Build internal Serialization library")
 
-if (NOT PothosSerialization_FOUND)
+if (ENABLE_INTERNAL_SERIALIZATION)
     message(STATUS "PothosSerialization not found - using built-in PothosSerialization")
 
     if (NOT EXISTS ${PROJECT_SOURCE_DIR}/serialization/CMakeLists.txt)
@@ -166,13 +176,11 @@ if (NOT PothosSerialization_FOUND)
     set(PothosSerialization_VERSION "[submodule]")
     set(PothosSerialization_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/serialization/include)
     set(PothosSerialization_LIBRARIES PothosSerialization)
-endif()
+endif(ENABLE_INTERNAL_SERIALIZATION)
 
 ########################################################################
 # Build the framework library
 ########################################################################
-include(FeatureSummary)
-include(CMakeDependentOption)
 cmake_dependent_option(ENABLE_LIBRARY "Enable Pothos Library component" ON "TRUE" OFF)
 add_feature_info(Library ENABLE_LIBRARY "The main library for all Pothos projects")
 
@@ -188,8 +196,6 @@ endif(ENABLE_LIBRARY)
 ########################################################################
 ## Build submodule toolkits
 ########################################################################
-include(FeatureSummary)
-include(CMakeDependentOption)
 cmake_dependent_option(ENABLE_TOOLKITS "Enable Pothos Toolkits components" ON "ENABLE_LIBRARY" OFF)
 add_feature_info(Toolkits ENABLE_TOOLKITS "Pothos data-flow software suite toolkits")
 
@@ -226,7 +232,6 @@ endif (POCO_IN_TREE)
 ########################################################################
 # print features summary
 ########################################################################
-include(FeatureSummary)
 message(STATUS "")
 message(STATUS "######################################################")
 message(STATUS "## Enabled features")

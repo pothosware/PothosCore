@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.3.2 (pending)
+==========================
+
+- Added CMake ENABLE_* flags for internal dependencies
+
 Release 0.3.1 (2016-01-01)
 ==========================
 
