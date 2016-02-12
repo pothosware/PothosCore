@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/Containers.hpp>
@@ -121,6 +121,26 @@ void registerNumericProxyVectorConversion(const std::string &name)
     Pothos::PluginRegistry::add("/object/convert/containers/"+name+"_vec_to_proxy_vec", Pothos::Callable(&convertNativeVectorToProxyVector<T>));
 }
 
+static Pothos::ObjectKwargs convertObjectMapToObjectKwargs(const Pothos::ObjectMap &oMap)
+{
+    Pothos::ObjectKwargs kwargs;
+    for (const auto &pair : oMap)
+    {
+        kwargs[pair.first.toString()] = pair.second;
+    }
+    return kwargs;
+}
+
+static Pothos::ObjectMap convertObjectKwargsToObjectMap(const Pothos::ObjectKwargs &kwargs)
+{
+    Pothos::ObjectMap oMap;
+    for (const auto &pair : kwargs)
+    {
+        oMap[Pothos::Object(pair.first)] = pair.second;
+    }
+    return oMap;
+}
+
 pothos_static_block(pothosObjectRegisterConvertContainers)
 {
     registerNumericProxyVectorConversion<bool>("bool");
@@ -150,4 +170,6 @@ pothos_static_block(pothosObjectRegisterConvertContainers)
     Pothos::PluginRegistry::add("/object/convert/containers/object_vec_to_proxy_vec", Pothos::Callable(&convertObjectVectorToProxyVector));
     Pothos::PluginRegistry::add("/object/convert/containers/object_set_to_proxy_set", Pothos::Callable(&convertObjectSetToProxySet));
     Pothos::PluginRegistry::add("/object/convert/containers/object_map_to_proxy_map", Pothos::Callable(&convertObjectMapToProxyMap));
+    Pothos::PluginRegistry::add("/object/convert/containers/object_map_to_object_kwargs", Pothos::Callable(&convertObjectMapToObjectKwargs));
+    Pothos::PluginRegistry::add("/object/convert/containers/object_kwargs_to_object_map", Pothos::Callable(&convertObjectKwargsToObjectMap));
 }
