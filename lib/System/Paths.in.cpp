@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Paths.hpp>
@@ -11,6 +11,26 @@ std::string Pothos::System::getRootPath(void)
 {
     if (Poco::Environment::has("POTHOS_ROOT"))
         return Poco::Path(Poco::Environment::get("POTHOS_ROOT")).absolute().toString();
+
+    // Get the path to the current dynamic linked library.
+    // The path to this library can be used to determine
+    // the installation root without prior knowledge.
+    #if defined(POCO_OS_FAMILY_WINDOWS)
+    char path[MAX_PATH];
+    HMODULE hm = NULL;
+    if (GetModuleHandleExA(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+        GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        (LPCSTR) &Pothos::System::getRootPath, &hm))
+    {
+        const DWORD size = GetModuleFileNameA(hm, path, sizeof(path));
+        if (size != 0)
+        {
+            const Poco::Path libPath(std::string(path, size), Poco::Path::PATH_WINDOWS);
+            return libPath.parent().popDirectory().toString();
+        }
+    }
+    #endif
 
     //assume that the root path is always in UNIX style
     const Poco::Path configPrefix = Poco::Path("@POTHOS_ROOT@", Poco::Path::PATH_UNIX);

@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.3.2 (pending)
 ==========================
 
+- Use current DLL path to determine the system install root
 - Fixes for POTHOS_MODULE_UTIL destination and install prefix
 - Added conversions between ObjectMap and ObjectKwargs
 - Added CMake ENABLE_* flags for internal dependencies
