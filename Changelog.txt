@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.3.2 (pending)
+Release 0.3.2 (2016-03-06)
 ==========================
 
 - Use current DLL path to determine the system install root
