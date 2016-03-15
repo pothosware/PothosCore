@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -103,6 +103,10 @@ void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
     std::cout.setf(std::ios::unitbuf);
     std::cerr.setf(std::ios::unitbuf);
     std::clog.setf(std::ios::unitbuf);
+
+    //remove buffering for stdout and stderr for printf() users
+    setvbuf(stdout, nullptr, _IONBF, 0);
+    setvbuf(stderr, nullptr, _IONBF, 0);
 
     Pothos::ScopedInit init;
 
