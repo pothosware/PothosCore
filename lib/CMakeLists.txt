@@ -300,7 +300,7 @@ string(REGEX MATCH "\\#define POTHOS_ABI_VERSION \"([0-9]+\\.[0-9]+-[0-9]+)\"" P
 if(NOT POTHOS_ABI_VERSION_MATCHES)
     message(FATAL_ERROR "Failed to extract version number from Version.hpp")
 endif(NOT POTHOS_ABI_VERSION_MATCHES)
-set(POTHOS_SOVER "${CMAKE_MATCH_1}" CACHE STRING "")
+set(POTHOS_SOVER "${CMAKE_MATCH_1}" CACHE INTERNAL "")
 
 ########################################################################
 # Build library
