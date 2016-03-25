@@ -175,24 +175,24 @@ public:
      * Convert a buffer chunk into the specified output buffer.
      * When the number of elements are 0, the entire buffer is converted.
      * The buffer length should be large enough to contain the entire conversion.
-     * On completion, the length will be set the exact number of elements written.
      * \throws BufferConvertError when the conversion is not possible
      * \param [out] outBuff the output buffer, also specifies the dtype
      * \param numElems the number of elements to convert
+     * \return the number of output elements written to the buffer
      */
-    void convert(BufferChunk &outBuff, const size_t numElems = 0) const;
+    size_t convert(const BufferChunk &outBuff, const size_t numElems = 0) const;
 
     /*!
      * Convert a buffer chunk of complex elements into two real buffers.
      * When the number of elements are 0, the entire buffer is converted.
      * The buffer length should be large enough to contain the entire conversion.
-     * On completion, the length will be set the exact number of elements written.
      * \throws BufferConvertError when the conversion is not possible
      * \param [out] outBuffRe the real output buffer, also specifies the dtype
      * \param [out] outBuffIm the imaginary output buffer, also specifies the dtype
      * \param numElems the number of elements to convert
+     * \return the number of output elements written to the buffers
      */
-    void convertComplex(BufferChunk &outBuffRe, BufferChunk &outBuffIm, const size_t numElems = 0) const;
+    size_t convertComplex(const BufferChunk &outBuffRe, const BufferChunk &outBuffIm, const size_t numElems = 0) const;
 
 private:
     SharedBuffer _buffer;

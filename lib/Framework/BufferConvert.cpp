@@ -170,7 +170,7 @@ std::pair<Pothos::BufferChunk, Pothos::BufferChunk> Pothos::BufferChunk::convert
     return std::make_pair(outRe, outIm);
 }
 
-void Pothos::BufferChunk::convert(BufferChunk &out, const size_t numElems_) const
+size_t Pothos::BufferChunk::convert(const BufferChunk &out, const size_t numElems_) const
 {
     const size_t numElems = (numElems_ == 0)? this->elements() : numElems_;
     const auto primElems = (numElems*this->dtype.size())/this->dtype.elemSize();
@@ -184,10 +184,10 @@ void Pothos::BufferChunk::convert(BufferChunk &out, const size_t numElems_) cons
         "Pothos::BufferChunk::convert("+dtype.toString()+")", "cant convert from " + this->dtype.toString());
 
     it->second(this->as<const void *>(), out.as<void *>(), primElems);
-    out.length = outElems*out.dtype.size();
+    return outElems;
 }
 
-void Pothos::BufferChunk::convertComplex(BufferChunk &outRe, BufferChunk &outIm, const size_t numElems_) const
+size_t Pothos::BufferChunk::convertComplex(const BufferChunk &outRe, const BufferChunk &outIm, const size_t numElems_) const
 {
     const size_t numElems = (numElems_ == 0)? this->elements() : numElems_;
     const auto primElems = (numElems*this->dtype.size())/this->dtype.elemSize();
@@ -205,6 +205,5 @@ void Pothos::BufferChunk::convertComplex(BufferChunk &outRe, BufferChunk &outIm,
         "Pothos::BufferChunk::convertComplex("+dtype.toString()+")", "cant convert from " + this->dtype.toString());
 
     it->second(this->as<const void *>(), outRe.as<void *>(), outIm.as<void *>(), primElems);
-    outRe.length = outElems*outRe.dtype.size();
-    outIm.length = outElems*outIm.dtype.size();
+    return outElems;
 }
