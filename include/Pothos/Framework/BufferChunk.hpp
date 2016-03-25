@@ -89,6 +89,13 @@ public:
     size_t elements(void) const;
 
     /*!
+     * Set the number of elements held by this buffer.
+     * This call modifies the length field in bytes based on the
+     * configured data type and the specified number of elements.
+     */
+    void setElements(const size_t numElements);
+
+    /*!
      * The underlying reference counted shared buffer.
      */
     const SharedBuffer &getBuffer(void) const;
@@ -224,6 +231,11 @@ inline Pothos::BufferChunk::BufferChunk(void):
 inline size_t Pothos::BufferChunk::elements(void) const
 {
     return this->length/this->dtype.size();
+}
+
+inline void Pothos::BufferChunk::setElements(const size_t numElements)
+{
+    this->length = numElements*this->dtype.size();
 }
 
 inline const Pothos::SharedBuffer &Pothos::BufferChunk::getBuffer(void) const
