@@ -5,7 +5,7 @@
 /// a managed or shared buffer and address/length offsets.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -170,6 +170,29 @@ public:
      * \return a real + complex pair of buffer chunks
      */
     std::pair<BufferChunk, BufferChunk> convertComplex(const DType &dtype, const size_t numElems = 0) const;
+
+    /*!
+     * Convert a buffer chunk into the specified output buffer.
+     * When the number of elements are 0, the entire buffer is converted.
+     * The buffer length should be large enough to contain the entire conversion.
+     * On completion, the length will be set the exact number of elements written.
+     * \throws BufferConvertError when the conversion is not possible
+     * \param [out] outBuff the output buffer, also specifies the dtype
+     * \param numElems the number of elements to convert
+     */
+    void convert(BufferChunk &outBuff, const size_t numElems = 0) const;
+
+    /*!
+     * Convert a buffer chunk of complex elements into two real buffers.
+     * When the number of elements are 0, the entire buffer is converted.
+     * The buffer length should be large enough to contain the entire conversion.
+     * On completion, the length will be set the exact number of elements written.
+     * \throws BufferConvertError when the conversion is not possible
+     * \param [out] outBuffRe the real output buffer, also specifies the dtype
+     * \param [out] outBuffIm the imaginary output buffer, also specifies the dtype
+     * \param numElems the number of elements to convert
+     */
+    void convertComplex(BufferChunk &outBuffRe, BufferChunk &outBuffIm, const size_t numElems = 0) const;
 
 private:
     SharedBuffer _buffer;

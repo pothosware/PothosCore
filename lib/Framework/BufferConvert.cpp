@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferChunk.hpp>
@@ -168,4 +168,43 @@ std::pair<Pothos::BufferChunk, Pothos::BufferChunk> Pothos::BufferChunk::convert
 
     it->second(this->as<const void *>(), outRe.as<void *>(), outIm.as<void *>(), primElems);
     return std::make_pair(outRe, outIm);
+}
+
+void Pothos::BufferChunk::convert(BufferChunk &out, const size_t numElems_) const
+{
+    const size_t numElems = (numElems_ == 0)? this->elements() : numElems_;
+    const auto primElems = (numElems*this->dtype.size())/this->dtype.elemSize();
+    const auto outElems = primElems*out.dtype.size()/out.dtype.elemSize();
+
+    if (out.elements() < outElems) throw Pothos::BufferConvertError(
+        "Pothos::BufferChunk::convert(buffer)", "insufficient input buffer");
+
+    auto it = getBufferConvertImpl().convertMap.find(dtypeIOToHash(this->dtype, out.dtype));
+    if (it == getBufferConvertImpl().convertMap.end()) throw Pothos::BufferConvertError(
+        "Pothos::BufferChunk::convert("+dtype.toString()+")", "cant convert from " + this->dtype.toString());
+
+    it->second(this->as<const void *>(), out.as<void *>(), primElems);
+    out.length = outElems*out.dtype.size();
+}
+
+void Pothos::BufferChunk::convertComplex(BufferChunk &outRe, BufferChunk &outIm, const size_t numElems_) const
+{
+    const size_t numElems = (numElems_ == 0)? this->elements() : numElems_;
+    const auto primElems = (numElems*this->dtype.size())/this->dtype.elemSize();
+    const auto outElems = primElems*outRe.dtype.size()/outRe.dtype.elemSize();
+
+    if (not (outRe.dtype == outIm.dtype)) throw Pothos::BufferConvertError(
+        "Pothos::BufferChunk::convertComplex(bufferRe, bufferIm)", "buffer DType mismatch");
+    if (outRe.elements() < outElems) throw Pothos::BufferConvertError(
+        "Pothos::BufferChunk::convertComplex(bufferRe, bufferIm)", "insufficient input bufferRe");
+    if (outIm.elements() < outElems) throw Pothos::BufferConvertError(
+        "Pothos::BufferChunk::convertComplex(bufferRe, bufferIm)", "insufficient input bufferIm");
+
+    auto it = getBufferConvertImpl().convertComplexMap.find(dtypeIOToHash(this->dtype, outRe.dtype));
+    if (it == getBufferConvertImpl().convertComplexMap.end()) throw Pothos::BufferConvertError(
+        "Pothos::BufferChunk::convertComplex("+dtype.toString()+")", "cant convert from " + this->dtype.toString());
+
+    it->second(this->as<const void *>(), outRe.as<void *>(), outIm.as<void *>(), primElems);
+    outRe.length = outElems*outRe.dtype.size();
+    outIm.length = outElems*outIm.dtype.size();
 }
