@@ -4,7 +4,7 @@
 /// Version information for the library.
 ///
 /// \copyright
-/// Copyright (c) 2013-2015 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -15,7 +15,7 @@
 /*!
  * ABI Version Information - incremented when the abi is changed.
  */
-#define POTHOS_ABI_VERSION "0.3-2"
+#define POTHOS_ABI_VERSION "0.4-0"
 
 namespace Pothos {
 namespace System {
