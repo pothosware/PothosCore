@@ -5,7 +5,7 @@
 /// a managed or shared buffer and address/length offsets.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -87,6 +87,13 @@ public:
      * \return the length in bytes divided by the dtype size.
      */
     size_t elements(void) const;
+
+    /*!
+     * Set the number of elements held by this buffer.
+     * This call modifies the length field in bytes based on the
+     * configured data type and the specified number of elements.
+     */
+    void setElements(const size_t numElements);
 
     /*!
      * The underlying reference counted shared buffer.
@@ -171,6 +178,29 @@ public:
      */
     std::pair<BufferChunk, BufferChunk> convertComplex(const DType &dtype, const size_t numElems = 0) const;
 
+    /*!
+     * Convert a buffer chunk into the specified output buffer.
+     * When the number of elements are 0, the entire buffer is converted.
+     * The buffer length should be large enough to contain the entire conversion.
+     * \throws BufferConvertError when the conversion is not possible
+     * \param [out] outBuff the output buffer, also specifies the dtype
+     * \param numElems the number of elements to convert
+     * \return the number of output elements written to the buffer
+     */
+    size_t convert(const BufferChunk &outBuff, const size_t numElems = 0) const;
+
+    /*!
+     * Convert a buffer chunk of complex elements into two real buffers.
+     * When the number of elements are 0, the entire buffer is converted.
+     * The buffer length should be large enough to contain the entire conversion.
+     * \throws BufferConvertError when the conversion is not possible
+     * \param [out] outBuffRe the real output buffer, also specifies the dtype
+     * \param [out] outBuffIm the imaginary output buffer, also specifies the dtype
+     * \param numElems the number of elements to convert
+     * \return the number of output elements written to the buffers
+     */
+    size_t convertComplex(const BufferChunk &outBuffRe, const BufferChunk &outBuffIm, const size_t numElems = 0) const;
+
 private:
     SharedBuffer _buffer;
     ManagedBuffer _managedBuffer;
@@ -201,6 +231,11 @@ inline Pothos::BufferChunk::BufferChunk(void):
 inline size_t Pothos::BufferChunk::elements(void) const
 {
     return this->length/this->dtype.size();
+}
+
+inline void Pothos::BufferChunk::setElements(const size_t numElements)
+{
+    this->length = numElements*this->dtype.size();
 }
 
 inline const Pothos::SharedBuffer &Pothos::BufferChunk::getBuffer(void) const
