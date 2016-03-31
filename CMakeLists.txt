@@ -90,6 +90,8 @@ if (ENABLE_INTERNAL_POCO)
     set(CMAKE_BINARY_DIR ${PROJECT_BINARY_DIR})
     set(CMAKE_MODULE_PATH ${POTHOS_MODULE_PATH})
 
+    set(Poco_FOUND 1)
+
     set(Poco_INCLUDE_DIRS
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Foundation/include
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Util/include
