@@ -8,6 +8,7 @@ Release 0.4.0 (pending)
 Release 0.3.3 (pending)
 ==========================
 
+- Updated muparserx submodule, contains various fixes
 - CMake POTHOS_SOVER variable cache fix use INTERNAL type
 - Proxy server sets unbuffered on descriptors for printf() users
 
