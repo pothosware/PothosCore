@@ -9,6 +9,7 @@ Release 0.4.0 (pending)
 Release 0.3.3 (pending)
 ==========================
 
+- Switch to getWildcardAddr() in logger for portability
 - Fix Poco in-tree build support, was missing Poco_FOUND
 - Updated muparserx submodule, contains various fixes
 - CMake POTHOS_SOVER variable cache fix use INTERNAL type

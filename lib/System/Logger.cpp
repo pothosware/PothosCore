@@ -1,7 +1,8 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Logger.hpp>
+#include <Pothos/Util/Network.hpp>
 #include <Pothos/Plugin/Static.hpp> //static block
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
@@ -133,7 +134,7 @@ std::string Pothos::System::Logger::startSyslogListener(void)
     if (not listener)
     {
         //find an available udp port
-        Poco::Net::DatagramSocket sock(Poco::Net::SocketAddress("::", 0));
+        Poco::Net::DatagramSocket sock(Poco::Net::SocketAddress(Pothos::Util::getWildcardAddr(), 0));
         const auto port = sock.address().port();
         sock.close();
 
