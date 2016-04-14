@@ -23,6 +23,7 @@
 #include <Poco/SingletonHolder.h>
 #include <Poco/String.h>
 #include <Poco/AutoPtr.h>
+#include <Poco/URI.h>
 #include <iostream>
 #include <chrono>
 #include <memory>
@@ -134,7 +135,8 @@ std::string Pothos::System::Logger::startSyslogListener(void)
     if (not listener)
     {
         //find an available udp port
-        Poco::Net::DatagramSocket sock(Poco::Net::SocketAddress(Pothos::Util::getWildcardAddr(), 0));
+        const auto addr = Poco::URI("udp://"+Pothos::Util::getWildcardAddr()).getHost();
+        Poco::Net::DatagramSocket sock(Poco::Net::SocketAddress(addr, 0));
         const auto port = sock.address().port();
         sock.close();
 
