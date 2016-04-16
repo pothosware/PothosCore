@@ -9,6 +9,7 @@ Release 0.4.0 (pending)
 Release 0.3.3 (pending)
 ==========================
 
+- Added conversion for proxy vector to/from numeric matrix
 - Switch to getWildcardAddr() in logger for portability
 - Fix Poco in-tree build support, was missing Poco_FOUND
 - Updated muparserx submodule, contains various fixes

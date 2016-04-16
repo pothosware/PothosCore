@@ -119,6 +119,8 @@ void registerNumericProxyVectorConversion(const std::string &name)
 {
     Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_"+name+"_vec", Pothos::Callable(&convertProxyVectorToNativeVector<T>));
     Pothos::PluginRegistry::add("/object/convert/containers/"+name+"_vec_to_proxy_vec", Pothos::Callable(&convertNativeVectorToProxyVector<T>));
+    Pothos::PluginRegistry::add("/object/convert/containers/proxy_vec_to_"+name+"_matrix", Pothos::Callable(&convertProxyVectorToNativeVector<std::vector<T>>));
+    Pothos::PluginRegistry::add("/object/convert/containers/"+name+"_matrix_to_proxy_vec", Pothos::Callable(&convertNativeVectorToProxyVector<std::vector<T>>));
 }
 
 static Pothos::ObjectKwargs convertObjectMapToObjectKwargs(const Pothos::ObjectMap &oMap)
