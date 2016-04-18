@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/DType.hpp>
@@ -218,6 +218,13 @@ Pothos::DType::DType(const std::type_info &type, const size_t dimension):
     _dimension(dimension)
 {
     return;
+}
+
+Pothos::DType Pothos::DType::fromDType(const DType &dtype, const size_t dimension)
+{
+    DType newDType = dtype;
+    newDType._dimension = dimension;
+    return newDType;
 }
 
 const std::string &Pothos::DType::name(void) const

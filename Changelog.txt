@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.4.0 (pending)
 ==========================
 
+- Added fromDType() factory method to DType class
 - Updated the internal Poco submodule to version 1.7.2
 - Added buffer chunk API to convert into a specified buffer
 

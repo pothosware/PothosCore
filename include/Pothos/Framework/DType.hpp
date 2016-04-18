@@ -4,7 +4,7 @@
 /// This file contains the definition for the DType object.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -78,6 +78,14 @@ public:
      * \param dimension the number of elements per type
      */
     DType(const std::type_info &type, const size_t dimension = 1);
+
+    /*!
+     * Create a DType from a DType object specified dimensionality.
+     * The dimensionality of the input dtype parameter is ignored.
+     * \param dtype supplies the primitive data type
+     * \param dimension the number of elements per type
+     */
+    static DType fromDType(const DType &dtype, const size_t dimension);
 
     /*!
      * Get a name that describes an element.
