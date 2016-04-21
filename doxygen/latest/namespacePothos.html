@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.3.0-ga8f2d4e2</span>
+   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -699,41 +699,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="acd044e1c200717b3d0bf54b5ded7dde4"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool Pothos::operator== </td>
-          <td>(</td>
-          <td class="paramtype">const BufferChunk &amp;&#160;</td>
-          <td class="paramname"><em>lhs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const BufferChunk &amp;&#160;</td>
-          <td class="paramname"><em>rhs</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Equality operator for <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> objects. True when the address, length, and underlying buffer are the same. </p>
-
-</div>
-</div>
 <a class="anchor" id="a05d2dce6549320129fc18aa10e72e30c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -766,6 +731,41 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if the objects represent the same internal data </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="acd044e1c200717b3d0bf54b5ded7dde4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Pothos::operator== </td>
+          <td>(</td>
+          <td class="paramtype">const BufferChunk &amp;&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const BufferChunk &amp;&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Equality operator for <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> objects. True when the address, length, and underlying buffer are the same. </p>
 
 </div>
 </div>
@@ -1012,39 +1012,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a6996ed2d4a88a7d4552ccfa4e3ac0a2d"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">Pothos::POTHOS_DECLARE_EXCEPTION </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a>&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">ManagedClassNameError&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">RuntimeException&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>A ManagedClassNameError is thrown when a method name does not exist. </p>
-
-</div>
-</div>
 <a class="anchor" id="ad2d60c6bc84723f3ab3fa05c43d09d71"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1075,6 +1042,39 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>A ProxyEnvironmentConvertError is thrown when a convert method fails. </p>
+
+</div>
+</div>
+<a class="anchor" id="a6996ed2d4a88a7d4552ccfa4e3ac0a2d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Pothos::POTHOS_DECLARE_EXCEPTION </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ManagedClassNameError&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">RuntimeException&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A ManagedClassNameError is thrown when a method name does not exist. </p>
 
 </div>
 </div>
@@ -1213,7 +1213,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Dec 16 2015 19:49:12 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

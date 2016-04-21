@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.3.0-ga8f2d4e2</span>
+   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -625,7 +625,7 @@ Friends</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set a reserve requirement on this input port. A reserve requirement means that work() will not be called unless this input port has at least numElements available; An exception to this rule is when a message is available. By default, each input port has a reserve of zero elements. </p>
+<p>Set a reserve requirement on this input port. The reserve size ensures that when sufficient resources are available, the buffer will contain at least the specified number of elements. By default, each input port has a reserve of zero elements, which means that the input port's buffer may be any size, including empty, depending upon the available resources. Note that work() may still be called when the reserve is not met, because the scheduler will only prevent work() from being called when all ports fail to meet their respective reserve requirements. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">numElements</td><td>the number of elements to require </td></tr>
@@ -783,7 +783,7 @@ Friends</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Dec 16 2015 19:49:12 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

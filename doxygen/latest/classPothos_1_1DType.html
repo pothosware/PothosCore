@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.3.0-ga8f2d4e2</span>
+   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -91,6 +91,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classPothos_1_1DType-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Pothos::DType Class Reference</div>  </div>
@@ -147,6 +148,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a65e8b64921ed2c28b3ddc3f285a479d0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#a65e8b64921ed2c28b3ddc3f285a479d0">serialize</a> (Archive &amp;ar, const unsigned int version)</td></tr>
 <tr class="memdesc:a65e8b64921ed2c28b3ddc3f285a479d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization support.  <a href="#a65e8b64921ed2c28b3ddc3f285a479d0">More...</a><br/></td></tr>
 <tr class="separator:a65e8b64921ed2c28b3ddc3f285a479d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a8f59906f5f6b3aff77a1381f5a6635c2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classPothos_1_1DType.html">DType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1DType.html#a8f59906f5f6b3aff77a1381f5a6635c2">fromDType</a> (const <a class="el" href="classPothos_1_1DType.html">DType</a> &amp;dtype, const size_t <a class="el" href="classPothos_1_1DType.html#ac5dabb9e05bd7736bfed3391a090ed10">dimension</a>)</td></tr>
+<tr class="separator:a8f59906f5f6b3aff77a1381f5a6635c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classPothos_1_1DType.html">DType</a> provides meta-information about a data type. A <a class="el" href="classPothos_1_1DType.html">DType</a> consists of a primitive element type and dimensionality. The dimensionality is a simple number that allows a <a class="el" href="classPothos_1_1DType.html">DType</a> to represent an integer number of primitive element per object.</p>
@@ -412,6 +418,48 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a8f59906f5f6b3aff77a1381f5a6635c2"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classPothos_1_1DType.html">DType</a> Pothos::DType::fromDType </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1DType.html">DType</a> &amp;&#160;</td>
+          <td class="paramname"><em>dtype</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>dimension</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a <a class="el" href="classPothos_1_1DType.html">DType</a> from a <a class="el" href="classPothos_1_1DType.html">DType</a> object specified dimensionality. The dimensionality of the input dtype parameter is ignored. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dtype</td><td>supplies the primitive data type </td></tr>
+    <tr><td class="paramname">dimension</td><td>the number of elements per type </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="a41263f9cf941e6beb6b9b6b0f09d298d"></a>
 <div class="memitem">
 <div class="memproto">
@@ -643,7 +691,7 @@ template&lt;class Archive &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Dec 16 2015 19:49:13 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -1,0 +1,14 @@
+<map id="Pothos::LogicException" name="Pothos::LogicException">
+<area shape="rect" id="node4" href="$classPothos_1_1AssertionViolationException.html" title="Pothos::AssertionViolation\lException" alt="" coords="569,5,745,46"/>
+<area shape="rect" id="node5" href="$classPothos_1_1BugcheckException.html" title="Pothos::BugcheckException" alt="" coords="564,71,751,97"/>
+<area shape="rect" id="node6" href="$classPothos_1_1IllegalStateException.html" title="Pothos::IllegalStateException" alt="" coords="560,121,755,148"/>
+<area shape="rect" id="node7" href="$classPothos_1_1InvalidAccessException.html" title="Pothos::InvalidAccessException" alt="" coords="552,172,763,199"/>
+<area shape="rect" id="node8" href="$classPothos_1_1InvalidArgumentException.html" title="Pothos::InvalidArgumentException" alt="" coords="546,223,769,249"/>
+<area shape="rect" id="node9" href="$classPothos_1_1NotImplementedException.html" title="Pothos::NotImplementedException" alt="" coords="545,273,770,300"/>
+<area shape="rect" id="node10" href="$classPothos_1_1NullPointerException.html" title="Pothos::NullPointerException" alt="" coords="561,324,754,351"/>
+<area shape="rect" id="node11" href="$classPothos_1_1NullValueException.html" title="Pothos::NullValueException" alt="" coords="565,375,750,401"/>
+<area shape="rect" id="node12" href="$classPothos_1_1RangeException.html" title="Pothos::RangeException" alt="" coords="574,425,741,452"/>
+<area shape="rect" id="node13" href="$classPothos_1_1SignalException.html" title="Pothos::SignalException" alt="" coords="575,476,740,503"/>
+<area shape="rect" id="node14" href="$classPothos_1_1UnhandledException.html" title="Pothos::UnhandledException" alt="" coords="562,527,753,553"/>
+<area shape="rect" id="node2" href="$classPothos_1_1Exception.html" title="Pothos::Exception" alt="" coords="158,273,287,300"/>
+</map>

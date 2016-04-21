@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.3.0-ga8f2d4e2</span>
+   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -115,6 +115,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a55777700eb480caeffcb5ae523d4bcac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe58ca6a5760f3ed3af3860f8d947194"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#afe58ca6a5760f3ed3af3860f8d947194">elements</a> (void) const </td></tr>
 <tr class="separator:afe58ca6a5760f3ed3af3860f8d947194"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4eb7b4782ee9394808221621f910640a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#a4eb7b4782ee9394808221621f910640a">setElements</a> (const size_t numElements)</td></tr>
+<tr class="separator:a4eb7b4782ee9394808221621f910640a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38c483e35b3622f2b4a3eb38017c8b83"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classPothos_1_1SharedBuffer.html">SharedBuffer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#a38c483e35b3622f2b4a3eb38017c8b83">getBuffer</a> (void) const </td></tr>
 <tr class="separator:a38c483e35b3622f2b4a3eb38017c8b83"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a513442ec93f0da9ea94b6c24507365a5"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classPothos_1_1ManagedBuffer.html">ManagedBuffer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#a513442ec93f0da9ea94b6c24507365a5">getManagedBuffer</a> (void) const </td></tr>
@@ -143,6 +145,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a9362b8b5f3c6c9ea83143692f2432b35"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a>, <br class="typebreak"/>
 <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#a9362b8b5f3c6c9ea83143692f2432b35">convertComplex</a> (const <a class="el" href="classPothos_1_1DType.html">DType</a> &amp;<a class="el" href="classPothos_1_1BufferChunk.html#af44958b4611a0c359e0551d9cba9262a">dtype</a>, const size_t numElems=0) const </td></tr>
 <tr class="separator:a9362b8b5f3c6c9ea83143692f2432b35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13509c8d18c6d9bd61bfc33afeac8d59"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#a13509c8d18c6d9bd61bfc33afeac8d59">convert</a> (const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;outBuff, const size_t numElems=0) const </td></tr>
+<tr class="separator:a13509c8d18c6d9bd61bfc33afeac8d59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2a76a179e7253f551d6bc6fdc717934"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BufferChunk.html#ac2a76a179e7253f551d6bc6fdc717934">convertComplex</a> (const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;outBuffRe, const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;outBuffIm, const size_t numElems=0) const </td></tr>
+<tr class="separator:ac2a76a179e7253f551d6bc6fdc717934"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -362,6 +368,47 @@ template&lt;typename ElementType &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a13509c8d18c6d9bd61bfc33afeac8d59"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t Pothos::BufferChunk::convert </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;&#160;</td>
+          <td class="paramname"><em>outBuff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>numElems</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Convert a buffer chunk into the specified output buffer. When the number of elements are 0, the entire buffer is converted. The buffer length should be large enough to contain the entire conversion. </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">BufferConvertError</td><td>when the conversion is not possible </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">outBuff</td><td>the output buffer, also specifies the dtype </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">numElems</td><td>the number of elements to convert </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the number of output elements written to the buffer </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a9362b8b5f3c6c9ea83143692f2432b35"></a>
 <div class="memitem">
 <div class="memproto">
@@ -400,6 +447,54 @@ template&lt;typename ElementType &gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>a real + complex pair of buffer chunks </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ac2a76a179e7253f551d6bc6fdc717934"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t Pothos::BufferChunk::convertComplex </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;&#160;</td>
+          <td class="paramname"><em>outBuffRe</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> &amp;&#160;</td>
+          <td class="paramname"><em>outBuffIm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>numElems</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Convert a buffer chunk of complex elements into two real buffers. When the number of elements are 0, the entire buffer is converted. The buffer length should be large enough to contain the entire conversion. </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">BufferConvertError</td><td>when the conversion is not possible </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">outBuffRe</td><td>the real output buffer, also specifies the dtype </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">outBuffIm</td><td>the imaginary output buffer, also specifies the dtype </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">numElems</td><td>the number of elements to convert </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the number of output elements written to the buffers </dd></dl>
 
 </div>
 </div>
@@ -613,6 +708,31 @@ template&lt;class Archive &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a4eb7b4782ee9394808221621f910640a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Pothos::BufferChunk::setElements </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>numElements</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set the number of elements held by this buffer. This call modifies the length field in bytes based on the configured data type and the specified number of elements. </p>
+
+</div>
+</div>
 <a class="anchor" id="abfa9f137d258bdc85561b6d560cda10f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -710,7 +830,7 @@ template&lt;class Archive &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Dec 16 2015 19:49:13 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -7,6 +7,7 @@ var searchData=
   ['set_5fcapacity',['set_capacity',['../classPothos_1_1Util_1_1RingDeque.html#abde33a20af0aee5791bd91f3abe271fd',1,'Pothos::Util::RingDeque']]],
   ['setalias',['setAlias',['../classPothos_1_1InputPort.html#a4aa242e354e97b9d5854f84e7b966969',1,'Pothos::InputPort::setAlias()'],['../classPothos_1_1OutputPort.html#adfe4b167063754eff1439a9b2aa931c8',1,'Pothos::OutputPort::setAlias()']]],
   ['setcallback',['setCallback',['../classPothos_1_1BufferManager.html#a76a08fa87758efe68923f6778c9a2d55',1,'Pothos::BufferManager']]],
+  ['setelements',['setElements',['../classPothos_1_1BufferChunk.html#a4eb7b4782ee9394808221621f910640a',1,'Pothos::BufferChunk']]],
   ['setfrontbuffer',['setFrontBuffer',['../classPothos_1_1BufferManager.html#aff759dbccc3a6f49664f45c18d8a79ac',1,'Pothos::BufferManager']]],
   ['setname',['setName',['../classPothos_1_1Connectable.html#ac6931aea1689a0fd0e6d917df9503509',1,'Pothos::Connectable']]],
   ['setreadbeforewrite',['setReadBeforeWrite',['../classPothos_1_1OutputPort.html#ad8f81f9b517d9c93631f46e860370e4f',1,'Pothos::OutputPort']]],

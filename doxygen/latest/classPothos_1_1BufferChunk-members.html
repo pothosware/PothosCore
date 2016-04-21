@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.3.0-ga8f2d4e2</span>
+   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -105,7 +105,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <tr class="even"><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a9d4774591853fe58ff93e0aa41b02149">BufferChunk</a>(const SharedBuffer &amp;buffer)</td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"></td></tr>
   <tr><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a55777700eb480caeffcb5ae523d4bcac">BufferChunk</a>(const ManagedBuffer &amp;buffer)</td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a953b744331c7164bc13f56bdaf83bdcb">convert</a>(const DType &amp;dtype, const size_t numElems=0) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"></td></tr>
-  <tr><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a9362b8b5f3c6c9ea83143692f2432b35">convertComplex</a>(const DType &amp;dtype, const size_t numElems=0) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a13509c8d18c6d9bd61bfc33afeac8d59">convert</a>(const BufferChunk &amp;outBuff, const size_t numElems=0) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a9362b8b5f3c6c9ea83143692f2432b35">convertComplex</a>(const DType &amp;dtype, const size_t numElems=0) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#ac2a76a179e7253f551d6bc6fdc717934">convertComplex</a>(const BufferChunk &amp;outBuffRe, const BufferChunk &amp;outBuffIm, const size_t numElems=0) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#af44958b4611a0c359e0551d9cba9262a">dtype</a></td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"></td></tr>
   <tr><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#afe58ca6a5760f3ed3af3860f8d947194">elements</a>(void) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a465048014ee4344872b65e6c94ead865">getAlias</a>(void) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
@@ -116,12 +118,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <tr><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a5c7a872a0729200aa82ecef33720d992">null</a>(void)</td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#abb69ccab54cefce01e0c8c5a922dd049">operator bool</a>(void) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
   <tr><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a5a21b2a07f62238baec3d6df39fdf99f">serialize</a>(Archive &amp;ar, const unsigned int version)</td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#abfa9f137d258bdc85561b6d560cda10f">unique</a>(void) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a61dfd65b1f750ef52f54cbc9d0ccc34c">useCount</a>(void) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a4eb7b4782ee9394808221621f910640a">setElements</a>(const size_t numElements)</td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#abfa9f137d258bdc85561b6d560cda10f">unique</a>(void) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html#a61dfd65b1f750ef52f54cbc9d0ccc34c">useCount</a>(void) const </td><td class="entry"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Dec 16 2015 19:49:13 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
