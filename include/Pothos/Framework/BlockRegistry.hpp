@@ -4,7 +4,7 @@
 /// A BlockRegistry registers a block's factory function.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -38,10 +38,17 @@ public:
      *
      * The return type of the call must be Block* or Topology*.
      *
+     * The optional overlay function returns a JSON block description
+     * that can be queried and merged over the existing block description.
+     * This allows blocks to advertise dynamic parameters before actual
+     * block instantiation takes place. Ex: enumerating available devices.
+     * The overlay function takes no arguments and returns a JSON string.
+     *
      * \param path the factory path begining with a slash ("/")
      * \param factory the Callable factory function
+     * \param overlay an optional block description overlay
      */
-    BlockRegistry(const std::string &path, const Callable &factory);
+    BlockRegistry(const std::string &path, const Callable &factory, const Callable &overlay = Callable());
 };
 
 } //namespace Pothos

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Block.hpp>
@@ -21,7 +21,7 @@ static bool isOpaqueFactory(const Pothos::Callable &factory)
 /***********************************************************************
  * Instance of BlockRegistry peforms check and plugin registration
  **********************************************************************/
-Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &factory)
+Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &factory, const Callable &overlay)
 {
     //check the path
     if (path.empty() or path.front() != '/')
@@ -65,7 +65,31 @@ Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &fa
     //otherwise report the error
     else
     {
-        poco_error_f1(Poco::Logger::get("Pothos.BlockRegistry"), "Bad Factory, must return Block* or Topology*: %s", factory.toString());
+        poco_error_f2(Poco::Logger::get("Pothos.BlockRegistry"),
+            "%s: Bad Factory, must return Block* or Topology*: %s", path, factory.toString());
+    }
+
+    //check the overlay
+    if (not overlay) return;
+    if (overlay.getNumArgs() == 0 and overlay.type(-1) == typeid(std::string))
+    {
+        //register
+        try
+        {
+            fullPath = PluginPath("/blocks/overlays").join(path.substr(1));
+            PluginRegistry::add(fullPath, overlay);
+        }
+        catch (const PluginRegistryError &ex)
+        {
+            poco_error(Poco::Logger::get("Pothos.BlockRegistry"), ex.displayText());
+            return;
+        }
+    }
+    else
+    {
+        poco_error_f2(Poco::Logger::get("Pothos.BlockRegistry"),
+            "%s: Bad Overlay, must take no arguments and return string: %s", path, overlay.toString());
+        return;
     }
 }
 
@@ -125,6 +149,21 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
 
     throw Pothos::IllegalStateException("Pothos::BlockRegistry::make("+path+")", factory.toString());
 }
+
+/***********************************************************************
+ * BlockRegistry overlay - get JSON overlay at block path or empty
+ **********************************************************************/
+static std::string blockRegistryOverlay(const std::string &path)
+{
+    const auto pluginPath = Pothos::PluginPath("/blocks/overlays").join(path.substr(1));
+    if (not Pothos::PluginRegistry::exists(pluginPath)) return "{}";
+
+    const auto plugin = Pothos::PluginRegistry::get(pluginPath);
+    const auto overlay = plugin.getObject().extract<Pothos::Callable>();
+    return overlay.call<std::string>();
+}
+
+//TODO -- register blockRegistryOverlay function
 
 #include <Pothos/Managed.hpp>
 
