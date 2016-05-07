@@ -150,24 +150,33 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     throw Pothos::IllegalStateException("Pothos::BlockRegistry::make("+path+")", factory.toString());
 }
 
-/***********************************************************************
- * BlockRegistry overlay - get JSON overlay at block path or empty
- **********************************************************************/
-static std::string blockRegistryOverlay(const std::string &path)
-{
-    const auto pluginPath = Pothos::PluginPath("/blocks/overlays").join(path.substr(1));
-    if (not Pothos::PluginRegistry::exists(pluginPath)) return "{}";
-
-    const auto plugin = Pothos::PluginRegistry::get(pluginPath);
-    const auto overlay = plugin.getObject().extract<Pothos::Callable>();
-    return overlay.call<std::string>();
-}
-
-//TODO -- register blockRegistryOverlay function
-
 #include <Pothos/Managed.hpp>
 
 static auto managedBlockRegistry = Pothos::ManagedClass()
     .registerClass<Pothos::BlockRegistry>()
     .registerWildcardStaticMethod(&blockRegistryMake)
     .commit("Pothos/BlockRegistry");
+
+/***********************************************************************
+ * BlockRegistry overlay - get JSON overlay at block path or empty
+ **********************************************************************/
+class BlockRegistryOverlay
+{
+public:
+    static std::string get(const std::string &path)
+    {
+        const auto pluginPath = Pothos::PluginPath("/blocks/overlays").join(path.substr(1));
+        if (not Pothos::PluginRegistry::exists(pluginPath)) return "{}";
+
+        const auto plugin = Pothos::PluginRegistry::get(pluginPath);
+        const auto overlay = plugin.getObject().extract<Pothos::Callable>();
+        return overlay.call<std::string>();
+    }
+};
+
+#include <Pothos/Managed.hpp>
+
+static auto managedBlockRegistryOverlay = Pothos::ManagedClass()
+    .registerClass<BlockRegistryOverlay>()
+    .registerStaticMethod(POTHOS_FCN_TUPLE(BlockRegistryOverlay, get))
+    .commit("Pothos/BlockRegistryOverlay");
