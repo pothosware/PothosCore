@@ -7,7 +7,7 @@ Release 0.4.0 (pending)
 - Updated the internal Poco submodule to version 1.7.3
 - Added buffer chunk API to convert into a specified buffer
 
-Release 0.3.3 (pending)
+Release 0.3.3 (2016-05-10)
 ==========================
 
 - Added conversion for proxy vector to/from numeric matrix
