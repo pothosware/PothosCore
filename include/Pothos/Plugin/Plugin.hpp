@@ -4,7 +4,7 @@
 /// The plugin representation for the plugin registry.
 ///
 /// \copyright
-/// Copyright (c) 2013-2015 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -47,14 +47,14 @@ public:
     const Object &getObject(void) const;
 
     //! Get the Module from the Plugin.
-    const PluginModule &getModule(void) const;
+    PluginModule getModule(void) const;
 
     //! String representation of plugin
     std::string toString(void) const;
 
 private:
-    // This module owns the plugin, so its just a pointer.
-    const PluginModule *_module;
+    // This module owns the plugin, so its just a weak pointer.
+    std::weak_ptr<PluginModule::Impl> _module;
     PluginPath _path;
     Object _object;
 };

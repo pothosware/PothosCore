@@ -4,7 +4,7 @@
 /// A PluginModule interacts with loadable library modules and the plugin registry.
 ///
 /// \copyright
-/// Copyright (c) 2013-2015 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -15,6 +15,8 @@
 #include <string>
 
 namespace Pothos {
+
+class Plugin;
 
 /*!
  * PluginModule represents a loaded shared library in the filesystem.
@@ -66,6 +68,7 @@ public:
 private:
     struct Impl;
     std::shared_ptr<Impl> _impl;
+    friend Plugin;
 };
 
 } //namespace Pothos
