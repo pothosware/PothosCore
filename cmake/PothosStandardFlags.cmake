@@ -16,14 +16,14 @@ endif()
 # Compiler flags that are generally always a good idea to set
 # or sensible to use because of the project's constraints.
 ########################################################################
+
+#C++11 is a required language feature for this project
+set(CMAKE_CXX_STANDARD 11)
+
 if(CMAKE_COMPILER_IS_GNUCXX)
 
-    #C++11 is a required language feature for this project
-    include(CheckCXXCompilerFlag)
-    CHECK_CXX_COMPILER_FLAG("-std=c++11" HAS_STD_CXX11)
-    if(HAS_STD_CXX11)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    else(HAS_STD_CXX11)
+    #enable C++11 on older versions of cmake
+    if (CMAKE_VERSION VERSION_LESS "3.1")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
     endif()
 
@@ -42,11 +42,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     add_compile_options(-fvisibility=hidden)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
 endif()
-
-#enable c++11 extensions for OSX
-if (APPLE)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wc++11-extensions")
-endif(APPLE)
 
 if(APPLE)
     #fixes issue with duplicate module registry when using application bundle
