@@ -172,7 +172,7 @@ void Pothos::BufferAccumulator::pop(const size_t numBytes)
         if (fOverBounds and f.getEnd() == b.address)
         {
             b.address -= f.length;
-            b.length =+ f.length;
+            b.length += f.length;
             queue.pop_front();
         }
     }

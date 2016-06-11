@@ -21,6 +21,10 @@
 #include <numa.h>
 #endif
 
+#ifdef __FreeBSD__
+#include <sys/stat.h>
+#endif
+
 /***********************************************************************
  * aligned allocator for a generic memory slab (uses new/delete)
  **********************************************************************/
