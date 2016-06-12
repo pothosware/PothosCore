@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.4.0 (pending)
 ==========================
 
+- Library fixes to support compilation on FreeBSD systems
 - Use default debug log level for plugin registry events
 - Allow for plugin module re-initialization after deinit()
 - Fixed weak storage of plugin's associated module object
