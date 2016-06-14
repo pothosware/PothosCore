@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/Object.hpp>
@@ -41,7 +41,7 @@ static inline size_t typesHashCombine(const std::type_info &t0, const std::type_
  **********************************************************************/
 static void handleComparePluginEvent(const Pothos::Plugin &plugin, const std::string &event)
 {
-    poco_information_f2(Poco::Logger::get("Pothos.Object.handleComparePluginEvent"), "plugin %s, event %s", plugin.toString(), event);
+    poco_debug_f2(Poco::Logger::get("Pothos.Object.handleComparePluginEvent"), "plugin %s, event %s", plugin.toString(), event);
     POTHOS_EXCEPTION_TRY
     {
         //validate the plugin -- if we want to handle it -- check the signature:

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin/Loader.hpp>
@@ -14,7 +14,7 @@
 
 std::vector<Poco::Path> getModulePaths(const Poco::Path &path)
 {
-    poco_information(Poco::Logger::get("Pothos.PluginLoader.load"), path.toString());
+    poco_debug(Poco::Logger::get("Pothos.PluginLoader.load"), path.toString());
 
     std::vector<Poco::Path> paths;
 

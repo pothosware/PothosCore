@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin/Registry.hpp>
@@ -149,7 +149,7 @@ void Pothos::PluginRegistry::add(const Plugin &plugin_)
     Plugin plugin = plugin_;
     const PluginPath &path = plugin.getPath();
 
-    poco_information(Poco::Logger::get("Pothos.PluginRegistry.add"), plugin.toString());
+    poco_debug(Poco::Logger::get("Pothos.PluginRegistry.add"), plugin.toString());
 
     {
         Poco::RWLock::ScopedWriteLock lock(getRegistryMutex());
@@ -208,7 +208,7 @@ Pothos::Plugin Pothos::PluginRegistry::get(const PluginPath &path)
 
 Pothos::Plugin Pothos::PluginRegistry::remove(const PluginPath &path)
 {
-    poco_information(Poco::Logger::get("Pothos.PluginRegistry.remove"), path.toString());
+    poco_debug(Poco::Logger::get("Pothos.PluginRegistry.remove"), path.toString());
 
     Plugin plugin;
     {

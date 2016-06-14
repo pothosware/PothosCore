@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Paths.hpp>
@@ -84,7 +84,7 @@ Pothos::PluginModule::PluginModule(const std::string &path):
     _impl(new Impl())
 {
     _impl->path = path;
-    poco_information(Poco::Logger::get("Pothos.PluginModule.load"), path);
+    poco_debug(Poco::Logger::get("Pothos.PluginModule.load"), path);
     try
     {
         std::lock_guard<std::mutex> lock(getModuleMutex());
@@ -106,7 +106,7 @@ Pothos::PluginModule::~PluginModule(void)
     if (not _impl.unique()) return; //this is not the last copy
     if (not _impl->sharedLibrary.isLoaded()) return; //module not loaded
 
-    poco_information(Poco::Logger::get("Pothos.PluginModule.unload"), _impl->sharedLibrary.getPath());
+    poco_debug(Poco::Logger::get("Pothos.PluginModule.unload"), _impl->sharedLibrary.getPath());
     for (const auto &pluginPath : this->getPluginPaths())
     {
         PluginRegistry::remove(pluginPath);

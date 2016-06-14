@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -91,12 +91,12 @@ void Pothos::TestingBase::report(
         "%s:%d\n  %s", Poco::Path(file).getFileName(), line, message);
     if (error.empty())
     {
-        poco_information(Poco::Logger::get("Pothos.Testing"), testMessage);
+        poco_debug(Poco::Logger::get("Pothos.Testing"), testMessage);
     }
     else
     {
         testMessage += "\n  " + error;
-        poco_information(Poco::Logger::get("Pothos.Testing"), testMessage);
+        poco_debug(Poco::Logger::get("Pothos.Testing"), testMessage);
         throw TestingReportError("Pothos::Testing " + testMessage);
     }
 }

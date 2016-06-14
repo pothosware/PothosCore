@@ -190,7 +190,7 @@ void Pothos::System::Logger::forwardStdIoToLogging(const std::string &source)
 
 static void __setupDefaultLogging(void)
 {
-    const std::string logLevel = Poco::Environment::get("POTHOS_LOG_LEVEL", "notice");
+    const std::string logLevel = Poco::Environment::get("POTHOS_LOG_LEVEL", "information");
     const std::string logChannel = Poco::Environment::get("POTHOS_LOG_CHANNEL", "color");
     const std::string logFile = Poco::Environment::get("POTHOS_LOG_FILE", "pothos.log");
     const std::string logFomat = Poco::Environment::get("POTHOS_LOG_FORMAT", "%Y-%m-%d %H:%M:%S %s: %t");

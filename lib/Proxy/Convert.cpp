@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Proxy/Environment.hpp>
@@ -85,7 +85,7 @@ static bool isConvertToProxy(const Pothos::Plugin &plugin)
  **********************************************************************/
 static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &event)
 {
-    poco_information_f2(Poco::Logger::get("Pothos.Proxy.handlePluginEvent"), "plugin %s, event %s", plugin.toString(), event);
+    poco_debug_f2(Poco::Logger::get("Pothos.Proxy.handlePluginEvent"), "plugin %s, event %s", plugin.toString(), event);
 
     const auto &nodes = plugin.getPath().listNodes();
     assert(nodes.size() > 2);
