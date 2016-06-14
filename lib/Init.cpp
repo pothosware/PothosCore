@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Init.hpp>
@@ -34,7 +34,12 @@ static std::vector<Pothos::PluginModule> &getLoadedModules(void)
 
 void Pothos::init(void)
 {
+    //performs one-time checks
     getInitSingleton();
+
+    //load the modules for plugin system
+    if (not getLoadedModules().empty()) return;
+    getLoadedModules() = PluginLoader::loadModules();
 }
 
 /***********************************************************************
@@ -104,9 +109,6 @@ Pothos::InitSingleton::InitSingleton(void)
         "Pothos development library directory FAIL - \"%s\" does not exist",
         System::getPothosDevLibraryPath()
     ));
-
-    //load the modules for plugin system
-    getLoadedModules() = PluginLoader::loadModules();
 }
 
 void Pothos::deinit(void)
