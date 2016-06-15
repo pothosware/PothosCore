@@ -10,6 +10,10 @@
 #include <cstring> //strerror
 #include <cerrno> //errno
 
+#ifdef __FreeBSD__
+#include <sys/stat.h>
+#endif
+
 struct Pothos::Util::FileLock::Impl
 {
     Impl(void):

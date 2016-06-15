@@ -66,3 +66,7 @@ if(MSVC)
     add_compile_options(/wd4275) #disable non – DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'
     add_compile_options(/wd4503) #'identifier' : decorated name length exceeded, name was truncated
 endif(MSVC)
+
+if ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
+    add_compile_options(-stdlib=libc++)
+endif()
