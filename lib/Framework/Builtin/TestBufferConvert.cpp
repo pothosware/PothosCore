@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -15,25 +15,25 @@
 template <typename InType, typename OutType>
 bool checkEqual(const InType in, const OutType out)
 {
-    return in == out;
+    return double(in) == double(out);
 }
 
 template <typename InType, typename OutType>
 bool checkEqual(const InType in, const std::complex<OutType> out)
 {
-    return in == out.real() and InType(0) == out.imag();
+    return checkEqual(in, out.real()) and checkEqual(InType(0), out.imag());
 }
 
 template <typename InType, typename OutType>
 bool checkEqual(const std::complex<InType> in, const std::complex<OutType> out)
 {
-    return in.real() == out.real() and in.imag() == out.imag();
+    return checkEqual(in.real(), out.real()) and checkEqual(in.imag(), out.imag());
 }
 
 template <typename InType, typename OutType>
 bool checkEqual(const std::complex<InType> in, const OutType outRe, const OutType outIm)
 {
-    return in.real() == outRe and in.imag() == outIm;
+    return checkEqual(in.real(), outRe) and checkEqual(in.imag(), outIm);
 }
 
 /***********************************************************************
