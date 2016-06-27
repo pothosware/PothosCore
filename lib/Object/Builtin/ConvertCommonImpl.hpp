@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -8,7 +8,6 @@
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Callable.hpp>
 #include <Poco/Format.h>
-#include <type_traits>
 #include <limits>
 #include <complex>
 #include <string>
@@ -36,22 +35,6 @@ typedef std::complex<float> cfloat;
 typedef std::complex<double> cdouble;
 
 /***********************************************************************
- * make signed that handles floats
- * https://stackoverflow.com/questions/16377736/stdmake-signed-that-accepts-floating-point-types
- **********************************************************************/
-template<typename T, typename Enable = void>
-struct my_make_signed
-{
-    typedef typename std::make_signed<T>::type type;
-};
-
-template<typename T>
-struct my_make_signed<T, typename std::enable_if<std::is_floating_point<T>::value>::type>
-{
-    typedef T type;
-};
-
-/***********************************************************************
  * type conversion checkers
  **********************************************************************/
 
@@ -59,9 +42,8 @@ struct my_make_signed<T, typename std::enable_if<std::is_floating_point<T>::valu
 template <typename OutType, typename InType>
 void convertNumCheck(const InType &in)
 {
-    if (in > std::numeric_limits<OutType>::max() or //too large
-        (std::is_signed<InType>::value and typename my_make_signed<InType>::type(in) <
-        typename my_make_signed<OutType>::type(std::numeric_limits<OutType>::lowest()))) //too small
+    if (double(in) > double(std::numeric_limits<OutType>::max()) or //too large
+        double(in) < double(std::numeric_limits<OutType>::lowest())) //too small
     {
         throw Pothos::RangeException(Poco::format("value %s out of range for output type %s",
             std::to_string(in), Pothos::Util::typeInfoToString(typeid(OutType))));

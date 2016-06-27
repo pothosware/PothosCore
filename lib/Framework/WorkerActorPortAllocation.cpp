@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
@@ -136,7 +136,7 @@ void Pothos::WorkerActor::autoDeletePort(const std::string &name, PortsType &por
     }
 
     //remove it from indexed ports and strip null ports
-    if (port.index() >= 0 and port.index() < indexedPorts.size())
+    if (port.index() >= 0 and size_t(port.index()) < indexedPorts.size())
     {
         indexedPorts[port.index()] = nullptr;
     }
