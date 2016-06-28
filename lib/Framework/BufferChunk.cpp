@@ -1,9 +1,10 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Poco/SingletonHolder.h>
 #include <cstring> //memcpy
+#include <utility> //move
 
 const Pothos::BufferChunk &Pothos::BufferChunk::null(void)
 {
@@ -44,6 +45,47 @@ Pothos::BufferChunk::BufferChunk(const ManagedBuffer &buffer):
     _managedBuffer(buffer)
 {
     return;
+}
+
+Pothos::BufferChunk::BufferChunk(const BufferChunk &other):
+    address(other.address),
+    length(other.length),
+    _buffer(other._buffer),
+    _managedBuffer(other._managedBuffer)
+{
+    return;
+}
+
+Pothos::BufferChunk::BufferChunk(BufferChunk &&other):
+    address(std::move(other.address)),
+    length(std::move(other.length)),
+    _buffer(std::move(other._buffer)),
+    _managedBuffer(std::move(other._managedBuffer))
+{
+    return;
+}
+
+Pothos::BufferChunk::~BufferChunk(void)
+{
+    return;
+}
+
+Pothos::BufferChunk &Pothos::BufferChunk::operator=(const BufferChunk &other)
+{
+    address = other.address;
+    length = other.length;
+    _buffer = other._buffer;
+    _managedBuffer = other._managedBuffer;
+    return *this;
+}
+
+Pothos::BufferChunk &Pothos::BufferChunk::operator=(BufferChunk &&other)
+{
+    address = std::move(other.address);
+    length = std::move(other.length);
+    _buffer = std::move(other._buffer);
+    _managedBuffer = std::move(other._managedBuffer);
+    return *this;
 }
 
 void Pothos::BufferChunk::append(const BufferChunk &other)

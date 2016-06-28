@@ -4,7 +4,7 @@
 /// A ManagedBuffer is checked-out and automatically returned to a BufferManager.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -100,6 +100,17 @@ public:
      * The number of copies of the managed buffer.
      */
     size_t useCount(void) const;
+
+    /*!
+     * Set the next contiguous buffer in the chain.
+     */
+    void setNextBuffer(const ManagedBuffer &next);
+
+    /*!
+     * Get the next contiguous buffer in the chain.
+     * Or return a null managed buffer if there is none.
+     */
+    ManagedBuffer &getNextBuffer(void) const;
 
 private:
     struct Impl; Impl *_impl;

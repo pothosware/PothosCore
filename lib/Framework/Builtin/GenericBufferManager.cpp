@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -31,7 +31,7 @@ public:
             auto sharedBuff = Pothos::SharedBuffer::make(
                 args.bufferSize, args.nodeAffinity);
             Pothos::ManagedBuffer buffer;
-            buffer.reset(this->shared_from_this(), sharedBuff);
+            buffer.reset(this->shared_from_this(), sharedBuff, i/*slabIndex*/);
         }
     }
 

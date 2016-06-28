@@ -67,6 +67,21 @@ public:
      */
     BufferChunk(const ManagedBuffer &buffer);
 
+    //! BufferChunk copy constructor
+    BufferChunk(const BufferChunk &other);
+
+    //! BufferChunk move constructor
+    BufferChunk(BufferChunk &&other);
+
+    //! BufferChunk destructor
+    ~BufferChunk(void);
+
+    //! BufferChunk copy assignment operator
+    BufferChunk &operator=(const BufferChunk &other);
+
+    //! BufferChunk move assignment operator
+    BufferChunk &operator=(BufferChunk &&other);
+
     /*!
      * The address of the start of the buffer.
      */

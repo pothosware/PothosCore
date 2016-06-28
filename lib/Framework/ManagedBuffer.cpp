@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/ManagedBuffer.hpp>
@@ -18,6 +18,7 @@ struct Pothos::ManagedBuffer::Impl
     std::weak_ptr<BufferManager> weakManager;
     SharedBuffer buffer;
     size_t slabIndex;
+    Pothos::ManagedBuffer nextBuffer;
 };
 
 Pothos::ManagedBuffer::ManagedBuffer(void):
@@ -104,4 +105,14 @@ size_t Pothos::ManagedBuffer::useCount(void) const
 {
     if (*this) return _impl->counter;
     return 0;
+}
+
+void Pothos::ManagedBuffer::setNextBuffer(const ManagedBuffer &next)
+{
+    _impl->nextBuffer = next;
+}
+
+Pothos::ManagedBuffer &Pothos::ManagedBuffer::getNextBuffer(void) const
+{
+    return _impl->nextBuffer;
 }
