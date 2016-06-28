@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -38,11 +38,19 @@ public:
         _readyBuffs = Pothos::Util::OrderedQueue<Pothos::ManagedBuffer>(args.numBuffers);
 
         //allocate buffer token objects
+        std::vector<Pothos::ManagedBuffer> managedBuffers(args.numBuffers);
         for (size_t i = 0; i < args.numBuffers; i++)
         {
             Pothos::ManagedBuffer buffer;
-            buffer.reset(this->shared_from_this(), _circBuff, i/*slabIndex*/);
+            managedBuffers[i].reset(this->shared_from_this(), _circBuff, i/*slabIndex*/);
         }
+
+        //set the next buffer pointers
+        for (size_t i = 0; i < managedBuffers.size()-1; i++)
+        {
+            managedBuffers[i].setNextBuffer(managedBuffers[i+1]);
+        }
+        managedBuffers.back().setNextBuffer(managedBuffers.front());
     }
 
     bool empty(void) const

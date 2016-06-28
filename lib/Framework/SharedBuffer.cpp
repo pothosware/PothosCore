@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/SharedBuffer.hpp>
@@ -26,7 +26,7 @@ Pothos::SharedBuffer::SharedBuffer(const size_t address, const size_t length, co
     _address(address), _length(length), _alias(buffer._alias), _container(buffer._container)
 {
     if (_alias != 0) _alias += _address - buffer.getAddress();
-    const bool beginInRange = (_address >= buffer.getAddress()) and (_address < buffer.getAddress() + buffer.getLength());
+    const bool beginInRange = (_address >= buffer.getAddress())/* and (_address < buffer.getAddress() + buffer.getLength())*/;
     const bool endInRange = (_address + _length <= std::max(buffer.getAlias(), buffer.getAddress()) + buffer.getLength());
     if (not beginInRange or not endInRange)
     {

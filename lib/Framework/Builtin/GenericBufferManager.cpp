@@ -5,6 +5,7 @@
 #include <Pothos/Util/RingDeque.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
 #include <cassert>
+#include <iostream>
 
 /***********************************************************************
  * generic buffer implementation
@@ -26,12 +27,25 @@ public:
         Pothos::BufferManager::init(args);
         _bufferSize = args.bufferSize;
         _readyBuffs.set_capacity(args.numBuffers);
+
+        //allocate one large continuous slab
+        auto commonSlab = Pothos::SharedBuffer::make(
+            args.bufferSize*args.numBuffers, args.nodeAffinity);
+
+        //create managed buffers based on chunks from the slab
+        std::vector<Pothos::ManagedBuffer> managedBuffers(args.numBuffers);
         for (size_t i = 0; i < args.numBuffers; i++)
         {
-            auto sharedBuff = Pothos::SharedBuffer::make(
-                args.bufferSize, args.nodeAffinity);
+            const size_t addr = commonSlab.getAddress()+(args.bufferSize*i);
+            Pothos::SharedBuffer sharedBuff(addr, args.bufferSize, commonSlab);
             Pothos::ManagedBuffer buffer;
-            buffer.reset(this->shared_from_this(), sharedBuff, i/*slabIndex*/);
+            managedBuffers[i].reset(this->shared_from_this(), sharedBuff, i/*slabIndex*/);
+        }
+
+        //set the next buffer pointers
+        for (size_t i = 0; i < managedBuffers.size()-1; i++)
+        {
+            managedBuffers[i].setNextBuffer(managedBuffers[i+1]);
         }
     }
 
