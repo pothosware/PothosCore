@@ -55,6 +55,7 @@ Pothos::BufferChunk::BufferChunk(const ManagedBuffer &buffer):
 Pothos::BufferChunk::BufferChunk(const BufferChunk &other):
     address(other.address),
     length(other.length),
+    dtype(other.dtype),
     _buffer(other._buffer),
     _managedBuffer(other._managedBuffer),
     _nextBuffers(other._nextBuffers)
@@ -72,6 +73,7 @@ Pothos::BufferChunk::BufferChunk(const BufferChunk &other):
 Pothos::BufferChunk::BufferChunk(BufferChunk &&other):
     address(std::move(other.address)),
     length(std::move(other.length)),
+    dtype(std::move(other.dtype)),
     _buffer(std::move(other._buffer)),
     _managedBuffer(std::move(other._managedBuffer)),
     _nextBuffers(std::move(other._nextBuffers))
@@ -95,6 +97,7 @@ Pothos::BufferChunk &Pothos::BufferChunk::operator=(const BufferChunk &other)
 {
     address = other.address;
     length = other.length;
+    dtype = other.dtype;
     _buffer = other._buffer;
     _managedBuffer = other._managedBuffer;
     _nextBuffers = other._nextBuffers;
@@ -115,6 +118,7 @@ Pothos::BufferChunk &Pothos::BufferChunk::operator=(BufferChunk &&other)
 {
     address = std::move(other.address);
     length = std::move(other.length);
+    dtype = std::move(other.dtype);
     _buffer = std::move(other._buffer);
     _managedBuffer = std::move(other._managedBuffer);
     _nextBuffers = std::move(other._nextBuffers);
