@@ -111,7 +111,7 @@ public:
      * Get the next contiguous buffer in the chain.
      * Or return a null managed buffer if there is none.
      */
-    ManagedBuffer &getNextBuffer(void) const;
+    ManagedBuffer getNextBuffer(void) const;
 
 private:
     friend BufferChunk;

@@ -41,8 +41,8 @@ public:
         std::vector<Pothos::ManagedBuffer> managedBuffers(args.numBuffers);
         for (size_t i = 0; i < args.numBuffers; i++)
         {
-            Pothos::ManagedBuffer buffer;
             managedBuffers[i].reset(this->shared_from_this(), _circBuff, i/*slabIndex*/);
+            this->push(managedBuffers[i]);
         }
 
         //set the next buffer pointers

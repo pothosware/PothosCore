@@ -94,10 +94,13 @@ size_t Pothos::ManagedBuffer::useCount(void) const
 
 void Pothos::ManagedBuffer::setNextBuffer(const ManagedBuffer &next)
 {
-    _impl->nextBuffer = next;
+    _impl->nextBuffer = next._impl;
 }
 
-Pothos::ManagedBuffer &Pothos::ManagedBuffer::getNextBuffer(void) const
+Pothos::ManagedBuffer Pothos::ManagedBuffer::getNextBuffer(void) const
 {
-    return _impl->nextBuffer;
+    Pothos::ManagedBuffer buff;
+    buff._impl = _impl->nextBuffer;
+    buff._impl->counter++;
+    return buff;
 }

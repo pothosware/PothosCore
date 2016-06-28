@@ -8,7 +8,8 @@ struct Pothos::ManagedBuffer::Impl
 {
     Impl(void):
         counter(1),
-        slabIndex(0)
+        slabIndex(0),
+        nextBuffer(nullptr)
     {
         return;
     }
@@ -16,5 +17,5 @@ struct Pothos::ManagedBuffer::Impl
     std::weak_ptr<BufferManager> weakManager;
     SharedBuffer buffer;
     size_t slabIndex;
-    Pothos::ManagedBuffer nextBuffer;
+    Pothos::ManagedBuffer::Impl *nextBuffer;
 };

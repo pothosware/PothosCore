@@ -38,8 +38,8 @@ public:
         {
             const size_t addr = commonSlab.getAddress()+(args.bufferSize*i);
             Pothos::SharedBuffer sharedBuff(addr, args.bufferSize, commonSlab);
-            Pothos::ManagedBuffer buffer;
             managedBuffers[i].reset(this->shared_from_this(), sharedBuff, i/*slabIndex*/);
+            this->push(managedBuffers[i]);
         }
 
         //set the next buffer pointers
