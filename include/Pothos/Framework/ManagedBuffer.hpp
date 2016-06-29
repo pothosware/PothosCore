@@ -116,6 +116,7 @@ public:
 private:
     friend BufferChunk;
     struct Impl; Impl *_impl;
+    ManagedBuffer(Impl *impl);
     POTHOS_API friend bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
 };
 

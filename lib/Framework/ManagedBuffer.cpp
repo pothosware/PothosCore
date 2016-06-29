@@ -12,6 +12,12 @@ Pothos::ManagedBuffer::ManagedBuffer(void):
     return;
 }
 
+Pothos::ManagedBuffer::ManagedBuffer(Impl *impl):
+    _impl(impl)
+{
+    if (_impl != nullptr) _impl->counter++;
+}
+
 void Pothos::ManagedBuffer::reset(void)
 {
     //decrement the counter, and handle the last ref case
@@ -100,11 +106,6 @@ void Pothos::ManagedBuffer::setNextBuffer(const ManagedBuffer &next)
 
 Pothos::ManagedBuffer Pothos::ManagedBuffer::getNextBuffer(void) const
 {
-    Pothos::ManagedBuffer buff;
-    if (*this and _impl->nextBuffer != nullptr)
-    {
-        buff._impl = _impl->nextBuffer;
-        buff._impl->counter++;
-    }
-    return buff;
+    assert(*this);
+    return Pothos::ManagedBuffer(_impl->nextBuffer);
 }
