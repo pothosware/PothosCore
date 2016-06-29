@@ -1,7 +1,6 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "ManagedBufferImpl.hpp"
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Poco/SingletonHolder.h>
 #include <cstring> //memcpy
@@ -133,7 +132,7 @@ void Pothos::BufferChunk::_incrNextBuffers(void)
         mb = mb.getNextBuffer();
         if (not mb) return;
         _nextBuffers++;
-        mb._impl->counter++;
+        mb._incrRef();
         lengthRemain -= mb.getBuffer().getLength();
     }
 }
@@ -145,7 +144,7 @@ void Pothos::BufferChunk::_decrNextBuffers(void)
     {
         mb = mb.getNextBuffer();
         assert(mb);
-        mb._impl->counter--;
+        mb._decrRef();
         _nextBuffers--;
     }
 }
