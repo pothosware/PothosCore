@@ -17,9 +17,6 @@
 
 namespace Pothos {
 
-//! Forward declares
-class BufferAccumulator;
-
 /*!
  * A BufferChunk holds a managed buffer, address, and length.
  * BufferChunk makes it easy to manipulate pieces of a managed buffer.
@@ -220,10 +217,10 @@ public:
     size_t convertComplex(const BufferChunk &outBuffRe, const BufferChunk &outBuffIm, const size_t numElems = 0) const;
 
 private:
-    friend BufferAccumulator;
-    void updateNextBuffers(const size_t num);
     SharedBuffer _buffer;
     ManagedBuffer _managedBuffer;
+    void _incrNextBuffers(void);
+    void _decrNextBuffers(void);
     size_t _nextBuffers;
 };
 

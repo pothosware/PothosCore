@@ -22,7 +22,6 @@ Pothos::BufferChunk::BufferChunk(const size_t numBytes):
     address = _buffer.getAddress();
 }
 
-
 Pothos::BufferChunk::BufferChunk(const DType &dtype, const size_t numElems):
     address(0),
     length(dtype.size()*numElems),
@@ -57,17 +56,9 @@ Pothos::BufferChunk::BufferChunk(const BufferChunk &other):
     length(other.length),
     dtype(other.dtype),
     _buffer(other._buffer),
-    _managedBuffer(other._managedBuffer),
-    _nextBuffers(other._nextBuffers)
+    _managedBuffer(other._managedBuffer)
 {
-    //increment next buffer references
-    auto mb = _managedBuffer;
-    for (size_t i = 0; i < _nextBuffers; i++)
-    {
-        mb = _managedBuffer.getNextBuffer();
-        assert(mb);
-        mb._impl->counter++;
-    }
+    _incrNextBuffers();
 }
 
 Pothos::BufferChunk::BufferChunk(BufferChunk &&other):
@@ -83,39 +74,24 @@ Pothos::BufferChunk::BufferChunk(BufferChunk &&other):
 
 Pothos::BufferChunk::~BufferChunk(void)
 {
-    //decrement next buffer references
-    auto mb = _managedBuffer;
-    for (size_t i = 0; i < _nextBuffers; i++)
-    {
-        mb = _managedBuffer.getNextBuffer();
-        assert(mb);
-        mb._impl->counter--;
-    }
+    _decrNextBuffers();
 }
 
 Pothos::BufferChunk &Pothos::BufferChunk::operator=(const BufferChunk &other)
 {
+    _decrNextBuffers();
     address = other.address;
     length = other.length;
     dtype = other.dtype;
     _buffer = other._buffer;
     _managedBuffer = other._managedBuffer;
-    _nextBuffers = other._nextBuffers;
-
-    //increment next buffer references
-    auto mb = _managedBuffer;
-    for (size_t i = 0; i < _nextBuffers; i++)
-    {
-        mb = _managedBuffer.getNextBuffer();
-        assert(mb);
-        mb._impl->counter++;
-    }
-
+    _incrNextBuffers();
     return *this;
 }
 
 Pothos::BufferChunk &Pothos::BufferChunk::operator=(BufferChunk &&other)
 {
+    _decrNextBuffers();
     address = std::move(other.address);
     length = std::move(other.length);
     dtype = std::move(other.dtype);
@@ -145,28 +121,33 @@ void Pothos::BufferChunk::append(const BufferChunk &other)
     }
 }
 
-void Pothos::BufferChunk::updateNextBuffers(const size_t num)
+void Pothos::BufferChunk::_incrNextBuffers(void)
 {
-    //increment all buffers up to the new count
+    _nextBuffers = 0;
     auto mb = _managedBuffer;
-    for (size_t i = 0; i < num; i++)
-    {
-        mb = _managedBuffer.getNextBuffer();
-        assert(mb);
-        mb._impl->counter++;
-    }
+    if (not mb) return;
 
-    //decrement all buffers up to the previous count
-    mb = _managedBuffer;
-    for (size_t i = 0; i < _nextBuffers; i++)
+    int lengthRemain = this->getEnd() - _buffer.getEnd();
+    while (lengthRemain > 0)
     {
-        mb = _managedBuffer.getNextBuffer();
+        mb = mb.getNextBuffer();
+        if (not mb) return;
+        _nextBuffers++;
+        mb._impl->counter++;
+        lengthRemain -= mb.getBuffer().getLength();
+    }
+}
+
+void Pothos::BufferChunk::_decrNextBuffers(void)
+{
+    auto mb = _managedBuffer;
+    while (_nextBuffers != 0)
+    {
+        mb = mb.getNextBuffer();
         assert(mb);
         mb._impl->counter--;
+        _nextBuffers--;
     }
-
-    //store the new count
-    _nextBuffers = num;
 }
 
 #include <Pothos/Managed.hpp>

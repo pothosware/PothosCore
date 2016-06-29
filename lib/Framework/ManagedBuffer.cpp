@@ -41,22 +41,22 @@ Pothos::ManagedBuffer::~ManagedBuffer(void)
 }
 
 Pothos::ManagedBuffer::ManagedBuffer(const ManagedBuffer &obj):
-    _impl(nullptr)
+    _impl(obj._impl)
 {
-    *this = obj;
+    if (_impl != nullptr) _impl->counter++;
 }
 
 Pothos::ManagedBuffer::ManagedBuffer(ManagedBuffer &&obj):
-    _impl(nullptr)
+    _impl(obj._impl)
 {
-    *this = obj;
+    obj._impl = nullptr;
 }
 
 Pothos::ManagedBuffer &Pothos::ManagedBuffer::operator=(const ManagedBuffer &obj)
 {
     this->reset();
     this->_impl = obj._impl;
-    if (_impl != nullptr) _impl->counter.fetch_add(1);
+    if (_impl != nullptr) _impl->counter++;
     return *this;
 }
 
@@ -94,13 +94,17 @@ size_t Pothos::ManagedBuffer::useCount(void) const
 
 void Pothos::ManagedBuffer::setNextBuffer(const ManagedBuffer &next)
 {
+    assert(*this);
     _impl->nextBuffer = next._impl;
 }
 
 Pothos::ManagedBuffer Pothos::ManagedBuffer::getNextBuffer(void) const
 {
     Pothos::ManagedBuffer buff;
-    buff._impl = _impl->nextBuffer;
-    buff._impl->counter++;
+    if (*this and _impl->nextBuffer != nullptr)
+    {
+        buff._impl = _impl->nextBuffer;
+        buff._impl->counter++;
+    }
     return buff;
 }
