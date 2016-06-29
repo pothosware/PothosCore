@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
-#include <Pothos/Util/RingDeque.hpp>
+#include <Pothos/Util/OrderedQueue.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
 #include <cassert>
 #include <iostream>
@@ -26,7 +26,7 @@ public:
     {
         Pothos::BufferManager::init(args);
         _bufferSize = args.bufferSize;
-        _readyBuffs.set_capacity(args.numBuffers);
+        _readyBuffs = Pothos::Util::OrderedQueue<Pothos::ManagedBuffer>(args.numBuffers);
 
         //allocate one large continuous slab
         auto commonSlab = Pothos::SharedBuffer::make(
@@ -70,7 +70,7 @@ public:
         }
 
         _bytesPopped = 0;
-        _readyBuffs.pop_front();
+        _readyBuffs.pop();
         if (_readyBuffs.empty()) this->setFrontBuffer(Pothos::BufferChunk::null());
         else this->setFrontBuffer(_readyBuffs.front());
     }
@@ -78,15 +78,14 @@ public:
     void push(const Pothos::ManagedBuffer &buff)
     {
         if (_readyBuffs.empty()) this->setFrontBuffer(buff);
-        assert(not _readyBuffs.full());
-        _readyBuffs.push_back(buff);
+        _readyBuffs.push(buff, buff.getSlabIndex());
     }
 
 private:
 
     size_t _bufferSize;
     size_t _bytesPopped;
-    Pothos::Util::RingDeque<Pothos::ManagedBuffer> _readyBuffs;
+    Pothos::Util::OrderedQueue<Pothos::ManagedBuffer> _readyBuffs;
 };
 
 /***********************************************************************
