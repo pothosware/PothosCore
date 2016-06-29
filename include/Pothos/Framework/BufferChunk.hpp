@@ -301,11 +301,6 @@ inline bool Pothos::BufferChunk::unique(void) const
 
 inline size_t Pothos::BufferChunk::useCount(void) const
 {
-    //dont count the copy held by the managed buffer
-    if (_managedBuffer)
-    {
-        assert(_buffer.useCount() >= 2);
-        return _buffer.useCount() - 1;
-    }
+    if (_managedBuffer) return _managedBuffer.useCount();
     return _buffer.useCount();
 }
