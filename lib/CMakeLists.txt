@@ -222,7 +222,6 @@ list(APPEND POTHOS_SOURCES
     Util/RefHolder.cpp
     Util/TypeInfo.cpp
     Util/Compiler.cpp
-    Util/EvalInterface.cpp
     Util/Network.cpp
 
     Util/Builtin/JSONSerialization.cpp
