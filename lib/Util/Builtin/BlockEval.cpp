@@ -67,7 +67,7 @@ Pothos::Object ProxyBlockEval::lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
     //otherwise the expression must be evaluated
     //with the evaluated properties as global variables
     //use a new eval to avoid poisoning the globals
-    auto evalEnv = EvalEnvironment::make();
+    auto evalEnv = Pothos::Util::EvalEnvironment::make();
     for (const auto &pair : _properties)
     {
         //Register can fail for non-primitive types
@@ -81,7 +81,7 @@ Pothos::Object ProxyBlockEval::lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
 #include <Pothos/Managed.hpp>
 
 static auto managedProxyBlockEval = Pothos::ManagedClass()
-    .registerConstructor<ProxyBlockEval, const std::shared_ptr<EvalEnvironment> &>()
+    .registerConstructor<ProxyBlockEval, const std::shared_ptr<Pothos::Util::EvalEnvironment> &>()
     .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, applyConstant))
     .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, removeConstant))
     .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, evalProperty))
