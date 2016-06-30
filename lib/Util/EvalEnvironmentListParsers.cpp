@@ -1,13 +1,13 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "EvalEnvironment.hpp"
+#include <Pothos/Util/EvalEnvironment.hpp>
 #include <vector>
 #include <string>
 #include <stack>
 #include <cctype>
 
-std::vector<std::string> EvalEnvironment::splitExpr(const std::string &expr, const char tokenizer)
+std::vector<std::string> Pothos::Util::EvalEnvironment::splitExpr(const std::string &expr, const char tokenizer)
 {
     std::vector<std::string> tokens;
     std::stack<char> specials;

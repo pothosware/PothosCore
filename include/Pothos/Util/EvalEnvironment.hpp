@@ -1,5 +1,12 @@
-// Copyright (c) 2014-2015 Josh Blum
-// SPDX-License-Identifier: BSL-1.0
+///
+/// \file Util/EvalEnvironment.hpp
+///
+/// Expression evaluation utilities.
+///
+/// \copyright
+/// Copyright (c) 2014-2016 Josh Blum
+/// SPDX-License-Identifier: BSL-1.0
+///
 
 #pragma once
 #include <Pothos/Object.hpp>
@@ -7,19 +14,29 @@
 #include <vector>
 #include <memory>
 
+namespace Pothos {
+namespace Util {
+
 /*!
  * The evaluation environment can evaluate and inspect expressions.
  * Expressions are considered to be valid C++ expressions involving
  * bools, integers, strings, floats, stl classes...
  */
-class EvalEnvironment
+class POTHOS_API EvalEnvironment
 {
 public:
-    static std::shared_ptr<EvalEnvironment> make(void)
-    {
-        return std::shared_ptr<EvalEnvironment>(new EvalEnvironment());
-    }
 
+    /*!
+     * Create a new empty eval environment in a shared ptr.
+     * This is a convenience factory for EvalEnvironment.
+     */
+    static std::shared_ptr<EvalEnvironment> make(void);
+
+    /*!
+     * Create an empty eval environment.
+     * The environment can evaluate expressions with eval() and can
+     * be extended with new constants using the registerConstant calls.
+     */
     EvalEnvironment(void);
 
     /*!
@@ -58,3 +75,6 @@ private:
     Pothos::Object _evalList(const std::string &expr);
     Pothos::Object _evalMap(const std::string &expr);
 };
+
+} //namespace Util
+} //namespace Pothos

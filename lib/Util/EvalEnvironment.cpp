@@ -1,9 +1,7 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "EvalEnvironment.hpp"
-#include <Pothos/Util/Compiler.hpp>
-#include <Pothos/Util/EvalInterface.hpp>
+#include <Pothos/Util/EvalEnvironment.hpp>
 #include <Pothos/Object.hpp>
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Object/Containers.hpp>
@@ -123,7 +121,7 @@ static mup::Value objectToMupValue(const Pothos::Object &obj)
 /***********************************************************************
  * Evaluator implementation
  **********************************************************************/
-struct EvalEnvironment::Impl
+struct Pothos::Util::EvalEnvironment::Impl
 {
     Impl(void):
         p(mup::pckALL_COMPLEX)
@@ -136,13 +134,18 @@ struct EvalEnvironment::Impl
     mup::ParserX p;
 };
 
-EvalEnvironment::EvalEnvironment(void):
+std::shared_ptr<Pothos::Util::EvalEnvironment> Pothos::Util::EvalEnvironment::make(void)
+{
+    return std::shared_ptr<EvalEnvironment>(new EvalEnvironment());
+}
+
+Pothos::Util::EvalEnvironment::EvalEnvironment(void):
     _impl(new Impl())
 {
     return;
 }
 
-void EvalEnvironment::registerConstantExpr(const std::string &key, const std::string &expr)
+void Pothos::Util::EvalEnvironment::registerConstantExpr(const std::string &key, const std::string &expr)
 {
     try
     {
@@ -156,19 +159,19 @@ void EvalEnvironment::registerConstantExpr(const std::string &key, const std::st
     }
 }
 
-void EvalEnvironment::registerConstantObj(const std::string &key, const Pothos::Object &obj)
+void Pothos::Util::EvalEnvironment::registerConstantObj(const std::string &key, const Pothos::Object &obj)
 {
     const auto result = objectToMupValue(obj);
     this->unregisterConstant(key);
     _impl->p.DefineConst(key, result);
 }
 
-void EvalEnvironment::unregisterConstant(const std::string &key)
+void Pothos::Util::EvalEnvironment::unregisterConstant(const std::string &key)
 {
     if (_impl->p.IsConstDefined(key)) _impl->p.RemoveConst(key);
 }
 
-Pothos::Object EvalEnvironment::eval(const std::string &expr)
+Pothos::Object Pothos::Util::EvalEnvironment::eval(const std::string &expr)
 {
     if (Poco::trim(expr).empty()) throw Pothos::Exception("EvalEnvironment::eval()", "expression is empty");
 
@@ -219,7 +222,7 @@ Pothos::Object EvalEnvironment::eval(const std::string &expr)
     throw Pothos::Exception("EvalEnvironment::eval("+expr+")", "unknown result");
 }
 
-Pothos::Object EvalEnvironment::_evalList(const std::string &expr)
+Pothos::Object Pothos::Util::EvalEnvironment::_evalList(const std::string &expr)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     Pothos::ProxyVector vec;
@@ -238,7 +241,7 @@ Pothos::Object EvalEnvironment::_evalList(const std::string &expr)
     return Pothos::Object(vec);
 }
 
-Pothos::Object EvalEnvironment::_evalMap(const std::string &expr)
+Pothos::Object Pothos::Util::EvalEnvironment::_evalMap(const std::string &expr)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     Pothos::ProxyMap map;
@@ -264,10 +267,10 @@ Pothos::Object EvalEnvironment::_evalMap(const std::string &expr)
 #include <Pothos/Managed.hpp>
 
 static auto managedEvalEnvironment = Pothos::ManagedClass()
-    .registerConstructor<EvalEnvironment>()
-    .registerStaticMethod(POTHOS_FCN_TUPLE(EvalEnvironment, make))
-    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, eval))
-    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, registerConstantExpr))
-    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, registerConstantObj))
-    .registerMethod(POTHOS_FCN_TUPLE(EvalEnvironment, unregisterConstant))
+    .registerConstructor<Pothos::Util::EvalEnvironment>()
+    .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::Util::EvalEnvironment, make))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Util::EvalEnvironment, eval))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Util::EvalEnvironment, registerConstantExpr))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Util::EvalEnvironment, registerConstantObj))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Util::EvalEnvironment, unregisterConstant))
     .commit("Pothos/Util/EvalEnvironment");

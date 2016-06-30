@@ -1,8 +1,8 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-#include "EvalEnvironment.hpp"
+#include <Pothos/Util/EvalEnvironment.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
@@ -14,7 +14,7 @@
 class ProxyBlockEval
 {
 public:
-    ProxyBlockEval(const std::shared_ptr<EvalEnvironment> &env):
+    ProxyBlockEval(const std::shared_ptr<Pothos::Util::EvalEnvironment> &env):
         _evalEnv(env)
     {
         return;
@@ -57,5 +57,5 @@ private:
 
     std::map<std::string, Pothos::Object> _properties;
     Pothos::Proxy _proxyBlock;
-    std::shared_ptr<EvalEnvironment> _evalEnv;
+    std::shared_ptr<Pothos::Util::EvalEnvironment> _evalEnv;
 };

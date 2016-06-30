@@ -222,8 +222,9 @@ list(APPEND POTHOS_SOURCES
     Util/RefHolder.cpp
     Util/TypeInfo.cpp
     Util/Compiler.cpp
-    Util/EvalInterface.cpp
     Util/Network.cpp
+    Util/EvalEnvironment.cpp
+    Util/EvalEnvironmentListParsers.cpp
 
     Util/Builtin/JSONSerialization.cpp
     Util/Builtin/TestJSONSerialization.cpp
@@ -231,8 +232,6 @@ list(APPEND POTHOS_SOURCES
     Util/Builtin/DeviceInfoUtils.cpp
     Util/Builtin/DocUtils.cpp
     Util/Builtin/TestDocUtils.cpp
-    Util/Builtin/EvalEnvironment.cpp
-    Util/Builtin/EvalEnvironmentListParsers.cpp
     Util/Builtin/TestEvalExpression.cpp
 )
 
