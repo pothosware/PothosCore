@@ -12,6 +12,14 @@ const Pothos::BufferChunk &Pothos::BufferChunk::null(void)
     return *sh.get();
 }
 
+Pothos::BufferChunk::BufferChunk(void):
+    address(0),
+    length(0),
+    _nextBuffers(0)
+{
+    return;
+}
+
 Pothos::BufferChunk::BufferChunk(const size_t numBytes):
     address(0),
     length(numBytes),

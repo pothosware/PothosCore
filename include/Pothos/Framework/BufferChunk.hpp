@@ -243,14 +243,6 @@ inline bool Pothos::operator==(const Pothos::BufferChunk &lhs, const Pothos::Buf
     return lhs.address == rhs.address and lhs.length == rhs.length and lhs.getBuffer() == rhs.getBuffer();
 }
 
-inline Pothos::BufferChunk::BufferChunk(void):
-    address(0),
-    length(0),
-    _nextBuffers(0)
-{
-    return;
-}
-
 inline size_t Pothos::BufferChunk::elements(void) const
 {
     return this->length/this->dtype.size();
