@@ -162,6 +162,12 @@ public:
      */
     pothos_explicit operator bool(void) const;
 
+    /*!
+     * Make this buffer chunk null by clearing its contents.
+     * All fields will be zero and containers will be empty.
+     */
+    void clear(void);
+
     //! Serialization support
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);

@@ -109,6 +109,17 @@ Pothos::BufferChunk &Pothos::BufferChunk::operator=(BufferChunk &&other)
     return *this;
 }
 
+void Pothos::BufferChunk::clear(void)
+{
+    _decrNextBuffers();
+    address = 0;
+    length = 0;
+    dtype = Pothos::DType();
+    _buffer = Pothos::SharedBuffer();
+    _managedBuffer.reset();
+    _nextBuffers = 0;
+}
+
 void Pothos::BufferChunk::append(const BufferChunk &other)
 {
     //this is a null buffer, just copy a reference to other
