@@ -67,15 +67,15 @@ Pothos::Object ProxyBlockEval::lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
     //otherwise the expression must be evaluated
     //with the evaluated properties as global variables
     //use a new eval to avoid poisoning the globals
-    auto evalEnv = Pothos::Util::EvalEnvironment::make();
+    Pothos::Util::EvalEnvironment evalEnv;
     for (const auto &pair : _properties)
     {
         //Register can fail for non-primitive types
         //but those are not used in expressions anyway.
-        try {evalEnv->registerConstantObj(pair.first, pair.second);}
+        try {evalEnv.registerConstantObj(pair.first, pair.second);}
         catch (...){}
     }
-    return evalEnv->eval(expr);
+    return evalEnv.eval(expr);
 }
 
 #include <Pothos/Managed.hpp>
