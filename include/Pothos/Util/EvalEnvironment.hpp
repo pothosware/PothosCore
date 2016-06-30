@@ -22,7 +22,7 @@ namespace Util {
  * Expressions are considered to be valid C++ expressions involving
  * bools, integers, strings, floats, stl classes...
  */
-class EvalEnvironment
+class POTHOS_API EvalEnvironment
 {
 public:
 
