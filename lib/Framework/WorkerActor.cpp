@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
@@ -289,7 +289,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         port.dtype().size() == port._readBeforeWritePort->dtype().size();
         if (tryRBW)
         {
-            port._readBeforeWritePort->_buffer = BufferChunk::null();
+            port._readBeforeWritePort->_buffer.clear();
             port._readBeforeWritePort->bufferAccumulatorFront(port._buffer);
         }
 
@@ -300,7 +300,7 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         }
         else if (port.bufferManagerEmpty())
         {
-            port._buffer = BufferChunk::null();
+            port._buffer.clear();
             port._bufferFromManager = false;
         }
         else
@@ -415,7 +415,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
         {
             port.bufferAccumulatorPop(bytes);
         }
-        port._buffer = BufferChunk::null(); //clear reference
+        port._buffer.clear(); //clear reference
 
         //move consumed elements into total
         port._totalElements += port._pendingElements;
@@ -458,7 +458,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
             }
             port.postBuffer(buffer);
         }
-        port._buffer = BufferChunk::null(); //clear reference
+        port._buffer.clear(); //clear reference
 
         //sort the posted labels in case the user posted out of order
         auto &postedLabels = port._postedLabels;

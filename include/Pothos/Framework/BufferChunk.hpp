@@ -17,6 +17,9 @@
 
 namespace Pothos {
 
+//! Forward declares
+class BufferAccumulator;
+
 /*!
  * A BufferChunk holds a managed buffer, address, and length.
  * BufferChunk makes it easy to manipulate pieces of a managed buffer.
@@ -66,6 +69,21 @@ public:
      * The fields will be initialized to that of the managed buffer.
      */
     BufferChunk(const ManagedBuffer &buffer);
+
+    //! BufferChunk copy constructor
+    BufferChunk(const BufferChunk &other);
+
+    //! BufferChunk move constructor
+    BufferChunk(BufferChunk &&other);
+
+    //! BufferChunk destructor
+    ~BufferChunk(void);
+
+    //! BufferChunk copy assignment operator
+    BufferChunk &operator=(const BufferChunk &other);
+
+    //! BufferChunk move assignment operator
+    BufferChunk &operator=(BufferChunk &&other);
 
     /*!
      * The address of the start of the buffer.
@@ -144,6 +162,12 @@ public:
      */
     pothos_explicit operator bool(void) const;
 
+    /*!
+     * Make this buffer chunk null by clearing its contents.
+     * All fields will be zero and containers will be empty.
+     */
+    void clear(void);
+
     //! Serialization support
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
@@ -202,8 +226,12 @@ public:
     size_t convertComplex(const BufferChunk &outBuffRe, const BufferChunk &outBuffIm, const size_t numElems = 0) const;
 
 private:
+    friend BufferAccumulator;
     SharedBuffer _buffer;
     ManagedBuffer _managedBuffer;
+    void _incrNextBuffers(void);
+    void _decrNextBuffers(void);
+    size_t _nextBuffers;
 };
 
 /*!
@@ -219,13 +247,6 @@ inline bool operator==(const BufferChunk &lhs, const BufferChunk &rhs);
 inline bool Pothos::operator==(const Pothos::BufferChunk &lhs, const Pothos::BufferChunk &rhs)
 {
     return lhs.address == rhs.address and lhs.length == rhs.length and lhs.getBuffer() == rhs.getBuffer();
-}
-
-inline Pothos::BufferChunk::BufferChunk(void):
-    address(0),
-    length(0)
-{
-    return;
 }
 
 inline size_t Pothos::BufferChunk::elements(void) const
@@ -278,11 +299,6 @@ inline bool Pothos::BufferChunk::unique(void) const
 
 inline size_t Pothos::BufferChunk::useCount(void) const
 {
-    //dont count the copy held by the managed buffer
-    if (_managedBuffer)
-    {
-        assert(_buffer.useCount() >= 2);
-        return _buffer.useCount() - 1;
-    }
+    if (_managedBuffer) return _managedBuffer.useCount();
     return _buffer.useCount();
 }

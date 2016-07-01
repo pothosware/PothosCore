@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/ManagedBuffer.hpp>
@@ -10,7 +10,8 @@ struct Pothos::ManagedBuffer::Impl
 {
     Impl(void):
         counter(1),
-        slabIndex(0)
+        slabIndex(0),
+        nextBuffer(nullptr)
     {
         return;
     }
@@ -18,6 +19,7 @@ struct Pothos::ManagedBuffer::Impl
     std::weak_ptr<BufferManager> weakManager;
     SharedBuffer buffer;
     size_t slabIndex;
+    Pothos::ManagedBuffer::Impl *nextBuffer;
 };
 
 Pothos::ManagedBuffer::ManagedBuffer(void):
@@ -26,18 +28,15 @@ Pothos::ManagedBuffer::ManagedBuffer(void):
     return;
 }
 
+Pothos::ManagedBuffer::ManagedBuffer(Impl *impl):
+    _impl(impl)
+{
+    _incrRef();
+}
+
 void Pothos::ManagedBuffer::reset(void)
 {
-    //decrement the counter, and handle the last ref case
-    if (_impl != nullptr and _impl->counter.fetch_sub(1) == 1)
-    {
-        //there is a manager to push to, otherwise delete
-        std::shared_ptr<BufferManager> manager = _impl->weakManager.lock();
-        if (manager) manager->pushExternal(*this);
-        else delete _impl;
-    }
-
-    //zero out the class members
+    _decrRef();
     _impl = nullptr;
 }
 
@@ -51,32 +50,32 @@ void Pothos::ManagedBuffer::reset(BufferManager::Sptr manager, const SharedBuffe
 
 Pothos::ManagedBuffer::~ManagedBuffer(void)
 {
-    this->reset();
+    _decrRef();
 }
 
 Pothos::ManagedBuffer::ManagedBuffer(const ManagedBuffer &obj):
-    _impl(nullptr)
+    _impl(obj._impl)
 {
-    *this = obj;
+    _incrRef();
 }
 
 Pothos::ManagedBuffer::ManagedBuffer(ManagedBuffer &&obj):
-    _impl(nullptr)
+    _impl(obj._impl)
 {
-    *this = obj;
+    obj._impl = nullptr;
 }
 
 Pothos::ManagedBuffer &Pothos::ManagedBuffer::operator=(const ManagedBuffer &obj)
 {
-    this->reset();
+    _decrRef();
     this->_impl = obj._impl;
-    if (_impl != nullptr) _impl->counter.fetch_add(1);
+    _incrRef();
     return *this;
 }
 
 Pothos::ManagedBuffer &Pothos::ManagedBuffer::operator=(ManagedBuffer &&obj)
 {
-    this->reset();
+    _decrRef();
     this->_impl = obj._impl;
     obj._impl = nullptr;
     return *this;
@@ -104,4 +103,33 @@ size_t Pothos::ManagedBuffer::useCount(void) const
 {
     if (*this) return _impl->counter;
     return 0;
+}
+
+void Pothos::ManagedBuffer::setNextBuffer(const ManagedBuffer &next)
+{
+    assert(*this);
+    _impl->nextBuffer = next._impl;
+}
+
+Pothos::ManagedBuffer Pothos::ManagedBuffer::getNextBuffer(void) const
+{
+    assert(*this);
+    return Pothos::ManagedBuffer(_impl->nextBuffer);
+}
+
+void Pothos::ManagedBuffer::_incrRef(void)
+{
+    if (_impl != nullptr) _impl->counter++;
+}
+
+void Pothos::ManagedBuffer::_decrRef(void)
+{
+    //decrement the counter, and handle the last ref case
+    if (_impl != nullptr and _impl->counter.fetch_sub(1) == 1)
+    {
+        //there is a manager to push to, otherwise delete
+        std::shared_ptr<BufferManager> manager = _impl->weakManager.lock();
+        if (manager) manager->pushExternal(*this);
+        else delete _impl;
+    }
 }

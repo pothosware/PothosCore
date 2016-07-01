@@ -4,7 +4,7 @@
 /// A ManagedBuffer is checked-out and automatically returned to a BufferManager.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -15,8 +15,9 @@
 
 namespace Pothos {
 
-//! Forward declare buffer manager
+//! Forward declares
 class BufferManager;
+class BufferChunk;
 
 /*!
  * A ManagedBuffer is a buffer that interacts with a BufferManager.
@@ -101,8 +102,23 @@ public:
      */
     size_t useCount(void) const;
 
+    /*!
+     * Set the next contiguous buffer in the chain.
+     */
+    void setNextBuffer(const ManagedBuffer &next);
+
+    /*!
+     * Get the next contiguous buffer in the chain.
+     * Or return a null managed buffer if there is none.
+     */
+    ManagedBuffer getNextBuffer(void) const;
+
 private:
+    friend BufferChunk;
+    void _incrRef(void);
+    void _decrRef(void);
     struct Impl; Impl *_impl;
+    ManagedBuffer(Impl *impl);
     POTHOS_API friend bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
 };
 

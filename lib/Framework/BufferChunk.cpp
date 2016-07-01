@@ -1,9 +1,10 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Poco/SingletonHolder.h>
 #include <cstring> //memcpy
+#include <utility> //move
 
 const Pothos::BufferChunk &Pothos::BufferChunk::null(void)
 {
@@ -11,20 +12,29 @@ const Pothos::BufferChunk &Pothos::BufferChunk::null(void)
     return *sh.get();
 }
 
+Pothos::BufferChunk::BufferChunk(void):
+    address(0),
+    length(0),
+    _nextBuffers(0)
+{
+    return;
+}
+
 Pothos::BufferChunk::BufferChunk(const size_t numBytes):
     address(0),
     length(numBytes),
-    _buffer(Pothos::SharedBuffer::make(numBytes))
+    _buffer(Pothos::SharedBuffer::make(numBytes)),
+    _nextBuffers(0)
 {
     address = _buffer.getAddress();
 }
-
 
 Pothos::BufferChunk::BufferChunk(const DType &dtype, const size_t numElems):
     address(0),
     length(dtype.size()*numElems),
     dtype(dtype),
-    _buffer(Pothos::SharedBuffer::make(length))
+    _buffer(Pothos::SharedBuffer::make(length)),
+    _nextBuffers(0)
 {
     address = _buffer.getAddress();
 }
@@ -32,7 +42,8 @@ Pothos::BufferChunk::BufferChunk(const DType &dtype, const size_t numElems):
 Pothos::BufferChunk::BufferChunk(const SharedBuffer &buffer):
     address(buffer.getAddress()),
     length(buffer.getLength()),
-    _buffer(buffer)
+    _buffer(buffer),
+    _nextBuffers(0)
 {
     return;
 }
@@ -41,18 +52,89 @@ Pothos::BufferChunk::BufferChunk(const ManagedBuffer &buffer):
     address(buffer.getBuffer().getAddress()),
     length(buffer.getBuffer().getLength()),
     _buffer(buffer.getBuffer()),
-    _managedBuffer(buffer)
+    _managedBuffer(buffer),
+    _nextBuffers(0)
 {
     return;
 }
 
+Pothos::BufferChunk::BufferChunk(const BufferChunk &other):
+    address(other.address),
+    length(other.length),
+    dtype(other.dtype),
+    _buffer(other._buffer),
+    _managedBuffer(other._managedBuffer)
+{
+    _incrNextBuffers();
+}
+
+Pothos::BufferChunk::BufferChunk(BufferChunk &&other):
+    address(std::move(other.address)),
+    length(std::move(other.length)),
+    dtype(std::move(other.dtype)),
+    _buffer(std::move(other._buffer)),
+    _managedBuffer(std::move(other._managedBuffer)),
+    _nextBuffers(std::move(other._nextBuffers))
+{
+    other._nextBuffers = 0;
+}
+
+Pothos::BufferChunk::~BufferChunk(void)
+{
+    _decrNextBuffers();
+}
+
+Pothos::BufferChunk &Pothos::BufferChunk::operator=(const BufferChunk &other)
+{
+    _decrNextBuffers();
+    address = other.address;
+    length = other.length;
+    dtype = other.dtype;
+    _buffer = other._buffer;
+    _managedBuffer = other._managedBuffer;
+    _incrNextBuffers();
+    return *this;
+}
+
+Pothos::BufferChunk &Pothos::BufferChunk::operator=(BufferChunk &&other)
+{
+    _decrNextBuffers();
+    address = std::move(other.address);
+    length = std::move(other.length);
+    dtype = std::move(other.dtype);
+    _buffer = std::move(other._buffer);
+    _managedBuffer = std::move(other._managedBuffer);
+    _nextBuffers = std::move(other._nextBuffers);
+    other._nextBuffers = 0;
+    return *this;
+}
+
+void Pothos::BufferChunk::clear(void)
+{
+    _decrNextBuffers();
+    address = 0;
+    length = 0;
+    dtype = Pothos::DType();
+    _buffer = Pothos::SharedBuffer();
+    _managedBuffer.reset();
+    _nextBuffers = 0;
+}
+
 void Pothos::BufferChunk::append(const BufferChunk &other)
 {
-    //this is a null buffer, just copy a reference to other
+    //this is a null buffer, take the input buffers type
     if (not *this)
     {
-        *this = other;
-        return;
+        //the other buffer is within bounds, copy the reference
+        if (other.getEnd() <= other.getBuffer().getEnd())
+        {
+            *this = other;
+            return;
+        }
+
+        //otherwise make a new buffer and copy in the contents
+        *this = Pothos::BufferChunk(other.dtype, other.elements());
+        std::memcpy((void *)this->address, (const void *)other.address, this->length);
     }
     //otherwise allocate and copy two buffers together
     else
@@ -62,6 +144,35 @@ void Pothos::BufferChunk::append(const BufferChunk &other)
         std::memcpy((void *)accumulator.address, (const void *)this->address, this->length);
         std::memcpy((char *)accumulator.address+this->length, (const void *)other.address, other.length);
         *this = accumulator;
+    }
+}
+
+void Pothos::BufferChunk::_incrNextBuffers(void)
+{
+    _nextBuffers = 0;
+    auto mb = _managedBuffer;
+    if (not mb) return;
+
+    int lengthRemain = this->getEnd() - _buffer.getEnd();
+    while (lengthRemain > 0)
+    {
+        mb = mb.getNextBuffer();
+        if (not mb) return;
+        _nextBuffers++;
+        mb._incrRef();
+        lengthRemain -= mb.getBuffer().getLength();
+    }
+}
+
+void Pothos::BufferChunk::_decrNextBuffers(void)
+{
+    auto mb = _managedBuffer;
+    while (_nextBuffers != 0)
+    {
+        mb = mb.getNextBuffer();
+        assert(mb);
+        mb._decrRef();
+        _nextBuffers--;
     }
 }
 

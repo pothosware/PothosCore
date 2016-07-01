@@ -8,6 +8,7 @@
 #include <cassert>
 #include <set>
 #include <algorithm> //min/max
+#include <utility> //move
 
 /***********************************************************************
  * SharedBufferPool
@@ -89,8 +90,8 @@ void Pothos::BufferAccumulator::push(const BufferChunk &buffer)
 
     //push the buffer, then perform amalgamation if possible
     queue.push_back(buffer);
-    if (queue.size() < 2) return;
     const size_t backIndex = queue.size() - 1;
+    if (queue.size() < 2) goto restoreNextBuffers;
 
     //Move contiguous chunks as far into the front buffer as possible.
     //This allows the front buffer to contain the largest contiguous section.
@@ -122,6 +123,19 @@ void Pothos::BufferAccumulator::push(const BufferChunk &buffer)
         {
             queue.pop_back();
         }
+    }
+
+    restoreNextBuffers:
+    //this buffer may have been an upstream amalgamation
+    //restore its empty next buffers in the queue as well
+    auto mb = buffer.getManagedBuffer();
+    for (size_t i = 0; i < buffer._nextBuffers; i++)
+    {
+        mb = mb.getNextBuffer();
+        Pothos::BufferChunk bnext(mb);
+        bnext.length = 0;
+        if (queue.full()) queue.set_capacity(queue.size()*2);
+        queue.push_back(std::move(bnext));
     }
 
     assert(not queue.empty());
@@ -243,7 +257,7 @@ void Pothos::BufferAccumulator::require(const size_t numBytes)
 
     //finally store the new buffer to the front
     _impl->inPoolBuffer = true;
-    queue.push_front(newBuffer);
+    queue.push_front(std::move(newBuffer));
 }
 
 /***********************************************************************
