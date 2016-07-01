@@ -122,11 +122,19 @@ void Pothos::BufferChunk::clear(void)
 
 void Pothos::BufferChunk::append(const BufferChunk &other)
 {
-    //this is a null buffer, just copy a reference to other
+    //this is a null buffer, take the input buffers type
     if (not *this)
     {
-        *this = other;
-        return;
+        //the other buffer is within bounds, copy the reference
+        if (other.getEnd() <= other.getBuffer().getEnd())
+        {
+            *this = other;
+            return;
+        }
+
+        //otherwise make a new buffer and copy in the contents
+        *this = Pothos::BufferChunk(other.dtype, other.elements());
+        std::memcpy((void *)this->address, (const void *)other.address, this->length);
     }
     //otherwise allocate and copy two buffers together
     else
