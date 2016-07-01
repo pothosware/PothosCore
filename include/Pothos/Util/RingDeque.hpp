@@ -4,13 +4,14 @@
 /// A templated double ended queue implemented on top of a vector.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <cstdlib> //size_t
+#include <utility> //forward
 #include <vector>
 #include <cassert>
 
@@ -41,10 +42,8 @@ public:
     T &operator[](const size_t offset);
 
     //! Push an element onto the front of the queue
-    void push_front(const T &elem);
-
-    //! Push an element onto the front of the queue
-    void push_front(T &&elem);
+    template <typename U>
+    void push_front(U &&elem);
 
     //! Pop and element from the front of the queue
     void pop_front(void);
@@ -56,10 +55,8 @@ public:
     T &front(void);
 
     //! Push an element onto the back of the queue
-    void push_back(const T &elem);
-
-    //! Push an element onto the back of the queue
-    void push_back(T &&elem);
+    template <typename U>
+    void push_back(U &&elem);
 
     //! Pop and element from the back of the queue
     void pop_back(void);
@@ -128,20 +125,12 @@ T &RingDeque<T>::operator[](const size_t offset)
 }
 
 template <typename T>
-void RingDeque<T>::push_front(const T &elem)
+template <typename U>
+void RingDeque<T>::push_front(U &&elem)
 {
     assert(not this->full());
     _frontIndex = size_t(_frontIndex + _container.size() - 1) % _container.size();
-    _container[_frontIndex] = elem;
-    _numElements++;
-}
-
-template <typename T>
-void RingDeque<T>::push_front(T &&elem)
-{
-    assert(not this->full());
-    _frontIndex = size_t(_frontIndex + _container.size() - 1) % _container.size();
-    _container[_frontIndex] = elem;
+    _container[_frontIndex] = std::forward<U>(elem);
     _numElements++;
 }
 
@@ -172,20 +161,12 @@ T &RingDeque<T>::front(void)
 }
 
 template <typename T>
-void RingDeque<T>::push_back(const T &elem)
+template <typename U>
+void RingDeque<T>::push_back(U &&elem)
 {
     assert(not this->full());
     _backIndex = size_t(_backIndex + 1) % _container.size();
-    _container[_backIndex] = elem;
-    _numElements++;
-}
-
-template <typename T>
-void RingDeque<T>::push_back(T &&elem)
-{
-    assert(not this->full());
-    _backIndex = size_t(_backIndex + 1) % _container.size();
-    _container[_backIndex] = elem;
+    _container[_backIndex] = std::forward<U>(elem);
     _numElements++;
 }
 

@@ -5,7 +5,7 @@
 /// when elements are pushed into the queue with an index.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -13,7 +13,7 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Util/RingDeque.hpp>
 #include <cstdlib> //size_t
-
+#include <utility> //std::forward
 #include <vector>
 #include <cassert>
 
@@ -46,7 +46,8 @@ public:
      * \param elem the new element to push
      * \param index the order of the element
      */
-    void push(const T &elem, const size_t index);
+    template <typename U>
+    void push(U &&elem, const size_t index);
 
     /*!
      * Get access to the element at the front of the queue
@@ -97,11 +98,12 @@ bool OrderedQueue<T>::empty(void) const
 }
 
 template <typename T>
-void OrderedQueue<T>::push(const T &elem, const size_t index)
+template <typename U>
+void OrderedQueue<T>::push(U &&elem, const size_t index)
 {
     //store the element into its position
     assert(index < _pushedElems.size());
-    _pushedElems[index] = elem;
+    _pushedElems[index] = std::forward<U>(elem);
     _pushedElemsFlag[index] = true;
 
     //look for pushed elements -- but in order
