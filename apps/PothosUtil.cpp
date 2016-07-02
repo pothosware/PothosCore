@@ -82,6 +82,16 @@ protected:
             .argument("runDuration")
             .binding("runDuration"));
 
+        options.addOption(Poco::Util::Option("var", "",
+            "Specify an arbitrary keyword + value variable\n"
+            "using the format --var=name:value\n"
+            "Multiple instances of --var are possible.\n"
+            "Use with --run-topology to overload globals.")
+            .required(false)
+            .repeatable(true)
+            .argument("variable")
+            .binding("variable"));
+
         options.addOption(Poco::Util::Option("self-tests", "", "run all plugin self tests")
             .required(false)
             .repeatable(false)
@@ -106,7 +116,9 @@ protected:
             .repeatable(false)
             .binding("requireActive"));
 
-        options.addOption(Poco::Util::Option("output", "", "specify an output file (used by various options)")
+        options.addOption(Poco::Util::Option("output", "",
+            "Specify an output file (used by various options)\n"
+            "Use with --run-topology to dump JSON statistics.")
             .required(false)
             .repeatable(false)
             .argument("outputFile")

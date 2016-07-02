@@ -1,9 +1,7 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#ifndef __INCLUDED_POTHOS_UTIL_HPP__
-#define __INCLUDED_POTHOS_UTIL_HPP__
-
+#pragma once
 #include <string>
 #include <Pothos/Init.hpp>
 #include <Poco/Util/ServerApplication.h>
@@ -21,5 +19,3 @@ public:
     void runTopology(void);
     void docParse(const std::vector<std::string> &);
 };
-
-#endif /*__INCLUDED_POTHOS_UTIL_HPP__*/

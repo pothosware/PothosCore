@@ -1,8 +1,9 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
 #include <Pothos/Framework.hpp>
+#include <Pothos/Exception.hpp>
 #include <Poco/Path.h>
 #include <fstream>
 #include <thread>
@@ -14,6 +15,11 @@ void PothosUtilBase::runTopology(void)
 
     //read the complete file into a string
     const auto path = this->config().getString("inputFile");
+    if (Poco::Path(path).getExtension() == "pth")
+    {
+        throw Pothos::DataFormatException("Cannot load "+path+"!\n"
+            "Please export the design to the JSON topology format.");
+    }
     std::ifstream ifs(Poco::Path::expand(path));
     const std::string json((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 
