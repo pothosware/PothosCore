@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2013 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 //
 // Copyright (c) 2004-2006, Applied Informatics Software Engineering GmbH.
@@ -30,6 +30,7 @@
 
 
 #include <Pothos/Exception.hpp>
+#include <Poco/String.h>
 #include <typeinfo>
 
 
@@ -59,7 +60,7 @@ Exception::Exception(const std::string& msg, const std::string& arg, int code): 
 Exception::Exception(const std::string& msg, const Exception& nested, int code): _msg(msg), _pNested(nested.clone()), _code(code)
 {
 	_msg.append("\n -> {");
-	_msg.append(_pNested->_msg);
+	_msg.append(Poco::trim(Poco::replace(_pNested->_msg, "\n", "\n  ")));
 	_msg.append("}");
 }
 

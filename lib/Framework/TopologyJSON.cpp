@@ -1,12 +1,14 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/TopologyImpl.hpp>
 #include "Framework/TopologyImpl.hpp"
+#include <Pothos/Util/EvalEnvironment.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/Format.h>
 #include <Poco/File.h>
 #include <sstream>
 #include <fstream>
@@ -40,22 +42,41 @@ static Poco::JSON::Object::Ptr parseJSONStr(const std::string &json)
 }
 
 /***********************************************************************
- * evaluate an args array (calls and constructors)
+ * evaluation helpers
  **********************************************************************/
+static Pothos::Object evalExpression(
+    Pothos::Util::EvalEnvironment &evaluator,
+    const Poco::Dynamic::Var &arg)
+{
+    if (arg.isString())
+    {
+        try
+        {
+            //it could be an expression
+            return evaluator.eval(arg.toString());
+        }
+        catch (...)
+        {
+            //fail, so treat it as a literal string
+            return Pothos::Object(arg.toString());
+        }
+    }
+
+    //otherwise run the evaluator as normal
+    return evaluator.eval(arg.toString());
+}
+
 static std::vector<Pothos::Proxy> evalArgsArray(
-    const Pothos::Proxy &evaluator,
+    Pothos::Util::EvalEnvironment &evaluator,
     const Poco::JSON::Array::Ptr &argsArray,
     const size_t offset = 0)
 {
-    std::vector<Pothos::Proxy> args;
+    std::vector<Pothos::Object> args;
     if (argsArray) for (size_t i = offset; i < argsArray->size(); i++)
     {
-        auto arg = argsArray->get(i).toString();
-        if (argsArray->get(i).isString()) arg = "\""+arg+"\"";
-        const auto obj = evaluator.call<Pothos::Object>("eval", arg);
-        args.push_back(evaluator.getEnvironment()->convertObjectToProxy(obj));
+        args.push_back(evalExpression(evaluator, argsArray->get(i)));
     }
-    return args;
+    return Pothos::Object(args).convert<std::vector<Pothos::Proxy>>();
 }
 
 /***********************************************************************
@@ -63,7 +84,7 @@ static std::vector<Pothos::Proxy> evalArgsArray(
  **********************************************************************/
 static Pothos::Proxy makeBlock(
     const Pothos::Proxy &registry,
-    const Pothos::Proxy &evaluator,
+    Pothos::Util::EvalEnvironment &evaluator,
     const Poco::JSON::Object::Ptr &blockObj)
 {
     const auto id = blockObj->getValue<std::string>("id");
@@ -78,7 +99,17 @@ static Pothos::Proxy makeBlock(
     const auto ctorArgs = evalArgsArray(evaluator, argsArray);
 
     //create the block
-    auto block = registry.getHandle()->call(path, ctorArgs.data(), ctorArgs.size());
+    Pothos::Proxy block;
+    try
+    {
+        block = registry.getHandle()->call(path, ctorArgs.data(), ctorArgs.size());
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        std::string argsStr;
+        for (const auto &arg : ctorArgs) argsStr += arg.toString() + (argsStr.empty()?"":", ");
+        throw Pothos::RuntimeException(Poco::format("%s = %s(%s)", id, path, argsStr), ex);
+    }
 
     //make the calls
     Poco::JSON::Array::Ptr callsArray;
@@ -88,7 +119,16 @@ static Pothos::Proxy makeBlock(
         const auto callArray = callsArray->getArray(i);
         auto name = callArray->getElement<std::string>(0);
         const auto callArgs = evalArgsArray(evaluator, callArray, 1/*offset*/);
-        block.getHandle()->call(name, callArgs.data(), callArgs.size());
+        try
+        {
+            block.getHandle()->call(name, callArgs.data(), callArgs.size());
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            std::string argsStr;
+            for (const auto &arg : callArgs) argsStr += arg.toString() + (argsStr.empty()?"":", ");
+            throw Pothos::RuntimeException(Poco::format("%s.%s(%s)", id, name, argsStr), ex);
+        }
     }
 
     return block;
@@ -100,12 +140,20 @@ static Pothos::Proxy makeBlock(
 std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json)
 {
     //parse the json string/file to a JSON object
-    const auto topObj = parseJSONStr(json);
+    Poco::JSON::Object::Ptr topObj;
+    try
+    {
+        topObj = parseJSONStr(json);
+    }
+    catch (const Poco::Exception &ex)
+    {
+        throw Pothos::DataFormatException("Pothos::Topology::make()", ex.message());
+    }
 
     //create the proxy environment (local) and the registry
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
-    auto evaluator = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("make");
+    auto evaluator = Pothos::Util::EvalEnvironment();
 
     //create thread pools
     std::map<std::string, Pothos::Proxy> threadPools;
@@ -119,6 +167,25 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
         threadPoolObj->getObject(name)->stringify(ss);
         Pothos::ThreadPoolArgs args(ss.str());
         threadPools[name] = env->findProxy("Pothos/ThreadPool").callProxy("new", args);
+    }
+
+    //register global variables
+    Poco::JSON::Array::Ptr globalsArray;
+    if (topObj->isArray("globals")) globalsArray = topObj->getArray("globals");
+    if (globalsArray) for (size_t i = 0; i < globalsArray->size(); i++)
+    {
+        if (not globalsArray->isObject(i)) throw Pothos::DataFormatException(
+            "Pothos::Topology::make()", "globals["+std::to_string(i)+"] must be an object");
+        const auto &globalVarObj = globalsArray->getObject(i);
+        if (not globalVarObj->has("name")) throw Pothos::DataFormatException(
+            "Pothos::Topology::make()", "globals["+std::to_string(i)+"] missing 'name' field");
+        const auto name = globalVarObj->getValue<std::string>("name");
+        if (not globalVarObj->has("value")) throw Pothos::DataFormatException(
+            "Pothos::Topology::make()", "globals["+std::to_string(i)+"] missing 'value' field");
+
+        //evaluate and store the result into the evaluator's constants
+        const auto value = evalExpression(evaluator, globalVarObj->get("value"));
+        evaluator.registerConstantObj(name, value);
     }
 
     //create the topology and add it to the blocks
