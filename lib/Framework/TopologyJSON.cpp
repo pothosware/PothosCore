@@ -9,37 +9,11 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Format.h>
-#include <Poco/File.h>
 #include <sstream>
-#include <fstream>
 #include <iostream>
 #include <future>
 #include <cassert>
 #include <map>
-
-/***********************************************************************
- * String/file parser - make JSON object from string
- **********************************************************************/
-static Poco::JSON::Object::Ptr parseJSONStr(const std::string &json)
-{
-    //determine markup string or file path
-    bool isPath = false;
-    try {isPath = Poco::File(json).exists();}
-    catch (...){}
-
-    //parse the json string/file to a JSON object
-    Poco::JSON::Parser p;
-    if (isPath)
-    {
-        std::ifstream ifs(json);
-        p.parse(ifs);
-    }
-    else
-    {
-        p.parse(json);
-    }
-    return p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
-}
 
 /***********************************************************************
  * evaluation helpers
@@ -139,11 +113,12 @@ static Pothos::Proxy makeBlock(
  **********************************************************************/
 std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json)
 {
-    //parse the json string/file to a JSON object
+    //parse the json formatted string into a JSON object
     Poco::JSON::Object::Ptr topObj;
     try
     {
-        topObj = parseJSONStr(json);
+        Poco::JSON::Parser p; p.parse(json);
+        topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
     }
     catch (const Poco::Exception &ex)
     {
@@ -289,7 +264,8 @@ std::string Pothos::Topology::queryJSONStats(void)
     }
 
     //use flat topology to get hierarchical block names
-    const auto flatTopologyObj = parseJSONStr(this->dumpJSON());
+    Poco::JSON::Parser p; p.parse(this->dumpJSON());
+    const auto flatTopologyObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
     const auto flatTopologyBlocks = flatTopologyObj->getObject("blocks");
     std::vector<std::string> names; flatTopologyBlocks->getNames(names);
     for (const auto &name : names)

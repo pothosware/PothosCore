@@ -141,7 +141,7 @@ public:
      *     ]
      * }
      * \endcode
-     * \param json a JSON string or file path
+     * \param json a JSON formatted string
      */
     static std::shared_ptr<Topology> make(const std::string &json);
 
