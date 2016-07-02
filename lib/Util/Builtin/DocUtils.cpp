@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Exception.hpp>
@@ -26,9 +26,8 @@ static Poco::JSON::Array::Ptr recurseParseDocPath(const Pothos::PluginPath &path
     {
         try
         {
-            Poco::JSON::Parser p;
-            p.parse(plugin.getObject().extract<std::string>());
-            array->add(p.getHandler()->asVar());
+            const auto str = plugin.getObject().extract<std::string>();
+            array->add(Poco::JSON::Parser().parse(str));
         }
         catch (const Poco::Exception &ex)
         {
@@ -60,8 +59,8 @@ public:
     {
         auto plugin = Pothos::PluginRegistry::get("/blocks/docs"+path);
         auto obj = plugin.getObject();
-        Poco::JSON::Parser p; p.parse(obj.convert<std::string>());
-        return p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(obj.convert<std::string>());
+        return result.extract<Poco::JSON::Object::Ptr>();
     }
 };
 

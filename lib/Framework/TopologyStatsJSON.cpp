@@ -21,8 +21,8 @@ static Poco::JSON::Object::Ptr queryWorkStats(const Pothos::Proxy &block)
     try
     {
         auto json = block.call<std::string>("queryJSONStats");
-        Poco::JSON::Parser p; p.parse(json);
-        return p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(json);
+        return result.extract<Poco::JSON::Object::Ptr>();
     }
     catch (Pothos::Exception &) {}
 
@@ -54,8 +54,8 @@ std::string Pothos::Topology::queryJSONStats(void)
     }
 
     //use flat topology to get hierarchical block names
-    Poco::JSON::Parser p; p.parse(this->dumpJSON());
-    const auto flatTopologyObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    const auto result = Poco::JSON::Parser().parse(this->dumpJSON());
+    const auto flatTopologyObj = result.extract<Poco::JSON::Object::Ptr>();
     const auto flatTopologyBlocks = flatTopologyObj->getObject("blocks");
     std::vector<std::string> names; flatTopologyBlocks->getNames(names);
     for (const auto &name : names)

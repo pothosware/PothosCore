@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -154,8 +154,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_simple_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_TRUE(connsArray);
@@ -175,8 +175,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_simple_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_TRUE(connsArray);
@@ -234,8 +234,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_nested_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 3);
@@ -250,8 +250,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_nested_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 2);
@@ -294,8 +294,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_uneven_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 2);
@@ -308,8 +308,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_uneven_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 2);
@@ -359,8 +359,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_multisrc_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 3);
@@ -375,8 +375,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_multisrc_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 3);
@@ -429,8 +429,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_multidst_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 3);
@@ -445,8 +445,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_multidst_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 3);
@@ -501,8 +501,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_shared_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 3);
@@ -517,8 +517,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_shared_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 4);
@@ -577,8 +577,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_independent_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 3);
@@ -593,8 +593,8 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_independent_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        Poco::JSON::Parser p; p.parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
         auto connsArray = topObj->getArray("connections");
         auto blocksObj = topObj->getObject("blocks");
         POTHOS_TEST_EQUAL(blocksObj->size(), 4);

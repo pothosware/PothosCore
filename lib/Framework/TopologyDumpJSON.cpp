@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2015 Josh Blum
+// Copyright (c) 2015-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/TopologyImpl.hpp>
@@ -193,8 +193,8 @@ static Poco::JSON::Object::Ptr portInfoToObj(const Pothos::PortInfo &portInfo)
 std::string Pothos::Topology::dumpJSON(const std::string &request)
 {
     //extract input request
-    Poco::JSON::Parser p; p.parse(request.empty()?"{}":request);
-    auto configObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    const auto result = Poco::JSON::Parser().parse(request.empty()?"{}":request);
+    auto configObj = result.extract<Poco::JSON::Object::Ptr>();
     assert(configObj);
     const auto modeConfig = configObj->optValue<std::string>("mode", "flat");
 
@@ -207,8 +207,8 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
     Poco::JSON::Object::Ptr flatBlocks;
     if (modeConfig == "rendered")
     {
-        Poco::JSON::Parser pFlat; pFlat.parse(this->dumpJSON("{\"mode\":\"flat\"}"));
-        auto flatObj = pFlat.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(this->dumpJSON("{\"mode\":\"flat\"}"));
+        auto flatObj = result.extract<Poco::JSON::Object::Ptr>();
         assert(flatObj);
         flatBlocks = flatObj->getObject("blocks");
         assert(flatBlocks);
@@ -254,8 +254,8 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
         if (traverse and this->uid() != blockId) try
         {
             auto subDump = block.call<std::string>("dumpJSON", "{\"mode\":\"top\"}");
-            Poco::JSON::Parser psub; psub.parse(subDump);
-            auto subObj = psub.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+            const auto result = Poco::JSON::Parser().parse(subDump);
+            auto subObj = result.extract<Poco::JSON::Object::Ptr>();
             assert(subObj);
             std::vector<std::string> names; subObj->getNames(names);
             for (const auto &name : names) blockObj->set(name, subObj->get(name));

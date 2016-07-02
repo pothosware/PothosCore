@@ -114,8 +114,8 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
     Poco::JSON::Object::Ptr topObj;
     try
     {
-        Poco::JSON::Parser p; p.parse(json);
-        topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(json);
+        topObj = result.extract<Poco::JSON::Object::Ptr>();
     }
     catch (const Poco::Exception &ex)
     {

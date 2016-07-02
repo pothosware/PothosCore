@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/Serialize.hpp>
@@ -25,8 +25,8 @@ void load(Archive & ar, Poco::JSON::Array::Ptr &t, const unsigned int)
     ar >> isNull;
     if (isNull) return;
     std::string s; ar >> s;
-    Poco::JSON::Parser p; p.parse(s);
-    t = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
+    const auto result = Poco::JSON::Parser().parse(s);
+    t = result.extract<Poco::JSON::Array::Ptr>();
 }
 
 template<class Archive>
@@ -46,8 +46,8 @@ void load(Archive & ar, Poco::JSON::Object::Ptr &t, const unsigned int)
     ar >> isNull;
     if (isNull) return;
     std::string s; ar >> s;
-    Poco::JSON::Parser p; p.parse(s);
-    t = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    const auto result = Poco::JSON::Parser().parse(s);
+    t = result.extract<Poco::JSON::Object::Ptr>();
 }
 }}
 

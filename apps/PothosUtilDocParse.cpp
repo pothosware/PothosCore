@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -67,8 +67,8 @@ static Poco::Dynamic::Var exprToDynVar(const std::string &expr)
 {
     try
     {
-        Poco::JSON::Parser p; p.parse("["+expr+"]");
-        return p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>()->get(0);
+        const auto result = Poco::JSON::Parser().parse("["+expr+"]");
+        return result.extract<Poco::JSON::Array::Ptr>()->get(0);
     }
     catch (const Poco::Exception &){}
     return expr;
