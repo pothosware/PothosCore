@@ -150,7 +150,8 @@ list(APPEND POTHOS_SOURCES
     Framework/TopologyDomainFlows.cpp
     Framework/TopologyDotMarkup.cpp
     Framework/TopologyDumpJSON.cpp
-    Framework/TopologyJSON.cpp
+    Framework/TopologyMakeJSON.cpp
+    Framework/TopologyStatsJSON.cpp
     Framework/WorkInfo.cpp
     Framework/WorkerActor.cpp
     Framework/WorkerActorPortAllocation.cpp

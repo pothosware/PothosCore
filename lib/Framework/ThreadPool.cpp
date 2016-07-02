@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/ThreadPool.hpp>
@@ -27,9 +27,8 @@ Pothos::ThreadPoolArgs::ThreadPoolArgs(const std::string &json):
     priority(0.0)
 {
     //parse to JSON object
-    Poco::JSON::Parser p;
-    p.parse(json);
-    auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    const auto result = Poco::JSON::Parser().parse(json);
+    auto topObj = result.extract<Poco::JSON::Object::Ptr>();
 
     //parse out the optional fields
     this->numThreads = topObj->optValue<int>("numThreads", 0);

@@ -1,11 +1,16 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
 #include <Pothos/Framework.hpp>
+#include <Pothos/Exception.hpp>
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Array.h>
+#include <Poco/JSON/Parser.h>
 #include <Poco/Path.h>
 #include <fstream>
 #include <thread>
+#include <sstream>
 #include <iostream>
 
 void PothosUtilBase::runTopology(void)
@@ -14,12 +19,61 @@ void PothosUtilBase::runTopology(void)
 
     //read the complete file into a string
     const auto path = this->config().getString("inputFile");
+    if (Poco::Path(path).getExtension() == "pth")
+    {
+        throw Pothos::DataFormatException("Cannot load "+path+"!\n"
+            "Please export the design to the JSON topology format.");
+    }
     std::ifstream ifs(Poco::Path::expand(path));
     const std::string json((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 
+    //parse the json formatted string into a JSON object
+    Poco::JSON::Object::Ptr topObj;
+    try
+    {
+        const auto result = Poco::JSON::Parser().parse(json);
+        topObj = result.extract<Poco::JSON::Object::Ptr>();
+    }
+    catch (const Poco::Exception &ex)
+    {
+        throw Pothos::DataFormatException(ex.message());
+    }
+
+    //apply the global variable overlays
+    if (not topObj->isArray("globals")) topObj->set("globals",
+        Poco::JSON::Array::Ptr(new Poco::JSON::Array()));
+    auto globalsArray = topObj->getArray("globals");
+    for (const auto &pair : _vars)
+    {
+        //look for a match in the existing globals and override its value
+        for (size_t i = 0; i < globalsArray->size(); i++)
+        {
+            if (not globalsArray->isObject(i)) continue;
+            auto globalVarObj = globalsArray->getObject(i);
+            if (globalVarObj->optValue<std::string>("name", "") == pair.first)
+            {
+                globalVarObj->remove("value");
+                globalVarObj->set("value", pair.second);
+                goto nextVar;
+            }
+        }
+
+        //otherwise add to the end of the globals array
+        {
+            std::cout << "add name " << pair.first << std::endl;
+            Poco::JSON::Object::Ptr globalVarObj(new Poco::JSON::Object());
+            globalVarObj->set("name", pair.first);
+            globalVarObj->set("value", pair.second);
+            globalsArray->add(globalVarObj);
+        }
+
+        nextVar: continue;
+    }
+
     //create the topology from the JSON string
     std::cout << ">>> Create Topology: " << path << std::endl;
-    auto topology = Pothos::Topology::make(json);
+    std::stringstream ss; topObj->stringify(ss);
+    auto topology = Pothos::Topology::make(ss.str());
 
     //commit the topology and wait for specified time for CTRL+C
     if (this->config().has("runDuration"))

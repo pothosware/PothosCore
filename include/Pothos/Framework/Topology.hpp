@@ -4,7 +4,7 @@
 /// This file contains the interface for creating a topology of blocks.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -40,6 +40,12 @@ public:
     /*!
      * Create a topology from a JSON description.
      *
+     * <h2>JSON fields</h2>
+     *
+     * The topology is a JSON object with fields to describe
+     * thread pools, global variables, blocks, and connections.
+     *
+     * <h3>Thread pools</h3>
      * The "threadPools" field is an optional JSON object
      * where each entry contains thread pool arguments which are
      * documented by the ThreadPoolArgs JSON markup constructor.
@@ -48,6 +54,55 @@ public:
      * The special thread pool named "default" will apply
      * to all blocks that do not specify the "threadPool" key.
      *
+     * <h3>Global variables</h3>
+     * The "globals" field is an optional JSON array
+     * where each entry is an object containing a variable name
+     * and value. The order of global variables matters here,
+     * because one global can reference another in an expression.
+     *
+     * <h3>Blocks</h3>
+     * The "blocks" field is an array of JSON objects,
+     * each of which describes a block by path,
+     * constructor args, and method calls.
+     * - The "id" of each block must be unique
+     *   and will be referenced by the connections.
+     * - The "path" is the registered block factory path.
+     * - The "args" is a list of constructor arguments.
+     * - The "calls" is a list of ordered method calls.
+     *   Each specified by the call name then arguments.
+     * - The "threadPool" specifies an optional thread pool by name
+     *
+     * <h3>Connections</h3>
+     * The "connections" field is an array of JSON arrays,
+     * where each array specifies a connection with source and destination ID and port name.
+     * The IDs are strings, but the port names can either be numbers or strings.
+     * Each connection entry has the following fields in order:
+     *  - source ID
+     *  - source port
+     *  - destination ID
+     *  - destination port
+     *
+     * <h2>Using expressions</h2>
+     *
+     * Global variable values and block arguments support expression parsing.
+     * The parser allows these values to be native JSON types:
+     * integers, floats, string, booleans, arrays, and objects.
+     * But they can also be strings containing expressions that
+     * make use of the global variables.
+     *
+     * Because string can ambiguously represent actual strings
+     * and expressions. Every string is parsed as an expression
+     * and will fall-back to a regular unparsed string type
+     * if the parser fails to perform the evaluation.
+     * To literally pass a string argument that contains an expression
+     * that would be evaluated by the parser, simply use escaped quotes:
+     *
+     * \code {.json}
+     * {"name" : "escapedExpr", "value" : "\"1+1\""}
+     * \endcode
+     *
+     * <h2>Example markup</h2>
+     *
      * Example JSON markup for a topology description:
      * \code {.json}
      * {
@@ -55,6 +110,10 @@ public:
      *         "default" : {"priority" : 0.5},
      *         "myPool0" : {"yieldMode" : "SPIN"}
      *     },
+     *     "globals" : [
+     *          {"name" : "fiz", "value" : 3.14},
+     *          {"name" : "baz", "value" : "-fiz"}
+     *     ],
      *     "blocks" : [
      *         {
      *             "id" : "id0",
@@ -62,7 +121,7 @@ public:
      *             "args" : [1, "hello"],
      *             "calls" : [
      *                 ["setFoo", true],
-     *                 ["updateBaz", 3.14]
+     *                 ["updateBaz", "baz"]
      *             ]
      *         },
      *         {
@@ -82,7 +141,7 @@ public:
      *     ]
      * }
      * \endcode
-     * \param json a JSON string or file path
+     * \param json a JSON formatted string
      */
     static std::shared_ptr<Topology> make(const std::string &json);
 

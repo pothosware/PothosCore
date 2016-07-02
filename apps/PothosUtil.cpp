@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -9,6 +9,7 @@
 #include <Poco/Util/HelpFormatter.h>
 #include <Poco/Util/IntValidator.h>
 #include <Pothos/System.hpp>
+#include <Pothos/Exception.hpp>
 #include <iostream>
 
 class PothosUtil : public PothosUtilBase
@@ -82,6 +83,16 @@ protected:
             .argument("runDuration")
             .binding("runDuration"));
 
+        options.addOption(Poco::Util::Option("var", "",
+            "Specify an arbitrary keyword + value variable\n"
+            "using the format --var=name:value\n"
+            "Multiple instances of --var are possible.\n"
+            "Use with --run-topology to overload globals.")
+            .required(false)
+            .repeatable(true)
+            .argument("variable")
+            .binding("variable"));
+
         options.addOption(Poco::Util::Option("self-tests", "", "run all plugin self tests")
             .required(false)
             .repeatable(false)
@@ -106,7 +117,9 @@ protected:
             .repeatable(false)
             .binding("requireActive"));
 
-        options.addOption(Poco::Util::Option("output", "", "specify an output file (used by various options)")
+        options.addOption(Poco::Util::Option("output", "",
+            "Specify an output file (used by various options)\n"
+            "Use with --run-topology to dump JSON statistics.")
             .required(false)
             .repeatable(false)
             .argument("outputFile")
@@ -125,6 +138,15 @@ protected:
         if (name == "device-info") _deviceInfoRequested = true;
         if (name == "run-topology") _runTopologyRequested = true;
         if (name == "help") this->stopOptionsProcessing();
+
+        //store --var options into the ordered vars map
+        if (name == "var")
+        {
+            const auto pos = value.find(":");
+            if (pos == std::string::npos) throw Pothos::InvalidArgumentException(
+                "Cannot parse --var="+value+", expected --var=name:value format");
+            _vars.emplace_back(value.substr(0, pos), value.substr(pos+1));
+        }
     }
 
     void printSystemInfo(const std::string &, const std::string &)

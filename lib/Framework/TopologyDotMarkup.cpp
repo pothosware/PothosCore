@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -88,13 +88,13 @@ static Poco::JSON::Array::Ptr getConnectedPortInfos(
 std::string Pothos::Topology::toDotMarkup(const std::string &request)
 {
     //parse request arguments
-    Poco::JSON::Parser p; p.parse(request.empty()?"{}":request);
-    auto configObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    const auto result = Poco::JSON::Parser().parse(request.empty()?"{}":request);
+    auto configObj = result.extract<Poco::JSON::Object::Ptr>();
     const auto portConfig = configObj->optValue<std::string>("port", "connected");
 
     //get a JSON dump of the topology
-    Poco::JSON::Parser pDump; pDump.parse(this->dumpJSON(request));
-    const auto topObj = pDump.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    const auto dumpResult = Poco::JSON::Parser().parse(this->dumpJSON(request));
+    const auto topObj = dumpResult.extract<Poco::JSON::Object::Ptr>();
     const auto connsArray = topObj->getArray("connections");
     const auto blocksObj = topObj->getObject("blocks");
     std::vector<std::string> blockIds; blocksObj->getNames(blockIds);
