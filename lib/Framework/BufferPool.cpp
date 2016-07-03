@@ -3,15 +3,18 @@
 
 #include <Pothos/Framework/BufferPool.hpp>
 
+//! The default size of allocations until the client requests larger buffers
+static const size_t defaultSize = 8*1024;
+
 Pothos::BufferPool::BufferPool(void):
-    _minBuffSize(0)
+    _minBuffSize(defaultSize)
 {
     return;
 }
 
 void Pothos::BufferPool::clear(void)
 {
-    _minBuffSize = 0;
+    _minBuffSize = defaultSize;
     _buffs.clear();
 }
 

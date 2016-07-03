@@ -11,57 +11,24 @@
 #include <utility> //move
 
 /***********************************************************************
- * SharedBufferPool
- **********************************************************************/
-class HelperBufferPool
-{
-public:
-    HelperBufferPool(void):
-        _minBuffSize(4096)
-    {
-        return;
-    }
-
-    Pothos::BufferChunk get(const size_t numBytes)
-    {
-        //user asked for a larger buffer size -- drop all entries
-        if (numBytes > _minBuffSize)
-        {
-            _buffs.clear();
-            _minBuffSize = numBytes;
-        }
-
-        //find the first buffer where we hold the only copy
-        for (size_t i = 0; i < _buffs.size(); i++)
-        {
-            if (_buffs[i].getBuffer().unique()) return _buffs[i];
-        }
-
-        //otherwise make a new buffer
-        _buffs.push_back(Pothos::BufferChunk(
-            Pothos::SharedBuffer::make(_minBuffSize)));
-        return _buffs.back();
-    }
-
-private:
-    size_t _minBuffSize;
-    std::vector<Pothos::BufferChunk> _buffs;
-};
-
-/***********************************************************************
  * BufferAccumulator implementation
  **********************************************************************/
-struct Pothos::BufferAccumulator::Impl
-{
-    HelperBufferPool pool;
-};
-
 Pothos::BufferAccumulator::BufferAccumulator(void):
     _queue(64/*arbitrary*/),
     _bytesAvailable(0),
-    _inPoolBuffer(false),
-    _impl(new Impl())
+    _inPoolBuffer(false)
 {
+    //never let the queue become empty -- hold an empty buffer
+    if (_queue.empty()) _queue.push_front(BufferChunk());
+}
+
+void Pothos::BufferAccumulator::clear(void)
+{
+    _queue.clear();
+    _bytesAvailable = 0;
+    _inPoolBuffer = false;
+    _pool.clear();
+
     //never let the queue become empty -- hold an empty buffer
     if (_queue.empty()) _queue.push_front(BufferChunk());
 }
@@ -216,7 +183,7 @@ void Pothos::BufferAccumulator::require(const size_t numBytes)
     //The smaller pool buffer in front will be absorbed and popped.
 
     //get a buffer that can hold the required bytes
-    auto newBuffer = _impl->pool.get(numBytes);
+    auto newBuffer = _pool.get(numBytes);
     newBuffer.dtype = queue.front().dtype;
     size_t newBuffBytes = newBuffer.length;
     newBuffer.length = 0;

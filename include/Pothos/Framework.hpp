@@ -4,7 +4,7 @@
 /// Top level include wrapper for Framework classes.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -28,6 +28,7 @@
 #include <Pothos/Framework/BlockRegistry.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
 #include <Pothos/Framework/BufferAccumulator.hpp>
+#include <Pothos/Framework/BufferPool.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Framework/SharedBuffer.hpp>
 #include <Pothos/Framework/ManagedBuffer.hpp>

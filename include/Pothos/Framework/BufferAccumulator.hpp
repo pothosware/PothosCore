@@ -10,9 +10,9 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Framework/BufferPool.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Util/RingDeque.hpp>
-#include <memory>
 #include <cassert>
 
 namespace Pothos {
@@ -34,6 +34,9 @@ public:
 
     //! Create a new buffer accumulator
     BufferAccumulator(void);
+
+    //! Clear the contents of this buffer accumulator
+    void clear(void);
 
     /*!
      * Is the accumulator empty?
@@ -84,8 +87,7 @@ private:
     Util::RingDeque<BufferChunk> _queue;
     size_t _bytesAvailable;
     bool _inPoolBuffer;
-    struct Impl;
-    std::shared_ptr<Impl> _impl;
+    Pothos::BufferPool _pool;
 };
 
 } //namespace Pothos
