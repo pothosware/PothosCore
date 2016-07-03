@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/OutputPortImpl.hpp>
@@ -58,14 +58,12 @@ void Pothos::OutputPort::_postMessage(const Object &async)
 
 void Pothos::OutputPort::bufferManagerPush(Pothos::Util::SpinLock *mutex, const Pothos::ManagedBuffer &buff)
 {
-    auto mgr = buff.getBufferManager();
-    if (mgr)
     {
         std::lock_guard<Pothos::Util::SpinLock> lock(*mutex);
-        mgr->push(buff);
-        assert(_actor != nullptr);
-        _actor->flagExternalChange();
+        buff.getBufferManager()->push(buff);
     }
+    assert(_actor != nullptr);
+    _actor->flagExternalChange();
 }
 
 void Pothos::OutputPort::bufferManagerSetup(const Pothos::BufferManager::Sptr &manager)

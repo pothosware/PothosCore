@@ -47,23 +47,22 @@ void Pothos::InputPort::setAlias(const std::string &alias)
 
 void Pothos::InputPort::pushBuffer(const BufferChunk &buffer)
 {
-    assert(_actor != nullptr);
     this->bufferAccumulatorPush(buffer);
+    assert(_actor != nullptr);
     _actor->flagExternalChange();
 }
 
 void Pothos::InputPort::pushLabel(const Label &label)
 {
-    assert(_actor != nullptr);
     this->inlineMessagesPush(label);
+    assert(_actor != nullptr);
     _actor->flagExternalChange();
 }
 
 void Pothos::InputPort::pushMessage(const Object &message)
 {
-    assert(_actor != nullptr);
     this->asyncMessagesPush(message);
-    _actor->flagExternalChange();
+    //flagExternalChange() called in asyncMessagesPush...
 }
 
 void Pothos::InputPort::clear(void)
@@ -76,20 +75,23 @@ void Pothos::InputPort::clear(void)
 
 void Pothos::InputPort::asyncMessagesPush(const Pothos::Object &message, const Pothos::BufferChunk &token)
 {
-    assert(_actor != nullptr);
-    std::lock_guard<Util::SpinLock> lock(_asyncMessagesLock);
-    if (_asyncMessages.full())
     {
-        if (_asyncMessages.size() >= MaxQueueCapacity)
+        std::lock_guard<Util::SpinLock> lock(_asyncMessagesLock);
+        if (_asyncMessages.full())
         {
-            _asyncMessages.clear();
-            poco_error_f2(Poco::Logger::get("Pothos.InputPort.messages"),
-                "%s[%s] detected input message overflow condition",
-                _actor->block->getName(), this->alias());
+            if (_asyncMessages.size() >= MaxQueueCapacity)
+            {
+                _asyncMessages.clear();
+                poco_error_f2(Poco::Logger::get("Pothos.InputPort.messages"),
+                    "%s[%s] detected input message overflow condition",
+                    _actor->block->getName(), this->alias());
+            }
+            else _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
         }
-        else _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
+        _asyncMessages.push_back(std::make_pair(message, token));
     }
-    _asyncMessages.push_back(std::make_pair(message, token));
+
+    assert(_actor != nullptr);
     _actor->flagExternalChange();
 }
 
@@ -101,20 +103,23 @@ void Pothos::InputPort::asyncMessagesClear(void)
 
 void Pothos::InputPort::slotCallsPush(const Pothos::Object &args, const Pothos::BufferChunk &token)
 {
-    assert(_actor != nullptr);
-    std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
-    if (_slotCalls.full())
     {
-        if (_slotCalls.size() >= MaxQueueCapacity)
+        std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
+        if (_slotCalls.full())
         {
-            _slotCalls.clear();
-            poco_error_f2(Poco::Logger::get("Pothos.InputPort.slots"),
-                "%s[%s] detected input slot overflow condition",
-                _actor->block->getName(), this->alias());
+            if (_slotCalls.size() >= MaxQueueCapacity)
+            {
+                _slotCalls.clear();
+                poco_error_f2(Poco::Logger::get("Pothos.InputPort.slots"),
+                    "%s[%s] detected input slot overflow condition",
+                    _actor->block->getName(), this->alias());
+            }
+            else _slotCalls.set_capacity(_slotCalls.capacity()*2);
         }
-        else _slotCalls.set_capacity(_slotCalls.capacity()*2);
+        _slotCalls.push_back(std::make_pair(args, token));
     }
-    _slotCalls.push_back(std::make_pair(args, token));
+
+    assert(_actor != nullptr);
     _actor->flagExternalChange();
 }
 
@@ -183,27 +188,29 @@ void Pothos::InputPort::bufferLabelPush(
     const std::vector<Pothos::Label> &postedLabels,
     const Pothos::Util::RingDeque<Pothos::BufferChunk> &postedBuffers)
 {
+    {
+        std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
+
+        const size_t currentBytes = _bufferAccumulator.getTotalBytesAvailable();
+        const size_t requiredLabelSize = _inputInlineMessages.size() + postedLabels.size();
+        if (_inputInlineMessages.capacity() < requiredLabelSize) _inputInlineMessages.set_capacity(requiredLabelSize);
+
+        //insert labels (in order) and adjust for the current offset
+        for (const auto &byteOffsetLabel : postedLabels)
+        {
+            auto label = byteOffsetLabel;
+            label.index += currentBytes; //increment by enqueued bytes
+            _inputInlineMessages.push_back(label);
+        }
+
+        //push all buffers into the accumulator
+        for (size_t i = 0; i < postedBuffers.size(); i++)
+        {
+            this->bufferAccumulatorPushNoLock(postedBuffers[i]);
+        }
+    }
+
     assert(_actor != nullptr);
-    std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
-
-    const size_t currentBytes = _bufferAccumulator.getTotalBytesAvailable();
-    const size_t requiredLabelSize = _inputInlineMessages.size() + postedLabels.size();
-    if (_inputInlineMessages.capacity() < requiredLabelSize) _inputInlineMessages.set_capacity(requiredLabelSize);
-
-    //insert labels (in order) and adjust for the current offset
-    for (const auto &byteOffsetLabel : postedLabels)
-    {
-        auto label = byteOffsetLabel;
-        label.index += currentBytes; //increment by enqueued bytes
-        _inputInlineMessages.push_back(label);
-    }
-
-    //push all buffers into the accumulator
-    for (size_t i = 0; i < postedBuffers.size(); i++)
-    {
-        this->bufferAccumulatorPushNoLock(postedBuffers[i]);
-    }
-
     _actor->flagExternalChange();
 }
 
