@@ -87,7 +87,7 @@ private:
     Util::RingDeque<BufferChunk> _queue;
     size_t _bytesAvailable;
     bool _inPoolBuffer;
-    Pothos::BufferPool _pool;
+    BufferPool _pool;
 };
 
 } //namespace Pothos

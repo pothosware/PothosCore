@@ -4,7 +4,7 @@
 /// This file provides an interface for a worker's output port.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -13,6 +13,7 @@
 #include <Pothos/Object/Object.hpp>
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Label.hpp>
+#include <Pothos/Framework/BufferPool.hpp>
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
 #include <Pothos/Util/RingDeque.hpp>
@@ -116,6 +117,17 @@ public:
     void popBuffer(const size_t numBytes);
 
     /*!
+     * Get a buffer of a specified size in elements.
+     * Some blocks may require buffers of arbitrary size
+     * for use with postBuffer() and postMessage() calls.
+     * The call will attempt to use the front buffer from
+     * this output port and will fall-back to a reusable pool.
+     * \param numElements the minimum buffer size
+     * \return a buffer chunk with at least numElements
+     */
+    BufferChunk getBuffer(const size_t numElements);
+
+    /*!
      * Post an output label to the subscribers on this port.
      * \param label the label to post
      */
@@ -215,6 +227,7 @@ private:
     std::vector<InputPort *> _subscribers;
     InputPort *_readBeforeWritePort;
     bool _bufferFromManager;
+    BufferPool _bufferPool;
 
     OutputPort(void);
     OutputPort(const OutputPort &){} // non construction-copyable
