@@ -159,6 +159,7 @@ list(APPEND POTHOS_SOURCES
     Framework/ThreadEnvironment.cpp
     Framework/SharedBuffer.cpp
     Framework/ManagedBuffer.cpp
+    Framework/BufferPool.cpp
     Framework/BufferChunk.cpp
     Framework/BufferConvert.cpp
     Framework/BufferManager.cpp
