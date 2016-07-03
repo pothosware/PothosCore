@@ -4,7 +4,7 @@
 /// BufferAccumulator provides an input pool of buffers.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -83,6 +83,7 @@ public:
 private:
     Util::RingDeque<BufferChunk> _queue;
     size_t _bytesAvailable;
+    bool _inPoolBuffer;
     struct Impl;
     std::shared_ptr<Impl> _impl;
 };

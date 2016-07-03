@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferAccumulator.hpp>
@@ -53,19 +53,13 @@ private:
  **********************************************************************/
 struct Pothos::BufferAccumulator::Impl
 {
-    Impl(void):
-        inPoolBuffer(false)
-    {
-        return;
-    }
-
-    bool inPoolBuffer;
     HelperBufferPool pool;
 };
 
 Pothos::BufferAccumulator::BufferAccumulator(void):
     _queue(64/*arbitrary*/),
     _bytesAvailable(0),
+    _inPoolBuffer(false),
     _impl(new Impl())
 {
     //never let the queue become empty -- hold an empty buffer
@@ -162,7 +156,7 @@ void Pothos::BufferAccumulator::pop(const size_t numBytes)
     //and the remainder bytes are in front+1,
     //then pop the front and move into front+1.
     if (
-        _impl->inPoolBuffer and queue.size() > 1 and //pool in front
+        _inPoolBuffer and queue.size() > 1 and //pool in front
         queue.front().length <= (queue[1].address - queue[1].getBuffer().getAddress()))
     {
         queue[1].address -= queue.front().length;
@@ -192,7 +186,7 @@ void Pothos::BufferAccumulator::pop(const size_t numBytes)
     }
 
     //clear the pool buffer state when the queue size shrinks
-    if (_impl->inPoolBuffer and queueSize != queue.size()) _impl->inPoolBuffer = false;
+    if (_inPoolBuffer and queueSize != queue.size()) _inPoolBuffer = false;
 
     //pop all of the front-most consumed buffers
     while (not queue.empty() and queue.front().length == 0) queue.pop_front();
@@ -218,7 +212,7 @@ void Pothos::BufferAccumulator::require(const size_t numBytes)
     if (_bytesAvailable < numBytes and queue.size() == 1 and
         numBytes <= queue.front().getBuffer().getLength()) return;
 
-    //Actually this is ok: assert(not _impl->inPoolBuffer);
+    //Actually this is ok: assert(not _inPoolBuffer);
     //The smaller pool buffer in front will be absorbed and popped.
 
     //get a buffer that can hold the required bytes
@@ -256,7 +250,7 @@ void Pothos::BufferAccumulator::require(const size_t numBytes)
     }
 
     //finally store the new buffer to the front
-    _impl->inPoolBuffer = true;
+    _inPoolBuffer = true;
     queue.push_front(std::move(newBuffer));
 }
 
