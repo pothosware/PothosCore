@@ -56,6 +56,7 @@ static OrderedVarMap extractVariableMap(const Poco::JSON::Object::Ptr &obj, cons
 {
     OrderedVarMap result;
     size_t i = 0;
+    if (not obj->has(key)) return result;
 
     //ordered array of variables format
     if (obj->isArray(key)) for (const auto &elem : *obj->getArray(key))
