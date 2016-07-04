@@ -50,12 +50,42 @@ static std::vector<Pothos::Proxy> evalArgsArray(
     return Pothos::Object(args).convert<std::vector<Pothos::Proxy>>();
 }
 
+typedef std::vector<std::pair<std::string, Poco::Dynamic::Var>> OrderedVarMap;
+
+static OrderedVarMap extractVariableMap(const Poco::JSON::Object::Ptr &obj, const std::string &key, const std::string &what)
+{
+    OrderedVarMap result;
+    size_t i = 0;
+
+    //ordered array of variables format
+    if (obj->isArray(key)) for (const auto &elem : *obj->getArray(key))
+    {
+        const std::string &what_i = what + "[" + std::to_string(i++) + "]";
+        if (elem.type() != typeid(Poco::JSON::Object::Ptr)) throw Pothos::DataFormatException(what_i+" not an object");
+        const auto varObj = elem.extract<Poco::JSON::Object::Ptr>();
+        if (not varObj->has("name")) throw Pothos::DataFormatException(what_i+" missing 'name' field");
+        if (not varObj->has("value")) throw Pothos::DataFormatException(what_i+" missing 'value' field");
+        result.emplace_back(varObj->getValue<std::string>("name"), varObj->get("value"));
+    }
+
+    //support unordered maps
+    else if (obj->isObject(key)) for (const auto &pair : *obj->getObject(key))
+    {
+        result.emplace_back(pair.first, pair.second);
+    }
+
+    //otherwise unknown
+    else throw Pothos::DataFormatException("variables must be an array or object");
+
+    return result;
+}
+
 /***********************************************************************
  * block factory - make blocks from JSON object
  **********************************************************************/
 static Pothos::Proxy makeBlock(
     const Pothos::Proxy &registry,
-    Pothos::Util::EvalEnvironment &evaluator,
+    const OrderedVarMap &globals,
     const Poco::JSON::Object::Ptr &blockObj)
 {
     const auto id = blockObj->getValue<std::string>("id");
@@ -63,6 +93,20 @@ static Pothos::Proxy makeBlock(
     if (not blockObj->has("path")) throw Pothos::DataFormatException(
         "Pothos::Topology::make()", "blocks["+id+"] missing 'path' field");
     const auto path = blockObj->getValue<std::string>("path");
+
+    //parse the local variables
+    auto locals = extractVariableMap(blockObj, "locals", id+".locals");
+
+    //prepend globals into the local variable space
+    locals.insert(locals.begin(), globals.begin(), globals.end());
+
+    //load the evaluator with variables
+    Pothos::Util::EvalEnvironment evaluator;
+    for (const auto &pair : locals)
+    {
+        const auto result = evalExpression(evaluator, pair.second);
+        evaluator.registerConstantObj(pair.first, result);
+    }
 
     //load up the constructor args
     Poco::JSON::Array::Ptr argsArray;
@@ -141,24 +185,8 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
         threadPools[name] = env->findProxy("Pothos/ThreadPool").callProxy("new", args);
     }
 
-    //register global variables
-    Poco::JSON::Array::Ptr globalsArray;
-    if (topObj->isArray("globals")) globalsArray = topObj->getArray("globals");
-    if (globalsArray) for (size_t i = 0; i < globalsArray->size(); i++)
-    {
-        if (not globalsArray->isObject(i)) throw Pothos::DataFormatException(
-            "Pothos::Topology::make()", "globals["+std::to_string(i)+"] must be an object");
-        const auto &globalVarObj = globalsArray->getObject(i);
-        if (not globalVarObj->has("name")) throw Pothos::DataFormatException(
-            "Pothos::Topology::make()", "globals["+std::to_string(i)+"] missing 'name' field");
-        const auto name = globalVarObj->getValue<std::string>("name");
-        if (not globalVarObj->has("value")) throw Pothos::DataFormatException(
-            "Pothos::Topology::make()", "globals["+std::to_string(i)+"] missing 'value' field");
-
-        //evaluate and store the result into the evaluator's constants
-        const auto value = evalExpression(evaluator, globalVarObj->get("value"));
-        evaluator.registerConstantObj(name, value);
-    }
+    //parse global variables
+    const auto globals = extractVariableMap(topObj, "globals", "globals");
 
     //create the topology and add it to the blocks
     //the IDs 'self', 'this', and '' can be used
@@ -179,7 +207,7 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
         if (not blockObj->has("id")) throw Pothos::DataFormatException(
             "Pothos::Topology::make()", "blocks["+std::to_string(i)+"] missing 'id' field");
         const auto id = blockObj->getValue<std::string>("id");
-        blocks[id] = makeBlock(registry, evaluator, blockObj);
+        blocks[id] = makeBlock(registry, globals, blockObj);
 
         //set the thread pool
         const auto threadPoolName = blockObj->optValue<std::string>("threadPool", "default");
