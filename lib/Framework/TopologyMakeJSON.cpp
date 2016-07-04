@@ -210,10 +210,10 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
         blocks[id] = makeBlock(registry, globals, blockObj);
 
         //set the thread pool
-        const auto threadPoolName = blockObj->optValue<std::string>("threadPool", "default");
+        const auto threadPoolName = blockObj->optValue<std::string>("threadPool", "");
         auto threadPoolIt = threadPools.find(threadPoolName);
         if (threadPoolIt != threadPools.end()) blocks[id].callVoid("setThreadPool", threadPoolIt->second);
-        else if (threadPoolName != "default") throw Pothos::DataFormatException(
+        else if (not threadPoolName.empty()) throw Pothos::DataFormatException(
             "Pothos::Topology::make()", "blocks["+id+"] unknown threadPool = " + threadPoolName);
     }
 
