@@ -38,6 +38,29 @@ void Pothos::OutputPort::setAlias(const std::string &alias)
     _alias = alias;
 }
 
+Pothos::BufferChunk Pothos::OutputPort::getBuffer(const size_t numElements)
+{
+    const size_t numBytes = numElements*_dtype.size();
+
+    //use the front buffer is possible
+    {
+        std::lock_guard<Util::SpinLock> lock(_bufferManagerLock);
+        Pothos::BufferChunk out(_bufferManager->front());
+        if (out.length >= numBytes)
+        {
+            out.dtype = _dtype;
+            out.length = numBytes;
+            _bufferManager->pop(out.length);
+            return out;
+        }
+    }
+
+    //otherwise use the internal pool
+    auto out = _bufferPool.get(numBytes);
+    out.dtype = _dtype;
+    return out;
+}
+
 void Pothos::OutputPort::_postMessage(const Object &async)
 {
     const auto token = this->tokenManagerPop();
