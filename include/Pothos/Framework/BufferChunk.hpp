@@ -14,6 +14,7 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/SharedBuffer.hpp>
 #include <Pothos/Framework/ManagedBuffer.hpp>
+#include <utility> //move
 
 namespace Pothos {
 
@@ -247,6 +248,114 @@ inline bool operator==(const BufferChunk &lhs, const BufferChunk &rhs);
 inline bool Pothos::operator==(const Pothos::BufferChunk &lhs, const Pothos::BufferChunk &rhs)
 {
     return lhs.address == rhs.address and lhs.length == rhs.length and lhs.getBuffer() == rhs.getBuffer();
+}
+
+inline Pothos::BufferChunk::BufferChunk(void):
+    address(0),
+    length(0),
+    _nextBuffers(0)
+{
+    return;
+}
+
+inline Pothos::BufferChunk::BufferChunk(const size_t numBytes):
+    address(0),
+    length(numBytes),
+    _buffer(Pothos::SharedBuffer::make(numBytes)),
+    _nextBuffers(0)
+{
+    address = _buffer.getAddress();
+}
+
+inline Pothos::BufferChunk::BufferChunk(const DType &dtype, const size_t numElems):
+    address(0),
+    length(dtype.size()*numElems),
+    dtype(dtype),
+    _buffer(Pothos::SharedBuffer::make(length)),
+    _nextBuffers(0)
+{
+    address = _buffer.getAddress();
+}
+
+inline Pothos::BufferChunk::BufferChunk(const SharedBuffer &buffer):
+    address(buffer.getAddress()),
+    length(buffer.getLength()),
+    _buffer(buffer),
+    _nextBuffers(0)
+{
+    return;
+}
+
+inline Pothos::BufferChunk::BufferChunk(const ManagedBuffer &buffer):
+    address(buffer.getBuffer().getAddress()),
+    length(buffer.getBuffer().getLength()),
+    _buffer(buffer.getBuffer()),
+    _managedBuffer(buffer),
+    _nextBuffers(0)
+{
+    return;
+}
+
+inline Pothos::BufferChunk::BufferChunk(const BufferChunk &other):
+    address(other.address),
+    length(other.length),
+    dtype(other.dtype),
+    _buffer(other._buffer),
+    _managedBuffer(other._managedBuffer)
+{
+    _incrNextBuffers();
+}
+
+inline Pothos::BufferChunk::BufferChunk(BufferChunk &&other):
+    address(std::move(other.address)),
+    length(std::move(other.length)),
+    dtype(std::move(other.dtype)),
+    _buffer(std::move(other._buffer)),
+    _managedBuffer(std::move(other._managedBuffer)),
+    _nextBuffers(std::move(other._nextBuffers))
+{
+    other._nextBuffers = 0;
+}
+
+inline Pothos::BufferChunk::~BufferChunk(void)
+{
+    _decrNextBuffers();
+}
+
+inline Pothos::BufferChunk &Pothos::BufferChunk::operator=(const BufferChunk &other)
+{
+    _decrNextBuffers();
+    address = other.address;
+    length = other.length;
+    dtype = other.dtype;
+    _buffer = other._buffer;
+    _managedBuffer = other._managedBuffer;
+    _incrNextBuffers();
+    return *this;
+}
+
+inline Pothos::BufferChunk &Pothos::BufferChunk::operator=(BufferChunk &&other)
+{
+    _decrNextBuffers();
+    address = std::move(other.address);
+    length = std::move(other.length);
+    dtype = std::move(other.dtype);
+    _buffer = std::move(other._buffer);
+    _managedBuffer = std::move(other._managedBuffer);
+    _nextBuffers = std::move(other._nextBuffers);
+    other._nextBuffers = 0;
+    return *this;
+}
+
+inline void Pothos::BufferChunk::clear(void)
+{
+    _decrNextBuffers();
+    address = 0;
+    length = 0;
+    dtype = Pothos::DType();
+    _buffer = Pothos::SharedBuffer();
+    _managedBuffer.reset();
+    _nextBuffers = 0;
 }
 
 inline size_t Pothos::BufferChunk::elements(void) const
