@@ -51,7 +51,7 @@ public:
      * documented by the ThreadPoolArgs JSON markup constructor.
      * A block can be associated to a particular thread pool
      * using the optional "threadPool" key and a pool name.
-     * The special thread pool named "default" will apply
+     * The special thread pool with empty name "" will apply
      * to all blocks that do not specify the "threadPool" key.
      *
      * <h3>Global variables</h3>
