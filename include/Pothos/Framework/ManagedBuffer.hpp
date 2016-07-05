@@ -12,6 +12,8 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Framework/SharedBuffer.hpp>
 #include <memory> //shared_ptr
+#include <atomic>
+#include <cassert>
 
 namespace Pothos {
 
@@ -115,8 +117,6 @@ public:
 
 private:
     friend BufferChunk;
-    void _incrRef(void);
-    void _decrRef(void);
     struct Impl; Impl *_impl;
     ManagedBuffer(Impl *impl);
     POTHOS_API friend bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
@@ -130,9 +130,96 @@ inline bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
 
 } //namespace Pothos
 
+struct Pothos::ManagedBuffer::Impl
+{
+    Impl(void);
+
+    std::atomic<int> counter;
+    std::weak_ptr<BufferManager> weakManager;
+    SharedBuffer buffer;
+    size_t slabIndex;
+    Pothos::ManagedBuffer::Impl *nextBuffer;
+
+    void incr(void)
+    {
+        counter++;
+    }
+
+    void decr(void)
+    {
+        //decrement the counter, and handle the last ref case
+        if (counter.fetch_sub(1) == 1) this->cleanup();
+    }
+
+    void cleanup(void);
+};
+
+inline Pothos::ManagedBuffer::ManagedBuffer(void):
+    _impl(nullptr)
+{
+    return;
+}
+
 inline Pothos::ManagedBuffer::operator bool(void) const
 {
     return _impl != nullptr;
+}
+
+inline void Pothos::ManagedBuffer::reset(void)
+{
+    if (_impl != nullptr) _impl->decr();
+    _impl = nullptr;
+}
+
+inline const Pothos::SharedBuffer &Pothos::ManagedBuffer::getBuffer(void) const
+{
+    assert(*this);
+    return _impl->buffer;
+}
+
+inline size_t Pothos::ManagedBuffer::getSlabIndex(void) const
+{
+    assert(*this);
+    return _impl->slabIndex;
+}
+
+inline Pothos::ManagedBuffer::~ManagedBuffer(void)
+{
+    if (_impl != nullptr) _impl->decr();
+}
+
+inline Pothos::ManagedBuffer::ManagedBuffer(const ManagedBuffer &obj):
+    _impl(obj._impl)
+{
+    if (_impl != nullptr) _impl->incr();
+}
+
+inline Pothos::ManagedBuffer::ManagedBuffer(ManagedBuffer &&obj):
+    _impl(obj._impl)
+{
+    obj._impl = nullptr;
+}
+
+inline Pothos::ManagedBuffer &Pothos::ManagedBuffer::operator=(const ManagedBuffer &obj)
+{
+    if (_impl != nullptr) _impl->decr();
+    this->_impl = obj._impl;
+    if (_impl != nullptr) _impl->incr();
+    return *this;
+}
+
+inline Pothos::ManagedBuffer &Pothos::ManagedBuffer::operator=(ManagedBuffer &&obj)
+{
+    if (_impl != nullptr) _impl->decr();
+    this->_impl = obj._impl;
+    obj._impl = nullptr;
+    return *this;
+}
+
+inline std::shared_ptr<Pothos::BufferManager> Pothos::ManagedBuffer::getBufferManager(void) const
+{
+    assert(*this);
+    return _impl->weakManager.lock();
 }
 
 inline bool Pothos::ManagedBuffer::operator<(const ManagedBuffer &rhs) const
@@ -143,6 +230,30 @@ inline bool Pothos::ManagedBuffer::operator<(const ManagedBuffer &rhs) const
 inline bool Pothos::ManagedBuffer::unique(void) const
 {
     return this->useCount() == 1;
+}
+
+inline size_t Pothos::ManagedBuffer::useCount(void) const
+{
+    if (*this) return _impl->counter;
+    return 0;
+}
+
+inline void Pothos::ManagedBuffer::setNextBuffer(const ManagedBuffer &next)
+{
+    assert(*this);
+    _impl->nextBuffer = next._impl;
+}
+
+inline Pothos::ManagedBuffer Pothos::ManagedBuffer::getNextBuffer(void) const
+{
+    assert(*this);
+    return Pothos::ManagedBuffer(_impl->nextBuffer);
+}
+
+inline Pothos::ManagedBuffer::ManagedBuffer(Impl *impl):
+    _impl(impl)
+{
+    if (_impl != nullptr) _impl->incr();
 }
 
 inline bool Pothos::operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs)

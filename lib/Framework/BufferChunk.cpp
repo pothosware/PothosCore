@@ -150,28 +150,33 @@ void Pothos::BufferChunk::append(const BufferChunk &other)
 void Pothos::BufferChunk::_incrNextBuffers(void)
 {
     _nextBuffers = 0;
-    auto mb = _managedBuffer;
-    if (not mb) return;
+    auto mb = _managedBuffer._impl;
+    if (mb == nullptr) return;
 
     int lengthRemain = this->getEnd() - _buffer.getEnd();
     while (lengthRemain > 0)
     {
-        mb = mb.getNextBuffer();
-        if (not mb) return;
+        mb = mb->nextBuffer;
+        if (mb == nullptr) return;
         _nextBuffers++;
-        mb._incrRef();
-        lengthRemain -= mb.getBuffer().getLength();
+        mb->incr();
+        lengthRemain -= mb->buffer.getLength();
     }
 }
 
 void Pothos::BufferChunk::_decrNextBuffers(void)
 {
-    auto mb = _managedBuffer;
+    auto mb = _managedBuffer._impl;
+    if (mb == nullptr) return;
+
+    auto next = mb->nextBuffer;
     while (_nextBuffers != 0)
     {
-        mb = mb.getNextBuffer();
-        assert(mb);
-        mb._decrRef();
+        mb = next;
+        assert(mb != nullptr);
+        //store next before possible deletion by decr()
+        next = mb->nextBuffer;
+        mb->decr();
         _nextBuffers--;
     }
 }
