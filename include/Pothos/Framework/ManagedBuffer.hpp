@@ -20,6 +20,7 @@ namespace Pothos {
 //! Forward declares
 class BufferManager;
 class BufferChunk;
+class BufferAccumulator;
 
 /*!
  * A ManagedBuffer is a buffer that interacts with a BufferManager.
@@ -117,6 +118,7 @@ public:
 
 private:
     friend BufferChunk;
+    friend BufferAccumulator;
     struct Impl; Impl *_impl;
     ManagedBuffer(Impl *impl);
     POTHOS_API friend bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);

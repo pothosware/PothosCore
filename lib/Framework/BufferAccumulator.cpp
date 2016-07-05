@@ -89,15 +89,19 @@ void Pothos::BufferAccumulator::push(const BufferChunk &buffer)
     restoreNextBuffers:
     //this buffer may have been an upstream amalgamation
     //restore its empty next buffers in the queue as well
-    auto mb = buffer.getManagedBuffer();
+    //mb is a temporary container that never changes references,
+    //we must set it to nullptr before exit to ensure accounting.
+    ManagedBuffer mb;
+    mb._impl = buffer.getManagedBuffer()._impl;
     for (size_t i = 0; i < buffer._nextBuffers; i++)
     {
-        mb = mb.getNextBuffer();
-        Pothos::BufferChunk bnext(mb);
+        mb._impl = mb._impl->nextBuffer;
+        BufferChunk bnext(mb);
         bnext.length = 0;
         if (queue.full()) queue.set_capacity(queue.size()*2);
         queue.push_back(std::move(bnext));
     }
+    mb._impl = nullptr;
 
     assert(not queue.empty());
 }
