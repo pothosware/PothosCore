@@ -5,7 +5,7 @@
 #include <Pothos/Framework/BufferManager.hpp>
 
 Pothos::ManagedBuffer::Impl::Impl(void):
-    counter(1),
+    counter(0),
     slabIndex(0),
     nextBuffer(nullptr)
 {
@@ -16,7 +16,13 @@ void Pothos::ManagedBuffer::Impl::cleanup(void)
 {
     //there is a manager to push to, otherwise delete
     std::shared_ptr<BufferManager> manager = weakManager.lock();
-    if (manager) manager->pushExternal(ManagedBuffer(this));
+    if (manager)
+    {
+        ManagedBuffer mb;
+        mb._impl = this;
+        manager->pushExternal(mb);
+        mb._impl = nullptr;
+    }
     else delete this;
 }
 

@@ -148,7 +148,7 @@ struct Pothos::ManagedBuffer::Impl
     void decr(void)
     {
         //decrement the counter, and handle the last ref case
-        if (counter.fetch_sub(1) == 1) this->cleanup();
+        if (counter.fetch_sub(1) == 0) this->cleanup();
     }
 
     void cleanup(void);
@@ -229,12 +229,12 @@ inline bool Pothos::ManagedBuffer::operator<(const ManagedBuffer &rhs) const
 
 inline bool Pothos::ManagedBuffer::unique(void) const
 {
-    return this->useCount() == 1;
+    return _impl->counter == 0;
 }
 
 inline size_t Pothos::ManagedBuffer::useCount(void) const
 {
-    if (*this) return _impl->counter;
+    if (*this) return _impl->counter+1;
     return 0;
 }
 
