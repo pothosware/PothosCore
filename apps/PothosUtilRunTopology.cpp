@@ -17,7 +17,7 @@ void PothosUtilBase::runTopology(void)
 {
     Pothos::ScopedInit init;
 
-    //read the complete file into a string
+    //sanity check the file
     const auto path = this->config().getString("inputFile");
     if (Poco::Path(path).getExtension() == "pth")
     {
@@ -25,13 +25,13 @@ void PothosUtilBase::runTopology(void)
             "Please export the design to the JSON topology format.");
     }
     std::ifstream ifs(Poco::Path::expand(path));
-    const std::string json((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    if (not ifs) throw Pothos::FileException("Cant open "+path+" for reading!");
 
     //parse the json formatted string into a JSON object
     Poco::JSON::Object::Ptr topObj;
     try
     {
-        const auto result = Poco::JSON::Parser().parse(json);
+        const auto result = Poco::JSON::Parser().parse(ifs);
         topObj = result.extract<Poco::JSON::Object::Ptr>();
     }
     catch (const Poco::Exception &ex)
