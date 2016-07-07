@@ -118,7 +118,7 @@ public:
      * Does this dtype specify a non-empty type?
      * \return false for default constructor/empty string
      */
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     /*!
      * Does this dtype represent a custom type?

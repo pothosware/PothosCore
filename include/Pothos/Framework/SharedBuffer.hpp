@@ -4,7 +4,7 @@
 /// The shared buffer is an RAII buffer that automatically deallocates.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -103,7 +103,7 @@ public:
     /*!
      * Is this shared buffer valid?
      */
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     /*!
      * Get access to the underlying memory container.

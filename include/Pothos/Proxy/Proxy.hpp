@@ -4,7 +4,7 @@
 /// Definitions for the Proxy wrapper class.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -52,7 +52,7 @@ public:
      * Is this Proxy have a handle?
      * \return true if the handle is set.
      */
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     //! Get the handle held in this proxy object.
     std::shared_ptr<ProxyHandle> getHandle(void) const;

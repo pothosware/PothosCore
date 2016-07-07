@@ -4,7 +4,7 @@
 /// Callable provides an opaque proxy for function or method calls.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -41,7 +41,7 @@ public:
      * Does the Callable hold a bound function?
      * \return true if callable holds a bound function
      */
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     /*!
      * Call into the function/method with opaque input and return types.

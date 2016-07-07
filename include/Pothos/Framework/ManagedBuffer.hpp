@@ -42,7 +42,7 @@ public:
      * Is this managed buffer valid?
      * \return true if it holds an allocation.
      */
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     /*!
      * Reset any reference held by the managed buffer.

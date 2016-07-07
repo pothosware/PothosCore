@@ -4,7 +4,7 @@
 /// Remote access proxy server interface.
 ///
 /// \copyright
-/// Copyright (c) 2013-2015 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -42,7 +42,7 @@ public:
     const std::string &getUri(void) const;
 
     //! Is this remove server active?
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     /*!
      * The locator port is the default port for running and locating a remote server.
