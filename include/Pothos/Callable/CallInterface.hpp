@@ -27,16 +27,16 @@ public:
     virtual ~CallInterface(void);
 
     //! Call a bound method/function with a return type and variable args
-    template <typename ReturnType, typename... Args>
-    ReturnType call(Args&&... args) const;
+    template <typename ReturnType, typename... ArgsType>
+    ReturnType call(ArgsType&&... args) const;
 
     //! Call a bound method/function with an Object return and variable args
-    template <typename... Args>
-    Object callObject(Args&&... args) const;
+    template <typename... ArgsType>
+    Object callObject(ArgsType&&... args) const;
 
     //! Call a bound method/function with a void return and variable args
-    template <typename... Args>
-    void callVoid(Args&&... args) const;
+    template <typename... ArgsType>
+    void callVoid(ArgsType&&... args) const;
 
 protected:
     /*!

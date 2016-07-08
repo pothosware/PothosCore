@@ -67,8 +67,8 @@ inline void loadProxyArgs(Proxy *, const ProxyEnvironment::Sptr &)
 }
 
 //! Recurse to fill the output with each arg
-template <typename Arg0, typename... Args>
-void loadProxyArgs(Proxy *out, const ProxyEnvironment::Sptr &env, const Arg0 &a0, const Args&... args)
+template <typename Arg0Type, typename... ArgsType>
+void loadProxyArgs(Proxy *out, const ProxyEnvironment::Sptr &env, const Arg0Type &a0, const ArgsType&... args)
 {
     *out++ = makeProxy(env, a0);
     loadProxyArgs(out, env, args...);
@@ -76,8 +76,8 @@ void loadProxyArgs(Proxy *out, const ProxyEnvironment::Sptr &env, const Arg0 &a0
 
 } //namespace Detail
 
-template <typename ReturnType, typename... Args>
-ReturnType Proxy::call(const std::string &name, const Args&... args) const
+template <typename ReturnType, typename... ArgsType>
+ReturnType Proxy::call(const std::string &name, const ArgsType&... args) const
 {
     Proxy proxyArgs[sizeof...(args)];
     Detail::loadProxyArgs(proxyArgs, this->getEnvironment(), args...);
@@ -87,16 +87,16 @@ ReturnType Proxy::call(const std::string &name, const Args&... args) const
     return Detail::convertProxy<ReturnType>(ret);
 }
 
-template <typename... Args>
-Proxy Proxy::callProxy(const std::string &name, const Args&... args) const
+template <typename... ArgsType>
+Proxy Proxy::callProxy(const std::string &name, const ArgsType&... args) const
 {
-    return this->call<Proxy, Args...>(name, args...);
+    return this->call<Proxy, ArgsType...>(name, args...);
 }
 
-template <typename... Args>
-void Proxy::callVoid(const std::string &name, const Args&... args) const
+template <typename... ArgsType>
+void Proxy::callVoid(const std::string &name, const ArgsType&... args) const
 {
-    this->call<Proxy, Args...>(name, args...);
+    this->call<Proxy, ArgsType...>(name, args...);
 }
 
 } //namespace Pothos

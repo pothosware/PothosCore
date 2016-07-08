@@ -26,19 +26,19 @@ inline void loadObjArgs(Object *)
 }
 
 //! Recurse to fill the output with each arg
-template <typename A0, typename... Args>
-void loadObjArgs(Object *out, A0 &&a0, Args&&... args)
+template <typename Arg0Type, typename... ArgsType>
+void loadObjArgs(Object *out, Arg0Type &&a0, ArgsType&&... args)
 {
-    *out++ = Object(std::forward<A0>(a0));
-    loadObjArgs(out, std::forward<Args>(args)...);
+    *out++ = Object(std::forward<Arg0Type>(a0));
+    loadObjArgs(out, std::forward<ArgsType>(args)...);
 }
 
 } //namespace Detail
 
-template <typename ReturnType, typename... Args>
-ReturnType CallInterface::call(Args&&... args) const
+template <typename ReturnType, typename... ArgsType>
+ReturnType CallInterface::call(ArgsType&&... args) const
 {
-    Object r = this->callObject(std::forward<Args>(args)...);
+    Object r = this->callObject(std::forward<ArgsType>(args)...);
     try
     {
         return r.convert<ReturnType>();
@@ -49,18 +49,18 @@ ReturnType CallInterface::call(Args&&... args) const
     }
 }
 
-template <typename... Args>
-Object CallInterface::callObject(Args&&... args) const
+template <typename... ArgsType>
+Object CallInterface::callObject(ArgsType&&... args) const
 {
     Object objArgs[sizeof...(args)];
-    Detail::loadObjArgs(objArgs, std::forward<Args>(args)...);
+    Detail::loadObjArgs(objArgs, std::forward<ArgsType>(args)...);
     return this->opaqueCall(objArgs, sizeof...(args));
 }
 
-template <typename... Args>
-void CallInterface::callVoid(Args&&... args) const
+template <typename... ArgsType>
+void CallInterface::callVoid(ArgsType&&... args) const
 {
-    this->callObject(std::forward<Args>(args)...);
+    this->callObject(std::forward<ArgsType>(args)...);
 }
 
 } //namespace Pothos
