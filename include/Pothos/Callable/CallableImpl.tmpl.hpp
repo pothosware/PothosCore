@@ -38,63 +38,91 @@ Callable &Callable::bind(ValueType &&val, const size_t argNo)
 }
 
 namespace Detail {
-#for $NARGS in range($MAX_ARGS+1)
+
 /***********************************************************************
- * Function specialization for return type with $(NARGS) args
+ * Function specialization for return type with variable args
  **********************************************************************/
-template <typename ReturnType, $expand('typename A%d', $NARGS)>
-struct CallableFunctionContainer$(NARGS) : Detail::CallableContainer
+template <typename ReturnType, typename... ArgsType>
+class CallableFunctionContainer : public Detail::CallableContainer
 {
+public:
     template <typename FcnType>
-    CallableFunctionContainer$(NARGS)(const FcnType &fcn):
-        _fcn(std::bind(fcn, $expand('std::placeholders::_$(%d+1)', $NARGS)))
+    CallableFunctionContainer(const FcnType &fcn):
+        _fcn(fcn)
     {
         return;
     }
 
     size_t getNumArgs(void) const
     {
-        return $NARGS;
+        return sizeof...(ArgsType);
     }
 
-    const std::type_info &type(const int $optarg('argNo', $NARGS))
+    const std::type_info &type(const int argNo)
     {
-        #for $i in range($NARGS):
-        if (argNo == $i) return typeid(A$i);
-        #end for
+        return typeR<ArgsType..., ReturnType>(argNo);
+    }
+
+    Object call(const Object *args)
+    {
+        return call(args, typename Gens<sizeof...(ArgsType)>::Type());
+    }
+
+private:
+
+    //! implement recursive type() tail-case
+    template <typename T>
+    const std::type_info &typeR(const int argNo)
+    {
+        if (argNo == 0) return typeid(T);
         return typeid(ReturnType);
     }
 
-    Object call(const Object * $optarg('args', $NARGS))
+    //! implement recursive type() for pack iteration
+    template <typename T0, typename T1, typename... Ts>
+    const std::type_info &typeR(const int argNo)
     {
-        #for $i in range($NARGS):
-        auto &a$i = args[$i].extract<A$i>();
-        #end for
+        if (argNo == 0) return typeid(T0);
+        return typeR<T1, Ts...>(argNo-1);
+    }
+
+    //! sequence generator used to help index object arguments below
+    template<int...> struct Seq {};
+    template<int N, int... S> struct Gens : Gens<N-1, N-1, S...> {};
+    template<int... S> struct Gens<0, S...>{ typedef Seq<S...> Type; };
+
+    //! implement call() using a generator sequence to handle array access
+    template<int ...S>
+    Object call(const Object *args, Seq<S...>)
+    {
+        checkArgs(args); //fixes warning for 0 args case
         return CallHelper<
             decltype(_fcn), std::is_void<ReturnType>::value
-        >::call(_fcn, $expand('a%d', $NARGS));
+        >::call(_fcn, args[S].extract<ArgsType>()...);
     }
+
+    //! NOP call used to avoid warning above
+    void checkArgs(const Object *){}
 
     //! templated call of function for optional return type
     template <typename FcnType, bool Condition> struct CallHelper;
     template <typename FcnType> struct CallHelper<FcnType, false>
     {
-        static Object call(const FcnType &fcn, $expand('const A%d &a%d', $NARGS))
+        static Object call(const FcnType &fcn, const ArgsType&... args)
         {
-            return Object::make(fcn($expand('a%d', $NARGS)));
+            return Object::make(fcn(args...));
         }
     };
     template <typename FcnType> struct CallHelper<FcnType, true>
     {
-        static Object call(const FcnType &fcn, $expand('const A%d &a%d', $NARGS))
+        static Object call(const FcnType &fcn, const ArgsType&... args)
         {
-            fcn($expand('a%d', $NARGS)); return Object();
+            fcn(args...); return Object();
         }
     };
 
-    std::function<ReturnType($expand('A%d', $NARGS))> _fcn;
+    std::function<ReturnType(ArgsType...)> _fcn;
 };
-#end for
 
 template <typename ClassType, typename... ArgsType>
 ClassType CallableFactoryWrapper(const ArgsType&... args)
@@ -116,31 +144,31 @@ std::shared_ptr<ClassType> CallableFactorySharedWrapper(const ArgsType&... args)
 
 } //namespace Detail
 
+template <typename ReturnType, typename ClassType, typename... ArgsType>
+Callable::Callable(ReturnType(ClassType::*fcn)(ArgsType...)):
+    _impl(new Detail::CallableFunctionContainer<ReturnType, ClassType &, ArgsType...>(fcn))
+{
+    return;
+}
+
+template <typename ReturnType, typename ClassType, typename... ArgsType>
+Callable::Callable(ReturnType(ClassType::*fcn)(ArgsType...) const):
+    _impl(new Detail::CallableFunctionContainer<ReturnType, const ClassType &, ArgsType...>(fcn))
+{
+    return;
+}
+
+template <typename ReturnType, typename... ArgsType>
+Callable::Callable(ReturnType(*fcn)(ArgsType...)):
+    _impl(new Detail::CallableFunctionContainer<ReturnType, ArgsType...>(fcn))
+{
+    return;
+}
+
 #for $NARGS in range($MAX_ARGS)
 /***********************************************************************
  * Templated factory/constructor calls with $(NARGS) args
  **********************************************************************/
-template <typename ReturnType, typename ClassType, $expand('typename A%d', $NARGS)>
-Callable::Callable(ReturnType(ClassType::*fcn)($expand('A%d', $NARGS))):
-    _impl(new Detail::CallableFunctionContainer$(NARGS+1)<ReturnType, ClassType &, $expand('A%d', $NARGS)>(fcn))
-{
-    return;
-}
-
-template <typename ReturnType, typename ClassType, $expand('typename A%d', $NARGS)>
-Callable::Callable(ReturnType(ClassType::*fcn)($expand('A%d', $NARGS)) const):
-    _impl(new Detail::CallableFunctionContainer$(NARGS+1)<ReturnType, const ClassType &, $expand('A%d', $NARGS)>(fcn))
-{
-    return;
-}
-
-template <typename ReturnType, $expand('typename A%d', $NARGS)>
-Callable::Callable(ReturnType(*fcn)($expand('A%d', $NARGS))):
-    _impl(new Detail::CallableFunctionContainer$(NARGS)<ReturnType, $expand('A%d', $NARGS)>(fcn))
-{
-    return;
-}
-
 template <$expand('typename A%d', $NARGS), typename ReturnType, typename ClassType>
 Callable Callable::make(ReturnType(ClassType::*fcn)($expand('A%d', $NARGS)))
 {

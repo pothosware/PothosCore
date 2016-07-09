@@ -109,19 +109,19 @@ public:
      */
     std::string toString(void) const;
 
+    //! Create a Callable for a class method with variable args
+    template <typename ReturnType, typename ClassType, typename... ArgsType>
+    Callable(ReturnType(ClassType::*fcn)(ArgsType...));
+
+    //! Create a Callable for a const class method with variable args
+    template <typename ReturnType, typename ClassType, typename... ArgsType>
+    Callable(ReturnType(ClassType::*fcn)(ArgsType...) const);
+
+    //! Create a Callable for a function with variable args
+    template <typename ReturnType, typename... ArgsType>
+    Callable(ReturnType(*fcn)(ArgsType...));
+
     #for $NARGS in range($MAX_ARGS)
-    //! Create a Callable for a class method with $NARGS args
-    template <typename ReturnType, typename ClassType, $expand('typename A%d', $NARGS)>
-    Callable(ReturnType(ClassType::*fcn)($expand('A%d', $NARGS)));
-
-    //! Create a Callable for a const class method with $NARGS args
-    template <typename ReturnType, typename ClassType, $expand('typename A%d', $NARGS)>
-    Callable(ReturnType(ClassType::*fcn)($expand('A%d', $NARGS)) const);
-
-    //! Create a Callable for a function with $NARGS args
-    template <typename ReturnType, $expand('typename A%d', $NARGS)>
-    Callable(ReturnType(*fcn)($expand('A%d', $NARGS)));
-
     /*!
      * Create a Callable for a class method with $NARGS args.
      * Use make to specify explicit template arguments
