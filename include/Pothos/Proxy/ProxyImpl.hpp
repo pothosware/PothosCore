@@ -16,6 +16,7 @@
 #include <Pothos/Proxy/Environment.hpp>
 #include <type_traits> //enable_if
 #include <cassert>
+#include <array>
 
 namespace Pothos {
 
@@ -60,30 +61,15 @@ inline Proxy makeProxy(const ProxyEnvironment::Sptr &, const Proxy &value)
     return value;
 }
 
-//! The empty arguments tail case
-inline void loadProxyArgs(Proxy *, const ProxyEnvironment::Sptr &)
-{
-    return;
-}
-
-//! Recurse to fill the output with each arg
-template <typename Arg0Type, typename... ArgsType>
-void loadProxyArgs(Proxy *out, const ProxyEnvironment::Sptr &env, const Arg0Type &a0, const ArgsType&... args)
-{
-    *out++ = makeProxy(env, a0);
-    loadProxyArgs(out, env, args...);
-}
-
 } //namespace Detail
 
 template <typename ReturnType, typename... ArgsType>
 ReturnType Proxy::call(const std::string &name, const ArgsType&... args) const
 {
-    Proxy proxyArgs[sizeof...(args)];
-    Detail::loadProxyArgs(proxyArgs, this->getEnvironment(), args...);
+    const std::array<Proxy, sizeof...(ArgsType)> proxyArgs{Detail::makeProxy(this->getEnvironment(), args)...};
     auto handle = this->getHandle();
     assert(handle);
-    Proxy ret = handle->call(name, proxyArgs, sizeof...(args));
+    Proxy ret = handle->call(name, proxyArgs.data(), sizeof...(args));
     return Detail::convertProxy<ReturnType>(ret);
 }
 

@@ -14,26 +14,9 @@
 #include <Pothos/Callable/Exception.hpp>
 #include <Pothos/Object/ObjectImpl.hpp>
 #include <utility> //std::forward
+#include <array>
 
 namespace Pothos {
-
-namespace Detail {
-
-//! The empty arguments tail case
-inline void loadObjArgs(Object *)
-{
-    return;
-}
-
-//! Recurse to fill the output with each arg
-template <typename Arg0Type, typename... ArgsType>
-void loadObjArgs(Object *out, Arg0Type &&a0, ArgsType&&... args)
-{
-    *out++ = Object(std::forward<Arg0Type>(a0));
-    loadObjArgs(out, std::forward<ArgsType>(args)...);
-}
-
-} //namespace Detail
 
 template <typename ReturnType, typename... ArgsType>
 ReturnType CallInterface::call(ArgsType&&... args) const
@@ -52,9 +35,8 @@ ReturnType CallInterface::call(ArgsType&&... args) const
 template <typename... ArgsType>
 Object CallInterface::callObject(ArgsType&&... args) const
 {
-    Object objArgs[sizeof...(args)];
-    Detail::loadObjArgs(objArgs, std::forward<ArgsType>(args)...);
-    return this->opaqueCall(objArgs, sizeof...(args));
+    const std::array<Object, sizeof...(ArgsType)> objArgs{Object(std::forward<ArgsType>(args))...};
+    return this->opaqueCall(objArgs.data(), sizeof...(args));
 }
 
 template <typename... ArgsType>
