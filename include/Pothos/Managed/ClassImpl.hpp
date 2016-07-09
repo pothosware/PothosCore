@@ -4,7 +4,7 @@
 /// Template implementation details for ManagedClass.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -90,13 +90,13 @@ ManagedClass &ManagedClass::registerField(const std::string &name, ValueType Cla
     return *this;
 }
 
-template <typename ClassType>
+template <typename ClassType, typename... ArgsType>
 ManagedClass &ManagedClass::registerConstructor(void)
 {
     this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType>());
+    this->registerConstructor(Callable::factory<ClassType, ArgsType...>());
+    this->registerStaticMethod("new", Callable::factoryNew<ClassType, ArgsType...>());
+    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, ArgsType...>());
     return *this;
 }
 
@@ -123,16 +123,6 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
     return *this;
 }
 
-template <typename ClassType, typename A0>
-ManagedClass &ManagedClass::registerConstructor(void)
-{
-    this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType, A0>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType, A0>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, A0>());
-    return *this;
-}
-
 template <typename A0, typename ReturnType>
 ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0))
 {
@@ -153,16 +143,6 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
 {
     this->registerClass<ClassType>();
     this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename ClassType, typename A0, typename A1>
-ManagedClass &ManagedClass::registerConstructor(void)
-{
-    this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType, A0, A1>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType, A0, A1>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, A0, A1>());
     return *this;
 }
 
@@ -189,16 +169,6 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
     return *this;
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2>
-ManagedClass &ManagedClass::registerConstructor(void)
-{
-    this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType, A0, A1, A2>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType, A0, A1, A2>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, A0, A1, A2>());
-    return *this;
-}
-
 template <typename A0, typename A1, typename A2, typename ReturnType>
 ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2))
 {
@@ -219,16 +189,6 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
 {
     this->registerClass<ClassType>();
     this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-ManagedClass &ManagedClass::registerConstructor(void)
-{
-    this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType, A0, A1, A2, A3>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType, A0, A1, A2, A3>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, A0, A1, A2, A3>());
     return *this;
 }
 
@@ -255,16 +215,6 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
     return *this;
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-ManagedClass &ManagedClass::registerConstructor(void)
-{
-    this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType, A0, A1, A2, A3, A4>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType, A0, A1, A2, A3, A4>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, A0, A1, A2, A3, A4>());
-    return *this;
-}
-
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType>
 ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4))
 {
@@ -285,16 +235,6 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
 {
     this->registerClass<ClassType>();
     this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-ManagedClass &ManagedClass::registerConstructor(void)
-{
-    this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType, A0, A1, A2, A3, A4, A5>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType, A0, A1, A2, A3, A4, A5>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, A0, A1, A2, A3, A4, A5>());
     return *this;
 }
 
@@ -321,16 +261,6 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
     return *this;
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-ManagedClass &ManagedClass::registerConstructor(void)
-{
-    this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType, A0, A1, A2, A3, A4, A5, A6>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType, A0, A1, A2, A3, A4, A5, A6>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, A0, A1, A2, A3, A4, A5, A6>());
-    return *this;
-}
-
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType>
 ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4, A5, A6))
 {
@@ -354,16 +284,6 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
     return *this;
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-ManagedClass &ManagedClass::registerConstructor(void)
-{
-    this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType, A0, A1, A2, A3, A4, A5, A6, A7>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType, A0, A1, A2, A3, A4, A5, A6, A7>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, A0, A1, A2, A3, A4, A5, A6, A7>());
-    return *this;
-}
-
 template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType>
 ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4, A5, A6, A7))
 {
@@ -384,16 +304,6 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
 {
     this->registerClass<ClassType>();
     this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-ManagedClass &ManagedClass::registerConstructor(void)
-{
-    this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType, A0, A1, A2, A3, A4, A5, A6, A7, A8>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType, A0, A1, A2, A3, A4, A5, A6, A7, A8>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, A0, A1, A2, A3, A4, A5, A6, A7, A8>());
     return *this;
 }
 

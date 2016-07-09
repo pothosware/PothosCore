@@ -4,7 +4,7 @@
 /// Template implementation details for ManagedClass.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -90,17 +90,17 @@ ManagedClass &ManagedClass::registerField(const std::string &name, ValueType Cla
     return *this;
 }
 
-#for $NARGS in range($MAX_ARGS)
-template <typename ClassType, $expand('typename A%d', $NARGS)>
+template <typename ClassType, typename... ArgsType>
 ManagedClass &ManagedClass::registerConstructor(void)
 {
     this->registerClass<ClassType>();
-    this->registerConstructor(Callable::factory<ClassType, $expand('A%d', $NARGS)>());
-    this->registerStaticMethod("new", Callable::factoryNew<ClassType, $expand('A%d', $NARGS)>());
-    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, $expand('A%d', $NARGS)>());
+    this->registerConstructor(Callable::factory<ClassType, ArgsType...>());
+    this->registerStaticMethod("new", Callable::factoryNew<ClassType, ArgsType...>());
+    this->registerStaticMethod("shared", Callable::factoryShared<ClassType, ArgsType...>());
     return *this;
 }
 
+#for $NARGS in range($MAX_ARGS)
 template <$expand('typename A%d', $NARGS), typename ReturnType>
 ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)($expand('A%d', $NARGS)))
 {

@@ -4,7 +4,7 @@
 /// Interface definition for a ManagedClass.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -55,14 +55,14 @@ public:
      */
     ManagedClass &registerToBaseClass(const Callable &toBase);
 
-    #for $NARGS in range($MAX_ARGS)
     /*!
-     * Register a constructor given class type and $NARGS argument types.
+     * Register a constructor given class type and variable argument types.
      * \throws ManagedClassTypeError if the class type differs from the registered type
      */
-    template <typename ClassType, $expand('typename A%d', $NARGS)>
+    template <typename ClassType, typename... ArgsType>
     ManagedClass &registerConstructor(void);
 
+    #for $NARGS in range($MAX_ARGS)
     /*!
      * Register a static method given class name and function pointer of $NARGS args.
      */
