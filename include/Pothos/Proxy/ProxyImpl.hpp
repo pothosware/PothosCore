@@ -66,7 +66,7 @@ inline Proxy makeProxy(const ProxyEnvironment::Sptr &, const Proxy &value)
 template <typename ReturnType, typename... ArgsType>
 ReturnType Proxy::call(const std::string &name, const ArgsType&... args) const
 {
-    const std::array<Proxy, sizeof...(ArgsType)> proxyArgs{Detail::makeProxy(this->getEnvironment(), args)...};
+    const std::array<Proxy, sizeof...(ArgsType)> proxyArgs{{Detail::makeProxy(this->getEnvironment(), args)...}};
     auto handle = this->getHandle();
     assert(handle);
     Proxy ret = handle->call(name, proxyArgs.data(), sizeof...(args));

@@ -35,7 +35,7 @@ ReturnType CallInterface::call(ArgsType&&... args) const
 template <typename... ArgsType>
 Object CallInterface::callObject(ArgsType&&... args) const
 {
-    const std::array<Object, sizeof...(ArgsType)> objArgs{Object(std::forward<ArgsType>(args))...};
+    const std::array<Object, sizeof...(ArgsType)> objArgs{{Object(std::forward<ArgsType>(args))...}};
     return this->opaqueCall(objArgs.data(), sizeof...(args));
 }
 
