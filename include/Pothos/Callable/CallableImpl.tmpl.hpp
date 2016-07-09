@@ -4,7 +4,7 @@
 /// Template implementation details for Callable.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -94,25 +94,25 @@ struct CallableFunctionContainer$(NARGS) : Detail::CallableContainer
 
     std::function<ReturnType($expand('A%d', $NARGS))> _fcn;
 };
-
-template <typename ClassType, $expand('typename A%d', $NARGS)>
-ClassType CallableFactoryWrapper($expand('const A%d &a%d', $NARGS))
-{
-    return ClassType($expand('a%d', $NARGS));
-}
-
-template <typename ClassType, $expand('typename A%d', $NARGS)>
-ClassType *CallableFactoryNewWrapper($expand('const A%d &a%d', $NARGS))
-{
-    return new ClassType($expand('a%d', $NARGS));
-}
-
-template <typename ClassType, $expand('typename A%d', $NARGS)>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper($expand('const A%d &a%d', $NARGS))
-{
-    return std::shared_ptr<ClassType>(new ClassType($expand('a%d', $NARGS)));
-}
 #end for
+
+template <typename ClassType, typename... ArgsType>
+ClassType CallableFactoryWrapper(const ArgsType&... args)
+{
+    return ClassType(args...);
+}
+
+template <typename ClassType, typename... ArgsType>
+ClassType *CallableFactoryNewWrapper(const ArgsType&... args)
+{
+    return new ClassType(args...);
+}
+
+template <typename ClassType, typename... ArgsType>
+std::shared_ptr<ClassType> CallableFactorySharedWrapper(const ArgsType&... args)
+{
+    return std::shared_ptr<ClassType>(new ClassType(args...));
+}
 
 } //namespace Detail
 
@@ -159,23 +159,23 @@ Callable Callable::make(ReturnType(*fcn)($expand('A%d', $NARGS)))
     return Callable(fcn);
 }
 
-template <typename ClassType, $expand('typename A%d', $NARGS)>
+#end for
+template <typename ClassType, typename... ArgsType>
 Callable Callable::factory(void)
 {
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, $expand('A%d', $NARGS)>);
+    return Callable(&Detail::CallableFactoryWrapper<ClassType, ArgsType...>);
 }
 
-template <typename ClassType, $expand('typename A%d', $NARGS)>
+template <typename ClassType, typename... ArgsType>
 Callable Callable::factoryNew(void)
 {
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, $expand('A%d', $NARGS)>);
+    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, ArgsType...>);
 }
 
-template <typename ClassType, $expand('typename A%d', $NARGS)>
+template <typename ClassType, typename... ArgsType>
 Callable Callable::factoryShared(void)
 {
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, $expand('A%d', $NARGS)>);
+    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, ArgsType...>);
 }
 
-#end for
 } //namespace Pothos

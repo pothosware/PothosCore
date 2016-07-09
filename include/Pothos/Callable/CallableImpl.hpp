@@ -4,7 +4,7 @@
 /// Template implementation details for Callable.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -87,24 +87,6 @@ struct CallableFunctionContainer0 : Detail::CallableContainer
 
     std::function<ReturnType()> _fcn;
 };
-
-template <typename ClassType>
-ClassType CallableFactoryWrapper()
-{
-    return ClassType();
-}
-
-template <typename ClassType>
-ClassType *CallableFactoryNewWrapper()
-{
-    return new ClassType();
-}
-
-template <typename ClassType>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper()
-{
-    return std::shared_ptr<ClassType>(new ClassType());
-}
 /***********************************************************************
  * Function specialization for return type with 1 args
  **********************************************************************/
@@ -156,24 +138,6 @@ struct CallableFunctionContainer1 : Detail::CallableContainer
 
     std::function<ReturnType(A0)> _fcn;
 };
-
-template <typename ClassType, typename A0>
-ClassType CallableFactoryWrapper(const A0 &a0)
-{
-    return ClassType(a0);
-}
-
-template <typename ClassType, typename A0>
-ClassType *CallableFactoryNewWrapper(const A0 &a0)
-{
-    return new ClassType(a0);
-}
-
-template <typename ClassType, typename A0>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const A0 &a0)
-{
-    return std::shared_ptr<ClassType>(new ClassType(a0));
-}
 /***********************************************************************
  * Function specialization for return type with 2 args
  **********************************************************************/
@@ -227,24 +191,6 @@ struct CallableFunctionContainer2 : Detail::CallableContainer
 
     std::function<ReturnType(A0, A1)> _fcn;
 };
-
-template <typename ClassType, typename A0, typename A1>
-ClassType CallableFactoryWrapper(const A0 &a0, const A1 &a1)
-{
-    return ClassType(a0, a1);
-}
-
-template <typename ClassType, typename A0, typename A1>
-ClassType *CallableFactoryNewWrapper(const A0 &a0, const A1 &a1)
-{
-    return new ClassType(a0, a1);
-}
-
-template <typename ClassType, typename A0, typename A1>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const A0 &a0, const A1 &a1)
-{
-    return std::shared_ptr<ClassType>(new ClassType(a0, a1));
-}
 /***********************************************************************
  * Function specialization for return type with 3 args
  **********************************************************************/
@@ -300,24 +246,6 @@ struct CallableFunctionContainer3 : Detail::CallableContainer
 
     std::function<ReturnType(A0, A1, A2)> _fcn;
 };
-
-template <typename ClassType, typename A0, typename A1, typename A2>
-ClassType CallableFactoryWrapper(const A0 &a0, const A1 &a1, const A2 &a2)
-{
-    return ClassType(a0, a1, a2);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2>
-ClassType *CallableFactoryNewWrapper(const A0 &a0, const A1 &a1, const A2 &a2)
-{
-    return new ClassType(a0, a1, a2);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const A0 &a0, const A1 &a1, const A2 &a2)
-{
-    return std::shared_ptr<ClassType>(new ClassType(a0, a1, a2));
-}
 /***********************************************************************
  * Function specialization for return type with 4 args
  **********************************************************************/
@@ -375,24 +303,6 @@ struct CallableFunctionContainer4 : Detail::CallableContainer
 
     std::function<ReturnType(A0, A1, A2, A3)> _fcn;
 };
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-ClassType CallableFactoryWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3)
-{
-    return ClassType(a0, a1, a2, a3);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-ClassType *CallableFactoryNewWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3)
-{
-    return new ClassType(a0, a1, a2, a3);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3)
-{
-    return std::shared_ptr<ClassType>(new ClassType(a0, a1, a2, a3));
-}
 /***********************************************************************
  * Function specialization for return type with 5 args
  **********************************************************************/
@@ -452,24 +362,6 @@ struct CallableFunctionContainer5 : Detail::CallableContainer
 
     std::function<ReturnType(A0, A1, A2, A3, A4)> _fcn;
 };
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-ClassType CallableFactoryWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4)
-{
-    return ClassType(a0, a1, a2, a3, a4);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-ClassType *CallableFactoryNewWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4)
-{
-    return new ClassType(a0, a1, a2, a3, a4);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4)
-{
-    return std::shared_ptr<ClassType>(new ClassType(a0, a1, a2, a3, a4));
-}
 /***********************************************************************
  * Function specialization for return type with 6 args
  **********************************************************************/
@@ -531,24 +423,6 @@ struct CallableFunctionContainer6 : Detail::CallableContainer
 
     std::function<ReturnType(A0, A1, A2, A3, A4, A5)> _fcn;
 };
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-ClassType CallableFactoryWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5)
-{
-    return ClassType(a0, a1, a2, a3, a4, a5);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-ClassType *CallableFactoryNewWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5)
-{
-    return new ClassType(a0, a1, a2, a3, a4, a5);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5)
-{
-    return std::shared_ptr<ClassType>(new ClassType(a0, a1, a2, a3, a4, a5));
-}
 /***********************************************************************
  * Function specialization for return type with 7 args
  **********************************************************************/
@@ -612,24 +486,6 @@ struct CallableFunctionContainer7 : Detail::CallableContainer
 
     std::function<ReturnType(A0, A1, A2, A3, A4, A5, A6)> _fcn;
 };
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-ClassType CallableFactoryWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6)
-{
-    return ClassType(a0, a1, a2, a3, a4, a5, a6);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-ClassType *CallableFactoryNewWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6)
-{
-    return new ClassType(a0, a1, a2, a3, a4, a5, a6);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6)
-{
-    return std::shared_ptr<ClassType>(new ClassType(a0, a1, a2, a3, a4, a5, a6));
-}
 /***********************************************************************
  * Function specialization for return type with 8 args
  **********************************************************************/
@@ -695,24 +551,6 @@ struct CallableFunctionContainer8 : Detail::CallableContainer
 
     std::function<ReturnType(A0, A1, A2, A3, A4, A5, A6, A7)> _fcn;
 };
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-ClassType CallableFactoryWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7)
-{
-    return ClassType(a0, a1, a2, a3, a4, a5, a6, a7);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-ClassType *CallableFactoryNewWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7)
-{
-    return new ClassType(a0, a1, a2, a3, a4, a5, a6, a7);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7)
-{
-    return std::shared_ptr<ClassType>(new ClassType(a0, a1, a2, a3, a4, a5, a6, a7));
-}
 /***********************************************************************
  * Function specialization for return type with 9 args
  **********************************************************************/
@@ -780,24 +618,6 @@ struct CallableFunctionContainer9 : Detail::CallableContainer
 
     std::function<ReturnType(A0, A1, A2, A3, A4, A5, A6, A7, A8)> _fcn;
 };
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-ClassType CallableFactoryWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8)
-{
-    return ClassType(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-ClassType *CallableFactoryNewWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8)
-{
-    return new ClassType(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8)
-{
-    return std::shared_ptr<ClassType>(new ClassType(a0, a1, a2, a3, a4, a5, a6, a7, a8));
-}
 /***********************************************************************
  * Function specialization for return type with 10 args
  **********************************************************************/
@@ -868,22 +688,22 @@ struct CallableFunctionContainer10 : Detail::CallableContainer
     std::function<ReturnType(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9)> _fcn;
 };
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9>
-ClassType CallableFactoryWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8, const A9 &a9)
+template <typename ClassType, typename... ArgsType>
+ClassType CallableFactoryWrapper(const ArgsType&... args)
 {
-    return ClassType(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+    return ClassType(args...);
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9>
-ClassType *CallableFactoryNewWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8, const A9 &a9)
+template <typename ClassType, typename... ArgsType>
+ClassType *CallableFactoryNewWrapper(const ArgsType&... args)
 {
-    return new ClassType(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+    return new ClassType(args...);
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8, const A9 &a9)
+template <typename ClassType, typename... ArgsType>
+std::shared_ptr<ClassType> CallableFactorySharedWrapper(const ArgsType&... args)
 {
-    return std::shared_ptr<ClassType>(new ClassType(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9));
+    return std::shared_ptr<ClassType>(new ClassType(args...));
 }
 
 } //namespace Detail
@@ -930,24 +750,6 @@ Callable Callable::make(ReturnType(*fcn)())
     return Callable(fcn);
 }
 
-template <typename ClassType>
-Callable Callable::factory(void)
-{
-    return Callable(&Detail::CallableFactoryWrapper<ClassType>);
-}
-
-template <typename ClassType>
-Callable Callable::factoryNew(void)
-{
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType>);
-}
-
-template <typename ClassType>
-Callable Callable::factoryShared(void)
-{
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType>);
-}
-
 /***********************************************************************
  * Templated factory/constructor calls with 1 args
  **********************************************************************/
@@ -988,24 +790,6 @@ template <typename A0, typename ReturnType>
 Callable Callable::make(ReturnType(*fcn)(A0))
 {
     return Callable(fcn);
-}
-
-template <typename ClassType, typename A0>
-Callable Callable::factory(void)
-{
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, A0>);
-}
-
-template <typename ClassType, typename A0>
-Callable Callable::factoryNew(void)
-{
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, A0>);
-}
-
-template <typename ClassType, typename A0>
-Callable Callable::factoryShared(void)
-{
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0>);
 }
 
 /***********************************************************************
@@ -1050,24 +834,6 @@ Callable Callable::make(ReturnType(*fcn)(A0, A1))
     return Callable(fcn);
 }
 
-template <typename ClassType, typename A0, typename A1>
-Callable Callable::factory(void)
-{
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, A0, A1>);
-}
-
-template <typename ClassType, typename A0, typename A1>
-Callable Callable::factoryNew(void)
-{
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, A0, A1>);
-}
-
-template <typename ClassType, typename A0, typename A1>
-Callable Callable::factoryShared(void)
-{
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1>);
-}
-
 /***********************************************************************
  * Templated factory/constructor calls with 3 args
  **********************************************************************/
@@ -1108,24 +874,6 @@ template <typename A0, typename A1, typename A2, typename ReturnType>
 Callable Callable::make(ReturnType(*fcn)(A0, A1, A2))
 {
     return Callable(fcn);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2>
-Callable Callable::factory(void)
-{
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, A0, A1, A2>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2>
-Callable Callable::factoryNew(void)
-{
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, A0, A1, A2>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2>
-Callable Callable::factoryShared(void)
-{
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2>);
 }
 
 /***********************************************************************
@@ -1170,24 +918,6 @@ Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3))
     return Callable(fcn);
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-Callable Callable::factory(void)
-{
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, A0, A1, A2, A3>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-Callable Callable::factoryNew(void)
-{
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, A0, A1, A2, A3>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-Callable Callable::factoryShared(void)
-{
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2, A3>);
-}
-
 /***********************************************************************
  * Templated factory/constructor calls with 5 args
  **********************************************************************/
@@ -1228,24 +958,6 @@ template <typename A0, typename A1, typename A2, typename A3, typename A4, typen
 Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3, A4))
 {
     return Callable(fcn);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-Callable Callable::factory(void)
-{
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, A0, A1, A2, A3, A4>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-Callable Callable::factoryNew(void)
-{
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, A0, A1, A2, A3, A4>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-Callable Callable::factoryShared(void)
-{
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2, A3, A4>);
 }
 
 /***********************************************************************
@@ -1290,24 +1002,6 @@ Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5))
     return Callable(fcn);
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-Callable Callable::factory(void)
-{
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, A0, A1, A2, A3, A4, A5>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-Callable Callable::factoryNew(void)
-{
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, A0, A1, A2, A3, A4, A5>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-Callable Callable::factoryShared(void)
-{
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2, A3, A4, A5>);
-}
-
 /***********************************************************************
  * Templated factory/constructor calls with 7 args
  **********************************************************************/
@@ -1348,24 +1042,6 @@ template <typename A0, typename A1, typename A2, typename A3, typename A4, typen
 Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6))
 {
     return Callable(fcn);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-Callable Callable::factory(void)
-{
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-Callable Callable::factoryNew(void)
-{
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-Callable Callable::factoryShared(void)
-{
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6>);
 }
 
 /***********************************************************************
@@ -1410,24 +1086,6 @@ Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6, A7))
     return Callable(fcn);
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-Callable Callable::factory(void)
-{
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6, A7>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-Callable Callable::factoryNew(void)
-{
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6, A7>);
-}
-
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-Callable Callable::factoryShared(void)
-{
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6, A7>);
-}
-
 /***********************************************************************
  * Templated factory/constructor calls with 9 args
  **********************************************************************/
@@ -1470,22 +1128,22 @@ Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6, A7, A8))
     return Callable(fcn);
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+template <typename ClassType, typename... ArgsType>
 Callable Callable::factory(void)
 {
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6, A7, A8>);
+    return Callable(&Detail::CallableFactoryWrapper<ClassType, ArgsType...>);
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+template <typename ClassType, typename... ArgsType>
 Callable Callable::factoryNew(void)
 {
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6, A7, A8>);
+    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, ArgsType...>);
 }
 
-template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+template <typename ClassType, typename... ArgsType>
 Callable Callable::factoryShared(void)
 {
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, A0, A1, A2, A3, A4, A5, A6, A7, A8>);
+    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, ArgsType...>);
 }
 
 } //namespace Pothos

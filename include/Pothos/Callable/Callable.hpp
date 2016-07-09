@@ -145,30 +145,6 @@ public:
     template <typename ReturnType>
     static Callable make(ReturnType(*fcn)());
 
-    /*!
-     * Create a Callable for a constructor with 0 args.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType>
-    static Callable factory(void);
-
-    /*!
-     * Create a Callable for a constructor with 0 args.
-     * The callable return type is a pointer to ClassType*.
-     * The user is responsible for managing the memory.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType>
-    static Callable factoryNew(void);
-
-    /*!
-     * Create a Callable for a constructor with 0 args.
-     * The callable return type is a std::shared_ptr<ClassType>.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType>
-    static Callable factoryShared(void);
-
     //! Create a Callable for a class method with 1 args
     template <typename ReturnType, typename ClassType, typename A0>
     Callable(ReturnType(ClassType::*fcn)(A0));
@@ -204,30 +180,6 @@ public:
      */
     template <typename A0, typename ReturnType>
     static Callable make(ReturnType(*fcn)(A0));
-
-    /*!
-     * Create a Callable for a constructor with 1 args.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0>
-    static Callable factory(void);
-
-    /*!
-     * Create a Callable for a constructor with 1 args.
-     * The callable return type is a pointer to ClassType*.
-     * The user is responsible for managing the memory.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0>
-    static Callable factoryNew(void);
-
-    /*!
-     * Create a Callable for a constructor with 1 args.
-     * The callable return type is a std::shared_ptr<ClassType>.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0>
-    static Callable factoryShared(void);
 
     //! Create a Callable for a class method with 2 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1>
@@ -265,30 +217,6 @@ public:
     template <typename A0, typename A1, typename ReturnType>
     static Callable make(ReturnType(*fcn)(A0, A1));
 
-    /*!
-     * Create a Callable for a constructor with 2 args.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1>
-    static Callable factory(void);
-
-    /*!
-     * Create a Callable for a constructor with 2 args.
-     * The callable return type is a pointer to ClassType*.
-     * The user is responsible for managing the memory.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1>
-    static Callable factoryNew(void);
-
-    /*!
-     * Create a Callable for a constructor with 2 args.
-     * The callable return type is a std::shared_ptr<ClassType>.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1>
-    static Callable factoryShared(void);
-
     //! Create a Callable for a class method with 3 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2));
@@ -324,30 +252,6 @@ public:
      */
     template <typename A0, typename A1, typename A2, typename ReturnType>
     static Callable make(ReturnType(*fcn)(A0, A1, A2));
-
-    /*!
-     * Create a Callable for a constructor with 3 args.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2>
-    static Callable factory(void);
-
-    /*!
-     * Create a Callable for a constructor with 3 args.
-     * The callable return type is a pointer to ClassType*.
-     * The user is responsible for managing the memory.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2>
-    static Callable factoryNew(void);
-
-    /*!
-     * Create a Callable for a constructor with 3 args.
-     * The callable return type is a std::shared_ptr<ClassType>.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2>
-    static Callable factoryShared(void);
 
     //! Create a Callable for a class method with 4 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3>
@@ -385,30 +289,6 @@ public:
     template <typename A0, typename A1, typename A2, typename A3, typename ReturnType>
     static Callable make(ReturnType(*fcn)(A0, A1, A2, A3));
 
-    /*!
-     * Create a Callable for a constructor with 4 args.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-    static Callable factory(void);
-
-    /*!
-     * Create a Callable for a constructor with 4 args.
-     * The callable return type is a pointer to ClassType*.
-     * The user is responsible for managing the memory.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-    static Callable factoryNew(void);
-
-    /*!
-     * Create a Callable for a constructor with 4 args.
-     * The callable return type is a std::shared_ptr<ClassType>.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-    static Callable factoryShared(void);
-
     //! Create a Callable for a class method with 5 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4));
@@ -444,30 +324,6 @@ public:
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType>
     static Callable make(ReturnType(*fcn)(A0, A1, A2, A3, A4));
-
-    /*!
-     * Create a Callable for a constructor with 5 args.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-    static Callable factory(void);
-
-    /*!
-     * Create a Callable for a constructor with 5 args.
-     * The callable return type is a pointer to ClassType*.
-     * The user is responsible for managing the memory.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-    static Callable factoryNew(void);
-
-    /*!
-     * Create a Callable for a constructor with 5 args.
-     * The callable return type is a std::shared_ptr<ClassType>.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-    static Callable factoryShared(void);
 
     //! Create a Callable for a class method with 6 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
@@ -505,30 +361,6 @@ public:
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType>
     static Callable make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5));
 
-    /*!
-     * Create a Callable for a constructor with 6 args.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-    static Callable factory(void);
-
-    /*!
-     * Create a Callable for a constructor with 6 args.
-     * The callable return type is a pointer to ClassType*.
-     * The user is responsible for managing the memory.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-    static Callable factoryNew(void);
-
-    /*!
-     * Create a Callable for a constructor with 6 args.
-     * The callable return type is a std::shared_ptr<ClassType>.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-    static Callable factoryShared(void);
-
     //! Create a Callable for a class method with 7 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6));
@@ -565,30 +397,6 @@ public:
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType>
     static Callable make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6));
 
-    /*!
-     * Create a Callable for a constructor with 7 args.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-    static Callable factory(void);
-
-    /*!
-     * Create a Callable for a constructor with 7 args.
-     * The callable return type is a pointer to ClassType*.
-     * The user is responsible for managing the memory.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-    static Callable factoryNew(void);
-
-    /*!
-     * Create a Callable for a constructor with 7 args.
-     * The callable return type is a std::shared_ptr<ClassType>.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-    static Callable factoryShared(void);
-
     //! Create a Callable for a class method with 8 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
     Callable(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7));
@@ -624,30 +432,6 @@ public:
      */
     template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType>
     static Callable make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6, A7));
-
-    /*!
-     * Create a Callable for a constructor with 8 args.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-    static Callable factory(void);
-
-    /*!
-     * Create a Callable for a constructor with 8 args.
-     * The callable return type is a pointer to ClassType*.
-     * The user is responsible for managing the memory.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-    static Callable factoryNew(void);
-
-    /*!
-     * Create a Callable for a constructor with 8 args.
-     * The callable return type is a std::shared_ptr<ClassType>.
-     * Template arguments must be explicitly specified.
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-    static Callable factoryShared(void);
 
     //! Create a Callable for a class method with 9 args
     template <typename ReturnType, typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
@@ -686,27 +470,27 @@ public:
     static Callable make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6, A7, A8));
 
     /*!
-     * Create a Callable for a constructor with 9 args.
+     * Create a Callable for a constructor with variable args.
      * Template arguments must be explicitly specified.
      */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+    template <typename ClassType, typename... ArgsType>
     static Callable factory(void);
 
     /*!
-     * Create a Callable for a constructor with 9 args.
+     * Create a Callable for a constructor with variable args.
      * The callable return type is a pointer to ClassType*.
      * The user is responsible for managing the memory.
      * Template arguments must be explicitly specified.
      */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+    template <typename ClassType, typename... ArgsType>
     static Callable factoryNew(void);
 
     /*!
-     * Create a Callable for a constructor with 9 args.
+     * Create a Callable for a constructor with variable args.
      * The callable return type is a std::shared_ptr<ClassType>.
      * Template arguments must be explicitly specified.
      */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+    template <typename ClassType, typename... ArgsType>
     static Callable factoryShared(void);
 
 private:

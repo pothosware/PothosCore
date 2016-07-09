@@ -146,31 +146,31 @@ public:
     template <$expand('typename A%d', $NARGS), typename ReturnType>
     static Callable make(ReturnType(*fcn)($expand('A%d', $NARGS)));
 
+    #end for
     /*!
-     * Create a Callable for a constructor with $NARGS args.
+     * Create a Callable for a constructor with variable args.
      * Template arguments must be explicitly specified.
      */
-    template <typename ClassType, $expand('typename A%d', $NARGS)>
+    template <typename ClassType, typename... ArgsType>
     static Callable factory(void);
 
     /*!
-     * Create a Callable for a constructor with $NARGS args.
+     * Create a Callable for a constructor with variable args.
      * The callable return type is a pointer to ClassType*.
      * The user is responsible for managing the memory.
      * Template arguments must be explicitly specified.
      */
-    template <typename ClassType, $expand('typename A%d', $NARGS)>
+    template <typename ClassType, typename... ArgsType>
     static Callable factoryNew(void);
 
     /*!
-     * Create a Callable for a constructor with $NARGS args.
+     * Create a Callable for a constructor with variable args.
      * The callable return type is a std::shared_ptr<ClassType>.
      * Template arguments must be explicitly specified.
      */
-    template <typename ClassType, $expand('typename A%d', $NARGS)>
+    template <typename ClassType, typename... ArgsType>
     static Callable factoryShared(void);
 
-    #end for
 private:
     std::vector<Object> _boundArgs;
     std::shared_ptr<Detail::CallableContainer> _impl;
