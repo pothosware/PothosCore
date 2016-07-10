@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Remote.hpp>
@@ -87,7 +87,7 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr, const bool closePi
     {
         std::string line; std::getline(is, line);
         if (line.empty()) continue;
-        const Poco::StringTokenizer tok(line, " ");
+        const Poco::StringTokenizer tok(line, " ", Poco::StringTokenizer::TOK_TRIM);
         if (tok.count() >= 2 and tok[0] == "Port:")
         {
             _impl->actualPort = tok[1];
