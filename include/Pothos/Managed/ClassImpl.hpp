@@ -101,14 +101,14 @@ ManagedClass &ManagedClass::registerConstructor(void)
 }
 
 template <typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)())
+ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(void))
 {
     this->registerStaticMethod(name, Callable(method));
     return *this;
 }
 
 template <typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)())
+ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(void))
 {
     this->registerClass<ClassType>();
     this->registerMethod(name, Callable(method));
@@ -116,220 +116,35 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
 }
 
 template <typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)() const)
+ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(void) const)
 {
     this->registerClass<ClassType>();
     this->registerMethod(name, Callable(method));
     return *this;
 }
 
-template <typename A0, typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0))
+template <typename... ArgsType, typename ReturnType>
+ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(ArgsType...))
 {
     this->registerStaticMethod(name, Callable(method));
     return *this;
 }
 
-template <typename A0, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0))
+template <typename... ArgsType, typename ReturnType, typename ClassType>
+ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(ArgsType...))
 {
     this->registerClass<ClassType>();
     this->registerMethod(name, Callable(method));
     return *this;
 }
 
-template <typename A0, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0) const)
+template <typename... ArgsType, typename ReturnType, typename ClassType>
+ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(ArgsType...) const)
 {
     this->registerClass<ClassType>();
     this->registerMethod(name, Callable(method));
     return *this;
 }
-
-template <typename A0, typename A1, typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1))
-{
-    this->registerStaticMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1))
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1) const)
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2))
-{
-    this->registerStaticMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2))
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2) const)
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3))
-{
-    this->registerStaticMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3))
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3) const)
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4))
-{
-    this->registerStaticMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4))
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4) const)
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4, A5))
-{
-    this->registerStaticMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5))
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5) const)
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4, A5, A6))
-{
-    this->registerStaticMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6))
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6) const)
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4, A5, A6, A7))
-{
-    this->registerStaticMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7))
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7) const)
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8))
-{
-    this->registerStaticMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8))
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8) const)
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
 
 template <typename ClassType>
 ManagedClass &ManagedClass::registerOpaqueConstructor(void)

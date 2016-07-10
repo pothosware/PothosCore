@@ -122,244 +122,55 @@ public:
     Callable(ReturnType(*fcn)(ArgsType...));
 
     /*!
-     * Create a Callable for a class method with 0 args.
+     * Create a Callable for a class method with no args.
      * Use make to specify explicit template arguments
      * to differentiate overloads with the same name.
      */
     template <typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)());
+    static Callable make(ReturnType(ClassType::*fcn)(void));
 
     /*!
-     * Create a Callable for a const class method with 0 args.
+     * Create a Callable for a const class method with no args.
      * Use make to specify explicit template arguments
      * to differentiate overloads with the same name.
      */
     template <typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)() const);
+    static Callable make(ReturnType(ClassType::*fcn)(void) const);
 
     /*!
-     * Create a Callable for a function with 0 args.
+     * Create a Callable for a function with no args.
      * Use make to specify explicit template arguments
      * to differentiate overloads with the same name.
      */
     template <typename ReturnType>
-    static Callable make(ReturnType(*fcn)());
+    static Callable make(ReturnType(*fcn)(void));
 
     /*!
-     * Create a Callable for a class method with 1 args.
+     * Create a Callable for a class method with variable args.
      * Use make to specify explicit template arguments
      * to differentiate overloads with the same name.
+     * In this case, the entire pack must be specified.
      */
-    template <typename A0, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0));
+    template <typename... ArgsType, typename ReturnType, typename ClassType>
+    static Callable make(ReturnType(ClassType::*fcn)(ArgsType...));
 
     /*!
-     * Create a Callable for a const class method with 1 args.
+     * Create a Callable for a const class method with variable args.
      * Use make to specify explicit template arguments
      * to differentiate overloads with the same name.
+     * In this case, the entire pack must be specified.
      */
-    template <typename A0, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0) const);
+    template <typename... ArgsType, typename ReturnType, typename ClassType>
+    static Callable make(ReturnType(ClassType::*fcn)(ArgsType...) const);
 
     /*!
-     * Create a Callable for a function with 1 args.
+     * Create a Callable for a function with variable args.
      * Use make to specify explicit template arguments
      * to differentiate overloads with the same name.
+     * In this case, the entire pack must be specified.
      */
-    template <typename A0, typename ReturnType>
-    static Callable make(ReturnType(*fcn)(A0));
-
-    /*!
-     * Create a Callable for a class method with 2 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1));
-
-    /*!
-     * Create a Callable for a const class method with 2 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1) const);
-
-    /*!
-     * Create a Callable for a function with 2 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename ReturnType>
-    static Callable make(ReturnType(*fcn)(A0, A1));
-
-    /*!
-     * Create a Callable for a class method with 3 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2));
-
-    /*!
-     * Create a Callable for a const class method with 3 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2) const);
-
-    /*!
-     * Create a Callable for a function with 3 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename ReturnType>
-    static Callable make(ReturnType(*fcn)(A0, A1, A2));
-
-    /*!
-     * Create a Callable for a class method with 4 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3));
-
-    /*!
-     * Create a Callable for a const class method with 4 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3) const);
-
-    /*!
-     * Create a Callable for a function with 4 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename ReturnType>
-    static Callable make(ReturnType(*fcn)(A0, A1, A2, A3));
-
-    /*!
-     * Create a Callable for a class method with 5 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4));
-
-    /*!
-     * Create a Callable for a const class method with 5 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4) const);
-
-    /*!
-     * Create a Callable for a function with 5 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType>
-    static Callable make(ReturnType(*fcn)(A0, A1, A2, A3, A4));
-
-    /*!
-     * Create a Callable for a class method with 6 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5));
-
-    /*!
-     * Create a Callable for a const class method with 6 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5) const);
-
-    /*!
-     * Create a Callable for a function with 6 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType>
-    static Callable make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5));
-
-    /*!
-     * Create a Callable for a class method with 7 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6));
-
-    /*!
-     * Create a Callable for a const class method with 7 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6) const);
-
-    /*!
-     * Create a Callable for a function with 7 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType>
-    static Callable make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6));
-
-    /*!
-     * Create a Callable for a class method with 8 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7));
-
-    /*!
-     * Create a Callable for a const class method with 8 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7) const);
-
-    /*!
-     * Create a Callable for a function with 8 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType>
-    static Callable make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6, A7));
-
-    /*!
-     * Create a Callable for a class method with 9 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7, A8));
-
-    /*!
-     * Create a Callable for a const class method with 9 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7, A8) const);
-
-    /*!
-     * Create a Callable for a function with 9 args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType>
-    static Callable make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6, A7, A8));
+    template <typename... ArgsType, typename ReturnType>
+    static Callable make(ReturnType(*fcn)(ArgsType...));
 
     /*!
      * Create a Callable for a constructor with variable args.

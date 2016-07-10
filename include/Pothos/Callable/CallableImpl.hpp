@@ -144,6 +144,9 @@ std::shared_ptr<ClassType> CallableFactorySharedWrapper(const ArgsType&... args)
 
 } //namespace Detail
 
+/***********************************************************************
+ * Templated factory/constructor calls with variable args
+ **********************************************************************/
 template <typename ReturnType, typename ClassType, typename... ArgsType>
 Callable::Callable(ReturnType(ClassType::*fcn)(ArgsType...)):
     _impl(new Detail::CallableFunctionContainer<ReturnType, ClassType &, ArgsType...>(fcn))
@@ -165,212 +168,38 @@ Callable::Callable(ReturnType(*fcn)(ArgsType...)):
     return;
 }
 
-/***********************************************************************
- * Templated factory/constructor calls with 0 args
- **********************************************************************/
 template <typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)())
+Callable Callable::make(ReturnType(ClassType::*fcn)(void))
 {
     return Callable(fcn);
 }
 
 template <typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)() const)
+Callable Callable::make(ReturnType(ClassType::*fcn)(void) const)
 {
     return Callable(fcn);
 }
 
 template <typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)())
+Callable Callable::make(ReturnType(*fcn)(void))
 {
     return Callable(fcn);
 }
 
-/***********************************************************************
- * Templated factory/constructor calls with 1 args
- **********************************************************************/
-template <typename A0, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0))
+template <typename... ArgsType, typename ReturnType, typename ClassType>
+Callable Callable::make(ReturnType(ClassType::*fcn)(ArgsType...))
 {
     return Callable(fcn);
 }
 
-template <typename A0, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0) const)
+template <typename... ArgsType, typename ReturnType, typename ClassType>
+Callable Callable::make(ReturnType(ClassType::*fcn)(ArgsType...) const)
 {
     return Callable(fcn);
 }
 
-template <typename A0, typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)(A0))
-{
-    return Callable(fcn);
-}
-
-/***********************************************************************
- * Templated factory/constructor calls with 2 args
- **********************************************************************/
-template <typename A0, typename A1, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1))
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1) const)
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)(A0, A1))
-{
-    return Callable(fcn);
-}
-
-/***********************************************************************
- * Templated factory/constructor calls with 3 args
- **********************************************************************/
-template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2))
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2) const)
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)(A0, A1, A2))
-{
-    return Callable(fcn);
-}
-
-/***********************************************************************
- * Templated factory/constructor calls with 4 args
- **********************************************************************/
-template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3))
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3) const)
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3))
-{
-    return Callable(fcn);
-}
-
-/***********************************************************************
- * Templated factory/constructor calls with 5 args
- **********************************************************************/
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4))
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4) const)
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3, A4))
-{
-    return Callable(fcn);
-}
-
-/***********************************************************************
- * Templated factory/constructor calls with 6 args
- **********************************************************************/
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5))
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5) const)
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5))
-{
-    return Callable(fcn);
-}
-
-/***********************************************************************
- * Templated factory/constructor calls with 7 args
- **********************************************************************/
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6))
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6) const)
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6))
-{
-    return Callable(fcn);
-}
-
-/***********************************************************************
- * Templated factory/constructor calls with 8 args
- **********************************************************************/
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7))
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7) const)
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6, A7))
-{
-    return Callable(fcn);
-}
-
-/***********************************************************************
- * Templated factory/constructor calls with 9 args
- **********************************************************************/
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7, A8))
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(A0, A1, A2, A3, A4, A5, A6, A7, A8) const)
-{
-    return Callable(fcn);
-}
-
-template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)(A0, A1, A2, A3, A4, A5, A6, A7, A8))
+template <typename... ArgsType, typename ReturnType>
+Callable Callable::make(ReturnType(*fcn)(ArgsType...))
 {
     return Callable(fcn);
 }

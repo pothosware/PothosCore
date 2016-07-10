@@ -38,9 +38,5 @@ endfunction(gen_tmpl)
 #declare generation rules for the templated sources
 #developers must manually configure with -DGEN_ENABLED for generation
 if(GEN_ENABLED AND PYTHON_EXECUTABLE)
-    gen_tmpl(${CMAKE_CURRENT_SOURCE_DIR}/Pothos/Callable/Callable.tmpl.hpp)
-    gen_tmpl(${CMAKE_CURRENT_SOURCE_DIR}/Pothos/Callable/CallableImpl.tmpl.hpp)
-    gen_tmpl(${CMAKE_CURRENT_SOURCE_DIR}/Pothos/Managed/Class.tmpl.hpp)
-    gen_tmpl(${CMAKE_CURRENT_SOURCE_DIR}/Pothos/Managed/ClassImpl.tmpl.hpp)
     add_custom_target(gen_tmpl ALL DEPENDS ${gen_tmpl_outputs})
 endif()
