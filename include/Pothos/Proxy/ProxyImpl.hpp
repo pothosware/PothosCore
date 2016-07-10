@@ -66,23 +66,23 @@ inline Proxy makeProxy(const ProxyEnvironment::Sptr &, const Proxy &value)
 template <typename ReturnType, typename... ArgsType>
 ReturnType Proxy::call(const std::string &name, const ArgsType&... args) const
 {
-    const std::array<Proxy, sizeof...(ArgsType)> proxyArgs{{Detail::makeProxy(this->getEnvironment(), args)...}};
-    auto handle = this->getHandle();
-    assert(handle);
-    Proxy ret = handle->call(name, proxyArgs.data(), sizeof...(args));
+    Proxy ret = this->callProxy<ArgsType...>(name, args...);
     return Detail::convertProxy<ReturnType>(ret);
 }
 
 template <typename... ArgsType>
 Proxy Proxy::callProxy(const std::string &name, const ArgsType&... args) const
 {
-    return this->call<Proxy, ArgsType...>(name, args...);
+    const std::array<Proxy, sizeof...(ArgsType)> proxyArgs{{Detail::makeProxy(this->getEnvironment(), args)...}};
+    auto handle = this->getHandle();
+    assert(handle);
+    return handle->call(name, proxyArgs.data(), sizeof...(args));
 }
 
 template <typename... ArgsType>
 void Proxy::callVoid(const std::string &name, const ArgsType&... args) const
 {
-    this->call<Proxy, ArgsType...>(name, args...);
+    this->callProxy<ArgsType...>(name, args...);
 }
 
 } //namespace Pothos
