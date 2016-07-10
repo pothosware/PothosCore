@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/InputPortImpl.hpp>
@@ -88,7 +88,7 @@ void Pothos::InputPort::asyncMessagesPush(const Pothos::Object &message, const P
             }
             else _asyncMessages.set_capacity(_asyncMessages.capacity()*2);
         }
-        _asyncMessages.push_back(std::make_pair(message, token));
+        _asyncMessages.emplace_back(message, token);
     }
 
     assert(_actor != nullptr);
@@ -116,7 +116,7 @@ void Pothos::InputPort::slotCallsPush(const Pothos::Object &args, const Pothos::
             }
             else _slotCalls.set_capacity(_slotCalls.capacity()*2);
         }
-        _slotCalls.push_back(std::make_pair(args, token));
+        _slotCalls.emplace_back(args, token);
     }
 
     assert(_actor != nullptr);

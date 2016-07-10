@@ -35,7 +35,7 @@ static std::vector<std::pair<std::string, std::string>> resolvePorts(
 
     if (not blockIsHier(blockObj))
     {
-        results.push_back(std::make_pair(blockId, portName));
+        results.emplace_back(blockId, portName);
         return results;
     }
 
@@ -62,7 +62,7 @@ static std::vector<std::pair<std::string, std::string>> resolvePorts(
         }
 
         //ignore pass-through connections in this loop
-        if (subId != blockId) results.push_back(std::make_pair(subId, subName));
+        if (subId != blockId) results.emplace_back(subId, subName);
     }
 
     return results;
