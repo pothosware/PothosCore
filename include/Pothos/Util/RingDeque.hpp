@@ -45,6 +45,10 @@ public:
     template <typename U>
     void push_front(U &&elem);
 
+    //! Emplace an element onto the front of the queue
+    template <typename... Args>
+    T &emplace_front(Args&&... args);
+
     //! Pop and element from the front of the queue
     void pop_front(void);
 
@@ -57,6 +61,10 @@ public:
     //! Push an element onto the back of the queue
     template <typename U>
     void push_back(U &&elem);
+
+    //! Emplace an element onto the back of the queue
+    template <typename... Args>
+    T &emplace_back(Args&&... args);
 
     //! Pop and element from the back of the queue
     void pop_back(void);
@@ -135,6 +143,17 @@ void RingDeque<T>::push_front(U &&elem)
 }
 
 template <typename T>
+template <typename... Args>
+T &RingDeque<T>::emplace_front(Args&&... args)
+{
+    assert(not this->full());
+    _frontIndex = size_t(_frontIndex + _container.size() - 1) % _container.size();
+    _container[_frontIndex] = T(std::forward<Args>(args)...);
+    _numElements++;
+    return _container[_frontIndex];
+}
+
+template <typename T>
 void RingDeque<T>::pop_front(void)
 {
     assert(not this->empty());
@@ -168,6 +187,17 @@ void RingDeque<T>::push_back(U &&elem)
     _backIndex = size_t(_backIndex + 1) % _container.size();
     _container[_backIndex] = std::forward<U>(elem);
     _numElements++;
+}
+
+template <typename T>
+template <typename... Args>
+T &RingDeque<T>::emplace_back(Args&&... args)
+{
+    assert(not this->full());
+    _backIndex = size_t(_backIndex + 1) % _container.size();
+    _container[_backIndex] = T(std::forward<Args>(args)...);
+    _numElements++;
+    return _container[_backIndex];
 }
 
 template <typename T>
