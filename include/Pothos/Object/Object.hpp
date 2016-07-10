@@ -58,7 +58,7 @@ public:
     /*!
      * Create a null Object.
      */
-    explicit Object(void);
+    Object(void);
 
     /*!
      * Create an object where type can be explicitly specified.
