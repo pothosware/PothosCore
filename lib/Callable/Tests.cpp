@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Callable.hpp>
@@ -199,7 +199,7 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_constructors)
 POTHOS_TEST_BLOCK("/callable/tests", test_callable_overloaded)
 {
     //bind a function (static method)
-    auto overloaded0 = Pothos::Callable::make<const int>(&TestClass::overloaded);
+    auto overloaded0 = Pothos::Callable::make<int>(&TestClass::overloaded);
     auto overloaded1 = Pothos::Callable::make<const long &>(&TestClass::overloaded);
     auto overloaded2 = Pothos::Callable::make<const std::string &>(&TestClass::overloaded);
 

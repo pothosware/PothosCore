@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
@@ -290,20 +290,20 @@ static auto managedBlock = Pothos::ManagedClass()
     //all of the setups with default args set
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setThreadPool))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, getThreadPool))
-    .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
-    .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
-    .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
-    .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
+    .registerMethod<const std::string &, const Pothos::DType &, const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
+    .registerMethod<size_t, const Pothos::DType &, const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupInput))
+    .registerMethod<const std::string &, const Pothos::DType &, const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
+    .registerMethod<size_t, const Pothos::DType &, const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, setupOutput))
 
-    .registerMethod("setupInput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupInput).bind("", 3))
-    .registerMethod("setupInput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupInput).bind("", 3).bind("byte", 2))
-    .registerMethod("setupInput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupInput).bind("", 3))
-    .registerMethod("setupInput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupInput).bind("", 3).bind("byte", 2))
+    .registerMethod("setupInput", Pothos::Callable::make<const std::string &, const Pothos::DType &, const std::string &>(&Pothos::Block::setupInput).bind("", 3))
+    .registerMethod("setupInput", Pothos::Callable::make<const std::string &, const Pothos::DType &, const std::string &>(&Pothos::Block::setupInput).bind("", 3).bind("byte", 2))
+    .registerMethod("setupInput", Pothos::Callable::make<size_t, const Pothos::DType &, const std::string &>(&Pothos::Block::setupInput).bind("", 3))
+    .registerMethod("setupInput", Pothos::Callable::make<size_t, const Pothos::DType &, const std::string &>(&Pothos::Block::setupInput).bind("", 3).bind("byte", 2))
 
-    .registerMethod("setupOutput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupOutput).bind("", 3))
-    .registerMethod("setupOutput", Pothos::Callable::make<const std::string &>(&Pothos::Block::setupOutput).bind("", 3).bind("byte", 2))
-    .registerMethod("setupOutput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupOutput).bind("", 3))
-    .registerMethod("setupOutput", Pothos::Callable::make<const size_t>(&Pothos::Block::setupOutput).bind("", 3).bind("byte", 2))
+    .registerMethod("setupOutput", Pothos::Callable::make<const std::string &, const Pothos::DType &, const std::string &>(&Pothos::Block::setupOutput).bind("", 3))
+    .registerMethod("setupOutput", Pothos::Callable::make<const std::string &, const Pothos::DType &, const std::string &>(&Pothos::Block::setupOutput).bind("", 3).bind("byte", 2))
+    .registerMethod("setupOutput", Pothos::Callable::make<size_t, const Pothos::DType &, const std::string &>(&Pothos::Block::setupOutput).bind("", 3))
+    .registerMethod("setupOutput", Pothos::Callable::make<size_t, const Pothos::DType &, const std::string &>(&Pothos::Block::setupOutput).bind("", 3).bind("byte", 2))
 
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSignal))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, registerSlot))
@@ -313,11 +313,11 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, inputs))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, allInputs))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, input))
-    .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, input))
+    .registerMethod<size_t>(POTHOS_FCN_TUPLE(Pothos::Block, input))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, outputs))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, allOutputs))
     .registerMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Block, output))
-    .registerMethod<const size_t>(POTHOS_FCN_TUPLE(Pothos::Block, output))
+    .registerMethod<size_t>(POTHOS_FCN_TUPLE(Pothos::Block, output))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, yield))
     .commit("Pothos/Block");
 

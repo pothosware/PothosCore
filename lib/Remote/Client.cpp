@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Remote.hpp>
@@ -190,6 +190,6 @@ static auto managedRemoteClient = Pothos::ManagedClass()
     .registerConstructor<Pothos::RemoteClient, std::string>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::RemoteClient, getIoStream))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::RemoteClient, makeEnvironment))
-    .registerStaticMethod<std::iostream &>(POTHOS_FCN_TUPLE(Pothos::RemoteClient, makeEnvironment))
-    .registerStaticMethod<std::istream &, std::ostream &>(POTHOS_FCN_TUPLE(Pothos::RemoteClient, makeEnvironment))
+    .registerStaticMethod<std::iostream &, const std::string &, const Pothos::ProxyEnvironmentArgs &>(POTHOS_FCN_TUPLE(Pothos::RemoteClient, makeEnvironment))
+    .registerStaticMethod<std::istream &, std::ostream &, const std::string &, const Pothos::ProxyEnvironmentArgs &>(POTHOS_FCN_TUPLE(Pothos::RemoteClient, makeEnvironment))
     .commit("Pothos/RemoteClient");

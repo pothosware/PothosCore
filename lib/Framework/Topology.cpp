@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -323,7 +323,7 @@ static auto managedTopology = Pothos::ManagedClass()
     .registerClass<Pothos::Topology>()
     .registerBaseClass<Pothos::Topology, Pothos::Connectable>()
     .registerStaticMethod<std::shared_ptr<Pothos::Topology>>(POTHOS_FCN_TUPLE(Pothos::Topology, make))
-    .registerStaticMethod<const std::string &, std::shared_ptr<Pothos::Topology>>(POTHOS_FCN_TUPLE(Pothos::Topology, make))
+    .registerStaticMethod<const std::string &>(POTHOS_FCN_TUPLE(Pothos::Topology, make))
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("subCommit", &topologySubCommit)
     .registerMethod("resolvePorts", &resolvePortsFromTopology)
