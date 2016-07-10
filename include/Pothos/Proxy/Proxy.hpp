@@ -72,15 +72,15 @@ public:
 
     //! Call a method with a return type and variable args
     template <typename ReturnType, typename... ArgsType>
-    ReturnType call(const std::string &name, const ArgsType&... args) const;
+    ReturnType call(const std::string &name, ArgsType&&... args) const;
 
     //! Call a method with a Proxy return and variable args
     template <typename... ArgsType>
-    Proxy callProxy(const std::string &name, const ArgsType&... args) const;
+    Proxy callProxy(const std::string &name, ArgsType&&... args) const;
 
     //! Call a method with a void return and variable args
     template <typename... ArgsType>
-    void callVoid(const std::string &name, const ArgsType&... args) const;
+    void callVoid(const std::string &name, ArgsType&&... args) const;
 
     /*!
      * Returns a negative integer, zero, or a positive integer as this object is

@@ -15,6 +15,7 @@
 #include <Pothos/Proxy/Handle.hpp>
 #include <Pothos/Proxy/Environment.hpp>
 #include <type_traits> //enable_if
+#include <utility> //std::forward
 #include <cassert>
 #include <array>
 
@@ -51,12 +52,15 @@ convertProxy(const Proxy &p)
  * or returns a proxy if the type is already a proxy
  **********************************************************************/
 template <typename T>
-Proxy makeProxy(const ProxyEnvironment::Sptr &env, const T &value)
+typename std::enable_if<!std::is_same<typename std::decay<T>::type, Proxy>::value, Proxy>::type
+makeProxy(const ProxyEnvironment::Sptr &env, T &&value)
 {
-    return env->makeProxy(value);
+    return env->makeProxy(std::forward<T>(value));
 }
 
-inline Proxy makeProxy(const ProxyEnvironment::Sptr &, const Proxy &value)
+template <typename T>
+typename std::enable_if<std::is_same<typename std::decay<T>::type, Proxy>::value, Proxy>::type
+makeProxy(const ProxyEnvironment::Sptr &, T &&value)
 {
     return value;
 }
@@ -64,25 +68,25 @@ inline Proxy makeProxy(const ProxyEnvironment::Sptr &, const Proxy &value)
 } //namespace Detail
 
 template <typename ReturnType, typename... ArgsType>
-ReturnType Proxy::call(const std::string &name, const ArgsType&... args) const
+ReturnType Proxy::call(const std::string &name, ArgsType&&... args) const
 {
-    Proxy ret = this->callProxy<ArgsType...>(name, args...);
+    Proxy ret = this->callProxy(name, std::forward<ArgsType>(args)...);
     return Detail::convertProxy<ReturnType>(ret);
 }
 
 template <typename... ArgsType>
-Proxy Proxy::callProxy(const std::string &name, const ArgsType&... args) const
+Proxy Proxy::callProxy(const std::string &name, ArgsType&&... args) const
 {
-    const std::array<Proxy, sizeof...(ArgsType)> proxyArgs{{Detail::makeProxy(this->getEnvironment(), args)...}};
+    const std::array<Proxy, sizeof...(ArgsType)> proxyArgs{{Detail::makeProxy(this->getEnvironment(), std::forward<ArgsType>(args))...}};
     auto handle = this->getHandle();
     assert(handle);
     return handle->call(name, proxyArgs.data(), sizeof...(args));
 }
 
 template <typename... ArgsType>
-void Proxy::callVoid(const std::string &name, const ArgsType&... args) const
+void Proxy::callVoid(const std::string &name, ArgsType&&... args) const
 {
-    this->callProxy<ArgsType...>(name, args...);
+    this->callProxy(name, std::forward<ArgsType>(args)...);
 }
 
 } //namespace Pothos
