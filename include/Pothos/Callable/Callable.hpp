@@ -151,7 +151,7 @@ public:
      * to differentiate overloads with the same name.
      * In this case, the entire pack must be specified.
      */
-    template <typename... ArgsType, typename ReturnType, typename ClassType>
+    template <typename ReturnType, typename ClassType, typename... ArgsType>
     static Callable make(ReturnType(ClassType::*fcn)(ArgsType...));
 
     /*!
@@ -160,7 +160,7 @@ public:
      * to differentiate overloads with the same name.
      * In this case, the entire pack must be specified.
      */
-    template <typename... ArgsType, typename ReturnType, typename ClassType>
+    template <typename ReturnType, typename ClassType, typename... ArgsType>
     static Callable make(ReturnType(ClassType::*fcn)(ArgsType...) const);
 
     /*!
@@ -169,7 +169,7 @@ public:
      * to differentiate overloads with the same name.
      * In this case, the entire pack must be specified.
      */
-    template <typename... ArgsType, typename ReturnType>
+    template <typename ReturnType, typename... ArgsType>
     static Callable make(ReturnType(*fcn)(ArgsType...));
 
     /*!

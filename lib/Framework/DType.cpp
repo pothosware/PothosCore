@@ -294,7 +294,7 @@ static auto managedDtype = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, isInteger))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, isSigned))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::DType, isComplex))
-    .registerStaticMethod<const Pothos::DType &, const Pothos::DType &>("equals", &Pothos::operator==)
+    .registerStaticMethod<bool, const Pothos::DType &, const Pothos::DType &>("equals", &Pothos::operator==)
     .commit("Pothos/DType");
 
 #include <Pothos/Object/Serialize.hpp>

@@ -149,14 +149,14 @@ std::shared_ptr<ClassType> CallableFactorySharedWrapper(const ArgsType&... args)
  **********************************************************************/
 template <typename ReturnType, typename ClassType, typename... ArgsType>
 Callable::Callable(ReturnType(ClassType::*fcn)(ArgsType...)):
-    _impl(new Detail::CallableFunctionContainer<ReturnType, ClassType &, ArgsType...>(fcn))
+    _impl(new Detail::CallableFunctionContainer<ReturnType, ClassType &, ArgsType...>(std::mem_fn(fcn)))
 {
     return;
 }
 
 template <typename ReturnType, typename ClassType, typename... ArgsType>
 Callable::Callable(ReturnType(ClassType::*fcn)(ArgsType...) const):
-    _impl(new Detail::CallableFunctionContainer<ReturnType, const ClassType &, ArgsType...>(fcn))
+    _impl(new Detail::CallableFunctionContainer<ReturnType, const ClassType &, ArgsType...>(std::mem_fn(fcn)))
 {
     return;
 }
@@ -186,19 +186,19 @@ Callable Callable::make(ReturnType(*fcn)(void))
     return Callable(fcn);
 }
 
-template <typename... ArgsType, typename ReturnType, typename ClassType>
+template <typename ReturnType, typename ClassType, typename... ArgsType>
 Callable Callable::make(ReturnType(ClassType::*fcn)(ArgsType...))
 {
     return Callable(fcn);
 }
 
-template <typename... ArgsType, typename ReturnType, typename ClassType>
+template <typename ReturnType, typename ClassType, typename... ArgsType>
 Callable Callable::make(ReturnType(ClassType::*fcn)(ArgsType...) const)
 {
     return Callable(fcn);
 }
 
-template <typename... ArgsType, typename ReturnType>
+template <typename ReturnType, typename... ArgsType>
 Callable Callable::make(ReturnType(*fcn)(ArgsType...))
 {
     return Callable(fcn);

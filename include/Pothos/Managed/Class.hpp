@@ -86,7 +86,7 @@ public:
      * Register a static method given class name and function pointer of variable args.
      * When specifying overloads using the ArgsType, the entire pack must be specified.
      */
-    template <typename... ArgsType, typename ReturnType>
+    template <typename ReturnType, typename... ArgsType>
     ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(ArgsType...));
 
     /*!
@@ -94,7 +94,7 @@ public:
      * When specifying overloads using the ArgsType, the entire pack must be specified.
      * \throws ManagedClassTypeError if the class type differs from the registered type
      */
-    template <typename... ArgsType, typename ReturnType, typename ClassType>
+    template <typename ReturnType, typename ClassType, typename... ArgsType>
     ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(ArgsType...));
 
     /*!
@@ -102,7 +102,7 @@ public:
      * When specifying overloads using the ArgsType, the entire pack must be specified.
      * \throws ManagedClassTypeError if the class type differs from the registered type
      */
-    template <typename... ArgsType, typename ReturnType, typename ClassType>
+    template <typename ReturnType, typename ClassType, typename... ArgsType>
     ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(ArgsType...) const);
 
     /*!

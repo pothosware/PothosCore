@@ -190,6 +190,6 @@ static auto managedRemoteClient = Pothos::ManagedClass()
     .registerConstructor<Pothos::RemoteClient, std::string>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::RemoteClient, getIoStream))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::RemoteClient, makeEnvironment))
-    .registerStaticMethod<std::iostream &, const std::string &, const Pothos::ProxyEnvironmentArgs &>(POTHOS_FCN_TUPLE(Pothos::RemoteClient, makeEnvironment))
-    .registerStaticMethod<std::istream &, std::ostream &, const std::string &, const Pothos::ProxyEnvironmentArgs &>(POTHOS_FCN_TUPLE(Pothos::RemoteClient, makeEnvironment))
+    .registerStaticMethod<Pothos::ProxyEnvironment::Sptr, std::iostream &, const std::string &, const Pothos::ProxyEnvironmentArgs &>(POTHOS_FCN_TUPLE(Pothos::RemoteClient, makeEnvironment))
+    .registerStaticMethod<Pothos::ProxyEnvironment::Sptr, std::istream &, std::ostream &, const std::string &, const Pothos::ProxyEnvironmentArgs &>(POTHOS_FCN_TUPLE(Pothos::RemoteClient, makeEnvironment))
     .commit("Pothos/RemoteClient");

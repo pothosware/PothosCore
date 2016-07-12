@@ -123,14 +123,14 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
     return *this;
 }
 
-template <typename... ArgsType, typename ReturnType>
+template <typename ReturnType, typename... ArgsType>
 ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(ArgsType...))
 {
     this->registerStaticMethod(name, Callable(method));
     return *this;
 }
 
-template <typename... ArgsType, typename ReturnType, typename ClassType>
+template <typename ReturnType, typename ClassType, typename... ArgsType>
 ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(ArgsType...))
 {
     this->registerClass<ClassType>();
@@ -138,7 +138,7 @@ ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(C
     return *this;
 }
 
-template <typename... ArgsType, typename ReturnType, typename ClassType>
+template <typename ReturnType, typename ClassType, typename... ArgsType>
 ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(ArgsType...) const)
 {
     this->registerClass<ClassType>();
