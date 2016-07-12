@@ -161,7 +161,7 @@ public:
      * Is this buffer chunk valid?
      * \return true when there is underlying memory
      */
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     /*!
      * Make this buffer chunk null by clearing its contents.

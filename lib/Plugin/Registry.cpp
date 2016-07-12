@@ -323,7 +323,7 @@ Pothos::PluginRegistryInfoDump Pothos::PluginRegistry::dump(void)
 
 static auto managedPluginRegistry = Pothos::ManagedClass()
     .registerClass<Pothos::PluginRegistry>()
-    .registerStaticMethod<const Pothos::Plugin &, void>("add", &Pothos::PluginRegistry::add)
+    .registerStaticMethod("add", &Pothos::PluginRegistry::add<const Pothos::Plugin &>)
     .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::PluginRegistry, remove))
     .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::PluginRegistry, get))
     .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::PluginRegistry, empty))

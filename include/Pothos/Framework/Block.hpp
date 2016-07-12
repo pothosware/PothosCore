@@ -4,7 +4,7 @@
 /// This file contains the interface for creating custom Blocks.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -318,6 +318,14 @@ public:
      * and must therefore return from the work() call without producing output.
      */
     void yield(void);
+
+    /*!
+     * Emit a signal to all subscribed slots.
+     * \param name the name of a registered signal
+     * \param args a variable number of arguments
+     */
+    template <typename... ArgsType>
+    void emitSignal(const std::string &name, ArgsType&&... args);
 
     /*!
      * Call a method on a derived instance with opaque input and return types.

@@ -4,7 +4,7 @@
 /// Interface definition for a ManagedClass.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -56,265 +56,34 @@ public:
     ManagedClass &registerToBaseClass(const Callable &toBase);
 
     /*!
-     * Register a constructor given class type and 0 argument types.
+     * Register a constructor given class type and variable argument types.
      * \throws ManagedClassTypeError if the class type differs from the registered type
      */
-    template <typename ClassType>
+    template <typename ClassType, typename... ArgsType>
     ManagedClass &registerConstructor(void);
 
     /*!
-     * Register a static method given class name and function pointer of 0 args.
+     * Register a static method given class name and function pointer of variable args.
+     * When specifying overloads using the ArgsType, the entire pack must be specified.
      */
-    template <typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)());
+    template <typename ReturnType, typename... ArgsType>
+    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(ArgsType...));
 
     /*!
-     * Register a method given class name and function pointer of 0 args.
+     * Register a method given class name and function pointer of variable args.
+     * When specifying overloads using the ArgsType, the entire pack must be specified.
      * \throws ManagedClassTypeError if the class type differs from the registered type
      */
-    template <typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)());
+    template <typename ReturnType, typename ClassType, typename... ArgsType>
+    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(ArgsType...));
 
     /*!
-     * Register a method given class name and function pointer of 0 args.
+     * Register a method given class name and function pointer of variable args.
+     * When specifying overloads using the ArgsType, the entire pack must be specified.
      * \throws ManagedClassTypeError if the class type differs from the registered type
      */
-    template <typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)() const);
-    /*!
-     * Register a constructor given class type and 1 argument types.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ClassType, typename A0>
-    ManagedClass &registerConstructor(void);
-
-    /*!
-     * Register a static method given class name and function pointer of 1 args.
-     */
-    template <typename A0, typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(A0));
-
-    /*!
-     * Register a method given class name and function pointer of 1 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0));
-
-    /*!
-     * Register a method given class name and function pointer of 1 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0) const);
-    /*!
-     * Register a constructor given class type and 2 argument types.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ClassType, typename A0, typename A1>
-    ManagedClass &registerConstructor(void);
-
-    /*!
-     * Register a static method given class name and function pointer of 2 args.
-     */
-    template <typename A0, typename A1, typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1));
-
-    /*!
-     * Register a method given class name and function pointer of 2 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1));
-
-    /*!
-     * Register a method given class name and function pointer of 2 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1) const);
-    /*!
-     * Register a constructor given class type and 3 argument types.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2>
-    ManagedClass &registerConstructor(void);
-
-    /*!
-     * Register a static method given class name and function pointer of 3 args.
-     */
-    template <typename A0, typename A1, typename A2, typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2));
-
-    /*!
-     * Register a method given class name and function pointer of 3 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2));
-
-    /*!
-     * Register a method given class name and function pointer of 3 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2) const);
-    /*!
-     * Register a constructor given class type and 4 argument types.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3>
-    ManagedClass &registerConstructor(void);
-
-    /*!
-     * Register a static method given class name and function pointer of 4 args.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3));
-
-    /*!
-     * Register a method given class name and function pointer of 4 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3));
-
-    /*!
-     * Register a method given class name and function pointer of 4 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3) const);
-    /*!
-     * Register a constructor given class type and 5 argument types.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4>
-    ManagedClass &registerConstructor(void);
-
-    /*!
-     * Register a static method given class name and function pointer of 5 args.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4));
-
-    /*!
-     * Register a method given class name and function pointer of 5 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4));
-
-    /*!
-     * Register a method given class name and function pointer of 5 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4) const);
-    /*!
-     * Register a constructor given class type and 6 argument types.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-    ManagedClass &registerConstructor(void);
-
-    /*!
-     * Register a static method given class name and function pointer of 6 args.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4, A5));
-
-    /*!
-     * Register a method given class name and function pointer of 6 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5));
-
-    /*!
-     * Register a method given class name and function pointer of 6 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5) const);
-    /*!
-     * Register a constructor given class type and 7 argument types.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-    ManagedClass &registerConstructor(void);
-
-    /*!
-     * Register a static method given class name and function pointer of 7 args.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4, A5, A6));
-
-    /*!
-     * Register a method given class name and function pointer of 7 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6));
-
-    /*!
-     * Register a method given class name and function pointer of 7 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6) const);
-    /*!
-     * Register a constructor given class type and 8 argument types.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-    ManagedClass &registerConstructor(void);
-
-    /*!
-     * Register a static method given class name and function pointer of 8 args.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4, A5, A6, A7));
-
-    /*!
-     * Register a method given class name and function pointer of 8 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7));
-
-    /*!
-     * Register a method given class name and function pointer of 8 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7) const);
-    /*!
-     * Register a constructor given class type and 9 argument types.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ClassType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-    ManagedClass &registerConstructor(void);
-
-    /*!
-     * Register a static method given class name and function pointer of 9 args.
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8));
-
-    /*!
-     * Register a method given class name and function pointer of 9 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8));
-
-    /*!
-     * Register a method given class name and function pointer of 9 args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(A0, A1, A2, A3, A4, A5, A6, A7, A8) const);
+    template <typename ReturnType, typename ClassType, typename... ArgsType>
+    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(ArgsType...) const);
 
     /*!
      * Register an accessor and mutator method for the field.

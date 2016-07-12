@@ -4,7 +4,7 @@
 /// Definitions for the Proxy wrapper class.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -52,7 +52,7 @@ public:
      * Is this Proxy have a handle?
      * \return true if the handle is set.
      */
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     //! Get the handle held in this proxy object.
     std::shared_ptr<ProxyHandle> getHandle(void) const;
@@ -70,116 +70,17 @@ public:
     template <typename ValueType>
     ValueType convert(void) const;
 
-    //! Call a method with a return type and 0 args
-    template <typename ReturnType>
-    ReturnType call(const std::string &name) const;
+    //! Call a method with a return type and variable args
+    template <typename ReturnType, typename... ArgsType>
+    ReturnType call(const std::string &name, ArgsType&&... args) const;
 
-    //! Call a method with a Proxy return and 0 args
-    inline
-    Proxy callProxy(const std::string &name) const;
+    //! Call a method with a Proxy return and variable args
+    template <typename... ArgsType>
+    Proxy callProxy(const std::string &name, ArgsType&&... args) const;
 
-    //! Call a method with a void return and 0 args
-    inline
-    void callVoid(const std::string &name) const;
-    //! Call a method with a return type and 1 args
-    template <typename ReturnType, typename A0>
-    ReturnType call(const std::string &name, const A0 &a0) const;
-
-    //! Call a method with a Proxy return and 1 args
-    template <typename A0>
-    Proxy callProxy(const std::string &name, const A0 &a0) const;
-
-    //! Call a method with a void return and 1 args
-    template <typename A0>
-    void callVoid(const std::string &name, const A0 &a0) const;
-    //! Call a method with a return type and 2 args
-    template <typename ReturnType, typename A0, typename A1>
-    ReturnType call(const std::string &name, const A0 &a0, const A1 &a1) const;
-
-    //! Call a method with a Proxy return and 2 args
-    template <typename A0, typename A1>
-    Proxy callProxy(const std::string &name, const A0 &a0, const A1 &a1) const;
-
-    //! Call a method with a void return and 2 args
-    template <typename A0, typename A1>
-    void callVoid(const std::string &name, const A0 &a0, const A1 &a1) const;
-    //! Call a method with a return type and 3 args
-    template <typename ReturnType, typename A0, typename A1, typename A2>
-    ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2) const;
-
-    //! Call a method with a Proxy return and 3 args
-    template <typename A0, typename A1, typename A2>
-    Proxy callProxy(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2) const;
-
-    //! Call a method with a void return and 3 args
-    template <typename A0, typename A1, typename A2>
-    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2) const;
-    //! Call a method with a return type and 4 args
-    template <typename ReturnType, typename A0, typename A1, typename A2, typename A3>
-    ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3) const;
-
-    //! Call a method with a Proxy return and 4 args
-    template <typename A0, typename A1, typename A2, typename A3>
-    Proxy callProxy(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3) const;
-
-    //! Call a method with a void return and 4 args
-    template <typename A0, typename A1, typename A2, typename A3>
-    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3) const;
-    //! Call a method with a return type and 5 args
-    template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4>
-    ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4) const;
-
-    //! Call a method with a Proxy return and 5 args
-    template <typename A0, typename A1, typename A2, typename A3, typename A4>
-    Proxy callProxy(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4) const;
-
-    //! Call a method with a void return and 5 args
-    template <typename A0, typename A1, typename A2, typename A3, typename A4>
-    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4) const;
-    //! Call a method with a return type and 6 args
-    template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-    ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5) const;
-
-    //! Call a method with a Proxy return and 6 args
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-    Proxy callProxy(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5) const;
-
-    //! Call a method with a void return and 6 args
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5) const;
-    //! Call a method with a return type and 7 args
-    template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-    ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6) const;
-
-    //! Call a method with a Proxy return and 7 args
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-    Proxy callProxy(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6) const;
-
-    //! Call a method with a void return and 7 args
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6) const;
-    //! Call a method with a return type and 8 args
-    template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-    ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7) const;
-
-    //! Call a method with a Proxy return and 8 args
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-    Proxy callProxy(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7) const;
-
-    //! Call a method with a void return and 8 args
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7) const;
-    //! Call a method with a return type and 9 args
-    template <typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-    ReturnType call(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8) const;
-
-    //! Call a method with a Proxy return and 9 args
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-    Proxy callProxy(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8) const;
-
-    //! Call a method with a void return and 9 args
-    template <typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-    void callVoid(const std::string &name, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8) const;
+    //! Call a method with a void return and variable args
+    template <typename... ArgsType>
+    void callVoid(const std::string &name, ArgsType&&... args) const;
 
     /*!
      * Returns a negative integer, zero, or a positive integer as this object is
@@ -231,13 +132,3 @@ private:
 POTHOS_API bool operator==(const Proxy &lhs, const Proxy &rhs);
 
 } //namespace Pothos
-
-inline Pothos::Proxy Pothos::Proxy::callProxy(const std::string &name) const
-{
-    return this->call<Proxy>(name);
-}
-
-inline void Pothos::Proxy::callVoid(const std::string &name) const
-{
-    this->call<Proxy>(name);
-}

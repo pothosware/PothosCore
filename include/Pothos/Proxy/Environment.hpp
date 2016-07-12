@@ -4,7 +4,7 @@
 /// Definitions for the ProxyEnvironment interface class.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -14,6 +14,7 @@
 #include <Pothos/Proxy/Proxy.hpp>
 #include <Pothos/Util/RefHolder.hpp>
 #include <Pothos/Callable/Callable.hpp>
+#include <utility> //std::forward
 #include <memory>
 #include <string>
 #include <vector>
@@ -112,10 +113,7 @@ public:
      * Convenience templated version that takes the ValueType as input.
      */
     template <typename ValueType>
-    Proxy makeProxy(const ValueType &local)
-    {
-        return convertObjectToProxy(Pothos::Object::make(local));
-    }
+    Proxy makeProxy(ValueType &&local);
 
     /*!
      * Convert a proxy object in this environment into a local object.
@@ -143,3 +141,9 @@ public:
 };
 
 } //namespace Pothos
+
+template <typename ValueType>
+Pothos::Proxy Pothos::ProxyEnvironment::makeProxy(ValueType &&local)
+{
+    return convertObjectToProxy(Pothos::Object::make(std::forward<ValueType>(local)));
+}

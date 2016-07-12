@@ -4,7 +4,7 @@
 /// Remote access proxy client interface.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -42,7 +42,7 @@ public:
     const std::string &getUri(void) const;
 
     //! Is this remote client connected?
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     /*!
      * Get the iostream to interact with the client handle.

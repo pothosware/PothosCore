@@ -4,13 +4,17 @@
 /// A BlockRegistry registers a block's factory function.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Callable/Callable.hpp>
+#include <Pothos/Proxy/Proxy.hpp>
+#include <Pothos/Proxy/ProxyImpl.hpp>
+#include <Pothos/Proxy/Environment.hpp>
+#include <utility> //std::forward
 #include <string>
 
 namespace Pothos {
@@ -42,6 +46,23 @@ public:
      * \param factory the Callable factory function
      */
     BlockRegistry(const std::string &path, const Callable &factory);
+
+    /*!
+     * Instantiate a block given the factory path and arguments.
+     * \param path the factory path begining with a slash ("/")
+     * \param args a variable number of factory arguments
+     * \return the newly created block instance as a Proxy
+     */
+    template <typename... ArgsType>
+    static Proxy make(const std::string &path, ArgsType&&... args);
 };
 
 } //namespace Pothos
+
+template <typename... ArgsType>
+Pothos::Proxy Pothos::BlockRegistry::make(const std::string &path, ArgsType&&... args)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto registry = env->findProxy("Pothos/BlockRegistry");
+    return registry.callProxy(path, std::forward<ArgsType>(args)...);
+}

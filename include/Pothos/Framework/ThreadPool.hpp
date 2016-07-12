@@ -4,7 +4,7 @@
 /// Support for configuring and managing threading in the framework.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -131,7 +131,7 @@ public:
      * Is this thread pool valid/non-empty?
      * \return true when the thread poll is non-null
      */
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     /*!
      * Get access to the underlying container for the thread pool.

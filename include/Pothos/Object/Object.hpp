@@ -4,7 +4,7 @@
 /// Object is intended to facilitate API polymorphism similar to java.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -58,7 +58,7 @@ public:
     /*!
      * Create a null Object.
      */
-    explicit Object(void);
+    Object(void);
 
     /*!
      * Create an object where type can be explicitly specified.
@@ -134,7 +134,7 @@ public:
      * Does the object hold a value?
      * \return true if the container is non-empty
      */
-    pothos_explicit operator bool(void) const;
+    explicit operator bool(void) const;
 
     /*!
      * Is the Object unique?

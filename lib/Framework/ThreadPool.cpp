@@ -115,7 +115,7 @@ static auto managedThreadPool = Pothos::ManagedClass()
     .registerConstructor<Pothos::ThreadPool, const std::shared_ptr<void> &>()
     .registerConstructor<Pothos::ThreadPool, const Pothos::ThreadPoolArgs &>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::ThreadPool, getContainer))
-    .registerStaticMethod<const Pothos::ThreadPool &, const Pothos::ThreadPool &>("equal", Pothos::operator==)
+    .registerStaticMethod<bool, const Pothos::ThreadPool &, const Pothos::ThreadPool &>("equal", Pothos::operator==)
     .commit("Pothos/ThreadPool");
 
 #include <Pothos/Object/Serialize.hpp>

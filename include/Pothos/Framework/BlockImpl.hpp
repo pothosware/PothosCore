@@ -4,7 +4,7 @@
 /// This file contains inline definitions for Block members.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -12,6 +12,7 @@
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/ConnectableImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
+#include <utility> //std::forward
 
 inline const Pothos::WorkInfo &Pothos::Block::workInfo(void) const
 {
@@ -66,4 +67,10 @@ inline const std::map<std::string, Pothos::InputPort*> &Pothos::Block::allInputs
 inline const std::map<std::string, Pothos::OutputPort*> &Pothos::Block::allOutputs(void) const
 {
     return _namedOutputs;
+}
+
+template <typename... ArgsType>
+void Pothos::Block::emitSignal(const std::string &name, ArgsType&&... args)
+{
+    this->callVoid(name, std::forward<ArgsType>(args)...);
 }
