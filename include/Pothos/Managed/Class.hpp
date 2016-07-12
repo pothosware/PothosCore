@@ -63,26 +63,6 @@ public:
     ManagedClass &registerConstructor(void);
 
     /*!
-     * Register a static method given class name and function pointer of no args.
-     */
-    template <typename ReturnType>
-    ManagedClass &registerStaticMethod(const std::string &name, ReturnType(*method)(void));
-
-    /*!
-     * Register a method given class name and function pointer of no args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(void));
-
-    /*!
-     * Register a method given class name and function pointer of no args.
-     * \throws ManagedClassTypeError if the class type differs from the registered type
-     */
-    template <typename ReturnType, typename ClassType>
-    ManagedClass &registerMethod(const std::string &name, ReturnType(ClassType::*method)(void) const);
-
-    /*!
      * Register a static method given class name and function pointer of variable args.
      * When specifying overloads using the ArgsType, the entire pack must be specified.
      */

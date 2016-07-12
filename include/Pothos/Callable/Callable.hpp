@@ -122,30 +122,6 @@ public:
     Callable(ReturnType(*fcn)(ArgsType...));
 
     /*!
-     * Create a Callable for a class method with no args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(void));
-
-    /*!
-     * Create a Callable for a const class method with no args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename ReturnType, typename ClassType>
-    static Callable make(ReturnType(ClassType::*fcn)(void) const);
-
-    /*!
-     * Create a Callable for a function with no args.
-     * Use make to specify explicit template arguments
-     * to differentiate overloads with the same name.
-     */
-    template <typename ReturnType>
-    static Callable make(ReturnType(*fcn)(void));
-
-    /*!
      * Create a Callable for a class method with variable args.
      * Use make to specify explicit template arguments
      * to differentiate overloads with the same name.

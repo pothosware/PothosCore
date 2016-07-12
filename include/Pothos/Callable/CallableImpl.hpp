@@ -168,24 +168,6 @@ Callable::Callable(ReturnType(*fcn)(ArgsType...)):
     return;
 }
 
-template <typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(void))
-{
-    return Callable(fcn);
-}
-
-template <typename ReturnType, typename ClassType>
-Callable Callable::make(ReturnType(ClassType::*fcn)(void) const)
-{
-    return Callable(fcn);
-}
-
-template <typename ReturnType>
-Callable Callable::make(ReturnType(*fcn)(void))
-{
-    return Callable(fcn);
-}
-
 template <typename ReturnType, typename ClassType, typename... ArgsType>
 Callable Callable::make(ReturnType(ClassType::*fcn)(ArgsType...))
 {

@@ -322,7 +322,7 @@ void topologySubCommit(Pothos::Topology &topology);
 static auto managedTopology = Pothos::ManagedClass()
     .registerClass<Pothos::Topology>()
     .registerBaseClass<Pothos::Topology, Pothos::Connectable>()
-    .registerStaticMethod<std::shared_ptr<Pothos::Topology>>(POTHOS_FCN_TUPLE(Pothos::Topology, make))
+    .registerStaticMethod("make", (std::shared_ptr<Pothos::Topology>(*)(void))&Pothos::Topology::make)
     .registerStaticMethod<std::shared_ptr<Pothos::Topology>, const std::string &>(POTHOS_FCN_TUPLE(Pothos::Topology, make))
     .registerMethod("getFlows", &getFlowsFromTopology)
     .registerMethod("subCommit", &topologySubCommit)

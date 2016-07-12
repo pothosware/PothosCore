@@ -100,29 +100,6 @@ ManagedClass &ManagedClass::registerConstructor(void)
     return *this;
 }
 
-template <typename ReturnType>
-ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(void))
-{
-    this->registerStaticMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(void))
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
-template <typename ReturnType, typename ClassType>
-ManagedClass &ManagedClass::registerMethod(const std::string &name, ReturnType(ClassType::*method)(void) const)
-{
-    this->registerClass<ClassType>();
-    this->registerMethod(name, Callable(method));
-    return *this;
-}
-
 template <typename ReturnType, typename... ArgsType>
 ManagedClass &ManagedClass::registerStaticMethod(const std::string &name, ReturnType(*method)(ArgsType...))
 {
