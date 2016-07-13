@@ -83,6 +83,16 @@ protected:
             .argument("runDuration")
             .binding("runDuration"));
 
+        options.addOption(Poco::Util::Option("idle-time", "",
+            "The maximum allowed idle time in seconds.\n"
+            "The topology will exit after all flows remain idle for the specified time in seconds. "
+            "Use this option with --run-duration to specify a timeout to wait for idle to occur. "
+            "PothosUtil will return an error code if the timeout is reached before idle occurs.")
+            .required(false)
+            .repeatable(false)
+            .argument("idleTime")
+            .binding("idleTime"));
+
         options.addOption(Poco::Util::Option("var", "",
             "Specify an arbitrary keyword + value variable\n"
             "using the format --var=name:value\n"

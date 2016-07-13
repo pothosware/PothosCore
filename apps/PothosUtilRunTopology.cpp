@@ -76,7 +76,24 @@ void PothosUtilBase::runTopology(void)
     auto topology = Pothos::Topology::make(ss.str());
 
     //commit the topology and wait for specified time for CTRL+C
-    if (this->config().has("runDuration"))
+    if (this->config().has("idleTime"))
+    {
+        const auto idleTime = this->config().getDouble("idleTime");
+        double timeout = 0.0;
+        std::string timeoutMsg = "no timeout";
+        if (this->config().has("runDuration"))
+        {
+            timeout = this->config().getDouble("runDuration");
+            timeoutMsg = "timeout " + std::to_string(timeout) + " seconds";
+        }
+        std::cout << ">>> Running topology until idle with " << timeoutMsg << std::endl;
+        topology->commit();
+        if (not topology->waitInactive(idleTime, timeout))
+        {
+            throw Pothos::RuntimeException("Topology::waitInactive() reached timeout");
+        }
+    }
+    else if (this->config().has("runDuration"))
     {
         const auto runDuration = this->config().getDouble("runDuration");
         std::cout << ">>> Running topology for " << runDuration << " seconds" << std::endl;
