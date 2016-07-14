@@ -12,6 +12,7 @@
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/ConnectableImpl.hpp>
 #include <Pothos/Framework/Exception.hpp>
+#include <Pothos/Object/Containers.hpp>
 #include <utility> //std::forward
 
 inline const Pothos::WorkInfo &Pothos::Block::workInfo(void) const
@@ -72,5 +73,10 @@ inline const std::map<std::string, Pothos::OutputPort*> &Pothos::Block::allOutpu
 template <typename... ArgsType>
 void Pothos::Block::emitSignal(const std::string &name, ArgsType&&... args)
 {
-    this->callVoid(name, std::forward<ArgsType>(args)...);
+    const auto it = _namedOutputs.find(name);
+    if (it == _namedOutputs.end() or not it->second->isSignal()) throw PortAccessError(
+        "Pothos::Block::emitSignal("+name+")", "signal port does not exist");
+
+    const ObjectVector objArgs{{Object(std::forward<ArgsType>(args))...}};
+    it->second->postMessage(std::move(objArgs));
 }
