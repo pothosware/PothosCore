@@ -7,5 +7,6 @@ var searchData=
   ['bufferchunk',['BufferChunk',['../classPothos_1_1BufferChunk.html',1,'Pothos']]],
   ['buffermanager',['BufferManager',['../classPothos_1_1BufferManager.html',1,'Pothos']]],
   ['buffermanagerargs',['BufferManagerArgs',['../structPothos_1_1BufferManagerArgs.html',1,'Pothos']]],
+  ['bufferpool',['BufferPool',['../classPothos_1_1BufferPool.html',1,'Pothos']]],
   ['bugcheckexception',['BugcheckException',['../classPothos_1_1BugcheckException.html',1,'Pothos']]]
 ];

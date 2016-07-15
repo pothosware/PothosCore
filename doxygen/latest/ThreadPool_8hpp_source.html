@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
+   &#160;<span id="projectnumber">0.4.0-gb9af81a8</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -132,7 +132,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;</div>
 <div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <a class="code" href="classPothos_1_1ThreadPool.html">ThreadPool</a>(<span class="keyword">const</span> <a class="code" href="classPothos_1_1ThreadPoolArgs.html">ThreadPoolArgs</a> &amp;args);</div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    <a class="code" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a> <span class="keyword">operator</span> bool(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    <span class="keyword">explicit</span> <span class="keyword">operator</span> bool(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;</div>
 <div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;    <span class="keyword">const</span> std::shared_ptr&lt;void&gt; &amp;getContainer(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;</div>
@@ -145,19 +145,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;} <span class="comment">//namespace Pothos</span></div>
 <div class="ttc" id="classPothos_1_1ThreadPoolArgs_html_a9d26bc2793d1ed9fbf2122f7166bc7cf"><div class="ttname"><a href="classPothos_1_1ThreadPoolArgs.html#a9d26bc2793d1ed9fbf2122f7166bc7cf">Pothos::ThreadPoolArgs::affinity</a></div><div class="ttdeci">std::vector&lt; size_t &gt; affinity</div><div class="ttdoc">A list of CPUs or NUMA nodes (depends on mode setting) </div><div class="ttdef"><b>Definition:</b> ThreadPool.hpp:82</div></div>
 <div class="ttc" id="classPothos_1_1ThreadPoolArgs_html_ae563751cd02a76b3084749112e273b15"><div class="ttname"><a href="classPothos_1_1ThreadPoolArgs.html#ae563751cd02a76b3084749112e273b15">Pothos::ThreadPoolArgs::affinityMode</a></div><div class="ttdeci">std::string affinityMode</div><div class="ttdef"><b>Definition:</b> ThreadPool.hpp:79</div></div>
-<div class="ttc" id="Config_8hpp_html_a8d78f57e80202fac856d4526459c4bbb"><div class="ttname"><a href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a></div><div class="ttdeci">#define pothos_explicit</div><div class="ttdef"><b>Definition:</b> Config.hpp:85</div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
 <div class="ttc" id="classPothos_1_1ThreadPoolArgs_html"><div class="ttname"><a href="classPothos_1_1ThreadPoolArgs.html">Pothos::ThreadPoolArgs</a></div><div class="ttdef"><b>Definition:</b> ThreadPool.hpp:23</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
 <div class="ttc" id="classPothos_1_1ThreadPoolArgs_html_a4c375e7de2f3009f3b62599a3f6f8583"><div class="ttname"><a href="classPothos_1_1ThreadPoolArgs.html#a4c375e7de2f3009f3b62599a3f6f8583">Pothos::ThreadPoolArgs::yieldMode</a></div><div class="ttdeci">std::string yieldMode</div><div class="ttdef"><b>Definition:</b> ThreadPool.hpp:93</div></div>
 <div class="ttc" id="classPothos_1_1ThreadPoolArgs_html_aa82fdfe513ba77618742e115c03ae491"><div class="ttname"><a href="classPothos_1_1ThreadPoolArgs.html#aa82fdfe513ba77618742e115c03ae491">Pothos::ThreadPoolArgs::priority</a></div><div class="ttdeci">double priority</div><div class="ttdef"><b>Definition:</b> ThreadPool.hpp:67</div></div>
 <div class="ttc" id="classPothos_1_1ThreadPool_html"><div class="ttname"><a href="classPothos_1_1ThreadPool.html">Pothos::ThreadPool</a></div><div class="ttdef"><b>Definition:</b> ThreadPool.hpp:113</div></div>
-<div class="ttc" id="namespacePothos_html_a5c411a7b9d73b5ca280d712592b6df5f"><div class="ttname"><a href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">Pothos::operator==</a></div><div class="ttdeci">bool operator==(const ManagedBuffer &amp;lhs, const ManagedBuffer &amp;rhs)</div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:132</div></div>
+<div class="ttc" id="namespacePothos_html_a5c411a7b9d73b5ca280d712592b6df5f"><div class="ttname"><a href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">Pothos::operator==</a></div><div class="ttdeci">bool operator==(const ManagedBuffer &amp;lhs, const ManagedBuffer &amp;rhs)</div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:261</div></div>
 <div class="ttc" id="classPothos_1_1ThreadPoolArgs_html_ae4bcae68446eaf4f540e361eaf8e2720"><div class="ttname"><a href="classPothos_1_1ThreadPoolArgs.html#ae4bcae68446eaf4f540e361eaf8e2720">Pothos::ThreadPoolArgs::numThreads</a></div><div class="ttdeci">size_t numThreads</div><div class="ttdef"><b>Definition:</b> ThreadPool.hpp:56</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 15 2016 08:55:06 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

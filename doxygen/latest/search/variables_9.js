@@ -1,6 +1,7 @@
 var searchData=
 [
   ['name',['name',['../classPothos_1_1PortInfo.html#a972d7b276cd2720c1d85942521732ae6',1,'Pothos::PortInfo']]],
+  ['nextbuffer',['nextBuffer',['../structPothos_1_1ManagedBuffer_1_1Impl.html#ae7bb5df94aff1de1b6dd219bb076d779',1,'Pothos::ManagedBuffer::Impl']]],
   ['nodeaffinity',['nodeAffinity',['../structPothos_1_1BufferManagerArgs.html#aaf55b223e6b9eb0b88687a3f42174149',1,'Pothos::BufferManagerArgs']]],
   ['nodeid',['nodeId',['../classPothos_1_1System_1_1HostInfo.html#a13fca75612b96cdeb58fec420a01d297',1,'Pothos::System::HostInfo']]],
   ['nodename',['nodeName',['../classPothos_1_1System_1_1HostInfo.html#af91800c79c12a72a92ddfc4a2592ac9a',1,'Pothos::System::HostInfo']]],

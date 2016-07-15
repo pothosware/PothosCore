@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
+   &#160;<span id="projectnumber">0.4.0-gb9af81a8</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -129,7 +129,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    std::string toMarkup(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <a class="code" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a> <span class="keyword">operator</span> bool(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <span class="keyword">explicit</span> <span class="keyword">operator</span> bool(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;</div>
 <div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    <span class="keywordtype">bool</span> isCustom(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;</div>
@@ -193,12 +193,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="keyword"></span>{</div>
 <div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    <span class="keywordflow">return</span> _elemType != 0;</div>
 <div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;}</div>
-<div class="ttc" id="Config_8hpp_html_a8d78f57e80202fac856d4526459c4bbb"><div class="ttname"><a href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a></div><div class="ttdeci">#define pothos_explicit</div><div class="ttdef"><b>Definition:</b> Config.hpp:85</div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
 <div class="ttc" id="classPothos_1_1DType_html_adcc0db5c2f1104cec8e23830a09e6e2c"><div class="ttname"><a href="classPothos_1_1DType.html#adcc0db5c2f1104cec8e23830a09e6e2c">Pothos::DType::DType</a></div><div class="ttdeci">DType(void)</div><div class="ttdoc">Create an unknown DType of size 1. </div><div class="ttdef"><b>Definition:</b> DType.hpp:175</div></div>
 <div class="ttc" id="classPothos_1_1DType_html_ac5dabb9e05bd7736bfed3391a090ed10"><div class="ttname"><a href="classPothos_1_1DType.html#ac5dabb9e05bd7736bfed3391a090ed10">Pothos::DType::dimension</a></div><div class="ttdeci">size_t dimension(void) const </div><div class="ttdoc">Get the dimensionality of this type. </div><div class="ttdef"><b>Definition:</b> DType.hpp:193</div></div>
-<div class="ttc" id="namespacePothos_html_a5c411a7b9d73b5ca280d712592b6df5f"><div class="ttname"><a href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">Pothos::operator==</a></div><div class="ttdeci">bool operator==(const ManagedBuffer &amp;lhs, const ManagedBuffer &amp;rhs)</div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:132</div></div>
+<div class="ttc" id="namespacePothos_html_a5c411a7b9d73b5ca280d712592b6df5f"><div class="ttname"><a href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">Pothos::operator==</a></div><div class="ttdeci">bool operator==(const ManagedBuffer &amp;lhs, const ManagedBuffer &amp;rhs)</div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:261</div></div>
 <div class="ttc" id="classPothos_1_1DType_html_a62ace4482f59c8f36f527e2eb64daea9"><div class="ttname"><a href="classPothos_1_1DType.html#a62ace4482f59c8f36f527e2eb64daea9">Pothos::DType::elemType</a></div><div class="ttdeci">size_t elemType(void) const </div><div class="ttdoc">Get the element type descriptor. </div><div class="ttdef"><b>Definition:</b> DType.hpp:183</div></div>
 <div class="ttc" id="classPothos_1_1DType_html_a16e62003032e2b9284b067fe9d067d8e"><div class="ttname"><a href="classPothos_1_1DType.html#a16e62003032e2b9284b067fe9d067d8e">Pothos::DType::elemSize</a></div><div class="ttdeci">size_t elemSize(void) const </div><div class="ttdoc">Get the size of a single element in bytes. </div><div class="ttdef"><b>Definition:</b> DType.hpp:188</div></div>
 <div class="ttc" id="namespacePothos_1_1serialization_html_a4ed1534bf24677dd94d889f63771821e"><div class="ttname"><a href="namespacePothos_1_1serialization.html#a4ed1534bf24677dd94d889f63771821e">Pothos::serialization::serialize</a></div><div class="ttdeci">void serialize(Archive &amp;, Pothos::Detail::ObjectContainer &amp;, const unsigned int)</div><div class="ttdef"><b>Definition:</b> Serialize.hpp:46</div></div>
@@ -207,7 +206,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 15 2016 08:55:06 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

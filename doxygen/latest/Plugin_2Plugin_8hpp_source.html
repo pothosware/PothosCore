@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
+   &#160;<span id="projectnumber">0.4.0-gb9af81a8</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -117,13 +117,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">const</span> <a class="code" href="classPothos_1_1Object.html">Object</a> &amp;getObject(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keyword">const</span> <a class="code" href="classPothos_1_1PluginModule.html">PluginModule</a> &amp;getModule(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <a class="code" href="classPothos_1_1PluginModule.html">PluginModule</a> getModule(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    std::string toString(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="comment">// This module owns the plugin, so its just a pointer.</span></div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keyword">const</span> <a class="code" href="classPothos_1_1PluginModule.html">PluginModule</a> *_module;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="comment">// This module owns the plugin, so its just a weak pointer.</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    std::weak_ptr&lt;PluginModule::Impl&gt; _module;</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <a class="code" href="classPothos_1_1PluginPath.html">PluginPath</a> _path;</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <a class="code" href="classPothos_1_1Object.html">Object</a> _object;</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;};</div>
@@ -141,7 +141,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;}</div>
 <div class="ttc" id="Module_8hpp_html"><div class="ttname"><a href="Module_8hpp.html">Module.hpp</a></div></div>
 <div class="ttc" id="classPothos_1_1PluginModule_html_ad4a12b76ca00adb7e45a88a0474f5e4a"><div class="ttname"><a href="classPothos_1_1PluginModule.html#ad4a12b76ca00adb7e45a88a0474f5e4a">Pothos::PluginModule::null</a></div><div class="ttdeci">static const PluginModule &amp; null(void)</div><div class="ttdoc">A reference to a permanent empty module. </div></div>
-<div class="ttc" id="classPothos_1_1PluginModule_html"><div class="ttname"><a href="classPothos_1_1PluginModule.html">Pothos::PluginModule</a></div><div class="ttdef"><b>Definition:</b> Module.hpp:22</div></div>
+<div class="ttc" id="classPothos_1_1PluginModule_html"><div class="ttname"><a href="classPothos_1_1PluginModule.html">Pothos::PluginModule</a></div><div class="ttdef"><b>Definition:</b> Module.hpp:24</div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
 <div class="ttc" id="classPothos_1_1Plugin_html_aaed2a151a45391ac345f5fc36fd43d95"><div class="ttname"><a href="classPothos_1_1Plugin.html#aaed2a151a45391ac345f5fc36fd43d95">Pothos::Plugin::Plugin</a></div><div class="ttdeci">Plugin(void)</div><div class="ttdoc">Create a null plugin. </div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
@@ -153,7 +153,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 15 2016 08:55:06 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

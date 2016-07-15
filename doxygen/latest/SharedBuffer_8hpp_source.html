@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
+   &#160;<span id="projectnumber">0.4.0-gb9af81a8</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -124,7 +124,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keywordtype">size_t</span> useCount(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <a class="code" href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a> <span class="keyword">operator</span> bool(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keyword">explicit</span> <span class="keyword">operator</span> bool(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;</div>
 <div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keyword">const</span> std::shared_ptr&lt;void&gt; &amp;getContainer(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;</div>
@@ -184,11 +184,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;{</div>
 <div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    <span class="keywordflow">return</span> lhs.<a class="code" href="classPothos_1_1SharedBuffer.html#ab9bd83e78a6ea200af776e366d207807">getContainer</a>() == rhs.<a class="code" href="classPothos_1_1SharedBuffer.html#ab9bd83e78a6ea200af776e366d207807">getContainer</a>();</div>
 <div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;}</div>
-<div class="ttc" id="Config_8hpp_html_a8d78f57e80202fac856d4526459c4bbb"><div class="ttname"><a href="Config_8hpp.html#a8d78f57e80202fac856d4526459c4bbb">pothos_explicit</a></div><div class="ttdeci">#define pothos_explicit</div><div class="ttdef"><b>Definition:</b> Config.hpp:85</div></div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
 <div class="ttc" id="classPothos_1_1SharedBuffer_html_afad16de685c8654b63ccd795ae39db53"><div class="ttname"><a href="classPothos_1_1SharedBuffer.html#afad16de685c8654b63ccd795ae39db53">Pothos::SharedBuffer::useCount</a></div><div class="ttdeci">size_t useCount(void) const </div><div class="ttdef"><b>Definition:</b> SharedBuffer.hpp:154</div></div>
-<div class="ttc" id="namespacePothos_html_a5c411a7b9d73b5ca280d712592b6df5f"><div class="ttname"><a href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">Pothos::operator==</a></div><div class="ttdeci">bool operator==(const ManagedBuffer &amp;lhs, const ManagedBuffer &amp;rhs)</div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:132</div></div>
+<div class="ttc" id="namespacePothos_html_a5c411a7b9d73b5ca280d712592b6df5f"><div class="ttname"><a href="namespacePothos.html#a5c411a7b9d73b5ca280d712592b6df5f">Pothos::operator==</a></div><div class="ttdeci">bool operator==(const ManagedBuffer &amp;lhs, const ManagedBuffer &amp;rhs)</div><div class="ttdef"><b>Definition:</b> ManagedBuffer.hpp:261</div></div>
 <div class="ttc" id="classPothos_1_1SharedBuffer_html_a83b83332796b405bcfa8ce106e285192"><div class="ttname"><a href="classPothos_1_1SharedBuffer.html#a83b83332796b405bcfa8ce106e285192">Pothos::SharedBuffer::getLength</a></div><div class="ttdeci">size_t getLength(void) const </div><div class="ttdoc">Get the length of the buffer in bytes. </div><div class="ttdef"><b>Definition:</b> SharedBuffer.hpp:134</div></div>
 <div class="ttc" id="classPothos_1_1SharedBuffer_html_a407f110797c76503a6763b18d97b6281"><div class="ttname"><a href="classPothos_1_1SharedBuffer.html#a407f110797c76503a6763b18d97b6281">Pothos::SharedBuffer::getAddress</a></div><div class="ttdeci">size_t getAddress(void) const </div><div class="ttdoc">Get the address of the first byte of the buffer. </div><div class="ttdef"><b>Definition:</b> SharedBuffer.hpp:129</div></div>
 <div class="ttc" id="classPothos_1_1SharedBuffer_html_a544c2f48f4d278b0ec038843d5e3e913"><div class="ttname"><a href="classPothos_1_1SharedBuffer.html#a544c2f48f4d278b0ec038843d5e3e913">Pothos::SharedBuffer::getAlias</a></div><div class="ttdeci">size_t getAlias(void) const </div><div class="ttdef"><b>Definition:</b> SharedBuffer.hpp:139</div></div>
@@ -199,7 +198,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 15 2016 08:55:06 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

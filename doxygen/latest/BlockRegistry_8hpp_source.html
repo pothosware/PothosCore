@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
+   &#160;<span id="projectnumber">0.4.0-gb9af81a8</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -95,27 +95,48 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#pragma once</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#include &lt;<a class="code" href="Config_8hpp.html">Pothos/Config.hpp</a>&gt;</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Callable_2Callable_8hpp.html">Pothos/Callable/Callable.hpp</a>&gt;</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">namespace </span>Pothos {</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;</div>
-<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="classPothos_1_1BlockRegistry.html">   26</a></span>&#160;<span class="keyword">class </span><a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <a class="code" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;{</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <a class="code" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a>(<span class="keyword">const</span> std::string &amp;path, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;factory);</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;};</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;} <span class="comment">//namespace Pothos</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Proxy_2Proxy_8hpp.html">Pothos/Proxy/Proxy.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="ProxyImpl_8hpp.html">Pothos/Proxy/ProxyImpl.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="Environment_8hpp.html">Pothos/Proxy/Environment.hpp</a>&gt;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &lt;utility&gt;</span> <span class="comment">//std::forward</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">namespace </span>Pothos {</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;</div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="classPothos_1_1BlockRegistry.html">   30</a></span>&#160;<span class="keyword">class </span><a class="code" href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a> <a class="code" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;{</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <a class="code" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a>(<span class="keyword">const</span> std::string &amp;path, <span class="keyword">const</span> <a class="code" href="classPothos_1_1Callable.html">Callable</a> &amp;factory);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span>... ArgsType&gt;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keyword">static</span> <a class="code" href="classPothos_1_1Proxy.html">Proxy</a> make(<span class="keyword">const</span> std::string &amp;path, ArgsType&amp;&amp;... args);</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;};</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;} <span class="comment">//namespace Pothos</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... ArgsType&gt;</div>
+<div class="line"><a name="l00063"></a><span class="lineno"><a class="line" href="classPothos_1_1BlockRegistry.html#a63898c5398496330614a97a4d05d50dd">   63</a></span>&#160;<a class="code" href="classPothos_1_1Proxy.html">Pothos::Proxy</a> <a class="code" href="classPothos_1_1BlockRegistry.html#a9f5d2d6313e1608d1bda4e1f645a0bcb">Pothos::BlockRegistry::make</a>(<span class="keyword">const</span> std::string &amp;path, ArgsType&amp;&amp;... args)</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;{</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">auto</span> env = <a class="code" href="classPothos_1_1ProxyEnvironment.html#ab63154827e33db936927a5d8d75b1772">Pothos::ProxyEnvironment::make</a>(<span class="stringliteral">&quot;managed&quot;</span>);</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keyword">auto</span> registry = env-&gt;findProxy(<span class="stringliteral">&quot;Pothos/BlockRegistry&quot;</span>);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keywordflow">return</span> registry.callProxy(path, std::forward&lt;ArgsType&gt;(args)...);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;}</div>
 <div class="ttc" id="Config_8hpp_html_a34c5a8e76e9545b45e03ec1ebaa068e6"><div class="ttname"><a href="Config_8hpp.html#a34c5a8e76e9545b45e03ec1ebaa068e6">POTHOS_API</a></div><div class="ttdeci">#define POTHOS_API</div><div class="ttdef"><b>Definition:</b> Config.hpp:41</div></div>
 <div class="ttc" id="Config_8hpp_html"><div class="ttname"><a href="Config_8hpp.html">Config.hpp</a></div></div>
 <div class="ttc" id="Callable_2Callable_8hpp_html"><div class="ttname"><a href="Callable_2Callable_8hpp.html">Callable.hpp</a></div></div>
-<div class="ttc" id="classPothos_1_1Callable_html"><div class="ttname"><a href="classPothos_1_1Callable.html">Pothos::Callable</a></div><div class="ttdef"><b>Definition:</b> Callable.tmpl.hpp:30</div></div>
-<div class="ttc" id="classPothos_1_1BlockRegistry_html"><div class="ttname"><a href="classPothos_1_1BlockRegistry.html">Pothos::BlockRegistry</a></div><div class="ttdef"><b>Definition:</b> BlockRegistry.hpp:26</div></div>
+<div class="ttc" id="Proxy_2Proxy_8hpp_html"><div class="ttname"><a href="Proxy_2Proxy_8hpp.html">Proxy.hpp</a></div></div>
+<div class="ttc" id="classPothos_1_1Callable_html"><div class="ttname"><a href="classPothos_1_1Callable.html">Pothos::Callable</a></div><div class="ttdef"><b>Definition:</b> Callable.hpp:30</div></div>
+<div class="ttc" id="classPothos_1_1BlockRegistry_html"><div class="ttname"><a href="classPothos_1_1BlockRegistry.html">Pothos::BlockRegistry</a></div><div class="ttdef"><b>Definition:</b> BlockRegistry.hpp:30</div></div>
+<div class="ttc" id="Environment_8hpp_html"><div class="ttname"><a href="Environment_8hpp.html">Environment.hpp</a></div></div>
+<div class="ttc" id="classPothos_1_1BlockRegistry_html_a9f5d2d6313e1608d1bda4e1f645a0bcb"><div class="ttname"><a href="classPothos_1_1BlockRegistry.html#a9f5d2d6313e1608d1bda4e1f645a0bcb">Pothos::BlockRegistry::make</a></div><div class="ttdeci">static Proxy make(const std::string &amp;path, ArgsType &amp;&amp;...args)</div></div>
+<div class="ttc" id="ProxyImpl_8hpp_html"><div class="ttname"><a href="ProxyImpl_8hpp.html">ProxyImpl.hpp</a></div></div>
+<div class="ttc" id="classPothos_1_1ProxyEnvironment_html_ab63154827e33db936927a5d8d75b1772"><div class="ttname"><a href="classPothos_1_1ProxyEnvironment.html#ab63154827e33db936927a5d8d75b1772">Pothos::ProxyEnvironment::make</a></div><div class="ttdeci">static Sptr make(const std::string &amp;name, const ProxyEnvironmentArgs &amp;args=ProxyEnvironmentArgs())</div></div>
+<div class="ttc" id="classPothos_1_1Proxy_html"><div class="ttname"><a href="classPothos_1_1Proxy.html">Pothos::Proxy</a></div><div class="ttdef"><b>Definition:</b> Proxy.hpp:27</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 15 2016 08:55:06 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

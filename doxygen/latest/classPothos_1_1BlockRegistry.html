@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.4.0-g6983c05b</span>
+   &#160;<span id="projectnumber">0.4.0-gb9af81a8</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -91,6 +91,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classPothos_1_1BlockRegistry-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Pothos::BlockRegistry Class Reference</div>  </div>
@@ -103,6 +104,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a12b7bcfe72a7d95693183626e42b3339"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1BlockRegistry.html#a12b7bcfe72a7d95693183626e42b3339">BlockRegistry</a> (const std::string &amp;path, const <a class="el" href="classPothos_1_1Callable.html">Callable</a> &amp;factory)</td></tr>
 <tr class="separator:a12b7bcfe72a7d95693183626e42b3339"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63898c5398496330614a97a4d05d50dd"><td class="memTemplParams" colspan="2">template&lt;typename... ArgsType&gt; </td></tr>
+<tr class="memitem:a63898c5398496330614a97a4d05d50dd"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1Proxy.html">Pothos::Proxy</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1BlockRegistry.html#a63898c5398496330614a97a4d05d50dd">make</a> (const std::string &amp;path, ArgsType &amp;&amp;...args)</td></tr>
+<tr class="separator:a63898c5398496330614a97a4d05d50dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a9f5d2d6313e1608d1bda4e1f645a0bcb"><td class="memTemplParams" colspan="2">template&lt;typename... ArgsType&gt; </td></tr>
+<tr class="memitem:a9f5d2d6313e1608d1bda4e1f645a0bcb"><td class="memTemplItemLeft" align="right" valign="top">static <a class="el" href="classPothos_1_1Proxy.html">Proxy</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1BlockRegistry.html#a9f5d2d6313e1608d1bda4e1f645a0bcb">make</a> (const std::string &amp;path, ArgsType &amp;&amp;...args)</td></tr>
+<tr class="separator:a9f5d2d6313e1608d1bda4e1f645a0bcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The <a class="el" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a> class registers factories for topological elements. These elements include Blocks and sub-Topologies (hierarchies of elements). A <a class="el" href="classPothos_1_1BlockRegistry.html">BlockRegistry</a> can be created at static initialization time so that modules providing blocks will automatically register. Usage example (put this at the bottom of your c++ source file) static <a class="el" href="classPothos_1_1BlockRegistry.html">Pothos::BlockRegistry</a> registerMyBlock("/my/factory/path", &amp;MyBlock::make); </p>
@@ -143,13 +153,87 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a9f5d2d6313e1608d1bda4e1f645a0bcb"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... ArgsType&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classPothos_1_1Proxy.html">Proxy</a> Pothos::BlockRegistry::make </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ArgsType &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Instantiate a block given the factory path and arguments. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>the factory path begining with a slash ("/") </td></tr>
+    <tr><td class="paramname">args</td><td>a variable number of factory arguments </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the newly created block instance as a <a class="el" href="classPothos_1_1Proxy.html">Proxy</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a63898c5398496330614a97a4d05d50dd"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... ArgsType&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classPothos_1_1Proxy.html">Pothos::Proxy</a> Pothos::BlockRegistry::make </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ArgsType &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/Pothos/Framework/<a class="el" href="BlockRegistry_8hpp_source.html">BlockRegistry.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Apr 20 2016 21:02:38 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 15 2016 08:55:06 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
