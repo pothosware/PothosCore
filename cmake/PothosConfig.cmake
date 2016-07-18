@@ -76,6 +76,18 @@ endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 
 ########################################################################
+# extract the ABI version string from the Version.hpp header
+########################################################################
+function(_POTHOS_GET_ABI_VERSION VERSION INCLUDE_DIR)
+    file(READ "${INCLUDE_DIR}/Pothos/System/Version.hpp" version_hpp)
+    string(REGEX MATCH "\\#define POTHOS_ABI_VERSION \"([0-9]+\\.[0-9]+-[0-9]+)\"" POTHOS_ABI_VERSION_MATCHES "${version_hpp}")
+    if(NOT POTHOS_ABI_VERSION_MATCHES)
+        message(FATAL_ERROR "Failed to extract version number from Version.hpp")
+    endif(NOT POTHOS_ABI_VERSION_MATCHES)
+    set(${VERSION} "${CMAKE_MATCH_1}" CACHE INTERNAL "")
+endfunction(_POTHOS_GET_ABI_VERSION)
+
+########################################################################
 ## in-tree build support
 ########################################################################
 if (POTHOS_IN_TREE_SOURCE_DIR)
@@ -86,6 +98,7 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
 
     list(INSERT Pothos_LIBRARIES 0 Pothos)
     list(INSERT Pothos_INCLUDE_DIRS 0 ${POTHOS_IN_TREE_SOURCE_DIR}/include)
+    _POTHOS_GET_ABI_VERSION(POTHOS_ABI_VERSION ${POTHOS_IN_TREE_SOURCE_DIR}/include)
 
     #a list of in-tree built libraries to generate a library path script
     set(IN_TREE_LIBRARIES Pothos)
@@ -224,3 +237,4 @@ if(NOT POTHOS_LIBRARY)
     message(FATAL_ERROR "cannot find Pothos includes in ${POTHOS_ROOT}/include")
 endif()
 list(INSERT Pothos_INCLUDE_DIRS 0 ${POTHOS_INCLUDE_DIR})
+_POTHOS_GET_ABI_VERSION(POTHOS_ABI_VERSION ${POTHOS_INCLUDE_DIR})
