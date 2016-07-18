@@ -44,17 +44,17 @@ std::vector<Pothos::PluginModule> Pothos::PluginLoader::loadModules(void)
     Poco::Path libPath = Pothos::System::getRootPath();
     libPath.append("lib@LIB_SUFFIX@");
     libPath.append("Pothos");
-    libPath.append("modules");
+    libPath.append("modules" + Pothos::System::getAbiVersion());
     searchPaths.push_back(libPath);
 
     //support /usr/local module installs when the install prefix is /usr
     if (Pothos::System::getRootPath() == "/usr")
     {
-        searchPaths.push_back("/usr/local/lib@LIB_SUFFIX@/Pothos/modules");
+        searchPaths.push_back("/usr/local/lib@LIB_SUFFIX@/Pothos/modules" + Pothos::System::getAbiVersion());
         //when using a multi-arch directory, support single-arch path as well
         static const std::string libsuffix("@LIB_SUFFIX@");
         if (not libsuffix.empty() and libsuffix.at(0) == '/')
-            searchPaths.push_back("/usr/local/lib/Pothos/modules");
+            searchPaths.push_back("/usr/local/lib/Pothos/modules" + Pothos::System::getAbiVersion());
 
     }
 
