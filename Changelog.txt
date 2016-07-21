@@ -11,6 +11,7 @@ New Framework API calls:
 
 - Added OutputPort::setReserve function call
 - Added OutputPort::popElements function call
+- Added OutputPort::getBuffer function call
 - Added InputPort::peekMessage function call
 - Added BlockRegistry::make block proxy factory
 - Added Block::emitSignal to replace callVoid
