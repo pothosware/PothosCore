@@ -4,7 +4,7 @@
 /// This file provides an interface for a worker's input port.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -132,6 +132,13 @@ public:
     Object popMessage(void);
 
     /*!
+     * Return an asynchronous message from the port without removing it.
+     * If there is no message available, a null Object() is returned.
+     * \return an asynchronous message object
+     */
+    Object peekMessage(void);
+
+    /*!
      * Set a reserve requirement on this input port.
      * The reserve size ensures that when sufficient resources are available,
      * the buffer will contain at least the specified number of elements.
@@ -226,6 +233,7 @@ private:
     void asyncMessagesPush(const Object &message, const BufferChunk &token = BufferChunk::null());
     bool asyncMessagesEmpty(void);
     Object asyncMessagesPop(void);
+    Object asyncMessagesPeek(void);
     void asyncMessagesClear(void);
 
     /////// slot call interface /////////

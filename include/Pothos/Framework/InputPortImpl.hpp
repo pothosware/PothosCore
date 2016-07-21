@@ -4,7 +4,7 @@
 /// Inline member implementation for InputPort class.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -90,6 +90,11 @@ inline Pothos::Object Pothos::InputPort::popMessage(void)
     return msg;
 }
 
+inline Pothos::Object Pothos::InputPort::peekMessage(void)
+{
+    return this->asyncMessagesPeek();
+}
+
 inline void Pothos::InputPort::removeLabel(const Label &label)
 {
     for (auto it = _inlineMessages.begin(); it != _inlineMessages.end(); it++)
@@ -126,6 +131,13 @@ inline Pothos::Object Pothos::InputPort::asyncMessagesPop(void)
     auto msg = _asyncMessages.front().first;
     _asyncMessages.pop_front();
     return msg;
+}
+
+inline Pothos::Object Pothos::InputPort::asyncMessagesPeek(void)
+{
+    std::lock_guard<Util::SpinLock> lock(_asyncMessagesLock);
+    if (_asyncMessages.empty()) return Pothos::Object();
+    return _asyncMessages.front().first;
 }
 
 inline void Pothos::InputPort::inlineMessagesPush(const Pothos::Label &label)
