@@ -15,6 +15,7 @@ Pothos::OutputPort::OutputPort(void):
     _totalLabels(0),
     _totalMessages(0),
     _pendingElements(0),
+    _reserveElements(0),
     _workEvents(0),
     _readBeforeWritePort(nullptr),
     _bufferFromManager(false)
@@ -125,6 +126,7 @@ static auto managedOutputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postLabel))
     .registerMethod("postMessage", &Pothos::OutputPort::postMessage<const Pothos::Object &>)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postBuffer))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, setReserve))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, isSignal))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, setReadBeforeWrite))
     .commit("Pothos/OutputPort");

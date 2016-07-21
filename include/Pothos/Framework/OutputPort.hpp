@@ -164,6 +164,20 @@ public:
     void postBuffer(const BufferChunk &buffer);
 
     /*!
+     * Set a reserve requirement on this output port.
+     * The reserve size ensures that when sufficient resources are available,
+     * the buffer will contain at least the specified number of elements.
+     * By default, each output port has a reserve of zero elements,
+     * which means that the output port's buffer may be any size,
+     * but not empty, depending upon the available resources.
+     * Note that work() may still be called when the reserve is not met,
+     * because the scheduler will only prevent work() from being called
+     * when any given port has no available output elements.
+     * \param numElements the number of elements to require
+     */
+    void setReserve(const size_t numElements);
+
+    /*!
      * Is this port used for signaling in a signals + slots paradigm?
      */
     bool isSignal(void) const;
@@ -211,6 +225,7 @@ private:
 
     //state changes from work
     size_t _pendingElements;
+    size_t _reserveElements;
     std::vector<Label> _postedLabels;
     Util::RingDeque<BufferChunk> _postedBuffers;
 

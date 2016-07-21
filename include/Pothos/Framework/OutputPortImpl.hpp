@@ -115,6 +115,14 @@ inline void Pothos::OutputPort::postLabel(const Label &label)
     _workEvents++;
 }
 
+inline void Pothos::OutputPort::setReserve(const size_t numElements)
+{
+    //only mark this change when setting a larger reserve
+    if (numElements > _reserveElements) _workEvents++;
+
+    _reserveElements = numElements;
+}
+
 inline bool Pothos::OutputPort::bufferManagerEmpty(void)
 {
     std::lock_guard<Util::SpinLock> lock(_bufferManagerLock);
