@@ -4,7 +4,7 @@
 /// Inline member implementation for OutputPort class.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -86,6 +86,12 @@ void Pothos::OutputPort::postMessage(ValueType &&message)
 inline void Pothos::OutputPort::popBuffer(const size_t numBytes)
 {
     this->bufferManagerPop(numBytes);
+    _workEvents++;
+}
+
+inline void Pothos::OutputPort::popElements(const size_t numElements)
+{
+    this->bufferManagerPop(numElements*this->dtype().size());
     _workEvents++;
 }
 
