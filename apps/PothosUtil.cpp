@@ -161,6 +161,7 @@ protected:
 
     void printSystemInfo(const std::string &, const std::string &)
     {
+        std::cout << "Lib Version: " << Pothos::System::getLibVersion() << std::endl;
         std::cout << "API Version: " << Pothos::System::getApiVersion() << std::endl;
         std::cout << "ABI Version: " << Pothos::System::getAbiVersion() << std::endl;
         std::cout << "Root Path: " << Pothos::System::getRootPath() << std::endl;
