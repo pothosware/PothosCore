@@ -4,7 +4,7 @@
 /// Inline member implementation for OutputPort class.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -89,6 +89,12 @@ inline void Pothos::OutputPort::popBuffer(const size_t numBytes)
     _workEvents++;
 }
 
+inline void Pothos::OutputPort::popElements(const size_t numElements)
+{
+    this->bufferManagerPop(numElements*this->dtype().size());
+    _workEvents++;
+}
+
 inline void Pothos::OutputPort::postBuffer(const BufferChunk &buffer)
 {
     auto &queue = _postedBuffers;
@@ -107,6 +113,14 @@ inline void Pothos::OutputPort::postLabel(const Label &label)
     _postedLabels.push_back(label.toAdjusted(this->dtype().size(), 1));
     _totalLabels++;
     _workEvents++;
+}
+
+inline void Pothos::OutputPort::setReserve(const size_t numElements)
+{
+    //only mark this change when setting a larger reserve
+    if (numElements > _reserveElements) _workEvents++;
+
+    _reserveElements = numElements;
 }
 
 inline bool Pothos::OutputPort::bufferManagerEmpty(void)

@@ -454,10 +454,35 @@ void Pothos::WorkerActor::postWorkTasks(void)
                     poco_error_f4(Poco::Logger::get("Pothos.Block.produce"), "%s[%s] overproduced %z bytes, %z available",
                         block->getName(), port.alias(), buffer.length, buffer.getBuffer().getLength());
                 }
+
+                //Some buffer managers may reuse the remainder of the buffer based on how much is left.
+                //The reserve logic disables this optimization by removing the entire available buffer
+                //when its remainder will not meet the reserve requirement. Circular buffers are exempt
+                //here because they will auto-accumulate larger as resources return from downstream.
+                else if (port._reserveElements != 0 and buffer.getAlias() == 0 and //non-circular buffer
+                    port._elements - port._pendingElements < port._reserveElements) //remainder < reserve
+                {
+                    port.bufferManagerPop(buffer.getBuffer().getLength());
+                }
+
                 else port.bufferManagerPop(buffer.length);
             }
             port.postBuffer(buffer);
         }
+
+        //Outside of produce, the block may use popElements() or increase the reserve.
+        //For these reasons, the reserve logic must be implemented for this case as well.
+        //Because popElements() could have changed the available length of the front buffer,
+        //we re-acquire the current front buffer and check its length against the reserve.
+        else if (port._workEvents != 0 and port._reserveElements != 0 and port._buffer.getAlias() == 0)
+        {
+            BufferChunk buffer; port.bufferManagerFront(buffer);
+            if (buffer.length < port._reserveElements*port._dtype.size())
+            {
+                port.bufferManagerPop(buffer.length);
+            }
+        }
+
         port._buffer.clear(); //clear reference
 
         //sort the posted labels in case the user posted out of order

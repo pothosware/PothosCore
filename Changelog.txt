@@ -3,6 +3,23 @@ This this the changelog file for the Pothos C++ library.
 Release 0.4.0 (pending)
 ==========================
 
+Deprecated Framework API calls:
+
+- Deprecated OutputPort::popBytes, use popElements
+
+New Framework API calls:
+
+- Added OutputPort::setReserve function call
+- Added OutputPort::popElements function call
+- Added OutputPort::getBuffer function call
+- Added InputPort::peekMessage function call
+- Added BlockRegistry::make block proxy factory
+- Added Block::emitSignal to replace callVoid
+- Added DType::fromDType factory method
+- Added BufferChunk::convert into a specified buffer
+
+General additions and changes:
+
 - Support global variables in JSON Topology description
 - BufferChunk management of multiple buffer references
 - Moved EvalEnvironment interface into public headers
@@ -10,9 +27,7 @@ Release 0.4.0 (pending)
 - Use default debug log level for plugin registry events
 - Allow for plugin module re-initialization after deinit()
 - Fixed weak storage of plugin's associated module object
-- Added fromDType() factory method to DType class
-- Updated the internal Poco submodule to version 1.7.3
-- Added buffer chunk API to convert into a specified buffer
+- Updated the internal Poco submodule to version 1.7.4
 
 Release 0.3.3 (2016-05-10)
 ==========================
