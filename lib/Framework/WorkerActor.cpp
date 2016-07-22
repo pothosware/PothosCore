@@ -469,6 +469,20 @@ void Pothos::WorkerActor::postWorkTasks(void)
             }
             port.postBuffer(buffer);
         }
+
+        //Outside of produce, the block may use popElements() or increase the reserve.
+        //For these reasons, the reserve logic must be implemented for this case as well.
+        //Because popElements() could have changed the available length of the front buffer,
+        //we re-acquire the current front buffer and check its length against the reserve.
+        else if (port._workEvents != 0 and port._reserveElements != 0 and port._buffer.getAlias() == 0)
+        {
+            BufferChunk buffer; port.bufferManagerFront(buffer);
+            if (buffer.length < port._reserveElements*port._dtype.size())
+            {
+                port.bufferManagerPop(buffer.length);
+            }
+        }
+
         port._buffer.clear(); //clear reference
 
         //sort the posted labels in case the user posted out of order
