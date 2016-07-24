@@ -14,32 +14,36 @@
  * Singleton for initialization once per process
  **********************************************************************/
 namespace Pothos {
-struct InitSingleton
-{
-    InitSingleton(void);
-};
+
+    class InitSingleton
+    {
+    public:
+        InitSingleton(void);
+        static InitSingleton &instance(void);
+        void load(void);
+        void unload(void);
+
+    private:
+        std::vector<Pothos::PluginModule> modules;
+    };
+
 } //namespace Pothos
 
-static Pothos::InitSingleton &getInitSingleton(void)
+Pothos::InitSingleton &Pothos::InitSingleton::instance(void)
 {
     static Poco::SingletonHolder<Pothos::InitSingleton> sh;
     return *sh.get();
 }
 
-static std::vector<Pothos::PluginModule> &getLoadedModules(void)
+void Pothos::InitSingleton::load(void)
 {
-    static Poco::SingletonHolder<std::vector<Pothos::PluginModule>> sh;
-    return *sh.get();
+    if (not modules.empty()) return;
+    modules = PluginLoader::loadModules();
 }
 
-void Pothos::init(void)
+void Pothos::InitSingleton::unload(void)
 {
-    //performs one-time checks
-    getInitSingleton();
-
-    //load the modules for plugin system
-    if (not getLoadedModules().empty()) return;
-    getLoadedModules() = PluginLoader::loadModules();
+    modules.clear();
 }
 
 /***********************************************************************
@@ -111,9 +115,14 @@ Pothos::InitSingleton::InitSingleton(void)
     ));
 }
 
+void Pothos::init(void)
+{
+    Pothos::InitSingleton::instance().load();
+}
+
 void Pothos::deinit(void)
 {
-    getLoadedModules().clear();
+    Pothos::InitSingleton::instance().unload();
 }
 
 Pothos::ScopedInit::ScopedInit(void)
