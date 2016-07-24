@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -35,7 +35,7 @@ static Port proxyToPort(const Pothos::Proxy &portProxy)
 {
     Port port;
     port.name = portProxy.call<std::string>("get:name");
-    port.obj = portProxy.callProxy("get:obj");
+    port.obj = portProxy.get("obj");
     port.uid = portProxy.call<std::string>("get:uid");
     port.objName = portProxy.call<std::string>("get:objName");
     return port;
@@ -78,8 +78,8 @@ std::vector<Flow> resolveFlowsFromTopology(const Pothos::Topology &t)
 static Flow proxyToFlow(const Pothos::Proxy &flowProxy)
 {
     Flow flow;
-    flow.src = proxyToPort(flowProxy.callProxy("get:src"));
-    flow.dst = proxyToPort(flowProxy.callProxy("get:dst"));
+    flow.src = proxyToPort(flowProxy.get("src"));
+    flow.dst = proxyToPort(flowProxy.get("dst"));
     return flow;
 }
 

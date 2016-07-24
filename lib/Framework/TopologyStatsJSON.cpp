@@ -27,7 +27,7 @@ static Poco::JSON::Object::Ptr queryWorkStats(const Pothos::Proxy &block)
     catch (Pothos::Exception &) {}
 
     //otherwise, regular block, query stats
-    auto actor = block.callProxy("get:_actor");
+    auto actor = block.get("_actor");
     auto workStats = actor.call<Poco::JSON::Object::Ptr>("queryWorkStats");
     Poco::JSON::Object::Ptr topStats(new Poco::JSON::Object());
     topStats->set(block.call<std::string>("uid"), workStats);

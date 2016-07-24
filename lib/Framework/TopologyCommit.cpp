@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -39,19 +39,19 @@ std::string collectFutureInfoErrors(const std::vector<FutureInfo> infoFutures)
  **********************************************************************/
 static std::string getBufferMode(const Port &port, const std::string &domain, const bool &isInput)
 {
-    auto actor = port.obj.callProxy("get:_actor");
+    auto actor = port.obj.get("_actor");
     return actor.call<std::string>("getBufferMode", port.name, domain, isInput);
 }
 
 static Pothos::Proxy getBufferManager(const Port &port, const std::string &domain, const bool &isInput)
 {
-    auto actor = port.obj.callProxy("get:_actor");
+    auto actor = port.obj.get("_actor");
     return actor.callProxy("getBufferManager", port.name, domain, isInput);
 }
 
 static void setOutputBufferManager(const Port &src, const Pothos::Proxy &manager)
 {
-    src.obj.callProxy("get:_actor").callVoid("setOutputBufferManager", src.name, manager);
+    src.obj.get("_actor").callVoid("setOutputBufferManager", src.name, manager);
 }
 
 static void installBufferManagers(const std::vector<Flow> &flatFlows)
@@ -129,11 +129,11 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
 static void subscribePort(const Port &src, const Port &dst, const std::string &action)
 {
     {
-        auto actor = src.obj.callProxy("get:_actor");
+        auto actor = src.obj.get("_actor");
         actor.callVoid("subscribeInput", action, src.name, dst.obj.callProxy("input", dst.name));
     }
     {
-        auto actor = dst.obj.callProxy("get:_actor");
+        auto actor = dst.obj.get("_actor");
         actor.callVoid("subscribeOutput", action, dst.name, src.obj.callProxy("output", src.name));
     }
 }
@@ -201,7 +201,7 @@ static std::vector<Flow> completePassThroughFlows(const std::vector<Flow> &flows
  **********************************************************************/
 static void setActiveState(const Pothos::Proxy &block, const bool state)
 {
-    block.callProxy("get:_actor").callVoid(state?"setActiveStateOn":"setActiveStateOff");
+    block.get("_actor").callVoid(state?"setActiveStateOn":"setActiveStateOff");
 }
 
 void topologySubCommit(Pothos::Topology &topology)
