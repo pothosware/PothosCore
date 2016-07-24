@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -43,7 +43,7 @@ static void test_inheritance0(Pothos::ProxyEnvironment::Sptr env)
         .commit("MyBaseClass0");
 
     //prove that base class can work
-    auto myBase0 = env->findProxy("MyBaseClass0").callProxy("new");
+    auto myBase0 = env->findProxy("MyBaseClass0")();
     POTHOS_TEST_EQUAL(-42, myBase0.call<int>("negateInt", 42));
 
     Pothos::ManagedClass()
@@ -52,7 +52,7 @@ static void test_inheritance0(Pothos::ProxyEnvironment::Sptr env)
         .commit("MyDerivedClass0");
 
     //prove that derived class has the base methods
-    auto myDerived0 = env->findProxy("MyDerivedClass0").callProxy("new");
+    auto myDerived0 = env->findProxy("MyDerivedClass0")();
     POTHOS_TEST_EQUAL(-42, myDerived0.call<int>("negateInt", 42));
 
     //runtime registration does not associate the module

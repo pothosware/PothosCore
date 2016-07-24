@@ -101,4 +101,10 @@ void Proxy::set(const std::string &name, ValueType&& value) const
     this->callVoid("set:"+name, std::forward<ValueType>(value));
 }
 
+template <typename... ArgsType>
+Proxy Proxy::operator()(ArgsType&&... args) const
+{
+    return this->callProxy("()", std::forward<ArgsType>(args)...);
+}
+
 } //namespace Pothos

@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -50,14 +50,14 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_wildcard_calls)
         auto SuperWildcardProxy = env->findProxy("SuperWildcard");
 
         //we should be setting and getting an empty string
-        auto sop0 = SuperWildcardProxy.callProxy("new");
+        auto sop0 = SuperWildcardProxy();
         POTHOS_TEST_EQUAL(sop0.call<std::string>("foo"), std::string(""));
 
         //change the value
         POTHOS_TEST_EQUAL(sop0.call<std::string>("foo", "hello"), std::string("hello"));
 
         //initial value
-        auto sop1 = SuperWildcardProxy.callProxy("new", "world");
+        auto sop1 = SuperWildcardProxy("world");
         POTHOS_TEST_EQUAL(sop1.call<std::string>("foo"), std::string("world"));
 
         //static test

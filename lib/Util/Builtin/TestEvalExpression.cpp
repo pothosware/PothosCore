@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016" Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -14,7 +14,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
     //check that the following does not throw
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
-    auto evalEnv = EvalEnvironment.callProxy("new");
+    auto evalEnv = EvalEnvironment();
 
     //booleans
     const auto resultT = evalEnv.call<Pothos::Object>("eval", "true");
@@ -39,7 +39,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
 POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
-    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("new");
+    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment")();
 
     //the empty test
     {
@@ -102,7 +102,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
 POTHOS_TEST_BLOCK("/util/tests", test_eval_map_expression)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
-    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("new");
+    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment")();
 
     //the empty test
     {
@@ -145,7 +145,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_map_expression)
 POTHOS_TEST_BLOCK("/util/tests", test_eval_with_constants)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
-    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("new");
+    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment")();
 
     //simple test
     {
@@ -198,7 +198,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_with_constants)
 POTHOS_TEST_BLOCK("/util/tests", test_eval_constant_obj)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
-    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("new");
+    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment")();
 
     //short type
     {
