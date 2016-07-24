@@ -89,4 +89,16 @@ void Proxy::callVoid(const std::string &name, ArgsType&&... args) const
     this->callProxy(name, std::forward<ArgsType>(args)...);
 }
 
+template <typename ReturnType>
+ReturnType Proxy::get(const std::string &name) const
+{
+    return this->call<ReturnType>("get:"+name);
+}
+
+template <typename ValueType>
+void Proxy::set(const std::string &name, ValueType&& value) const
+{
+    this->callVoid("set:"+name, std::forward<ValueType>(value));
+}
+
 } //namespace Pothos

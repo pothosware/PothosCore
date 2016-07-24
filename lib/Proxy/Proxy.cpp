@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Proxy/Proxy.hpp>
@@ -37,6 +37,11 @@ std::shared_ptr<Pothos::ProxyEnvironment> Pothos::Proxy::getEnvironment(void) co
 Pothos::Proxy::operator bool(void) const
 {
     return bool(_handle);
+}
+
+Pothos::Proxy Pothos::Proxy::get(const std::string &name) const
+{
+    return this->callProxy("get:"+name);
 }
 
 int Pothos::Proxy::compareTo(const Proxy &other) const
