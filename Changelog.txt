@@ -20,6 +20,7 @@ New Framework API calls:
 
 General additions and changes:
 
+- Added set, get, and function call operator to Proxy
 - Support global variables in JSON Topology description
 - BufferChunk management of multiple buffer references
 - Moved EvalEnvironment interface into public headers

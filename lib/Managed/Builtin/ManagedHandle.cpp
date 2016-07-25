@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ManagedProxy.hpp"
@@ -30,7 +30,7 @@ int ManagedProxyHandle::compareTo(const Pothos::Proxy &proxy) const
 Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Proxy *args, const size_t numArgs)
 {
     const bool isManagedClass = obj.type() == typeid(Pothos::ManagedClass);
-    const bool callConstructor = isManagedClass and (name == "new" or name == "()");
+    const bool callConstructor = isManagedClass and name == "()";
     const bool callStaticMethod = isManagedClass and not callConstructor;
     const bool callMethod = not isManagedClass;
 
