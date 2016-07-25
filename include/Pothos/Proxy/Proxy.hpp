@@ -10,6 +10,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Object/Object.hpp>
 #include <memory>
 #include <string>
 
@@ -111,6 +112,13 @@ public:
      * The hash code should be identical for equivalent objects.
      */
     size_t hashCode(void) const;
+
+    /*!
+     * Convert this proxy in this environment to a local object.
+     * \throws ProxyEnvironmentConvertError if conversion failed
+     * \return a new Object that contains something in local memory
+     */
+    Object toObject(void) const;
 
     /*!
      * Get the string representation of the Proxy.

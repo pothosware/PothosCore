@@ -37,8 +37,7 @@ static Pothos::ObjectVector convertProxyVectorToObjectVector(const Pothos::Proxy
     Pothos::ObjectVector objVec;
     for (const auto &elem : v)
     {
-        auto o = elem.getEnvironment()->convertProxyToObject(elem);
-        objVec.push_back(o);
+        objVec.push_back(elem.toObject());
     }
     return objVec;
 }
@@ -48,8 +47,7 @@ static Pothos::ObjectSet convertProxySetToObjectSet(const Pothos::ProxySet &s)
     Pothos::ObjectSet objSet;
     for (const auto &elem : s)
     {
-        auto o = elem.getEnvironment()->convertProxyToObject(elem);
-        objSet.insert(o);
+        objSet.insert(elem.toObject());
     }
     return objSet;
 }
@@ -59,9 +57,7 @@ static Pothos::ObjectMap convertProxyMapToObjectMap(const Pothos::ProxyMap &m)
     Pothos::ObjectMap objMap;
     for (const auto &elem : m)
     {
-        auto k = elem.first.getEnvironment()->convertProxyToObject(elem.first);
-        auto v = elem.second.getEnvironment()->convertProxyToObject(elem.second);
-        objMap[k] = v;
+        objMap[elem.first.toObject()] = elem.second.toObject();
     }
     return objMap;
 }

@@ -170,8 +170,7 @@ Pothos::Object Pothos::ProxyEnvironment::convertProxyToObject(const Pothos::Prox
     Pothos::Proxy proxy = proxy_;
     if (proxy.getEnvironment() != this->shared_from_this())
     {
-        auto local = proxy.getEnvironment()->convertProxyToObject(proxy);
-        proxy = this->convertObjectToProxy(local);
+        proxy = this->convertObjectToProxy(proxy.toObject());
     }
 
     //find the plugin in the map, it will be null if not found

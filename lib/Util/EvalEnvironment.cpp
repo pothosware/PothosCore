@@ -92,8 +92,7 @@ static mup::Value objectToMupValue(const Pothos::Object &obj)
         mup::Value arr(1, vec.size(), 0.0);
         for (size_t i = 0; i < vec.size(); i++)
         {
-            const auto obj_i = vec[i].getEnvironment()->convertProxyToObject(vec[i]);
-            arr.At(0, i) = objectToMupValue(obj_i);
+            arr.At(0, i) = objectToMupValue(vec[i].toObject());
         }
         return arr;
     }
@@ -107,10 +106,8 @@ static mup::Value objectToMupValue(const Pothos::Object &obj)
         arr.At(0, i++) = mup::Value(mapTypeId);
         for (const auto &pair : map)
         {
-            const auto key_i = pair.first.getEnvironment()->convertProxyToObject(pair.first);
-            const auto val_i = pair.second.getEnvironment()->convertProxyToObject(pair.second);
-            arr.At(0, i++) = objectToMupValue(key_i);
-            arr.At(0, i++) = objectToMupValue(val_i);
+            arr.At(0, i++) = objectToMupValue(pair.first.toObject());
+            arr.At(0, i++) = objectToMupValue(pair.second.toObject());
         }
         return arr;
     }

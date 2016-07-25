@@ -145,5 +145,5 @@ public:
 template <typename ValueType>
 Pothos::Proxy Pothos::ProxyEnvironment::makeProxy(ValueType &&local)
 {
-    return convertObjectToProxy(Pothos::Object::make(std::forward<ValueType>(local)));
+    return convertObjectToProxy(Pothos::Object(std::forward<ValueType>(local)));
 }

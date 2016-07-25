@@ -3,6 +3,7 @@
 
 #include <Pothos/Proxy/Proxy.hpp>
 #include <Pothos/Proxy/Handle.hpp>
+#include <Pothos/Proxy/Environment.hpp>
 #include <Pothos/Proxy/Exception.hpp>
 #include <cassert>
 
@@ -54,6 +55,12 @@ size_t Pothos::Proxy::hashCode(void) const
 {
     assert(_handle);
     return _handle->hashCode();
+}
+
+Pothos::Object Pothos::Proxy::toObject(void) const
+{
+    assert(_handle);
+    return _handle->getEnvironment()->convertProxyToObject(*this);
 }
 
 std::string Pothos::Proxy::toString(void) const

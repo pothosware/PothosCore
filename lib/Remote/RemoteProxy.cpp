@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "RemoteProxy.hpp"
@@ -157,8 +157,7 @@ std::shared_ptr<RemoteProxyHandle> RemoteProxyEnvironment::getHandle(const Potho
     }
 
     //otherwise perform the conversion
-    auto local = proxy.getEnvironment()->convertProxyToObject(proxy);
-    auto myProxy = this->convertObjectToProxy(local);
+    auto myProxy = this->convertObjectToProxy(proxy.toObject());
     return std::dynamic_pointer_cast<RemoteProxyHandle>(myProxy.getHandle());
 }
 

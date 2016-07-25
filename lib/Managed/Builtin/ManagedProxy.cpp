@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2013 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ManagedProxy.hpp"
@@ -24,8 +24,7 @@ std::shared_ptr<ManagedProxyHandle> ManagedProxyEnvironment::getHandle(const Pot
     {
         try
         {
-            auto local = proxy.getEnvironment()->convertProxyToObject(proxy);
-            myProxy = this->convertObjectToProxy(local);
+            myProxy = this->convertObjectToProxy(proxy.toObject());
         }
         catch (const Pothos::ProxyEnvironmentConvertError &)
         {
