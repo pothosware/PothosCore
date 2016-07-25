@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -89,16 +89,16 @@ static void test_simple_runner(Pothos::ProxyEnvironment::Sptr env)
     POTHOS_TEST_EQUAL(superBarProxy.call<int>("what"), 42);
 
     //make an instance and test
-    auto superBarInstance0 = superBarProxy.callProxy("new");
+    auto superBarInstance0 = superBarProxy();
     superBarInstance0.callVoid("setBar", 123);
     POTHOS_TEST_EQUAL(superBarInstance0.call<int>("getBar"), 123);
 
     //test field access
-    superBarInstance0.callVoid("set:_bar", 321);
-    POTHOS_TEST_EQUAL(superBarInstance0.call<int>("get:_bar"), 321);
+    superBarInstance0.set("_bar", 321);
+    POTHOS_TEST_EQUAL(superBarInstance0.get<int>("_bar"), 321);
 
     //make an instance and test
-    auto superBarInstance1 = superBarProxy.callProxy("new", 21);
+    auto superBarInstance1 = superBarProxy(21);
     POTHOS_TEST_EQUAL(superBarInstance1.call<int>("getBar"), 21);
 
     Pothos::ManagedClass()
@@ -131,9 +131,9 @@ POTHOS_TEST_BLOCK("/proxy/remote/tests", test_inception)
     auto env = Pothos::ProxyEnvironment::make("managed");
 
     //spawn server and connect
-    auto serverHandle1 = env->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://"+Pothos::Util::getWildcardAddr());
+    auto serverHandle1 = env->findProxy("Pothos/RemoteServer")("tcp://"+Pothos::Util::getWildcardAddr());
     auto actualPort1 = serverHandle1.call<std::string>("getActualPort");
-    auto clientHandle1 = env->findProxy("Pothos/RemoteClient").callProxy("new", "tcp://"+Pothos::Util::getLoopbackAddr(actualPort1));
+    auto clientHandle1 = env->findProxy("Pothos/RemoteClient")("tcp://"+Pothos::Util::getLoopbackAddr(actualPort1));
 
     //create a remote environment
     auto &ios = clientHandle1.call<std::iostream &>("getIoStream");
@@ -141,9 +141,9 @@ POTHOS_TEST_BLOCK("/proxy/remote/tests", test_inception)
 
     //now the remove env can make a new server
     //which can now be connected to locally
-    auto serverHandle2 = remoteEnv->findProxy("Pothos/RemoteServer").callProxy("new", "tcp://"+Pothos::Util::getWildcardAddr());
+    auto serverHandle2 = remoteEnv->findProxy("Pothos/RemoteServer")("tcp://"+Pothos::Util::getWildcardAddr());
     auto actualPort2 = serverHandle2.call<std::string>("getActualPort");
-    auto clientHandle2 = env->findProxy("Pothos/RemoteClient").callProxy("new", "tcp://"+Pothos::Util::getLoopbackAddr(actualPort2));
+    auto clientHandle2 = env->findProxy("Pothos/RemoteClient")("tcp://"+Pothos::Util::getLoopbackAddr(actualPort2));
 }
 
 //! A thread to handle remote proxy requests

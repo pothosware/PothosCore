@@ -183,7 +183,7 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
         std::stringstream ss;
         threadPoolObj->getObject(name)->stringify(ss);
         Pothos::ThreadPoolArgs args(ss.str());
-        threadPools[name] = env->findProxy("Pothos/ThreadPool").callProxy("new", args);
+        threadPools[name] = env->findProxy("Pothos/ThreadPool")(args);
     }
 
     //parse global variables

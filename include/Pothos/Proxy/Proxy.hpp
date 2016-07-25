@@ -82,6 +82,21 @@ public:
     template <typename... ArgsType>
     void callVoid(const std::string &name, ArgsType&&... args) const;
 
+    //! Call a field getter with specified return type
+    template <typename ReturnType>
+    ReturnType get(const std::string &name) const;
+
+    //! Call a field getter with Proxy return type
+    Proxy get(const std::string &name) const;
+
+    //! Call a field setter
+    template <typename ValueType>
+    void set(const std::string &name, ValueType&& value) const;
+
+    //! Call the function operator() with a Proxy return and variable args
+    template <typename... ArgsType>
+    Proxy operator()(ArgsType&&... args) const;
+
     /*!
      * Returns a negative integer, zero, or a positive integer as this object is
      * less than, equal to, or greater than the specified object.
