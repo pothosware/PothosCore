@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Callable/CallableImpl.hpp>
@@ -162,3 +162,10 @@ bool Pothos::operator==(const Callable &lhs, const Callable &rhs)
 {
     return (lhs._impl == rhs._impl) and (lhs._boundArgs == rhs._boundArgs);
 }
+
+#include <Pothos/Managed.hpp>
+
+static auto managedCallable = Pothos::ManagedClass()
+    .registerConstructor<Pothos::Callable>()
+    .registerOpaqueMethod("()", &Pothos::Callable::opaqueCall)
+    .commit("Pothos/Callable");
