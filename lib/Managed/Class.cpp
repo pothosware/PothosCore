@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -12,6 +12,63 @@
 #include <vector>
 #include <cctype> //isalnum, tolower
 
+/***********************************************************************
+ * Wrapper for opaque calling into opaque calls
+ **********************************************************************/
+struct OpaqueCallable
+{
+public:
+    OpaqueCallable(void)
+    {
+        return;
+    }
+
+    OpaqueCallable(const Pothos::Callable &call):
+        _call(call)
+    {
+        return;
+    }
+
+    Pothos::Object opaqueCall(const Pothos::Object *args, const size_t numArgs)
+    {
+        return _call.call<Pothos::Object>(args, numArgs);
+    }
+
+private:
+    Pothos::Callable _call;
+};
+
+static auto managedOpaqueCallable = Pothos::ManagedClass()
+    .registerConstructor<OpaqueCallable>()
+    .registerOpaqueMethod("()", &OpaqueCallable::opaqueCall)
+    .commit("Pothos/OpaqueCallable");
+
+/***********************************************************************
+ * Function getter helpers
+ **********************************************************************/
+static Pothos::Callable getUnboundMethod(const Pothos::Callable &method)
+{
+    return method;
+}
+
+static Pothos::Callable getBoundMethod(Pothos::Callable method, const Pothos::Object &instance)
+{
+    return method.bind(instance, 0);
+}
+
+static OpaqueCallable getUnboundOpaqueMethod(const Pothos::Callable &method)
+{
+    return OpaqueCallable(method);
+}
+
+static OpaqueCallable getBoundOpaqueMethod(Pothos::Callable method, const Pothos::Object &instance)
+{
+    return OpaqueCallable(method.bind(instance, 0));
+}
+
+/***********************************************************************
+ * Managed class implementation
+ **********************************************************************/
 struct Pothos::ManagedClass::Impl
 {
     Pothos::Callable referenceToWrapper;
@@ -117,6 +174,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerConstructor(const Callable &
 Pothos::ManagedClass &Pothos::ManagedClass::registerStaticMethod(const std::string &name, const Callable &method)
 {
     _impl->staticMethods[name].push_back(method);
+    _impl->staticMethods["get:"+name].push_back(Callable(&getUnboundMethod).bind(method, 0));
     return *this;
 }
 
@@ -127,6 +185,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerMethod(const std::string &na
         throw ManagedClassTypeError("Pothos::ManagedClass::registerMethod()", "class type mismatch");
     }
     _impl->methods[name].push_back(method);
+    _impl->methods["get:"+name].push_back(Callable(&getBoundMethod).bind(method, 0));
     return *this;
 }
 
@@ -151,6 +210,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerOpaqueStaticMethod(const std
         throw ManagedClassTypeError("Pothos::ManagedClass::registerOpaqueStaticMethod("+name+")", "opaque args incorrect");
     }
     _impl->opaqueStaticMethods[name] = method;
+    _impl->staticMethods["get:"+name].push_back(Callable(&getUnboundOpaqueMethod).bind(method, 0));
     return *this;
 }
 
@@ -175,6 +235,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerOpaqueMethod(const std::stri
         throw ManagedClassTypeError("Pothos::ManagedClass::registerOpaqueMethod("+name+")", "opaque args incorrect");
     }
     _impl->opaqueMethods[name] = method;
+    _impl->methods["get:"+name].push_back(Callable(&getBoundOpaqueMethod).bind(method, 0));
     return *this;
 }
 

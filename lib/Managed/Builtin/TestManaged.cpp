@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -60,4 +60,82 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_containers)
     auto find1 = resultDict.find(env->makeProxy(1));
     POTHOS_TEST_TRUE(find1 != resultDict.end());
     POTHOS_TEST_EQUAL(find1->second.convert<int>(), 2);
+}
+
+struct TestAccessFunctions
+{
+    TestAccessFunctions(void):
+        _value(0)
+    {
+        return;
+    }
+
+    static long addNums(const int num0, const int num1)
+    {
+        return num0 + num1;
+    }
+
+    static Pothos::Object addNums2(const Pothos::Object *args, const size_t numArgs)
+    {
+        if (numArgs > 1) return Pothos::Object(args[0].convert<int>() + args[1].convert<int>());
+        return Pothos::Object("");
+    }
+
+    void setValue(const int value)
+    {
+        _value = value;
+    }
+
+    int getValue(void) const
+    {
+        return _value;
+    }
+
+    Pothos::Object setAndGetValue(const Pothos::Object *args, const size_t numArgs)
+    {
+        if (numArgs > 0) this->setValue(args[0].convert<int>());
+        return Pothos::Object(this->getValue());
+    }
+
+    int _value;
+};
+
+POTHOS_TEST_BLOCK("/proxy/managed/tests", test_function_accessors)
+{
+    Pothos::ManagedClass()
+        .registerConstructor<TestAccessFunctions>()
+        .registerStaticMethod(POTHOS_FCN_TUPLE(TestAccessFunctions, addNums))
+        .registerOpaqueStaticMethod(POTHOS_FCN_TUPLE(TestAccessFunctions, addNums2))
+        .registerMethod(POTHOS_FCN_TUPLE(TestAccessFunctions, setValue))
+        .registerMethod(POTHOS_FCN_TUPLE(TestAccessFunctions, getValue))
+        .registerOpaqueMethod(POTHOS_FCN_TUPLE(TestAccessFunctions, setAndGetValue))
+        .commit("TestAccessFunctions");
+
+    {
+        auto env = Pothos::ProxyEnvironment::make("managed");
+        auto TestAccessFunctionsCls = env->findProxy("TestAccessFunctions");
+
+        //get a function for a static method
+        auto addNumsFcn = TestAccessFunctionsCls.get("addNums");
+        POTHOS_TEST_EQUAL(addNumsFcn(1, 2).convert<long>(), 3);
+
+        //get a function for an opaque static method
+        auto addNums2Fcn = TestAccessFunctionsCls.get("addNums2");
+        POTHOS_TEST_EQUAL(addNums2Fcn(3, 4).convert<long>(), 7);
+
+        //get functions for a class method
+        auto inst0 = TestAccessFunctionsCls();
+        auto setValueInst0 = inst0.get("setValue");
+        auto getValueInst0 = inst0.get("getValue");
+        setValueInst0(1234);
+        POTHOS_TEST_EQUAL(getValueInst0().convert<int>(), 1234);
+
+        //get opaque function for a class method
+        auto setAndGetValueInst0 = inst0.get("setAndGetValue");
+        POTHOS_TEST_EQUAL(setAndGetValueInst0(5678).convert<int>(), 5678);
+    }
+
+    //runtime registration does not associate the module
+    //therefore to be safe, we unregister these classes now
+    Pothos::PluginRegistry::remove("/managed/TestAccessFunctions");
 }
