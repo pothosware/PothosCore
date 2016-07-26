@@ -34,7 +34,7 @@ struct POTHOS_API CallableContainer
 template <typename ValueType>
 Callable &Callable::bind(ValueType &&val, const size_t argNo)
 {
-    return this->bind(Object::make(std::forward<ValueType>(val)), argNo);
+    return this->bind(Object(std::forward<ValueType>(val)), argNo);
 }
 
 namespace Detail {
