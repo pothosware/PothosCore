@@ -66,6 +66,30 @@ static OpaqueCallable getBoundOpaqueMethod(Pothos::Callable method, const Pothos
     return OpaqueCallable(method.bind(instance, 0));
 }
 
+static Pothos::Object getUnboundWildcardMethod(Pothos::Callable method, const std::string &name, const Pothos::Object *args, const size_t numArgs)
+{
+    if (name.size() > 4 and name.substr(0, 4) == "get:")
+    {
+        return Pothos::Object(OpaqueCallable(method.bind(name.substr(4), 0)));
+    }
+    else
+    {
+        return method.call<Pothos::Object>(name, args, numArgs);
+    }
+}
+
+static Pothos::Object getBoundWildcardMethod(Pothos::Callable method, const Pothos::Object &instance, const std::string &name, const Pothos::Object *args, const size_t numArgs)
+{
+    if (name.size() > 4 and name.substr(0, 4) == "get:")
+    {
+        return Pothos::Object(OpaqueCallable(method.bind(instance, 0).bind(name.substr(4), 1)));
+    }
+    else
+    {
+        return method.call<Pothos::Object>(instance, name, args, numArgs);
+    }
+}
+
 /***********************************************************************
  * Managed class implementation
  **********************************************************************/
@@ -220,7 +244,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerWildcardStaticMethod(const C
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::registerWildcardStaticMethod()", "wildcard args incorrect");
     }
-    _impl->wildcardStaticMethod = method;
+    _impl->wildcardStaticMethod = Callable(&getUnboundWildcardMethod).bind(method, 0);
     return *this;
 }
 
@@ -249,7 +273,7 @@ Pothos::ManagedClass &Pothos::ManagedClass::registerWildcardMethod(const Callabl
     {
         throw ManagedClassTypeError("Pothos::ManagedClass::registerWildcardMethod()", "wildcard args incorrect");
     }
-    _impl->wildcardMethod = method;
+    _impl->wildcardMethod = Callable(&getBoundWildcardMethod).bind(method, 0);
     return *this;
 }
 
