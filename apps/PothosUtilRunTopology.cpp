@@ -19,7 +19,8 @@ void PothosUtilBase::runTopology(void)
 
     //sanity check the file
     const auto path = this->config().getString("inputFile");
-    if (Poco::Path(path).getExtension() == "pth")
+    if (Poco::Path(path).getExtension() == "pothos" or
+        Poco::Path(path).getExtension() == "pth")
     {
         throw Pothos::DataFormatException("Cannot load "+path+"!\n"
             "Please export the design to the JSON topology format.");
