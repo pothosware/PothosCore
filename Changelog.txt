@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.4.0 (pending)
+Release 0.4.0 (2016-08-02)
 ==========================
 
 Deprecated Framework API calls:
