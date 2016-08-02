@@ -46,13 +46,12 @@ Architecture: all
 Depends:
     pothos,
     pothos-gui,
-    pothos-widgets,
-    pothos-plotters,
-    pothos-blocks,
-    pothos-comms,
-    pothos-audio,
-    pothos-sdr,
-    pothos-python,
+    pothos-modules-audio,
+    pothos-modules-blocks,
+    pothos-modules-comms,
+    pothos-modules-plotters,
+    pothos-modules-widgets,
+    pothos-modules-sdr,
     ${misc:Depends}
 Description: Meta package for all official toolkits
  This is a metapackage for the most common Pothos toolkits.
