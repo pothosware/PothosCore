@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['get',['get',['../classPothos_1_1BufferPool.html#aa725dd76596d71cd6f0a91c1d50655aa',1,'Pothos::BufferPool::get()'],['../classPothos_1_1System_1_1NumaInfo.html#a2ae9a620d245895aa70d3bfb2706929e',1,'Pothos::System::NumaInfo::get()'],['../classPothos_1_1System_1_1HostInfo.html#ad9e84ed6dfada100727cba70583fa49b',1,'Pothos::System::HostInfo::get()'],['../classPothos_1_1PluginRegistry.html#ad9038d821dd4f15a4d4f6feb6efe0f47',1,'Pothos::PluginRegistry::get()']]],
+  ['get',['get',['../classPothos_1_1BufferPool.html#aa725dd76596d71cd6f0a91c1d50655aa',1,'Pothos::BufferPool::get()'],['../classPothos_1_1System_1_1NumaInfo.html#a2ae9a620d245895aa70d3bfb2706929e',1,'Pothos::System::NumaInfo::get()'],['../classPothos_1_1System_1_1HostInfo.html#ad9e84ed6dfada100727cba70583fa49b',1,'Pothos::System::HostInfo::get()'],['../classPothos_1_1Proxy.html#ac645b93fc0931059cfa67229e6389268',1,'Pothos::Proxy::get(const std::string &amp;name) const '],['../classPothos_1_1Proxy.html#a55c2677402a5e7032086ce9f278c3c71',1,'Pothos::Proxy::get(const std::string &amp;name) const '],['../classPothos_1_1PluginRegistry.html#ad9038d821dd4f15a4d4f6feb6efe0f47',1,'Pothos::PluginRegistry::get()']]],
   ['getabiversion',['getAbiVersion',['../namespacePothos_1_1System.html#a1017bb67a9cd28a706b33e7f522b9f65',1,'Pothos::System']]],
   ['getactualport',['getActualPort',['../classPothos_1_1RemoteServer.html#a72470f3697122e60410c3ce8f39ced67',1,'Pothos::RemoteServer']]],
   ['getaddress',['getAddress',['../classPothos_1_1SharedBuffer.html#a407f110797c76503a6763b18d97b6281',1,'Pothos::SharedBuffer']]],
@@ -20,6 +20,7 @@ var searchData=
   ['getinputbuffermanager',['getInputBufferManager',['../classPothos_1_1Block.html#a323b2577fca93ed31a9f7eda0d9a1107',1,'Pothos::Block']]],
   ['getiostream',['getIoStream',['../classPothos_1_1RemoteClient.html#ad04540b9505f7348cb9e6aff3fcc2b4b',1,'Pothos::RemoteClient']]],
   ['getlength',['getLength',['../classPothos_1_1SharedBuffer.html#a83b83332796b405bcfa8ce106e285192',1,'Pothos::SharedBuffer']]],
+  ['getlibversion',['getLibVersion',['../namespacePothos_1_1System.html#add03f30aee7d006e60ca84a1b5b6aa2c',1,'Pothos::System']]],
   ['getlocaluniquepid',['getLocalUniquePid',['../classPothos_1_1ProxyEnvironment.html#ab3c93cdc281a23746009229be72b4835',1,'Pothos::ProxyEnvironment']]],
   ['getlocatorport',['getLocatorPort',['../classPothos_1_1RemoteServer.html#a0e6014af0174ac0d3bd857e722c39b9a',1,'Pothos::RemoteServer']]],
   ['getloopbackaddr',['getLoopbackAddr',['../namespacePothos_1_1Util.html#a3ef569ac6b5c1d0870edfe2f778bcf01',1,'Pothos::Util']]],
