@@ -12,7 +12,7 @@
 #include <Poco/File.h>
 #include <future>
 
-std::vector<Poco::Path> getModulePaths(const Poco::Path &path)
+static std::vector<Poco::Path> getModulePaths(const Poco::Path &path)
 {
     poco_debug(Poco::Logger::get("Pothos.PluginLoader.load"), path.toString());
 
