@@ -166,6 +166,7 @@ list(APPEND POTHOS_SOURCES
     Framework/BufferAccumulator.cpp
     Framework/BlockRegistry.cpp
     Framework/Exception.cpp
+    Framework/ConfLoader.cpp
 
     Framework/Builtin/CircularBufferManager.cpp
     Framework/Builtin/TestBufferChunkSerialization.cpp
