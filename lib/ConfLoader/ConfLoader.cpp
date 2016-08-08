@@ -1,7 +1,6 @@
 // Copyright (c) 2016-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include <Pothos/Plugin/Loader.hpp>
 #include <Pothos/System.hpp>
 #include <Pothos/Plugin.hpp>
 #include <Poco/StringTokenizer.h>
@@ -13,8 +12,6 @@
 #include <Poco/Format.h>
 #include <Poco/Util/IniFileConfiguration.h>
 #include <future>
-#include <fstream>
-#include <iostream>
 
 static Poco::Logger &confLoaderLogger(void)
 {
@@ -22,27 +19,22 @@ static Poco::Logger &confLoaderLogger(void)
     return logger;
 }
 
-static std::vector<std::string> loadConfFile(const std::string &path)
+/***********************************************************************
+ * Load a config file by iterating through sections and running action
+ **********************************************************************/
+static std::vector<Pothos::PluginPath> loadConfFile(const std::string &path)
 {
+    std::vector<Pothos::PluginPath> entries;
     poco_debug_f1(confLoaderLogger(), "loading %s", path);
 
-    std::vector<std::string> entries;
+    //parse the configuration file with the INI parser
     Poco::AutoPtr<Poco::Util::IniFileConfiguration> conf(new Poco::Util::IniFileConfiguration(path));
+
+    //iterate through each section
     Poco::Util::AbstractConfiguration::Keys rootKeys; conf->keys(rootKeys);
     for (const auto &rootKey : rootKeys)
     {
         poco_debug_f2(confLoaderLogger(), "loading %s[%s]", path, rootKey);
-
-        //get the plugin path
-        if (not conf->hasProperty(rootKey+".path")) throw Pothos::Exception(
-            Poco::format("%s[%s] does not specify a path", path, rootKey));
-        const auto pluginPath = Pothos::PluginPath(conf->getString(rootKey+".path"));
-
-        //get the loader type
-        if (not conf->hasProperty(rootKey+".loader")) throw Pothos::Exception(
-            Poco::format("%s[%s] does not specify a loader", path, rootKey));
-        const std::string loader(conf->getString(rootKey+".loader"));
-        //TODO does loader exist?
 
         //create a mapping of the config data
         Poco::Util::AbstractConfiguration::Keys subKeys; conf->keys(rootKey, subKeys);
@@ -52,25 +44,41 @@ static std::vector<std::string> loadConfFile(const std::string &path)
             subConfig[subKey] = conf->getString(rootKey+"."+subKey);
         }
 
-        //load optional JSON description from file
-        if (conf->hasProperty(rootKey+".description"))
-        {
-            Poco::Path descPath(conf->getString(rootKey+".description"));
-            descPath.makeAbsolute(Poco::Path(path).makeParent());
-            if (not Poco::File(descPath).exists()) throw Pothos::Exception(
-            Poco::format("%s[%s] description path %s does not exist", path, rootKey, descPath.toString()));
-            std::ifstream ifs(Poco::Path::expand(descPath.toString()));
-            const std::string desc((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        //and other config file parameters
+        subConfig["confFilePath"] = path;
+        subConfig["confFileSection"] = rootKey;
 
-            //register the contents into the plugin registry
-            const Pothos::PluginPath descPluginPath("/blocks/docs"+pluginPath.toString());
-            Pothos::PluginRegistry::add(descPluginPath, desc);
-            entries.push_back(descPluginPath.toString());
+        //handle the loader
+        POTHOS_EXCEPTION_TRY
+        {
+            //get the loader
+            if (not conf->hasProperty(rootKey+".loader")) throw Pothos::Exception(
+                Poco::format("%s[%s] does not specify a loader", path, rootKey));
+            const std::string loader(conf->getString(rootKey+".loader"));
+            const auto loaderPath = Pothos::PluginPath("/framework/conf_loader").join(loader);
+            if (not Pothos::PluginRegistry::exists(loaderPath)) throw Pothos::Exception(
+                Poco::format("%s[%s] loader %s does not exist", path, rootKey, loader));
+
+            //call the loader
+            const auto plugin = Pothos::PluginRegistry::get(loaderPath);
+            const auto &loaderFcn = plugin.getObject().extract<Pothos::Callable>();
+            const auto subEntries = loaderFcn.call<std::vector<std::string>>(subConfig);
+            entries.insert(entries.end(), subEntries.begin(), subEntries.end());
+        }
+        POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
+        {
+            //log an error here, but do not re-throw when a particular loader fails
+            //we must return successfully all loaded entries so they can be unloaded later
+            poco_error_f3(confLoaderLogger(), "%s[%s] %s", path, rootKey, ex.message());
         }
     }
+
     return entries;
 }
 
+/***********************************************************************
+ * Traverse a path for configuration files
+ **********************************************************************/
 static std::vector<Poco::Path> getConfFilePaths(const Poco::Path &path)
 {
     poco_debug_f1(confLoaderLogger(), "traversing %s", path.toString());
@@ -96,7 +104,10 @@ static std::vector<Poco::Path> getConfFilePaths(const Poco::Path &path)
     return paths;
 }
 
-std::vector<std::string> Pothos_ConfLoader_loadConfFiles(void)
+/***********************************************************************
+ * Entry point: traversal and loading of configuration files
+ **********************************************************************/
+std::vector<Pothos::PluginPath> Pothos_ConfLoader_loadConfFiles(void)
 {
     //the default search path
     std::vector<Poco::Path> searchPaths;
@@ -123,7 +134,7 @@ std::vector<std::string> Pothos_ConfLoader_loadConfFiles(void)
     }
 
     //traverse the search paths and spawn futures
-    std::vector<std::future<std::vector<std::string>>> futures;
+    std::vector<std::future<std::vector<Pothos::PluginPath>>> futures;
     for (const auto &searchPath : searchPaths)
     {
         for (const auto &path : getConfFilePaths(searchPath.absolute()))
@@ -133,13 +144,13 @@ std::vector<std::string> Pothos_ConfLoader_loadConfFiles(void)
     }
 
     //wait for completion of future module load
-    std::vector<std::string> entries;
+    std::vector<Pothos::PluginPath> entries;
     for (auto &future : futures)
     {
         POTHOS_EXCEPTION_TRY
         {
-            auto entries_i = future.get();
-            entries.insert(entries.end(), entries_i.begin(), entries_i.end());
+            auto subEntries = future.get();
+            entries.insert(entries.end(), subEntries.begin(), subEntries.end());
         }
         POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
         {

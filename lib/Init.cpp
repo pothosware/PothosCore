@@ -11,7 +11,7 @@
 #include <Poco/SingletonHolder.h>
 
 //from lib/Framework/ConfLoader.cpp
-std::vector<std::string> Pothos_ConfLoader_loadConfFiles(void);
+std::vector<Pothos::PluginPath> Pothos_ConfLoader_loadConfFiles(void);
 
 /***********************************************************************
  * Singleton for initialization once per process
@@ -28,7 +28,7 @@ namespace Pothos {
 
     private:
         std::vector<Pothos::PluginModule> modules;
-        std::vector<std::string> confLoadedPaths;
+        std::vector<Pothos::PluginPath> confLoadedPaths;
     };
 
 } //namespace Pothos
