@@ -10,16 +10,70 @@
 #include <Poco/Logger.h>
 #include <Poco/Path.h>
 #include <Poco/File.h>
+#include <Poco/Format.h>
+#include <Poco/Util/IniFileConfiguration.h>
 #include <future>
+#include <fstream>
+#include <iostream>
+
+static Poco::Logger &confLoaderLogger(void)
+{
+    static Poco::Logger &logger(Poco::Logger::get("Pothos.ConfLoader"));
+    return logger;
+}
 
 static std::vector<std::string> loadConfFile(const std::string &path)
 {
-    return std::vector<std::string>();
+    poco_debug_f1(confLoaderLogger(), "loading %s", path);
+
+    std::vector<std::string> entries;
+    Poco::AutoPtr<Poco::Util::IniFileConfiguration> conf(new Poco::Util::IniFileConfiguration(path));
+    Poco::Util::AbstractConfiguration::Keys rootKeys; conf->keys(rootKeys);
+    for (const auto &rootKey : rootKeys)
+    {
+        poco_debug_f2(confLoaderLogger(), "loading %s[%s]", path, rootKey);
+
+        //get the plugin path
+        if (not conf->hasProperty(rootKey+".path")) throw Pothos::Exception(
+            Poco::format("%s[%s] does not specify a path", path, rootKey));
+        const auto pluginPath = Pothos::PluginPath(conf->getString(rootKey+".path"));
+
+        //get the loader type
+        if (not conf->hasProperty(rootKey+".loader")) throw Pothos::Exception(
+            Poco::format("%s[%s] does not specify a loader", path, rootKey));
+        const std::string loader(conf->getString(rootKey+".loader"));
+        //TODO does loader exist?
+
+        //create a mapping of the config data
+        Poco::Util::AbstractConfiguration::Keys subKeys; conf->keys(rootKey, subKeys);
+        std::map<std::string, std::string> subConfig;
+        for (const auto &subKey : subKeys)
+        {
+            subConfig[subKey] = conf->getString(rootKey+"."+subKey);
+        }
+
+        //load optional JSON description from file
+        if (conf->hasProperty(rootKey+".description"))
+        {
+            Poco::Path descPath(conf->getString(rootKey+".description"));
+            descPath.makeAbsolute(Poco::Path(path).makeParent());
+            if (not Poco::File(descPath).exists()) throw Pothos::Exception(
+            Poco::format("%s[%s] description path %s does not exist", path, rootKey, descPath.toString()));
+            std::ifstream ifs(Poco::Path::expand(descPath.toString()));
+            const std::string desc((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+
+            //register the contents into the plugin registry
+            const Pothos::PluginPath descPluginPath("/blocks/docs"+pluginPath.toString());
+            Pothos::PluginRegistry::add(descPluginPath, desc);
+            entries.push_back(descPluginPath.toString());
+        }
+    }
+    return entries;
 }
 
 static std::vector<Poco::Path> getConfFilePaths(const Poco::Path &path)
 {
-    poco_debug(Poco::Logger::get("Pothos.ConfLoader.load"), path.toString());
+    poco_debug_f1(confLoaderLogger(), "traversing %s", path.toString());
 
     std::vector<Poco::Path> paths;
 
@@ -52,7 +106,7 @@ std::vector<std::string> Pothos_ConfLoader_loadConfFiles(void)
     confPath.append("blocks");
     searchPaths.push_back(confPath);
 
-    //the user's home directory path
+    //the user's home config path
     confPath = Pothos::System::getUserConfigPath();
     confPath.append("blocks");
     searchPaths.push_back(confPath);
@@ -89,7 +143,7 @@ std::vector<std::string> Pothos_ConfLoader_loadConfFiles(void)
         }
         POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
         {
-            poco_error(Poco::Logger::get("Pothos.ConfLoader.load"), ex.displayText());
+            poco_error(confLoaderLogger(), ex.displayText());
         }
     }
     return entries;
