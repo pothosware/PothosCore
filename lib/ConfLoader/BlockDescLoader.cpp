@@ -8,9 +8,9 @@
 #include <Poco/Path.h>
 #include <Poco/File.h>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <cassert>
+#include <map>
 
 /***********************************************************************
  * Load a JSON block description described by a config file section

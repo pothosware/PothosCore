@@ -12,6 +12,7 @@
 #include <Poco/Format.h>
 #include <Poco/Util/IniFileConfiguration.h>
 #include <future>
+#include <map>
 
 static Poco::Logger &confLoaderLogger(void)
 {
