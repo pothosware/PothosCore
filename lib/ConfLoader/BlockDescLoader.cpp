@@ -70,7 +70,7 @@ static std::vector<Pothos::PluginPath> blockDescLoader(const std::map<std::strin
 }
 
 /***********************************************************************
- * factory and registration
+ * loader registration
  **********************************************************************/
 pothos_static_block(pothosFrameworkRegisterBlockDescLoader)
 {

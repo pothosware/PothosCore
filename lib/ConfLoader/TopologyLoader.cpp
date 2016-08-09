@@ -10,7 +10,7 @@
 //TODO not finished, factory args implementation....
 
 /***********************************************************************
- * Load a JSON block description described by a config file section
+ * Load a JSON topology described by a config file section
  **********************************************************************/
 static std::vector<Pothos::PluginPath> topologyLoader(const std::map<std::string, std::string> &config)
 {
@@ -49,9 +49,9 @@ static std::vector<Pothos::PluginPath> topologyLoader(const std::map<std::string
 }
 
 /***********************************************************************
- * factory and registration
+ * loader registration
  **********************************************************************/
 pothos_static_block(pothosFrameworkRegisterTopologyLoader)
 {
-    Pothos::PluginRegistry::addCall("/framework/conf_loader/TopologyLoader", &topologyLoader);
+    Pothos::PluginRegistry::addCall("/framework/conf_loader/Topology", &topologyLoader);
 }
