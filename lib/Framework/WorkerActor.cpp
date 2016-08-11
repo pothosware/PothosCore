@@ -188,6 +188,7 @@ void Pothos::WorkerActor::setActiveStateOn(void)
     {
         this->activeState = true;
         this->block->activate();
+        this->activityIndicator.fetch_add(1, std::memory_order_relaxed);
     }
     POTHOS_EXCEPTION_CATCH(const Exception &ex)
     {
@@ -205,6 +206,7 @@ void Pothos::WorkerActor::setActiveStateOff(void)
 
     this->activeState = false;
     this->block->deactivate();
+    this->activityIndicator.fetch_add(1, std::memory_order_relaxed);
 }
 
 /***********************************************************************
@@ -254,6 +256,8 @@ void Pothos::WorkerActor::handleSlotCalls(InputPort &port)
         {
             const auto args =  port.slotCallsPop().extract<ObjectVector>();
             block->opaqueCallHandler(port.name(), args.data(), args.size());
+            this->flagInternalChange();
+            this->activityIndicator.fetch_add(1, std::memory_order_relaxed);
         }
         POTHOS_EXCEPTION_CATCH(const Exception &ex)
         {

@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.4.1 (pending)
+==========================
+
+- Bump activity indicator for slots and de/activate
+
 Release 0.4.0 (2016-08-02)
 ==========================
 
