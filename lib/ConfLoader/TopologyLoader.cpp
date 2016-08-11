@@ -2,12 +2,60 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
+#include <Pothos/Framework.hpp>
 #include <Poco/Path.h>
 #include <Poco/File.h>
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Array.h>
+#include <Poco/JSON/Parser.h>
+#include <sstream>
 #include <fstream>
 #include <map>
 
-//TODO not finished, factory args implementation....
+/***********************************************************************
+ * The topology factory loads args into a JSON description
+ * and creates and returns an instance of the topology
+ **********************************************************************/
+static Pothos::Object opaqueJSONTopologyFactory(
+    const std::string &json,
+    const Pothos::Object *args,
+    const size_t numArgs)
+{
+    //parse the json formatted string into a JSON object
+    Poco::JSON::Object::Ptr topObj;
+    try
+    {
+        const auto result = Poco::JSON::Parser().parse(json);
+        topObj = result.extract<Poco::JSON::Object::Ptr>();
+    }
+    catch (const Poco::Exception &ex)
+    {
+        throw Pothos::DataFormatException(ex.message());
+    }
+
+    //apply the global variable overlays
+    if (not topObj->isArray("globals")) topObj->set("globals",
+        Poco::JSON::Array::Ptr(new Poco::JSON::Array()));
+    auto globalsArray = topObj->getArray("globals");
+    if (numArgs > globalsArray->size())
+    {
+        throw Pothos::InvalidArgumentException("too many args passed to factory");
+    }
+
+    for (size_t i = 0; i < numArgs; i++)
+    {
+        if (not globalsArray->isObject(i))
+        {
+            throw Pothos::DataFormatException("global entry not a JSON object");
+        }
+        auto globalVarObj = globalsArray->getObject(i);
+        globalVarObj->set("value", args[i].toString());
+    }
+
+    //create the topology from the JSON string
+    std::stringstream ss; topObj->stringify(ss);
+    return Pothos::Object(Pothos::Topology::make(ss.str()));
+}
 
 /***********************************************************************
  * Load a JSON topology described by a config file section
@@ -41,8 +89,8 @@ static std::vector<Pothos::PluginPath> topologyLoader(const std::map<std::string
     const std::string json((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 
     //create an entry for the factory
-    //not ready yet! need factory args list in design
-    //Pothos::PluginRegistry::addCall(pluginPath, &Pothos::Topology::make
+    const auto factory = Pothos::Callable(&opaqueJSONTopologyFactory).bind(json, 0);
+    Pothos::PluginRegistry::addCall(pluginPath, factory);
 
     entries.push_back(pluginPath);
     return entries;
