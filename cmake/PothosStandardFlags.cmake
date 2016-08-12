@@ -65,6 +65,12 @@ if(MSVC)
     add_compile_options(/wd4251) #disable 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     add_compile_options(/wd4275) #disable non – DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'
     add_compile_options(/wd4503) #'identifier' : decorated name length exceeded, name was truncated
+
+else(MSVC)
+    #define _DEBUG for debug mode flags (used by some macros)
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+
 endif(MSVC)
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
