@@ -63,14 +63,14 @@ static std::vector<Pothos::PluginPath> loadConfFile(const std::string &path)
             //call the loader
             const auto plugin = Pothos::PluginRegistry::get(loaderPath);
             const auto &loaderFcn = plugin.getObject().extract<Pothos::Callable>();
-            const auto subEntries = loaderFcn.call<std::vector<std::string>>(subConfig);
+            const auto subEntries = loaderFcn.call<std::vector<Pothos::PluginPath>>(subConfig);
             entries.insert(entries.end(), subEntries.begin(), subEntries.end());
         }
         POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
         {
             //log an error here, but do not re-throw when a particular loader fails
             //we must return successfully all loaded entries so they can be unloaded later
-            poco_error_f3(confLoaderLogger(), "%s[%s] %s", path, rootKey, ex.message());
+            poco_error_f3(confLoaderLogger(), "%s[%s]\n\t%s", path, rootKey, ex.message());
         }
     }
 
