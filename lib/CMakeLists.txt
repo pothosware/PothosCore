@@ -170,7 +170,7 @@ list(APPEND POTHOS_SOURCES
     ConfLoader/ConfLoader.cpp
     ConfLoader/BlockDescLoader.cpp
     ConfLoader/TopologyLoader.cpp
-    ConfLoader/CppSourceLoader.cpp
+    ConfLoader/SourceLoader.cpp
 
     Framework/Builtin/CircularBufferManager.cpp
     Framework/Builtin/TestBufferChunkSerialization.cpp

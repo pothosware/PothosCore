@@ -84,7 +84,7 @@ static void compilationHelper(
 /***********************************************************************
  * Compile and load blocks built from C++ sources
  **********************************************************************/
-static std::vector<Pothos::PluginPath> cppSourceLoader(const std::map<std::string, std::string> &config)
+static std::vector<Pothos::PluginPath> sourceLoader(const std::map<std::string, std::string> &config)
 {
     std::vector<Pothos::PluginPath> entries;
 
@@ -163,5 +163,5 @@ static std::vector<Pothos::PluginPath> cppSourceLoader(const std::map<std::strin
  **********************************************************************/
 pothos_static_block(pothosFrameworkRegisterCppSourceLoader)
 {
-    Pothos::PluginRegistry::addCall("/framework/conf_loader/CppSource", &cppSourceLoader);
+    Pothos::PluginRegistry::addCall("/framework/conf_loader/Source", &sourceLoader);
 }
