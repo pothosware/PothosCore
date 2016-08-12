@@ -26,6 +26,7 @@
 #include <Pothos/Framework/Topology.hpp>
 #include <Pothos/Framework/TopologyImpl.hpp>
 #include <Pothos/Framework/BlockRegistry.hpp>
+#include <Pothos/Framework/BlockRegistryImpl.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
 #include <Pothos/Framework/BufferAccumulator.hpp>
 #include <Pothos/Framework/BufferPool.hpp>

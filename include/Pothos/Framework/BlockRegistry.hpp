@@ -12,9 +12,6 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Callable/Callable.hpp>
 #include <Pothos/Proxy/Proxy.hpp>
-#include <Pothos/Proxy/ProxyImpl.hpp>
-#include <Pothos/Proxy/Environment.hpp>
-#include <utility> //std::forward
 #include <string>
 
 namespace Pothos {
@@ -58,11 +55,3 @@ public:
 };
 
 } //namespace Pothos
-
-template <typename... ArgsType>
-Pothos::Proxy Pothos::BlockRegistry::make(const std::string &path, ArgsType&&... args)
-{
-    auto env = Pothos::ProxyEnvironment::make("managed");
-    auto registry = env->findProxy("Pothos/BlockRegistry");
-    return registry.callProxy(path, std::forward<ArgsType>(args)...);
-}
