@@ -4,7 +4,7 @@
 /// Static initialization implementation for load-time registration.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -36,6 +36,22 @@
 #endif
 
 /*!
+ * Define POTHOS_PROJECT used as the fixture's outer namespace.
+ * The POTHOS_MODULE_UTIL() will set this to the project name.
+ */
+#ifndef POTHOS_PROJECT
+#define POTHOS_PROJECT PothosProject
+#endif
+
+/*!
+ * Define POTHOS_TARGET used as the fixture's inner namespace.
+ * The POTHOS_MODULE_UTIL() will set this to the target name.
+ */
+#ifndef POTHOS_TARGET
+#define POTHOS_TARGET PothosTarget
+#endif
+
+/*!
  * pothos_static_block - macro that declares code to be run at init time
  * Example usage:
  * pothos_static_block(someValidFunctionName)
@@ -44,6 +60,7 @@
  * }
  */
 #define pothos_static_block(name) \
+    namespace POTHOS_PROJECT { namespace POTHOS_TARGET { \
     POTHOS_STATIC_FIXTURE_DECL void name ## StaticFixtureInit__(void); \
     template <Pothos::Detail::InitFcn init> \
     struct name ## StaticFixture__ \
@@ -53,8 +70,8 @@
             Pothos::Detail::safeInit(POTHOS_ABI_VERSION, #name, init); \
         } \
     }; \
-    static name ## StaticFixture__<&name ## StaticFixtureInit__> name ## StaticFixtureInstance__; \
-    POTHOS_STATIC_FIXTURE_DECL void name ## StaticFixtureInit__(void)
+    static name ## StaticFixture__<&name ## StaticFixtureInit__> name ## StaticFixtureInstance__; }} \
+    POTHOS_STATIC_FIXTURE_DECL void POTHOS_PROJECT::POTHOS_TARGET::name ## StaticFixtureInit__(void)
 
 namespace Pothos {
 namespace Detail {

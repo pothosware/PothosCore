@@ -315,6 +315,8 @@ install(TARGETS Pothos
 
 #get the library name into Paths.cpp for getPothosRuntimeLibraryPath()
 add_definitions("-DPOTHOS_LIBRARY_NAME=\"$<TARGET_FILE_NAME:Pothos>\"")
+add_definitions(-DPOTHOS_PROJECT=PothosProject)
+add_definitions(-DPOTHOS_TARGET=PothosLibrary)
 
 ########################################################################
 # Build pkg config file
