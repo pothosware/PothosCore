@@ -1,10 +1,10 @@
 ///
-/// \file Managed.hpp
+/// \file Pothos/Managed.hpp
 ///
 /// Top level include wrapper for Managed classes.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 

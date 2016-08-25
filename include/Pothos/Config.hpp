@@ -1,5 +1,5 @@
 ///
-/// \file Config.hpp
+/// \file Pothos/Config.hpp
 ///
 /// Common macro definitions for library API export.
 ///

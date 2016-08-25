@@ -1,5 +1,5 @@
 ///
-/// \file Framework.hpp
+/// \file Pothos/Framework.hpp
 ///
 /// Top level include wrapper for Framework classes.
 ///

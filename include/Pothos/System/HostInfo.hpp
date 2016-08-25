@@ -1,10 +1,10 @@
 ///
-/// \file System/Info.hpp
+/// \file System/HostInfo.hpp
 ///
 /// Support for querying information about a host's configuration.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 

@@ -1,10 +1,10 @@
 ///
-/// \file Init.hpp
+/// \file Pothos/Init.hpp
 ///
 /// Initialization calls for library
 ///
 /// \copyright
-/// Copyright (c) 2013-2015 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
