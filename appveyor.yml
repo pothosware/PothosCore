@@ -33,7 +33,8 @@ os: Windows Server 2012 R2
 branches:
   # whitelist
   only:
-  - master
+    - master
+    - maint
 
 before_build:
   # install SoapySDR from source
