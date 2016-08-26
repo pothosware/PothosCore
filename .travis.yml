@@ -24,6 +24,7 @@ env:
 branches:
   only:
     - master
+    - maint
 
 before_install:
   # regular ubuntu packages
