@@ -1,10 +1,10 @@
 ///
-/// \file Exception.hpp
+/// \file Pothos/Exception.hpp
 ///
 /// Definition of various Pothos exception classes.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 /// \copyright
