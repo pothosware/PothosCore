@@ -5,14 +5,10 @@
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 # extract the last section of the changelog version for extra info
-DEB_VERSION_EXTVER ?= $(shell dpkg-parsechangelog | grep ^Version: | rev | cut -d'-' -f1 | rev)
+DEB_VERSION ?= $(shell dpkg-parsechangelog -S Version)
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
-
-# This has to be exported to make some magic below work.
-export DH_OPTIONS
-
 
 %:
 	dh $@ --buildsystem=cmake --parallel
@@ -20,7 +16,7 @@ export DH_OPTIONS
 override_dh_auto_configure:
 	dh_auto_configure -- \
 		-DLIB_SUFFIX="/$(DEB_HOST_MULTIARCH)" \
-		-DPOTHOS_EXTVER="$(DEB_VERSION_EXTVER)" \
+		-DPOTHOS_EXTVER="$(DEB_VERSION)" \
 		-DCMAKE_AUTOSET_INSTALL_RPATH=FALSE \
 		-DENABLE_TOOLKITS=OFF
 
