@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.4.1 (pending)
 ==========================
 
+- Fixed output port reserve handling for empty managers
 - Fix warnings for doxygen generated documentation
 - Set _DEBUG define when not building under MSVC Debug
 - Bump activity indicator for slots and de/activate
