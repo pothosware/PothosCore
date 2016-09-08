@@ -481,7 +481,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
         else if (port._workEvents != 0 and port._reserveElements != 0 and port._buffer.getAlias() == 0)
         {
             BufferChunk buffer; port.bufferManagerFront(buffer);
-            if (buffer.length < port._reserveElements*port._dtype.size())
+            if (buffer.length != 0 and buffer.length < port._reserveElements*port._dtype.size())
             {
                 port.bufferManagerPop(buffer.length);
             }
