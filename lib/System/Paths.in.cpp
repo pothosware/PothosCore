@@ -9,8 +9,8 @@
 
 std::string Pothos::System::getRootPath(void)
 {
-    if (Poco::Environment::has("POTHOS_ROOT"))
-        return Poco::Path(Poco::Environment::get("POTHOS_ROOT")).absolute().toString();
+    if (Poco::Environment::has("@POTHOS_ROOT_ENV@"))
+        return Poco::Path(Poco::Environment::get("@POTHOS_ROOT_ENV@")).absolute().toString();
 
     // Get the path to the current dynamic linked library.
     // The path to this library can be used to determine
