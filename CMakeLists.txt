@@ -12,7 +12,7 @@ enable_testing()
 ########################################################################
 set(POTHOS_MAJOR_VERSION 0)
 set(POTHOS_MINOR_VERSION 4)
-set(POTHOS_PATCH_VERSION 0)
+set(POTHOS_PATCH_VERSION 1)
 set(POTHOS_LIBVER ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATCH_VERSION})
 
 if (NOT POTHOS_EXTVER)
@@ -35,9 +35,16 @@ set(POTHOS_IN_TREE_SOURCE_DIR ${PROJECT_SOURCE_DIR})
 #POTHOS_ROOT is compiled into the library to locate the install base.
 #By default, the POTHOS_ROOT is set to the CMAKE_INSTALL_PREFIX.
 #However users may overload this by specifying -DPOTHOS_ROOT=<path>.
-if(NOT POTHOS_ROOT)
-    file(TO_CMAKE_PATH ${CMAKE_INSTALL_PREFIX} POTHOS_ROOT)
-endif(NOT POTHOS_ROOT)
+set(POTHOS_ROOT "${CMAKE_INSTALL_PREFIX}" CACHE PATH
+    "Installation root for Pothos::System::getRootPath()")
+file(TO_CMAKE_PATH "${POTHOS_ROOT}" POTHOS_ROOT)
+
+#POTHOS_ROOT_ENV is the name of the environment variable
+#which tells SoapySDR where to find the root installation.
+#By default, the environment variable POTHOS_ROOT is used.
+#Example: set -DPOTHOS_ROOT_ENV=SNAP for snappy packages.
+set(POTHOS_ROOT_ENV "POTHOS_ROOT" CACHE STRING
+    "Environment variable for Pothos::System::getRootPath()")
 
 # Include the Pothos library config into the top level.
 # This brings in LIB_SUFFIX and RPATH settings for submodules.
