@@ -13,7 +13,7 @@
 [submodule "poco"]
 	path = poco
 	url = https://github.com/pocoproject/poco.git
-	branch = poco-1.7.4
+	branch = poco-1.7.5
 [submodule "plotters"]
 	path = plotters
 	url = https://github.com/pothosware/pothos-plotters.git

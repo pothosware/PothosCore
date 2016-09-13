@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.4.1 (pending)
 ==========================
 
+- Update internal poco submodule to track poco-1.7.5
 - Dynamic root environment variable for snappy packages
 - Fixed output port reserve handling for empty managers
 - Fix warnings for doxygen generated documentation
