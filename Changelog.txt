@@ -4,7 +4,7 @@ Release 0.4.1 (pending)
 ==========================
 
 - Update internal poco submodule to track poco-1.7.5
-- Dynamic root environment variable for snappy packages
+- Dynamic environment variables for snappy packages
 - Fixed output port reserve handling for empty managers
 - Fix warnings for doxygen generated documentation
 - Set _DEBUG define when not building under MSVC Debug

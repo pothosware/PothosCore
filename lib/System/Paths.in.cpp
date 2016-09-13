@@ -52,9 +52,9 @@ std::string Pothos::System::getUserDataPath(void)
     {
         dataPath = Poco::Path(Poco::Environment::get("XDG_DATA_HOME"));
     }
-    else if (Poco::Environment::has("APPDATA"))
+    else if (Poco::Environment::has("@APPDATA_ENV@"))
     {
-        dataPath = Poco::Path(Poco::Environment::get("APPDATA"));
+        dataPath = Poco::Path(Poco::Environment::get("@APPDATA_ENV@"));
     }
     else
     {
@@ -73,9 +73,9 @@ std::string Pothos::System::getUserConfigPath(void)
     {
         configPath = Poco::Path(Poco::Environment::get("XDG_CONFIG_HOME"));
     }
-    else if (Poco::Environment::has("APPDATA"))
+    else if (Poco::Environment::has("@APPDATA_ENV@"))
     {
-        configPath = Poco::Path(Poco::Environment::get("APPDATA"));
+        configPath = Poco::Path(Poco::Environment::get("@APPDATA_ENV@"));
     }
     else
     {
