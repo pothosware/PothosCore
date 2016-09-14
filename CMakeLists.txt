@@ -40,11 +40,18 @@ set(POTHOS_ROOT "${CMAKE_INSTALL_PREFIX}" CACHE PATH
 file(TO_CMAKE_PATH "${POTHOS_ROOT}" POTHOS_ROOT)
 
 #POTHOS_ROOT_ENV is the name of the environment variable
-#which tells SoapySDR where to find the root installation.
+#which tells Pothos where to find the root installation.
 #By default, the environment variable POTHOS_ROOT is used.
 #Example: set -DPOTHOS_ROOT_ENV=SNAP for snappy packages.
 set(POTHOS_ROOT_ENV "POTHOS_ROOT" CACHE STRING
     "Environment variable for Pothos::System::getRootPath()")
+
+#APPDATA_ENV is the name of the environment variable
+#which tells Pothos where to find the user's data directory.
+#By default, the environment variable APPDATA is used.
+#Example: set -DAPPDATA_ENV=SNAP_USER_DATA for snappy packages.
+set(APPDATA_ENV "APPDATA" CACHE STRING
+    "Environment variable for Pothos::System::getUserDataPath()")
 
 # Include the Pothos library config into the top level.
 # This brings in LIB_SUFFIX and RPATH settings for submodules.
