@@ -26,7 +26,7 @@
  * #endif
  * \endcode
  */
-#define POTHOS_API_VERSION 0x00040000
+#define POTHOS_API_VERSION 0x00050000
 
 /*!
  * ABI Version Information - incremented when the ABI is changed.
@@ -35,7 +35,7 @@
  * and <i>bump</i> signifies a change to the ABI during library development.
  * The ABI should remain constant across patch releases of the library.
  */
-#define POTHOS_ABI_VERSION "0.4-3"
+#define POTHOS_ABI_VERSION "0.5-dev"
 
 namespace Pothos {
 namespace System {

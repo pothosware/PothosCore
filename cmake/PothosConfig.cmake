@@ -80,7 +80,7 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 ########################################################################
 function(_POTHOS_GET_ABI_VERSION VERSION INCLUDE_DIR)
     file(READ "${INCLUDE_DIR}/Pothos/System/Version.hpp" version_hpp)
-    string(REGEX MATCH "\\#define POTHOS_ABI_VERSION \"([0-9]+\\.[0-9]+-[0-9]+)\"" POTHOS_ABI_VERSION_MATCHES "${version_hpp}")
+    string(REGEX MATCH "\\#define POTHOS_ABI_VERSION \"([0-9]+\\.[0-9]+(-[A-Za-z0-9]+)?)\"" POTHOS_ABI_VERSION_MATCHES "${version_hpp}")
     if(NOT POTHOS_ABI_VERSION_MATCHES)
         message(FATAL_ERROR "Failed to extract version number from Version.hpp")
     endif(NOT POTHOS_ABI_VERSION_MATCHES)
