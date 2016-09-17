@@ -4,7 +4,7 @@
 /// Compiler utilities for creating API control of various compilers.
 ///
 /// \copyright
-/// Copyright (c) 2014-2014 Josh Blum
+/// Copyright (c) 2014-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -30,7 +30,7 @@ public:
     //! Create a new args with default Pothos development libraries + includes
     static CompilerArgs defaultDevEnv(void);
 
-    //! A list of sources, not file paths
+    //! A list of source file paths
     std::vector<std::string> sources;
 
     //! A list of include paths
@@ -51,6 +51,9 @@ class POTHOS_API Compiler
 public:
     typedef std::shared_ptr<Compiler> Sptr;
 
+    //! Compiler destructor
+    virtual ~Compiler(void);
+
     /*!
      * Create a compiler instance given the name of the compiler.
      * Plugins for custom Compilers should be located in
@@ -70,9 +73,21 @@ public:
      * Compile a set of C++ sources into a runtime loadable module.
      * \throws Exception with message when a compilation fails
      * \param args the compiler arguments (flags and sources)
-     * \return the output binary generated module as a string
+     * \return the path to the output binary/loadable module
      */
     virtual std::string compileCppModule(const CompilerArgs &args) = 0;
+
+    /*!
+     * Get an absolute path to a temporary file.
+     * The file will be automatically removed
+     * when the Compiler object is destroyed.
+     * \param ext the file extension with dot (ex: ".obj")
+     * \return the full path to a temporary file
+     */
+    const std::string &createTempFile(const std::string &ext = "");
+
+private:
+    std::vector<std::string> _tempFiles;
 };
 
 } //namespace Util

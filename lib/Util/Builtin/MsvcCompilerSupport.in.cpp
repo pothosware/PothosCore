@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/Compiler.hpp>
@@ -14,21 +14,8 @@
 #include <fstream>
 #include <iostream>
 
-static void cleanupTempFiles(const std::vector<std::string> &tempFilesToCleanup)
-{
-    for (const auto &path : tempFilesToCleanup)
-    {
-        Poco::File f(path);
-        if (f.exists()) try
-        {
-            f.remove();
-        }
-        catch(...){}
-    }
-}
-
 /***********************************************************************
- * gcc compiler wrapper
+ * msvc compiler wrapper
  **********************************************************************/
 class MsvcCompilerSupport : public Pothos::Util::Compiler
 {
@@ -58,11 +45,8 @@ private:
 
 std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerArgs &compilerArgs)
 {
-    std::vector<std::string> tempFilesToCleanup;
-
     //create compiler bat script
-    const auto clBatPath = Poco::TemporaryFile::tempName() + ".bat";
-    tempFilesToCleanup.push_back(clBatPath);
+    const auto clBatPath = this->createTempFile(".bat");
     std::ofstream clBatFile(clBatPath.c_str());
     clBatFile << "call \"" << _vcvars_path << "\"" << std::endl;
     clBatFile << "cl.exe %*" << std::endl;
@@ -100,21 +84,16 @@ std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerAr
     //add compiler sources
     for (const auto &source : compilerArgs.sources)
     {
-        const auto filePath = Poco::TemporaryFile::tempName() + ".cpp";
-        tempFilesToCleanup.push_back(filePath);
-        std::ofstream(filePath.c_str()).write(source.data(), source.size());
         args.push_back("/Tp"); //Specifies a C++ source file
-        args.push_back(filePath);
+        args.push_back("\""+source+"\"");
     }
 
     //specify object output
-    const auto objPath = Poco::TemporaryFile::tempName() + ".obj";
-    tempFilesToCleanup.push_back(objPath);
+    const auto objPath = this->createTempFile(".obj");
     args.push_back("/Fo"+objPath); //required: no space between option and argument
 
     //create temp out file
-    const auto outPath = Poco::TemporaryFile::tempName() + Poco::SharedLibrary::suffix();
-    tempFilesToCleanup.push_back(outPath);
+    const auto outPath = this->createTempFile(Poco::SharedLibrary::suffix());
     args.push_back("/link");
     args.push_back("/out:"+outPath);
 
@@ -136,17 +115,11 @@ std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerAr
         const std::string errMsgBuff = std::string(
             std::istreambuf_iterator<char>(errStream),
             std::istreambuf_iterator<char>());
-        cleanupTempFiles(tempFilesToCleanup);
         throw Pothos::Exception("MsvcCompilerSupport::compileCppModule", errMsgBuff);
     }
 
-    //output file to string
-    std::ifstream outFile(outPath.c_str(), std::ios::binary);
-    const std::string outBuff = std::string(
-        std::istreambuf_iterator<char>(outFile),
-        std::istreambuf_iterator<char>());
-    cleanupTempFiles(tempFilesToCleanup);
-    return outBuff;
+    //return output file path
+    return outPath;
 }
 
 /***********************************************************************

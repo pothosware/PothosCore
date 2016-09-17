@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/Compiler.hpp>
@@ -8,6 +8,7 @@
 #include <Pothos/System/Paths.hpp>
 #include <Poco/Path.h>
 #include <Poco/File.h>
+#include <Poco/TemporaryFile.h>
 
 Pothos::Util::CompilerArgs::CompilerArgs(void)
 {
@@ -41,6 +42,19 @@ Pothos::Util::CompilerArgs Pothos::Util::CompilerArgs::defaultDevEnv(void)
     return args;
 }
 
+Pothos::Util::Compiler::~Compiler(void)
+{
+    for (const auto &path : _tempFiles)
+    {
+        Poco::File f(path);
+        if (f.exists()) try
+        {
+            f.remove();
+        }
+        catch(...){}
+    }
+}
+
 Pothos::Util::Compiler::Sptr Pothos::Util::Compiler::make(const std::string &name)
 {
     //handle the empty name/automatic case
@@ -67,4 +81,10 @@ Pothos::Util::Compiler::Sptr Pothos::Util::Compiler::make(const std::string &nam
         throw Pothos::Exception("Pothos::Util::Compiler::make("+name+")", ex);
     }
     return compiler;
+}
+
+const std::string &Pothos::Util::Compiler::createTempFile(const std::string &ext)
+{
+    _tempFiles.push_back(Poco::TemporaryFile::tempName() + ext);
+    return _tempFiles.back();
 }

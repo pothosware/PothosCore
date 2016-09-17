@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/Compiler.hpp>
@@ -10,15 +10,6 @@
 #include <Poco/SharedLibrary.h>
 #include <fstream>
 #include <iostream>
-
-static void cleanupTempFiles(const std::vector<std::string> &tempFilesToCleanup)
-{
-    for (const auto &path : tempFilesToCleanup)
-    {
-        Poco::File f(path);
-        if (f.exists()) f.remove();
-    }
-}
 
 /***********************************************************************
  * gcc compiler wrapper
@@ -48,8 +39,6 @@ public:
 
 std::string GccCompilerSupport::compileCppModule(const Pothos::Util::CompilerArgs &compilerArgs)
 {
-    std::vector<std::string> tempFilesToCleanup;
-
     //create args
     Poco::Process::Args args;
 
@@ -78,21 +67,13 @@ std::string GccCompilerSupport::compileCppModule(const Pothos::Util::CompilerArg
     //add compiler sources
     args.push_back("-x");
     args.push_back("c++");
-    if (compilerArgs.sources.size() == 1)
+    for (const auto &source : compilerArgs.sources)
     {
-        args.push_back("-"); //stdin optimization for single source
-    }
-    else for (const auto &source : compilerArgs.sources)
-    {
-        const auto filePath = Poco::TemporaryFile::tempName() + ".cpp";
-        tempFilesToCleanup.push_back(filePath);
-        std::ofstream(filePath.c_str()).write(source.data(), source.size());
-        args.push_back(filePath);
+        args.push_back(source);
     }
 
     //create temp out file
-    const auto outPath = Poco::TemporaryFile::tempName() + Poco::SharedLibrary::suffix();
-    tempFilesToCleanup.push_back(outPath);
+    const auto outPath = this->createTempFile(Poco::SharedLibrary::suffix());
     args.push_back("-o");
     args.push_back(outPath);
 
@@ -102,14 +83,6 @@ std::string GccCompilerSupport::compileCppModule(const Pothos::Util::CompilerArg
     Poco::ProcessHandle ph(Poco::Process::launch(
         "g++", args, &inPipe, &outPipe, &outPipe, env));
 
-    //dump single source into stdin
-    if (compilerArgs.sources.size() == 1)
-    {
-        Poco::PipeOutputStream inStream(inPipe);
-        inStream.write(compilerArgs.sources[0].data(), compilerArgs.sources[0].size());
-        inStream.close();
-    }
-
     //handle error case
     if (ph.wait() != 0)
     {
@@ -117,17 +90,11 @@ std::string GccCompilerSupport::compileCppModule(const Pothos::Util::CompilerArg
         const std::string errMsgBuff = std::string(
             std::istreambuf_iterator<char>(errStream),
             std::istreambuf_iterator<char>());
-        cleanupTempFiles(tempFilesToCleanup);
         throw Pothos::Exception("GccCompilerSupport::compileCppModule", errMsgBuff);
     }
 
-    //output file to string
-    std::ifstream outFile(outPath.c_str(), std::ios::binary);
-    const std::string outBuff = std::string(
-        std::istreambuf_iterator<char>(outFile),
-        std::istreambuf_iterator<char>());
-    cleanupTempFiles(tempFilesToCleanup);
-    return outBuff;
+    //return output file path
+    return outPath;
 }
 
 /***********************************************************************
