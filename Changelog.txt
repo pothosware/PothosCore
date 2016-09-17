@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.5.0 (pending)
+==========================
+
+- Reimplemented compiler support around file paths
+
 Release 0.4.1 (pending)
 ==========================
 
