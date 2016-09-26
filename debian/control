@@ -9,7 +9,7 @@ Build-Depends:
     libpoco-dev (>= 1.6),
     libmuparserx-dev,
     libnuma-dev [amd64 i386]
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Homepage: https://github.com/pothosware/pothos/wiki
 Vcs-Git: https://github.com/pothosware/pothos.git
 Vcs-Browser: https://github.com/pothosware/pothos

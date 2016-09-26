@@ -6,7 +6,7 @@ Release 0.5.0 (pending)
 - Reimplemented compiler support around file paths
 - Reimplemented QFormat for simplification and warnings
 
-Release 0.4.1 (pending)
+Release 0.4.1 (2016-09-26)
 ==========================
 
 - Update internal poco submodule to track poco-1.7.5
