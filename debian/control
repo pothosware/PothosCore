@@ -25,7 +25,7 @@ Package: libpothos0.4-3
 Section: libs
 Architecture: any
 Multi-Arch: same
-Pre-Depends: multiarch-support, ${misc:Pre-Depends}
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Provides: pothos-util
 Conflicts: pothos-util
