@@ -115,12 +115,18 @@ std::vector<Pothos::PluginPath> Pothos_ConfLoader_loadConfFiles(void)
     Poco::Path confPath = Pothos::System::getRootPath();
     confPath.append("share");
     confPath.append("Pothos");
-    confPath.append("blocks");
+    confPath.append("modules");
     searchPaths.push_back(confPath);
+
+    //support /usr/local module installs when the install prefix is /usr
+    if (Pothos::System::getRootPath() == "/usr")
+    {
+        searchPaths.push_back("/usr/local/share/Pothos/modules");
+    }
 
     //the user's home config path
     confPath = Pothos::System::getUserConfigPath();
-    confPath.append("blocks");
+    confPath.append("modules");
     searchPaths.push_back(confPath);
 
     //separator for search paths
