@@ -7,6 +7,7 @@ Release 0.5.0 (pending)
     - With built-in loader for JSON topologies
     - With built-in loader for JIT compilation
     - With built-in loader for block descriptions
+- Added PluginModule boolean operator for checking null
 - Reimplemented compiler support around file paths
 - Reimplemented QFormat for simplification and warnings
 

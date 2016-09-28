@@ -65,6 +65,12 @@ public:
      */
     const std::vector<std::string> &getPluginPaths(void) const;
 
+    /*!
+     * Does the module hold a loaded library?
+     * \return true if the module is non-empty
+     */
+    explicit operator bool(void) const;
+
 private:
     struct Impl;
     std::shared_ptr<Impl> _impl;
