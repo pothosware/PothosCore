@@ -74,5 +74,5 @@ static std::vector<Pothos::PluginPath> blockDescLoader(const std::map<std::strin
  **********************************************************************/
 pothos_static_block(pothosFrameworkRegisterBlockDescLoader)
 {
-    Pothos::PluginRegistry::addCall("/framework/conf_loader/BlockDesc", &blockDescLoader);
+    Pothos::PluginRegistry::addCall("/framework/conf_loader/block_desc", &blockDescLoader);
 }

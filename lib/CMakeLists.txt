@@ -169,8 +169,8 @@ list(APPEND POTHOS_SOURCES
 
     ConfLoader/ConfLoader.cpp
     ConfLoader/BlockDescLoader.cpp
-    ConfLoader/TopologyLoader.cpp
-    ConfLoader/SourceLoader.cpp
+    ConfLoader/JSONTopologyLoader.cpp
+    ConfLoader/JITCompilerLoader.cpp
 
     Framework/Builtin/CircularBufferManager.cpp
     Framework/Builtin/TestBufferChunkSerialization.cpp

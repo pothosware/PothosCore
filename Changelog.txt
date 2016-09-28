@@ -3,6 +3,10 @@ This this the changelog file for the Pothos C++ library.
 Release 0.5.0 (pending)
 ==========================
 
+- Created configuration-file based loader for plugins:
+    - With built-in loader for JSON topologies
+    - With built-in loader for JIT compilation
+    - With built-in loader for block descriptions
 - Reimplemented compiler support around file paths
 - Reimplemented QFormat for simplification and warnings
 

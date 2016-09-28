@@ -60,7 +60,7 @@ static Pothos::Object opaqueJSONTopologyFactory(
 /***********************************************************************
  * Load a JSON topology described by a config file section
  **********************************************************************/
-static std::vector<Pothos::PluginPath> topologyLoader(const std::map<std::string, std::string> &config)
+static std::vector<Pothos::PluginPath> JSONTopologyLoader(const std::map<std::string, std::string> &config)
 {
     std::vector<Pothos::PluginPath> entries;
 
@@ -101,5 +101,5 @@ static std::vector<Pothos::PluginPath> topologyLoader(const std::map<std::string
  **********************************************************************/
 pothos_static_block(pothosFrameworkRegisterTopologyLoader)
 {
-    Pothos::PluginRegistry::addCall("/framework/conf_loader/Topology", &topologyLoader);
+    Pothos::PluginRegistry::addCall("/framework/conf_loader/json_topology", &JSONTopologyLoader);
 }

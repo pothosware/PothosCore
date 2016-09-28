@@ -84,7 +84,7 @@ static void compilationHelper(
 /***********************************************************************
  * Compile and load blocks built from C++ sources
  **********************************************************************/
-static std::vector<Pothos::PluginPath> sourceLoader(const std::map<std::string, std::string> &config)
+static std::vector<Pothos::PluginPath> JITCompilerLoader(const std::map<std::string, std::string> &config)
 {
     std::vector<Pothos::PluginPath> entries;
 
@@ -152,7 +152,7 @@ static std::vector<Pothos::PluginPath> sourceLoader(const std::map<std::string, 
     Pothos::PluginModule pluginModule(outPath.toString());
 
     //store the handle in the registry
-    const auto pluginPath = Pothos::PluginPath("/framework/conf_loader/CppSource/blocks").join(target);
+    const auto pluginPath = Pothos::PluginPath("/framework/conf_loader/jit_compiler/blocks").join(target);
     Pothos::PluginRegistry::add(pluginPath, pluginModule);
     entries.push_back(pluginPath);
     return entries;
@@ -163,5 +163,5 @@ static std::vector<Pothos::PluginPath> sourceLoader(const std::map<std::string, 
  **********************************************************************/
 pothos_static_block(pothosFrameworkRegisterCppSourceLoader)
 {
-    Pothos::PluginRegistry::addCall("/framework/conf_loader/Source", &sourceLoader);
+    Pothos::PluginRegistry::addCall("/framework/conf_loader/jit_compiler", &JITCompilerLoader);
 }
