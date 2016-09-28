@@ -13,29 +13,15 @@
 #include <map>
 
 /***********************************************************************
- * Load a JSON block description described by a config file section
+ * Load a JSON block description from file and register the descriptions.
+ * return a list of registration paths and a list of paths for blocks.
  **********************************************************************/
-static std::vector<Pothos::PluginPath> blockDescLoader(const std::map<std::string, std::string> &config)
+std::vector<Pothos::PluginPath> blockDescParser(std::istream &is, std::vector<Pothos::PluginPath> &blockPaths)
 {
     std::vector<Pothos::PluginPath> entries;
 
-    //config file path set by caller
-    const auto confFilePathIt = config.find("confFilePath");
-    if (confFilePathIt == config.end() or confFilePathIt->second.empty())
-        throw Pothos::Exception("missing confFilePath");
-
-    //determine JSON description file path
-    const auto jsonIt = config.find("json");
-    if (jsonIt == config.end() or jsonIt->second.empty())
-        throw Pothos::Exception("JSON file not specified");
-    Poco::Path jsonPath(jsonIt->second);
-    jsonPath.makeAbsolute(Poco::Path(confFilePathIt->second).makeParent());
-    if (not Poco::File(jsonPath).exists())
-        throw Pothos::Exception(jsonPath.toString() + " does not exist");
-
-    //parse the file into a JSON array
-    std::ifstream ifs(Poco::Path::expand(jsonPath.toString()));
-    const auto result = Poco::JSON::Parser().parse(ifs);
+    //parse the stream into a JSON array
+    const auto result = Poco::JSON::Parser().parse(is);
     Poco::JSON::Array::Ptr arrayOut;
     if (result.type() == typeid(Poco::JSON::Object::Ptr))
     {
@@ -64,9 +50,36 @@ static std::vector<Pothos::PluginPath> blockDescLoader(const std::map<std::strin
             const auto pluginPath = Pothos::PluginPath("/blocks/docs").join(path.substr(1));
             Pothos::PluginRegistry::add(pluginPath, JsonObjStr);
             entries.push_back(pluginPath);
+            blockPaths.push_back(Pothos::PluginPath("/blocks").join(path.substr(1)));
         }
     }
     return entries;
+}
+
+/***********************************************************************
+ * Load a JSON block description described by a config file section
+ **********************************************************************/
+static std::vector<Pothos::PluginPath> blockDescLoader(const std::map<std::string, std::string> &config)
+{
+    //config file path set by caller
+    const auto confFilePathIt = config.find("confFilePath");
+    if (confFilePathIt == config.end() or confFilePathIt->second.empty())
+        throw Pothos::Exception("missing confFilePath");
+
+    //determine JSON description file path
+    const auto jsonIt = config.find("json");
+    if (jsonIt == config.end() or jsonIt->second.empty())
+        throw Pothos::Exception("JSON file not specified");
+    Poco::Path jsonPath(jsonIt->second);
+    jsonPath.makeAbsolute(Poco::Path(confFilePathIt->second).makeParent());
+    if (not Poco::File(jsonPath).exists())
+        throw Pothos::Exception(jsonPath.toString() + " does not exist");
+
+    //open an input file stream
+    std::ifstream ifs(Poco::Path::expand(jsonPath.toString()));
+
+    std::vector<Pothos::PluginPath> blockPaths;
+    return blockDescParser(ifs, blockPaths);
 }
 
 /***********************************************************************

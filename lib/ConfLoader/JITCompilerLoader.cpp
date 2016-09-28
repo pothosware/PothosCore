@@ -4,6 +4,7 @@
 #include <Pothos/Plugin.hpp>
 #include <Pothos/System.hpp>
 #include <Pothos/Util/Compiler.hpp>
+#include <Pothos/Util/FileLock.hpp>
 #include <Poco/Logger.h>
 #include <Poco/Path.h>
 #include <Poco/File.h>
@@ -12,20 +13,35 @@
 #include <Poco/StringTokenizer.h>
 #include <Poco/SharedLibrary.h>
 #include <Poco/Process.h>
+#include <memory>
+#include <mutex>
 #include <map>
 
 static Poco::Logger &sourceLoaderLogger(void)
 {
-    static Poco::Logger &logger(Poco::Logger::get("Pothos.SourceLoader"));
+    static Poco::Logger &logger(Poco::Logger::get("Pothos.JITCompiler"));
     return logger;
 }
+
+struct RegistryJITResult
+{
+    RegistryJITResult(void):
+        loaded(false){}
+
+    std::mutex mutex;
+    bool loaded;
+    Pothos::PluginModule pluginModule;
+    std::vector<Pothos::PluginPath> factories;
+};
+
+std::vector<Pothos::PluginPath> blockDescParser(std::istream &is, std::vector<Pothos::PluginPath> &blockPaths);
 
 /***********************************************************************
  * Helper to manage recompile
  **********************************************************************/
 static void compilationHelper(
     const std::string &target, const Poco::File &outFile,
-    Pothos::Util::CompilerArgs &compilerArgs)
+    const Pothos::Util::CompilerArgs &compilerArgs)
 {
     //check if we need to recompile
     bool recompile = false;
@@ -45,35 +61,6 @@ static void compilationHelper(
     //compiler instance
     const auto compiler = Pothos::Util::Compiler::make();
 
-    //generate JSON block descriptions
-    Poco::Process::Args args;
-    args.push_back("--doc-parse");
-    for (const auto &source : compilerArgs.sources)
-    {
-        args.push_back(source);
-    }
-    const auto blockDescs = compiler->createTempFile(".cpp");
-    args.push_back("--output");
-    args.push_back(blockDescs);
-    compilerArgs.sources.push_back(blockDescs);
-
-    sourceLoaderLogger().information("Parse sources for %s...", target);
-    Poco::Pipe inPipe, outPipe;
-    Poco::Process::Env env;
-    Poco::ProcessHandle ph(Poco::Process::launch(
-        Pothos::System::getPothosUtilExecutablePath(),
-        args, &inPipe, &outPipe, &outPipe, env));
-
-    //handle error case
-    if (ph.wait() != 0)
-    {
-        Poco::PipeInputStream errStream(outPipe);
-        const std::string errMsgBuff = std::string(
-            std::istreambuf_iterator<char>(errStream),
-            std::istreambuf_iterator<char>());
-        throw Pothos::Exception("PothosUtil --doc-parse", errMsgBuff);
-    }
-
     //compile
     sourceLoaderLogger().information("Compile sources for %s...", target);
     const auto tmpOutput = compiler->compileCppModule(compilerArgs);
@@ -82,11 +69,55 @@ static void compilationHelper(
 }
 
 /***********************************************************************
- * Compile and load blocks built from C++ sources
+ * The JIT compiler factory compiles sources on demand
+ * and replaces its plugin registration with the compiled on
+ **********************************************************************/
+static Pothos::Object opaqueJITCompilerFactory(
+    std::shared_ptr<RegistryJITResult> handle,
+    const std::string &target, const Poco::Path &outPath,
+    const Pothos::Util::CompilerArgs &compilerArgs,
+    const Pothos::PluginPath &pluginPath,
+    const Pothos::Object *args,
+    const size_t numArgs)
+{
+    //local mutex lock for the registry
+    std::lock_guard<std::mutex> lock(handle->mutex);
+
+    //file lock for compilation atomicity across processes
+    Pothos::Util::FileLock outputFileLock(outPath.toString());
+    std::lock_guard<Pothos::Util::FileLock> fileLock(outputFileLock);
+
+    //compile if changed
+    compilationHelper(target, outPath, compilerArgs);
+
+    //load the module, only once for all registered entries
+    if (not handle->loaded)
+    {
+        //remove all registrations before loading
+        for (const auto &pluginPath : handle->factories)
+        {
+            Pothos::PluginRegistry::remove(pluginPath);
+        }
+
+        handle->pluginModule = Pothos::PluginModule(outPath.toString());
+        handle->loaded = true;
+    }
+
+    //the actual function from the compiled module
+    const auto plugin = Pothos::PluginRegistry::get(pluginPath);
+    const auto &call = plugin.getObject().extract<Pothos::Callable>();
+    return call.opaqueCall(args, numArgs);
+}
+
+/***********************************************************************
+ * Register factory functions that will compile the source
  **********************************************************************/
 static std::vector<Pothos::PluginPath> JITCompilerLoader(const std::map<std::string, std::string> &config)
 {
     std::vector<Pothos::PluginPath> entries;
+
+    //create handle to hold shared compilation result
+    std::shared_ptr<RegistryJITResult> handle(new RegistryJITResult());
 
     //config file path set by caller
     const auto confFilePathIt = config.find("confFilePath");
@@ -139,21 +170,68 @@ static std::vector<Pothos::PluginPath> JITCompilerLoader(const std::map<std::str
         compilerArgs.flags.push_back(flag);
     }
 
+    //load the factories: use this when providing no block description
+    const auto factoriesIt = config.find("factories");
+    if (factoriesIt != config.end()) for (const auto &factory :
+        Poco::StringTokenizer(factoriesIt->second, ",", tokOptions))
+    {
+        handle->factories.push_back(Pothos::PluginPath("/blocks").join(factory.substr(1)));
+    }
+
     //determine output file
     Poco::Path outPath(Pothos::System::getUserDataPath());
     outPath.append("blocks");
     Poco::File(outPath).createDirectories();
     outPath.append(target + Poco::SharedLibrary::suffix());
 
-    //compile if changed
-    compilationHelper(target, outPath, compilerArgs);
+    //generate JSON block descriptions
+    Poco::Process::Args args;
+    args.push_back("--doc-parse");
+    for (const auto &source : compilerArgs.sources)
+    {
+        args.push_back(source);
+    }
+    args.push_back("--success-code");
+    args.push_back("200");
 
-    //load the module
-    Pothos::PluginModule pluginModule(outPath.toString());
+    Poco::Pipe inPipe, outPipe;
+    Poco::Process::Env env;
+    Poco::ProcessHandle ph(Poco::Process::launch(
+        Pothos::System::getPothosUtilExecutablePath(),
+        args, &inPipe, &outPipe, &outPipe, env));
+    Poco::PipeInputStream outStream(outPipe);
+
+    //handle error case
+    if (ph.wait() != 200)
+    {
+        const std::string errMsgBuff = std::string(
+            std::istreambuf_iterator<char>(outStream),
+            std::istreambuf_iterator<char>());
+        throw Pothos::Exception("PothosUtil --doc-parse", errMsgBuff);
+    }
+
+    //parse the json, store block paths in handle, and store doc paths
+    for (const auto &docPath : blockDescParser(outStream, handle->factories))
+    {
+        entries.push_back(docPath);
+    }
+
+    //register for all factory paths
+    for (const auto &pluginPath : handle->factories)
+    {
+        const auto factory = Pothos::Callable(&opaqueJITCompilerFactory)
+            .bind(handle, 0)
+            .bind(target, 1)
+            .bind(outPath, 2)
+            .bind(compilerArgs, 3)
+            .bind(pluginPath, 4);
+        Pothos::PluginRegistry::addCall(pluginPath, factory);
+        entries.push_back(pluginPath);
+    }
 
     //store the handle in the registry
     const auto pluginPath = Pothos::PluginPath("/framework/conf_loader/jit_compiler/blocks").join(target);
-    Pothos::PluginRegistry::add(pluginPath, pluginModule);
+    Pothos::PluginRegistry::add(pluginPath, handle);
     entries.push_back(pluginPath);
     return entries;
 }
