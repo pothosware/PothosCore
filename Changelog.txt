@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.5.0 (pending)
 ==========================
 
+- Added PluginModule boolean operator for checking null
 - Reimplemented compiler support around file paths
 - Reimplemented QFormat for simplification and warnings
 

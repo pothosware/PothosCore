@@ -125,6 +125,11 @@ const std::vector<std::string> &Pothos::PluginModule::getPluginPaths(void) const
     return _impl->pluginPaths;
 }
 
+Pothos::PluginModule::operator bool(void) const
+{
+    return bool(_impl);
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedPluginModule = Pothos::ManagedClass()
