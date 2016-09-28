@@ -168,6 +168,7 @@ list(APPEND POTHOS_SOURCES
     Framework/Exception.cpp
 
     ConfLoader/ConfLoader.cpp
+    ConfLoader/FileRealPath.cpp
     ConfLoader/BlockDescLoader.cpp
     ConfLoader/JSONTopologyLoader.cpp
     ConfLoader/JITCompilerLoader.cpp

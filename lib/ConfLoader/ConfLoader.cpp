@@ -20,6 +20,8 @@ static Poco::Logger &confLoaderLogger(void)
     return logger;
 }
 
+std::string Pothos_FileRealPath(const std::string &path);
+
 /***********************************************************************
  * Load a config file by iterating through sections and running action
  **********************************************************************/
@@ -90,7 +92,7 @@ static std::vector<Poco::Path> getConfFilePaths(const Poco::Path &path)
     if (not file.exists()) return paths;
     else if (file.isFile() and (path.getExtension() == "conf"))
     {
-        paths.push_back(path);
+        paths.push_back(Pothos_FileRealPath(path.toString()));
     }
     else if (file.isDirectory())
     {
