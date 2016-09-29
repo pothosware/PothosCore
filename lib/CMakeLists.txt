@@ -167,6 +167,12 @@ list(APPEND POTHOS_SOURCES
     Framework/BlockRegistry.cpp
     Framework/Exception.cpp
 
+    ConfLoader/ConfLoader.cpp
+    ConfLoader/FileRealPath.cpp
+    ConfLoader/BlockDescLoader.cpp
+    ConfLoader/JSONTopologyLoader.cpp
+    ConfLoader/JITCompilerLoader.cpp
+
     Framework/Builtin/CircularBufferManager.cpp
     Framework/Builtin/TestBufferChunkSerialization.cpp
     Framework/Builtin/TestBufferConvert.cpp

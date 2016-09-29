@@ -4,11 +4,14 @@
 #include <Pothos/Init.hpp>
 #include <Pothos/Exception.hpp>
 #include <Pothos/System/Paths.hpp>
-#include <Pothos/Plugin/Loader.hpp>
+#include <Pothos/Plugin.hpp>
 #include <Poco/Path.h>
 #include <Poco/File.h>
 #include <Poco/Format.h>
 #include <Poco/SingletonHolder.h>
+
+//from lib/Framework/ConfLoader.cpp
+std::vector<Pothos::PluginPath> Pothos_ConfLoader_loadConfFiles(void);
 
 /***********************************************************************
  * Singleton for initialization once per process
@@ -25,6 +28,7 @@ namespace Pothos {
 
     private:
         std::vector<Pothos::PluginModule> modules;
+        std::vector<Pothos::PluginPath> confLoadedPaths;
     };
 
 } //namespace Pothos
@@ -39,10 +43,15 @@ void Pothos::InitSingleton::load(void)
 {
     if (not modules.empty()) return;
     modules = PluginLoader::loadModules();
+    confLoadedPaths = Pothos_ConfLoader_loadConfFiles();
 }
 
 void Pothos::InitSingleton::unload(void)
 {
+    for (const auto &path : confLoadedPaths)
+    {
+        Pothos::PluginRegistry::remove(path);
+    }
     modules.clear();
 }
 
