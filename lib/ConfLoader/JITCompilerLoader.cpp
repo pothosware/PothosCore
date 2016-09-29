@@ -261,7 +261,7 @@ static std::vector<Pothos::PluginPath> JITCompilerLoader(const std::map<std::str
 /***********************************************************************
  * loader registration
  **********************************************************************/
-pothos_static_block(pothosFrameworkRegisterCppSourceLoader)
+pothos_static_block(pothosFrameworkRegisterJITCompilerLoader)
 {
     Pothos::PluginRegistry::addCall("/framework/conf_loader/jit_compiler", &JITCompilerLoader);
 }

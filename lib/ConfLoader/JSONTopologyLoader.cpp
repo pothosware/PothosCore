@@ -99,7 +99,7 @@ static std::vector<Pothos::PluginPath> JSONTopologyLoader(const std::map<std::st
 /***********************************************************************
  * loader registration
  **********************************************************************/
-pothos_static_block(pothosFrameworkRegisterTopologyLoader)
+pothos_static_block(pothosFrameworkRegisterJSONTopologyLoader)
 {
     Pothos::PluginRegistry::addCall("/framework/conf_loader/json_topology", &JSONTopologyLoader);
 }
