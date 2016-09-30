@@ -14,7 +14,8 @@
 #include <Poco/StringTokenizer.h>
 #include <Poco/NumberFormatter.h>
 #include <Poco/Types.h>
-#include <iostream>
+#include <Poco/File.h>
+#include <Poco/Path.h>
 #include <fstream>
 #include <vector>
 #include <string>
@@ -494,7 +495,7 @@ struct Pothos::Util::BlockDescriptionParser::Impl
 {
     std::map<std::string, Poco::JSON::Object::Ptr> objects;
     Poco::JSON::Array::Ptr array;
-    std::vector<Pothos::PluginPath> factories;
+    std::vector<std::string> factories;
 };
 
 Pothos::Util::BlockDescriptionParser::BlockDescriptionParser(void):
@@ -532,7 +533,14 @@ void Pothos::Util::BlockDescriptionParser::feedStream(std::istream &is)
 
 void Pothos::Util::BlockDescriptionParser::feedFilePath(const std::string &filePath)
 {
-    std::ifstream inputFile(filePath.c_str());
+    if (not Poco::File(filePath).exists())
+        throw Pothos::FileExistsException(filePath);
+
+    std::ifstream inputFile(Poco::Path::expand(filePath));
+
+    if (not inputFile)
+        throw Pothos::OpenFileException(filePath);
+
     try
     {
         this->feedStream(inputFile);
@@ -543,7 +551,7 @@ void Pothos::Util::BlockDescriptionParser::feedFilePath(const std::string &fileP
     }
 }
 
-std::vector<Pothos::PluginPath> Pothos::Util::BlockDescriptionParser::listFactories(void) const
+std::vector<std::string> Pothos::Util::BlockDescriptionParser::listFactories(void) const
 {
     return _impl->factories;
 }
@@ -555,9 +563,9 @@ std::string Pothos::Util::BlockDescriptionParser::getJSONArray(const size_t inde
     return ossJsonArr.str();
 }
 
-std::string Pothos::Util::BlockDescriptionParser::getJSONObject(const Pothos::PluginPath &factoryPath, const size_t indent) const
+std::string Pothos::Util::BlockDescriptionParser::getJSONObject(const std::string &factoryPath, const size_t indent) const
 {
-    const auto &obj = _impl->objects.at(factoryPath.toString());
+    const auto &obj = _impl->objects.at(factoryPath);
     std::stringstream ossJsonObj;
     obj->stringify(ossJsonObj, indent);
     return ossJsonObj.str();

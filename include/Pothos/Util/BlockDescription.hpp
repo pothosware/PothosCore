@@ -11,7 +11,6 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Plugin/Path.hpp>
 #include <iosfwd>
 #include <string>
 #include <vector>
@@ -43,13 +42,14 @@ public:
      * Feed the parser a source file with embedded markup.
      * \param filePath the path to a source file
      * \throws SyntaxException if the parsing failed
+     * \throws FileException for file access errors
      */
     void feedFilePath(const std::string &filePath);
 
     /*!
      * Get all factories that were discovered when parsing.
      */
-    std::vector<Pothos::PluginPath> listFactories(void) const;
+    std::vector<std::string> listFactories(void) const;
 
     /*!
      * Get a JSON array containing all block descriptions.
@@ -62,7 +62,7 @@ public:
      * \param factoryPath a discovered factory path
      * \return a string containing a JSON object
      */
-    std::string getJSONObject(const Pothos::PluginPath &factoryPath, const size_t indent = 0) const;
+    std::string getJSONObject(const std::string &factoryPath, const size_t indent = 0) const;
 
 private:
     struct Impl;

@@ -5,14 +5,12 @@
 #include <Pothos/System.hpp>
 #include <Pothos/Util/Compiler.hpp>
 #include <Pothos/Util/FileLock.hpp>
+#include <Pothos/Util/BlockDescription.hpp>
 #include <Poco/Logger.h>
 #include <Poco/Path.h>
 #include <Poco/File.h>
-#include <Poco/Pipe.h>
-#include <Poco/PipeStream.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/SharedLibrary.h>
-#include <Poco/Process.h>
 #include <memory>
 #include <mutex>
 #include <map>
@@ -41,8 +39,6 @@ struct RegistryJITResult
 
     std::string target; //!< unique target name
 };
-
-std::vector<Pothos::PluginPath> blockDescParser(std::istream &is, std::vector<Pothos::PluginPath> &blockPaths);
 
 /***********************************************************************
  * Helper to manage recompile
@@ -213,32 +209,16 @@ static std::vector<Pothos::PluginPath> JITCompilerLoader(const std::map<std::str
     }
 
     //generate JSON block descriptions
-    Poco::Process::Args args;
-    args.push_back("--doc-parse");
-    for (const auto &source : docSources) args.push_back(source);
-    args.push_back("--success-code");
-    args.push_back("200");
+    Pothos::Util::BlockDescriptionParser parser;
+    for (const auto &source : docSources) parser.feedFilePath(source);
 
-    Poco::Pipe inPipe, outPipe;
-    Poco::Process::Env env;
-    Poco::ProcessHandle ph(Poco::Process::launch(
-        Pothos::System::getPothosUtilExecutablePath(),
-        args, &inPipe, &outPipe, &outPipe, env));
-    Poco::PipeInputStream outStream(outPipe);
-
-    //handle error case
-    if (ph.wait() != 200)
+    //store block paths in handle, and store doc paths
+    for (const auto &factory : parser.listFactories())
     {
-        const std::string errMsgBuff = std::string(
-            std::istreambuf_iterator<char>(outStream),
-            std::istreambuf_iterator<char>());
-        throw Pothos::Exception("PothosUtil --doc-parse", errMsgBuff);
-    }
-
-    //parse the json, store block paths in handle, and store doc paths
-    for (const auto &docPath : blockDescParser(outStream, handle->factories))
-    {
-        entries.push_back(docPath);
+        const auto pluginPath = Pothos::PluginPath("/blocks/docs").join(factory.substr(1));
+        Pothos::PluginRegistry::add(pluginPath, parser.getJSONObject(factory));
+        entries.push_back(pluginPath);
+        handle->factories.push_back(Pothos::PluginPath("/blocks").join(factory.substr(1)));
     }
 
     //register for all factory paths

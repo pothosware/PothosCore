@@ -20,17 +20,17 @@ static void jsonArrayToCppStaticBlock(const Pothos::Util::BlockDescriptionParser
     os << "#include <Pothos/Plugin.hpp>\n";
     os << Poco::format("pothos_static_block(registerPothosBlockDocs%s)\n", target);
     os << "{\n";
-    for (const auto &factoryPath : parser.listFactories())
+    for (const auto &factory : parser.listFactories())
     {
         //create escaped string of json
         std::string escaped;
-        for (const auto &ch : parser.getJSONObject(factoryPath))
+        for (const auto &ch : parser.getJSONObject(factory))
         {
             escaped += "\\x" + Poco::NumberFormatter::formatHex(int(ch), 2/*width*/, false/*no 0x*/);
         }
 
         //register the block description at the specified path
-        const auto pluginPath = Pothos::PluginPath("/blocks/docs").join(factoryPath.toString().substr(1));
+        const auto pluginPath = Pothos::PluginPath("/blocks/docs").join(factory.substr(1));
         os << Poco::format("    Pothos::PluginRegistry::add(\"%s\", std::string(\"%s\"));\n", pluginPath.toString(), escaped);
     }
     os << "}\n";
