@@ -38,13 +38,27 @@ struct RegistryJITResult
     Pothos::Util::CompilerArgs compilerArgs; //! Compiler arguments
 
     std::string target; //!< unique target name
+
+    void removeRegistrations(void)
+    {
+        for (const auto &factoryPath : this->factories)
+        {
+            Pothos::PluginRegistry::remove(factoryPath);
+        }
+        factories.clear();
+    }
+
+    ~RegistryJITResult(void)
+    {
+        this->removeRegistrations();
+    }
 };
 
 /***********************************************************************
  * Helper to manage recompile
  **********************************************************************/
 static void compilationHelper(
-    std::shared_ptr<RegistryJITResult> handle,
+    RegistryJITResult *handle,
     const Poco::File &outFile)
 {
     //check if we need to recompile
@@ -77,7 +91,7 @@ static void compilationHelper(
  * and replaces its plugin registration with the compiled on
  **********************************************************************/
 static Pothos::Object opaqueJITCompilerFactory(
-    std::shared_ptr<RegistryJITResult> handle,
+    RegistryJITResult *handle,
     const Pothos::PluginPath &pluginPath,
     const Pothos::Object *args,
     const size_t numArgs)
@@ -114,11 +128,10 @@ static Pothos::Object opaqueJITCompilerFactory(
     if (not handle->pluginModule)
     {
         //remove all registrations before loading
-        for (const auto &factoryPath : handle->factories)
-        {
-            Pothos::PluginRegistry::remove(factoryPath);
-        }
+        handle->removeRegistrations();
 
+        //load the newly compiled library with plugin module
+        //the plugin module now owns the factory path entries
         handle->pluginModule = Pothos::PluginModule(outPath.toString());
     }
 
@@ -222,13 +235,13 @@ static std::vector<Pothos::PluginPath> JITCompilerLoader(const std::map<std::str
     }
 
     //register for all factory paths
+    //the handle retains ownership of the factory calls
     for (const auto &pluginPath : handle->factories)
     {
         const auto factory = Pothos::Callable(&opaqueJITCompilerFactory)
-            .bind(handle, 0)
+            .bind(handle.get(), 0)
             .bind(pluginPath, 1);
         Pothos::PluginRegistry::addCall(pluginPath, factory);
-        entries.push_back(pluginPath);
     }
 
     //store the handle in the registry
