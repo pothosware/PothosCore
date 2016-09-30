@@ -233,6 +233,7 @@ list(APPEND POTHOS_SOURCES
     Util/Network.cpp
     Util/EvalEnvironment.cpp
     Util/EvalEnvironmentListParsers.cpp
+    Util/BlockDescription.cpp
 
     Util/Builtin/JSONSerialization.cpp
     Util/Builtin/TestJSONSerialization.cpp
