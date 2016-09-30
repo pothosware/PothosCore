@@ -16,7 +16,7 @@
  * Load a JSON block description from file and register the descriptions.
  * return a list of registration paths and a list of paths for blocks.
  **********************************************************************/
-std::vector<Pothos::PluginPath> blockDescParser(std::istream &is, std::vector<Pothos::PluginPath> &blockPaths)
+static std::vector<Pothos::PluginPath> blockDescParser(std::istream &is, std::vector<Pothos::PluginPath> &blockPaths)
 {
     std::vector<Pothos::PluginPath> entries;
 
