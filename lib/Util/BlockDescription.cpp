@@ -467,6 +467,9 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
         }
     }
 
+    //empty state means this was a regular comment block, return null
+    if (state.empty()) return Poco::JSON::Object::Ptr();
+
     topDocs = stripDocArray(topDocs);
     if (topDocs->size() > 0) topObj->set("docs", topDocs);
     if (categories.size() > 0) topObj->set("categories", categories);
@@ -476,7 +479,7 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
     if (calls.size() > 0) topObj->set("calls", calls);
 
     //sanity check for required stuff
-    if (not state.empty() and not topObj->has("path"))
+    if (not topObj->has("path"))
     {
         throw Pothos::SyntaxException("missing |factory declaration");
     }
@@ -505,9 +508,10 @@ void Pothos::Util::BlockDescriptionParser::feedStream(std::istream &is)
     for (const auto &contiguousBlock : extractContiguousBlocks(is))
     {
         const auto obj = parseCommentBlockForMarkup(contiguousBlock);
+        if (not obj) continue;
 
         //store into the array of all description objects
-        if (obj->has("path")) _impl->array->add(obj);
+        _impl->array->add(obj);
 
         //get a list of all paths including aliases
         std::vector<std::string> paths;
@@ -529,8 +533,14 @@ void Pothos::Util::BlockDescriptionParser::feedStream(std::istream &is)
 void Pothos::Util::BlockDescriptionParser::feedFilePath(const std::string &filePath)
 {
     std::ifstream inputFile(filePath.c_str());
-    this->feedStream(inputFile);
-    inputFile.close();
+    try
+    {
+        this->feedStream(inputFile);
+    }
+    catch (const Pothos::Exception &ex)
+    {
+        throw Pothos::SyntaxException(filePath, ex);
+    }
 }
 
 std::vector<Pothos::PluginPath> Pothos::Util::BlockDescriptionParser::listFactories(void) const
@@ -538,17 +548,17 @@ std::vector<Pothos::PluginPath> Pothos::Util::BlockDescriptionParser::listFactor
     return _impl->factories;
 }
 
-std::string Pothos::Util::BlockDescriptionParser::getJSONArray(void) const
+std::string Pothos::Util::BlockDescriptionParser::getJSONArray(const size_t indent) const
 {
     std::stringstream ossJsonArr;
-    _impl->array->stringify(ossJsonArr);
+    _impl->array->stringify(ossJsonArr, indent);
     return ossJsonArr.str();
 }
 
-std::string Pothos::Util::BlockDescriptionParser::getJSONObject(const Pothos::PluginPath &factoryPath) const
+std::string Pothos::Util::BlockDescriptionParser::getJSONObject(const Pothos::PluginPath &factoryPath, const size_t indent) const
 {
     const auto &obj = _impl->objects.at(factoryPath.toString());
     std::stringstream ossJsonObj;
-    obj->stringify(ossJsonObj);
+    obj->stringify(ossJsonObj, indent);
     return ossJsonObj.str();
 }

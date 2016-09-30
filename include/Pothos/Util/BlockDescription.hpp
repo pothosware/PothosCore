@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <cstddef>
 
 namespace Pothos {
 namespace Util {
@@ -54,14 +55,14 @@ public:
      * Get a JSON array containing all block descriptions.
      * \return a string containing a JSON array
      */
-    std::string getJSONArray(void) const;
+    std::string getJSONArray(const size_t indent = 0) const;
 
     /*!
      * Get a JSON object for a single block description.
      * \param factoryPath a discovered factory path
      * \return a string containing a JSON object
      */
-    std::string getJSONObject(const Pothos::PluginPath &factoryPath) const;
+    std::string getJSONObject(const Pothos::PluginPath &factoryPath, const size_t indent = 0) const;
 
 private:
     struct Impl;
