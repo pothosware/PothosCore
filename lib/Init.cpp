@@ -52,6 +52,7 @@ void Pothos::InitSingleton::unload(void)
     {
         Pothos::PluginRegistry::remove(path);
     }
+    confLoadedPaths.clear();
     modules.clear();
 }
 
