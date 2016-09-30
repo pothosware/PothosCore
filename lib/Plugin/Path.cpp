@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin/Path.hpp>
@@ -39,6 +39,12 @@ Pothos::PluginPath::PluginPath(void):
 
 Pothos::PluginPath::PluginPath(const std::string &path):
     _path(path)
+{
+    validatePathString(_path);
+}
+
+Pothos::PluginPath::PluginPath(const PluginPath &path0, const PluginPath &path1):
+    _path(path0._path + path1._path) //should always be valid because of individual PluginPath rules
 {
     validatePathString(_path);
 }
@@ -98,6 +104,7 @@ bool Pothos::operator==(const PluginPath &lhs, const PluginPath &rhs)
 static auto managedPluginPath = Pothos::ManagedClass()
     .registerConstructor<Pothos::PluginPath>()
     .registerConstructor<Pothos::PluginPath, const std::string &>()
+    .registerConstructor<Pothos::PluginPath, const Pothos::PluginPath &, const Pothos::PluginPath &>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::PluginPath, join))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::PluginPath, listNodes))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::PluginPath, toString))

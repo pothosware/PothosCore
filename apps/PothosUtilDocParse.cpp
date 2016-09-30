@@ -30,7 +30,7 @@ static void jsonArrayToCppStaticBlock(const Pothos::Util::BlockDescriptionParser
         }
 
         //register the block description at the specified path
-        const auto pluginPath = Pothos::PluginPath("/blocks/docs").join(factory.substr(1));
+        const auto pluginPath = Pothos::PluginPath("/blocks/docs", factory);
         os << Poco::format("    Pothos::PluginRegistry::add(\"%s\", std::string(\"%s\"));\n", pluginPath.toString(), escaped);
     }
     os << "}\n";

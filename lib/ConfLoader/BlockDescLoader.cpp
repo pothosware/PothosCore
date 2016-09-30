@@ -47,10 +47,10 @@ static std::vector<Pothos::PluginPath> blockDescParser(std::istream &is, std::ve
         //register the block description for every path
         for (const auto &path : paths)
         {
-            const auto pluginPath = Pothos::PluginPath("/blocks/docs").join(path.substr(1));
+            const auto pluginPath = Pothos::PluginPath("/blocks/docs", path);
             Pothos::PluginRegistry::add(pluginPath, JsonObjStr);
             entries.push_back(pluginPath);
-            blockPaths.push_back(Pothos::PluginPath("/blocks").join(path.substr(1)));
+            blockPaths.push_back(Pothos::PluginPath("/blocks", path));
         }
     }
     return entries;

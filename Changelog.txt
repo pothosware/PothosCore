@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.5.0 (pending)
 ==========================
 
+- Added Plugin path API for concatenating two paths
 - Added API for parsing sources for block descriptions
 - Created configuration-file based loader for plugins:
     - With built-in loader for JSON topologies

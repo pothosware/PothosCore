@@ -205,7 +205,7 @@ static std::vector<Pothos::PluginPath> JITCompilerLoader(const std::map<std::str
     if (factoriesIt != config.end()) for (const auto &factory :
         Poco::StringTokenizer(factoriesIt->second, ",", tokOptions))
     {
-        handle->factories.push_back(Pothos::PluginPath("/blocks").join(factory.substr(1)));
+        handle->factories.push_back(Pothos::PluginPath("/blocks", factory));
     }
 
     //generate JSON block descriptions
@@ -215,10 +215,10 @@ static std::vector<Pothos::PluginPath> JITCompilerLoader(const std::map<std::str
     //store block paths in handle, and store doc paths
     for (const auto &factory : parser.listFactories())
     {
-        const auto pluginPath = Pothos::PluginPath("/blocks/docs").join(factory.substr(1));
+        const auto pluginPath = Pothos::PluginPath("/blocks/docs", factory);
         Pothos::PluginRegistry::add(pluginPath, parser.getJSONObject(factory));
         entries.push_back(pluginPath);
-        handle->factories.push_back(Pothos::PluginPath("/blocks").join(factory.substr(1)));
+        handle->factories.push_back(Pothos::PluginPath("/blocks", factory));
     }
 
     //register for all factory paths

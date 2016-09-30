@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Block.hpp>
@@ -34,7 +34,7 @@ Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &fa
     PluginPath fullPath;
     try
     {
-        fullPath = PluginPath("/blocks").join(path.substr(1));
+        fullPath = PluginPath("/blocks", path);
     }
     catch (const PluginPathError &)
     {
@@ -74,7 +74,7 @@ Pothos::BlockRegistry::BlockRegistry(const std::string &path, const Callable &fa
  **********************************************************************/
 static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::Object *args, const size_t numArgs)
 {
-    const auto pluginPath = Pothos::PluginPath("/blocks").join(path.substr(1));
+    const auto pluginPath = Pothos::PluginPath("/blocks", path);
     const auto plugin = Pothos::PluginRegistry::get(pluginPath);
     const auto factory = plugin.getObject().extract<Pothos::Callable>();
 

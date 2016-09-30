@@ -4,7 +4,7 @@
 /// Plugin path represents a UNIX-style path for the plugin hierarchy.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -35,6 +35,12 @@ public:
      * \param path a plugin path in string representation
      */
     PluginPath(const std::string &path);
+
+    /*!
+     * Create a PluginPath by concatenating two paths.
+     * The resulting path with be a valid /path0/path1
+     */
+    PluginPath(const PluginPath &path0, const PluginPath &path1);
 
     /*!
      * Create a PluginPath from a path string.

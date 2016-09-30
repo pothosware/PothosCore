@@ -82,7 +82,7 @@ static std::vector<Pothos::PluginPath> JSONTopologyLoader(const std::map<std::st
     const auto pathIt = config.find("path");
     if (pathIt == config.end() or pathIt->second.empty())
         throw Pothos::Exception("missing plugin path");
-    const auto pluginPath = Pothos::PluginPath("/blocks").join(pathIt->second.substr(1));
+    const auto pluginPath = Pothos::PluginPath("/blocks", pathIt->second);
 
     //parse the file into a string
     std::ifstream ifs(Poco::Path::expand(jsonPath.toString()));
