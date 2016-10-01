@@ -13,6 +13,7 @@
 #include <Poco/SharedLibrary.h>
 #include <memory>
 #include <mutex>
+#include <cctype>
 #include <map>
 
 static Poco::Logger &sourceLoaderLogger(void)
@@ -63,7 +64,7 @@ static void compilationHelper(
 {
     //check if we need to recompile
     bool recompile = false;
-    if (outFile.exists())
+    if (outFile.exists() and outFile.getSize() != 0)
     {
         const auto lastTimeCompiled = outFile.getLastModified();
         const auto devLib = Pothos::System::getPothosDevLibraryPath();
@@ -157,11 +158,11 @@ static std::vector<Pothos::PluginPath> JITCompilerLoader(const std::map<std::str
         throw Pothos::Exception("missing confFilePath");
     const auto rootDir = Poco::Path(confFilePathIt->second).makeParent();
 
-    //config section set by caller
-    const auto confFileSectionIt = config.find("confFileSection");
-    if (confFileSectionIt == config.end() or confFileSectionIt->second.empty())
-        throw Pothos::Exception("missing confFileSection");
-    handle->target = confFileSectionIt->second;
+    //get the target (config basename unless specified)
+    const auto targetIt = config.find("target");
+    if (targetIt != config.end()) handle->target = targetIt->second;
+    else handle->target = Poco::Path(confFilePathIt->second).getBaseName();
+    if (handle->target.empty()) throw Pothos::Exception("target empty");
 
     //load the compiler args
     handle->compilerArgs = Pothos::Util::CompilerArgs::defaultDevEnv();
