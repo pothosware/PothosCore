@@ -10,7 +10,7 @@
 #include <Poco/Path.h>
 #include <Poco/File.h>
 #include <Poco/Format.h>
-#include <Poco/Util/IniFileConfiguration.h>
+#include <Poco/Util/PropertyFileConfiguration.h>
 #include <future>
 #include <map>
 
@@ -31,49 +31,39 @@ static std::vector<Pothos::PluginPath> loadConfFile(const std::string &path)
     poco_debug_f1(confLoaderLogger(), "loading %s", path);
 
     //parse the configuration file with the INI parser
-    Poco::AutoPtr<Poco::Util::IniFileConfiguration> conf(new Poco::Util::IniFileConfiguration(path));
+    Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> conf(new Poco::Util::PropertyFileConfiguration(path));
 
     //iterate through each section
-    Poco::Util::AbstractConfiguration::Keys rootKeys; conf->keys(rootKeys);
-    for (const auto &rootKey : rootKeys)
+    Poco::Util::AbstractConfiguration::Keys keys; conf->keys(keys);
+
+    //create a mapping of the config data
+    std::map<std::string, std::string> configMap;
+    for (const auto &key : keys) configMap[key] = conf->getString(key);
+
+    //and other config file parameters
+    configMap["confFilePath"] = path;
+
+    //handle the loader
+    POTHOS_EXCEPTION_TRY
     {
-        poco_debug_f2(confLoaderLogger(), "loading %s[%s]", path, rootKey);
+        //get the loader
+        if (not conf->hasProperty("loader")) throw Pothos::Exception(
+            Poco::format("%s does not specify a loader", path));
+        const std::string loader(conf->getString("loader"));
+        const auto loaderPath = Pothos::PluginPath("/framework/conf_loader").join(loader);
+        if (not Pothos::PluginRegistry::exists(loaderPath)) throw Pothos::Exception(
+            Poco::format("%s loader %s does not exist", path, loader));
 
-        //create a mapping of the config data
-        Poco::Util::AbstractConfiguration::Keys subKeys; conf->keys(rootKey, subKeys);
-        std::map<std::string, std::string> subConfig;
-        for (const auto &subKey : subKeys)
-        {
-            subConfig[subKey] = conf->getString(rootKey+"."+subKey);
-        }
-
-        //and other config file parameters
-        subConfig["confFilePath"] = path;
-        subConfig["confFileSection"] = rootKey;
-
-        //handle the loader
-        POTHOS_EXCEPTION_TRY
-        {
-            //get the loader
-            if (not conf->hasProperty(rootKey+".loader")) throw Pothos::Exception(
-                Poco::format("%s[%s] does not specify a loader", path, rootKey));
-            const std::string loader(conf->getString(rootKey+".loader"));
-            const auto loaderPath = Pothos::PluginPath("/framework/conf_loader").join(loader);
-            if (not Pothos::PluginRegistry::exists(loaderPath)) throw Pothos::Exception(
-                Poco::format("%s[%s] loader %s does not exist", path, rootKey, loader));
-
-            //call the loader
-            const auto plugin = Pothos::PluginRegistry::get(loaderPath);
-            const auto &loaderFcn = plugin.getObject().extract<Pothos::Callable>();
-            const auto subEntries = loaderFcn.call<std::vector<Pothos::PluginPath>>(subConfig);
-            entries.insert(entries.end(), subEntries.begin(), subEntries.end());
-        }
-        POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
-        {
-            //log an error here, but do not re-throw when a particular loader fails
-            //we must return successfully all loaded entries so they can be unloaded later
-            poco_error_f3(confLoaderLogger(), "%s[%s]\n\t%s", path, rootKey, ex.message());
-        }
+        //call the loader
+        const auto plugin = Pothos::PluginRegistry::get(loaderPath);
+        const auto &loaderFcn = plugin.getObject().extract<Pothos::Callable>();
+        entries = loaderFcn.call<std::vector<Pothos::PluginPath>>(configMap);
+    }
+    POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
+    {
+        //log an error here, but do not re-throw when a particular loader fails
+        //we must return successfully all loaded entries so they can be unloaded later
+        confLoaderLogger().error("%s\n\t%s", path, ex.message());
     }
 
     return entries;
