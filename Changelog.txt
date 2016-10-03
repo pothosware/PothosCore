@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.4.2 (pending)
+==========================
+
+- PothosUtil option argument for --proxy-server
+
 Release 0.4.1 (2016-09-26)
 ==========================
 

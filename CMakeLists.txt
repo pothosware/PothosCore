@@ -12,7 +12,7 @@ enable_testing()
 ########################################################################
 set(POTHOS_MAJOR_VERSION 0)
 set(POTHOS_MINOR_VERSION 4)
-set(POTHOS_PATCH_VERSION 1)
+set(POTHOS_PATCH_VERSION 2)
 set(POTHOS_LIBVER ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATCH_VERSION})
 
 if (NOT POTHOS_EXTVER)
