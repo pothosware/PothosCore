@@ -343,7 +343,7 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             Poco::RegularExpression::MatchVec fields;
             Poco::RegularExpression("^\\s*(\\w+)\\s*\\((.*)\\)$").match(payload, 0, fields);
             if (fields.empty()) throw Pothos::SyntaxException(
-                "Expected |widget SpinBox(args, )",
+                "Expected |widget SpinBox(args...)",
                 codeLine.toString());
 
             assert(fields.size() == 3);
@@ -368,7 +368,7 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             Poco::RegularExpression::MatchVec fields;
             Poco::RegularExpression("^\\s*(\\w+)(\\s*\\((.*)\\))?$").match(payload, 0, fields);
             if (fields.empty()) throw Pothos::SyntaxException(
-                "Expected |preview previewType(args, )",
+                "Expected |preview previewType(args...)",
                 codeLine.toString());
 
             assert(fields.size() == 2 or fields.size() == 4);
@@ -416,7 +416,7 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             Poco::RegularExpression::MatchVec fields;
             Poco::RegularExpression("^\\s*(/.*)\\s*\\((.*)\\)$").match(payload, 0, fields);
             if (fields.empty()) throw Pothos::SyntaxException(
-                "Expected |factory /registry/path(args, )",
+                "Expected |factory /registry/path(args...)",
                 codeLine.toString());
 
             assert(fields.size() == 3);
@@ -443,7 +443,7 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             Poco::RegularExpression::MatchVec fields;
             Poco::RegularExpression("^\\s*(\\w+)\\s*\\((.*)\\)$").match(payload, 0, fields);
             if (fields.empty()) throw Pothos::SyntaxException(
-                "Expected |"+instruction+" setFooBar(args, )",
+                "Expected |"+instruction+" setFooBar(args...)",
                 codeLine.toString());
 
             assert(fields.size() == 3);
@@ -547,7 +547,7 @@ void Pothos::Util::BlockDescriptionParser::feedFilePath(const std::string &fileP
     }
     catch (const Pothos::Exception &ex)
     {
-        throw Pothos::SyntaxException(filePath, ex);
+        throw Pothos::SyntaxException("BlockDescriptionParser("+filePath+")", ex);
     }
 }
 

@@ -27,17 +27,22 @@ std::string Pothos_FileRealPath(const std::string &path);
  **********************************************************************/
 static std::vector<Pothos::PluginPath> loadConfFile(const std::string &path)
 {
-    std::vector<Pothos::PluginPath> entries;
     poco_debug_f1(confLoaderLogger(), "loading %s", path);
 
     //parse the configuration file with the INI parser
-    Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> conf(new Poco::Util::PropertyFileConfiguration(path));
+    Poco::AutoPtr<Poco::Util::PropertyFileConfiguration> conf;
+    try
+    {
+        conf = new Poco::Util::PropertyFileConfiguration(path);
+    }
+    catch (const Poco::Exception &ex)
+    {
+        throw Pothos::Exception("ConfLoader("+path+")", ex.displayText());
+    }
 
-    //iterate through each section
-    Poco::Util::AbstractConfiguration::Keys keys; conf->keys(keys);
-
-    //create a mapping of the config data
+    //store then config into a map structure
     std::map<std::string, std::string> configMap;
+    Poco::Util::AbstractConfiguration::Keys keys; conf->keys(keys);
     for (const auto &key : keys) configMap[key] = conf->getString(key);
 
     //and other config file parameters
@@ -57,16 +62,12 @@ static std::vector<Pothos::PluginPath> loadConfFile(const std::string &path)
         //call the loader
         const auto plugin = Pothos::PluginRegistry::get(loaderPath);
         const auto &loaderFcn = plugin.getObject().extract<Pothos::Callable>();
-        entries = loaderFcn.call<std::vector<Pothos::PluginPath>>(configMap);
+        return loaderFcn.call<std::vector<Pothos::PluginPath>>(configMap);
     }
     POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
     {
-        //log an error here, but do not re-throw when a particular loader fails
-        //we must return successfully all loaded entries so they can be unloaded later
-        confLoaderLogger().error("%s\n\t%s", path, ex.message());
+        throw Pothos::Exception("ConfLoader("+path+")", ex);
     }
-
-    return entries;
 }
 
 /***********************************************************************
@@ -146,14 +147,14 @@ std::vector<Pothos::PluginPath> Pothos_ConfLoader_loadConfFiles(void)
     std::vector<Pothos::PluginPath> entries;
     for (auto &future : futures)
     {
-        POTHOS_EXCEPTION_TRY
+        try
         {
             auto subEntries = future.get();
             entries.insert(entries.end(), subEntries.begin(), subEntries.end());
         }
-        POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
+        catch(const Pothos::Exception &ex)
         {
-            poco_error(confLoaderLogger(), ex.displayText());
+            confLoaderLogger().error(ex.message());
         }
     }
     return entries;
