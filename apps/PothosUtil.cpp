@@ -62,7 +62,7 @@ protected:
         options.addOption(Poco::Util::Option("proxy-server", "", "run the proxy server, tcp://bindHost:bindPort")
             .required(false)
             .repeatable(false)
-            .argument("URI")
+            .argument("URI", false/*optional*/)
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::proxyServer)));
 
         options.addOption(Poco::Util::Option("load-module", "", "test load a library module")
