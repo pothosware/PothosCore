@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.4.2 (pending)
 ==========================
 
+- Fixed typo in PothosConfig.cmake for include check
 - PothosUtil option argument for --proxy-server
 
 Release 0.4.1 (2016-09-26)
