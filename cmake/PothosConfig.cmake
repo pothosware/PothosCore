@@ -233,7 +233,7 @@ find_path(
     PATHS ${POTHOS_ROOT}/include
     NO_DEFAULT_PATH
 )
-if(NOT POTHOS_LIBRARY)
+if(NOT POTHOS_INCLUDE_DIR)
     message(FATAL_ERROR "cannot find Pothos includes in ${POTHOS_ROOT}/include")
 endif()
 list(INSERT Pothos_INCLUDE_DIRS 0 ${POTHOS_INCLUDE_DIR})

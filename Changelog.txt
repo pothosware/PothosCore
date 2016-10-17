@@ -16,6 +16,7 @@ Release 0.5.0 (pending)
 Release 0.4.2 (pending)
 ==========================
 
+- Fixed typo in PothosConfig.cmake for include check
 - PothosUtil option argument for --proxy-server
 
 Release 0.4.1 (2016-09-26)
