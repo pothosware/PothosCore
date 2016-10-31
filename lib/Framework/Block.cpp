@@ -286,6 +286,7 @@ static auto managedBlock = Pothos::ManagedClass()
     .registerMethod("getPointer", &getPointer)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Block, _actor))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, workInfo))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, isActive))
 
     //all of the setups with default args set
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Block, setThreadPool))
