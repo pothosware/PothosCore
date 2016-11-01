@@ -36,6 +36,7 @@ struct Pothos::RemoteServer::Impl
         errPipe.close();
         if (outThread.joinable()) outThread.join();
         if (errThread.joinable()) errThread.join();
+        ph.wait();
     }
 
     Poco::ProcessHandle ph;

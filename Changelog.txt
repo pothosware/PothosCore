@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.4.2 (pending)
 ==========================
 
+- RemoteServer should wait() on process after terminate
 - Added missing Block::isActive to managed registry
 - Fixed typo in PothosConfig.cmake for include check
 - PothosUtil option argument for --proxy-server
