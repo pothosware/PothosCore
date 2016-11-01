@@ -16,6 +16,7 @@ Release 0.5.0 (pending)
 Release 0.4.2 (pending)
 ==========================
 
+- RemoteServer should wait() on process after terminate
 - Added missing Block::isActive to managed registry
 - Fixed typo in PothosConfig.cmake for include check
 - PothosUtil option argument for --proxy-server
