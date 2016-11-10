@@ -56,6 +56,8 @@ public:
         //Create a new ostream that we set the old buffer in
         std::unique_ptr<std::ostream> os(new std::ostream(_orgbuf));
         _newstream.swap(os);
+        //disable automatic flushing on this stream
+        stream << std::nounitbuf;
     }
 
     ~InterceptStream(void)

@@ -99,14 +99,16 @@ Poco::Net::TCPServerConnection *MyTCPServerConnectionFactory::createConnection(c
  **********************************************************************/
 void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
 {
-    //set stdio to be unbuffered to prevent IO backup when this is a subprocess
-    std::cout.setf(std::ios::unitbuf);
-    std::cerr.setf(std::ios::unitbuf);
-    std::clog.setf(std::ios::unitbuf);
+    //remove automatic flushing from iostreams
+    //only flushes on newlines and intentional flushes
+    std::cout << std::nounitbuf;
+    std::cerr << std::nounitbuf;
+    std::clog << std::nounitbuf;
 
-    //remove buffering for stdout and stderr for printf() users
-    setvbuf(stdout, nullptr, _IONBF, 0);
-    setvbuf(stderr, nullptr, _IONBF, 0);
+    //set stdio to be line buffered
+    //fully buffered IO backs up and is not acceptable for logging
+    setvbuf(stdout, nullptr, _IOLBF, 0);
+    setvbuf(stderr, nullptr, _IOLBF, 0);
 
     Pothos::ScopedInit init;
 
