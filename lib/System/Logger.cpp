@@ -56,6 +56,8 @@ public:
         //Create a new ostream that we set the old buffer in
         std::unique_ptr<std::ostream> os(new std::ostream(_orgbuf));
         _newstream.swap(os);
+        //disable automatic flushing on this stream
+        stream << std::nounitbuf;
     }
 
     ~InterceptStream(void)
@@ -161,12 +163,20 @@ void Pothos::System::Logger::stopSyslogListener(void)
 
 static Poco::AutoPtr<Poco::Net::RemoteSyslogChannel> forwarder;
 
+static void __startSyslogForwarding(const std::string &addr)
+{
+    forwarder = new Poco::Net::RemoteSyslogChannel(addr, ""/*empty name*/);
+    Poco::Logger::get("").setChannel(forwarder);
+    Poco::Logger::get("").setLevel(Poco::Environment::get("POTHOS_LOG_LEVEL", "information"));
+
+    //subprocesses will automatically forward to this address
+    Poco::Environment::set("POTHOS_SYSLOG_ADDR", addr);
+}
+
 void Pothos::System::Logger::startSyslogForwarding(const std::string &addr)
 {
     std::lock_guard<std::mutex> lock(getSetupLoggerMutex());
-    forwarder = new Poco::Net::RemoteSyslogChannel(addr, ""/*empty name*/);
-    Poco::Logger::get("").setChannel(forwarder);
-    Poco::Logger::get("").setLevel("trace"); //lowest level -> forward everything
+    __startSyslogForwarding(addr);
 }
 
 void Pothos::System::Logger::stopSyslogForwarding(void)
@@ -224,6 +234,10 @@ static void __setupDefaultLogging(void)
     Poco::AutoPtr<Poco::SplitterChannel> splitterChannel(new Poco::SplitterChannel());
     splitterChannel->addChannel(formattingChannel);
     Poco::Logger::get("").setChannel(splitterChannel);
+
+    //syslog forwarding when the address is specified
+    const auto syslogAddr = Poco::Environment::get("POTHOS_SYSLOG_ADDR", "");
+    if (not syslogAddr.empty()) __startSyslogForwarding(syslogAddr);
 }
 
 void Pothos::System::Logger::setupDefaultLogging(void)
