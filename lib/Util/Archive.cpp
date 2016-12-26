@@ -9,13 +9,37 @@ Pothos::Util::ArchiveEntry::ArchiveEntry(const std::type_info &type, const char 
     std::cout << "REGISTER " << type.name() << ", id = " << id << std::endl;
 }
 
+#include <sstream>
+
 class BooHoo
 {
 public:
     BooHoo()
     {
-        
+
     }
+
+int foo;
+std::string bar;
 };
 
+namespace Pothos {
+namespace serialization {
+
+template<class Archive>
+void serialize(Archive &a, BooHoo &t, const unsigned int)
+{
+    a & t.foo;
+    a & t.bar;
+}
+
+}}
+
 POTHOS_CLASS_EXPORT_GUID(BooHoo, "BooHoo");
+
+void test(void)
+{
+    BooHoo bh;
+    std::stringstream ss;
+    Pothos::Util::SerializeArchive(ss, bh);
+}
