@@ -234,7 +234,6 @@ list(APPEND POTHOS_SOURCES
     Util/EvalEnvironment.cpp
     Util/EvalEnvironmentListParsers.cpp
     Util/BlockDescription.cpp
-    Util/Archive.cpp
 
     Util/Builtin/JSONSerialization.cpp
     Util/Builtin/TestJSONSerialization.cpp
@@ -243,6 +242,8 @@ list(APPEND POTHOS_SOURCES
     Util/Builtin/DocUtils.cpp
     Util/Builtin/TestDocUtils.cpp
     Util/Builtin/TestEvalExpression.cpp
+
+    Archive/Archive.cpp
 )
 
 if(WIN32)
