@@ -34,8 +34,6 @@ public:
     template <typename T>
     void operator<<(const T &value);
 
-    void writeInt32(const unsigned int num);
-    void writeInt64(const unsigned long long num);
     void writeBytes(const void *buff, const size_t len);
 
 private:
@@ -62,8 +60,6 @@ public:
     template <typename T>
     void operator>>(T &value);
 
-    unsigned int readInt32(void);
-    unsigned long long readInt64(void);
     void readBytes(void *buff, const size_t len);
 
 private:

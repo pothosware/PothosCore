@@ -12,6 +12,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Archive/Invoke.hpp>
+#include <Pothos/Archive/BinaryObject.hpp>
 #include <type_traits>
 #include <cfloat> //FLT_MANT_DIG, DBL_MANT_DIG
 #include <cmath> //frexp, ldexp
@@ -29,7 +30,13 @@ typename std::enable_if<std::is_integral<T>::value and
     (sizeof(T) <= 4 and !std::is_same<T, size_t>::value)>::type
 save(Archive &ar, const T &t, const unsigned int)
 {
-    ar.writeInt32(static_cast<unsigned int>(t));
+    unsigned char buff[4];
+    buff[0] = char(t >> 0);
+    buff[1] = char(t >> 8);
+    buff[2] = char(t >> 16);
+    buff[3] = char(t >> 24);
+    BinaryObject bo(buff, sizeof(buff));
+    ar << bo;
 }
 
 template<typename Archive, typename T>
@@ -37,7 +44,14 @@ typename std::enable_if<std::is_integral<T>::value and
     (sizeof(T) <= 4 and !std::is_same<T, size_t>::value)>::type
 load(Archive &ar, T &t, const unsigned int)
 {
-    t = T(ar.readInt32());
+    unsigned char buff[4];
+    BinaryObject bo(buff, sizeof(buff));
+    ar >> bo;
+    t = T(
+        (static_cast<unsigned int>(buff[0]) << 0) |
+        (static_cast<unsigned int>(buff[1]) << 8) |
+        (static_cast<unsigned int>(buff[2]) << 16) |
+        (static_cast<unsigned int>(buff[3]) << 24));
 }
 
 //------------ 64 bit integer support --------------//
@@ -46,7 +60,17 @@ typename std::enable_if<std::is_integral<T>::value and
     (sizeof(T) == 8 or std::is_same<T, size_t>::value)>::type
 save(Archive &ar, const T &t, const unsigned int)
 {
-    ar.writeInt64(static_cast<unsigned long long>(t));
+    unsigned char buff[8];
+    buff[0] = char(t >> 0);
+    buff[1] = char(t >> 8);
+    buff[2] = char(t >> 16);
+    buff[3] = char(t >> 24);
+    buff[4] = char(t >> 32);
+    buff[5] = char(t >> 40);
+    buff[6] = char(t >> 48);
+    buff[7] = char(t >> 56);
+    BinaryObject bo(buff, sizeof(buff));
+    ar << bo;
 }
 
 template<typename Archive, typename T>
@@ -54,7 +78,18 @@ typename std::enable_if<std::is_integral<T>::value and
     (sizeof(T) == 8 or std::is_same<T, size_t>::value)>::type
 load(Archive &ar, T &t, const unsigned int)
 {
-    t = T(ar.readInt64());
+    unsigned char buff[8];
+    BinaryObject bo(buff, sizeof(buff));
+    ar >> bo;
+    t = T(
+        (static_cast<unsigned long long>(buff[0]) << 0) |
+        (static_cast<unsigned long long>(buff[1]) << 8) |
+        (static_cast<unsigned long long>(buff[2]) << 16) |
+        (static_cast<unsigned long long>(buff[3]) << 24) |
+        (static_cast<unsigned long long>(buff[4]) << 32) |
+        (static_cast<unsigned long long>(buff[5]) << 40) |
+        (static_cast<unsigned long long>(buff[6]) << 48) |
+        (static_cast<unsigned long long>(buff[7]) << 56));
 }
 
 //------------ 32-bit float support --------------//

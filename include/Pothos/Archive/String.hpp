@@ -22,7 +22,7 @@ template<typename Archive, typename T>
 void save(Archive &ar, const std::basic_string<T> &t, const unsigned int)
 {
     ar << unsigned(t.size());
-    Pothos::serialization::BinaryObject bo((void *)t.data(), t.size());
+    BinaryObject bo(t.data(), t.size());
     ar << bo;
 }
 
@@ -32,7 +32,7 @@ void load(Archive &ar, std::basic_string<T> &t, const unsigned int)
     unsigned size(0);
     ar >> size;
     t.resize(size);
-    Pothos::serialization::BinaryObject bo((void *)t.data(), t.size());
+    BinaryObject bo(t.data(), t.size());
     ar >> bo;
 }
 
