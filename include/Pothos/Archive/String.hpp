@@ -10,24 +10,32 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Archive/Numbers.hpp>
 #include <Pothos/Archive/Macros.hpp>
 #include <string>
 
 namespace Pothos {
 namespace serialization {
 
-template<class Archive>
-void save(Archive &a, const std::string &t, const unsigned int)
+template<typename Archive>
+void save(Archive &ar, const std::string &t, const unsigned int)
 {
-    
+    ar << int(t.size());
+    ar.writeBytes(t.data(), t.size());
 }
 
-template<class Archive>
-void load(Archive &a, std::string &t, const unsigned int)
+template<typename Archive>
+void load(Archive &ar, std::string &t, const unsigned int)
 {
-    
+    int size(0);
+    ar >> size;
+    t.resize(size);
+    ar.readBytes((void *)t.data(), t.size());
 }
 
 }}
 
+//TODO wstring
+
 POTHOS_SERIALIZATION_SPLIT_FREE(std::string)
+POTHOS_CLASS_EXPORT(std::string)

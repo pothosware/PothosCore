@@ -13,64 +13,74 @@
 #include <typeinfo>
 #include <iosfwd>
 
-/*
-namespace Pothos { namespace serialization {
-    template <typename Archive, typename T>
-    void serialize(Archive &ar, T &t, const unsigned int ver);
-}}
-*/
-
 namespace Pothos {
 namespace Archive {
 
 template <typename T>
 struct ArchiveEntryContainer;
 
-template <typename T>
-struct OStreamArchiver
+class POTHOS_API OStreamArchiver
 {
-    OStreamArchiver(std::ostream &os):
-        os(os)
+public:
+    OStreamArchiver(std::ostream &os, const int ver = 0):
+        os(os), ver(ver)
     {
         return;
     }
 
-    template <typename S>
-    void operator&(const S &value)
+    template <typename T>
+    void operator&(const T &value)
     {
-        Pothos::serialization::serialize(OStreamArchiver<S>(os), const_cast<S &>(value), 0);
+        this->writeType(typeid(value));
+        ArchiveEntryContainer<T>::save(*this, value, ver);
     }
 
-    template <typename S>
-    void operator<<(const S &value)
+    template <typename T>
+    void operator<<(const T &value)
     {
         *this & value;
     }
+
+    void writeInt32(const int num);
+    void writeInt64(const long long num);
+    void writeBytes(const void *buff, const size_t len);
+
+private:
+
+    void writeType(const std::type_info &type);
 
     std::ostream &os;
+    const int ver;
 };
-template <typename T>
-struct IStreamArchiver
+class POTHOS_API IStreamArchiver
 {
-    IStreamArchiver(std::istream &is):
-        is(is)
+public:
+    IStreamArchiver(std::istream &is, const int ver = 0):
+        is(is), ver(ver)
     {
         return;
     }
 
-    template <typename S>
-    void operator&(S &value)
+    template <typename T>
+    void operator&(T &value)
     {
-        Pothos::serialization::serialize(IStreamArchiver<S>(is), value, 0);
+        ArchiveEntryContainer<T>::load(*this, value, ver);
     }
 
-    template <typename S>
-    void operator>>(S &value)
+    template <typename T>
+    void operator>>(T &value)
     {
         *this & value;
     }
 
+    int readInt32(void);
+    long long readInt64(void);
+    void readBytes(void *buff, const size_t len);
+
+private:
+
     std::istream &is;
+    const int ver;
 };
 
 class POTHOS_API ArchiveEntry
@@ -79,24 +89,6 @@ public:
 
     ArchiveEntry(const std::type_info &type, const char *id);
 };
-
-/*!
- * Serialize a type into the output stream
- */
-template <typename T>
-void serializeArchive(std::ostream &os, const T &value)
-{
-    ArchiveEntryContainer<T>::save(os, value);
-}
-
-/*!
- * Deserialize a type into from the input stream
- */
-template <typename T>
-void deserializeArchive(std::istream &is, T &value)
-{
-    ArchiveEntryContainer<T>::load(is, value);
-}
 
 } //namespace Archive
 } //namespace Pothos
