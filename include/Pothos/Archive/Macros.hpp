@@ -41,3 +41,15 @@
             Pothos::serialization::invokeLoadSave(ar, t, ver); \
         } \
     }}
+
+/*!
+ * Declare a serialize() function that can dispatch to
+ * individually declared save and load member functions.
+ */
+#define POTHOS_SERIALIZATION_SPLIT_MEMBER(T) \
+    namespace Pothos { namespace serialization { \
+        template <typename Archive> \
+        void serialize(Archive &ar, T &t, const unsigned int ver) { \
+            Pothos::serialization::invokeLoadSaveMember(ar, t, ver); \
+        } \
+    }}

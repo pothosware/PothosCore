@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <iosfwd>
+#include <cstddef> //size_t
 
 namespace Pothos {
 namespace Archive {

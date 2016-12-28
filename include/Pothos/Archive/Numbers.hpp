@@ -16,19 +16,25 @@
 #include <cfloat> //FLT_MANT_DIG, DBL_MANT_DIG
 #include <cmath> //frexp, ldexp
 
+//For the sake of portability, whatever type is size_t
+//will always be packed and unpacked a 64-bit integer.
+#include <cstddef> //size_t
+
 namespace Pothos {
 namespace serialization {
 
 //------------ 32 bit integer support (and below) --------------//
 template<typename Archive, typename T>
-typename std::enable_if<std::is_integral<T>::value and sizeof(T) <= 4>::type
+typename std::enable_if<std::is_integral<T>::value and
+    (sizeof(T) <= 4 and !std::is_same<T, size_t>::value)>::type
 save(Archive &ar, const T &t, const unsigned int)
 {
     ar.writeInt32(static_cast<unsigned int>(t));
 }
 
 template<typename Archive, typename T>
-typename std::enable_if<std::is_integral<T>::value and sizeof(T) <= 4>::type
+typename std::enable_if<std::is_integral<T>::value and
+    (sizeof(T) <= 4 and !std::is_same<T, size_t>::value)>::type
 load(Archive &ar, T &t, const unsigned int)
 {
     t = T(ar.readInt32());
@@ -36,14 +42,16 @@ load(Archive &ar, T &t, const unsigned int)
 
 //------------ 64 bit integer support --------------//
 template<typename Archive, typename T>
-typename std::enable_if<std::is_integral<T>::value and sizeof(T) == 8>::type
+typename std::enable_if<std::is_integral<T>::value and
+    (sizeof(T) == 8 or std::is_same<T, size_t>::value)>::type
 save(Archive &ar, const T &t, const unsigned int)
 {
     ar.writeInt64(static_cast<unsigned long long>(t));
 }
 
 template<typename Archive, typename T>
-typename std::enable_if<std::is_integral<T>::value and sizeof(T) == 8>::type
+typename std::enable_if<std::is_integral<T>::value and
+    (sizeof(T) == 8 or std::is_same<T, size_t>::value)>::type
 load(Archive &ar, T &t, const unsigned int)
 {
     t = T(ar.readInt64());

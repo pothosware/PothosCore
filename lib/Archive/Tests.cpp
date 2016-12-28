@@ -133,11 +133,30 @@ public:
 
     }
 
+    template <typename Archive>
+    void save(Archive &a, const unsigned int)
+    {
+        a & foo;
+        a & bar;
+        a & baz;
+    }
+
+    template <typename Archive>
+    void load(Archive &a, const unsigned int)
+    {
+        a & foo;
+        a & bar;
+        a & baz;
+    }
+
     int foo;
     std::string bar;
     std::map<int, std::string> baz;
 };
 
+POTHOS_SERIALIZATION_SPLIT_MEMBER(BooHoo)
+
+/*
 namespace Pothos {
 namespace serialization {
 
@@ -150,6 +169,7 @@ void serialize(Archive &a, BooHoo &t, const unsigned int)
 }
 
 }}
+*/
 
 POTHOS_CLASS_EXPORT_ID(BooHoo, "BooHoo");
 
@@ -162,8 +182,6 @@ POTHOS_TEST_BLOCK("/archive/tests", test_basic_archive)
     bh.baz[42] = "42";
     Pothos::Archive::OStreamArchiver ar(ss);
     ar << bh;
-    //std::string s("xyz");
-    //Pothos::Archive::serializeArchive(ss, s);
 
     std::stringstream ss2(ss.str());
     BooHoo bh2;
