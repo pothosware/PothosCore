@@ -12,7 +12,6 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Archive/Archive.hpp>
 #include <Pothos/Archive/Invoke.hpp>
-#include <iosfwd>
 
 /*!
  * Register archival functions for a given class.
@@ -23,12 +22,6 @@
     namespace Pothos { namespace Archive { \
         template <> struct ArchiveEntryContainer<T> { \
             static const ArchiveEntry &entry; \
-            static void save(OStreamArchiver &ar, const T &value, const unsigned int ver) { \
-                Pothos::serialization::serialize(ar, const_cast<T &>(value), ver); \
-            } \
-            static void load(IStreamArchiver &ar, T &value, const unsigned int ver) { \
-                Pothos::serialization::serialize(ar, value, ver); \
-            } \
         }; \
         const ArchiveEntry &ArchiveEntryContainer<T>::entry = \
             ArchiveEntry(typeid(T), id) ; \
@@ -45,6 +38,6 @@
     namespace Pothos { namespace serialization { \
         template <typename Archive> \
         void serialize(Archive &ar, T &t, const unsigned int ver) { \
-            Pothos::serialization::invoke_load_save(ar, t, ver); \
+            Pothos::serialization::invokeLoadSave(ar, t, ver); \
         } \
     }}

@@ -10,6 +10,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <type_traits>
 #include <typeinfo>
 #include <iosfwd>
 
@@ -18,63 +19,6 @@ namespace Archive {
 
 template <typename T>
 struct ArchiveEntryContainer;
-
-class POTHOS_API OStreamArchiver
-{
-public:
-    OStreamArchiver(std::ostream &os, const unsigned int ver = 0):
-        os(os), ver(ver)
-    {
-        return;
-    }
-
-    template <typename T>
-    void operator&(const T &value);
-
-    template <typename T>
-    void operator<<(const T &value)
-    {
-        *this & value;
-    }
-
-    void writeInt32(const int num);
-    void writeInt64(const long long num);
-    void writeBytes(const void *buff, const size_t len);
-
-private:
-
-    void writeType(const std::type_info &type);
-
-    std::ostream &os;
-    const unsigned int ver;
-};
-class POTHOS_API IStreamArchiver
-{
-public:
-    IStreamArchiver(std::istream &is, const unsigned int ver = 0):
-        is(is), ver(ver)
-    {
-        return;
-    }
-
-    template <typename T>
-    void operator&(T &value);
-
-    template <typename T>
-    void operator>>(T &value)
-    {
-        *this & value;
-    }
-
-    int readInt32(void);
-    long long readInt64(void);
-    void readBytes(void *buff, const size_t len);
-
-private:
-
-    std::istream &is;
-    const unsigned int ver;
-};
 
 class POTHOS_API ArchiveEntry
 {
@@ -85,18 +29,3 @@ public:
 
 } //namespace Archive
 } //namespace Pothos
-
-#include <Pothos/Archive/Invoke.hpp>
-
-template <typename T>
-void Pothos::Archive::OStreamArchiver::operator&(const T &value)
-{
-    this->writeType(typeid(value));
-    Pothos::serialization::invoke_serialize(*this, const_cast<T &>(value), ver);
-}
-
-template <typename T>
-void Pothos::Archive::IStreamArchiver::operator&(T &value)
-{
-    Pothos::serialization::invoke_serialize(*this, value, ver);
-}

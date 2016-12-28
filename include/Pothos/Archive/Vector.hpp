@@ -1,7 +1,7 @@
 ///
-/// \file Archive/String.hpp
+/// \file Archive/Map.hpp
 ///
-/// String support for serialization.
+/// Vector support for serialization.
 ///
 /// \copyright
 /// Copyright (c) 2016 Josh Blum
@@ -12,29 +12,39 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Archive/Invoke.hpp>
 #include <Pothos/Archive/Numbers.hpp>
-#include <string>
+#include <vector>
+#include <utility> //move
+#include <map>
 
 namespace Pothos {
 namespace serialization {
 
 template<typename Archive, typename T>
-void save(Archive &ar, const std::basic_string<T> &t, const unsigned int)
+void save(Archive &ar, const std::vector<T> &t, const unsigned int)
 {
     ar << unsigned(t.size());
-    ar.writeBytes(t.data(), t.size());
+    for (const auto &elem : t)
+    {
+        ar << elem;
+    }
 }
 
 template<typename Archive, typename T>
-void load(Archive &ar, std::basic_string<T> &t, const unsigned int)
+void load(Archive &ar, std::vector<T> &t, const unsigned int)
 {
     unsigned size(0);
     ar >> size;
     t.resize(size);
-    ar.readBytes((void *)t.data(), t.size());
+    for (size_t i = 0; i < size_t(size); i++)
+    {
+        T elem;
+        ar >> elem;
+        t[i] = std::move(elem);
+    }
 }
 
 template <typename Archive, typename T>
-void serialize(Archive &ar, std::basic_string<T> &t, const unsigned int ver)
+void serialize(Archive &ar, std::vector<T> &t, const unsigned int ver)
 {
     Pothos::serialization::invokeLoadSave(ar, t, ver);
 }

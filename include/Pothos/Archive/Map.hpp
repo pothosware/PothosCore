@@ -10,9 +10,10 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Archive/Archive.hpp>
+#include <Pothos/Archive/Invoke.hpp>
 #include <Pothos/Archive/Numbers.hpp>
-#include <type_traits>
+#include <Pothos/Archive/Pair.hpp>
+#include <utility> //move
 #include <map>
 
 namespace Pothos {
@@ -24,8 +25,7 @@ void save(Archive &ar, const std::map<K, T> &t, const unsigned int)
     ar << unsigned(t.size());
     for (const auto &pair : t)
     {
-        ar << pair.first;
-        ar << pair.second;
+        ar << pair;
     }
 }
 
@@ -37,16 +37,16 @@ void load(Archive &ar, std::map<K, T> &t, const unsigned int)
     ar >> size;
     for (size_t i = 0; i < size_t(size); i++)
     {
-        K key; ar >> key;
-        T value; ar >> value;
-        t.emplace(key, value);
+        std::pair<K, T> pair;
+        ar >> pair;
+        t.emplace(std::move(pair));
     }
 }
 
 template <typename Archive, typename K, typename T>
 void serialize(Archive &ar, std::map<K, T> &t, const unsigned int ver)
 {
-    Pothos::serialization::invoke_load_save(ar, t, ver);
+    Pothos::serialization::invokeLoadSave(ar, t, ver);
 }
 
 }}

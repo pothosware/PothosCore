@@ -38,6 +38,93 @@ POTHOS_TEST_BLOCK("/archive/tests", test_integers)
     }
 }
 
+POTHOS_TEST_BLOCK("/archive/tests", test_floats)
+{
+    //test the float support
+    {
+        std::stringstream so;
+        Pothos::Archive::OStreamArchiver ao(so);
+        float x(1e6); ao << x;
+
+        std::stringstream si(so.str());
+        Pothos::Archive::IStreamArchiver ai(si);
+        float y; ai >> y;
+
+        POTHOS_TEST_EQUAL(x, y);
+    }
+
+    //test the double support
+    {
+        std::stringstream so;
+        Pothos::Archive::OStreamArchiver ao(so);
+        double x(-0.1e3); ao << x;
+
+        std::stringstream si(so.str());
+        Pothos::Archive::IStreamArchiver ai(si);
+        double y; ai >> y;
+
+        POTHOS_TEST_EQUAL(x, y);
+    }
+}
+
+POTHOS_TEST_BLOCK("/archive/tests", test_complex)
+{
+    std::stringstream so;
+    Pothos::Archive::OStreamArchiver ao(so);
+    std::complex<int> x(1, -2); ao << x;
+
+    std::stringstream si(so.str());
+    Pothos::Archive::IStreamArchiver ai(si);
+    std::complex<int> y; ai >> y;
+
+    POTHOS_TEST_EQUAL(x, y);
+}
+
+POTHOS_TEST_BLOCK("/archive/tests", test_string)
+{
+    std::stringstream so;
+    Pothos::Archive::OStreamArchiver ao(so);
+    std::string x("hello world"); ao << x;
+
+    std::stringstream si(so.str());
+    Pothos::Archive::IStreamArchiver ai(si);
+    std::string y; ai >> y;
+
+    POTHOS_TEST_EQUAL(x, y);
+}
+
+POTHOS_TEST_BLOCK("/archive/tests", test_map)
+{
+    std::stringstream so;
+    Pothos::Archive::OStreamArchiver ao(so);
+    std::map<int, std::string> x;
+    x[123] = "hello";
+    x[456] = "world";
+    ao << x;
+
+    std::stringstream si(so.str());
+    Pothos::Archive::IStreamArchiver ai(si);
+    std::map<int, std::string> y; ai >> y;
+
+    POTHOS_TEST_EQUAL(x, y);
+}
+
+POTHOS_TEST_BLOCK("/archive/tests", test_vector)
+{
+    std::stringstream so;
+    Pothos::Archive::OStreamArchiver ao(so);
+    std::vector<std::string> x;
+    x.push_back("hello");
+    x.push_back("world");
+    ao << x;
+
+    std::stringstream si(so.str());
+    Pothos::Archive::IStreamArchiver ai(si);
+    std::vector<std::string> y; ai >> y;
+
+    POTHOS_TEST_EQUALV(x, y);
+}
+
 class BooHoo
 {
 public:
