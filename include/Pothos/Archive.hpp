@@ -12,3 +12,6 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Archive/Archive.hpp>
 #include <Pothos/Archive/Macros.hpp>
+#include <Pothos/Archive/Numbers.hpp>
+#include <Pothos/Archive/String.hpp>
+#include <Pothos/Archive/Map.hpp>

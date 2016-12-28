@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Archive.hpp>
-#include <Pothos/Archive/String.hpp>
-#include <Pothos/Archive/Numbers.hpp>
 #include <iostream>
 
 void Pothos::Archive::OStreamArchiver::writeBytes(const void *buff, const size_t len)
@@ -74,42 +72,4 @@ void Pothos::Archive::IStreamArchiver::readBytes(void *buff, const size_t len)
 Pothos::Archive::ArchiveEntry::ArchiveEntry(const std::type_info &type, const char *id)
 {
     std::cout << "REGISTER " << type.name() << ", id = " << id << std::endl;
-}
-
-#include <sstream>
-
-class BooHoo
-{
-public:
-    BooHoo()
-    {
-
-    }
-
-int foo;
-std::string bar;
-};
-
-namespace Pothos {
-namespace serialization {
-
-template<class Archive>
-void serialize(Archive &a, BooHoo &t, const unsigned int)
-{
-    a & t.foo;
-    a & t.bar;
-}
-
-}}
-
-POTHOS_CLASS_EXPORT_ID(BooHoo, "BooHoo");
-
-void test(void)
-{
-    std::stringstream ss;
-    BooHoo bh;
-    Pothos::Archive::OStreamArchiver ar(ss, 0);
-    ar << bh;
-    //std::string s("xyz");
-    //Pothos::Archive::serializeArchive(ss, s);
 }

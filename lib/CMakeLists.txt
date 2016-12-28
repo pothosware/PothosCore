@@ -244,6 +244,7 @@ list(APPEND POTHOS_SOURCES
     Util/Builtin/TestEvalExpression.cpp
 
     Archive/Archive.cpp
+    Archive/Tests.cpp
 )
 
 if(WIN32)

@@ -11,7 +11,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Archive/Archive.hpp>
-#include <type_traits>
+#include <Pothos/Archive/Invoke.hpp>
 #include <iosfwd>
 
 /*!
@@ -23,10 +23,10 @@
     namespace Pothos { namespace Archive { \
         template <> struct ArchiveEntryContainer<T> { \
             static const ArchiveEntry &entry; \
-            static void save(OStreamArchiver &ar, const T &value, const int ver) { \
+            static void save(OStreamArchiver &ar, const T &value, const unsigned int ver) { \
                 Pothos::serialization::serialize(ar, const_cast<T &>(value), ver); \
             } \
-            static void load(IStreamArchiver &ar, T &value, const int ver) { \
+            static void load(IStreamArchiver &ar, T &value, const unsigned int ver) { \
                 Pothos::serialization::serialize(ar, value, ver); \
             } \
         }; \
@@ -44,13 +44,7 @@
 #define POTHOS_SERIALIZATION_SPLIT_FREE(T) \
     namespace Pothos { namespace serialization { \
         template <typename Archive> \
-        typename std::enable_if<std::is_same<Pothos::Archive::OStreamArchiver, Archive>::value>::type \
-        serialize(Archive &ar, T &t, const unsigned int ver) { \
-            Pothos::serialization::save(ar, t, ver); \
-        } \
-        template <typename Archive> \
-        typename std::enable_if<std::is_same<Pothos::Archive::IStreamArchiver, Archive>::value>::type \
-        serialize(Archive &ar, T &t, const unsigned int ver) { \
-            Pothos::serialization::load(ar, t, ver); \
+        void serialize(Archive &ar, T &t, const unsigned int ver) { \
+            Pothos::serialization::invoke_load_save(ar, t, ver); \
         } \
     }}
