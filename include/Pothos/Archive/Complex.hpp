@@ -36,7 +36,7 @@ void load(Archive &ar, std::complex<T> &t, const unsigned int)
 template <typename Archive, typename T>
 void serialize(Archive &ar, std::complex<T> &t, const unsigned int ver)
 {
-    Pothos::serialization::invokeLoadSave(ar, t, ver);
+    Pothos::serialization::invokeSplit(ar, t, ver);
 }
 
 }}

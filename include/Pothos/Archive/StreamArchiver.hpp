@@ -73,6 +73,13 @@ private:
 };
 
 } //namespace Archive
+
+//! Old pothos serialization support
+namespace archive {
+    typedef Pothos::Archive::OStreamArchiver polymorphic_oarchive;
+    typedef Pothos::Archive::IStreamArchiver polymorphic_iarchive;
+} //namespace archive
+
 } //namespace Pothos
 
 #include <Pothos/Archive/Invoke.hpp>

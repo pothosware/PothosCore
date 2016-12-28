@@ -46,7 +46,7 @@ void load(Archive &ar, std::map<K, T> &t, const unsigned int)
 template <typename Archive, typename K, typename T>
 void serialize(Archive &ar, std::map<K, T> &t, const unsigned int ver)
 {
-    Pothos::serialization::invokeLoadSave(ar, t, ver);
+    Pothos::serialization::invokeSplit(ar, t, ver);
 }
 
 }}

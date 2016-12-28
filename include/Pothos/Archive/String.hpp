@@ -12,6 +12,7 @@
 #include <Pothos/Config.hpp>
 #include <Pothos/Archive/Invoke.hpp>
 #include <Pothos/Archive/Numbers.hpp>
+#include <Pothos/Archive/BinaryObject.hpp>
 #include <string>
 
 namespace Pothos {
@@ -21,7 +22,8 @@ template<typename Archive, typename T>
 void save(Archive &ar, const std::basic_string<T> &t, const unsigned int)
 {
     ar << unsigned(t.size());
-    ar.writeBytes(t.data(), t.size());
+    Pothos::serialization::BinaryObject bo((void *)t.data(), t.size());
+    ar << bo;
 }
 
 template<typename Archive, typename T>
@@ -30,13 +32,14 @@ void load(Archive &ar, std::basic_string<T> &t, const unsigned int)
     unsigned size(0);
     ar >> size;
     t.resize(size);
-    ar.readBytes((void *)t.data(), t.size());
+    Pothos::serialization::BinaryObject bo((void *)t.data(), t.size());
+    ar >> bo;
 }
 
 template <typename Archive, typename T>
 void serialize(Archive &ar, std::basic_string<T> &t, const unsigned int ver)
 {
-    Pothos::serialization::invokeLoadSave(ar, t, ver);
+    Pothos::serialization::invokeSplit(ar, t, ver);
 }
 
 }}

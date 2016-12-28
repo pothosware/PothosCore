@@ -104,7 +104,7 @@ template <typename Archive, typename T>
 typename std::enable_if<std::is_arithmetic<T>::value>::type
 serialize(Archive &ar, T &t, const unsigned int ver)
 {
-    Pothos::serialization::invokeLoadSave(ar, t, ver);
+    Pothos::serialization::invokeSplit(ar, t, ver);
 }
 
 }}

@@ -18,4 +18,5 @@
 #include <Pothos/Archive/Map.hpp>
 #include <Pothos/Archive/Pair.hpp>
 #include <Pothos/Archive/Vector.hpp>
+#include <Pothos/Archive/BinaryObject.hpp>
 #include <Pothos/Archive/StreamArchiver.hpp>

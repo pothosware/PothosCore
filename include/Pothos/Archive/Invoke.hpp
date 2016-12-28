@@ -77,7 +77,7 @@ namespace serialization {
      */
     template <typename Archive, typename T>
     typename std::enable_if<std::is_same<typename Archive::isSave, std::true_type>::value>::type
-    invokeLoadSave(Archive &ar, T &value, const unsigned int ver)
+    invokeSplit(Archive &ar, T &value, const unsigned int ver)
     {
         const VersionType vt(ver);
         save(ar, value, vt);
@@ -88,36 +88,14 @@ namespace serialization {
      */
     template <typename Archive, typename T>
     typename std::enable_if<std::is_same<typename Archive::isSave, std::false_type>::value>::type
-    invokeLoadSave(Archive &ar, T &value, const unsigned int ver)
+    invokeSplit(Archive &ar, T &value, const unsigned int ver)
     {
         const VersionType vt(ver);
         load(ar, value, vt);
     }
 
     /*!
-     * Invoke a save operation given an output stream archiver
-     */
-    template <typename Archive, typename T>
-    typename std::enable_if<std::is_same<typename Archive::isSave, std::true_type>::value>::type
-    invokeLoadSaveMember(Archive &ar, T &value, const unsigned int ver)
-    {
-        const VersionType vt(ver);
-        value.save(ar, vt);
-    }
-
-    /*!
-     * Invoke a load operation given an input stream archiver
-     */
-    template <typename Archive, typename T>
-    typename std::enable_if<std::is_same<typename Archive::isSave, std::false_type>::value>::type
-    invokeLoadSaveMember(Archive &ar, T &value, const unsigned int ver)
-    {
-        const VersionType vt(ver);
-        value.load(ar, vt);
-    }
-
-    /*!
-     * Invoke serialize (save or load) based on the archive type
+     * Invoke serialize when its not a member function
      */
     template <typename Archive, typename T>
     typename std::enable_if<!has_serialize<T, void(Archive &, const unsigned int)>::value>::type
@@ -128,13 +106,12 @@ namespace serialization {
     }
 
     /*!
-     * Invoke serialize (save or load) based on the archive type
+     * Invoke serialize when it is a member function
      */
     template <typename Archive, typename T>
     typename std::enable_if<has_serialize<T, void(Archive &, const unsigned int)>::value>::type
     invokeSerialize(Archive &ar, T &value, const unsigned int ver)
     {
-        const VersionType vt(ver);
         value.serialize(ar, ver);
     }
 

@@ -149,12 +149,13 @@ public:
         a & baz;
     }
 
+    POTHOS_SERIALIZATION_SPLIT_MEMBER()
+
     int foo;
     std::string bar;
     std::map<int, std::string> baz;
 };
 
-POTHOS_SERIALIZATION_SPLIT_MEMBER(BooHoo)
 
 /*
 namespace Pothos {
@@ -171,7 +172,7 @@ void serialize(Archive &a, BooHoo &t, const unsigned int)
 }}
 */
 
-POTHOS_CLASS_EXPORT_ID(BooHoo, "BooHoo");
+POTHOS_CLASS_EXPORT_GUID(BooHoo, "BooHoo");
 
 POTHOS_TEST_BLOCK("/archive/tests", test_basic_archive)
 {
