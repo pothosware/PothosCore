@@ -38,16 +38,23 @@ public:
     virtual void *load(void *ar) const = 0;
 
     //! Lookup the entry given the type info or throw if not found
-    static const ArchiveEntry &getEntryFromType(const std::type_info &type);
+    static const ArchiveEntry &find(const std::type_info &type);
 
     //! Lookup the entry given the unique id or throw if not found
-    static const ArchiveEntry &getEntryFromGUID(const std::string &id);
+    static const ArchiveEntry &find(const std::string &id);
+
+    //! Lookup the entry given the the id hash or throw if not found
+    static const ArchiveEntry &find(const unsigned long long &hash);
 
     //! Get the associated unique ID
     const std::string &getId(void) const;
 
+    //! Get a reproducible hash for this entry
+    const unsigned long long &getHash(void) const;
+
 private:
     const std::string _id;
+    const unsigned long long _hash;
 };
 
 /*!
@@ -71,6 +78,11 @@ struct ArchiveEntryT : ArchiveEntry
 inline const std::string &Pothos::Archive::ArchiveEntry::getId(void) const
 {
     return _id;
+}
+
+inline const unsigned long long &Pothos::Archive::ArchiveEntry::getHash(void) const
+{
+    return _hash;
 }
 
 template <typename T>
