@@ -15,11 +15,6 @@ void Pothos::Archive::OStreamArchiver::writeBytes(const void *buff, const size_t
     os.write(reinterpret_cast<const char *>(buff), len);
 }
 
-void Pothos::Archive::OStreamArchiver::writeType(const std::type_info &)
-{
-    //TODO
-}
-
 Pothos::Archive::IStreamArchiver::IStreamArchiver(std::istream &is, const unsigned int ver):
     is(is), ver(ver)
 {

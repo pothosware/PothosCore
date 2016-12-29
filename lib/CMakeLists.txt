@@ -243,9 +243,12 @@ list(APPEND POTHOS_SOURCES
     Util/Builtin/TestDocUtils.cpp
     Util/Builtin/TestEvalExpression.cpp
 
-    Archive/Archive.cpp
+    Archive/ArchiveEntry.cpp
     Archive/StreamArchiver.cpp
-    Archive/Tests.cpp
+    Archive/TestBasicTypes.cpp
+    Archive/TestCustomType.cpp
+    Archive/TestPolymorphicType.cpp
+    Archive/Exception.cpp
 )
 
 if(WIN32)

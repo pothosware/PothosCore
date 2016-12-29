@@ -11,7 +11,6 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <type_traits>
-#include <typeinfo>
 #include <iosfwd>
 #include <cstddef> //size_t
 
@@ -37,8 +36,6 @@ public:
     void writeBytes(const void *buff, const size_t len);
 
 private:
-
-    void writeType(const std::type_info &type);
 
     std::ostream &os;
     const unsigned int ver;
@@ -83,7 +80,6 @@ namespace archive {
 template <typename T>
 void Pothos::Archive::OStreamArchiver::operator&(const T &value)
 {
-    this->writeType(typeid(value));
     Pothos::serialization::invokeSerialize(*this, const_cast<T &>(value), ver);
 }
 

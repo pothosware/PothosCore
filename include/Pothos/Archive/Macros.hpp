@@ -10,7 +10,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Archive/Archive.hpp>
+#include <Pothos/Archive/ArchiveEntry.hpp>
 #include <Pothos/Archive/Invoke.hpp>
 #include <type_traits>
 
@@ -25,11 +25,11 @@
             static const ArchiveEntry &entry; \
         }; \
         const ArchiveEntry &ArchiveEntryContainer<T>::entry = \
-            ArchiveEntry(typeid(T), id) ; \
+            ArchiveEntryT<T>(id) ; \
     }}
 
 //! Register archival functions using the stringified type as the ID
-#define POTHOS_CLASS_EXPORT(T) POTHOS_CLASS_EXPORT_ID(T, #T)
+#define POTHOS_CLASS_EXPORT(T) POTHOS_CLASS_EXPORT_GUID(T, #T)
 
 /*!
  * Declare a serialize() function that can dispatch to
