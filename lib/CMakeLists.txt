@@ -22,7 +22,7 @@ endif (muparserx_FOUND)
 ########################################################################
 ## Feature registration
 ########################################################################
-cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND;muparserx_FOUND" OFF)
+cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;muparserx_FOUND" OFF)
 add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos development and runtime libraries")
 if (NOT ENABLE_LIBRARY_LIB)
     return()

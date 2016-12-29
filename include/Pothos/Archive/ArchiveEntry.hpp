@@ -50,6 +50,11 @@ private:
     const std::string _id;
 };
 
+/*!
+ * Archive entry for specific types.
+ * When instantiated, the library can
+ * save, create, and load this type.
+ */
 template <typename T>
 struct ArchiveEntryT : ArchiveEntry
 {
@@ -59,9 +64,6 @@ struct ArchiveEntryT : ArchiveEntry
 
     void *load(void *ar) const;
 };
-
-template <typename T>
-struct ArchiveEntryContainer;
 
 } //namespace Archive
 } //namespace Pothos

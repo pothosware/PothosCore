@@ -307,7 +307,7 @@ void Pothos::DType::serialize(Archive & ar, const unsigned int)
     ar & this->_dimension;
 }
 
-template void Pothos::DType::serialize<Pothos::archive::polymorphic_iarchive>(Pothos::archive::polymorphic_iarchive &, const unsigned int);
-template void Pothos::DType::serialize<Pothos::archive::polymorphic_oarchive>(Pothos::archive::polymorphic_oarchive &, const unsigned int);
+template void Pothos::DType::serialize<Pothos::Archive::IStreamArchiver>(Pothos::Archive::IStreamArchiver &, const unsigned int);
+template void Pothos::DType::serialize<Pothos::Archive::OStreamArchiver>(Pothos::Archive::OStreamArchiver &, const unsigned int);
 
 POTHOS_OBJECT_SERIALIZE(Pothos::DType)

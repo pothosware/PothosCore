@@ -10,7 +10,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Archive/Macros.hpp>
+#include <Pothos/Archive/Split.hpp>
 #include <cstddef> //size_t
 
 namespace Pothos {
@@ -47,8 +47,5 @@ private:
     const void * const buff;
     const size_t len;
 };
-
-//! Old pothos serialization support
-typedef BinaryObject binary_object;
 
 }}

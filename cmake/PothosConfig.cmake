@@ -38,26 +38,6 @@ else (Poco_FOUND)
 endif (Poco_FOUND)
 
 ########################################################################
-## locate the Pothos Serialization library
-########################################################################
-if(NOT PothosSerialization_IN_TREE)
-    find_package(PothosSerialization CONFIG)
-endif(NOT PothosSerialization_IN_TREE)
-
-if (PothosSerialization_FOUND)
-
-    message(STATUS "PothosSerialization_VERSION: ${PothosSerialization_VERSION}")
-    message(STATUS "PothosSerialization_INCLUDE_DIRS: ${PothosSerialization_INCLUDE_DIRS}")
-    message(STATUS "PothosSerialization_LIBRARIES: ${PothosSerialization_LIBRARIES}")
-
-    list(APPEND Pothos_LIBRARIES ${PothosSerialization_LIBRARIES})
-    list(APPEND Pothos_INCLUDE_DIRS ${PothosSerialization_INCLUDE_DIRS})
-
-else (PothosSerialization_FOUND)
-    message(WARNING "Pothos projects require serialization libraries...")
-endif (PothosSerialization_FOUND)
-
-########################################################################
 # install directory for cmake files
 ########################################################################
 if (UNIX)
@@ -104,9 +84,6 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
     set(IN_TREE_LIBRARIES Pothos)
     if (POCO_IN_TREE)
         list(APPEND IN_TREE_LIBRARIES ${Poco_LIBRARIES})
-    endif()
-    if (PothosSerialization_IN_TREE)
-        list(APPEND IN_TREE_LIBRARIES ${PothosSerialization_LIBRARIES})
     endif()
     if (MUPARSERX_IN_TREE)
         list(APPEND IN_TREE_LIBRARIES ${muparserx_LIBRARIES})

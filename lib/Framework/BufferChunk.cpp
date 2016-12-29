@@ -93,7 +93,6 @@ static auto managedBufferChunk = Pothos::ManagedClass()
     .commit("Pothos/BufferChunk");
 
 #include <Pothos/Object/Serialize.hpp>
-#include <Pothos/serialization/binary_object.hpp>
 #include <Poco/Types.h>
 
 namespace Pothos { namespace serialization {
@@ -105,7 +104,7 @@ void save(Archive & ar, const Pothos::BufferChunk &t, const unsigned int)
     if (is_null) return;
     const Poco::UInt32 length = Poco::UInt32(t.length);
     ar << length;
-    Pothos::serialization::binary_object bo(t.as<void *>(), t.length);
+    Pothos::serialization::BinaryObject bo(t.as<void *>(), t.length);
     ar << bo;
     ar << t.dtype;
 }
@@ -120,7 +119,7 @@ void load(Archive & ar, Pothos::BufferChunk &t, const unsigned int)
     Poco::UInt32 length = 0;
     ar >> length;
     t = Pothos::BufferChunk(size_t(length));
-    Pothos::serialization::binary_object bo(t.as<void *>(), t.length);
+    Pothos::serialization::BinaryObject bo(t.as<void *>(), t.length);
     ar >> bo;
     ar >> t.dtype;
 }
@@ -129,10 +128,10 @@ void load(Archive & ar, Pothos::BufferChunk &t, const unsigned int)
 template<class Archive>
 void Pothos::BufferChunk::serialize(Archive & ar, const unsigned int version)
 {
-    Pothos::serialization::split_free(ar, *this, version);
+    Pothos::serialization::invokeSplit(ar, *this, version);
 }
 
-template void Pothos::BufferChunk::serialize<Pothos::archive::polymorphic_iarchive>(Pothos::archive::polymorphic_iarchive &, const unsigned int);
-template void Pothos::BufferChunk::serialize<Pothos::archive::polymorphic_oarchive>(Pothos::archive::polymorphic_oarchive &, const unsigned int);
+template void Pothos::BufferChunk::serialize<Pothos::Archive::IStreamArchiver>(Pothos::Archive::IStreamArchiver &, const unsigned int);
+template void Pothos::BufferChunk::serialize<Pothos::Archive::OStreamArchiver>(Pothos::Archive::OStreamArchiver &, const unsigned int);
 
 POTHOS_OBJECT_SERIALIZE(Pothos::BufferChunk)

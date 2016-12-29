@@ -10,11 +10,13 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Archive/Macros.hpp>
+#include <Pothos/Archive/Split.hpp>
+#include <Pothos/Archive/Export.hpp>
 #include <Pothos/Archive/Numbers.hpp>
 #include <Pothos/Archive/Complex.hpp>
 #include <Pothos/Archive/String.hpp>
 #include <Pothos/Archive/Map.hpp>
+#include <Pothos/Archive/Set.hpp>
 #include <Pothos/Archive/Pair.hpp>
 #include <Pothos/Archive/Vector.hpp>
 #include <Pothos/Archive/BinaryObject.hpp>
