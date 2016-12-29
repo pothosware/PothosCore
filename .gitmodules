@@ -2,10 +2,6 @@
 	path = spuce
 	url = https://github.com/audiofilter/spuce.git
 	branch = master
-[submodule "serialization"]
-	path = serialization
-	url = https://github.com/pothosware/pothos-serialization.git
-	branch = master
 [submodule "muparserx"]
 	path = muparserx
 	url = https://github.com/beltoforion/muparserx.git
