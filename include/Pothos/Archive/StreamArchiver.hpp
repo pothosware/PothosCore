@@ -23,7 +23,7 @@ namespace Archive {
 class POTHOS_API OStreamArchiver
 {
 public:
-    OStreamArchiver(std::ostream &os, const unsigned int ver = 0);
+    OStreamArchiver(std::ostream &os);
 
     typedef std::true_type isSave;
 
@@ -38,7 +38,7 @@ public:
 private:
 
     std::ostream &os;
-    const unsigned int ver;
+    unsigned int ver;
 };
 
 /*!
@@ -47,7 +47,7 @@ private:
 class POTHOS_API IStreamArchiver
 {
 public:
-    IStreamArchiver(std::istream &is, const unsigned int ver = 0);
+    IStreamArchiver(std::istream &is);
 
     typedef std::false_type isSave;
 
@@ -62,7 +62,7 @@ public:
 private:
 
     std::istream &is;
-    const unsigned int ver;
+    unsigned int ver;
 };
 
 } //namespace Archive

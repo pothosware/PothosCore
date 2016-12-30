@@ -16,7 +16,6 @@
 #include <type_traits>
 #include <cfloat> //FLT_MANT_DIG, DBL_MANT_DIG
 #include <cmath> //frexp, ldexp
-#include <cstddef> //size_t
 
 namespace Pothos {
 namespace serialization {
@@ -84,8 +83,8 @@ typename std::enable_if<
     BinaryObject bo(buff, sizeof(buff));
     ar >> bo;
     t = T(
-        (static_cast<unsigned int>(buff[0]) << 0) |
-        (static_cast<unsigned int>(buff[1]) << 8));
+        (static_cast<unsigned short>(buff[0]) << 0) |
+        (static_cast<unsigned short>(buff[1]) << 8));
 }
 
 //------------ 32 bit integer support (int types) --------------//
