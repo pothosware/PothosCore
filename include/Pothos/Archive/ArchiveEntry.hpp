@@ -32,10 +32,10 @@ public:
     ArchiveEntry(const std::type_info &type, const std::string &id);
 
     //! Save a pointer to the archive in a derived class
-    virtual void save(void *ar, void *t) const = 0;
+    virtual void save(OStreamArchiver &ar, const void *t) const = 0;
 
     //! Load a pointer from the archive in a derived class
-    virtual void *load(void *ar) const = 0;
+    virtual void *load(IStreamArchiver &ar) const = 0;
 
     //! Lookup the entry given the type info or throw if not found
     static const ArchiveEntry &find(const std::type_info &type);
@@ -67,9 +67,9 @@ struct ArchiveEntryT : ArchiveEntry
 {
     ArchiveEntryT(const std::string &id);
 
-    void save(void *ar, void *t) const;
+    void save(OStreamArchiver &ar, const void *t) const;
 
-    void *load(void *ar) const;
+    void *load(IStreamArchiver &ar) const;
 };
 
 } //namespace Archive
@@ -93,15 +93,15 @@ Pothos::Archive::ArchiveEntryT<T>::ArchiveEntryT(const std::string &id):
 }
 
 template <typename T>
-void Pothos::Archive::ArchiveEntryT<T>::save(void *ar, void *t) const
+void Pothos::Archive::ArchiveEntryT<T>::save(OStreamArchiver &ar, const void *t) const
 {
-    (*static_cast<OStreamArchiver *>(ar)) << (*static_cast<T *>(t));
+    ar << (*static_cast<const T *>(t));
 }
 
 template <typename T>
-void *Pothos::Archive::ArchiveEntryT<T>::load(void *ar) const
+void *Pothos::Archive::ArchiveEntryT<T>::load(IStreamArchiver &ar) const
 {
     T *t = new T();
-    (*static_cast<IStreamArchiver *>(ar)) >> *t;
+    ar >> *t;
     return t;
 }

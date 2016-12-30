@@ -9,6 +9,19 @@
 
 POTHOS_TEST_BLOCK("/archive/tests", test_integers)
 {
+    //test the boolean support
+    {
+        std::stringstream so;
+        Pothos::Archive::OStreamArchiver ao(so);
+        bool x(true); ao << x;
+
+        std::stringstream si(so.str());
+        Pothos::Archive::IStreamArchiver ai(si);
+        bool y; ai >> y;
+
+        POTHOS_TEST_EQUAL(x, y);
+    }
+
     //test the 32-bit integer support
     {
         std::stringstream so;

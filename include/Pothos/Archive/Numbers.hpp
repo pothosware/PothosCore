@@ -16,33 +16,99 @@
 #include <type_traits>
 #include <cfloat> //FLT_MANT_DIG, DBL_MANT_DIG
 #include <cmath> //frexp, ldexp
-
-//For the sake of portability, whatever type is size_t
-//will always be packed and unpacked a 64-bit integer.
 #include <cstddef> //size_t
 
 namespace Pothos {
 namespace serialization {
 
-//------------ 32 bit integer support (and below) --------------//
-template<typename Archive, typename T>
-typename std::enable_if<std::is_integral<T>::value and
-    (sizeof(T) <= 4 and !std::is_same<T, size_t>::value)>::type
-save(Archive &ar, const T &t, const unsigned int)
+//------------ boolean support --------------//
+template<typename Archive>
+void save(Archive &ar, const bool &t, const unsigned int)
 {
-    unsigned char buff[4];
-    buff[0] = char(t >> 0);
-    buff[1] = char(t >> 8);
-    buff[2] = char(t >> 16);
-    buff[3] = char(t >> 24);
+    unsigned char value(t?1:0);
+    ar << value;
+}
+
+template<typename Archive>
+void load(Archive &ar, bool &t, const unsigned int)
+{
+    unsigned char value;
+    ar >> value;
+    t = (value == 0)?false:true;
+}
+
+//------------ 8 bit integer support (all char types) --------------//
+template<typename Archive, typename T>
+typename std::enable_if<
+    std::is_same<T, unsigned char>::value or
+    std::is_same<T, signed char>::value or
+    std::is_same<T, char>::value
+>::type save(Archive &ar, const T &t, const unsigned int)
+{
+    BinaryObject bo(&t, 1);
+    ar << bo;
+}
+
+template<typename Archive, typename T>
+typename std::enable_if<
+    std::is_same<T, unsigned char>::value or
+    std::is_same<T, signed char>::value or
+    std::is_same<T, char>::value
+>::type load(Archive &ar, T &t, const unsigned int)
+{
+    BinaryObject bo(&t, 1);
+    ar >> bo;
+}
+
+//------------ 16 bit integer support (short types) --------------//
+template<typename Archive, typename T>
+typename std::enable_if<
+    std::is_same<T, unsigned short>::value or
+    std::is_same<T, signed short>::value
+>::type save(Archive &ar, const T &t, const unsigned int)
+{
+    unsigned char buff[2];
+    buff[0] = static_cast<unsigned char>(t >> 0);
+    buff[1] = static_cast<unsigned char>(t >> 8);
     BinaryObject bo(buff, sizeof(buff));
     ar << bo;
 }
 
 template<typename Archive, typename T>
-typename std::enable_if<std::is_integral<T>::value and
-    (sizeof(T) <= 4 and !std::is_same<T, size_t>::value)>::type
-load(Archive &ar, T &t, const unsigned int)
+typename std::enable_if<
+    std::is_same<T, unsigned short>::value or
+    std::is_same<T, signed short>::value
+>::type load(Archive &ar, T &t, const unsigned int)
+{
+    unsigned char buff[2];
+    BinaryObject bo(buff, sizeof(buff));
+    ar >> bo;
+    t = T(
+        (static_cast<unsigned int>(buff[0]) << 0) |
+        (static_cast<unsigned int>(buff[1]) << 8));
+}
+
+//------------ 32 bit integer support (int types) --------------//
+template<typename Archive, typename T>
+typename std::enable_if<
+    std::is_same<T, unsigned int>::value or
+    std::is_same<T, signed int>::value
+>::type save(Archive &ar, const T &t, const unsigned int)
+{
+    unsigned char buff[4];
+    buff[0] = static_cast<unsigned char>(t >> 0);
+    buff[1] = static_cast<unsigned char>(t >> 8);
+    buff[2] = static_cast<unsigned char>(t >> 16);
+    buff[3] = static_cast<unsigned char>(t >> 24);
+    BinaryObject bo(buff, sizeof(buff));
+    ar << bo;
+}
+
+template<typename Archive, typename T>
+typename std::enable_if<
+    std::is_same<T, unsigned int>::value or
+    std::is_same<T, signed int>::value
+>::type load(Archive &ar, T &t, const unsigned int)
 {
     unsigned char buff[4];
     BinaryObject bo(buff, sizeof(buff));
@@ -54,29 +120,37 @@ load(Archive &ar, T &t, const unsigned int)
         (static_cast<unsigned int>(buff[3]) << 24));
 }
 
-//------------ 64 bit integer support --------------//
+//------------ 64 bit integer support (long types)--------------//
+// the size of long notoriously varies among platforms
+// always serialize long with 8 bytes for portability
 template<typename Archive, typename T>
-typename std::enable_if<std::is_integral<T>::value and
-    (sizeof(T) == 8 or std::is_same<T, size_t>::value)>::type
-save(Archive &ar, const T &t, const unsigned int)
+typename std::enable_if<
+    std::is_same<T, unsigned long>::value or
+    std::is_same<T, signed long>::value or
+    std::is_same<T, unsigned long long>::value or
+    std::is_same<T, signed long long>::value
+>::type save(Archive &ar, const T &t, const unsigned int)
 {
     unsigned char buff[8];
-    buff[0] = char(t >> 0);
-    buff[1] = char(t >> 8);
-    buff[2] = char(t >> 16);
-    buff[3] = char(t >> 24);
-    buff[4] = char(t >> 32);
-    buff[5] = char(t >> 40);
-    buff[6] = char(t >> 48);
-    buff[7] = char(t >> 56);
+    buff[0] = static_cast<unsigned char>(t >> 0);
+    buff[1] = static_cast<unsigned char>(t >> 8);
+    buff[2] = static_cast<unsigned char>(t >> 16);
+    buff[3] = static_cast<unsigned char>(t >> 24);
+    buff[4] = static_cast<unsigned char>(t >> 32);
+    buff[5] = static_cast<unsigned char>(t >> 40);
+    buff[6] = static_cast<unsigned char>(t >> 48);
+    buff[7] = static_cast<unsigned char>(t >> 56);
     BinaryObject bo(buff, sizeof(buff));
     ar << bo;
 }
 
 template<typename Archive, typename T>
-typename std::enable_if<std::is_integral<T>::value and
-    (sizeof(T) == 8 or std::is_same<T, size_t>::value)>::type
-load(Archive &ar, T &t, const unsigned int)
+typename std::enable_if<
+    std::is_same<T, unsigned long>::value or
+    std::is_same<T, signed long>::value or
+    std::is_same<T, unsigned long long>::value or
+    std::is_same<T, signed long long>::value
+>::type load(Archive &ar, T &t, const unsigned int)
 {
     unsigned char buff[8];
     BinaryObject bo(buff, sizeof(buff));

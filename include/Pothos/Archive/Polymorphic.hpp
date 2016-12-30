@@ -13,30 +13,34 @@
 #include <Pothos/Archive/ArchiveEntry.hpp>
 #include <Pothos/Archive/Numbers.hpp>
 #include <Pothos/Archive/Invoke.hpp>
+#include <type_traits>
 
 namespace Pothos {
 namespace serialization {
 
-template<typename Archive, typename T>
-void save(Archive &ar, T* const &t, const unsigned int)
+template <typename Archive, typename T>
+typename std::enable_if<std::is_pointer<T>::value>::type
+save(Archive &ar, const T &t, const unsigned int)
 {
     const auto &entry = Pothos::Archive::ArchiveEntry::find(typeid(*t));
     ar << entry.getHash();
-    entry.save(&ar, t);
+    entry.save(ar, t);
 }
 
-template<typename Archive, typename T>
-void load(Archive &ar, T* &t, const unsigned int)
+template <typename Archive, typename T>
+typename std::enable_if<std::is_pointer<T>::value>::type
+load(Archive &ar, T &t, const unsigned int)
 {
     unsigned long long idHash;
     ar >> idHash;
     const auto &entry = Pothos::Archive::ArchiveEntry::find(idHash);
-    delete t;
-    t = (T*)entry.load(&ar);
+    delete t; //delete previous pointer or its null
+    t = static_cast<T>(entry.load(ar));
 }
 
 template <typename Archive, typename T>
-void serialize(Archive &ar, T* &t, const unsigned int ver)
+typename std::enable_if<std::is_pointer<T>::value>::type
+serialize(Archive &ar, T &t, const unsigned int ver)
 {
     Pothos::serialization::invokeSplit(ar, t, ver);
 }

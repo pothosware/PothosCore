@@ -12,6 +12,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <type_traits>
+#include <utility> //std::declval
 
 namespace Pothos {
 namespace serialization {
@@ -43,33 +44,21 @@ namespace serialization {
         unsigned int ver;
     };
 
-    //https://stackoverflow.com/questions/87372/check-if-a-class-has-a-member-function-of-a-given-signature
-    template<typename, typename T>
-    struct has_serialize {
-        static_assert(
-            std::integral_constant<T, false>::value,
-            "Second template parameter needs to be of function type.");
-    };
-
-    template<typename C, typename Ret, typename... Args>
-    class has_serialize<C, Ret(Args...)>
+    /*!
+     * Check for the presence of a serialize member function for class T.
+     * https://stackoverflow.com/questions/34595072/error-with-decltype-template-with-msvc2013
+     */
+    template <typename T, typename Archive>
+    struct hasSerialize
     {
-    private:
-        template<typename T>
-        static constexpr auto check(T*)
-        -> typename
-            std::is_same<
-                decltype( std::declval<T>().serialize( std::declval<Args>()... ) ),
-                Ret    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            >::type;  // attempt to call it and see if the return type is correct
+        template <typename U>
+        static auto test(U* p) -> decltype(p->serialize(std::declval<Archive&>(), std::declval<const unsigned int>()));
 
-        template<typename>
-        static constexpr std::false_type check(...);
+        template <typename U>
+        static auto test(...) -> std::false_type;
 
-        typedef decltype(check<C>(0)) type;
-
-    public:
-        static constexpr bool value = type::value;
+        using type = typename std::is_same<decltype(test<T>(nullptr)), void>::type;
+        static const auto value = type::value;
     };
 
     /*!
@@ -98,7 +87,7 @@ namespace serialization {
      * Invoke serialize when its not a member function
      */
     template <typename Archive, typename T>
-    typename std::enable_if<!has_serialize<T, void(Archive &, const unsigned int)>::value>::type
+    typename std::enable_if<!hasSerialize<T, Archive>::value>::type
     invokeSerialize(Archive &ar, T &value, const unsigned int ver)
     {
         const VersionType vt(ver);
@@ -109,7 +98,7 @@ namespace serialization {
      * Invoke serialize when it is a member function
      */
     template <typename Archive, typename T>
-    typename std::enable_if<has_serialize<T, void(Archive &, const unsigned int)>::value>::type
+    typename std::enable_if<hasSerialize<T, Archive>::value>::type
     invokeSerialize(Archive &ar, T &value, const unsigned int ver)
     {
         value.serialize(ar, ver);
