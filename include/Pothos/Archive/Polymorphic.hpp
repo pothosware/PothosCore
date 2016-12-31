@@ -19,8 +19,8 @@ namespace Pothos {
 namespace serialization {
 
 template <typename Archive, typename T>
-typename std::enable_if<std::is_pointer<T>::value>::type
-save(Archive &ar, const T &t, const unsigned int)
+typename std::enable_if<std::is_polymorphic<T>::value>::type
+save(Archive &ar, const T* const &t, const unsigned int)
 {
     const auto &entry = Pothos::Archive::ArchiveEntry::find(typeid(*t));
     ar << entry.getHash();
@@ -28,19 +28,19 @@ save(Archive &ar, const T &t, const unsigned int)
 }
 
 template <typename Archive, typename T>
-typename std::enable_if<std::is_pointer<T>::value>::type
-load(Archive &ar, T &t, const unsigned int)
+typename std::enable_if<std::is_polymorphic<T>::value>::type
+load(Archive &ar, T* &t, const unsigned int)
 {
     unsigned long long idHash;
     ar >> idHash;
     const auto &entry = Pothos::Archive::ArchiveEntry::find(idHash);
     delete t; //delete previous pointer or its null
-    t = static_cast<T>(entry.load(ar));
+    t = static_cast<T*>(entry.load(ar));
 }
 
 template <typename Archive, typename T>
-typename std::enable_if<std::is_pointer<T>::value>::type
-serialize(Archive &ar, T &t, const unsigned int ver)
+typename std::enable_if<std::is_polymorphic<T>::value>::type
+serialize(Archive &ar, T* &t, const unsigned int ver)
 {
     Pothos::serialization::invokeSplit(ar, t, ver);
 }

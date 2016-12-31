@@ -19,8 +19,8 @@
 namespace Pothos {
 namespace serialization {
 
-template<typename Archive, typename K, typename T>
-void save(Archive &ar, const std::map<K, T> &t, const unsigned int)
+template<typename Archive, typename K, typename T, typename Compare, typename Allocator>
+void save(Archive &ar, const std::map<K, T, Compare, Allocator> &t, const unsigned int)
 {
     ar << unsigned(t.size());
     for (const auto &pair : t)
@@ -29,8 +29,8 @@ void save(Archive &ar, const std::map<K, T> &t, const unsigned int)
     }
 }
 
-template<typename Archive, typename K, typename T>
-void load(Archive &ar, std::map<K, T> &t, const unsigned int)
+template<typename Archive, typename K, typename T, typename Compare, typename Allocator>
+void load(Archive &ar, std::map<K, T, Compare, Allocator> &t, const unsigned int)
 {
     t.clear();
     unsigned size(0);
@@ -43,8 +43,8 @@ void load(Archive &ar, std::map<K, T> &t, const unsigned int)
     }
 }
 
-template <typename Archive, typename K, typename T>
-void serialize(Archive &ar, std::map<K, T> &t, const unsigned int ver)
+template <typename Archive, typename K, typename T, typename Compare, typename Allocator>
+void serialize(Archive &ar, std::map<K, T, Compare, Allocator> &t, const unsigned int ver)
 {
     Pothos::serialization::invokeSplit(ar, t, ver);
 }

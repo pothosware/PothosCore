@@ -18,16 +18,16 @@
 namespace Pothos {
 namespace serialization {
 
-template<typename Archive, typename T>
-void save(Archive &ar, const std::basic_string<T> &t, const unsigned int)
+template<typename Archive, typename T, typename Traits, typename Allocator>
+void save(Archive &ar, const std::basic_string<T, Traits, Allocator> &t, const unsigned int)
 {
     ar << unsigned(t.size());
     BinaryObject bo(t.data(), t.size());
     ar << bo;
 }
 
-template<typename Archive, typename T>
-void load(Archive &ar, std::basic_string<T> &t, const unsigned int)
+template<typename Archive, typename T, typename Traits, typename Allocator>
+void load(Archive &ar, std::basic_string<T, Traits, Allocator> &t, const unsigned int)
 {
     unsigned size(0);
     ar >> size;
@@ -36,8 +36,8 @@ void load(Archive &ar, std::basic_string<T> &t, const unsigned int)
     ar >> bo;
 }
 
-template <typename Archive, typename T>
-void serialize(Archive &ar, std::basic_string<T> &t, const unsigned int ver)
+template <typename Archive, typename T, typename Traits, typename Allocator>
+void serialize(Archive &ar, std::basic_string<T, Traits, Allocator> &t, const unsigned int ver)
 {
     Pothos::serialization::invokeSplit(ar, t, ver);
 }

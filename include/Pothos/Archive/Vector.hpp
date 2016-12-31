@@ -19,8 +19,8 @@ namespace Pothos {
 namespace serialization {
 
 //------------ boolean vectors use a special internal type --------------//
-template <typename Archive>
-void save(Archive &ar, const std::vector<bool> &t, const unsigned int)
+template <typename Archive, typename Allocator>
+void save(Archive &ar, const std::vector<bool, Allocator> &t, const unsigned int)
 {
     ar << unsigned(t.size());
     for (const bool elem : t)
@@ -29,8 +29,8 @@ void save(Archive &ar, const std::vector<bool> &t, const unsigned int)
     }
 }
 
-template <typename Archive>
-void load(Archive &ar, std::vector<bool> &t, const unsigned int)
+template <typename Archive, typename Allocator>
+void load(Archive &ar, std::vector<bool, Allocator> &t, const unsigned int)
 {
     unsigned size(0);
     ar >> size;
@@ -44,8 +44,8 @@ void load(Archive &ar, std::vector<bool> &t, const unsigned int)
 }
 
 //------------ a vector of any type --------------//
-template<typename Archive, typename T>
-void save(Archive &ar, const std::vector<T> &t, const unsigned int)
+template<typename Archive, typename T, typename Allocator>
+void save(Archive &ar, const std::vector<T, Allocator> &t, const unsigned int)
 {
     ar << unsigned(t.size());
     for (const auto &elem : t)
@@ -54,8 +54,8 @@ void save(Archive &ar, const std::vector<T> &t, const unsigned int)
     }
 }
 
-template<typename Archive, typename T>
-void load(Archive &ar, std::vector<T> &t, const unsigned int)
+template<typename Archive, typename T, typename Allocator>
+void load(Archive &ar, std::vector<T, Allocator> &t, const unsigned int)
 {
     unsigned size(0);
     ar >> size;
@@ -68,8 +68,8 @@ void load(Archive &ar, std::vector<T> &t, const unsigned int)
     }
 }
 
-template <typename Archive, typename T>
-void serialize(Archive &ar, std::vector<T> &t, const unsigned int ver)
+template <typename Archive, typename T, typename Allocator>
+void serialize(Archive &ar, std::vector<T, Allocator> &t, const unsigned int ver)
 {
     Pothos::serialization::invokeSplit(ar, t, ver);
 }
