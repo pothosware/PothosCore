@@ -2,7 +2,16 @@
 /// \file Archive/Numbers.hpp
 ///
 /// Numeric support for serialization.
-/// Integer and floating point types.
+///
+/// Integers are serialized into a portable byte ordering
+/// to work across big and little platform endianess.
+/// In addition, all long types get serialized as 8 bytes
+/// because the size of long may vary from 4 to 8 bytes.
+///
+/// Floats are cast to an integer type of identical size
+/// and serialized as an integer; also for platform endianess.
+/// The implementation assumes the IEEE-754 format for floats,
+/// but could easily be expanded for soft packing of IEEE-754.
 ///
 /// \copyright
 /// Copyright (c) 2016 Josh Blum
@@ -14,8 +23,7 @@
 #include <Pothos/Archive/Invoke.hpp>
 #include <Pothos/Archive/BinaryObject.hpp>
 #include <type_traits>
-#include <cfloat> //FLT_MANT_DIG, DBL_MANT_DIG
-#include <cmath> //frexp, ldexp
+#include <limits> //is_iec559
 
 namespace Pothos {
 namespace serialization {
@@ -67,8 +75,9 @@ typename std::enable_if<
 >::type save(Archive &ar, const T &t, const unsigned int)
 {
     unsigned char buff[2];
-    buff[0] = static_cast<unsigned char>(t >> 0);
-    buff[1] = static_cast<unsigned char>(t >> 8);
+    const auto v = static_cast<unsigned short>(t);
+    buff[0] = static_cast<unsigned char>(v >> 0);
+    buff[1] = static_cast<unsigned char>(v >> 8);
     BinaryObject bo(buff, sizeof(buff));
     ar << bo;
 }
@@ -82,7 +91,7 @@ typename std::enable_if<
     unsigned char buff[2];
     BinaryObject bo(buff, sizeof(buff));
     ar >> bo;
-    t = T(
+    t = static_cast<T>(
         (static_cast<unsigned short>(buff[0]) << 0) |
         (static_cast<unsigned short>(buff[1]) << 8));
 }
@@ -95,10 +104,11 @@ typename std::enable_if<
 >::type save(Archive &ar, const T &t, const unsigned int)
 {
     unsigned char buff[4];
-    buff[0] = static_cast<unsigned char>(t >> 0);
-    buff[1] = static_cast<unsigned char>(t >> 8);
-    buff[2] = static_cast<unsigned char>(t >> 16);
-    buff[3] = static_cast<unsigned char>(t >> 24);
+    const auto v = static_cast<unsigned int>(t);
+    buff[0] = static_cast<unsigned char>(v >> 0);
+    buff[1] = static_cast<unsigned char>(v >> 8);
+    buff[2] = static_cast<unsigned char>(v >> 16);
+    buff[3] = static_cast<unsigned char>(v >> 24);
     BinaryObject bo(buff, sizeof(buff));
     ar << bo;
 }
@@ -112,7 +122,7 @@ typename std::enable_if<
     unsigned char buff[4];
     BinaryObject bo(buff, sizeof(buff));
     ar >> bo;
-    t = T(
+    t = static_cast<T>(
         (static_cast<unsigned int>(buff[0]) << 0) |
         (static_cast<unsigned int>(buff[1]) << 8) |
         (static_cast<unsigned int>(buff[2]) << 16) |
@@ -131,14 +141,15 @@ typename std::enable_if<
 >::type save(Archive &ar, const T &t, const unsigned int)
 {
     unsigned char buff[8];
-    buff[0] = static_cast<unsigned char>(t >> 0);
-    buff[1] = static_cast<unsigned char>(t >> 8);
-    buff[2] = static_cast<unsigned char>(t >> 16);
-    buff[3] = static_cast<unsigned char>(t >> 24);
-    buff[4] = static_cast<unsigned char>(t >> 32);
-    buff[5] = static_cast<unsigned char>(t >> 40);
-    buff[6] = static_cast<unsigned char>(t >> 48);
-    buff[7] = static_cast<unsigned char>(t >> 56);
+    const auto v = static_cast<unsigned long long>(t);
+    buff[0] = static_cast<unsigned char>(v >> 0);
+    buff[1] = static_cast<unsigned char>(v >> 8);
+    buff[2] = static_cast<unsigned char>(v >> 16);
+    buff[3] = static_cast<unsigned char>(v >> 24);
+    buff[4] = static_cast<unsigned char>(v >> 32);
+    buff[5] = static_cast<unsigned char>(v >> 40);
+    buff[6] = static_cast<unsigned char>(v >> 48);
+    buff[7] = static_cast<unsigned char>(v >> 56);
     BinaryObject bo(buff, sizeof(buff));
     ar << bo;
 }
@@ -154,7 +165,7 @@ typename std::enable_if<
     unsigned char buff[8];
     BinaryObject bo(buff, sizeof(buff));
     ar >> bo;
-    t = T(
+    t = static_cast<T>(
         (static_cast<unsigned long long>(buff[0]) << 0) |
         (static_cast<unsigned long long>(buff[1]) << 8) |
         (static_cast<unsigned long long>(buff[2]) << 16) |
@@ -166,45 +177,45 @@ typename std::enable_if<
 }
 
 //------------ 32-bit float support --------------//
+static_assert(std::numeric_limits<float>::is_iec559, "System is IEEE-754");
+
 template<typename Archive>
-void save(Archive &ar, const float &t, const unsigned int)
+typename std::enable_if<std::numeric_limits<float>::is_iec559>::type
+save(Archive &ar, const float &t, const unsigned int)
 {
-    int exp = 0;
-    const float x = std::frexp(t, &exp);
-    const auto man = (int)std::ldexp(x, FLT_MANT_DIG);
-    ar & exp;
-    ar & man;
+    const void *bin(&t);
+    ar << *static_cast<const unsigned int *>(bin);
 }
 
 template<typename Archive>
-void load(Archive &ar, float &t, const unsigned int)
+typename std::enable_if<std::numeric_limits<float>::is_iec559>::type
+load(Archive &ar, float &t, const unsigned int)
 {
-    int exp = 0;
-    int man = 0;
-    ar & exp;
-    ar & man;
-    t = std::ldexp(float(man), exp-FLT_MANT_DIG);
+    unsigned int num;
+    ar >> num;
+    const void *bin(&num);
+    t = *reinterpret_cast<const float *>(bin);
 }
 
 //------------ 64-bit float support --------------//
+static_assert(std::numeric_limits<double>::is_iec559, "System is IEEE-754");
+
 template<typename Archive>
-void save(Archive &ar, const double &t, const unsigned int)
+typename std::enable_if<std::numeric_limits<double>::is_iec559>::type
+save(Archive &ar, const double &t, const unsigned int)
 {
-    int exp = 0;
-    const double x = std::frexp(t, &exp);
-    const auto man = (long long)std::ldexp(x, DBL_MANT_DIG);
-    ar & exp;
-    ar & man;
+    const void *bin(&t);
+    ar << *static_cast<const unsigned long long *>(bin);
 }
 
 template<typename Archive>
-void load(Archive &ar, double &t, const unsigned int)
+typename std::enable_if<std::numeric_limits<double>::is_iec559>::type
+load(Archive &ar, double &t, const unsigned int)
 {
-    int exp = 0;
-    long long man = 0;
-    ar & exp;
-    ar & man;
-    t = std::ldexp(double(man), exp-DBL_MANT_DIG);
+    unsigned long long num;
+    ar >> num;
+    const void *bin(&num);
+    t = *reinterpret_cast<const double *>(bin);
 }
 
 //------------ serialize for integers and floats --------------//

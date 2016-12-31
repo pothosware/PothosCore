@@ -6,14 +6,19 @@
 #include <Pothos/Archive.hpp>
 #include <sstream>
 #include <iostream>
+#include <cmath> //pow
+#include <cstdlib> //rand
+
+static const int numIters(100);
 
 POTHOS_TEST_BLOCK("/archive/tests", test_integers)
 {
     //test the boolean support
+    for (int i = 0; i < 2; i++)
     {
         std::stringstream so;
         Pothos::Archive::OStreamArchiver ao(so);
-        bool x(true); ao << x;
+        bool x((i==0)?false:true); ao << x;
 
         std::stringstream si(so.str());
         Pothos::Archive::IStreamArchiver ai(si);
@@ -23,10 +28,11 @@ POTHOS_TEST_BLOCK("/archive/tests", test_integers)
     }
 
     //test the 32-bit integer support
+    for (int i = 0; i < numIters; i++)
     {
         std::stringstream so;
         Pothos::Archive::OStreamArchiver ao(so);
-        int x(123); ao << x;
+        int x(std::rand()); ao << x;
 
         std::stringstream si(so.str());
         Pothos::Archive::IStreamArchiver ai(si);
@@ -36,11 +42,13 @@ POTHOS_TEST_BLOCK("/archive/tests", test_integers)
     }
 
     //test the 64-bit integer support
+    for (int i = 0; i < numIters; i++)
     {
         std::stringstream so;
         Pothos::Archive::OStreamArchiver ao(so);
-        long long x(123);
+        long long x(std::rand());
         x <<= 32;
+        x |= std::rand();
         ao << x;
 
         std::stringstream si(so.str());
@@ -54,10 +62,13 @@ POTHOS_TEST_BLOCK("/archive/tests", test_integers)
 POTHOS_TEST_BLOCK("/archive/tests", test_floats)
 {
     //test the float support
+    for (int i = 0; i < numIters; i++)
     {
         std::stringstream so;
         Pothos::Archive::OStreamArchiver ao(so);
-        float x(1e6); ao << x;
+        float x(std::rand());
+        x *= std::pow(1.0f, float(std::rand() & 0xf));
+        ao << x;
 
         std::stringstream si(so.str());
         Pothos::Archive::IStreamArchiver ai(si);
@@ -67,10 +78,13 @@ POTHOS_TEST_BLOCK("/archive/tests", test_floats)
     }
 
     //test the double support
+    for (int i = 0; i < numIters; i++)
     {
         std::stringstream so;
         Pothos::Archive::OStreamArchiver ao(so);
-        double x(-0.1e3); ao << x;
+        double x(std::rand());
+        x *= std::pow(1.0, double(std::rand() & 0xf));
+        ao << x;
 
         std::stringstream si(so.str());
         Pothos::Archive::IStreamArchiver ai(si);
@@ -82,15 +96,19 @@ POTHOS_TEST_BLOCK("/archive/tests", test_floats)
 
 POTHOS_TEST_BLOCK("/archive/tests", test_complex)
 {
-    std::stringstream so;
-    Pothos::Archive::OStreamArchiver ao(so);
-    std::complex<int> x(1, -2); ao << x;
+    for (int i = 0; i < numIters; i++)
+    {
+        std::stringstream so;
+        Pothos::Archive::OStreamArchiver ao(so);
+        std::complex<int> x(std::rand(), std::rand());
+        ao << x;
 
-    std::stringstream si(so.str());
-    Pothos::Archive::IStreamArchiver ai(si);
-    std::complex<int> y; ai >> y;
+        std::stringstream si(so.str());
+        Pothos::Archive::IStreamArchiver ai(si);
+        std::complex<int> y; ai >> y;
 
-    POTHOS_TEST_EQUAL(x, y);
+        POTHOS_TEST_EQUAL(x, y);
+    }
 }
 
 POTHOS_TEST_BLOCK("/archive/tests", test_string)

@@ -15,6 +15,7 @@ Pothos::Archive::OStreamArchiver::OStreamArchiver(std::ostream &os):
 
 void Pothos::Archive::OStreamArchiver::writeBytes(const void *buff, const size_t len)
 {
+    if (len == 0) return;
     os.write(reinterpret_cast<const char *>(buff), len);
 }
 
@@ -26,5 +27,6 @@ Pothos::Archive::IStreamArchiver::IStreamArchiver(std::istream &is):
 
 void Pothos::Archive::IStreamArchiver::readBytes(void *buff, const size_t len)
 {
+    if (len == 0) return;
     is.read(reinterpret_cast<char *>(buff), len);
 }
