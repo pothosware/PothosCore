@@ -1,24 +1,18 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/Serialize.hpp>
 #include <Pothos/Object/Exception.hpp>
-
-//required define: portable only exported in pothos-serialization
-#define NO_EXPLICIT_TEMPLATE_INSTANTIATION
-#include <Pothos/archive/eos/portable_oarchive.hpp>
-#include <Pothos/archive/eos/portable_iarchive.hpp>
-
 #include <cassert>
 
 std::ostream &Pothos::Object::serialize(std::ostream &os) const
 {
     try
     {
-        eos::polymorphic_portable_oarchive oa(os);
+        Pothos::Archive::OStreamArchiver oa(os);
         oa << *this;
     }
-    catch(const Pothos::archive::archive_exception &ex)
+    catch(const Pothos::ArchiveException &ex)
     {
         throw ObjectSerializeError("Pothos::Object::serialize("+this->toString()+")", ex.what());
     }
@@ -32,10 +26,10 @@ std::istream &Pothos::Object::deserialize(std::istream &is)
 
     try
     {
-        eos::polymorphic_portable_iarchive ia(is);
+        Pothos::Archive::IStreamArchiver ia(is);
         ia >> *this;
     }
-    catch(const Pothos::archive::archive_exception &ex)
+    catch(const Pothos::ArchiveException &ex)
     {
         throw ObjectSerializeError("Pothos::Object::deserialize()", ex.what());
     }

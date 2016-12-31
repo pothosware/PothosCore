@@ -22,7 +22,7 @@ endif (muparserx_FOUND)
 ########################################################################
 ## Feature registration
 ########################################################################
-cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;PothosSerialization_FOUND;muparserx_FOUND" OFF)
+cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;muparserx_FOUND" OFF)
 add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos development and runtime libraries")
 if (NOT ENABLE_LIBRARY_LIB)
     return()
@@ -242,6 +242,13 @@ list(APPEND POTHOS_SOURCES
     Util/Builtin/DocUtils.cpp
     Util/Builtin/TestDocUtils.cpp
     Util/Builtin/TestEvalExpression.cpp
+
+    Archive/ArchiveEntry.cpp
+    Archive/StreamArchiver.cpp
+    Archive/TestBasicTypes.cpp
+    Archive/TestCustomType.cpp
+    Archive/TestPolymorphicType.cpp
+    Archive/Exception.cpp
 )
 
 if(WIN32)

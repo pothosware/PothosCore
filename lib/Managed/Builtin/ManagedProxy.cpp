@@ -72,7 +72,7 @@ void ManagedProxyEnvironment::serialize(const Pothos::Proxy &proxy, std::ostream
         auto handle = this->getHandle(proxy);
         handle->obj.serialize(os);
     }
-    catch (const Pothos::archive::archive_exception &ex)
+    catch (const Pothos::ArchiveException &ex)
     {
         throw Pothos::ProxySerializeError("ManagedProxyEnvironment::serialize()", ex.what());
     }
@@ -86,7 +86,7 @@ Pothos::Proxy ManagedProxyEnvironment::deserialize(std::istream &is)
         obj.deserialize(is);
         return this->makeHandle(obj);
     }
-    catch (const Pothos::archive::archive_exception &ex)
+    catch (const Pothos::ArchiveException &ex)
     {
         throw Pothos::ProxySerializeError("ManagedProxyEnvironment::deserialize()", ex.what());
     }

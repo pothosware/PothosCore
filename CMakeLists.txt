@@ -173,28 +173,6 @@ if (ENABLE_INTERNAL_MUPARSERX)
 endif(ENABLE_INTERNAL_MUPARSERX)
 
 ########################################################################
-# Pothos serialization library
-########################################################################
-find_package(PothosSerialization CONFIG)
-cmake_dependent_option(ENABLE_INTERNAL_SERIALIZATION "Enable Serialization library" ON "NOT PothosSerialization_FOUND" OFF)
-add_feature_info(Serialization ENABLE_INTERNAL_SERIALIZATION "Build internal Serialization library")
-
-if (ENABLE_INTERNAL_SERIALIZATION)
-    message(STATUS "PothosSerialization not found - using built-in PothosSerialization")
-
-    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/serialization/CMakeLists.txt)
-        message(FATAL_ERROR "PothosSerialization submodule not configured (git submodule update --init --recursive)")
-    endif ()
-
-    add_subdirectory(serialization)
-    set(PothosSerialization_IN_TREE TRUE)
-    set(PothosSerialization_FOUND TRUE)
-    set(PothosSerialization_VERSION "[submodule]")
-    set(PothosSerialization_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/serialization/include)
-    set(PothosSerialization_LIBRARIES PothosSerialization)
-endif(ENABLE_INTERNAL_SERIALIZATION)
-
-########################################################################
 # Build the framework library
 ########################################################################
 cmake_dependent_option(ENABLE_LIBRARY "Enable Pothos Library component" ON "TRUE" OFF)

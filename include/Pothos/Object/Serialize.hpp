@@ -8,7 +8,7 @@
 /// users adding a type should explicitly include this file.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2016 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -23,21 +23,8 @@
 
 #include <Pothos/Config.hpp>
 #include <Pothos/Object/ObjectImpl.hpp>
+#include <Pothos/Archive.hpp>
 #include <cassert>
-
-//disable auto linking
-#ifndef POTHOS_ALL_NO_LIB
-#define POTHOS_ALL_NO_LIB
-#endif
-
-#include <Pothos/serialization/base_object.hpp>
-#include <Pothos/serialization/split_free.hpp>
-
-#include <Pothos/archive/polymorphic_iarchive.hpp>
-#include <Pothos/archive/polymorphic_oarchive.hpp>
-
-#include <Pothos/serialization/export.hpp>
-#include <Pothos/serialization/extended_type_info.hpp>
 
 namespace Pothos {
 namespace serialization {
@@ -48,7 +35,6 @@ void serialize(Archive &, Pothos::Detail::ObjectContainer &, const unsigned int)
 template <class Archive, typename ValueType>
 void serialize(Archive &ar, Pothos::Detail::ObjectContainerT<ValueType> &t, const unsigned int)
 {
-    Pothos::serialization::base_object<Pothos::Detail::ObjectContainer>(t);
     ar & t.value;
 }
 
@@ -73,9 +59,3 @@ void load(Archive & ar, Pothos::Object &t, const unsigned int)
 } // namespace Pothos
 
 POTHOS_SERIALIZATION_SPLIT_FREE(Pothos::Object)
-
-#include <Pothos/serialization/complex.hpp>
-#include <Pothos/serialization/string.hpp>
-#include <Pothos/serialization/vector.hpp>
-#include <Pothos/serialization/set.hpp>
-#include <Pothos/serialization/map.hpp>

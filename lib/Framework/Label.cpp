@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Label.hpp>
@@ -74,8 +74,8 @@ void Pothos::Label::serialize(Archive & ar, const unsigned int)
     ar & this->width;
 }
 
-template void Pothos::Label::serialize<Pothos::archive::polymorphic_iarchive>(Pothos::archive::polymorphic_iarchive &, const unsigned int);
-template void Pothos::Label::serialize<Pothos::archive::polymorphic_oarchive>(Pothos::archive::polymorphic_oarchive &, const unsigned int);
+template void Pothos::Label::serialize<Pothos::Archive::IStreamArchiver>(Pothos::Archive::IStreamArchiver &, const unsigned int);
+template void Pothos::Label::serialize<Pothos::Archive::OStreamArchiver>(Pothos::Archive::OStreamArchiver &, const unsigned int);
 
 POTHOS_OBJECT_SERIALIZE(Pothos::Label)
 POTHOS_OBJECT_SERIALIZE(std::vector<Pothos::Label>)
