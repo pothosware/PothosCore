@@ -35,7 +35,6 @@ struct Fundamental<std::complex<T>>
  *
  * - Floating point inputs are passed-through without change.
  * - Fixed point inputs are down-shifted by the number of fractional bits.
- * - The fractional bits default to half of the fixed point integer size.
  *
  * \tparam T the output data type
  * \tparam U the input data type
@@ -45,14 +44,20 @@ struct Fundamental<std::complex<T>>
  * \return the output number
  */
 template <typename T, typename U>
-T fromQ(const U &in, const int n = sizeof(typename Fundamental<U>::Type)*4);
+T fromQ(const U &in, const int n);
+
+/*!
+ * Convert from a Q format number.
+ * The fractional bits default to half of the fixed point integer size.
+ */
+template <typename T, typename U>
+T fromQ(const U &in);
 
 /*!
  * Convert a floating point number into Q format.
  *
  * - Floating point outputs are passed-through without change.
  * - Fixed point outputs are shifted up by the number of fractional bits.
- * - The fractional bits default to half of the fixed point integer size.
  *
  * \tparam T the output data type
  * \tparam U the input data type
@@ -62,7 +67,14 @@ T fromQ(const U &in, const int n = sizeof(typename Fundamental<U>::Type)*4);
  * \return the output number in Q format
  */
 template <typename T, typename U>
-T floatToQ(const U &in, const int n = sizeof(typename Fundamental<T>::Type)*4);
+T floatToQ(const U &in, const int n);
+
+/*!
+ * Convert a floating point number into Q format.
+ * The fractional bits default to half of the fixed point integer size.
+ */
+template <typename T, typename U>
+T floatToQ(const U &in);
 
 namespace Detail {
 
@@ -133,7 +145,21 @@ T Pothos::Util::fromQ(const U &in, const int n)
 }
 
 template <typename T, typename U>
+T Pothos::Util::fromQ(const U &in)
+{
+    const int n = sizeof(typename Fundamental<U>::Type)*4;
+    return Pothos::Util::Detail::fromQImpl<T>(in, n, std::is_integral<typename Fundamental<U>::Type>());
+}
+
+template <typename T, typename U>
 T Pothos::Util::floatToQ(const U &in, const int n)
 {
+    return Pothos::Util::Detail::floatToQImpl<T>(in, n, std::is_integral<typename Fundamental<T>::Type>());
+}
+
+template <typename T, typename U>
+T Pothos::Util::floatToQ(const U &in)
+{
+    const int n = sizeof(typename Fundamental<T>::Type)*4;
     return Pothos::Util::Detail::floatToQImpl<T>(in, n, std::is_integral<typename Fundamental<T>::Type>());
 }
