@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -107,8 +107,8 @@ void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
 
     //set stdio to be line buffered
     //fully buffered IO backs up and is not acceptable for logging
-    setvbuf(stdout, nullptr, _IOLBF, 0);
-    setvbuf(stderr, nullptr, _IOLBF, 0);
+    setvbuf(stdout, nullptr, _IOLBF, BUFSIZ);
+    setvbuf(stderr, nullptr, _IOLBF, BUFSIZ);
 
     Pothos::ScopedInit init;
 
