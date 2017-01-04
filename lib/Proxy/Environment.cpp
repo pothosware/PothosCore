@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Proxy/Exception.hpp>
@@ -49,3 +49,16 @@ std::string Pothos::ProxyEnvironment::getPeeringAddress(void)
     //not a real address for the local environment
     return "local";
 }
+
+#include <Pothos/Managed.hpp>
+
+static auto managedProxyEnvironment = Pothos::ManagedClass()
+    .registerClass<Pothos::ProxyEnvironment>()
+    .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::ProxyEnvironment, make))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::ProxyEnvironment, getName))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::ProxyEnvironment, findProxy))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::ProxyEnvironment, getNodeId))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::ProxyEnvironment, getUniquePid))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::ProxyEnvironment, getLocalUniquePid))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::ProxyEnvironment, getPeeringAddress))
+    .commit("Pothos/ProxyEnvironment");
