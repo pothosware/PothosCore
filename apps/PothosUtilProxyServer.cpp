@@ -105,10 +105,16 @@ void PothosUtilBase::proxyServer(const std::string &, const std::string &uriStr)
     std::cerr << std::nounitbuf;
     std::clog << std::nounitbuf;
 
-    //set stdio to be line buffered
     //fully buffered IO backs up and is not acceptable for logging
-    setvbuf(stdout, nullptr, _IOLBF, BUFSIZ);
-    setvbuf(stderr, nullptr, _IOLBF, BUFSIZ);
+    //set stdio to be line buffered which is useful for logging
+    //on windows, line buffering is not supported, use unbuffered
+    #ifdef _MSC_VER
+    setvbuf(stdout, nullptr, _IONBF, 0);
+    setvbuf(stderr, nullptr, _IONBF, 0);
+    #else
+    setvbuf(stdout, nullptr, _IOLBF, 0);
+    setvbuf(stderr, nullptr, _IOLBF, 0);
+    #endif
 
     Pothos::ScopedInit init;
 
