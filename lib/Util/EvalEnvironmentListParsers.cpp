@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/EvalEnvironment.hpp>
@@ -23,7 +23,7 @@ std::vector<std::string> Pothos::Util::EvalEnvironment::splitExpr(const std::str
             if (ch == '"' and previousCh != '\\') inQuotes = false;
         }
 
-        else if (/*ch == ')' or */ch == '}' or ch == ']')
+        else if ((ch == ')' and tokenizer != '\0') or ch == '}' or ch == ']')
         {
             field.push_back(ch);
             if ((specials.top() == '(' and ch == ')') or
@@ -38,7 +38,7 @@ std::vector<std::string> Pothos::Util::EvalEnvironment::splitExpr(const std::str
             }
         }
 
-        else if (/*ch == '(' or */ch == '{' or ch == '[')
+        else if ((ch == '(' and tokenizer != '\0') or ch == '{' or ch == '[')
         {
             //top level container began
             if (specials.empty() and tokenizer == '\0')

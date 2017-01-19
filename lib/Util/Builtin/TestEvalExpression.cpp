@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016" Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -96,6 +96,14 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
         POTHOS_TEST_EQUAL(vec_1[0], "hello");
         POTHOS_TEST_EQUAL(vec_1[1], "world");
         POTHOS_TEST_EQUAL(vec[2].convert<int>(), 3);
+    }
+
+    //an embedded function with commas
+    {
+        const auto result = evalEnv.call<Pothos::Object>("eval", "[pow(2, 3)]");
+        const auto vec = result.convert<Pothos::ObjectVector>();
+        POTHOS_TEST_EQUAL(vec.size(), 1);
+        POTHOS_TEST_CLOSE(vec[0].convert<double>(), 8, 0.001);
     }
 }
 
