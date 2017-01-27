@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.4.2 (pending)
+Release 0.4.2 (2017-01-26)
 ==========================
 
 - Fix expression parser for nested parenthesized functions
