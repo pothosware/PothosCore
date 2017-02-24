@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.5.0-g181a6f23</span>
+   &#160;<span id="projectnumber">0.5.0-g14464e10</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -99,18 +99,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="Config_8hpp_source.html">Pothos/Config.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="ObjectImpl_8hpp_source.html">Pothos/Object/ObjectImpl.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="Archive_8hpp_source.html">Pothos/Archive.hpp</a>&gt;</code><br />
 <code>#include &lt;cassert&gt;</code><br />
-<code>#include &lt;Pothos/serialization/base_object.hpp&gt;</code><br />
-<code>#include &lt;Pothos/serialization/split_free.hpp&gt;</code><br />
-<code>#include &lt;Pothos/archive/polymorphic_iarchive.hpp&gt;</code><br />
-<code>#include &lt;Pothos/archive/polymorphic_oarchive.hpp&gt;</code><br />
-<code>#include &lt;Pothos/serialization/export.hpp&gt;</code><br />
-<code>#include &lt;Pothos/serialization/extended_type_info.hpp&gt;</code><br />
-<code>#include &lt;Pothos/serialization/complex.hpp&gt;</code><br />
-<code>#include &lt;Pothos/serialization/string.hpp&gt;</code><br />
-<code>#include &lt;Pothos/serialization/vector.hpp&gt;</code><br />
-<code>#include &lt;Pothos/serialization/set.hpp&gt;</code><br />
-<code>#include &lt;Pothos/serialization/map.hpp&gt;</code><br />
 </div>
 <p><a href="Serialize_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -123,10 +113,8 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a7a508b55097ad02da728fb920297f0d0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Serialize_8hpp.html#a7a508b55097ad02da728fb920297f0d0">POTHOS_OBJECT_SERIALIZE</a>(ValueType)&#160;&#160;&#160;POTHOS_CLASS_EXPORT_GUID(Pothos::Detail::ObjectContainerT&lt;ValueType&gt;, &quot;Pothos::Object&lt;&quot; #ValueType &quot;&gt;&quot;)</td></tr>
+<tr class="memitem:a7a508b55097ad02da728fb920297f0d0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Serialize_8hpp.html#a7a508b55097ad02da728fb920297f0d0">POTHOS_OBJECT_SERIALIZE</a>(ValueType)&#160;&#160;&#160;<a class="el" href="Export_8hpp.html#a1be3c622883ade01a143292224887c6a">POTHOS_CLASS_EXPORT_GUID</a>(Pothos::Detail::ObjectContainerT&lt;ValueType&gt;, &quot;Pothos::Object&lt;&quot; #ValueType &quot;&gt;&quot;)</td></tr>
 <tr class="separator:a7a508b55097ad02da728fb920297f0d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaeb7952f7bfdde4bd012aa96e6151dce"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Serialize_8hpp.html#aaeb7952f7bfdde4bd012aa96e6151dce">POTHOS_ALL_NO_LIB</a></td></tr>
-<tr class="separator:aaeb7952f7bfdde4bd012aa96e6151dce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -145,20 +133,8 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Serialization support for types held by an Object. This file provides the POTHOS_OBJECT_SERIALIZE macro which exports types into the serialization system. This file is not automatically included by Object.hpp; users adding a type should explicitly include this file.</p>
-<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2013-2014 Josh Blum SPDX-License-Identifier: BSL-1.0 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2013-2016 Josh Blum SPDX-License-Identifier: BSL-1.0 </dd></dl>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
-<a class="anchor" id="aaeb7952f7bfdde4bd012aa96e6151dce"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define POTHOS_ALL_NO_LIB</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="a7a508b55097ad02da728fb920297f0d0"></a>
 <div class="memitem">
 <div class="memproto">
@@ -168,7 +144,7 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">ValueType</td><td>)</td>
-          <td>&#160;&#160;&#160;POTHOS_CLASS_EXPORT_GUID(Pothos::Detail::ObjectContainerT&lt;ValueType&gt;, &quot;Pothos::Object&lt;&quot; #ValueType &quot;&gt;&quot;)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="Export_8hpp.html#a1be3c622883ade01a143292224887c6a">POTHOS_CLASS_EXPORT_GUID</a>(Pothos::Detail::ObjectContainerT&lt;ValueType&gt;, &quot;Pothos::Object&lt;&quot; #ValueType &quot;&gt;&quot;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -179,7 +155,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Sep 26 2016 11:16:55 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Feb 24 2017 13:05:47 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>
