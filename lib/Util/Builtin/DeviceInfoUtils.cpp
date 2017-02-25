@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -29,7 +29,7 @@ public:
 
 #include <Pothos/Managed.hpp>
 
-static auto managedDocUtils = Pothos::ManagedClass()
+static auto managedDeviceInfoUtils = Pothos::ManagedClass()
     .registerClass<DeviceInfoUtilsDumpJson>()
     .registerStaticMethod("dumpJson", &DeviceInfoUtilsDumpJson::dump)
     .commit("Pothos/Util/DeviceInfoUtils");
