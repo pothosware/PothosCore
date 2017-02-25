@@ -1,17 +1,28 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockEval.hpp"
+#include <Poco/JSON/Parser.h>
 
-void ProxyBlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &blockDesc)
+ProxyBlockEval::ProxyBlockEval(const std::string &path, const std::shared_ptr<Pothos::Util::EvalEnvironment> &evalEnv):
+    _path(path),
+    _evalEnv(evalEnv)
+{
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto proxy = env->findProxy("Pothos/Util/DocUtils");
+    const auto json = proxy.call<std::string>("dumpJsonAt", path);
+    const auto result = Poco::JSON::Parser().parse(json);
+    _blockDesc = result.extract<Poco::JSON::Object::Ptr>();
+}
+
+void ProxyBlockEval::eval(const std::string &id)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
-    auto path = blockDesc->getValue<std::string>("path");
 
     //load up the constructor args
     std::vector<Pothos::Proxy> ctorArgs;
-    if (blockDesc->isArray("args")) for (auto arg : *blockDesc->getArray("args"))
+    if (_blockDesc->isArray("args")) for (auto arg : *_blockDesc->getArray("args"))
     {
         const auto obj = this->lookupOrEvalAsType(arg);
         ctorArgs.push_back(env->convertObjectToProxy(obj));
@@ -20,22 +31,34 @@ void ProxyBlockEval::eval(const std::string &id, const Poco::JSON::Object::Ptr &
     //create the block
     try
     {
-        _proxyBlock = registry.getHandle()->call(path, ctorArgs.data(), ctorArgs.size());
+        _proxyBlock = registry.getHandle()->call(_path, ctorArgs.data(), ctorArgs.size());
     }
     catch (const Pothos::Exception &ex)
     {
-        throw Pothos::Exception("ProxyBlockEval factory("+path+")", ex);
+        throw Pothos::Exception("ProxyBlockEval factory("+_path+")", ex);
     }
     _proxyBlock.callVoid("setName", id);
 
     //make the calls
-    if (blockDesc->isArray("calls")) for (auto call : *blockDesc->getArray("calls"))
+    if (_blockDesc->isArray("calls")) for (auto call : *_blockDesc->getArray("calls"))
     {
-        this->handleCall(call.extract<Poco::JSON::Object::Ptr>());
+        this->_handleCall(call.extract<Poco::JSON::Object::Ptr>());
     }
 }
 
-void ProxyBlockEval::handleCall(const Poco::JSON::Object::Ptr &callObj)
+void ProxyBlockEval::handleCall(const std::string &callName)
+{
+    if (_blockDesc->isArray("calls")) for (auto call : *_blockDesc->getArray("calls"))
+    {
+        const auto callObj = call.extract<Poco::JSON::Object::Ptr>();
+        if (callObj->get("name").extract<std::string>() == callName)
+        {
+            this->_handleCall(callObj);
+        }
+    }
+}
+
+void ProxyBlockEval::_handleCall(const Poco::JSON::Object::Ptr &callObj)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     const auto callName = callObj->get("name").extract<std::string>();
@@ -81,7 +104,7 @@ Pothos::Object ProxyBlockEval::lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
 #include <Pothos/Managed.hpp>
 
 static auto managedProxyBlockEval = Pothos::ManagedClass()
-    .registerConstructor<ProxyBlockEval, const std::shared_ptr<Pothos::Util::EvalEnvironment> &>()
+    .registerConstructor<ProxyBlockEval, const std::string &, const std::shared_ptr<Pothos::Util::EvalEnvironment> &>()
     .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, applyConstant))
     .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, removeConstant))
     .registerMethod(POTHOS_FCN_TUPLE(ProxyBlockEval, evalProperty))

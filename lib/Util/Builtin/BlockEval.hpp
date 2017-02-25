@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -14,11 +14,7 @@
 class ProxyBlockEval
 {
 public:
-    ProxyBlockEval(const std::shared_ptr<Pothos::Util::EvalEnvironment> &env):
-        _evalEnv(env)
-    {
-        return;
-    }
+    ProxyBlockEval(const std::string &path, const std::shared_ptr<Pothos::Util::EvalEnvironment> &evalEnv);
 
     void applyConstant(const std::string &name, const std::string &expr)
     {
@@ -42,9 +38,9 @@ public:
         _properties[key] = val;
     }
 
-    void eval(const std::string &id, const Poco::JSON::Object::Ptr &blockDesc);
+    void eval(const std::string &id);
 
-    void handleCall(const Poco::JSON::Object::Ptr &callObj);
+    void handleCall(const std::string &callName);
 
     Pothos::Proxy getProxyBlock(void) const
     {
@@ -53,9 +49,12 @@ public:
 
 private:
 
+    void _handleCall(const Poco::JSON::Object::Ptr &callObj);
     Pothos::Object lookupOrEvalAsType(const Poco::Dynamic::Var &arg);
 
     std::map<std::string, Pothos::Object> _properties;
     Pothos::Proxy _proxyBlock;
+    const std::string _path;
     std::shared_ptr<Pothos::Util::EvalEnvironment> _evalEnv;
+    Poco::JSON::Object::Ptr _blockDesc;
 };
