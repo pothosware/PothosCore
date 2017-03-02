@@ -3,6 +3,8 @@ This this the changelog file for the Pothos C++ library.
 Release 0.5.0 (pending)
 ==========================
 
+- BlockEval API changes to support GUI evaluator
+- DocUtils API changes to support GUI docs query
 - Removed the pothos-serialization dependency and
   replaced it with a much smaller in-library solution.
   The serialization format has changed for this release.
