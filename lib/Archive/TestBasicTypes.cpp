@@ -27,33 +27,64 @@ POTHOS_TEST_BLOCK("/archive/tests", test_integers)
         POTHOS_TEST_EQUAL(x, y);
     }
 
-    //test the 32-bit integer support
+    //test the signed 32-bit integer support
     for (int i = 0; i < numIters; i++)
     {
         std::stringstream so;
         Pothos::Archive::OStreamArchiver ao(so);
-        int x(std::rand()); ao << x;
+        signed int x(std::rand()); ao << x;
 
         std::stringstream si(so.str());
         Pothos::Archive::IStreamArchiver ai(si);
-        int y; ai >> y;
+        signed int y; ai >> y;
 
         POTHOS_TEST_EQUAL(x, y);
     }
 
-    //test the 64-bit integer support
+    //test the unsigned 32-bit integer support
     for (int i = 0; i < numIters; i++)
     {
         std::stringstream so;
         Pothos::Archive::OStreamArchiver ao(so);
-        long long x(std::rand());
+        unsigned int x(std::rand()); ao << x;
+
+        std::stringstream si(so.str());
+        Pothos::Archive::IStreamArchiver ai(si);
+        unsigned int y; ai >> y;
+
+        POTHOS_TEST_EQUAL(x, y);
+    }
+
+    //test the signed 64-bit integer support
+    for (int i = 0; i < numIters; i++)
+    {
+        std::stringstream so;
+        Pothos::Archive::OStreamArchiver ao(so);
+        signed long long x(std::rand());
         x <<= 32;
         x |= std::rand();
         ao << x;
 
         std::stringstream si(so.str());
         Pothos::Archive::IStreamArchiver ai(si);
-        long long y; ai >> y;
+        signed long long y; ai >> y;
+
+        POTHOS_TEST_EQUAL(x, y);
+    }
+
+    //test the unsigned 64-bit integer support
+    for (int i = 0; i < numIters; i++)
+    {
+        std::stringstream so;
+        Pothos::Archive::OStreamArchiver ao(so);
+        unsigned long long x(std::rand());
+        x <<= 32;
+        x |= std::rand();
+        ao << x;
+
+        std::stringstream si(so.str());
+        Pothos::Archive::IStreamArchiver ai(si);
+        unsigned long long y; ai >> y;
 
         POTHOS_TEST_EQUAL(x, y);
     }
