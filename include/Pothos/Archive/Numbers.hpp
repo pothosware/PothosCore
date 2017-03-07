@@ -138,7 +138,7 @@ typename std::enable_if<
 
     //sign extend the remaining bits when negative
     const auto signbit = byte & 0x40;
-    if (signbit != 0) t |= -(1 << shift);
+    if (signbit != 0 and shift < (sizeof(T)*8)) t |= -(1 << shift);
 }
 
 //------------ 32-64 bit unsigned integer types --------------//
