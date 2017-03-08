@@ -14,7 +14,7 @@
 /// but could easily be expanded for soft packing of IEEE-754.
 ///
 /// \copyright
-/// Copyright (c) 2016 Josh Blum
+/// Copyright (c) 2016-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -96,84 +96,88 @@ typename std::enable_if<
         (static_cast<unsigned short>(buff[1]) << 8));
 }
 
-//------------ 32 bit integer support (int types) --------------//
+//------------ 32-64 bit signed integer types --------------//
+// use signed LEB128 encoding for variable length encoding
+// https://en.wikipedia.org/wiki/LEB128
 template<typename Archive, typename T>
 typename std::enable_if<
-    std::is_same<T, unsigned int>::value or
-    std::is_same<T, signed int>::value
->::type save(Archive &ar, const T &t, const unsigned int)
-{
-    unsigned char buff[4];
-    const auto v = static_cast<unsigned int>(t);
-    buff[0] = static_cast<unsigned char>(v >> 0);
-    buff[1] = static_cast<unsigned char>(v >> 8);
-    buff[2] = static_cast<unsigned char>(v >> 16);
-    buff[3] = static_cast<unsigned char>(v >> 24);
-    BinaryObject bo(buff, sizeof(buff));
-    ar << bo;
-}
-
-template<typename Archive, typename T>
-typename std::enable_if<
-    std::is_same<T, unsigned int>::value or
-    std::is_same<T, signed int>::value
->::type load(Archive &ar, T &t, const unsigned int)
-{
-    unsigned char buff[4];
-    BinaryObject bo(buff, sizeof(buff));
-    ar >> bo;
-    t = static_cast<T>(
-        (static_cast<unsigned int>(buff[0]) << 0) |
-        (static_cast<unsigned int>(buff[1]) << 8) |
-        (static_cast<unsigned int>(buff[2]) << 16) |
-        (static_cast<unsigned int>(buff[3]) << 24));
-}
-
-//------------ 64 bit integer support (long types)--------------//
-// the size of long notoriously varies among platforms
-// always serialize long with 8 bytes for portability
-template<typename Archive, typename T>
-typename std::enable_if<
-    std::is_same<T, unsigned long>::value or
+    std::is_same<T, signed int>::value or
     std::is_same<T, signed long>::value or
-    std::is_same<T, unsigned long long>::value or
     std::is_same<T, signed long long>::value
 >::type save(Archive &ar, const T &t, const unsigned int)
 {
-    unsigned char buff[8];
-    const auto v = static_cast<unsigned long long>(t);
-    buff[0] = static_cast<unsigned char>(v >> 0);
-    buff[1] = static_cast<unsigned char>(v >> 8);
-    buff[2] = static_cast<unsigned char>(v >> 16);
-    buff[3] = static_cast<unsigned char>(v >> 24);
-    buff[4] = static_cast<unsigned char>(v >> 32);
-    buff[5] = static_cast<unsigned char>(v >> 40);
-    buff[6] = static_cast<unsigned char>(v >> 48);
-    buff[7] = static_cast<unsigned char>(v >> 56);
-    BinaryObject bo(buff, sizeof(buff));
-    ar << bo;
+    T value(t);
+    unsigned char byte;
+    do
+    {
+        byte = static_cast<unsigned char>(value) & 0x7f;
+        value >>= 7; //must be arithmetic shift
+        const auto signbit = byte & 0x40;
+        if ((value != 0 or signbit != 0) and
+            (value != -1 or signbit == 0)) byte |= 0x80;
+        ar << byte;
+    } while ((byte & 0x80) != 0);
 }
 
 template<typename Archive, typename T>
 typename std::enable_if<
-    std::is_same<T, unsigned long>::value or
+    std::is_same<T, signed int>::value or
     std::is_same<T, signed long>::value or
-    std::is_same<T, unsigned long long>::value or
     std::is_same<T, signed long long>::value
 >::type load(Archive &ar, T &t, const unsigned int)
 {
-    unsigned char buff[8];
-    BinaryObject bo(buff, sizeof(buff));
-    ar >> bo;
-    t = static_cast<T>(
-        (static_cast<unsigned long long>(buff[0]) << 0) |
-        (static_cast<unsigned long long>(buff[1]) << 8) |
-        (static_cast<unsigned long long>(buff[2]) << 16) |
-        (static_cast<unsigned long long>(buff[3]) << 24) |
-        (static_cast<unsigned long long>(buff[4]) << 32) |
-        (static_cast<unsigned long long>(buff[5]) << 40) |
-        (static_cast<unsigned long long>(buff[6]) << 48) |
-        (static_cast<unsigned long long>(buff[7]) << 56));
+    t = T(0);
+    unsigned shift(0);
+    unsigned char byte;
+    do
+    {
+        ar >> byte;
+        t |= T(byte & 0x7f) << shift;
+        shift += 7;
+    } while ((byte & 0x80) != 0);
+
+    //sign extend the remaining bits when negative
+    const auto signbit = byte & 0x40;
+    if (signbit != 0 and shift < (sizeof(T)*8)) t |= -(1 << shift);
+}
+
+//------------ 32-64 bit unsigned integer types --------------//
+// use unsigned LEB128 encoding for variable length encoding
+// https://en.wikipedia.org/wiki/LEB128
+template<typename Archive, typename T>
+typename std::enable_if<
+    std::is_same<T, unsigned int>::value or
+    std::is_same<T, unsigned long>::value or
+    std::is_same<T, unsigned long long>::value
+>::type save(Archive &ar, const T &t, const unsigned int)
+{
+    T value(t);
+    unsigned char byte;
+    do
+    {
+        byte = static_cast<unsigned char>(value) & 0x7f;
+        value >>= 7;
+        if (value != 0) byte |= 0x80;
+        ar << byte;
+    } while ((byte & 0x80) != 0);
+}
+
+template<typename Archive, typename T>
+typename std::enable_if<
+    std::is_same<T, unsigned int>::value or
+    std::is_same<T, unsigned long>::value or
+    std::is_same<T, unsigned long long>::value
+>::type load(Archive &ar, T &t, const unsigned int)
+{
+    t = T(0);
+    unsigned shift(0);
+    unsigned char byte;
+    do
+    {
+        ar >> byte;
+        t |= T(byte & 0x7f) << shift;
+        shift += 7;
+    } while ((byte & 0x80) != 0);
 }
 
 //------------ 32-bit float support --------------//
