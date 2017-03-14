@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Remote.hpp>
@@ -70,8 +70,7 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr, const bool closePi
     //create args
     Poco::Process::Args args;
     args.push_back("--require-active");
-    args.push_back("--proxy-server");
-    args.push_back(uriStr);
+    args.push_back("--proxy-server="+uriStr);
 
     //launch
     Poco::Pipe outPipe, errPipe;

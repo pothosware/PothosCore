@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.4.3 (pending)
 ==========================
 
+- Fixed RemoteServer process arguments for some shells
 - Fix copy/paste typo in DeviceInfoUtils registration
 
 Release 0.4.2 (2017-01-26)
