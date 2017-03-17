@@ -19,6 +19,7 @@ void ProxyBlockEval::eval(const std::string &id)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
+    _proxyBlock = Pothos::Proxy(); //release old handle
 
     //load up the constructor args
     std::vector<Pothos::Proxy> ctorArgs;
