@@ -5,11 +5,11 @@ It also contains submodules for various dependencies
 and Pothos toolkits to make it easy to install
 the entire Pothos software suite in one build.
 
-##Documentation
+## Documentation
 
 * https://github.com/pothosware/pothos/wiki
 
-##Build Status
+## Build Status
 
 - Travis: [![Travis Build Status](https://travis-ci.org/pothosware/pothos.svg?branch=master)](https://travis-ci.org/pothosware/pothos)
 - AppVeyor: [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/7owo8qb9oldw8iq8)](https://ci.appveyor.com/project/guruofquality/pothos)
