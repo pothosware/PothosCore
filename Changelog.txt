@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.4.3 (pending)
+Release 0.4.3 (2017-04-23)
 ==========================
 
 - Fixed RemoteServer process arguments for some shells
