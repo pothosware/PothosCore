@@ -10,10 +10,7 @@ enable_testing()
 # gather version information
 # packagers may specify -DPOTHOS_EXTVER="foo" to replace the git hash
 ########################################################################
-set(POTHOS_MAJOR_VERSION 0)
-set(POTHOS_MINOR_VERSION 5)
-set(POTHOS_PATCH_VERSION 0)
-set(POTHOS_LIBVER ${POTHOS_MAJOR_VERSION}.${POTHOS_MINOR_VERSION}.${POTHOS_PATCH_VERSION})
+set(POTHOS_LIBVER "0.5.0")
 
 if (NOT POTHOS_EXTVER)
     include(${PROJECT_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake)
