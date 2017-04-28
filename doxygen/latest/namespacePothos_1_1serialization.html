@@ -25,7 +25,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.5.0-g14464e10</span>
+   &#160;<span id="projectnumber">0.5.0-gb7c19fe7</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -108,6 +108,27 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ab38855c8849fc4c333b4fed5056ae39f"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:ab38855c8849fc4c333b4fed5056ae39f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#ab38855c8849fc4c333b4fed5056ae39f">save</a> (Archive &amp;ar, const std::complex&lt; T &gt; &amp;t, const unsigned int)</td></tr>
+<tr class="separator:ab38855c8849fc4c333b4fed5056ae39f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afacd63662bff70cf7c15960875045246"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:afacd63662bff70cf7c15960875045246"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#afacd63662bff70cf7c15960875045246">load</a> (Archive &amp;ar, std::complex&lt; T &gt; &amp;t, const unsigned int)</td></tr>
+<tr class="separator:afacd63662bff70cf7c15960875045246"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29add67dd201aa72868e173d91487361"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:a29add67dd201aa72868e173d91487361"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a29add67dd201aa72868e173d91487361">serialize</a> (Archive &amp;ar, std::complex&lt; T &gt; &amp;t, const unsigned int ver)</td></tr>
+<tr class="separator:a29add67dd201aa72868e173d91487361"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26b99e81b624c668a7c87292be0b4521"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:a26b99e81b624c668a7c87292be0b4521"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; typename Archive::isSave, std::true_type &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a26b99e81b624c668a7c87292be0b4521">invokeSplit</a> (Archive &amp;ar, T &amp;value, const unsigned int ver)</td></tr>
+<tr class="separator:a26b99e81b624c668a7c87292be0b4521"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0863ad1b018693f02b8a8da7a4be35b"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:aa0863ad1b018693f02b8a8da7a4be35b"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; typename Archive::isSave, std::false_type &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#aa0863ad1b018693f02b8a8da7a4be35b">invokeSplit</a> (Archive &amp;ar, T &amp;value, const unsigned int ver)</td></tr>
+<tr class="separator:aa0863ad1b018693f02b8a8da7a4be35b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8318d0cae76448227e0519483d2ae2ca"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:a8318d0cae76448227e0519483d2ae2ca"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt;!<a class="el" href="structPothos_1_1serialization_1_1hasSerialize.html">hasSerialize</a>&lt; T, Archive &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a8318d0cae76448227e0519483d2ae2ca">invokeSerialize</a> (Archive &amp;ar, T &amp;value, const unsigned int ver)</td></tr>
+<tr class="separator:a8318d0cae76448227e0519483d2ae2ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af23dc12af05e9fe3e09b97d2188b1e07"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:af23dc12af05e9fe3e09b97d2188b1e07"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; <a class="el" href="structPothos_1_1serialization_1_1hasSerialize.html">hasSerialize</a>&lt; T, Archive &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#af23dc12af05e9fe3e09b97d2188b1e07">invokeSerialize</a> (Archive &amp;ar, T &amp;value, const unsigned int ver)</td></tr>
+<tr class="separator:af23dc12af05e9fe3e09b97d2188b1e07"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e842ddfdc5255610c373f686081bc4e"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename K , typename T , typename Compare , typename Allocator &gt; </td></tr>
 <tr class="memitem:a7e842ddfdc5255610c373f686081bc4e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a7e842ddfdc5255610c373f686081bc4e">save</a> (Archive &amp;ar, const std::map&lt; K, T, Compare, Allocator &gt; &amp;t, const unsigned int)</td></tr>
 <tr class="separator:a7e842ddfdc5255610c373f686081bc4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -135,18 +156,18 @@ Functions</h2></td></tr>
 <tr class="memitem:a5fd9a829e626f623f5c562caba286edc"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
 <tr class="memitem:a5fd9a829e626f623f5c562caba286edc"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; T, unsigned short &gt;::value or std::is_same&lt; T, signed short &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a5fd9a829e626f623f5c562caba286edc">load</a> (Archive &amp;ar, T &amp;t, const unsigned int)</td></tr>
 <tr class="separator:a5fd9a829e626f623f5c562caba286edc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7011ecf7d67c3a696adbbe265a526018"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:a7011ecf7d67c3a696adbbe265a526018"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; T, unsigned int &gt;::value or std::is_same&lt; T, signed int &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a7011ecf7d67c3a696adbbe265a526018">save</a> (Archive &amp;ar, const T &amp;t, const unsigned int)</td></tr>
-<tr class="separator:a7011ecf7d67c3a696adbbe265a526018"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9b205c089628890061c741cba4964486"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:a9b205c089628890061c741cba4964486"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; T, unsigned int &gt;::value or std::is_same&lt; T, signed int &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a9b205c089628890061c741cba4964486">load</a> (Archive &amp;ar, T &amp;t, const unsigned int)</td></tr>
-<tr class="separator:a9b205c089628890061c741cba4964486"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae343668f61aca49c79ef54931c514b36"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:ae343668f61aca49c79ef54931c514b36"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; T, unsigned long &gt;::value or std::is_same&lt; T, signed long &gt;::value or std::is_same&lt; T, unsigned long long &gt;::value or std::is_same&lt; T, signed long long &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#ae343668f61aca49c79ef54931c514b36">save</a> (Archive &amp;ar, const T &amp;t, const unsigned int)</td></tr>
-<tr class="separator:ae343668f61aca49c79ef54931c514b36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a69197e6eb4244f6fa6ff6ff180aebda3"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:a69197e6eb4244f6fa6ff6ff180aebda3"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; T, unsigned long &gt;::value or std::is_same&lt; T, signed long &gt;::value or std::is_same&lt; T, unsigned long long &gt;::value or std::is_same&lt; T, signed long long &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a69197e6eb4244f6fa6ff6ff180aebda3">load</a> (Archive &amp;ar, T &amp;t, const unsigned int)</td></tr>
-<tr class="separator:a69197e6eb4244f6fa6ff6ff180aebda3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae528b1120bf63a5065d43aa69d0ceeb1"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:ae528b1120bf63a5065d43aa69d0ceeb1"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; T, signed int &gt;::value or std::is_same&lt; T, signed long &gt;::value or std::is_same&lt; T, signed long long &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#ae528b1120bf63a5065d43aa69d0ceeb1">save</a> (Archive &amp;ar, const T &amp;t, const unsigned int)</td></tr>
+<tr class="separator:ae528b1120bf63a5065d43aa69d0ceeb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14dc3bca8eab227e907eb8cdcd636b11"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:a14dc3bca8eab227e907eb8cdcd636b11"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; T, signed int &gt;::value or std::is_same&lt; T, signed long &gt;::value or std::is_same&lt; T, signed long long &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a14dc3bca8eab227e907eb8cdcd636b11">load</a> (Archive &amp;ar, T &amp;t, const unsigned int)</td></tr>
+<tr class="separator:a14dc3bca8eab227e907eb8cdcd636b11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afca6ac50a51b4a39dcd4aef841b43477"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:afca6ac50a51b4a39dcd4aef841b43477"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; T, unsigned int &gt;::value or std::is_same&lt; T, unsigned long &gt;::value or std::is_same&lt; T, unsigned long long &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#afca6ac50a51b4a39dcd4aef841b43477">save</a> (Archive &amp;ar, const T &amp;t, const unsigned int)</td></tr>
+<tr class="separator:afca6ac50a51b4a39dcd4aef841b43477"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f92d57b9ac5c7808c7e3869f6d5a53c"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:a3f92d57b9ac5c7808c7e3869f6d5a53c"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; T, unsigned int &gt;::value or std::is_same&lt; T, unsigned long &gt;::value or std::is_same&lt; T, unsigned long long &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a3f92d57b9ac5c7808c7e3869f6d5a53c">load</a> (Archive &amp;ar, T &amp;t, const unsigned int)</td></tr>
+<tr class="separator:a3f92d57b9ac5c7808c7e3869f6d5a53c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a304f7f8f266be9c33451a7bc6c986eee"><td class="memTemplParams" colspan="2">template&lt;typename Archive &gt; </td></tr>
 <tr class="memitem:a304f7f8f266be9c33451a7bc6c986eee"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::numeric_limits&lt; float &gt;::is_iec559 &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a304f7f8f266be9c33451a7bc6c986eee">save</a> (Archive &amp;ar, const float &amp;t, const unsigned int)</td></tr>
 <tr class="separator:a304f7f8f266be9c33451a7bc6c986eee"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -162,6 +183,18 @@ Functions</h2></td></tr>
 <tr class="memitem:ae6ede30d921b1d156d80cd220492492e"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
 <tr class="memitem:ae6ede30d921b1d156d80cd220492492e"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_arithmetic&lt; T &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#ae6ede30d921b1d156d80cd220492492e">serialize</a> (Archive &amp;ar, T &amp;t, const unsigned int ver)</td></tr>
 <tr class="separator:ae6ede30d921b1d156d80cd220492492e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab408e5fe350b1a941d12f1d56e4327cb"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename F , typename L &gt; </td></tr>
+<tr class="memitem:ab408e5fe350b1a941d12f1d56e4327cb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#ab408e5fe350b1a941d12f1d56e4327cb">serialize</a> (Archive &amp;ar, std::pair&lt; F, L &gt; &amp;t, const unsigned int)</td></tr>
+<tr class="separator:ab408e5fe350b1a941d12f1d56e4327cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad61e99c748c2ed5940a53465a7e21643"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:ad61e99c748c2ed5940a53465a7e21643"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_polymorphic&lt; T &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#ad61e99c748c2ed5940a53465a7e21643">save</a> (Archive &amp;ar, const T *const &amp;t, const unsigned int)</td></tr>
+<tr class="separator:ad61e99c748c2ed5940a53465a7e21643"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a596eae46ddd4c81c8b2d1c32d0aa84fd"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:a596eae46ddd4c81c8b2d1c32d0aa84fd"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_polymorphic&lt; T &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a596eae46ddd4c81c8b2d1c32d0aa84fd">load</a> (Archive &amp;ar, T *&amp;t, const unsigned int)</td></tr>
+<tr class="separator:a596eae46ddd4c81c8b2d1c32d0aa84fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63bbee54a56c79230870dadc47ef3957"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
+<tr class="memitem:a63bbee54a56c79230870dadc47ef3957"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_polymorphic&lt; T &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a63bbee54a56c79230870dadc47ef3957">serialize</a> (Archive &amp;ar, T *&amp;t, const unsigned int ver)</td></tr>
+<tr class="separator:a63bbee54a56c79230870dadc47ef3957"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7b7e52e38e354ebbd216c27c5c3346a"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T , typename Compare , typename Allocator &gt; </td></tr>
 <tr class="memitem:ae7b7e52e38e354ebbd216c27c5c3346a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#ae7b7e52e38e354ebbd216c27c5c3346a">save</a> (Archive &amp;ar, const std::set&lt; T, Compare, Allocator &gt; &amp;t, const unsigned int)</td></tr>
 <tr class="separator:ae7b7e52e38e354ebbd216c27c5c3346a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -195,39 +228,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a30907e6439f86709a55cff4068f7c022"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T , typename Allocator &gt; </td></tr>
 <tr class="memitem:a30907e6439f86709a55cff4068f7c022"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a30907e6439f86709a55cff4068f7c022">serialize</a> (Archive &amp;ar, std::vector&lt; T, Allocator &gt; &amp;t, const unsigned int ver)</td></tr>
 <tr class="separator:a30907e6439f86709a55cff4068f7c022"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab408e5fe350b1a941d12f1d56e4327cb"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename F , typename L &gt; </td></tr>
-<tr class="memitem:ab408e5fe350b1a941d12f1d56e4327cb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#ab408e5fe350b1a941d12f1d56e4327cb">serialize</a> (Archive &amp;ar, std::pair&lt; F, L &gt; &amp;t, const unsigned int)</td></tr>
-<tr class="separator:ab408e5fe350b1a941d12f1d56e4327cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab38855c8849fc4c333b4fed5056ae39f"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:ab38855c8849fc4c333b4fed5056ae39f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#ab38855c8849fc4c333b4fed5056ae39f">save</a> (Archive &amp;ar, const std::complex&lt; T &gt; &amp;t, const unsigned int)</td></tr>
-<tr class="separator:ab38855c8849fc4c333b4fed5056ae39f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afacd63662bff70cf7c15960875045246"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:afacd63662bff70cf7c15960875045246"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#afacd63662bff70cf7c15960875045246">load</a> (Archive &amp;ar, std::complex&lt; T &gt; &amp;t, const unsigned int)</td></tr>
-<tr class="separator:afacd63662bff70cf7c15960875045246"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29add67dd201aa72868e173d91487361"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:a29add67dd201aa72868e173d91487361"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a29add67dd201aa72868e173d91487361">serialize</a> (Archive &amp;ar, std::complex&lt; T &gt; &amp;t, const unsigned int ver)</td></tr>
-<tr class="separator:a29add67dd201aa72868e173d91487361"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad61e99c748c2ed5940a53465a7e21643"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:ad61e99c748c2ed5940a53465a7e21643"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_polymorphic&lt; T &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#ad61e99c748c2ed5940a53465a7e21643">save</a> (Archive &amp;ar, const T *const &amp;t, const unsigned int)</td></tr>
-<tr class="separator:ad61e99c748c2ed5940a53465a7e21643"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a596eae46ddd4c81c8b2d1c32d0aa84fd"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:a596eae46ddd4c81c8b2d1c32d0aa84fd"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_polymorphic&lt; T &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a596eae46ddd4c81c8b2d1c32d0aa84fd">load</a> (Archive &amp;ar, T *&amp;t, const unsigned int)</td></tr>
-<tr class="separator:a596eae46ddd4c81c8b2d1c32d0aa84fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63bbee54a56c79230870dadc47ef3957"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:a63bbee54a56c79230870dadc47ef3957"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_polymorphic&lt; T &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a63bbee54a56c79230870dadc47ef3957">serialize</a> (Archive &amp;ar, T *&amp;t, const unsigned int ver)</td></tr>
-<tr class="separator:a63bbee54a56c79230870dadc47ef3957"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26b99e81b624c668a7c87292be0b4521"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:a26b99e81b624c668a7c87292be0b4521"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; typename Archive::isSave, std::true_type &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a26b99e81b624c668a7c87292be0b4521">invokeSplit</a> (Archive &amp;ar, T &amp;value, const unsigned int ver)</td></tr>
-<tr class="separator:a26b99e81b624c668a7c87292be0b4521"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0863ad1b018693f02b8a8da7a4be35b"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:aa0863ad1b018693f02b8a8da7a4be35b"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_same&lt; typename Archive::isSave, std::false_type &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#aa0863ad1b018693f02b8a8da7a4be35b">invokeSplit</a> (Archive &amp;ar, T &amp;value, const unsigned int ver)</td></tr>
-<tr class="separator:aa0863ad1b018693f02b8a8da7a4be35b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8318d0cae76448227e0519483d2ae2ca"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:a8318d0cae76448227e0519483d2ae2ca"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt;!<a class="el" href="structPothos_1_1serialization_1_1hasSerialize.html">hasSerialize</a>&lt; T, Archive &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a8318d0cae76448227e0519483d2ae2ca">invokeSerialize</a> (Archive &amp;ar, T &amp;value, const unsigned int ver)</td></tr>
-<tr class="separator:a8318d0cae76448227e0519483d2ae2ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af23dc12af05e9fe3e09b97d2188b1e07"><td class="memTemplParams" colspan="2">template&lt;typename Archive , typename T &gt; </td></tr>
-<tr class="memitem:af23dc12af05e9fe3e09b97d2188b1e07"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; <a class="el" href="structPothos_1_1serialization_1_1hasSerialize.html">hasSerialize</a>&lt; T, Archive &gt;::value &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#af23dc12af05e9fe3e09b97d2188b1e07">invokeSerialize</a> (Archive &amp;ar, T &amp;value, const unsigned int ver)</td></tr>
-<tr class="separator:af23dc12af05e9fe3e09b97d2188b1e07"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ed1534bf24677dd94d889f63771821e"><td class="memTemplParams" colspan="2">template&lt;class Archive &gt; </td></tr>
 <tr class="memitem:a4ed1534bf24677dd94d889f63771821e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacePothos_1_1serialization.html#a4ed1534bf24677dd94d889f63771821e">serialize</a> (Archive &amp;, Pothos::Detail::ObjectContainer &amp;, const unsigned int)</td></tr>
 <tr class="separator:a4ed1534bf24677dd94d889f63771821e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -756,14 +756,14 @@ template&lt;typename Archive , typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a9b205c089628890061c741cba4964486"></a>
+<a class="anchor" id="a14dc3bca8eab227e907eb8cdcd636b11"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename Archive , typename T &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; std::is_same&lt;T, unsigned int&gt;::value or std::is_same&lt;T, signed int&gt;::value&gt;::type Pothos::serialization::load </td>
+          <td class="memname">std::enable_if&lt; std::is_same&lt;T, signed int&gt;::value or std::is_same&lt;T, signed long&gt;::value or std::is_same&lt;T, signed long long&gt;::value&gt;::type Pothos::serialization::load </td>
           <td>(</td>
           <td class="paramtype">Archive &amp;&#160;</td>
           <td class="paramname"><em>ar</em>, </td>
@@ -790,14 +790,14 @@ template&lt;typename Archive , typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a69197e6eb4244f6fa6ff6ff180aebda3"></a>
+<a class="anchor" id="a3f92d57b9ac5c7808c7e3869f6d5a53c"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename Archive , typename T &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; std::is_same&lt;T, unsigned long&gt;::value or std::is_same&lt;T, signed long&gt;::value or std::is_same&lt;T, unsigned long long&gt;::value or std::is_same&lt;T, signed long long&gt;::value&gt;::type Pothos::serialization::load </td>
+          <td class="memname">std::enable_if&lt; std::is_same&lt;T, unsigned int&gt;::value or std::is_same&lt;T, unsigned long&gt;::value or std::is_same&lt;T, unsigned long long&gt;::value&gt;::type Pothos::serialization::load </td>
           <td>(</td>
           <td class="paramtype">Archive &amp;&#160;</td>
           <td class="paramname"><em>ar</em>, </td>
@@ -926,40 +926,6 @@ template&lt;typename Archive , typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ae7b7e52e38e354ebbd216c27c5c3346a"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Archive , typename T , typename Compare , typename Allocator &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">void Pothos::serialization::save </td>
-          <td>(</td>
-          <td class="paramtype">Archive &amp;&#160;</td>
-          <td class="paramname"><em>ar</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::set&lt; T, Compare, Allocator &gt; &amp;&#160;</td>
-          <td class="paramname"><em>t</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const unsigned&#160;</td>
-          <td class="paramname"><em>int</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="a18db0dcc9c371a15009c56c9d1b3abd8"></a>
 <div class="memitem">
 <div class="memproto">
@@ -994,14 +960,14 @@ template&lt;typename Archive , typename T , typename Traits , typename Allocator
 
 </div>
 </div>
-<a class="anchor" id="ad61e99c748c2ed5940a53465a7e21643"></a>
+<a class="anchor" id="ae7b7e52e38e354ebbd216c27c5c3346a"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Archive , typename T &gt; </div>
+template&lt;typename Archive , typename T , typename Compare , typename Allocator &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt;std::is_polymorphic&lt;T&gt;::value&gt;::type Pothos::serialization::save </td>
+          <td class="memname">void Pothos::serialization::save </td>
           <td>(</td>
           <td class="paramtype">Archive &amp;&#160;</td>
           <td class="paramname"><em>ar</em>, </td>
@@ -1009,7 +975,7 @@ template&lt;typename Archive , typename T &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const T *const &amp;&#160;</td>
+          <td class="paramtype">const std::set&lt; T, Compare, Allocator &gt; &amp;&#160;</td>
           <td class="paramname"><em>t</em>, </td>
         </tr>
         <tr>
@@ -1078,6 +1044,40 @@ template&lt;typename Archive , typename Allocator &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::vector&lt; bool, Allocator &gt; &amp;&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned&#160;</td>
+          <td class="paramname"><em>int</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad61e99c748c2ed5940a53465a7e21643"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Archive , typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::enable_if&lt;std::is_polymorphic&lt;T&gt;::value&gt;::type Pothos::serialization::save </td>
+          <td>(</td>
+          <td class="paramtype">Archive &amp;&#160;</td>
+          <td class="paramname"><em>ar</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T *const &amp;&#160;</td>
           <td class="paramname"><em>t</em>, </td>
         </tr>
         <tr>
@@ -1266,14 +1266,14 @@ template&lt;typename Archive , typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a7011ecf7d67c3a696adbbe265a526018"></a>
+<a class="anchor" id="ae528b1120bf63a5065d43aa69d0ceeb1"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename Archive , typename T &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; std::is_same&lt;T, unsigned int&gt;::value or std::is_same&lt;T, signed int&gt;::value&gt;::type Pothos::serialization::save </td>
+          <td class="memname">std::enable_if&lt; std::is_same&lt;T, signed int&gt;::value or std::is_same&lt;T, signed long&gt;::value or std::is_same&lt;T, signed long long&gt;::value&gt;::type Pothos::serialization::save </td>
           <td>(</td>
           <td class="paramtype">Archive &amp;&#160;</td>
           <td class="paramname"><em>ar</em>, </td>
@@ -1300,14 +1300,14 @@ template&lt;typename Archive , typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ae343668f61aca49c79ef54931c514b36"></a>
+<a class="anchor" id="afca6ac50a51b4a39dcd4aef841b43477"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename Archive , typename T &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; std::is_same&lt;T, unsigned long&gt;::value or std::is_same&lt;T, signed long&gt;::value or std::is_same&lt;T, unsigned long long&gt;::value or std::is_same&lt;T, signed long long&gt;::value&gt;::type Pothos::serialization::save </td>
+          <td class="memname">std::enable_if&lt; std::is_same&lt;T, unsigned int&gt;::value or std::is_same&lt;T, unsigned long&gt;::value or std::is_same&lt;T, unsigned long long&gt;::value&gt;::type Pothos::serialization::save </td>
           <td>(</td>
           <td class="paramtype">Archive &amp;&#160;</td>
           <td class="paramname"><em>ar</em>, </td>
@@ -1745,7 +1745,7 @@ template&lt;typename Archive , typename T &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Feb 24 2017 13:05:48 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 28 2017 12:39:32 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>
