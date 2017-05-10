@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2015 Josh Blum
+// Copyright (c) 2015-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/FileLock.hpp>
@@ -38,6 +38,7 @@ Pothos::Util::FileLock::~FileLock(void)
 {
     if (_impl->locked) this->unlock();
     CloseHandle(_impl->handle);
+    delete _impl;
 }
 
 void Pothos::Util::FileLock::lock(void)

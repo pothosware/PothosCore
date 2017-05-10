@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.5.1 (pending)
+==========================
+
+- Fixed memory leak in Util FileLock implementation
+
 Release 0.5.0 (2017-04-27)
 ==========================
 
