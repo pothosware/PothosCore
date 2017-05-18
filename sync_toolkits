@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#sync the tookit submodules to the same branch (maint/master)
+#this updates the submodules to match the top level project
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+echo "Current branch: ${BRANCH}"
+
+TOOLKITS="
+audio
+blocks
+comms
+gui
+plotters
+python
+sdr
+widgets
+"
+
+for TOOLKIT in ${TOOLKITS}; do
+    echo "Syncing ${TOOLKIT}..."
+    git -C ${TOOLKIT} checkout ${BRANCH}
+    git -C ${TOOLKIT} pull origin ${BRANCH}
+done
+
+echo "Done!"
