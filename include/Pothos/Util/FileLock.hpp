@@ -45,7 +45,7 @@ public:
 
 private:
     struct Impl;
-    Impl *_impl;
+    std::shared_ptr<Impl> _impl;
 
     FileLock(const FileLock&){}
     void operator=(const FileLock&){}
