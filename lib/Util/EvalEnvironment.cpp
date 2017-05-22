@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/EvalEnvironment.hpp>
@@ -158,9 +158,16 @@ void Pothos::Util::EvalEnvironment::registerConstantExpr(const std::string &key,
 
 void Pothos::Util::EvalEnvironment::registerConstantObj(const std::string &key, const Pothos::Object &obj)
 {
-    const auto result = objectToMupValue(obj);
-    this->unregisterConstant(key);
-    _impl->p.DefineConst(key, result);
+    try
+    {
+        const auto result = objectToMupValue(obj);
+        this->unregisterConstant(key);
+        _impl->p.DefineConst(key, result);
+    }
+    catch (const mup::ParserError &ex)
+    {
+        throw Pothos::Exception("EvalEnvironment::registerConstantObj("+key+")", ex.GetMsg());
+    }
 }
 
 void Pothos::Util::EvalEnvironment::unregisterConstant(const std::string &key)
