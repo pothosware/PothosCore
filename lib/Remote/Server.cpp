@@ -12,6 +12,7 @@
 #include <Poco/String.h>
 #include <Poco/Message.h>
 #include <Poco/Net/RemoteSyslogChannel.h>
+#include <functional>
 #include <thread>
 #include <cassert>
 
