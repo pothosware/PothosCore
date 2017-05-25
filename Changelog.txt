@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.5.1 (pending)
 ==========================
 
+- Added missing functional include for Remote/Server.cpp
 - Exception handling for EvalEnvironment::registerConstantObj()
 - Fixed memory leak in Util FileLock implementation
 
