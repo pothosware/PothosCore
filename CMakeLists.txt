@@ -13,7 +13,7 @@ enable_testing()
 set(POTHOS_LIBVER "0.5.1")
 
 if (NOT POTHOS_EXTVER)
-    include(${PROJECT_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake)
+    include(${PROJECT_SOURCE_DIR}/cmake/Modules/GetGitRevisionDescription.cmake)
     get_git_head_revision(GITREFSPEC GITHASH)
     if (GITHASH)
         string(SUBSTRING "${GITHASH}" 0 8 GITHASH)
@@ -26,7 +26,7 @@ endif()
 set(POTHOS_VERSION "${POTHOS_LIBVER}-${POTHOS_EXTVER}")
 
 #set in-tree variables for PothosConfig.cmake
-set(Pothos_DIR ${PROJECT_SOURCE_DIR}/cmake)
+set(Pothos_DIR ${PROJECT_SOURCE_DIR}/cmake/Modules)
 set(POTHOS_IN_TREE_SOURCE_DIR ${PROJECT_SOURCE_DIR})
 
 #POTHOS_ROOT is compiled into the library to locate the install base.
@@ -52,7 +52,7 @@ set(APPDATA_ENV "APPDATA" CACHE STRING
 
 # Include the Pothos library config into the top level.
 # This brings in LIB_SUFFIX and RPATH settings for submodules.
-include(${PROJECT_SOURCE_DIR}/cmake/PothosLibraryConfig.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/Modules/PothosLibraryConfig.cmake)
 
 include(FeatureSummary)
 include(CMakeDependentOption)
@@ -60,7 +60,7 @@ include(CMakeDependentOption)
 ########################################################################
 # POCO C++ utility libraries
 ########################################################################
-include(${PROJECT_SOURCE_DIR}/cmake/SetupPoco.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/Modules/SetupPoco.cmake)
 cmake_dependent_option(ENABLE_INTERNAL_POCO "Enable Poco C++ utility libraries" ON "NOT Poco_FOUND" OFF)
 add_feature_info(Poco ENABLE_INTERNAL_POCO "Build internal Poco C++ utility libraries")
 
@@ -179,7 +179,7 @@ if(ENABLE_LIBRARY)
     find_package(Pothos CONFIG REQUIRED)
     add_subdirectory(include)
     add_subdirectory(lib)
-    add_subdirectory(cmake)
+    add_subdirectory(cmake/Modules)
     add_subdirectory(apps)
     add_subdirectory(docs)
 endif(ENABLE_LIBRARY)

@@ -3,6 +3,8 @@ This this the changelog file for the Pothos C++ library.
 Release 0.5.1 (pending)
 ==========================
 
+- Moved cmake modules into subdirectory to hide them from cmake's
+  default project search path when cloned in user's home directory
 - Fix for doc parser and getline for windows newlines
 - Added missing functional include for Remote/Server.cpp
 - Exception handling for EvalEnvironment::registerConstantObj()
