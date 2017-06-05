@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
@@ -298,7 +298,8 @@ bool Pothos::WorkerActor::preWorkTasks(void)
         }
 
         //now determine the buffer provided to this port
-        if (tryRBW and port._buffer.useCount() == 2) //2 -> accumulator + this port
+        if (tryRBW and port._buffer.useCount() == 2 and //2 -> accumulator + this port
+            port._buffer.getEnd() <= port._buffer.getBuffer().getEnd()) //no amalgamation
         {
             port._bufferFromManager = false;
         }
