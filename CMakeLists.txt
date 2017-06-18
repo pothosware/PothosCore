@@ -10,7 +10,12 @@ enable_testing()
 # gather version information
 # packagers may specify -DPOTHOS_EXTVER="foo" to replace the git hash
 ########################################################################
-set(POTHOS_LIBVER "0.5.1")
+file(READ "${PROJECT_SOURCE_DIR}/Changelog.txt" changelog_txt)
+string(REGEX MATCH "Release ([0-9]+\\.[0-9]+\\.[0-9]+) \\(" CHANGELOG_MATCH "${changelog_txt}")
+if(NOT CHANGELOG_MATCH)
+    message(FATAL_ERROR "Failed to extract version number from Changelog.txt")
+endif(NOT CHANGELOG_MATCH)
+set(POTHOS_LIBVER "${CMAKE_MATCH_1}")
 
 if (NOT POTHOS_EXTVER)
     include(${PROJECT_SOURCE_DIR}/cmake/Modules/GetGitRevisionDescription.cmake)
