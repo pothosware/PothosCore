@@ -43,7 +43,7 @@ endif (Poco_FOUND)
 if (UNIX)
     set(POTHOS_CMAKE_DIRECTORY share/cmake/Pothos)
 elseif (WIN32)
-    set(POTHOS_CMAKE_DIRECTORY cmake/Modules)
+    set(POTHOS_CMAKE_DIRECTORY cmake)
 endif ()
 
 ########################################################################
