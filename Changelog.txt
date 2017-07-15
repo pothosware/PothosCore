@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.6.0 (pending)
+==========================
+
+- Switched to YAML C++ library to handle JSON parsing/emitting
+
 Release 0.5.1 (pending)
 ==========================
 

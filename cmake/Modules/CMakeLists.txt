@@ -26,6 +26,7 @@ install(
         FindPkgMacros.cmake
         FindPoco.cmake
         SetupPoco.cmake
+        FindYamlCpp.cmake
     DESTINATION ${POTHOS_CMAKE_DIRECTORY}
     COMPONENT pothos_devel
 )
