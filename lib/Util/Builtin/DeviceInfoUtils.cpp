@@ -20,8 +20,7 @@ public:
             deviceObj.push_back(YAML::Load(call.call<std::string>()));
         }
         std::stringstream ss;
-        YAML::Emitter emitter(ss);
-        emitter << YAML::DoubleQuoted << YAML::Flow << deviceObj;
+        ss << deviceObj;
         return ss.str();
     }
 };
