@@ -7,6 +7,7 @@ Build-Depends:
     cmake (>= 2.8.9),
     libpoco-dev (>= 1.6),
     libmuparserx-dev,
+    nlohmann-json-dev,
     libnuma-dev [amd64 i386]
 Standards-Version: 3.9.8
 Homepage: https://github.com/pothosware/pothos/wiki

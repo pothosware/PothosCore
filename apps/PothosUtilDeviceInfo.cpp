@@ -8,6 +8,9 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 void PothosUtilBase::printDeviceInfo(void)
 {
@@ -32,7 +35,7 @@ void PothosUtilBase::printDeviceInfo(void)
     std::cout << ">>> Querying device info: " << path.toString() << std::endl;
     auto plugin = Pothos::PluginRegistry::get(path);
     auto call = plugin.getObject().extract<Pothos::Callable>();
-    auto info = call.call<std::string>();
+    auto info = json::parse(call.call<std::string>());
 
     //dump the information to file
     if (this->config().has("outputFile"))
@@ -40,11 +43,11 @@ void PothosUtilBase::printDeviceInfo(void)
         const auto infoFile = this->config().getString("outputFile");
         std::cout << ">>> Dumping info: " << infoFile << std::endl;
         std::ofstream ofs(Poco::Path::expand(infoFile));
-        ofs << info;
+        ofs << info.dump(4);
     }
     //or otherwise to stdout
     else
     {
-        std::cout << info << std::endl;
+        std::cout << info.dump(4) << std::endl;
     }
 }

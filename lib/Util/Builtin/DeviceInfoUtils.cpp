@@ -2,26 +2,25 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
-#include <yaml-cpp/yaml.h>
-#include <sstream>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 class DeviceInfoUtilsDumpJson
 {
 public:
     static std::string dump(void)
     {
-        YAML::Node deviceObj;
+        json deviceObj;
         for (const auto &deviceName : Pothos::PluginRegistry::list("/devices"))
         {
             auto path = Pothos::PluginPath("/devices").join(deviceName).join("info");
             if (not Pothos::PluginRegistry::exists(path)) continue;
             auto plugin = Pothos::PluginRegistry::get(path);
             auto call = plugin.getObject().extract<Pothos::Callable>();
-            deviceObj.push_back(YAML::Load(call.call<std::string>()));
+            deviceObj.push_back(json::parse(call.call<std::string>()));
         }
-        std::stringstream ss;
-        ss << deviceObj;
-        return ss.str();
+        return deviceObj.dump();
     }
 };
 

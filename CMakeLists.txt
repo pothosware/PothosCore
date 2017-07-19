@@ -175,30 +175,6 @@ if (ENABLE_INTERNAL_MUPARSERX)
 endif(ENABLE_INTERNAL_MUPARSERX)
 
 ########################################################################
-# YAMP C++ parser library
-########################################################################
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
-find_package(YamlCpp)
-cmake_dependent_option(ENABLE_INTERNAL_YAMLCPP "Enable YAML C++ parser library" ON "NOT YAMLCPP_FOUND" OFF)
-add_feature_info(YamlCpp ENABLE_INTERNAL_YAMLCPP "Build internal YAML C++ parser library")
-
-if (ENABLE_INTERNAL_YAMLCPP)
-    message(STATUS "YAML C++ not found - using built-in YAML C++")
-
-    if (EXISTS ${PROJECT_SOURCE_DIR}/yaml-cpp/CMakeLists.txt)
-        add_subdirectory(yaml-cpp)
-        set(YAMLCPP_IN_TREE TRUE)
-        set(YAMLCPP_FOUND TRUE)
-        set(YAMLCPP_VERSION "[submodule]")
-        set(YAMLCPP_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/yaml-cpp/include)
-        set(YAMLCPP_LIBRARIES yaml-cpp)
-    else ()
-        message(WARNING "yaml-cpp submodule not configured (git submodule update --init --recursive)")
-    endif ()
-
-endif(ENABLE_INTERNAL_YAMLCPP)
-
-########################################################################
 # Build the framework library
 ########################################################################
 cmake_dependent_option(ENABLE_LIBRARY "Enable Pothos Library component" ON "TRUE" OFF)
