@@ -6,8 +6,6 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Object/Containers.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Parser.h>
 #include <Poco/String.h>
 #include <string>
 #include <vector>

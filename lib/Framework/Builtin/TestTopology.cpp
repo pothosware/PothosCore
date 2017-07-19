@@ -1,12 +1,12 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
 #include <Pothos/Framework.hpp>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Parser.h>
 #include <iostream>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 /***********************************************************************
  * Helper blocks to test the rendered flow of the topology
@@ -89,18 +89,17 @@ size_t workCount;
  * Helper method for unit tests
  **********************************************************************/
 static bool connectionsHave(
-    const Poco::JSON::Array::Ptr &connsArray,
+    const json &connsArray,
     const std::string &srcId, const std::string &srcName,
     const std::string &dstId, const std::string &dstName
 )
 {
-    for (size_t c_i = 0; c_i < connsArray->size(); c_i++)
+    for (const auto &connObj : connsArray)
     {
-        const auto connObj = connsArray->getObject(c_i);
-        if (connObj->getValue<std::string>("srcId") != srcId) continue;
-        if (connObj->getValue<std::string>("srcName") != srcName) continue;
-        if (connObj->getValue<std::string>("dstId") != dstId) continue;
-        if (connObj->getValue<std::string>("dstName") != dstName) continue;
+        if (connObj["srcId"].get<std::string>() != srcId) continue;
+        if (connObj["srcName"].get<std::string>() != srcName) continue;
+        if (connObj["dstId"].get<std::string>() != dstId) continue;
+        if (connObj["dstName"].get<std::string>() != dstName) continue;
         return true;
     }
     return false;
@@ -154,20 +153,17 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_simple_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_TRUE(connsArray);
-        POTHOS_TEST_TRUE(blocksObj);
-        POTHOS_TEST_EQUAL(blocksObj->size(), 3);
-        POTHOS_TEST_EQUAL(connsArray->size(), 2);
-        POTHOS_TEST_TRUE(blocksObj->has(passer->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(ping->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pong->uid()));
-        POTHOS_TEST_EQUAL(blocksObj->getObject(passer->uid())->getValue<std::string>("name"), "Passer");
-        POTHOS_TEST_EQUAL(blocksObj->getObject(ping->uid())->getValue<std::string>("name"), "Ping");
-        POTHOS_TEST_EQUAL(blocksObj->getObject(pong->uid())->getValue<std::string>("name"), "Pong");
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 3);
+        POTHOS_TEST_EQUAL(connsArray.size(), 2);
+        POTHOS_TEST_TRUE(blocksObj.count(passer->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(ping->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pong->uid()));
+        POTHOS_TEST_EQUAL(blocksObj[passer->uid()]["name"].get<std::string>(), "Passer");
+        POTHOS_TEST_EQUAL(blocksObj[ping->uid()]["name"].get<std::string>(), "Ping");
+        POTHOS_TEST_EQUAL(blocksObj[pong->uid()]["name"].get<std::string>(), "Pong");
         POTHOS_TEST_TRUE(connectionsHave(connsArray, ping->uid(), "out0", passer->uid(), "passIn"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, passer->uid(), "passOut", pong->uid(), "in0"));
     }
@@ -175,18 +171,15 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_simple_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_TRUE(connsArray);
-        POTHOS_TEST_TRUE(blocksObj);
-        POTHOS_TEST_EQUAL(blocksObj->size(), 2);
-        POTHOS_TEST_EQUAL(connsArray->size(), 1);
-        POTHOS_TEST_TRUE(blocksObj->has(ping->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pong->uid()));
-        POTHOS_TEST_EQUAL(blocksObj->getObject(ping->uid())->getValue<std::string>("name"), "Ping");
-        POTHOS_TEST_EQUAL(blocksObj->getObject(pong->uid())->getValue<std::string>("name"), "Pong");
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 2);
+        POTHOS_TEST_EQUAL(connsArray.size(), 1);
+        POTHOS_TEST_TRUE(blocksObj.count(ping->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pong->uid()));
+        POTHOS_TEST_EQUAL(blocksObj[ping->uid()]["name"].get<std::string>(), "Ping");
+        POTHOS_TEST_EQUAL(blocksObj[pong->uid()]["name"].get<std::string>(), "Pong");
         POTHOS_TEST_TRUE(connectionsHave(connsArray, ping->uid(), "out0", pong->uid(), "in0"));
     }
 
@@ -234,15 +227,14 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_nested_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 3);
-        POTHOS_TEST_EQUAL(connsArray->size(), 2);
-        POTHOS_TEST_TRUE(blocksObj->has(nester->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(ping->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pong->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 3);
+        POTHOS_TEST_EQUAL(connsArray.size(), 2);
+        POTHOS_TEST_TRUE(blocksObj.count(nester->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(ping->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pong->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, ping->uid(), "out0", nester->uid(), "nestIn"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, nester->uid(), "nestOut", pong->uid(), "in0"));
     }
@@ -250,14 +242,13 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_nested_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 2);
-        POTHOS_TEST_EQUAL(connsArray->size(), 1);
-        POTHOS_TEST_TRUE(blocksObj->has(ping->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pong->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 2);
+        POTHOS_TEST_EQUAL(connsArray.size(), 1);
+        POTHOS_TEST_TRUE(blocksObj.count(ping->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pong->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, ping->uid(), "out0", pong->uid(), "in0"));
     }
 }
@@ -294,28 +285,26 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_uneven_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 2);
-        POTHOS_TEST_EQUAL(connsArray->size(), 1);
-        POTHOS_TEST_TRUE(blocksObj->has(nester->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pong->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 2);
+        POTHOS_TEST_EQUAL(connsArray.size(), 1);
+        POTHOS_TEST_TRUE(blocksObj.count(nester->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pong->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, nester->uid(), "nestOut", pong->uid(), "in0"));
     }
 
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 2);
-        POTHOS_TEST_EQUAL(connsArray->size(), 1);
-        POTHOS_TEST_TRUE(blocksObj->has(ping->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pong->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 2);
+        POTHOS_TEST_EQUAL(connsArray.size(), 1);
+        POTHOS_TEST_TRUE(blocksObj.count(ping->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pong->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, ping->uid(), "out0", pong->uid(), "in0"));
     }
 }
@@ -359,15 +348,14 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_multisrc_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 3);
-        POTHOS_TEST_EQUAL(connsArray->size(), 2);
-        POTHOS_TEST_TRUE(blocksObj->has(nester->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pingOuter->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pong->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 3);
+        POTHOS_TEST_EQUAL(connsArray.size(), 2);
+        POTHOS_TEST_TRUE(blocksObj.count(nester->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pingOuter->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pong->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, pingOuter->uid(), "out0", nester->uid(), "nestIn"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, nester->uid(), "nestOut", pong->uid(), "in0"));
     }
@@ -375,15 +363,14 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_multisrc_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 3);
-        POTHOS_TEST_EQUAL(connsArray->size(), 2);
-        POTHOS_TEST_TRUE(blocksObj->has(pingOuter->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pingInner->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pong->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 3);
+        POTHOS_TEST_EQUAL(connsArray.size(), 2);
+        POTHOS_TEST_TRUE(blocksObj.count(pingOuter->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pingInner->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pong->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, pingOuter->uid(), "out0", pong->uid(), "in0"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, pingInner->uid(), "out0", pong->uid(), "in0"));
     }
@@ -429,15 +416,14 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_multidst_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 3);
-        POTHOS_TEST_EQUAL(connsArray->size(), 2);
-        POTHOS_TEST_TRUE(blocksObj->has(nester->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pongOuter->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(ping->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 3);
+        POTHOS_TEST_EQUAL(connsArray.size(), 2);
+        POTHOS_TEST_TRUE(blocksObj.count(nester->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pongOuter->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(ping->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, ping->uid(), "out0", nester->uid(), "nestIn"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, nester->uid(), "nestOut", pongOuter->uid(), "in0"));
     }
@@ -445,15 +431,14 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_multidst_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 3);
-        POTHOS_TEST_EQUAL(connsArray->size(), 2);
-        POTHOS_TEST_TRUE(blocksObj->has(pongOuter->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pongInner->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(ping->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 3);
+        POTHOS_TEST_EQUAL(connsArray.size(), 2);
+        POTHOS_TEST_TRUE(blocksObj.count(pongOuter->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pongInner->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(ping->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, ping->uid(), "out0", pongOuter->uid(), "in0"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, ping->uid(), "out0", pongInner->uid(), "in0"));
     }
@@ -501,15 +486,14 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_shared_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 3);
-        POTHOS_TEST_EQUAL(connsArray->size(), 2);
-        POTHOS_TEST_TRUE(blocksObj->has(nester->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pingOuter->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pingOuter->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 3);
+        POTHOS_TEST_EQUAL(connsArray.size(), 2);
+        POTHOS_TEST_TRUE(blocksObj.count(nester->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pingOuter->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pingOuter->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, pingOuter->uid(), "out0", nester->uid(), "nestIn"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, nester->uid(), "nestOut", pongOuter->uid(), "in0"));
     }
@@ -517,16 +501,15 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_shared_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 4);
-        POTHOS_TEST_EQUAL(connsArray->size(), 4);
-        POTHOS_TEST_TRUE(blocksObj->has(pingInner->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pingOuter->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pingOuter->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pingOuter->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 4);
+        POTHOS_TEST_EQUAL(connsArray.size(), 4);
+        POTHOS_TEST_TRUE(blocksObj.count(pingInner->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pingOuter->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pingOuter->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pingOuter->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, pingOuter->uid(), "out0", pongOuter->uid(), "in0"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, pingInner->uid(), "out0", pongInner->uid(), "in0"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, pingOuter->uid(), "out0", pongInner->uid(), "in0"));
@@ -577,15 +560,14 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_independent_passthrough)
     //check the top JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"top\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 3);
-        POTHOS_TEST_EQUAL(connsArray->size(), 2);
-        POTHOS_TEST_TRUE(blocksObj->has(nester->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pingOuter->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pongOuter->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"top\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 3);
+        POTHOS_TEST_EQUAL(connsArray.size(), 2);
+        POTHOS_TEST_TRUE(blocksObj.count(nester->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pingOuter->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pongOuter->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, pingOuter->uid(), "out0", nester->uid(), "nestIn"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, nester->uid(), "nestOut", pongOuter->uid(), "in0"));
     }
@@ -593,16 +575,15 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_independent_passthrough)
     //check the flat JSON dump
     {
         POTHOS_TEST_CHECKPOINT();
-        const auto result = Poco::JSON::Parser().parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
-        auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-        auto connsArray = topObj->getArray("connections");
-        auto blocksObj = topObj->getObject("blocks");
-        POTHOS_TEST_EQUAL(blocksObj->size(), 4);
-        POTHOS_TEST_EQUAL(connsArray->size(), 2);
-        POTHOS_TEST_TRUE(blocksObj->has(pingOuter->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pongOuter->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pingInner->uid()));
-        POTHOS_TEST_TRUE(blocksObj->has(pongInner->uid()));
+        const auto topObj = json::parse(topology.dumpJSON("{\"mode\":\"flat\"}"));
+        auto connsArray = topObj["connections"];
+        auto blocksObj = topObj["blocks"];
+        POTHOS_TEST_EQUAL(blocksObj.size(), 4);
+        POTHOS_TEST_EQUAL(connsArray.size(), 2);
+        POTHOS_TEST_TRUE(blocksObj.count(pingOuter->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pongOuter->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pingInner->uid()));
+        POTHOS_TEST_TRUE(blocksObj.count(pongInner->uid()));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, pingOuter->uid(), "out0", pongOuter->uid(), "in0"));
         POTHOS_TEST_TRUE(connectionsHave(connsArray, pingInner->uid(), "out0", pongInner->uid(), "in0"));
     }
