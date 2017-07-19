@@ -22,7 +22,7 @@ endif (muparserx_FOUND)
 ########################################################################
 # json.hpp header
 ########################################################################
-find_path(JSON_HPP_INCLUDE_DIR NAMES json.hpp)
+find_path(JSON_HPP_INCLUDE_DIR NAMES json.hpp PATH_SUFFIXES nlohmann)
 
 list(APPEND Pothos_INCLUDE_DIRS ${JSON_HPP_INCLUDE_DIR})
 
@@ -246,7 +246,6 @@ list(APPEND POTHOS_SOURCES
     Util/EvalEnvironmentListParsers.cpp
     Util/BlockDescription.cpp
 
-    Util/Builtin/JSONSerialization.cpp
     Util/Builtin/TestJSONSerialization.cpp
     Util/Builtin/BlockEval.cpp
     Util/Builtin/DeviceInfoUtils.cpp
