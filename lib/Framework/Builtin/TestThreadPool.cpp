@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -23,4 +23,15 @@ POTHOS_TEST_BLOCK("/framework/tests", test_thread_pool)
     Pothos::ThreadPoolArgs args4;
     args4.priority = -1e6;
     POTHOS_TEST_THROWS(Pothos::ThreadPool tp4(args4), Pothos::ThreadPoolError);
+}
+
+POTHOS_TEST_BLOCK("/framework/tests", test_thread_pool_args)
+{
+    Pothos::ThreadPoolArgs args("{\"affinity\":[0, 4], \"numThreads\":2}");
+    const std::vector<size_t> expected = {0, 4};
+    POTHOS_TEST_EQUALV(args.affinity, expected);
+    POTHOS_TEST_EQUAL(args.numThreads, 2);
+    POTHOS_TEST_EQUAL(args.priority, 0.0);
+    POTHOS_TEST_EQUAL(args.affinityMode, "");
+    POTHOS_TEST_EQUAL(args.yieldMode, "");
 }

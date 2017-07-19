@@ -1,12 +1,12 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/ThreadPool.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include "Framework/ThreadEnvironment.hpp"
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Parser.h>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 Pothos::ThreadPoolArgs::ThreadPoolArgs(void):
     numThreads(0),
@@ -22,27 +22,21 @@ Pothos::ThreadPoolArgs::ThreadPoolArgs(const size_t numThreads):
     return;
 }
 
-Pothos::ThreadPoolArgs::ThreadPoolArgs(const std::string &json):
+Pothos::ThreadPoolArgs::ThreadPoolArgs(const std::string &jsonStr):
     numThreads(0),
     priority(0.0)
 {
     //parse to JSON object
-    const auto result = Poco::JSON::Parser().parse(json);
-    auto topObj = result.extract<Poco::JSON::Object::Ptr>();
+    const auto topObj = json::parse(jsonStr);
 
     //parse out the optional fields
-    this->numThreads = topObj->optValue<int>("numThreads", 0);
-    this->priority = topObj->optValue<double>("priority", 0.0);
-    this->affinityMode = topObj->optValue<std::string>("affinityMode", "");
-    this->yieldMode = topObj->optValue<std::string>("yieldMode", "");
+    this->numThreads = topObj.value<int>("numThreads", 0);
+    this->priority = topObj.value<double>("priority", 0.0);
+    this->affinityMode = topObj.value<std::string>("affinityMode", "");
+    this->yieldMode = topObj.value<std::string>("yieldMode", "");
 
     //parse out the affinity list
-    Poco::JSON::Array::Ptr affinityArray;
-    if (topObj->isArray("affinity")) affinityArray = topObj->getArray("affinity");
-    if (affinityArray) for (size_t i = 0; i < affinityArray->size(); i++)
-    {
-        this->affinity.push_back(affinityArray->getElement<int>(i));
-    }
+    this->affinity = topObj.value<std::vector<size_t>>("affinity", std::vector<size_t>());
 }
 
 Pothos::ThreadPool::ThreadPool(void)
