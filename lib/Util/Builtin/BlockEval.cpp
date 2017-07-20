@@ -38,11 +38,18 @@ void ProxyBlockEval::eval(const std::string &id)
     _proxyBlock.callVoid("setName", id);
 
     //make the calls
-    for (const auto &call : _blockDesc["calls"]) this->_handleCall(call);
+    if (_blockDesc.count("calls"))
+    {
+        for (const auto &call : _blockDesc["calls"])
+        {
+            this->_handleCall(call);
+        }
+    }
 }
 
 void ProxyBlockEval::handleCall(const std::string &callName)
 {
+    if (_blockDesc.count("calls") == 0) return;
     for (const auto &call : _blockDesc["calls"])
     {
         if (call["name"].get<std::string>() == callName)
@@ -57,7 +64,7 @@ void ProxyBlockEval::_handleCall(const json &callObj)
     auto env = Pothos::ProxyEnvironment::make("managed");
     const auto callName = callObj["name"].get<std::string>();
     std::vector<Pothos::Proxy> callArgs;
-    for (const auto &arg : callObj["args"])
+    if (callObj.count("args")) for (const auto &arg : callObj["args"])
     {
         const auto obj = this->lookupOrEvalAsType(arg);
         callArgs.push_back(env->convertObjectToProxy(obj));
