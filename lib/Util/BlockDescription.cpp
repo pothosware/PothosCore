@@ -193,26 +193,27 @@ static std::vector<CodeBlock> extractContiguousBlocks(std::istream &is)
 /***********************************************************************
  * Strip top and bottom whitespace from a document array
  **********************************************************************/
-static json stripDocArray(const json &in)
+static void stripDocArray(json &in)
 {
+    if (in.empty()) return;
     json out;
 
-    for (size_t i = 0; i < in.size(); i++)
+    for (const auto &entry : in)
     {
         //dont add empty lines if the last line is empty
-        const auto line = in[i].get<std::string>();
+        const auto line = entry.get<std::string>();
         std::string lastLine;
-        if (not out.empty()) lastLine = out[out.size()-1].get<std::string>();
+        if (not out.empty()) lastLine = out.back().get<std::string>();
         if (not lastLine.empty() or not line.empty()) out.push_back(line);
     }
 
     //remove trailing empty line from docs
-    if (not out.empty() and out[out.size()-1].get<std::string>().empty())
+    if (not out.empty() and out.back().get<std::string>().empty())
     {
         out.erase(out.size()-1);
     }
 
-    return out;
+    in = out;
 }
 
 /***********************************************************************
@@ -221,9 +222,7 @@ static json stripDocArray(const json &in)
 static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
 {
     json topObj;
-    json params;
-    json topDocs;
-    json currentParam;
+    json &params = topObj["params"];
 
     std::string state;
     std::string indent;
@@ -268,13 +267,11 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
         }
         else if (matches.empty() and state == "DOC")
         {
-            topDocs.push_back(line);
+            topObj["docs"].push_back(line);
         }
         else if (matches.empty() and state == "PARAM")
         {
-            auto array = currentParam["desc"];
-            array.push_back(line);
-            currentParam["desc"] = stripDocArray(array);
+            params.back()["desc"].push_back(line);
         }
         else if (instruction == "category" and state == "DOC")
         {
@@ -313,30 +310,30 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
             if (fields[3].length != 0) name = bracketEscapeDecode(Poco::trim(payload.substr(fields[3].offset, fields[3].length)));
             const std::string desc = bracketEscapeDecode(Poco::trim(payload.substr(fields[4].offset, fields[4].length)));
 
-            if (not currentParam.empty()) params.push_back(currentParam);
-            currentParam = json();
-            currentParam["key"] = key;
-            currentParam["name"] = name;
-            currentParam["desc"].push_back(desc);
+            json param;
+            param["key"] = key;
+            param["name"] = name;
+            param["desc"].push_back(desc);
+            params.push_back(param);
             state = "PARAM";
         }
         else if (instruction == "default" and state == "PARAM")
         {
-            if (currentParam.count("default")) throw Pothos::SyntaxException(
+            if (params.back().count("default")) throw Pothos::SyntaxException(
                 "Multiple occurrence of |default for param",
                 codeLine.toString());
-            currentParam["default"] = payload;
+            params.back()["default"] = payload;
         }
         else if (instruction == "units" and state == "PARAM")
         {
-            if (currentParam.count("units")) throw Pothos::SyntaxException(
+            if (params.back().count("units")) throw Pothos::SyntaxException(
                 "Multiple occurrence of |units for param",
                 codeLine.toString());
-            currentParam["units"] = payload;
+            params.back()["units"] = payload;
         }
         else if (instruction == "widget" and state == "PARAM")
         {
-            if (currentParam.count("widgetType")) throw Pothos::SyntaxException(
+            if (params.back().count("widgetType")) throw Pothos::SyntaxException(
                 "Multiple occurrence of |widget for param",
                 codeLine.toString());
             Poco::RegularExpression::MatchVec fields;
@@ -349,19 +346,19 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
             const std::string widgetType = Poco::trim(payload.substr(fields[1].offset, fields[1].length));
             const std::string argsStr = Poco::trim(payload.substr(fields[2].offset, fields[2].length));
 
-            currentParam["widgetType"] = widgetType;
-            loadArgs(codeLine, currentParam, argsStr, "widgetArgs", "widgetKwargs");
+            params.back()["widgetType"] = widgetType;
+            loadArgs(codeLine, params.back(), argsStr, "widgetArgs", "widgetKwargs");
         }
         else if (instruction == "tab" and state == "PARAM")
         {
-            if (currentParam.count("tab")) throw Pothos::SyntaxException(
+            if (params.back().count("tab")) throw Pothos::SyntaxException(
                 "Multiple occurrence of |tab for param",
                 codeLine.toString());
-            currentParam["tab"] = payload;
+            params.back()["tab"] = payload;
         }
         else if (instruction == "preview" and state == "PARAM")
         {
-            if (currentParam.count("preview")) throw Pothos::SyntaxException(
+            if (params.back().count("preview")) throw Pothos::SyntaxException(
                 "Multiple occurrence of preview for param",
                 codeLine.toString());
             Poco::RegularExpression::MatchVec fields;
@@ -382,11 +379,11 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
                 "Only supports enable/disable/valid/invalid/when as value for preview option of param",
                 codeLine.toString());
 
-            currentParam["preview"] = previewType;
+            params.back()["preview"] = previewType;
             if (fields.size() == 4)
             {
                 const std::string argsStr = Poco::trim(payload.substr(fields[3].offset, fields[3].length));
-                loadArgs(codeLine, currentParam, argsStr, "previewArgs", "previewKwargs");
+                loadArgs(codeLine, params.back(), argsStr, "previewArgs", "previewKwargs");
             }
         }
         else if (instruction == "option" and state == "PARAM")
@@ -406,7 +403,7 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
             json option;
             option["value"] = value;
             option["name"] = name;
-            currentParam["options"].push_back(option);
+            params.back()["options"].push_back(option);
         }
         else if (instruction == "factory" and (state == "DOC" or state == "PARAM"))
         {
@@ -468,10 +465,13 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
     //empty state means this was a regular comment block, return null
     if (state.empty()) return json();
 
-    topDocs = stripDocArray(topDocs);
-    if (not topDocs.empty()) topObj["docs"] = topDocs;
-    if (not currentParam.empty()) params.push_back(currentParam);
-    if (not params.empty()) topObj["params"] = params;
+    //cleanup docs with trimming/stripping
+    stripDocArray(topObj["docs"]);
+    for (auto &param : params) stripDocArray(param["desc"]);
+
+    //remove null entries
+    if (topObj["docs"].empty()) topObj.erase("docs");
+    if (params.empty()) topObj.erase("params");
 
     //sanity check for required stuff
     if (not topObj.count("path"))
