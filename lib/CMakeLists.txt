@@ -246,7 +246,6 @@ list(APPEND POTHOS_SOURCES
     Util/EvalEnvironmentListParsers.cpp
     Util/BlockDescription.cpp
 
-    Util/Builtin/TestJSONSerialization.cpp
     Util/Builtin/BlockEval.cpp
     Util/Builtin/DeviceInfoUtils.cpp
     Util/Builtin/DocUtils.cpp
