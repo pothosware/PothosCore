@@ -1,60 +1,54 @@
-// Copyright (c) 2016-2016 Josh Blum
+// Copyright (c) 2016-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Framework.hpp>
 #include <Poco/Path.h>
 #include <Poco/File.h>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Parser.h>
-#include <sstream>
 #include <fstream>
 #include <map>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 /***********************************************************************
  * The topology factory loads args into a JSON description
  * and creates and returns an instance of the topology
  **********************************************************************/
 static Pothos::Object opaqueJSONTopologyFactory(
-    const std::string &json,
+    const std::string &jsonStr,
     const Pothos::Object *args,
     const size_t numArgs)
 {
     //parse the json formatted string into a JSON object
-    Poco::JSON::Object::Ptr topObj;
+    json topObj;
     try
     {
-        const auto result = Poco::JSON::Parser().parse(json);
-        topObj = result.extract<Poco::JSON::Object::Ptr>();
+        topObj = json::parse(jsonStr);
     }
-    catch (const Poco::Exception &ex)
+    catch (const std::exception &ex)
     {
-        throw Pothos::DataFormatException(ex.message());
+        throw Pothos::DataFormatException(ex.what());
     }
 
     //apply the global variable overlays
-    if (not topObj->isArray("globals")) topObj->set("globals",
-        Poco::JSON::Array::Ptr(new Poco::JSON::Array()));
-    auto globalsArray = topObj->getArray("globals");
-    if (numArgs > globalsArray->size())
+    auto &globalsArray = topObj["globals"];
+    if (numArgs > globalsArray.size())
     {
         throw Pothos::InvalidArgumentException("too many args passed to factory");
     }
 
     for (size_t i = 0; i < numArgs; i++)
     {
-        if (not globalsArray->isObject(i))
+        if (not globalsArray[i].is_object())
         {
             throw Pothos::DataFormatException("global entry not a JSON object");
         }
-        auto globalVarObj = globalsArray->getObject(i);
-        globalVarObj->set("value", args[i].toString());
+        globalsArray[i]["value"] = args[i].toString();
     }
 
     //create the topology from the JSON string
-    std::stringstream ss; topObj->stringify(ss);
-    return Pothos::Object(Pothos::Topology::make(ss.str()));
+    return Pothos::Object(Pothos::Topology::make(topObj.dump()));
 }
 
 /***********************************************************************
