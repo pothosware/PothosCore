@@ -62,7 +62,7 @@ void ProxyBlockEval::handleCall(const std::string &callName)
 void ProxyBlockEval::_handleCall(const json &callObj)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
-    const auto callName = callObj["name"].get<std::string>();
+    const std::string callName = callObj["name"];
     std::vector<Pothos::Proxy> callArgs;
     if (callObj.count("args")) for (const auto &arg : callObj["args"])
     {
@@ -85,7 +85,7 @@ Pothos::Object ProxyBlockEval::lookupOrEvalAsType(const json &arg)
     if (not arg.is_string()) return _evalEnv->eval(arg.dump());
 
     //the expression is an already evaluated property
-    const auto expr = arg.get<std::string>();
+    const std::string expr = arg;
     if (_properties.count(expr) != 0) return _properties.at(expr);
 
     //otherwise the expression must be evaluated

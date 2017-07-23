@@ -90,7 +90,7 @@ static Pothos::Proxy makeBlock(
     const OrderedVarMap &globals,
     const json &blockObj)
 {
-    const auto id = blockObj["id"].get<std::string>();
+    const std::string id = blockObj["id"];
 
     if (blockObj.count("path") == 0) throw Pothos::DataFormatException(
         "Pothos::Topology::make()", "blocks["+id+"] missing 'path' field");
@@ -171,8 +171,8 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
 
     //create thread pools
     std::map<std::string, Pothos::Proxy> threadPools;
-    const auto &threadPoolObj = topObj["threadPools"];
-    if (not threadPoolObj.is_null()) for (auto it = threadPoolObj.begin(); it != threadPoolObj.end(); ++it)
+    const auto &threadPoolObj = topObj.value("threadPools", json::object());
+    for (auto it = threadPoolObj.begin(); it != threadPoolObj.end(); ++it)
     {
         Pothos::ThreadPoolArgs args(it.value().dump());
         threadPools[it.key()] = env->findProxy("Pothos/ThreadPool")(args);

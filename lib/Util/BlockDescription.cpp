@@ -201,9 +201,9 @@ static void stripDocArray(json &in)
     for (const auto &entry : in)
     {
         //dont add empty lines if the last line is empty
-        const auto line = entry.get<std::string>();
+        const std::string line = entry;
         std::string lastLine;
-        if (not out.empty()) lastLine = out.back().get<std::string>();
+        if (not out.empty()) lastLine = out.back();
         if (not lastLine.empty() or not line.empty()) out.push_back(line);
     }
 
@@ -510,10 +510,10 @@ void Pothos::Util::BlockDescriptionParser::feedStream(std::istream &is)
 
         //get a list of all paths including aliases
         std::vector<std::string> paths;
-        paths.push_back(obj["path"].get<std::string>());
-        if (obj.count("aliases")) for (const auto &alias : obj["aliases"])
+        paths.push_back(obj["path"]);
+        for (const auto &alias : obj.value("aliases", json::array()))
         {
-            paths.push_back(alias.get<std::string>());
+            paths.push_back(alias);
         }
 
         //store mapping for each factory path

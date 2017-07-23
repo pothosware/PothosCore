@@ -28,10 +28,10 @@ static std::vector<Pothos::PluginPath> blockDescParser(std::istream &is, std::ve
         const std::string JsonObjStr(obj.dump());
 
         std::vector<std::string> paths;
-        paths.push_back(obj["path"].get<std::string>());
-        if (obj.count("aliases")) for (const auto &alias : obj["aliases"])
+        paths.push_back(obj["path"]);
+        for (const auto &alias : obj.value("aliases", json::array()))
         {
-            paths.push_back(alias.get<std::string>());
+            paths.push_back(alias);
         }
 
         //register the block description for every path
