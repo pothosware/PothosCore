@@ -613,7 +613,7 @@ std::string Pothos::WorkerActor::queryWorkStats(void)
     }
     if (not outputStats.empty()) stats["outputStats"] = outputStats;
 
-    return stats;
+    return stats.dump();
 }
 
 #include <Pothos/Managed.hpp>
