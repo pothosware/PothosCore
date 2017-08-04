@@ -21,7 +21,7 @@ configuration:
 
 environment:
   global:
-    GENERATOR: Visual Studio 12 Win64
+    GENERATOR: Visual Studio 14 Win64
     POTHOS_PREFIX: C:/Program Files/Pothos
     SOAPY_PREFIX: C:/Program Files/SoapySDR
     SOAPY_BRANCH: master
