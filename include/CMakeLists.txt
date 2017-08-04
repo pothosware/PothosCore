@@ -14,5 +14,4 @@ install(
     DIRECTORY Pothos
     DESTINATION include
     COMPONENT pothos_devel
-    PATTERN "*.tmpl.*" EXCLUDE
 )
