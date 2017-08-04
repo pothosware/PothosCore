@@ -49,9 +49,6 @@ install:
   # install development dependencies from support ppa
   - sudo apt-get install -qq libpoco-dev-min libmuparserx-dev
 
-  # install development dependencies from framework ppa
-  - sudo apt-get install -qq libpothos-serialization-dev
-
   # install audio support dependencies
   - sudo apt-get install -qq portaudio19-dev libjack-jackd2-dev
 
