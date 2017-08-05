@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockEval.hpp"
-#include <Poco/JSON/Parser.h>
 
 ProxyBlockEval::ProxyBlockEval(const std::string &path, const std::shared_ptr<Pothos::Util::EvalEnvironment> &evalEnv):
     _path(path),
@@ -10,9 +9,7 @@ ProxyBlockEval::ProxyBlockEval(const std::string &path, const std::shared_ptr<Po
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto proxy = env->findProxy("Pothos/Util/DocUtils");
-    const auto json = proxy.call<std::string>("dumpJsonAt", path);
-    const auto result = Poco::JSON::Parser().parse(json);
-    _blockDesc = result.extract<Poco::JSON::Object::Ptr>();
+    _blockDesc = json::parse(proxy.call<std::string>("dumpJsonAt", path));
 }
 
 void ProxyBlockEval::eval(const std::string &id)
@@ -23,7 +20,7 @@ void ProxyBlockEval::eval(const std::string &id)
 
     //load up the constructor args
     std::vector<Pothos::Proxy> ctorArgs;
-    if (_blockDesc->isArray("args")) for (auto arg : *_blockDesc->getArray("args"))
+    for (const auto &arg : _blockDesc["args"])
     {
         const auto obj = this->lookupOrEvalAsType(arg);
         ctorArgs.push_back(env->convertObjectToProxy(obj));
@@ -41,30 +38,33 @@ void ProxyBlockEval::eval(const std::string &id)
     _proxyBlock.callVoid("setName", id);
 
     //make the calls
-    if (_blockDesc->isArray("calls")) for (auto call : *_blockDesc->getArray("calls"))
+    if (_blockDesc.count("calls"))
     {
-        this->_handleCall(call.extract<Poco::JSON::Object::Ptr>());
+        for (const auto &call : _blockDesc["calls"])
+        {
+            this->_handleCall(call);
+        }
     }
 }
 
 void ProxyBlockEval::handleCall(const std::string &callName)
 {
-    if (_blockDesc->isArray("calls")) for (auto call : *_blockDesc->getArray("calls"))
+    if (_blockDesc.count("calls") == 0) return;
+    for (const auto &call : _blockDesc["calls"])
     {
-        const auto callObj = call.extract<Poco::JSON::Object::Ptr>();
-        if (callObj->get("name").extract<std::string>() == callName)
+        if (call["name"].get<std::string>() == callName)
         {
-            this->_handleCall(callObj);
+            this->_handleCall(call);
         }
     }
 }
 
-void ProxyBlockEval::_handleCall(const Poco::JSON::Object::Ptr &callObj)
+void ProxyBlockEval::_handleCall(const json &callObj)
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
-    const auto callName = callObj->get("name").extract<std::string>();
+    const std::string callName = callObj["name"];
     std::vector<Pothos::Proxy> callArgs;
-    for (auto arg : *callObj->getArray("args"))
+    if (callObj.count("args")) for (const auto &arg : callObj["args"])
     {
         const auto obj = this->lookupOrEvalAsType(arg);
         callArgs.push_back(env->convertObjectToProxy(obj));
@@ -79,13 +79,13 @@ void ProxyBlockEval::_handleCall(const Poco::JSON::Object::Ptr &callObj)
     }
 }
 
-Pothos::Object ProxyBlockEval::lookupOrEvalAsType(const Poco::Dynamic::Var &arg)
+Pothos::Object ProxyBlockEval::lookupOrEvalAsType(const json &arg)
 {
     //this is not an expression, but a native JSON type
-    if (not arg.isString()) return _evalEnv->eval(arg.toString());
+    if (not arg.is_string()) return _evalEnv->eval(arg.dump());
 
     //the expression is an already evaluated property
-    const auto expr = arg.extract<std::string>();
+    const std::string expr = arg;
     if (_properties.count(expr) != 0) return _properties.at(expr);
 
     //otherwise the expression must be evaluated

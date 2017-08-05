@@ -1,16 +1,16 @@
-// Copyright (c) 2016-2016 Josh Blum
+// Copyright (c) 2016-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Parser.h>
 #include <Poco/Path.h>
 #include <Poco/File.h>
 #include <fstream>
 #include <sstream>
 #include <cassert>
 #include <map>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 /***********************************************************************
  * Load a JSON block description from file and register the descriptions.
@@ -21,27 +21,17 @@ static std::vector<Pothos::PluginPath> blockDescParser(std::istream &is, std::ve
     std::vector<Pothos::PluginPath> entries;
 
     //parse the stream into a JSON array
-    const auto result = Poco::JSON::Parser().parse(is);
-    Poco::JSON::Array::Ptr arrayOut;
-    if (result.type() == typeid(Poco::JSON::Object::Ptr))
+    auto arrayOut = json::parse(is);
+    if (arrayOut.is_object()) arrayOut = {arrayOut};
+    for (const auto &obj : arrayOut)
     {
-        arrayOut = new Poco::JSON::Array();
-        arrayOut->add(result.extract<Poco::JSON::Object::Ptr>());
-    }
-    else arrayOut = result.extract<Poco::JSON::Array::Ptr>();
-    for (size_t i = 0; i < arrayOut->size(); i++)
-    {
-        auto obj = arrayOut->getObject(i);
-        assert(obj);
-        std::stringstream ossJsonObj;
-        obj->stringify(ossJsonObj);
-        const std::string JsonObjStr(ossJsonObj.str());
+        const std::string JsonObjStr(obj.dump());
 
         std::vector<std::string> paths;
-        paths.push_back(obj->getValue<std::string>("path"));
-        if (obj->has("aliases")) for (const auto &alias : *obj->getArray("aliases"))
+        paths.push_back(obj["path"]);
+        for (const auto &alias : obj.value("aliases", json::array()))
         {
-            paths.push_back(alias.toString());
+            paths.push_back(alias);
         }
 
         //register the block description for every path

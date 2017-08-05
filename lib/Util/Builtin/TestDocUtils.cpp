@@ -5,19 +5,21 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Proxy/Environment.hpp>
 #include <Pothos/Exception.hpp>
-#include <Poco/JSON/Parser.h>
 #include <iostream>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 POTHOS_TEST_BLOCK("/util/tests", test_doc_utils_dump_json)
 {
     //check that the following does not throw
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto proxy = env->findProxy("Pothos/Util/DocUtils");
-    const auto json = proxy.call<std::string>("dumpJson");
-    POTHOS_TEST_TRUE(not json.empty());
-    if (json.size() > 100)
+    const auto jsonStr = proxy.call<std::string>("dumpJson");
+    POTHOS_TEST_TRUE(not jsonStr.empty());
+    if (jsonStr.size() > 100)
     {
-        std::cout << json.substr(0, 100) << "...\n..." << json.substr(json.size()-100) << std::endl;
+        std::cout << jsonStr.substr(0, 100) << "...\n..." << jsonStr.substr(jsonStr.size()-100) << std::endl;
     }
-    Poco::JSON::Parser().parse(json); //should not throw
+    json::parse(jsonStr); //should not throw
 }

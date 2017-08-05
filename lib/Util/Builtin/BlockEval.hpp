@@ -4,12 +4,13 @@
 #pragma once
 #include <Pothos/Util/EvalEnvironment.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
 #include <memory>
 #include <string>
 #include <vector>
 #include <map>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 class ProxyBlockEval
 {
@@ -49,12 +50,12 @@ public:
 
 private:
 
-    void _handleCall(const Poco::JSON::Object::Ptr &callObj);
-    Pothos::Object lookupOrEvalAsType(const Poco::Dynamic::Var &arg);
+    void _handleCall(const json &callObj);
+    Pothos::Object lookupOrEvalAsType(const json &arg);
 
     std::map<std::string, Pothos::Object> _properties;
     Pothos::Proxy _proxyBlock;
     const std::string _path;
     std::shared_ptr<Pothos::Util::EvalEnvironment> _evalEnv;
-    Poco::JSON::Object::Ptr _blockDesc;
+    json _blockDesc;
 };

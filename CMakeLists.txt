@@ -175,6 +175,21 @@ if (ENABLE_INTERNAL_MUPARSERX)
 endif(ENABLE_INTERNAL_MUPARSERX)
 
 ########################################################################
+# json.hpp header
+########################################################################
+find_path(JSON_HPP_INCLUDE_DIR NAMES json.hpp PATH_SUFFIXES nlohmann)
+
+#some of the libraries use this header for development
+#its a header only and its extremely easy to just download
+#but don't do this for package builds (/usr) the package
+#maintainer should do this manually to avoid downloading
+if (NOT JSON_HPP_INCLUDE_DIR AND NOT "${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr")
+    file(DOWNLOAD "https://raw.githubusercontent.com/nlohmann/json/v2.1.1/src/json.hpp" "${PROJECT_BINARY_DIR}/json.hpp")
+    install(FILES "${PROJECT_BINARY_DIR}/json.hpp" DESTINATION include/nlohmann)
+    set(JSON_HPP_INCLUDE_DIR "${PROJECT_BINARY_DIR}")
+endif ()
+
+########################################################################
 # Build the framework library
 ########################################################################
 cmake_dependent_option(ENABLE_LIBRARY "Enable Pothos Library component" ON "TRUE" OFF)

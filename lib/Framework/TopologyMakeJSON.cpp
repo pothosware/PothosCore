@@ -1,78 +1,79 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/TopologyImpl.hpp>
 #include <Pothos/Util/EvalEnvironment.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Parser.h>
 #include <Poco/Format.h>
-#include <sstream>
-#include <iostream>
 #include <map>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 /***********************************************************************
  * evaluation helpers
  **********************************************************************/
 static Pothos::Object evalExpression(
     Pothos::Util::EvalEnvironment &evaluator,
-    const Poco::Dynamic::Var &arg)
+    const json &arg)
 {
-    if (arg.isString())
+    if (arg.is_string())
     {
         try
         {
             //it could be an expression
-            return evaluator.eval(arg.toString());
+            return evaluator.eval(arg.get<std::string>());
         }
         catch (...)
         {
             //fail, so treat it as a literal string
-            return Pothos::Object(arg.toString());
+            return Pothos::Object(arg.get<std::string>());
         }
     }
 
     //otherwise run the evaluator as normal
-    return evaluator.eval(arg.toString());
+    return evaluator.eval(arg.dump());
 }
 
 static std::vector<Pothos::Proxy> evalArgsArray(
     Pothos::Util::EvalEnvironment &evaluator,
-    const Poco::JSON::Array::Ptr &argsArray,
+    const json &argsArray,
     const size_t offset = 0)
 {
     std::vector<Pothos::Object> args;
-    if (argsArray) for (size_t i = offset; i < argsArray->size(); i++)
+    for (size_t i = offset; i < argsArray.size(); i++)
     {
-        args.push_back(evalExpression(evaluator, argsArray->get(i)));
+        args.push_back(evalExpression(evaluator, argsArray.at(i)));
     }
     return Pothos::Object(args).convert<std::vector<Pothos::Proxy>>();
 }
 
-typedef std::vector<std::pair<std::string, Poco::Dynamic::Var>> OrderedVarMap;
+typedef std::vector<std::pair<std::string, json>> OrderedVarMap;
 
-static OrderedVarMap extractVariableMap(const Poco::JSON::Object::Ptr &obj, const std::string &key, const std::string &what)
+static OrderedVarMap extractVariableMap(const json &obj, const std::string &key, const std::string &what)
 {
     OrderedVarMap result;
     size_t i = 0;
-    if (not obj->has(key)) return result;
+    if (obj.count(key) == 0) return result;
+    const auto &varMap = obj[key];
 
     //ordered array of variables format
-    if (obj->isArray(key)) for (const auto &elem : *obj->getArray(key))
+    if (varMap.is_array()) for (const auto &varObj : varMap)
     {
         const std::string &what_i = what + "[" + std::to_string(i++) + "]";
-        if (elem.type() != typeid(Poco::JSON::Object::Ptr)) throw Pothos::DataFormatException(what_i+" not an object");
-        const auto varObj = elem.extract<Poco::JSON::Object::Ptr>();
-        if (not varObj->has("name")) throw Pothos::DataFormatException(what_i+" missing 'name' field");
-        if (not varObj->has("value")) throw Pothos::DataFormatException(what_i+" missing 'value' field");
-        result.emplace_back(varObj->getValue<std::string>("name"), varObj->get("value"));
+        if (not varObj.is_object()) throw Pothos::DataFormatException(what_i+" not an object");
+        if (varObj.count("name") == 0) throw Pothos::DataFormatException(what_i+" missing 'name' field");
+        if (varObj.count("value") == 0) throw Pothos::DataFormatException(what_i+" missing 'value' field");
+        result.emplace_back(varObj["name"].get<std::string>(), varObj["value"]);
     }
 
     //support unordered maps
-    else if (obj->isObject(key)) for (const auto &pair : *obj->getObject(key))
+    else if (varMap.is_object())
     {
-        result.emplace_back(pair.first, pair.second);
+        for (auto it = varMap.begin(); it != varMap.end(); ++it)
+        {
+            result.emplace_back(it.key(), it.value());
+        }
     }
 
     //otherwise unknown
@@ -87,13 +88,13 @@ static OrderedVarMap extractVariableMap(const Poco::JSON::Object::Ptr &obj, cons
 static Pothos::Proxy makeBlock(
     const Pothos::Proxy &registry,
     const OrderedVarMap &globals,
-    const Poco::JSON::Object::Ptr &blockObj)
+    const json &blockObj)
 {
-    const auto id = blockObj->getValue<std::string>("id");
+    const std::string id = blockObj["id"];
 
-    if (not blockObj->has("path")) throw Pothos::DataFormatException(
+    if (blockObj.count("path") == 0) throw Pothos::DataFormatException(
         "Pothos::Topology::make()", "blocks["+id+"] missing 'path' field");
-    const auto path = blockObj->getValue<std::string>("path");
+    const std::string path = blockObj["path"];
 
     //parse the local variables
     auto locals = extractVariableMap(blockObj, "locals", id+".locals");
@@ -110,8 +111,7 @@ static Pothos::Proxy makeBlock(
     }
 
     //load up the constructor args
-    Poco::JSON::Array::Ptr argsArray;
-    if (blockObj->isArray("args")) argsArray = blockObj->getArray("args");
+    const auto &argsArray = blockObj.value("args", json::array());
     const auto ctorArgs = evalArgsArray(evaluator, argsArray);
 
     //create the block
@@ -128,12 +128,10 @@ static Pothos::Proxy makeBlock(
     }
 
     //make the calls
-    Poco::JSON::Array::Ptr callsArray;
-    if (blockObj->isArray("calls")) callsArray = blockObj->getArray("calls");
-    if (callsArray) for (size_t i = 0; i < callsArray->size(); i++)
+    const auto &callsArray = blockObj.value("calls", json::array());
+    for (const auto &callArray : callsArray)
     {
-        const auto callArray = callsArray->getArray(i);
-        auto name = callArray->getElement<std::string>(0);
+        auto name = callArray[0].get<std::string>();
         const auto callArgs = evalArgsArray(evaluator, callArray, 1/*offset*/);
         try
         {
@@ -153,18 +151,17 @@ static Pothos::Proxy makeBlock(
 /***********************************************************************
  * make topology from JSON string - implementation
  **********************************************************************/
-std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json)
+std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &jsonStr)
 {
     //parse the json formatted string into a JSON object
-    Poco::JSON::Object::Ptr topObj;
+    json topObj;
     try
     {
-        const auto result = Poco::JSON::Parser().parse(json);
-        topObj = result.extract<Poco::JSON::Object::Ptr>();
+        topObj = json::parse(jsonStr);
     }
-    catch (const Poco::Exception &ex)
+    catch (const std::exception &ex)
     {
-        throw Pothos::DataFormatException("Pothos::Topology::make()", ex.message());
+        throw Pothos::DataFormatException("Pothos::Topology::make()", ex.what());
     }
 
     //create the proxy environment (local) and the registry
@@ -174,16 +171,11 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
 
     //create thread pools
     std::map<std::string, Pothos::Proxy> threadPools;
-    Poco::JSON::Object::Ptr threadPoolObj;
-    if (topObj->isObject("threadPools")) threadPoolObj = topObj->getObject("threadPools");
-    std::vector<std::string> threadPoolNames;
-    if (threadPoolObj) threadPoolObj->getNames(threadPoolNames);
-    for (const auto &name : threadPoolNames)
+    const auto &threadPoolObj = topObj.value("threadPools", json::object());
+    for (auto it = threadPoolObj.begin(); it != threadPoolObj.end(); ++it)
     {
-        std::stringstream ss;
-        threadPoolObj->getObject(name)->stringify(ss);
-        Pothos::ThreadPoolArgs args(ss.str());
-        threadPools[name] = env->findProxy("Pothos/ThreadPool")(args);
+        Pothos::ThreadPoolArgs args(it.value().dump());
+        threadPools[it.key()] = env->findProxy("Pothos/ThreadPool")(args);
     }
 
     //parse global variables
@@ -198,20 +190,19 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
     blocks[""] = env->makeProxy(topology);
 
     //create the blocks
-    Poco::JSON::Array::Ptr blockArray;
-    if (topObj->isArray("blocks")) blockArray = topObj->getArray("blocks");
-    if (blockArray) for (size_t i = 0; i < blockArray->size(); i++)
+    const auto &blockArray = topObj.value("blocks", json::array());
+    for (size_t i = 0; i < blockArray.size(); i++)
     {
-        if (not blockArray->isObject(i)) throw Pothos::DataFormatException(
+        const auto &blockObj = blockArray.at(i);
+        if (not blockObj.is_object()) throw Pothos::DataFormatException(
             "Pothos::Topology::make()", "blocks["+std::to_string(i)+"] must be an object");
-        const auto &blockObj = blockArray->getObject(i);
-        if (not blockObj->has("id")) throw Pothos::DataFormatException(
+        if (not blockObj.count("id")) throw Pothos::DataFormatException(
             "Pothos::Topology::make()", "blocks["+std::to_string(i)+"] missing 'id' field");
-        const auto id = blockObj->getValue<std::string>("id");
+        const auto id = blockObj["id"].get<std::string>();
         blocks[id] = makeBlock(registry, globals, blockObj);
 
         //set the thread pool
-        const auto threadPoolName = blockObj->optValue<std::string>("threadPool", "");
+        const auto threadPoolName = blockObj.value<std::string>("threadPool", "");
         auto threadPoolIt = threadPools.find(threadPoolName);
         if (threadPoolIt != threadPools.end()) blocks[id].callVoid("setThreadPool", threadPoolIt->second);
         else if (not threadPoolName.empty()) throw Pothos::DataFormatException(
@@ -219,21 +210,26 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
     }
 
     //create the topology and connect the blocks
-    Poco::JSON::Array::Ptr connArray;
-    if (topObj->isArray("connections")) connArray = topObj->getArray("connections");
-    if (connArray) for (size_t i = 0; i < connArray->size(); i++)
+    const auto &connArray = topObj.value("connections", json::array());
+    for (size_t i = 0; i < connArray.size(); i++)
     {
-        if (not connArray->isArray(i)) throw Pothos::DataFormatException(
+        const auto &connArgs = connArray.at(i);
+        if (not connArgs.is_array()) throw Pothos::DataFormatException(
             "Pothos::Topology::make()", "connections["+std::to_string(i)+"] must be an array");
-        const auto &connArgs = connArray->getArray(i);
-        if (connArgs->size() != 4) throw Pothos::DataFormatException(
+        if (connArgs.size() != 4) throw Pothos::DataFormatException(
             "Pothos::Topology::make()", "connections["+std::to_string(i)+"] must be size 4");
 
+        //get string value or dump the value to a string
+        auto optStr = [](const json &v) -> std::string
+        {
+            return v.is_string()?v.get<std::string>():v.dump();
+        };
+
         //extract connection arg fields
-        const auto srcId = connArgs->getElement<std::string>(0);
-        const auto srcPort = connArgs->get(1).toString();
-        const auto dstId = connArgs->getElement<std::string>(2);
-        const auto dstPort = connArgs->get(3).toString();
+        const std::string srcId = connArgs.at(0);
+        const auto srcPort = optStr(connArgs.at(1));
+        const std::string dstId = connArgs.at(2);
+        const auto dstPort = optStr(connArgs.at(3));
 
         //check that the block IDs exist
         if (blocks.count(srcId) == 0) throw Pothos::DataFormatException(

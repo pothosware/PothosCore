@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -7,8 +7,6 @@
 #include <Pothos/Framework/Exception.hpp>
 #include <Poco/Format.h>
 #include <Poco/Logger.h>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
 #include <atomic>
 #include <set>
 #include <iostream>
@@ -61,7 +59,7 @@ public:
      * This call is made by the top level topology
      * to amalgamate stats from all blocks in the design.
      */
-    Poco::JSON::Object::Ptr queryWorkStats(void);
+    std::string queryWorkStats(void);
 
     ///////////////////// WorkerActor storage ///////////////////////
     Block *block;

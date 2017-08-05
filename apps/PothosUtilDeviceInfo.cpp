@@ -1,15 +1,16 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Proxy.hpp>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Parser.h>
 #include <Poco/Path.h>
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 void PothosUtilBase::printDeviceInfo(void)
 {
@@ -34,7 +35,7 @@ void PothosUtilBase::printDeviceInfo(void)
     std::cout << ">>> Querying device info: " << path.toString() << std::endl;
     auto plugin = Pothos::PluginRegistry::get(path);
     auto call = plugin.getObject().extract<Pothos::Callable>();
-    auto json = call.call<Poco::JSON::Object::Ptr>();
+    auto info = json::parse(call.call<std::string>());
 
     //dump the information to file
     if (this->config().has("outputFile"))
@@ -42,13 +43,11 @@ void PothosUtilBase::printDeviceInfo(void)
         const auto infoFile = this->config().getString("outputFile");
         std::cout << ">>> Dumping info: " << infoFile << std::endl;
         std::ofstream ofs(Poco::Path::expand(infoFile));
-        json->stringify(ofs, 4);
+        ofs << info.dump(4);
     }
     //or otherwise to stdout
     else
     {
-        std::stringstream ss;
-        json->stringify(ss, 4);
-        std::cout << ss.str() << std::endl;
+        std::cout << info.dump(4) << std::endl;
     }
 }

@@ -20,9 +20,20 @@ else (muparserx_FOUND)
 endif (muparserx_FOUND)
 
 ########################################################################
+# json.hpp header
+########################################################################
+find_path(JSON_HPP_INCLUDE_DIR NAMES json.hpp PATH_SUFFIXES nlohmann)
+
+list(APPEND Pothos_INCLUDE_DIRS ${JSON_HPP_INCLUDE_DIR})
+
+if (NOT JSON_HPP_INCLUDE_DIR)
+    message(WARNING "Pothos library requires dependency json.hpp...")
+endif (NOT JSON_HPP_INCLUDE_DIR)
+
+########################################################################
 ## Feature registration
 ########################################################################
-cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;muparserx_FOUND" OFF)
+cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;muparserx_FOUND;JSON_HPP_INCLUDE_DIR" OFF)
 add_feature_info("  Lib" ENABLE_LIBRARY_LIB "Pothos development and runtime libraries")
 if (NOT ENABLE_LIBRARY_LIB)
     return()
@@ -235,8 +246,6 @@ list(APPEND POTHOS_SOURCES
     Util/EvalEnvironmentListParsers.cpp
     Util/BlockDescription.cpp
 
-    Util/Builtin/JSONSerialization.cpp
-    Util/Builtin/TestJSONSerialization.cpp
     Util/Builtin/BlockEval.cpp
     Util/Builtin/DeviceInfoUtils.cpp
     Util/Builtin/DocUtils.cpp

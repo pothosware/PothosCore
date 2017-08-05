@@ -12,6 +12,7 @@ endif()
 ########################################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Pothos_INCLUDE_DIRS})
+include_directories(${JSON_HPP_INCLUDE_DIR})
 
 ########################################################################
 # apps

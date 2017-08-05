@@ -9,6 +9,9 @@
 #include <Poco/Logger.h>
 #include <cassert>
 #include <algorithm> //min/max
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 //! Helper routine to deal with automatically accumulating time durations
 struct TimeAccumulator
@@ -530,87 +533,87 @@ void Pothos::WorkerActor::postWorkTasks(void)
     }
 }
 
-Poco::JSON::Object::Ptr Pothos::WorkerActor::queryWorkStats(void)
+std::string Pothos::WorkerActor::queryWorkStats(void)
 {
     ActorInterfaceLock lock(this);
-    Poco::JSON::Object::Ptr stats(new Poco::JSON::Object());
+    json stats;
 
     //load the work stats
-    stats->set("blockName", block->getName());
-    stats->set("numTaskCalls", Poco::UInt64(this->numTaskCalls));
-    stats->set("numWorkCalls", Poco::UInt64(this->numWorkCalls));
-    stats->set("totalTimeTask", Poco::UInt64(this->totalTimeTask.count()));
-    stats->set("totalTimeWork", Poco::UInt64(this->totalTimeWork.count()));
-    stats->set("totalTimePreWork", Poco::UInt64(this->totalTimePreWork.count()));
-    stats->set("totalTimePostWork", Poco::UInt64(this->totalTimePostWork.count()));
-    stats->set("timeLastConsumed", Poco::UInt64(this->timeLastConsumed.time_since_epoch().count()));
-    stats->set("timeLastProduced", Poco::UInt64(this->timeLastProduced.time_since_epoch().count()));
-    stats->set("timeLastWork", Poco::UInt64(this->timeLastWork.time_since_epoch().count()));
-    stats->set("timeStatsQuery", Poco::UInt64(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
+    stats["blockName"] = block->getName();
+    stats["numTaskCalls"] = this->numTaskCalls;
+    stats["numWorkCalls"] = this->numWorkCalls;
+    stats["totalTimeTask"] = this->totalTimeTask.count();
+    stats["totalTimeWork"] = this->totalTimeWork.count();
+    stats["totalTimePreWork"] = this->totalTimePreWork.count();
+    stats["totalTimePostWork"] = this->totalTimePostWork.count();
+    stats["timeLastConsumed"] = this->timeLastConsumed.time_since_epoch().count();
+    stats["timeLastProduced"] = this->timeLastProduced.time_since_epoch().count();
+    stats["timeLastWork"] = this->timeLastWork.time_since_epoch().count();
+    stats["timeStatsQuery"] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
     //resolution period ratio tells the consumer how to interpret the tick counts
-    stats->set("tickRatioNum", Poco::UInt64(std::chrono::high_resolution_clock::period::num));
-    stats->set("tickRatioDen", Poco::UInt64(std::chrono::high_resolution_clock::period::den));
+    stats["tickRatioNum"] = std::chrono::high_resolution_clock::period::num;
+    stats["tickRatioDen"] = std::chrono::high_resolution_clock::period::den;
 
     //load the input port stats
-    Poco::JSON::Array::Ptr inputStats(new Poco::JSON::Array());
+    json inputStats;
     for (const auto &name : block->inputPortNames())
     {
         auto &port = *this->inputs.at(name);
         if (port.isSlot()) continue;
-        Poco::JSON::Object::Ptr portStats(new Poco::JSON::Object());
-        portStats->set("totalElements", Poco::UInt64(port.totalElements()));
-        portStats->set("totalBuffers", Poco::UInt64(port.totalBuffers()));
-        portStats->set("totalLabels", Poco::UInt64(port.totalLabels()));
-        portStats->set("totalMessages", Poco::UInt64(port.totalMessages()));
-        portStats->set("dtypeSize", Poco::UInt64(port.dtype().size()));
-        portStats->set("dtypeMarkup", port.dtype().toMarkup());
-        portStats->set("portName", name);
-        portStats->set("portAlias", port.alias());
-        portStats->set("reserveElements", Poco::UInt64(port._reserveElements));
+        json portStats;
+        portStats["totalElements"] = port.totalElements();
+        portStats["totalBuffers"] = port.totalBuffers();
+        portStats["totalLabels"] = port.totalLabels();
+        portStats["totalMessages"] = port.totalMessages();
+        portStats["dtypeSize"] = port.dtype().size();
+        portStats["dtypeMarkup"] = port.dtype().toMarkup();
+        portStats["portName"] = name;
+        portStats["portAlias"] = port.alias();
+        portStats["reserveElements"] = port._reserveElements;
         {
             BufferChunk frontBuff; port.bufferAccumulatorFront(frontBuff);
-            portStats->set("frontBytes", Poco::UInt64(frontBuff.length));
+            portStats["frontBytes"] = frontBuff.length;
         }
         {
             std::lock_guard<Util::SpinLock> lockB(port._bufferAccumulatorLock);
-            portStats->set("enqueuedBytes", Poco::UInt64(port._bufferAccumulator.getTotalBytesAvailable()));
-            portStats->set("enqueuedBuffers", Poco::UInt64(port._bufferAccumulator.getUniqueManagedBufferCount()));
-            portStats->set("enqueuedLabels", Poco::UInt64(port._inlineMessages.size()+port._inputInlineMessages.size()));
+            portStats["enqueuedBytes"] = port._bufferAccumulator.getTotalBytesAvailable();
+            portStats["enqueuedBuffers"] = port._bufferAccumulator.getUniqueManagedBufferCount();
+            portStats["enqueuedLabels"] = port._inlineMessages.size()+port._inputInlineMessages.size();
         }
         {
             std::lock_guard<Util::SpinLock> lockM(port._asyncMessagesLock);
-            portStats->set("enqueuedMessages", Poco::UInt64(port._asyncMessages.size()));
+            portStats["enqueuedMessages"] = port._asyncMessages.size();
         }
-        inputStats->add(portStats);
+        inputStats.push_back(portStats);
     }
-    if (inputStats->size() > 0) stats->set("inputStats", inputStats);
+    if (not inputStats.empty()) stats["inputStats"] = inputStats;
 
     //load the output port stats
-    Poco::JSON::Array::Ptr outputStats(new Poco::JSON::Array());
+    json outputStats;
     for (const auto &name : block->outputPortNames())
     {
         auto &port = *this->outputs.at(name);
         if (port.isSignal()) continue;
-        Poco::JSON::Object::Ptr portStats(new Poco::JSON::Object());
-        portStats->set("totalElements", Poco::UInt64(port.totalElements()));
-        portStats->set("totalBuffers", Poco::UInt64(port.totalBuffers()));
-        portStats->set("totalLabels", Poco::UInt64(port.totalLabels()));
-        portStats->set("totalMessages", Poco::UInt64(port.totalMessages()));
-        portStats->set("dtypeSize", Poco::UInt64(port.dtype().size()));
-        portStats->set("dtypeMarkup", port.dtype().toMarkup());
-        portStats->set("portName", name);
-        portStats->set("portAlias", port.alias());
+        json portStats;
+        portStats["totalElements"] = port.totalElements();
+        portStats["totalBuffers"] = port.totalBuffers();
+        portStats["totalLabels"] = port.totalLabels();
+        portStats["totalMessages"] = port.totalMessages();
+        portStats["dtypeSize"] = port.dtype().size();
+        portStats["dtypeMarkup"] = port.dtype().toMarkup();
+        portStats["portName"] = name;
+        portStats["portAlias"] = port.alias();
         {
             BufferChunk frontBuff; port.bufferManagerFront(frontBuff);
-            portStats->set("frontBytes", Poco::UInt64(frontBuff.length));
+            portStats["frontBytes"] = frontBuff.length;
         }
-        portStats->set("tokensEmpty", port.tokenManagerEmpty());
-        outputStats->add(portStats);
+        portStats["tokensEmpty"] = port.tokenManagerEmpty();
+        outputStats.push_back(portStats);
     }
-    if (outputStats->size() > 0) stats->set("outputStats", outputStats);
+    if (not outputStats.empty()) stats["outputStats"] = outputStats;
 
-    return stats;
+    return stats.dump();
 }
 
 #include <Pothos/Managed.hpp>

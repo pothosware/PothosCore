@@ -9,7 +9,7 @@ set(INCLUDED_SETUP_POCO_CMAKE TRUE)
 if("${CMAKE_VERSION}" VERSION_LESS "3.0.0")
 else()
     set(Poco_INCLUDE_DIRS "")
-    find_package(Poco CONFIG COMPONENTS Foundation Util JSON XML Net)
+    find_package(Poco CONFIG COMPONENTS Foundation Util XML Net)
     if (Poco_FOUND)
         return()
     endif()
@@ -21,7 +21,7 @@ endif()
 message(STATUS "PocoConfig not found - trying with FindPoco")
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
 find_package(Poco)
-if (POCO_FOUND AND POCO_Util_FOUND AND POCO_Net_FOUND AND POCO_XML_FOUND AND POCO_JSON_FOUND)
+if (POCO_FOUND AND POCO_Util_FOUND AND POCO_Net_FOUND AND POCO_XML_FOUND)
     ########################################################################
     # Check version >= 1.5.4
     ########################################################################
@@ -43,7 +43,6 @@ if (POCO_FOUND AND POCO_Util_FOUND AND POCO_Net_FOUND AND POCO_XML_FOUND AND POC
         ${POCO_Util_LIBRARIES}
         ${POCO_Net_LIBRARIES}
         ${POCO_XML_LIBRARIES}
-        ${POCO_JSON_LIBRARIES}
     )
 
     ########################################################################

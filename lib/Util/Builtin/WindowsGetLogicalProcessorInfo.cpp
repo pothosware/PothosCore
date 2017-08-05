@@ -1,14 +1,15 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Config.hpp>
 #include <Windows.h>
 #include <Pothos/Plugin.hpp>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Object.h>
 #include <Poco/NumberFormatter.h>
 #include <cassert>
 #include <iostream>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 //delay loaded symbols for windows backwards compatibility
 BOOL DL_GetLogicalProcessorInformationEx(LOGICAL_PROCESSOR_RELATIONSHIP RelationshipType, PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX Buffer, PDWORD ReturnedLength);
@@ -84,109 +85,101 @@ static std::string MaskToString(KAFFINITY Mask)
 /***********************************************************************
  * traverse the structures
  **********************************************************************/
-static Poco::JSON::Object::Ptr enumerateGetLogicalProcessorInformationEx(void)
+static std::string enumerateGetLogicalProcessorInformationEx(void)
 {
-    Poco::JSON::Object::Ptr topObject = new Poco::JSON::Object();
+    json topObject(json::object());
 
     {
-        Poco::JSON::Array::Ptr infoArray = new Poco::JSON::Array();
-        topObject->set("CPU Cache", infoArray);
+        auto &infoArray = topObject["CPU Cache"];
         for (EnumLogicalProcessorInformation enumInfo(RelationCache); auto pinfo = enumInfo.Current(); enumInfo.MoveNext())
         {
-            Poco::JSON::Object::Ptr infoObj = new Poco::JSON::Object();
-            infoArray->add(infoObj);
+            json infoObj;
             assert(pinfo->Relationship == RelationCache);
-            infoObj->set("Level", "L"+std::to_string(pinfo->Cache.Level));
-            infoObj->set("Associativity", "0x"+Poco::NumberFormatter::formatHex(pinfo->Cache.Associativity));
-            infoObj->set("LineSize", std::to_string(pinfo->Cache.LineSize)+" bytes");
-            infoObj->set("CacheSize", std::to_string(pinfo->Cache.CacheSize)+" bytes");
+            infoObj["Level"] = "L"+std::to_string(pinfo->Cache.Level);
+            infoObj["Associativity"] = "0x"+Poco::NumberFormatter::formatHex(pinfo->Cache.Associativity);
+            infoObj["LineSize"] = std::to_string(pinfo->Cache.LineSize)+" bytes";
+            infoObj["CacheSize"] = std::to_string(pinfo->Cache.CacheSize)+" bytes";
             switch(pinfo->Cache.Type)
             {
-            case CacheUnified: infoObj->set("Type", "Unified"); break;
-            case CacheInstruction:  infoObj->set("Type", "Instruction"); break;
-            case CacheData: infoObj->set("Type", "Data"); break;
-            case CacheTrace: infoObj->set("Type", "Trace"); break;
+            case CacheUnified: infoObj["Type"] = "Unified"; break;
+            case CacheInstruction: infoObj["Type"] = "Instruction"; break;
+            case CacheData: infoObj["Type"] = "Data"; break;
+            case CacheTrace: infoObj["Type"] = "Trace"; break;
             }
-            infoObj->set("GroupMask", MaskToString(pinfo->Cache.GroupMask.Mask));
-            infoObj->set("Group", pinfo->Cache.GroupMask.Group);
+            infoObj["GroupMask"] = MaskToString(pinfo->Cache.GroupMask.Mask);
+            infoObj["Group"] = pinfo->Cache.GroupMask.Group;
+            infoArray.push_back(infoObj);
         }
     }
     {
-        Poco::JSON::Array::Ptr infoArray = new Poco::JSON::Array();
-        topObject->set("CPU Group", infoArray);
+        auto &infoArray = topObject["CPU Group"];
         for (EnumLogicalProcessorInformation enumInfo(RelationGroup); auto pinfo = enumInfo.Current(); enumInfo.MoveNext())
         {
-            Poco::JSON::Object::Ptr infoObj = new Poco::JSON::Object();
-            infoArray->add(infoObj);
+            json infoObj;
             assert(pinfo->Relationship == RelationGroup);
-            infoObj->set("MaximumGroupCount", pinfo->Group.MaximumGroupCount);
-            infoObj->set("ActiveGroupCount", pinfo->Group.ActiveGroupCount);
-            Poco::JSON::Array::Ptr groupInfoArray = new Poco::JSON::Array();
-            infoObj->set("GroupInfo", groupInfoArray);
+            infoObj["MaximumGroupCount"] = pinfo->Group.MaximumGroupCount;
+            infoObj["ActiveGroupCount"] = pinfo->Group.ActiveGroupCount;
+            auto &groupInfoArray = infoObj["GroupInfo"];
             for (size_t i = 0; i < pinfo->Group.ActiveGroupCount; i++)
             {
-                Poco::JSON::Object::Ptr infoInfoObj = new Poco::JSON::Object();
-                groupInfoArray->add(infoInfoObj);
-                infoInfoObj->set("MaximumProcessorCount", pinfo->Group.GroupInfo[i].MaximumProcessorCount);
-                infoInfoObj->set("ActiveProcessorCount", pinfo->Group.GroupInfo[i].ActiveProcessorCount);
-                infoInfoObj->set("ActiveProcessorMask", MaskToString(pinfo->Group.GroupInfo[i].ActiveProcessorMask));
+                json infoInfoObj;
+                infoInfoObj["MaximumProcessorCount"] = pinfo->Group.GroupInfo[i].MaximumProcessorCount;
+                infoInfoObj["ActiveProcessorCount"] = pinfo->Group.GroupInfo[i].ActiveProcessorCount;
+                infoInfoObj["ActiveProcessorMask"] = MaskToString(pinfo->Group.GroupInfo[i].ActiveProcessorMask);
+                groupInfoArray.push_back(infoInfoObj);
             }
+            infoArray.push_back(infoObj);
         }
     }
     {
-        Poco::JSON::Array::Ptr infoArray = new Poco::JSON::Array();
-        topObject->set("CPU Numa Node", infoArray);
+        auto &infoArray = topObject["CPU Numa Node"];
         for (EnumLogicalProcessorInformation enumInfo(RelationNumaNode); auto pinfo = enumInfo.Current(); enumInfo.MoveNext())
         {
-            Poco::JSON::Object::Ptr infoObj = new Poco::JSON::Object();
-            infoArray->add(infoObj);
+            json infoObj;
             assert(pinfo->Relationship == RelationNumaNode);
-            infoObj->set("NodeNumber", pinfo->NumaNode.NodeNumber);
-            infoObj->set("GroupMask", MaskToString(pinfo->NumaNode.GroupMask.Mask));
-            infoObj->set("Group", pinfo->NumaNode.GroupMask.Group);
+            infoObj["NodeNumber"] = pinfo->NumaNode.NodeNumber;
+            infoObj["GroupMask"] = MaskToString(pinfo->NumaNode.GroupMask.Mask);
+            infoObj["Group"] = pinfo->NumaNode.GroupMask.Group;
+            infoArray.push_back(infoObj);
         }
     }
     {
-        Poco::JSON::Array::Ptr infoArray = new Poco::JSON::Array();
-        topObject->set("CPU Processor Core", infoArray);
+        auto &infoArray = topObject["CPU Processor Core"];
         for (EnumLogicalProcessorInformation enumInfo(RelationProcessorCore); auto pinfo = enumInfo.Current(); enumInfo.MoveNext())
         {
-            Poco::JSON::Object::Ptr infoObj = new Poco::JSON::Object();
-            infoArray->add(infoObj);
+            json infoObj;
             assert(pinfo->Relationship == RelationProcessorCore);
-            infoObj->set("SMT", (pinfo->Processor.Flags & LTP_PC_SMT) != 0);
-            Poco::JSON::Array::Ptr groupInfoArray = new Poco::JSON::Array();
-            infoObj->set("GroupInfo", groupInfoArray);
+            infoObj["SMT"] = (pinfo->Processor.Flags & LTP_PC_SMT) != 0;
+            auto &groupInfoArray = infoObj["GroupInfo"];
             for (size_t i = 0; i < pinfo->Processor.GroupCount; i++)
             {
-                Poco::JSON::Object::Ptr infoInfoObj = new Poco::JSON::Object();
-                groupInfoArray->add(infoInfoObj);
-                infoInfoObj->set("GroupMask", MaskToString(pinfo->Processor.GroupMask[i].Mask));
-                infoInfoObj->set("Group", pinfo->Processor.GroupMask[i].Group);
+                json infoInfoObj;
+                infoInfoObj["GroupMask"] = MaskToString(pinfo->Processor.GroupMask[i].Mask);
+                infoInfoObj["Group"] = pinfo->Processor.GroupMask[i].Group;
+                groupInfoArray.push_back(infoInfoObj);
             }
+            infoArray.push_back(infoObj);
         }
     }
     {
-        Poco::JSON::Array::Ptr infoArray = new Poco::JSON::Array();
-        topObject->set("CPU Processor Package", infoArray);
+        auto &infoArray = topObject["CPU Processor Package"];
         for (EnumLogicalProcessorInformation enumInfo(RelationProcessorPackage); auto pinfo = enumInfo.Current(); enumInfo.MoveNext())
         {
-            Poco::JSON::Object::Ptr infoObj = new Poco::JSON::Object();
-            infoArray->add(infoObj);
+            json infoObj;
             assert(pinfo->Relationship == RelationProcessorPackage);
-            Poco::JSON::Array::Ptr groupInfoArray = new Poco::JSON::Array();
-            infoObj->set("GroupInfo", groupInfoArray);
+            auto &groupInfoArray = infoObj["GroupInfo"];
             for (size_t i = 0; i < pinfo->Processor.GroupCount; i++)
             {
-                Poco::JSON::Object::Ptr infoInfoObj = new Poco::JSON::Object();
-                groupInfoArray->add(infoInfoObj);
-                infoInfoObj->set("GroupMask", MaskToString(pinfo->Processor.GroupMask[i].Mask));
-                infoInfoObj->set("Group", pinfo->Processor.GroupMask[i].Group);
+                json infoInfoObj;
+                infoInfoObj["GroupMask"] = MaskToString(pinfo->Processor.GroupMask[i].Mask);
+                infoInfoObj["Group"] = pinfo->Processor.GroupMask[i].Group;
+                groupInfoArray.push_back(infoInfoObj);
             }
+            infoArray.push_back(infoObj);
         }
     }
 
-    return topObject;
+    return topObject.dump();
 }
 
 pothos_static_block(registerWinProcInfo)

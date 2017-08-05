@@ -1,12 +1,9 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/BlockDescription.hpp>
 #include <Pothos/Exception.hpp>
 #include <Pothos/Plugin.hpp>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Parser.h>
 #include <Poco/String.h>
 #include <Poco/Format.h>
 #include <Poco/Path.h>
@@ -20,6 +17,9 @@
 #include <vector>
 #include <string>
 #include <cassert>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 struct CodeLine
 {
@@ -64,28 +64,29 @@ static std::vector<std::string> splitCommaArgs(const std::string &argsStr)
 }
 
 //! Turn a simple expression into a type-specific container
-static Poco::Dynamic::Var exprToDynVar(const std::string &expr)
+static json exprToJSON(const std::string &expr)
 {
     try
     {
-        const auto result = Poco::JSON::Parser().parse("["+expr+"]");
-        return result.extract<Poco::JSON::Array::Ptr>()->get(0);
+        return json::parse(expr);
     }
-    catch (const Poco::Exception &){}
-    return expr;
+    catch (...)
+    {
+        return expr;
+    }
 }
 
 /*!
  * Extract an args array and kwargs object parsed from an args string
  */
-static void extractArgs(const std::string &argsStr, Poco::JSON::Array::Ptr &args, Poco::JSON::Object::Ptr &kwargs)
+static void extractArgs(const std::string &argsStr, json &args, json &kwargs)
 {
     for (const auto &arg : splitCommaArgs(argsStr))
     {
         const Poco::StringTokenizer kvpTok(arg, "=", Poco::StringTokenizer::TOK_TRIM);
         const std::vector<std::string> kvp(kvpTok.begin(), kvpTok.end());
-        if (kwargs and kvp.size() == 2) kwargs->set(kvp[0], exprToDynVar(kvp[1]));
-        else if (args) args->add(exprToDynVar(arg));
+        if (kvp.size() == 2) kwargs[kvp[0]] = exprToJSON(kvp[1]);
+        else args.push_back(exprToJSON(arg));
     }
 }
 
@@ -93,19 +94,18 @@ static void extractArgs(const std::string &argsStr, Poco::JSON::Array::Ptr &args
  * Load a JSON object with an args array and kwargs object parsed from the args string
  */
 static void loadArgs(
-    const CodeLine &codeLine, Poco::JSON::Object &obj, const std::string &argsStr,
+    const CodeLine &codeLine, json &obj, const std::string &argsStr,
     const std::string &argsKey = "args", const std::string &kwargsKey = "kwargs")
 {
-    Poco::JSON::Array::Ptr args(new Poco::JSON::Array());
-    Poco::JSON::Object::Ptr kwargs(new Poco::JSON::Object());
+    json args, kwargs;
     try {extractArgs(argsStr, args, kwargs);}
     catch (const Pothos::Exception &ex)
     {
         throw Pothos::SyntaxException(codeLine.toString(), ex);
     }
 
-    if (args->size() > 0) obj.set(argsKey, args);
-    if (kwargs->size() > 0) obj.set(kwargsKey, kwargs);
+    if (not args.empty()) obj[argsKey] = args;
+    if (not kwargs.empty()) obj[kwargsKey] = kwargs;
 }
 
 //! Encode backslash escaped brackets to save them from regex
@@ -193,41 +193,36 @@ static std::vector<CodeBlock> extractContiguousBlocks(std::istream &is)
 /***********************************************************************
  * Strip top and bottom whitespace from a document array
  **********************************************************************/
-static Poco::JSON::Array::Ptr stripDocArray(const Poco::JSON::Array::Ptr &in)
+static void stripDocArray(json &in)
 {
-    Poco::JSON::Array::Ptr out(new Poco::JSON::Array());
+    if (in.empty()) return;
+    json out;
 
-    for (size_t i = 0; i < in->size(); i++)
+    for (const auto &entry : in)
     {
         //dont add empty lines if the last line is empty
-        const auto line = in->getElement<std::string>(i);
+        const std::string line = entry;
         std::string lastLine;
-        if (out->size() != 0) lastLine = out->getElement<std::string>(out->size()-1);
-        if (not lastLine.empty() or not line.empty()) out->add(line);
+        if (not out.empty()) lastLine = out.back();
+        if (not lastLine.empty() or not line.empty()) out.push_back(line);
     }
 
     //remove trailing empty line from docs
-    if (out->size() != 0 and out->getElement<std::string>(out->size()-1).empty())
+    if (not out.empty() and out.back().get<std::string>().empty())
     {
-        out->remove(out->size()-1);
+        out.erase(out.size()-1);
     }
 
-    return out;
+    in = out;
 }
 
 /***********************************************************************
  * Parse a single documentation block for markup
  **********************************************************************/
-static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &commentBlock)
+static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
 {
-    Poco::JSON::Object::Ptr topObj(new Poco::JSON::Object());
-    Poco::JSON::Array calls;
-    Poco::JSON::Array keywords;
-    Poco::JSON::Array::Ptr aliases(new Poco::JSON::Array());
-    Poco::JSON::Array categories;
-    Poco::JSON::Array params;
-    Poco::JSON::Array::Ptr topDocs(new Poco::JSON::Array());
-    Poco::JSON::Object::Ptr currentParam;
+    json topObj;
+    json &params = topObj["params"];
 
     std::string state;
     std::string indent;
@@ -267,29 +262,27 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             if (matches.empty()) continue;
             assert(matches.size() == 3);
             indent = line.substr(matches[1].offset, matches[1].length);
-            topObj->set("name", Poco::trim(line.substr(matches[2].offset, matches[2].length)));
+            topObj["name"] = Poco::trim(line.substr(matches[2].offset, matches[2].length));
             state = "DOC";
         }
         else if (matches.empty() and state == "DOC")
         {
-            topDocs->add(line);
+            topObj["docs"].push_back(line);
         }
         else if (matches.empty() and state == "PARAM")
         {
-            auto array = currentParam->getArray("desc");
-            array->add(line);
-            currentParam->set("desc", stripDocArray(array));
+            params.back()["desc"].push_back(line);
         }
         else if (instruction == "category" and state == "DOC")
         {
-            categories.add(Poco::trim(payload));
+            topObj["categories"].push_back(Poco::trim(payload));
         }
         else if (instruction == "keywords" and state == "DOC")
         {
             for (const auto &keyword : Poco::StringTokenizer(
                 payload, " \t", Poco::StringTokenizer::TOK_TRIM | Poco::StringTokenizer::TOK_IGNORE_EMPTY))
             {
-                keywords.add(Poco::trim(keyword));
+                topObj["keywords"].push_back(Poco::trim(keyword));
             }
         }
         else if (instruction == "alias" and state == "DOC")
@@ -300,7 +293,7 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             {
                 throw Pothos::SyntaxException("Invalid alias path", codeLine.toString());
             }
-            aliases->add(alias);
+            topObj["aliases"].push_back(alias);
         }
         else if (instruction == "param" and (state == "DOC" or state == "PARAM"))
         {
@@ -317,32 +310,30 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             if (fields[3].length != 0) name = bracketEscapeDecode(Poco::trim(payload.substr(fields[3].offset, fields[3].length)));
             const std::string desc = bracketEscapeDecode(Poco::trim(payload.substr(fields[4].offset, fields[4].length)));
 
-            currentParam = Poco::JSON::Object::Ptr(new Poco::JSON::Object());
-            params.add(currentParam);
-            currentParam->set("key", key);
-            currentParam->set("name", name);
-            Poco::JSON::Array::Ptr descArr(new Poco::JSON::Array());
-            descArr->add(desc);
-            currentParam->set("desc", descArr);
+            json param;
+            param["key"] = key;
+            param["name"] = name;
+            param["desc"].push_back(desc);
+            params.push_back(param);
             state = "PARAM";
         }
         else if (instruction == "default" and state == "PARAM")
         {
-            if (currentParam->has("default")) throw Pothos::SyntaxException(
+            if (params.back().count("default")) throw Pothos::SyntaxException(
                 "Multiple occurrence of |default for param",
                 codeLine.toString());
-            currentParam->set("default", payload);
+            params.back()["default"] = payload;
         }
         else if (instruction == "units" and state == "PARAM")
         {
-            if (currentParam->has("units")) throw Pothos::SyntaxException(
+            if (params.back().count("units")) throw Pothos::SyntaxException(
                 "Multiple occurrence of |units for param",
                 codeLine.toString());
-            currentParam->set("units", payload);
+            params.back()["units"] = payload;
         }
         else if (instruction == "widget" and state == "PARAM")
         {
-            if (currentParam->has("widgetType")) throw Pothos::SyntaxException(
+            if (params.back().count("widgetType")) throw Pothos::SyntaxException(
                 "Multiple occurrence of |widget for param",
                 codeLine.toString());
             Poco::RegularExpression::MatchVec fields;
@@ -355,19 +346,19 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             const std::string widgetType = Poco::trim(payload.substr(fields[1].offset, fields[1].length));
             const std::string argsStr = Poco::trim(payload.substr(fields[2].offset, fields[2].length));
 
-            currentParam->set("widgetType", widgetType);
-            loadArgs(codeLine, *currentParam, argsStr, "widgetArgs", "widgetKwargs");
+            params.back()["widgetType"] = widgetType;
+            loadArgs(codeLine, params.back(), argsStr, "widgetArgs", "widgetKwargs");
         }
         else if (instruction == "tab" and state == "PARAM")
         {
-            if (currentParam->has("tab")) throw Pothos::SyntaxException(
+            if (params.back().count("tab")) throw Pothos::SyntaxException(
                 "Multiple occurrence of |tab for param",
                 codeLine.toString());
-            currentParam->set("tab", payload);
+            params.back()["tab"] = payload;
         }
         else if (instruction == "preview" and state == "PARAM")
         {
-            if (currentParam->has("preview")) throw Pothos::SyntaxException(
+            if (params.back().count("preview")) throw Pothos::SyntaxException(
                 "Multiple occurrence of preview for param",
                 codeLine.toString());
             Poco::RegularExpression::MatchVec fields;
@@ -388,11 +379,11 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
                 "Only supports enable/disable/valid/invalid/when as value for preview option of param",
                 codeLine.toString());
 
-            currentParam->set("preview", previewType);
+            params.back()["preview"] = previewType;
             if (fields.size() == 4)
             {
                 const std::string argsStr = Poco::trim(payload.substr(fields[3].offset, fields[3].length));
-                loadArgs(codeLine, *currentParam, argsStr, "previewArgs", "previewKwargs");
+                loadArgs(codeLine, params.back(), argsStr, "previewArgs", "previewKwargs");
             }
         }
         else if (instruction == "option" and state == "PARAM")
@@ -409,12 +400,10 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             std::string name = titleCase(value);
             if (fields[2].length != 0) name = bracketEscapeDecode(Poco::trim(payload.substr(fields[2].offset, fields[2].length)));
 
-            Poco::JSON::Object option;
-            option.set("value", value);
-            option.set("name", name);
-            if (not currentParam->has("options")) currentParam->set(
-                "options", Poco::JSON::Array::Ptr(new Poco::JSON::Array()));
-            currentParam->getArray("options")->add(option);
+            json option;
+            option["value"] = value;
+            option["name"] = name;
+            params.back()["options"].push_back(option);
         }
         else if (instruction == "factory" and (state == "DOC" or state == "PARAM"))
         {
@@ -434,12 +423,12 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             {
                 throw Pothos::SyntaxException("Invalid factory path", codeLine.toString());
             }
-            if (topObj->has("path")) throw Pothos::SyntaxException(
+            if (topObj.count("path")) throw Pothos::SyntaxException(
                 "Multiple occurrence of |factory", codeLine.toString());
-            topObj->set("path", path);
+            topObj["path"] = path;
 
             //split and extract args
-            loadArgs(codeLine, *topObj, argsStr);
+            loadArgs(codeLine, topObj, argsStr);
 
             state = "DOC";
         }
@@ -456,36 +445,36 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
             const std::string argsStr = Poco::trim(payload.substr(fields[2].offset, fields[2].length));
 
             //add to calls
-            Poco::JSON::Object call;
-            call.set("type", instruction);
-            call.set("name", callName);
+            json call;
+            call["type"] = instruction;
+            call["name"] = callName;
             loadArgs(codeLine, call, argsStr);
-            calls.add(call);
+            topObj["calls"].push_back(call);
 
             state = "DOC";
         }
         else if (instruction == "mode" and (state == "DOC" or state == "PARAM"))
         {
-            if (topObj->has("mode")) throw Pothos::SyntaxException(
+            if (topObj.count("mode")) throw Pothos::SyntaxException(
                 "Multiple occurrence of |mode",
                 codeLine.toString());
-            topObj->set("mode", payload);
+            topObj["mode"] = payload;
         }
     }
 
     //empty state means this was a regular comment block, return null
-    if (state.empty()) return Poco::JSON::Object::Ptr();
+    if (state.empty()) return json();
 
-    topDocs = stripDocArray(topDocs);
-    if (topDocs->size() > 0) topObj->set("docs", topDocs);
-    if (categories.size() > 0) topObj->set("categories", categories);
-    if (keywords.size() > 0) topObj->set("keywords", keywords);
-    if (aliases->size() > 0) topObj->set("aliases", aliases);
-    if (params.size() > 0) topObj->set("params", params);
-    if (calls.size() > 0) topObj->set("calls", calls);
+    //cleanup docs with trimming/stripping
+    stripDocArray(topObj["docs"]);
+    for (auto &param : params) stripDocArray(param["desc"]);
+
+    //remove null entries
+    if (topObj["docs"].empty()) topObj.erase("docs");
+    if (params.empty()) topObj.erase("params");
 
     //sanity check for required stuff
-    if (not topObj->has("path"))
+    if (not topObj.count("path"))
     {
         throw Pothos::SyntaxException("missing |factory declaration");
     }
@@ -498,15 +487,15 @@ static Poco::JSON::Object::Ptr parseCommentBlockForMarkup(const CodeBlock &comme
  **********************************************************************/
 struct Pothos::Util::BlockDescriptionParser::Impl
 {
-    std::map<std::string, Poco::JSON::Object::Ptr> objects;
-    Poco::JSON::Array::Ptr array;
+    std::map<std::string, json> objects;
+    json array;
     std::vector<std::string> factories;
 };
 
 Pothos::Util::BlockDescriptionParser::BlockDescriptionParser(void):
     _impl(new Impl())
 {
-    _impl->array = new Poco::JSON::Array();
+    return;
 }
 
 void Pothos::Util::BlockDescriptionParser::feedStream(std::istream &is)
@@ -514,17 +503,17 @@ void Pothos::Util::BlockDescriptionParser::feedStream(std::istream &is)
     for (const auto &contiguousBlock : extractContiguousBlocks(is))
     {
         const auto obj = parseCommentBlockForMarkup(contiguousBlock);
-        if (not obj) continue;
+        if (obj.empty()) continue;
 
         //store into the array of all description objects
-        _impl->array->add(obj);
+        _impl->array.push_back(obj);
 
         //get a list of all paths including aliases
         std::vector<std::string> paths;
-        paths.push_back(obj->getValue<std::string>("path"));
-        if (obj->has("aliases")) for (const auto &alias : *obj->getArray("aliases"))
+        paths.push_back(obj["path"]);
+        for (const auto &alias : obj.value("aliases", json::array()))
         {
-            paths.push_back(alias.toString());
+            paths.push_back(alias);
         }
 
         //store mapping for each factory path
@@ -563,15 +552,11 @@ std::vector<std::string> Pothos::Util::BlockDescriptionParser::listFactories(voi
 
 std::string Pothos::Util::BlockDescriptionParser::getJSONArray(const size_t indent) const
 {
-    std::stringstream ossJsonArr;
-    _impl->array->stringify(ossJsonArr, indent);
-    return ossJsonArr.str();
+    return _impl->array.dump(indent);
 }
 
 std::string Pothos::Util::BlockDescriptionParser::getJSONObject(const std::string &factoryPath, const size_t indent) const
 {
     const auto &obj = _impl->objects.at(factoryPath);
-    std::stringstream ossJsonObj;
-    obj->stringify(ossJsonObj, indent);
-    return ossJsonObj.str();
+    return obj.dump(indent);
 }

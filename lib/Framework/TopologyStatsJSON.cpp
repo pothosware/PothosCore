@@ -1,45 +1,40 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/TopologyImpl.hpp>
 #include "Framework/TopologyImpl.hpp"
 #include <Pothos/Proxy.hpp>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Parser.h>
-#include <sstream>
-#include <iostream>
 #include <future>
-#include <cassert>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 /***********************************************************************
  * create JSON stats object
  **********************************************************************/
-static Poco::JSON::Object::Ptr queryWorkStats(const Pothos::Proxy &block)
+static json queryWorkStats(const Pothos::Proxy &block)
 {
     //try recursive traversal
     try
     {
-        auto json = block.call<std::string>("queryJSONStats");
-        const auto result = Poco::JSON::Parser().parse(json);
-        return result.extract<Poco::JSON::Object::Ptr>();
+        return json::parse(block.call<std::string>("queryJSONStats"));
     }
-    catch (Pothos::Exception &) {}
+    catch (const std::exception &) {}
 
     //otherwise, regular block, query stats
     auto actor = block.get("_actor");
-    auto workStats = actor.call<Poco::JSON::Object::Ptr>("queryWorkStats");
-    Poco::JSON::Object::Ptr topStats(new Poco::JSON::Object());
-    topStats->set(block.call<std::string>("uid"), workStats);
+    auto workStats = json::parse(actor.call<std::string>("queryWorkStats"));
+    json topStats;
+    topStats[block.call<std::string>("uid")] = workStats;
     return topStats;
 }
 
 std::string Pothos::Topology::queryJSONStats(void)
 {
-    Poco::JSON::Object::Ptr stats(new Poco::JSON::Object());
+    json stats;
 
     //query each block's work stats and key it with the UID
-    std::vector<std::shared_future<Poco::JSON::Object::Ptr>> results;
+    std::vector<std::shared_future<json>> results;
     for (const auto &block : getObjSetFromFlowList(_impl->flows))
     {
         results.push_back(std::async(std::launch::async, queryWorkStats, block));
@@ -49,26 +44,21 @@ std::string Pothos::Topology::queryJSONStats(void)
     for (const auto &result : results)
     {
         const auto workStats = result.get();
-        std::vector<std::string> names; workStats->getNames(names);
-        for (const auto &name : names) stats->set(name, workStats->getObject(name));
+        for (auto it = workStats.begin(); it != workStats.end(); ++it)
+        {
+            stats[it.key()] = it.value();
+        }
     }
 
     //use flat topology to get hierarchical block names
-    const auto result = Poco::JSON::Parser().parse(this->dumpJSON());
-    const auto flatTopologyObj = result.extract<Poco::JSON::Object::Ptr>();
-    const auto flatTopologyBlocks = flatTopologyObj->getObject("blocks");
-    std::vector<std::string> names; flatTopologyBlocks->getNames(names);
-    for (const auto &name : names)
+    const auto flatTopologyObj = json::parse(this->dumpJSON());
+    const auto flatTopologyBlocks = flatTopologyObj["blocks"];
+    for (auto it = flatTopologyBlocks.begin(); it != flatTopologyBlocks.end(); ++it)
     {
-        if (not stats->has(name)) continue;
-        assert(stats->getObject(name));
-        const auto topologObj = flatTopologyBlocks->getObject(name);
-        assert(topologObj);
-        const auto blockName = topologObj->getValue<std::string>("name");
-        stats->getObject(name)->set("blockName", blockName);
+        if (not stats.count(it.key())) continue;
+        stats[it.key()]["blockName"] = it.value()["name"];
     }
 
     //return the string-formatted result
-    std::stringstream ss; stats->stringify(ss, 4);
-    return ss.str();
+    return stats.dump(4);
 }
