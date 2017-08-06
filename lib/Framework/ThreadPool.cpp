@@ -30,13 +30,13 @@ Pothos::ThreadPoolArgs::ThreadPoolArgs(const std::string &jsonStr):
     const auto topObj = json::parse(jsonStr);
 
     //parse out the optional fields
-    this->numThreads = topObj.value<int>("numThreads", 0);
-    this->priority = topObj.value<double>("priority", 0.0);
-    this->affinityMode = topObj.value<std::string>("affinityMode", "");
-    this->yieldMode = topObj.value<std::string>("yieldMode", "");
+    this->numThreads = topObj.value("numThreads", 0);
+    this->priority = topObj.value("priority", 0.0);
+    this->affinityMode = topObj.value("affinityMode", "");
+    this->yieldMode = topObj.value("yieldMode", "");
 
     //parse out the affinity list
-    this->affinity = topObj.value<std::vector<size_t>>("affinity", std::vector<size_t>());
+    this->affinity = topObj.value("affinity", std::vector<size_t>());
 }
 
 Pothos::ThreadPool::ThreadPool(void)
