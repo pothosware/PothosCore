@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.5.1 (pending)
+Release 0.5.1 (2017-08-16)
 ==========================
 
 - Fixed buffer inlining corner case for amalgamated multi-buffers
