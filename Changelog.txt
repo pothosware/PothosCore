@@ -5,7 +5,7 @@ Release 0.6.0 (pending)
 
 - Alternative JSON C++ library to handle JSON parsing/emitting
 
-Release 0.5.1 (pending)
+Release 0.5.1 (2017-08-16)
 ==========================
 
 - Fixed buffer inlining corner case for amalgamated multi-buffers
