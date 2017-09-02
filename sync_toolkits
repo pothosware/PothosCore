@@ -10,10 +10,10 @@ TOOLKITS="
 audio
 blocks
 comms
-gui
+flow
 plotters
 python
-sdr
+soapy
 widgets
 "
 
