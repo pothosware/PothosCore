@@ -3,6 +3,10 @@ This this the changelog file for the Pothos C++ library.
 Release 0.6.0 (pending)
 ==========================
 
+- Renamed the project repo from pothos to PothosCore
+- Updated toolkit/submodule URLs for repo rename
+  - Renamed pothos-gui toolkit to PothosFlow
+  - Renamed pothos-sdr toolkit to PothosSoapy
 - Alternative JSON C++ library to handle JSON parsing/emitting
 
 Release 0.5.1 (2017-08-16)

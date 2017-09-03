@@ -7,7 +7,7 @@ the entire Pothos software suite in one build.
 
 ## Documentation
 
-* https://github.com/pothosware/pothos/wiki
+* https://github.com/pothosware/PothosCore/wiki
 
 ## Build Status
 
