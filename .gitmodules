@@ -12,33 +12,33 @@
 	branch = poco-1.7.8
 [submodule "plotters"]
 	path = plotters
-	url = https://github.com/pothosware/pothos-plotters.git
+	url = https://github.com/pothosware/PothosPlotters.git
 	branch = master
 [submodule "widgets"]
 	path = widgets
-	url = https://github.com/pothosware/pothos-widgets.git
+	url = https://github.com/pothosware/PothosWidgets.git
 	branch = master
-[submodule "gui"]
-	path = gui
-	url = https://github.com/pothosware/pothos-gui.git
+[submodule "flow"]
+	path = flow
+	url = https://github.com/pothosware/PothosFlow.git
 	branch = master
-[submodule "sdr"]
-	path = sdr
-	url = https://github.com/pothosware/pothos-sdr.git
+[submodule "soapy"]
+	path = soapy
+	url = https://github.com/pothosware/PothosSoapy.git
 	branch = master
 [submodule "blocks"]
 	path = blocks
-	url = https://github.com/pothosware/pothos-blocks.git
+	url = https://github.com/pothosware/PothosBlocks.git
 	branch = master
 [submodule "python"]
 	path = python
-	url = https://github.com/pothosware/pothos-python.git
+	url = https://github.com/pothosware/PothosPython.git
 	branch = master
 [submodule "audio"]
 	path = audio
-	url = https://github.com/pothosware/pothos-audio.git
+	url = https://github.com/pothosware/PothosAudio.git
 	branch = master
 [submodule "comms"]
 	path = comms
-	url = https://github.com/pothosware/pothos-comms.git
+	url = https://github.com/pothosware/PothosComms.git
 	branch = master

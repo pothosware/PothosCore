@@ -10,9 +10,9 @@ Build-Depends:
     nlohmann-json-dev,
     libnuma-dev [amd64 i386]
 Standards-Version: 3.9.8
-Homepage: https://github.com/pothosware/pothos/wiki
-Vcs-Git: https://github.com/pothosware/pothos.git
-Vcs-Browser: https://github.com/pothosware/pothos
+Homepage: https://github.com/pothosware/PothosCore/wiki
+Vcs-Git: https://github.com/pothosware/PothosCore.git
+Vcs-Browser: https://github.com/pothosware/PothosCore
 
 Package: pothos
 Section: science
@@ -45,13 +45,13 @@ Section: libs
 Architecture: all
 Depends:
     pothos,
-    pothos-gui,
+    pothos-flow,
     pothos-modules-audio,
     pothos-modules-blocks,
     pothos-modules-comms,
     pothos-modules-plotters,
     pothos-modules-widgets,
-    pothos-modules-sdr,
+    pothos-modules-soapy,
     ${misc:Depends}
 Description: Meta package for all official toolkits
  This is a metapackage for the most common Pothos toolkits.

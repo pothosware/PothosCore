@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: pothos
-Source: https://github.com/pothosware/pothos/wiki
+Source: https://github.com/pothosware/PothosCore/wiki
 
 Files: *
 Copyright:
