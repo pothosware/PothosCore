@@ -3,8 +3,13 @@
 #sync the tookit submodules to the same branch (maint/master)
 #this updates the submodules to match the top level project
 
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-echo "Current branch: ${BRANCH}"
+if [ -z "$1" ]; then
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    echo "Current branch: ${BRANCH}"
+else
+    BRANCH=$1
+    echo "Sync branch: ${BRANCH}"
+fi
 
 TOOLKITS="
 audio
