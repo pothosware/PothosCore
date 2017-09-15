@@ -11,7 +11,7 @@ the entire Pothos software suite in one build.
 
 ## Build Status
 
-- Travis: [![Travis Build Status](https://travis-ci.org/pothosware/pothos.svg?branch=master)](https://travis-ci.org/pothosware/pothos)
+- Travis: [![Travis Build Status](https://travis-ci.org/pothosware/pothos.svg?branch=master)](https://travis-ci.org/pothosware/PothosCore)
 - AppVeyor: [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/7owo8qb9oldw8iq8)](https://ci.appveyor.com/project/guruofquality/pothos)
 
 ## Dependencies
@@ -32,14 +32,14 @@ user may wish to build these toolkits alongside the framework
 library to simplfy the effort involved building from source.
 The following toolkits are available as git submodules:
 
-* pothos-audio
-* pothos-blocks
-* pothos-comms
-* pothos-gui
-* pothos-plotters
-* pothos-python
-* pothos-sdr
-* pothos-widgets
+* PothosAudio
+* PothosBlocks
+* PothosComms
+* PothosFlow
+* PothosPlotters
+* PothosPython
+* PothosSoapy
+* PothosWidgets
 
 ## Building
 
@@ -105,4 +105,4 @@ however are available under a permissive compatible software license.
 * Description: C++ drop-down color selection Qt widget
 * License: GNU Lesser General Public License Usage
 * Usage: Pothos GUI designer affinity color selection
-* Source: gui/qtcolorpicker/ (embedded copy)
+* Source: flow/qtcolorpicker/ (embedded copy)
