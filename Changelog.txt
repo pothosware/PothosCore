@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.6.0 (pending)
 ==========================
 
+- Automatic slots for all void calls in Block::registerCallable
 - Renamed the project repo from pothos to PothosCore
 - Updated toolkit/submodule URLs for repo rename
   - Renamed pothos-gui toolkit to PothosFlow

@@ -4,7 +4,7 @@
 /// This file contains the interface for creating custom Blocks.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -264,7 +264,9 @@ public:
 
     /*!
      * Export a function call on this block to set/get parameters.
-     * This call will automatically register a slot of the same name.
+     * This call will automatically register a slot of the same name
+     * when the call has a void return type and the name does not
+     * start with an underscore in which case its considered private.
      * \param name the name of the callable
      * \param call the bound callable method
      */

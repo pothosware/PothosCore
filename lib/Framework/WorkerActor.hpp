@@ -65,6 +65,7 @@ public:
     Block *block;
     bool activeState;
     std::atomic<int> activityIndicator;
+    std::set<std::string> automaticSlots;
     std::map<std::string, std::unique_ptr<InputPort>> inputs;
     std::map<std::string, std::unique_ptr<OutputPort>> outputs;
     std::map<bool, std::map<std::string, std::map<std::string, std::string>>> bufferModeCache;

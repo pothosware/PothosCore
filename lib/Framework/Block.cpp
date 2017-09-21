@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
@@ -125,9 +125,14 @@ void Pothos::Block::registerCallable(const std::string &name, const Callable &ca
 {
     _calls.insert(std::make_pair(name, call));
 
-    //automatic registration of slots for calls that take arguments and are not "private"
+    //automatic registration of slots for calls that return void and are not "private"
     const bool isPrivate = name.front() == '_';
-    if (call.getNumArgs() > 0 and not isPrivate and _namedInputs.count(name) == 0) this->registerSlot(name);
+    const bool returnVoid = call.type(-1) == typeid(void);
+    if (not isPrivate and returnVoid and _namedInputs.count(name) == 0)
+    {
+        this->registerSlot(name);
+        _actor->automaticSlots.insert(name);
+    }
 }
 
 void Pothos::Block::registerSignal(const std::string &name)
@@ -141,6 +146,7 @@ void Pothos::Block::registerSignal(const std::string &name)
 void Pothos::Block::registerSlot(const std::string &name)
 {
     if (name.empty()) throw PortAccessError("Pothos::Block::registerSlot()", "empty name");
+    if (_actor->automaticSlots.count(name) != 0) return; //already registered automatically, no error
     if (_namedInputs.count(name) > 0) throw PortAccessError("Pothos::Block::registerSlot("+name+")", "already registered");
 
     _actor->allocateSlot(name);
