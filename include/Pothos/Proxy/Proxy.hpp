@@ -4,7 +4,7 @@
 /// Definitions for the Proxy wrapper class.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -70,6 +70,13 @@ public:
      */
     template <typename ValueType>
     ValueType convert(void) const;
+
+    /*!
+     * Templated conversion operator to assign Proxy to a target type.
+     * \throws ProxyEnvironmentConvertError if object cannot be converted
+     */
+    template <typename ValueType>
+    operator ValueType(void) const;
 
     //! Call a method with a return type and variable args
     template <typename ReturnType, typename... ArgsType>

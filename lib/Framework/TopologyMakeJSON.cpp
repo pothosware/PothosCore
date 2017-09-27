@@ -45,7 +45,7 @@ static std::vector<Pothos::Proxy> evalArgsArray(
     {
         args.push_back(evalExpression(evaluator, argsArray.at(i)));
     }
-    return Pothos::Object(args).convert<std::vector<Pothos::Proxy>>();
+    return Pothos::Object(args);
 }
 
 typedef std::vector<std::pair<std::string, json>> OrderedVarMap;

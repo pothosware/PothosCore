@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Connectable.hpp>
@@ -45,7 +45,7 @@ Pothos::Object Pothos::Connectable::opaqueCall(const Object *inputArgs, const si
     {
         throw Pothos::BlockCallNotFound("Pothos::Connectable::call()", "missing method name");
     }
-    return this->opaqueCallMethod(inputArgs[0].convert<std::string>(), inputArgs+1, numArgs-1);
+    return this->opaqueCallMethod(inputArgs[0], inputArgs+1, numArgs-1);
 }
 
 #include <Pothos/Managed.hpp>

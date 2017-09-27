@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -21,7 +21,7 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_containers)
 
     //convert to proxy and back
     auto proxyVec = env->makeProxy(testVec);
-    auto resultVec = proxyVec.convert<Pothos::ProxyVector>();
+    Pothos::ProxyVector resultVec = proxyVec;
 
     //check for equality
     POTHOS_TEST_EQUAL(testVec.size(), resultVec.size());
@@ -36,7 +36,7 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_containers)
 
     //convert to proxy and back
     auto proxySet = env->makeProxy(testSet);
-    auto resultSet = proxySet.convert<Pothos::ProxySet>();
+    Pothos::ProxySet resultSet = proxySet;
 
     //check result
     auto findHiSet = resultSet.find(env->makeProxy("hi"));
@@ -51,7 +51,7 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_containers)
 
     //convert to proxy and back
     auto proxyDict = env->makeProxy(testDict);
-    auto resultDict = proxyDict.convert<Pothos::ProxyMap>();
+    Pothos::ProxyMap resultDict = proxyDict;
 
     //check result
     auto findHi = resultDict.find(env->makeProxy("hi"));

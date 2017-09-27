@@ -4,7 +4,7 @@
 /// Proxy template method implementations.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -66,6 +66,12 @@ makeProxy(const ProxyEnvironment::Sptr &, T &&value)
 }
 
 } //namespace Detail
+
+template <typename ValueType>
+Proxy::operator ValueType(void) const
+{
+    return this->convert<ValueType>();
+}
 
 template <typename ReturnType, typename... ArgsType>
 ReturnType Proxy::call(const std::string &name, ArgsType&&... args) const

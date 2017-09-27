@@ -4,7 +4,7 @@
 /// Template implementation details for Object.
 ///
 /// \copyright
-/// Copyright (c) 2013-2015 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -228,6 +228,12 @@ ValueType Object::convert(void) const
 {
     Object newObj = this->convert(typeid(ValueType));
     return newObj.extract<ValueType>();
+}
+
+template <typename ValueType>
+Object::operator ValueType(void) const
+{
+    return this->convert<ValueType>();
 }
 
 } //namespace Pothos

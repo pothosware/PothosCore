@@ -4,7 +4,7 @@
 /// Object is intended to facilitate API polymorphism similar to java.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -166,6 +166,13 @@ public:
      */
     template <typename ValueType>
     ValueType convert(void) const;
+
+    /*!
+     * Templated conversion operator to assign Object to a target type.
+     * \throws ObjectConvertError if object cannot be safe casted
+     */
+    template <typename ValueType>
+    operator ValueType(void) const;
 
     /*!
      * Convert to a new Object that will be of the type specified.
