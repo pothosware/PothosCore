@@ -18,14 +18,14 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
 
     //booleans
     const auto resultT = evalEnv.call<Pothos::Object>("eval", "true");
-    POTHOS_TEST_TRUE(resultT.convert<bool>());
+    POTHOS_TEST_TRUE(bool(resultT));
 
     const auto resultF = evalEnv.call<Pothos::Object>("eval", "false");
-    POTHOS_TEST_TRUE(not resultF.convert<bool>());
+    POTHOS_TEST_TRUE(not (const bool&)resultF);
 
     //simple expression
     const auto result = evalEnv.call<Pothos::Object>("eval", "1 + 2");
-    POTHOS_TEST_EQUAL(result.convert<int>(), 3);
+    POTHOS_TEST_EQUAL(int(result), 3);
 
     //a pothos type
     //const auto result2 = evalEnv.call<Pothos::Object>("eval", "DType(\"int32\")");
@@ -33,7 +33,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
 
     //test string w/ escape quote
     const auto result3 = evalEnv.call<Pothos::Object>("eval", "\"hello \\\" world\"");
-    POTHOS_TEST_EQUAL(result3.convert<std::string>(), "hello \" world");
+    POTHOS_TEST_EQUAL((const std::string &)result3, "hello \" world");
 }
 
 POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
@@ -44,14 +44,14 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
     //the empty test
     {
         const auto result = evalEnv.call<Pothos::Object>("eval", "[]");
-        const auto vec = result.convert<std::vector<int>>();
+        const std::vector<int> vec = result;
         POTHOS_TEST_EQUAL(vec.size(), 0);
     }
 
     //a simple test
     {
         const auto result = evalEnv.call<Pothos::Object>("eval", "[1, 2, 3]");
-        const auto vec = result.convert<std::vector<int>>();
+        const std::vector<int> vec = result;
         POTHOS_TEST_EQUAL(vec.size(), 3);
         POTHOS_TEST_EQUAL(vec[0], 1);
         POTHOS_TEST_EQUAL(vec[1], 2);
@@ -61,7 +61,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
     //array math
     {
         const auto result = evalEnv.call<Pothos::Object>("eval", "(2 * [1, 2, 3]) + [3, 2, 1]");
-        const auto vec = result.convert<std::vector<int>>();
+        const std::vector<int> vec = result;
         POTHOS_TEST_EQUAL(vec.size(), 3);
         POTHOS_TEST_EQUAL(vec[0], 2*1 + 3);
         POTHOS_TEST_EQUAL(vec[1], 2*2 + 2);
@@ -71,7 +71,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
     //a trailing comma test
     {
         const auto result = evalEnv.call<Pothos::Object>("eval", "[1, ]");
-        const auto vec = result.convert<std::vector<int>>();
+        const std::vector<int> vec = result;
         POTHOS_TEST_EQUAL(vec.size(), 1);
         POTHOS_TEST_EQUAL(vec[0], 1);
     }
@@ -79,7 +79,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_list_expression)
     //a quote test (including commas and escapes)
     {
         const auto result = evalEnv.call<Pothos::Object>("eval", "[\"comma, \\\"comma, comma, \", \"chameleon\"]");
-        const auto vec = result.convert<std::vector<std::string>>();
+        const std::vector<std::string> vec = result;
         POTHOS_TEST_EQUAL(vec.size(), 2);
         POTHOS_TEST_EQUAL(vec[0], "comma, \"comma, comma, ");
         POTHOS_TEST_EQUAL(vec[1], "chameleon");
