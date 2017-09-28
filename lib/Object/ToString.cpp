@@ -46,7 +46,7 @@ std::string Pothos::Object::toString(void) const
     if (this->canConvert(typeid(Pothos::ObjectVector))) try
     {
         std::string out = "[";
-        for (const auto &obj_i : this->convert<Pothos::ObjectVector>())
+        for (const auto &obj_i : this->operator Pothos::ObjectVector())
         {
             if (out.size() > 1) out += ", ";
             out += obj_i.toString();
@@ -59,7 +59,7 @@ std::string Pothos::Object::toString(void) const
     if (this->canConvert(typeid(Pothos::ObjectMap))) try
     {
         std::string out = "{";
-        for (const auto &pair : this->convert<Pothos::ObjectMap>())
+        for (const auto &pair : this->operator Pothos::ObjectMap())
         {
             if (out.size() > 1) out += ", ";
             out += Poco::format("%s: %s", pair.first.toString(), pair.second.toString());

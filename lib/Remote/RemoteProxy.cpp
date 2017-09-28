@@ -118,9 +118,9 @@ RemoteProxyEnvironment::RemoteProxyEnvironment(
 
     //set the remote ID for this env
     remoteID = reply["envID"];
-    upid = reply["upid"].convert<std::string>();
-    nodeId = reply["nodeId"].convert<std::string>();
-    peerAddr = reply["peerAddr"].convert<std::string>();
+    upid = reply["upid"].operator std::string();
+    nodeId = reply["nodeId"].operator std::string();
+    peerAddr = reply["peerAddr"].operator std::string();
 }
 
 RemoteProxyEnvironment::~RemoteProxyEnvironment(void)
