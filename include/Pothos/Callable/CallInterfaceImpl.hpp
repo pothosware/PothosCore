@@ -39,4 +39,16 @@ Object CallInterface::call(ArgsType&&... args) const
     return this->opaqueCall(objArgs.data(), sizeof...(args));
 }
 
+template <typename... ArgsType>
+Object CallInterface::callObject(ArgsType&&... args) const
+{
+    return this->call(std::forward<ArgsType>(args)...);
+}
+
+template <typename... ArgsType>
+void CallInterface::callVoid(ArgsType&&... args) const
+{
+    this->call(std::forward<ArgsType>(args)...);
+}
+
 } //namespace Pothos

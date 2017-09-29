@@ -34,6 +34,22 @@ public:
     template <typename... ArgsType>
     Object call(ArgsType&&... args) const;
 
+    /*!
+     * Call a bound method/function with an Object return and variable args
+     * \deprecated use call overload without return type
+     */
+    template <typename... ArgsType>
+    POTHOS_DEPRECATED
+    Object callObject(ArgsType&&... args) const;
+
+    /*!
+     * Call a bound method/function with a void return and variable args
+     * \deprecated use call overload without return type
+     */
+    template <typename... ArgsType>
+    POTHOS_DEPRECATED
+    void callVoid(ArgsType&&... args) const;
+
 protected:
     /*!
      * Call into the function/method with opaque input and return types.

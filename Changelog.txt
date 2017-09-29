@@ -6,10 +6,10 @@ Release 0.6.0 (pending)
 - API changes Pothos::Object
   * Object supports implicit templated convert to target type
   * Proxy supports implicit templated convert to target type
-  * Removed Callable interface's callVoid() function
-  * Renamed Callable interface's callObject() to call()
-  * Removed Proxy interface's callVoid() function
-  * Renamed Proxy interface's callProxy() to call()
+  * Deprecated Callable interface's callVoid(), use call()
+  * Deprecated Callable interface's callObject(), use call()
+  * Deprecated Proxy interface's callVoid(), use call()
+  * Deprecated Proxy interface's callProxy(), use call()
 
 - Automatic slots for all void calls in Block::registerCallable
 - Renamed the project repo from pothos to PothosCore

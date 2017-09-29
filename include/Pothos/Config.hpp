@@ -54,6 +54,16 @@
   #endif //_USE_MATH_DEFINES
 #endif //_MSC_VER
 
+//deprecated macro for causing warnings on old calls
+#if defined(__GNUC__)
+#define POTHOS_DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define POTHOS_DEPRECATED __declspec(deprecated)
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define POTHOS_DEPRECATED
+#endif
+
 /*!
  * The function tuple emits a string name + function pointer tuple.
  * This macro simplifies specifying a function name more than once

@@ -4,7 +4,7 @@
 /// Proxy template method implementations.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -81,6 +81,18 @@ Proxy Proxy::call(const std::string &name, ArgsType&&... args) const
     auto handle = this->getHandle();
     assert(handle);
     return handle->call(name, proxyArgs.data(), sizeof...(args));
+}
+
+template <typename... ArgsType>
+Proxy Proxy::callProxy(const std::string &name, ArgsType&&... args) const
+{
+    return this->call(name, std::forward<ArgsType>(args)...);
+}
+
+template <typename... ArgsType>
+void Proxy::callVoid(const std::string &name, ArgsType&&... args) const
+{
+    this->call(name, std::forward<ArgsType>(args)...);
 }
 
 template <typename ReturnType>

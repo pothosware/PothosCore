@@ -4,7 +4,7 @@
 /// Definitions for the Proxy wrapper class.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -78,6 +78,22 @@ public:
     //! Call a method with a Proxy return and variable args
     template <typename... ArgsType>
     Proxy call(const std::string &name, ArgsType&&... args) const;
+
+    /*!
+     * Call a method with a Proxy return and variable args
+     * \deprecated use call overload without return type
+     */
+    template <typename... ArgsType>
+    POTHOS_DEPRECATED
+    Proxy callProxy(const std::string &name, ArgsType&&... args) const;
+
+    /*!
+     * Call a method with a void return and variable args
+     * \deprecated use call overload without return type
+     */
+    template <typename... ArgsType>
+    POTHOS_DEPRECATED
+    void callVoid(const std::string &name, ArgsType&&... args) const;
 
     //! Call a field getter with specified return type
     template <typename ReturnType>
