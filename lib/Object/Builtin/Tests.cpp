@@ -88,6 +88,17 @@ POTHOS_TEST_BLOCK("/object/tests", test_convert_numbers)
     POTHOS_TEST_TRUE(intObj.canConvert(typeid(long)));
     POTHOS_TEST_TRUE(not intObj.canConvert(typeid(NeverHeardOfFooBar)));
 
+    //tests bool explicit and implicit
+    Pothos::Object trueObj(true);
+    POTHOS_TEST_TRUE(trueObj.convert<bool>());
+    const bool trueRes = trueObj;
+    POTHOS_TEST_TRUE(trueRes);
+
+    Pothos::Object falseObj(false);
+    POTHOS_TEST_TRUE(not falseObj.convert<bool>());
+    const bool falseRes = falseObj;
+    POTHOS_TEST_TRUE(not falseRes);
+
     //test int to double
     POTHOS_TEST_EQUAL(double(Pothos::Object(+1)), +1.0);
     POTHOS_TEST_EQUAL(double(Pothos::Object(-1)), -1.0);
