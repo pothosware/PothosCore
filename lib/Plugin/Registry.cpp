@@ -68,7 +68,7 @@ static void callPluginEventHandler(const Pothos::Object &handler, const Pothos::
     if (not canObjectHandleEvent(handler)) return;
     POTHOS_EXCEPTION_TRY
     {
-        handler.extract<Pothos::Callable>().callVoid(plugin, event);
+        handler.extract<Pothos::Callable>().call(plugin, event);
     }
     POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {

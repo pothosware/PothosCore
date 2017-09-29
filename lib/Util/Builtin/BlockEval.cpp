@@ -35,7 +35,7 @@ void ProxyBlockEval::eval(const std::string &id)
     {
         throw Pothos::Exception("ProxyBlockEval factory("+_path+")", ex);
     }
-    _proxyBlock.callVoid("setName", id);
+    _proxyBlock.call("setName", id);
 
     //make the calls
     if (_blockDesc.count("calls"))

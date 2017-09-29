@@ -46,12 +46,12 @@ static std::string getBufferMode(const Port &port, const std::string &domain, co
 static Pothos::Proxy getBufferManager(const Port &port, const std::string &domain, const bool &isInput)
 {
     auto actor = port.obj.get("_actor");
-    return actor.callProxy("getBufferManager", port.name, domain, isInput);
+    return actor.call("getBufferManager", port.name, domain, isInput);
 }
 
 static void setOutputBufferManager(const Port &src, const Pothos::Proxy &manager)
 {
-    src.obj.get("_actor").callVoid("setOutputBufferManager", src.name, manager);
+    src.obj.get("_actor").call("setOutputBufferManager", src.name, manager);
 }
 
 static void installBufferManagers(const std::vector<Flow> &flatFlows)
@@ -77,8 +77,8 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         auto dst = dsts.at(0);
         Pothos::Proxy manager;
 
-        auto srcDomain = src.obj.callProxy("output", src.name).call<std::string>("domain");
-        auto dstDomain = dst.obj.callProxy("input", dst.name).call<std::string>("domain");
+        auto srcDomain = src.obj.call("output", src.name).call<std::string>("domain");
+        auto dstDomain = dst.obj.call("input", dst.name).call<std::string>("domain");
 
         auto srcMode = getBufferMode(src, dstDomain, false);
         auto dstMode = getBufferMode(dst, srcDomain, true);
@@ -95,7 +95,7 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
             for (const auto &otherDst : dsts)
             {
                 if (otherDst == dst) continue;
-                auto otherDstDomain = otherDst.obj.callProxy("input", otherDst.name).call<std::string>("domain");
+                auto otherDstDomain = otherDst.obj.call("input", otherDst.name).call<std::string>("domain");
                 if (getBufferMode(otherDst, srcDomain, true) != "ABDICATE" and not otherDstDomain.empty())
                 {
                     throw Pothos::Exception("Pothos::Topology::installBufferManagers", Poco::format("%s->%s\n"
@@ -130,11 +130,11 @@ static void subscribePort(const Port &src, const Port &dst, const std::string &a
 {
     {
         auto actor = src.obj.get("_actor");
-        actor.callVoid("subscribeInput", action, src.name, dst.obj.callProxy("input", dst.name));
+        actor.call("subscribeInput", action, src.name, dst.obj.call("input", dst.name));
     }
     {
         auto actor = dst.obj.get("_actor");
-        actor.callVoid("subscribeOutput", action, dst.name, src.obj.callProxy("output", src.name));
+        actor.call("subscribeOutput", action, dst.name, src.obj.call("output", src.name));
     }
 }
 
@@ -201,7 +201,7 @@ static std::vector<Flow> completePassThroughFlows(const std::vector<Flow> &flows
  **********************************************************************/
 static void setActiveState(const Pothos::Proxy &block, const bool state)
 {
-    block.get("_actor").callVoid(state?"setActiveStateOn":"setActiveStateOff");
+    block.get("_actor").call(state?"setActiveStateOn":"setActiveStateOff");
 }
 
 void topologySubCommit(Pothos::Topology &topology)
@@ -264,7 +264,7 @@ void topologySubCommit(Pothos::Topology &topology)
  **********************************************************************/
 static void subCommitFutureTask(const Pothos::Proxy &proxy)
 {
-    proxy.callVoid("subCommit");
+    proxy.call("subCommit");
 }
 
 void Pothos::Topology::commit(void)
@@ -286,18 +286,18 @@ void Pothos::Topology::commit(void)
     {
         auto upid = obj.getEnvironment()->getUniquePid();
         if (_impl->remoteTopologies.count(upid) != 0) continue;
-        _impl->remoteTopologies[upid] = obj.getEnvironment()->findProxy("Pothos/Topology").callProxy("make");
+        _impl->remoteTopologies[upid] = obj.getEnvironment()->findProxy("Pothos/Topology").call("make");
     }
 
     //clear connections on old topologies
-    for (const auto &pair : _impl->remoteTopologies) pair.second.callVoid("disconnectAll");
+    for (const auto &pair : _impl->remoteTopologies) pair.second.call("disconnectAll");
 
     //load each topology with connections from flat flows
     for (const auto &flow : flatFlows)
     {
         auto upid = flow.src.obj.getEnvironment()->getUniquePid();
         assert(upid == flow.dst.obj.getEnvironment()->getUniquePid());
-        _impl->remoteTopologies[upid].callVoid("connect", flow.src.obj, flow.src.name, flow.dst.obj, flow.dst.name);
+        _impl->remoteTopologies[upid].call("connect", flow.src.obj, flow.src.name, flow.dst.obj, flow.dst.name);
     }
 
     //Call commit on all sub-topologies:

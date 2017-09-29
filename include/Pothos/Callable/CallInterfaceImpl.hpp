@@ -4,7 +4,7 @@
 /// Template implementation details for CallInterface.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -21,7 +21,7 @@ namespace Pothos {
 template <typename ReturnType, typename... ArgsType>
 ReturnType CallInterface::call(ArgsType&&... args) const
 {
-    Object r = this->callObject(std::forward<ArgsType>(args)...);
+    Object r = this->call(std::forward<ArgsType>(args)...);
     try
     {
         return r.convert<ReturnType>();
@@ -33,16 +33,22 @@ ReturnType CallInterface::call(ArgsType&&... args) const
 }
 
 template <typename... ArgsType>
-Object CallInterface::callObject(ArgsType&&... args) const
+Object CallInterface::call(ArgsType&&... args) const
 {
     const std::array<Object, sizeof...(ArgsType)> objArgs{{Object(std::forward<ArgsType>(args))...}};
     return this->opaqueCall(objArgs.data(), sizeof...(args));
 }
 
 template <typename... ArgsType>
+Object CallInterface::callObject(ArgsType&&... args) const
+{
+    return this->call(std::forward<ArgsType>(args)...);
+}
+
+template <typename... ArgsType>
 void CallInterface::callVoid(ArgsType&&... args) const
 {
-    this->callObject(std::forward<ArgsType>(args)...);
+    this->call(std::forward<ArgsType>(args)...);
 }
 
 } //namespace Pothos

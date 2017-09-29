@@ -4,7 +4,7 @@
 /// CallInterface provides an method call abstraction interface.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -32,10 +32,22 @@ public:
 
     //! Call a bound method/function with an Object return and variable args
     template <typename... ArgsType>
+    Object call(ArgsType&&... args) const;
+
+    /*!
+     * Call a bound method/function with an Object return and variable args
+     * \deprecated use call overload without return type
+     */
+    template <typename... ArgsType>
+    POTHOS_DEPRECATED
     Object callObject(ArgsType&&... args) const;
 
-    //! Call a bound method/function with a void return and variable args
+    /*!
+     * Call a bound method/function with a void return and variable args
+     * \deprecated use call overload without return type
+     */
     template <typename... ArgsType>
+    POTHOS_DEPRECATED
     void callVoid(ArgsType&&... args) const;
 
 protected:

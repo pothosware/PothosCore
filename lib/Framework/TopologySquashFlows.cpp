@@ -49,7 +49,7 @@ static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
     Pothos::Proxy subPorts;
     try
     {
-        subPorts = port.obj.callProxy("resolvePorts", port.name, isSource);
+        subPorts = port.obj.call("resolvePorts", port.name, isSource);
     }
     catch (const Pothos::Exception &)
     {
@@ -61,7 +61,7 @@ static std::vector<Port> resolvePorts(const Port &port, const bool isSource)
     const auto len = subPorts.call<size_t>("size");
     for (size_t i = 0; i < len; i++)
     {
-        ports.push_back(proxyToPort(subPorts.callProxy("at", i)));
+        ports.push_back(proxyToPort(subPorts.call("at", i)));
     }
 
     return ports;
@@ -91,7 +91,7 @@ static std::vector<Flow> resolveFlows(const Pothos::Proxy &obj)
     Pothos::Proxy subFlows;
     try
     {
-        subFlows = obj.callProxy("resolveFlows");
+        subFlows = obj.call("resolveFlows");
     }
     catch (const Pothos::Exception &)
     {
@@ -101,7 +101,7 @@ static std::vector<Flow> resolveFlows(const Pothos::Proxy &obj)
     const auto len = subFlows.call<size_t>("size");
     for (size_t i = 0; i < len; i++)
     {
-        flows.push_back(proxyToFlow(subFlows.callProxy("at", i)));
+        flows.push_back(proxyToFlow(subFlows.call("at", i)));
     }
 
     return flows;

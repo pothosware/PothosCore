@@ -204,7 +204,7 @@ std::shared_ptr<Pothos::Topology> Pothos::Topology::make(const std::string &json
         //set the thread pool
         const auto threadPoolName = blockObj.value<std::string>("threadPool", "");
         auto threadPoolIt = threadPools.find(threadPoolName);
-        if (threadPoolIt != threadPools.end()) blocks[id].callVoid("setThreadPool", threadPoolIt->second);
+        if (threadPoolIt != threadPools.end()) blocks[id].call("setThreadPool", threadPoolIt->second);
         else if (not threadPoolName.empty()) throw Pothos::DataFormatException(
             "Pothos::Topology::make()", "blocks["+id+"] unknown threadPool = " + threadPoolName);
     }
