@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -25,9 +25,9 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_containers)
 
     //check for equality
     POTHOS_TEST_EQUAL(testVec.size(), resultVec.size());
-    POTHOS_TEST_EQUAL((const std::string &)testVec[0], (const std::string &)resultVec[0]);
-    POTHOS_TEST_EQUAL(int(testVec[1]), int(resultVec[1]));
-    POTHOS_TEST_EQUAL((const std::complex<double> &)testVec[2], (const std::complex<double> &)resultVec[2]);
+    POTHOS_TEST_EQUAL(testVec[0].convert<std::string>(), resultVec[0].convert<std::string>());
+    POTHOS_TEST_EQUAL(testVec[1].convert<int>(), resultVec[1].convert<int>());
+    POTHOS_TEST_EQUAL(testVec[2].convert<std::complex<double>>(), resultVec[2].convert<std::complex<double>>());
 
     //make test set
     Pothos::ProxySet testSet;
@@ -56,8 +56,8 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_containers)
     //check result
     auto findHi = resultDict.find(env->makeProxy("hi"));
     POTHOS_TEST_TRUE(findHi != resultDict.end());
-    POTHOS_TEST_EQUAL((const std::string &)findHi->second, "bye");
+    POTHOS_TEST_EQUAL(findHi->second.convert<std::string>(), "bye");
     auto find1 = resultDict.find(env->makeProxy(1));
     POTHOS_TEST_TRUE(find1 != resultDict.end());
-    POTHOS_TEST_EQUAL(int(find1->second), 2);
+    POTHOS_TEST_EQUAL(find1->second, 2);
 }

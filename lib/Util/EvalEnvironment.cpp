@@ -75,11 +75,11 @@ static mup::Value objectToMupValue(const Pothos::Object &obj)
     try
     {
         Pothos::DType dtype(obj.type());
-        if (dtype.isComplex()) return mup::Value(obj.operator mup::cmplx_type());
-        if (dtype.isFloat()) return mup::Value(obj.operator mup::float_type());
+        if (dtype.isComplex()) return mup::Value(obj.convert<mup::cmplx_type>());
+        if (dtype.isFloat()) return mup::Value(obj.convert<mup::float_type>());
         //types that fit into the parser's integer type, otherwise use floating point
-        if (dtype.size() <= sizeof(mup::int_type)) return mup::Value(obj.operator mup::int_type());
-        else return mup::Value(obj.operator mup::float_type());
+        if (dtype.size() <= sizeof(mup::int_type)) return mup::Value(obj.convert<mup::int_type>());
+        else return mup::Value(obj.convert<mup::float_type>());
     }
     catch (...) {}
 

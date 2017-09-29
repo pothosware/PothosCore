@@ -48,7 +48,7 @@ public:
     static std::string dumpJsonAt(const std::string &path)
     {
         auto plugin = Pothos::PluginRegistry::get("/blocks/docs"+path);
-        return plugin.getObject().operator std::string();
+        return plugin.getObject().convert<std::string>();
     }
 };
 

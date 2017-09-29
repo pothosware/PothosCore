@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -11,14 +11,14 @@ struct SuperWildcard
 {
     SuperWildcard(const Pothos::Object *args, const size_t numArgs)
     {
-        if (numArgs > 0) _value = args[0].operator std::string();
+        if (numArgs > 0) _value = args[0].convert<std::string>();
     }
 
     Pothos::Object foo(const std::string &name, const Pothos::Object *args, const size_t numArgs)
     {
         if (name == "foo")
         {
-            if (numArgs > 0) _value = args[0].operator std::string();
+            if (numArgs > 0) _value = args[0].convert<std::string>();
             return Pothos::Object(_value);
         }
         return Pothos::Object();
@@ -28,7 +28,7 @@ struct SuperWildcard
     {
         if (name == "bar")
         {
-            if (numArgs > 0) return Pothos::Object(args[0].operator std::string());
+            if (numArgs > 0) return Pothos::Object(args[0].convert<std::string>());
             return Pothos::Object("");
         }
         return Pothos::Object();
