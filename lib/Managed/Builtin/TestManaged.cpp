@@ -59,5 +59,5 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_containers)
     POTHOS_TEST_EQUAL(findHi->second.convert<std::string>(), "bye");
     auto find1 = resultDict.find(env->makeProxy(1));
     POTHOS_TEST_TRUE(find1 != resultDict.end());
-    POTHOS_TEST_EQUAL(find1->second, 2);
+    POTHOS_TEST_EQUAL(find1->second.convert<int>(), 2);
 }

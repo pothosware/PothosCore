@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object.hpp>
@@ -89,9 +89,9 @@ POTHOS_TEST_BLOCK("/object/tests", test_convert_numbers)
     POTHOS_TEST_TRUE(not intObj.canConvert(typeid(NeverHeardOfFooBar)));
 
     //test int to double
-    POTHOS_TEST_EQUAL(Pothos::Object(+1), +1.0);
-    POTHOS_TEST_EQUAL(Pothos::Object(-1), -1.0);
-    POTHOS_TEST_EQUAL(Pothos::Object(0), 0.0);
+    POTHOS_TEST_EQUAL(double(Pothos::Object(+1)), +1.0);
+    POTHOS_TEST_EQUAL(double(Pothos::Object(-1)), -1.0);
+    POTHOS_TEST_EQUAL(double(Pothos::Object(0)), 0.0);
 
     //tests for range errors
     POTHOS_TEST_THROWS(Pothos::Object(-1).convert<unsigned>(), Pothos::RangeException);

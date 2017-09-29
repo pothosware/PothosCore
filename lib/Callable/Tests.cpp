@@ -130,12 +130,12 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_with_methods)
     POTHOS_TEST_EQUAL(getBar.getNumArgs(), 1);
     POTHOS_TEST_TRUE(getBar.type(-1) == typeid(int));
     POTHOS_TEST_TRUE(getBar.type(0) == typeid(TestClass));
-    POTHOS_TEST_THROWS(getBar.call(), Pothos::CallableArgumentError);
+    POTHOS_TEST_THROWS(getBar.call<int>(), Pothos::CallableArgumentError);
 
     //call the class methods
     TestClass test;
     setBar.call(std::ref(test), int(42));
-    POTHOS_TEST_EQUAL(42, getBar.call(std::ref(test)));
+    POTHOS_TEST_EQUAL(42, getBar.call<int>(std::ref(test)));
 
     //check the return error conditions
     POTHOS_TEST_THROWS(setBar.call<int>(std::ref(test), 21), Pothos::CallableReturnError);
@@ -152,19 +152,19 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_with_functions)
     POTHOS_TEST_EQUAL(strLen.getNumArgs(), 1);
     POTHOS_TEST_TRUE(strLen.type(-1) == typeid(long));
     POTHOS_TEST_TRUE(strLen.type(0) == typeid(std::string));
-    POTHOS_TEST_EQUAL(5, strLen.call(std::string("hello")));
-    POTHOS_TEST_THROWS(strLen.call(NonsenseClass()), Pothos::CallableArgumentError);
+    POTHOS_TEST_EQUAL(5, strLen.call<long>(std::string("hello")));
+    POTHOS_TEST_THROWS(strLen.call<long>(NonsenseClass()), Pothos::CallableArgumentError);
 
     //test copy ability
     Pothos::Callable strLenCopy0 = strLen;
-    POTHOS_TEST_EQUAL(5, strLenCopy0.call(std::string("world")));
+    POTHOS_TEST_EQUAL(5, strLenCopy0.call<long>(std::string("world")));
 
     Pothos::Callable strLenCopy1 = Pothos::Callable(strLen);
-    POTHOS_TEST_EQUAL(2, strLenCopy1.call(std::string("!!")));
+    POTHOS_TEST_EQUAL(2, strLenCopy1.call<long>(std::string("!!")));
 
     //test multiple args
     Pothos::Callable add(&TestClass::add);
-    POTHOS_TEST_EQUAL(32, add.call(int(10), unsigned(22)));
+    POTHOS_TEST_EQUAL(32, add.call<long>(int(10), unsigned(22)));
     std::cout << add.toString() << std::endl;
 }
 
@@ -208,8 +208,8 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_overloaded)
     POTHOS_TEST_TRUE(overloaded2.type(-1) == typeid(void));
 
     TestClass test;
-    POTHOS_TEST_EQUAL(overloaded0.call(std::ref(test), int(0)), 0);
-    POTHOS_TEST_EQUAL(overloaded1.call(std::ref(test), long(0)), 1);
+    POTHOS_TEST_EQUAL(overloaded0.call<int>(std::ref(test), int(0)), 0);
+    POTHOS_TEST_EQUAL(overloaded1.call<int>(std::ref(test), long(0)), 1);
 }
 
 /***********************************************************************
@@ -229,11 +229,11 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_bind)
     //bind and unbind arguments for add
     Pothos::Callable add(&TestClass::add);
     add.bind(unsigned(11), 1);
-    POTHOS_TEST_EQUAL(21, add.call(int(10)));
+    POTHOS_TEST_EQUAL(21, add.call<long>(int(10)));
     add.bind(int(33), 0);
-    POTHOS_TEST_EQUAL(44, add.call());
+    POTHOS_TEST_EQUAL(44, add.call<long>());
     add.unbind(1);
-    POTHOS_TEST_EQUAL(43, add.call(unsigned(10)));
+    POTHOS_TEST_EQUAL(43, add.call<long>(unsigned(10)));
 
     //test type() and numArgs() logic with many args
     Pothos::Callable addMany(&TestClass::addMany);

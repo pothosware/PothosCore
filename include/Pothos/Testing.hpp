@@ -6,7 +6,7 @@
 /// The test macros are loosely based on the Boost unit test suite.
 ///
 /// \copyright
-/// Copyright (c) 2013-2015 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
