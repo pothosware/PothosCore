@@ -18,7 +18,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_expression)
 
     //booleans
     const auto resultT = evalEnv.call<Pothos::Object>("eval", "true");
-    POTHOS_TEST_TRUE(bool(resultT));
+    POTHOS_TEST_TRUE((const bool&)resultT);
 
     const auto resultF = evalEnv.call<Pothos::Object>("eval", "false");
     POTHOS_TEST_TRUE(not (const bool&)resultF);
