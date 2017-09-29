@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/Compiler.hpp>
@@ -74,7 +74,7 @@ Pothos::Util::Compiler::Sptr Pothos::Util::Compiler::make(const std::string &nam
     {
         auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/util/compiler").join(name));
         auto callable = plugin.getObject().extract<Pothos::Callable>();
-        compiler = callable.call<Sptr>();
+        compiler = callable.call();
     }
     catch(const Exception &ex)
     {

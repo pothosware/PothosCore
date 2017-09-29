@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2016 Josh Blum
+// Copyright (c) 2016-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System.hpp>
@@ -62,7 +62,7 @@ static std::vector<Pothos::PluginPath> loadConfFile(const std::string &path)
         //call the loader
         const auto plugin = Pothos::PluginRegistry::get(loaderPath);
         const auto &loaderFcn = plugin.getObject().extract<Pothos::Callable>();
-        return loaderFcn.call<std::vector<Pothos::PluginPath>>(configMap);
+        return loaderFcn.call(configMap);
     }
     POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
     {

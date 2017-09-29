@@ -39,7 +39,7 @@ std::pair<Pothos::Proxy, Pothos::Proxy> createNetworkFlow(const Flow &flow)
     uri.setScheme("tcp");
     uri.setHost(bindIp);
     netBind = bindEnv->findProxy("Pothos/BlockRegistry").call(netBindPath, uri.toString(), "BIND");
-    auto connectPort = netBind.call<std::string>("getActualPort");
+    const std::string connectPort = netBind.call("getActualPort");
     uri.setPort(std::stoi(connectPort));
     netConn = connEnv->findProxy("Pothos/BlockRegistry").call(netConnPath, uri.toString(), "CONNECT");
 

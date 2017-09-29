@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -113,20 +113,20 @@ void Pothos::Topology::_connect(
     flow.dst = _impl->makePort(dst, dstName);
 
     //perform auto-allocation, on a block this may or may not allocate, on a topology this throws
-    try{getConnectable(src).get("_actor").call<std::string>("autoAllocateOutput", srcName);}catch(const Exception &){}
-    try{getConnectable(dst).get("_actor").call<std::string>("autoAllocateInput", dstName);}catch(const Exception &){}
+    try{getConnectable(src).get("_actor").call("autoAllocateOutput", srcName);}catch(const Exception &){}
+    try{getConnectable(dst).get("_actor").call("autoAllocateInput", dstName);}catch(const Exception &){}
 
     //validate that the ports exists before connection
     if (flow.src.obj)
     {
-        auto outs = getConnectable(src).call<std::vector<std::string>>("outputPortNames");
+        std::vector<std::string> outs = getConnectable(src).call("outputPortNames");
         if (std::find(outs.begin(), outs.end(), srcName) == outs.end())
             throw Pothos::TopologyConnectError("Pothos::Topology::connect()", flow.src.toString() + " has no output port named " + srcName);
     }
 
     if (flow.dst.obj)
     {
-        auto ins = getConnectable(dst).call<std::vector<std::string>>("inputPortNames");
+        std::vector<std::string> ins = getConnectable(dst).call("inputPortNames");
         if (std::find(ins.begin(), ins.end(), dstName) == ins.end())
             throw Pothos::TopologyConnectError("Pothos::Topology::connect()", flow.dst.toString() + " has no input port named " + dstName);
     }
@@ -186,11 +186,11 @@ void Pothos::Topology::_disconnect(
     flow.dst = _impl->makePort(dst, dstName);
 
     //validate that the ports exists before disconnection
-    auto outs = getConnectable(src).call<std::vector<std::string>>("outputPortNames");
+    std::vector<std::string> outs = getConnectable(src).call("outputPortNames");
     if (std::find(outs.begin(), outs.end(), srcName) == outs.end())
         throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()", flow.src.toString() + " has no output port named " + srcName);
 
-    auto ins = getConnectable(dst).call<std::vector<std::string>>("inputPortNames");
+    std::vector<std::string> ins = getConnectable(dst).call("inputPortNames");
     if (std::find(ins.begin(), ins.end(), dstName) == ins.end())
         throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()", flow.dst.toString() + " has no input port named " + dstName);
 
@@ -203,8 +203,8 @@ void Pothos::Topology::_disconnect(
         Poco::format("this flow does not exist in the topology(%s)", flow.toString()));
 
     //perform auto-deletion, on a block this may or may not delete, on a topology this throws
-    try{getConnectable(src).get("_actor").call<std::string>("autoDeleteOutput", srcName);}catch(const Exception &){}
-    try{getConnectable(dst).get("_actor").call<std::string>("autoDeleteInput", dstName);}catch(const Exception &){}
+    try{getConnectable(src).get("_actor").call("autoDeleteOutput", srcName);}catch(const Exception &){}
+    try{getConnectable(dst).get("_actor").call("autoDeleteInput", dstName);}catch(const Exception &){}
 
     _impl->flows.erase(it);
 }
@@ -231,8 +231,8 @@ void Pothos::Topology::disconnectAll(const bool recursive)
     //perform auto-deletion, on a block this may or may not delete, on a topology this throws
     for (const auto &flow : _impl->flows)
     {
-        if (flow.src.obj) try{getInternalBlock(flow.src.obj).get("_actor").call<std::string>("autoDeleteOutput", flow.src.name);}catch(const Exception &){}
-        if (flow.dst.obj) try{getInternalBlock(flow.dst.obj).get("_actor").call<std::string>("autoDeleteInput", flow.dst.name);}catch(const Exception &){}
+        if (flow.src.obj) try{getInternalBlock(flow.src.obj).get("_actor").call("autoDeleteOutput", flow.src.name);}catch(const Exception &){}
+        if (flow.dst.obj) try{getInternalBlock(flow.dst.obj).get("_actor").call("autoDeleteInput", flow.dst.name);}catch(const Exception &){}
     }
 
     //clear our own local flows
@@ -262,7 +262,7 @@ bool Pothos::Topology::waitInactive(const double idleDuration, const double time
         for (size_t i = 0; i < blocks.size(); i++)
         {
             const auto &block = blocks[i];
-            const auto activityIndicator = block.get("_actor").call<int>("queryActivityIndicator");
+            const int activityIndicator = block.get("_actor").call("queryActivityIndicator");
             if (lastActivityIndicator[i] != activityIndicator)
             {
                 lastActivityTime[i] = std::chrono::high_resolution_clock::now();

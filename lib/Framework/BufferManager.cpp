@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferManager.hpp>
@@ -28,7 +28,7 @@ Pothos::BufferManager::Sptr Pothos::BufferManager::make(const std::string &name)
     {
         auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/framework/buffer_manager").join(name));
         auto callable = plugin.getObject().extract<Pothos::Callable>();
-        manager = callable.call<Sptr>();
+        manager = callable.call();
     }
     catch(const Exception &ex)
     {

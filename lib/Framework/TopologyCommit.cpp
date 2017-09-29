@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -40,7 +40,7 @@ std::string collectFutureInfoErrors(const std::vector<FutureInfo> infoFutures)
 static std::string getBufferMode(const Port &port, const std::string &domain, const bool &isInput)
 {
     auto actor = port.obj.get("_actor");
-    return actor.call<std::string>("getBufferMode", port.name, domain, isInput);
+    return actor.call("getBufferMode", port.name, domain, isInput);
 }
 
 static Pothos::Proxy getBufferManager(const Port &port, const std::string &domain, const bool &isInput)
@@ -77,8 +77,8 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
         auto dst = dsts.at(0);
         Pothos::Proxy manager;
 
-        auto srcDomain = src.obj.call("output", src.name).call<std::string>("domain");
-        auto dstDomain = dst.obj.call("input", dst.name).call<std::string>("domain");
+        std::string srcDomain = src.obj.call("output", src.name).call("domain");
+        std::string dstDomain = dst.obj.call("input", dst.name).call("domain");
 
         auto srcMode = getBufferMode(src, dstDomain, false);
         auto dstMode = getBufferMode(dst, srcDomain, true);
@@ -95,7 +95,7 @@ static void installBufferManagers(const std::vector<Flow> &flatFlows)
             for (const auto &otherDst : dsts)
             {
                 if (otherDst == dst) continue;
-                auto otherDstDomain = otherDst.obj.call("input", otherDst.name).call<std::string>("domain");
+                std::string otherDstDomain = otherDst.obj.call("input", otherDst.name).call("domain");
                 if (getBufferMode(otherDst, srcDomain, true) != "ABDICATE" and not otherDstDomain.empty())
                 {
                     throw Pothos::Exception("Pothos::Topology::installBufferManagers", Poco::format("%s->%s\n"

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -13,12 +13,12 @@
 static std::string getBufferMode(const Port &port, const std::string &domain, const bool &isInput)
 {
     auto actor = port.obj.get("_actor");
-    return actor.call<std::string>("getBufferMode", port.name, domain, isInput);
+    return actor.call("getBufferMode", port.name, domain, isInput);
 }
 
 static std::string getDomain(const Port &port, const bool &isInput)
 {
-    return port.obj.call(isInput?"input":"output", port.name).call<std::string>("domain");
+    return port.obj.call(isInput?"input":"output", port.name).call("domain");
 }
 
 /***********************************************************************

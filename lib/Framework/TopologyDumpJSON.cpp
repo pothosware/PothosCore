@@ -188,7 +188,7 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
     for (const auto &block : getObjSetFromFlowList(flows))
     {
         //gather block info
-        const auto blockId = block.call<std::string>("uid");
+        const std::string blockId = block.call("uid");
         auto &blockObj = blocksObj[blockId];
 
         //replace rendered names with names from flattened hierarchy
@@ -217,7 +217,7 @@ std::string Pothos::Topology::dumpJSON(const std::string &request)
         //sub-topology info
         if (traverse and this->uid() != blockId) try
         {
-            auto subDump = block.call<std::string>("dumpJSON", "{\"mode\":\"top\"}");
+            std::string subDump = block.call("dumpJSON", "{\"mode\":\"top\"}");
             auto subObj = json::parse(subDump);
             for (auto it = subObj.begin(); it != subObj.end(); ++it)
             {
