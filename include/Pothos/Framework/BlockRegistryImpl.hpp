@@ -4,7 +4,7 @@
 /// Inline member implementation for BlockRegistry class.
 ///
 /// \copyright
-/// Copyright (c) 2016-2016 Josh Blum
+/// Copyright (c) 2016-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -18,5 +18,5 @@ Pothos::Proxy Pothos::BlockRegistry::make(const std::string &path, ArgsType&&...
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto registry = env->findProxy("Pothos/BlockRegistry");
-    return registry.callProxy(path, std::forward<ArgsType>(args)...);
+    return registry.call(path, std::forward<ArgsType>(args)...);
 }

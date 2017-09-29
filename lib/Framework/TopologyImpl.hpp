@@ -88,7 +88,7 @@ inline Pothos::Proxy getInternalBlock(const Pothos::Proxy &block)
     Pothos::Proxy internal;
     try
     {
-        internal = block.callProxy("getInternalBlock");
+        internal = block.call("getInternalBlock");
     }
     catch (const Pothos::Exception &)
     {

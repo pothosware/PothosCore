@@ -77,11 +77,7 @@ public:
 
     //! Call a method with a Proxy return and variable args
     template <typename... ArgsType>
-    Proxy callProxy(const std::string &name, ArgsType&&... args) const;
-
-    //! Call a method with a void return and variable args
-    template <typename... ArgsType>
-    void callVoid(const std::string &name, ArgsType&&... args) const;
+    Proxy call(const std::string &name, ArgsType&&... args) const;
 
     //! Call a field getter with specified return type
     template <typename ReturnType>

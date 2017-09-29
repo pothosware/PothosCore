@@ -217,13 +217,13 @@ void Pothos::Topology::disconnectAll(const bool recursive)
         //throws ProxyHandleCallError on non topologies (aka blocks)
         if (flow.src.obj) try
         {
-            flow.src.obj.callVoid("disconnectAll");
+            flow.src.obj.call("disconnectAll");
         }
         catch (const Pothos::Exception &){}
 
         if (flow.dst.obj) try
         {
-            flow.dst.obj.callVoid("disconnectAll");
+            flow.dst.obj.call("disconnectAll");
         }
         catch (const Pothos::Exception &){}
     }

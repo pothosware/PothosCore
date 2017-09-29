@@ -90,7 +90,7 @@ static void test_simple_runner(Pothos::ProxyEnvironment::Sptr env)
 
     //make an instance and test
     auto superBarInstance0 = superBarProxy();
-    superBarInstance0.callVoid("setBar", 123);
+    superBarInstance0.call("setBar", 123);
     POTHOS_TEST_EQUAL(superBarInstance0.call<int>("getBar"), 123);
 
     //test field access
@@ -112,12 +112,12 @@ static void test_simple_runner(Pothos::ProxyEnvironment::Sptr env)
     auto superFooProxy = env->findProxy("SuperFoo");
 
     //test it making a super bar and test
-    auto superBarInstance2 = superFooProxy.callProxy("make", 4567);
+    auto superBarInstance2 = superFooProxy.call("make", 4567);
     POTHOS_TEST_EQUAL(superBarInstance2.call<int>("getBar"), 4567);
-    auto superBarInstance3 = superFooProxy.callProxy("makeNew", -543);
+    auto superBarInstance3 = superFooProxy.call("makeNew", -543);
     POTHOS_TEST_EQUAL(superBarInstance3.call<int>("getBar"), -543);
-    superBarInstance3.callVoid("delete");
-    auto superBarInstance4 = superFooProxy.callProxy("makeShared", 987);
+    superBarInstance3.call("delete");
+    auto superBarInstance4 = superFooProxy.call("makeShared", 987);
     POTHOS_TEST_EQUAL(superBarInstance4.call<int>("getBar"), 987);
 
     //runtime registration does not associate the module

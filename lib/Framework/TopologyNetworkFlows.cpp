@@ -38,15 +38,15 @@ std::pair<Pothos::Proxy, Pothos::Proxy> createNetworkFlow(const Flow &flow)
     Poco::URI uri;
     uri.setScheme("tcp");
     uri.setHost(bindIp);
-    netBind = bindEnv->findProxy("Pothos/BlockRegistry").callProxy(netBindPath, uri.toString(), "BIND");
+    netBind = bindEnv->findProxy("Pothos/BlockRegistry").call(netBindPath, uri.toString(), "BIND");
     auto connectPort = netBind.call<std::string>("getActualPort");
     uri.setPort(std::stoi(connectPort));
-    netConn = connEnv->findProxy("Pothos/BlockRegistry").callProxy(netConnPath, uri.toString(), "CONNECT");
+    netConn = connEnv->findProxy("Pothos/BlockRegistry").call(netConnPath, uri.toString(), "CONNECT");
 
     //return the pair of network blocks
     const auto name = flow.src.obj.call<std::string>("getName")+"["+flow.src.name+"]";
-    netSink.get().callVoid("setName", "NetTo: "+name);
-    netSource.get().callVoid("setName", "NetFrom: "+name);
+    netSink.get().call("setName", "NetTo: "+name);
+    netSource.get().call("setName", "NetFrom: "+name);
     return std::make_pair(netSource, netSink);
 }
 

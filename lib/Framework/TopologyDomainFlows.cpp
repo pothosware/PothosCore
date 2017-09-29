@@ -18,7 +18,7 @@ static std::string getBufferMode(const Port &port, const std::string &domain, co
 
 static std::string getDomain(const Port &port, const bool &isInput)
 {
-    return port.obj.callProxy(isInput?"input":"output", port.name).call<std::string>("domain");
+    return port.obj.call(isInput?"input":"output", port.name).call<std::string>("domain");
 }
 
 /***********************************************************************
@@ -82,8 +82,8 @@ static Pothos::Proxy getCopierForDomainCrossing(
 {
     if (isDomainCrossingAcceptable(mainPort, subPorts, isInput)) return Pothos::Proxy();
     auto registry = mainPort.obj.getEnvironment()->findProxy("Pothos/BlockRegistry");
-    auto copier = registry.callProxy("/blocks/copier");
-    copier.callVoid("setName", "DomainBridge");
+    auto copier = registry.call("/blocks/copier");
+    copier.call("setName", "DomainBridge");
     return copier;
 }
 
