@@ -3,7 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.6.0 (pending)
 ==========================
 
-- API changes Pothos::Object
+- API changes to Object, Proxy, and Callable interface types
   * Object supports implicit templated convert to target type
   * Proxy supports implicit templated convert to target type
   * Deprecated Callable interface's callVoid(), use call()
