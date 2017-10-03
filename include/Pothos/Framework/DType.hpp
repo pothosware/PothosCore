@@ -4,7 +4,7 @@
 /// This file contains the definition for the DType object.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -155,8 +155,8 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 
 private:
-    size_t _elemType;
-    size_t _elemSize;
+    unsigned char _elemType;
+    unsigned char _elemSize;
     size_t _dimension;
 };
 
