@@ -10,8 +10,11 @@ Release 0.6.0 (pending)
   * Deprecated Callable interface's callObject(), use call()
   * Deprecated Proxy interface's callVoid(), use call()
   * Deprecated Proxy interface's callProxy(), use call()
-
-- Automatic slots for all void calls in Block::registerCallable
+- Automatic slots for all void calls in Block::registerCallable:
+  Previously calls with 1 or more arguments became automatic slots.
+  The new rule checks for void return type and supports calls
+  without arguments. In addition registerSlot() will not throw
+  when registering slots that were created automatically.
 - Renamed the project repo from pothos to PothosCore
 - Updated toolkit/submodule URLs for repo rename
   - Renamed pothos-gui toolkit to PothosFlow
