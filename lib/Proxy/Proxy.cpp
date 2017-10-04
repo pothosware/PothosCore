@@ -42,7 +42,7 @@ Pothos::Proxy::operator bool(void) const
 
 Pothos::Proxy Pothos::Proxy::get(const std::string &name) const
 {
-    return this->callProxy("get:"+name);
+    return this->call("get:"+name);
 }
 
 int Pothos::Proxy::compareTo(const Proxy &other) const

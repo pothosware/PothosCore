@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -88,7 +88,7 @@ inline Pothos::Proxy getInternalBlock(const Pothos::Proxy &block)
     Pothos::Proxy internal;
     try
     {
-        internal = block.callProxy("getInternalBlock");
+        internal = block.call("getInternalBlock");
     }
     catch (const Pothos::Exception &)
     {
@@ -114,7 +114,7 @@ inline bool checkObj(const Pothos::Object &o)
 {
     try
     {
-        getProxy(o).call<std::string>("uid");
+        getProxy(o).call("uid");
     }
     catch(...)
     {

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/Containers.hpp>
@@ -14,7 +14,7 @@ std::vector<OutType> convertProxyVectorToNativeVector(const Pothos::ProxyVector 
     std::vector<OutType> nativeVec;
     for (const auto &elem : v)
     {
-        nativeVec.push_back(elem.convert<OutType>());
+        nativeVec.push_back(elem);
     }
     return nativeVec;
 }
@@ -68,7 +68,7 @@ std::map<KeyType, ValType> convertProxyMapToNativeMap(const Pothos::ProxyMap &m)
     std::map<KeyType, ValType> out;
     for (const auto &pair : m)
     {
-        out[pair.first.convert<KeyType>()] = pair.second.convert<ValType>();
+        out[pair.first] = (const ValType &)pair.second;
     }
     return out;
 }

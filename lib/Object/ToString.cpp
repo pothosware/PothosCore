@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2015 Josh Blum
+// Copyright (c) 2015-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/ObjectImpl.hpp>
@@ -22,7 +22,7 @@ std::string Pothos::Object::toString(void) const
         const Pothos::DType dtype(this->type());
         if (dtype.isComplex() and dtype.isFloat())
         {
-            const auto c = this->convert<std::complex<double>>();
+            const std::complex<double> c = *this;
             if (c.imag() == 0.0) return std::to_string(c.real());
             if (c.real() == 0.0) return std::to_string(c.imag())+"j";
             if (c.imag() < 0.0) return Poco::format("%f-%fj", c.real(), -c.imag());
@@ -30,15 +30,15 @@ std::string Pothos::Object::toString(void) const
         }
         if (dtype.isComplex())
         {
-            const auto c = this->convert<std::complex<long long>>();
+            const std::complex<long long> c = *this;
             if (c.imag() == 0) return std::to_string(c.real());
             if (c.real() == 0) return std::to_string(c.imag())+"j";
             if (c.imag() < 0) return Poco::format("%s-%sj", std::to_string(c.real()), std::to_string(-c.imag()));
             return Poco::format("%s+%sj", std::to_string(c.real()), std::to_string(c.imag()));
         }
-        if (dtype.isFloat()) return std::to_string(this->convert<double>());
-        if (dtype.isSigned()) return std::to_string(this->convert<long long>());
-        return std::to_string(this->convert<unsigned long long>());
+        if (dtype.isFloat()) return std::to_string(double(*this));
+        if (dtype.isSigned()) return std::to_string((long long)(*this));
+        return std::to_string((unsigned long long)(*this));
     }
     catch (...) {}
 

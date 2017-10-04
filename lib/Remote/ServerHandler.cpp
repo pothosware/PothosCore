@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "RemoteProxyDatagram.hpp"
@@ -39,14 +39,14 @@ static Pothos::Object getNewObjectId(const Pothos::Object &obj)
 
 static Pothos::Object getObjectAtId(const Pothos::Object &id)
 {
-    const size_t key = id.convert<size_t>();
+    const size_t key(id);
     std::lock_guard<std::mutex> lock(getObjectsMutex());
     return getObjectsMap()[key];
 }
 
 static void removeObjectAtId(const Pothos::Object &id)
 {
-    const size_t key = id.convert<size_t>();
+    const size_t key(id);
     std::lock_guard<std::mutex> lock(getObjectsMutex());
     getObjectsMap().erase(key);
 }

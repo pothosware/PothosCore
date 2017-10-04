@@ -179,8 +179,8 @@ Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const P
         const auto &callName = probesIt->second.first;
         const auto &signalName = probesIt->second.second;
         auto result = this->opaqueCallHandler(callName, inputArgs, numArgs);
-        if (result) this->callVoid(signalName, result);
-        else this->callVoid(signalName);
+        if (result) this->call(signalName, result);
+        else this->call(signalName);
         return Pothos::Object();
     }
 

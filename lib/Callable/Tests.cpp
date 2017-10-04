@@ -80,7 +80,7 @@ struct NonsenseClass
 POTHOS_TEST_BLOCK("/callable/tests", test_callable_null)
 {
     Pothos::Callable callNull;
-    POTHOS_TEST_THROWS(callNull.callVoid(0), Pothos::CallableNullError);
+    POTHOS_TEST_THROWS(callNull.call(0), Pothos::CallableNullError);
     POTHOS_TEST_TRUE(callNull == callNull);
     POTHOS_TEST_TRUE(callNull == Pothos::Callable());
 }
@@ -124,7 +124,7 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_with_methods)
     POTHOS_TEST_TRUE(setBar.type(-1) == typeid(void));
     POTHOS_TEST_TRUE(setBar.type(0) == typeid(TestClass));
     POTHOS_TEST_TRUE(setBar.type(1) == typeid(int));
-    POTHOS_TEST_THROWS(setBar.callVoid(0), Pothos::CallableArgumentError);
+    POTHOS_TEST_THROWS(setBar.call(0), Pothos::CallableArgumentError);
 
     Pothos::Callable getBar(&TestClass::getBar);
     POTHOS_TEST_EQUAL(getBar.getNumArgs(), 1);
@@ -134,7 +134,7 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_with_methods)
 
     //call the class methods
     TestClass test;
-    setBar.callVoid(std::ref(test), int(42));
+    setBar.call(std::ref(test), int(42));
     POTHOS_TEST_EQUAL(42, getBar.call<int>(std::ref(test)));
 
     //check the return error conditions
@@ -223,7 +223,7 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_bind)
     TestClass test;
     setBar.bind(std::ref(test), 0);
     getBar.bind(std::ref(test), 0);
-    setBar.callVoid(int(42));
+    setBar.call(int(42));
     POTHOS_TEST_EQUAL(42, getBar.call<int>());
 
     //bind and unbind arguments for add
@@ -273,5 +273,5 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_bind)
 POTHOS_TEST_BLOCK("/callable/tests", test_callable_throwing)
 {
     Pothos::Callable itsGonnaThrow(&TestClass::itsGonnaThrow);
-    POTHOS_TEST_THROWS(itsGonnaThrow.callVoid(int(42)), std::runtime_error);
+    POTHOS_TEST_THROWS(itsGonnaThrow.call(int(42)), std::runtime_error);
 }

@@ -4,7 +4,7 @@
 /// Definitions for the Proxy wrapper class.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -71,16 +71,35 @@ public:
     template <typename ValueType>
     ValueType convert(void) const;
 
+    /*!
+     * Templated conversion operator to assign Proxy to a target type.
+     * \throws ProxyEnvironmentConvertError if object cannot be converted
+     */
+    template <typename ValueType>
+    operator ValueType(void) const;
+
     //! Call a method with a return type and variable args
     template <typename ReturnType, typename... ArgsType>
     ReturnType call(const std::string &name, ArgsType&&... args) const;
 
     //! Call a method with a Proxy return and variable args
     template <typename... ArgsType>
+    Proxy call(const std::string &name, ArgsType&&... args) const;
+
+    /*!
+     * Call a method with a Proxy return and variable args
+     * \deprecated use call overload without return type
+     */
+    template <typename... ArgsType>
+    POTHOS_DEPRECATED
     Proxy callProxy(const std::string &name, ArgsType&&... args) const;
 
-    //! Call a method with a void return and variable args
+    /*!
+     * Call a method with a void return and variable args
+     * \deprecated use call overload without return type
+     */
     template <typename... ArgsType>
+    POTHOS_DEPRECATED
     void callVoid(const std::string &name, ArgsType&&... args) const;
 
     //! Call a field getter with specified return type

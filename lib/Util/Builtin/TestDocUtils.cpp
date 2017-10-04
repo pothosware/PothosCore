@@ -15,7 +15,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_doc_utils_dump_json)
     //check that the following does not throw
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto proxy = env->findProxy("Pothos/Util/DocUtils");
-    const auto jsonStr = proxy.call<std::string>("dumpJson");
+    const std::string jsonStr = proxy.call("dumpJson");
     POTHOS_TEST_TRUE(not jsonStr.empty());
     if (jsonStr.size() > 100)
     {

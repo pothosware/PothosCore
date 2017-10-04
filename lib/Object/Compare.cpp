@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/Object.hpp>
@@ -91,7 +91,7 @@ int Pothos::Object::compareTo(const Pothos::Object &other) const
     //try a number type just in the case that this is possible
     if (it == getCompareMap().end()) try
     {
-        return Pothos::Util::compareTo(this->convert<double>(), other.convert<double>());
+        return Pothos::Util::compareTo(double(*this), double(other));
     }
     catch(const Pothos::ObjectConvertError &){}
 

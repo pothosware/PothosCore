@@ -86,7 +86,7 @@ static mup::Value objectToMupValue(const Pothos::Object &obj)
     //support proxy vector to parser array
     if (obj.canConvert(typeid(Pothos::ProxyVector)))
     {
-        const auto vec = obj.convert<Pothos::ProxyVector>();
+        const Pothos::ProxyVector vec = obj;
         mup::Value arr(1, vec.size(), 0.0);
         for (size_t i = 0; i < vec.size(); i++)
         {
@@ -98,7 +98,7 @@ static mup::Value objectToMupValue(const Pothos::Object &obj)
     //support proxy map to parser array
     if (obj.canConvert(typeid(Pothos::ProxyMap)))
     {
-        const auto map = obj.convert<Pothos::ProxyMap>();
+        const Pothos::ProxyMap map = obj;
         mup::Value arr(1, map.size()*2+1, 0.0);
         size_t i = 0;
         arr.At(0, i++) = mup::Value(mapTypeId);

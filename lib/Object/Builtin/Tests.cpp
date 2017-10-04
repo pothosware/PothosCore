@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object.hpp>
@@ -79,7 +79,7 @@ POTHOS_TEST_BLOCK("/object/tests", test_object_mutable_copy_assigns)
 POTHOS_TEST_BLOCK("/object/tests", test_convert_numbers)
 {
     Pothos::Object intObj(int(42));
-    const long longVal = intObj.convert<long>();
+    const long longVal = intObj;
     POTHOS_TEST_EQUAL(longVal, 42);
     POTHOS_TEST_THROWS(intObj.convert<NeverHeardOfFooBar>(), Pothos::ObjectConvertError);
 
@@ -88,10 +88,21 @@ POTHOS_TEST_BLOCK("/object/tests", test_convert_numbers)
     POTHOS_TEST_TRUE(intObj.canConvert(typeid(long)));
     POTHOS_TEST_TRUE(not intObj.canConvert(typeid(NeverHeardOfFooBar)));
 
+    //tests bool explicit and implicit
+    Pothos::Object trueObj(true);
+    POTHOS_TEST_TRUE(trueObj.convert<bool>());
+    const bool trueRes = trueObj;
+    POTHOS_TEST_TRUE(trueRes);
+
+    Pothos::Object falseObj(false);
+    POTHOS_TEST_TRUE(not falseObj.convert<bool>());
+    const bool falseRes = falseObj;
+    POTHOS_TEST_TRUE(not falseRes);
+
     //test int to double
-    POTHOS_TEST_EQUAL(Pothos::Object(+1).convert<double>(), +1.0);
-    POTHOS_TEST_EQUAL(Pothos::Object(-1).convert<double>(), -1.0);
-    POTHOS_TEST_EQUAL(Pothos::Object(0).convert<double>(), 0.0);
+    POTHOS_TEST_EQUAL(double(Pothos::Object(+1)), +1.0);
+    POTHOS_TEST_EQUAL(double(Pothos::Object(-1)), -1.0);
+    POTHOS_TEST_EQUAL(double(Pothos::Object(0)), 0.0);
 
     //tests for range errors
     POTHOS_TEST_THROWS(Pothos::Object(-1).convert<unsigned>(), Pothos::RangeException);
@@ -114,7 +125,7 @@ POTHOS_TEST_BLOCK("/object/tests", test_convert_vectors)
     inputVec.push_back(3);
     Pothos::Object inputVecObj(inputVec);
 
-    auto outputVec = inputVecObj.convert<std::vector<unsigned long>>();
+    std::vector<unsigned long> outputVec = inputVecObj;
 
     POTHOS_TEST_EQUALV(inputVec, outputVec);
 }

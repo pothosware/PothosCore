@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "RemoteProxy.hpp"
@@ -79,7 +79,7 @@ Pothos::ObjectKwargs RemoteProxyEnvironment::transact(const Pothos::ObjectKwargs
         isBlocking = false;
 
         //this is our thread ID, reply args
-        const auto replyTid = replyArgs.at("tid").convert<size_t>();
+        const size_t replyTid(replyArgs.at("tid"));
         if (replyTid == tid)
         {
             lock.unlock();
@@ -117,7 +117,7 @@ RemoteProxyEnvironment::RemoteProxyEnvironment(
         "RemoteProxyEnvironment()", errorMsgIt->second.extract<std::string>());
 
     //set the remote ID for this env
-    remoteID = reply["envID"].convert<size_t>();
+    remoteID = reply["envID"];
     upid = reply["upid"].convert<std::string>();
     nodeId = reply["nodeId"].convert<std::string>();
     peerAddr = reply["peerAddr"].convert<std::string>();
@@ -177,7 +177,7 @@ Pothos::Proxy RemoteProxyEnvironment::findProxy(const std::string &name)
         "RemoteProxyEnvironment::findProxy("+name+")", errorMsgIt->second.extract<std::string>());
 
     //otherwise make a handle
-    return this->makeHandle(reply["handleID"].convert<size_t>());
+    return this->makeHandle(reply["handleID"]);
 }
 
 Pothos::Proxy RemoteProxyEnvironment::convertObjectToProxy(const Pothos::Object &local)
@@ -196,7 +196,7 @@ Pothos::Proxy RemoteProxyEnvironment::convertObjectToProxy(const Pothos::Object 
         "RemoteProxyEnvironment::convertObjectToProxy()", errorMsgIt->second.extract<std::string>());
 
     //otherwise make a handle
-    return this->makeHandle(reply["handleID"].convert<size_t>());
+    return this->makeHandle(reply["handleID"]);
 }
 
 Pothos::Object RemoteProxyEnvironment::convertProxyToObject(const Pothos::Proxy &proxy)

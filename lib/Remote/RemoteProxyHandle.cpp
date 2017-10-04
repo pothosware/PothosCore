@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "RemoteProxy.hpp"
@@ -64,7 +64,7 @@ Pothos::Proxy RemoteProxyHandle::call(const std::string &name, const Pothos::Pro
     if (messageIt != reply.end()) throw Pothos::ProxyExceptionMessage(messageIt->second.extract<std::string>());
 
     //otherwise make a handle
-    return env->makeHandle(reply["handleID"].convert<size_t>());
+    return env->makeHandle(reply["handleID"]);
 }
 
 int RemoteProxyHandle::compareTo(const Pothos::Proxy &proxy) const
@@ -93,7 +93,7 @@ int RemoteProxyHandle::compareTo(const Pothos::Proxy &proxy) const
     if (errorMsgIt != reply.end()) throw Pothos::ProxyCompareError(
         "RemoteProxyEnvironment::compareTo()", errorMsgIt->second.extract<std::string>());
 
-    return reply["result"].convert<int>();
+    return reply["result"];
 }
 
 size_t RemoteProxyHandle::hashCode(void) const
@@ -105,7 +105,7 @@ size_t RemoteProxyHandle::hashCode(void) const
 
     auto reply = env->transact(req);
 
-    return reply["result"].extract<size_t>();
+    return reply["result"];
 }
 
 std::string RemoteProxyHandle::toString(void) const
@@ -117,7 +117,7 @@ std::string RemoteProxyHandle::toString(void) const
 
     auto reply = env->transact(req);
 
-    return reply["result"].extract<std::string>();
+    return reply["result"];
 }
 
 std::string RemoteProxyHandle::getClassName(void) const
@@ -129,5 +129,5 @@ std::string RemoteProxyHandle::getClassName(void) const
 
     auto reply = env->transact(req);
 
-    return reply["result"].extract<std::string>();
+    return reply["result"];
 }
