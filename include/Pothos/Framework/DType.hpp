@@ -155,9 +155,9 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 
 private:
+    size_t _dimension;
     unsigned char _elemType;
     unsigned char _elemSize;
-    size_t _dimension;
 };
 
 //! Equality operator for DType (all attributes must match for equality)
@@ -173,9 +173,9 @@ inline bool Pothos::operator==(const DType &lhs, const DType &rhs)
 }
 
 inline Pothos::DType::DType(void):
+    _dimension(1),
     _elemType(0),
-    _elemSize(1),
-    _dimension(1)
+    _elemSize(1)
 {
     return;
 }

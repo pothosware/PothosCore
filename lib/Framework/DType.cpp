@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/DType.hpp>
@@ -195,30 +195,33 @@ static ElementTypes parseMarkupName(const std::string &markup, size_t &dimension
  * DType implementation
  **********************************************************************/
 Pothos::DType::DType(const char *markup):
-    _elemType(0), _elemSize(0), _dimension(1)
+    _dimension(1),
+    _elemType(parseMarkupName(markup, _dimension)),
+    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType))
 {
-    _elemType = parseMarkupName(markup, _dimension);
-    _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
+    return;
 }
 
 Pothos::DType::DType(const std::string &markup):
-    _elemType(0), _elemSize(0), _dimension(1)
+    _dimension(1),
+    _elemType(parseMarkupName(markup, _dimension)),
+    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType))
 {
-    _elemType = parseMarkupName(markup, _dimension);
-    _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
+    return;
 }
 
 Pothos::DType::DType(const std::string &alias, const size_t dimension):
-    _elemType(0), _elemSize(0), _dimension(dimension)
+    _dimension(dimension),
+    _elemType(getElementTypeSuperMap().lookupAlias(alias)),
+    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType))
 {
-    _elemType = getElementTypeSuperMap().lookupAlias(alias);
-    _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
+    return;
 }
 
 Pothos::DType::DType(const std::type_info &type, const size_t dimension):
+    _dimension(dimension),
     _elemType(getElementTypeSuperMap().lookupElemType(type)),
-    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType)),
-    _dimension(dimension)
+    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType))
 {
     return;
 }
