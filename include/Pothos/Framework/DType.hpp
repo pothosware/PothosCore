@@ -94,10 +94,10 @@ public:
     const std::string &name(void) const;
     
     //! Get the element type descriptor
-    size_t elemType(void) const;
+    unsigned char elemType(void) const;
 
     //! Get the size of a single element in bytes
-    size_t elemSize(void) const;
+    unsigned char elemSize(void) const;
 
     //! Get the dimensionality of this type
     size_t dimension(void) const;
@@ -180,12 +180,12 @@ inline Pothos::DType::DType(void):
     return;
 }
 
-inline size_t Pothos::DType::elemType(void) const
+inline unsigned char Pothos::DType::elemType(void) const
 {
     return _elemType;
 }
 
-inline size_t Pothos::DType::elemSize(void) const
+inline unsigned char Pothos::DType::elemSize(void) const
 {
     return _elemSize;
 }
