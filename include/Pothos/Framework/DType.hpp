@@ -4,7 +4,7 @@
 /// This file contains the definition for the DType object.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -94,10 +94,10 @@ public:
     const std::string &name(void) const;
     
     //! Get the element type descriptor
-    size_t elemType(void) const;
+    unsigned char elemType(void) const;
 
     //! Get the size of a single element in bytes
-    size_t elemSize(void) const;
+    unsigned char elemSize(void) const;
 
     //! Get the dimensionality of this type
     size_t dimension(void) const;
@@ -155,9 +155,9 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 
 private:
-    size_t _elemType;
-    size_t _elemSize;
     size_t _dimension;
+    unsigned char _elemType;
+    unsigned char _elemSize;
 };
 
 //! Equality operator for DType (all attributes must match for equality)
@@ -173,19 +173,19 @@ inline bool Pothos::operator==(const DType &lhs, const DType &rhs)
 }
 
 inline Pothos::DType::DType(void):
+    _dimension(1),
     _elemType(0),
-    _elemSize(1),
-    _dimension(1)
+    _elemSize(1)
 {
     return;
 }
 
-inline size_t Pothos::DType::elemType(void) const
+inline unsigned char Pothos::DType::elemType(void) const
 {
     return _elemType;
 }
 
-inline size_t Pothos::DType::elemSize(void) const
+inline unsigned char Pothos::DType::elemSize(void) const
 {
     return _elemSize;
 }

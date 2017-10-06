@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/DType.hpp>
@@ -10,6 +10,7 @@
 #include <Poco/HashMap.h>
 #include <Poco/String.h>
 #include <complex>
+#include <array>
 #include <map>
 
 /***********************************************************************
@@ -24,7 +25,9 @@ static const int Bytes1 = (0 << 5);
 static const int Bytes2 = (1 << 5);
 static const int Bytes4 = (2 << 5);
 static const int Bytes8 = (3 << 5);
-enum ElementTypes
+static const int Length = 128;
+
+enum ElementTypes : unsigned char
 {
     EmptyType = 0,
     CustomType = Custom,
@@ -110,7 +113,7 @@ public:
         declareNativeAlias(Int64, "llong");
     }
 
-    size_t lookupAlias(const std::string &alias) const
+    ElementTypes lookupAlias(const std::string &alias) const
     {
         auto it = _aliasToElementType.find(Poco::toLower(alias));
         if (it == _aliasToElementType.end())
@@ -120,7 +123,7 @@ public:
         return it->second;
     }
 
-    size_t lookupElemType(const std::type_info &type) const
+    ElementTypes lookupElemType(const std::type_info &type) const
     {
         try
         {
@@ -132,19 +135,19 @@ public:
         }
     }
 
-    size_t lookupElemSize(const size_t type) const
+    unsigned char lookupElemSize(const unsigned char type) const
     {
         return _elemTypeToElemSize.at(type);
     }
 
-    const std::string &lookupElemName(const size_t type) const
+    const std::string &lookupElemName(const unsigned char type) const
     {
         return _elemTypeToElemName.at(type);
     }
 
 private:
     template <typename Type>
-    void loadType(const size_t elemType, const std::string &name)
+    void loadType(const ElementTypes elemType, const std::string &name)
     {
         _aliasToElementType[name] = elemType;
         _aliasToElementType[typeid(Type).name()] = elemType;
@@ -154,10 +157,10 @@ private:
         _elemTypeToElemName[elemType] = name;
     }
 
-    Poco::HashMap<std::string, size_t> _aliasToElementType;
-    std::map<size_t, size_t> _typeHashToElemType;
-    std::map<size_t, size_t> _elemTypeToElemSize;
-    std::map<size_t, std::string> _elemTypeToElemName;
+    Poco::HashMap<std::string, ElementTypes> _aliasToElementType;
+    std::map<size_t, ElementTypes> _typeHashToElemType;
+    std::array<unsigned char, Length> _elemTypeToElemSize;
+    std::array<std::string, Length> _elemTypeToElemName;
 };
 
 static ElementTypeSuperMap &getElementTypeSuperMap(void)
@@ -169,7 +172,7 @@ static ElementTypeSuperMap &getElementTypeSuperMap(void)
 /***********************************************************************
  * Parse a name with markup
  **********************************************************************/
-static size_t parseMarkupName(const std::string &markup, size_t &dimension)
+static ElementTypes parseMarkupName(const std::string &markup, size_t &dimension)
 {
     const auto commaPos = markup.find(",");
     if (commaPos == std::string::npos) return getElementTypeSuperMap().lookupAlias(markup);
@@ -192,30 +195,33 @@ static size_t parseMarkupName(const std::string &markup, size_t &dimension)
  * DType implementation
  **********************************************************************/
 Pothos::DType::DType(const char *markup):
-    _elemType(0), _elemSize(0), _dimension(1)
+    _dimension(1),
+    _elemType(parseMarkupName(markup, _dimension)),
+    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType))
 {
-    _elemType = parseMarkupName(markup, _dimension);
-    _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
+    return;
 }
 
 Pothos::DType::DType(const std::string &markup):
-    _elemType(0), _elemSize(0), _dimension(1)
+    _dimension(1),
+    _elemType(parseMarkupName(markup, _dimension)),
+    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType))
 {
-    _elemType = parseMarkupName(markup, _dimension);
-    _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
+    return;
 }
 
 Pothos::DType::DType(const std::string &alias, const size_t dimension):
-    _elemType(0), _elemSize(0), _dimension(dimension)
+    _dimension(dimension),
+    _elemType(getElementTypeSuperMap().lookupAlias(alias)),
+    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType))
 {
-    _elemType = getElementTypeSuperMap().lookupAlias(alias);
-    _elemSize = getElementTypeSuperMap().lookupElemSize(_elemType);
+    return;
 }
 
 Pothos::DType::DType(const std::type_info &type, const size_t dimension):
+    _dimension(dimension),
     _elemType(getElementTypeSuperMap().lookupElemType(type)),
-    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType)),
-    _dimension(dimension)
+    _elemSize(getElementTypeSuperMap().lookupElemSize(_elemType))
 {
     return;
 }
