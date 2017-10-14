@@ -39,7 +39,7 @@ public:
      * \deprecated use call overload without return type
      */
     template <typename... ArgsType>
-    POTHOS_DEPRECATED
+    POTHOS_DEPRECATED("Replaced by call() overload without return type")
     Object callObject(ArgsType&&... args) const;
 
     /*!
@@ -47,7 +47,7 @@ public:
      * \deprecated use call overload without return type
      */
     template <typename... ArgsType>
-    POTHOS_DEPRECATED
+    POTHOS_DEPRECATED("Replaced by call() overload without return type")
     void callVoid(ArgsType&&... args) const;
 
 protected:

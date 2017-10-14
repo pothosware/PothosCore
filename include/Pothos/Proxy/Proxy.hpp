@@ -91,7 +91,7 @@ public:
      * \deprecated use call overload without return type
      */
     template <typename... ArgsType>
-    POTHOS_DEPRECATED
+    POTHOS_DEPRECATED("Replaced by call() overload without return type")
     Proxy callProxy(const std::string &name, ArgsType&&... args) const;
 
     /*!
@@ -99,7 +99,7 @@ public:
      * \deprecated use call overload without return type
      */
     template <typename... ArgsType>
-    POTHOS_DEPRECATED
+    POTHOS_DEPRECATED("Replaced by call() overload without return type")
     void callVoid(const std::string &name, ArgsType&&... args) const;
 
     //! Call a field getter with specified return type

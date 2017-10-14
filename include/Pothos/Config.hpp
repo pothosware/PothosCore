@@ -55,15 +55,22 @@
 #endif //_MSC_VER
 
 //deprecated macro for causing warnings on old calls
-#if defined(__has_cpp_attribute) && __has_cpp_attribute(deprecated)
-#define POTHOS_DEPRECATED [[deprecated]]
-#elif defined(__GNUC__)
-#define POTHOS_DEPRECATED __attribute__((deprecated))
-#elif defined(_MSC_VER)
-#define POTHOS_DEPRECATED __declspec(deprecated)
-#else
-#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
-#define POTHOS_DEPRECATED
+#ifdef __has_cpp_attribute
+#  if __has_cpp_attribute(deprecated)
+#    define POTHOS_DEPRECATED(msg) [[deprecated(msg)]]
+#  endif
+#endif
+
+//fall-back compiler specific support for deprecated
+#ifndef POTHOS_DEPRECATED
+#  if defined(__GNUC__)
+#    define POTHOS_DEPRECATED(msg) __attribute__((deprecated(msg)))
+#  elif defined(_MSC_VER)
+#    define POTHOS_DEPRECATED(msg) __declspec(deprecated(msg))
+#  else
+#   pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#   define POTHOS_DEPRECATED(msg)
+#  endif
 #endif
 
 /*!
