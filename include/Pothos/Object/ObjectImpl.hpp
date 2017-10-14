@@ -13,7 +13,6 @@
 #include <Pothos/Object/Object.hpp>
 #include <type_traits> //std::conditional, std::decay
 #include <functional> //std::reference_wrapper
-#include <cstdlib> //size_t
 #include <utility> //std::forward
 #include <atomic>
 #include <iosfwd>
@@ -22,41 +21,23 @@ namespace Pothos {
 namespace Detail {
 
 /***********************************************************************
- * meta-template foo to implement remove_reference_wrapper
- * http://en.wikipedia.org/wiki/Substitution_failure_is_not_an_error
+ * special_decay_t = decay + unwrapping a reference wrapper
+ * http://en.cppreference.com/w/cpp/utility/tuple/make_tuple
  **********************************************************************/
-template <typename T, bool C> struct extract_type_helper;
-template <typename T> struct extract_type_helper<T, true>
+template <typename T>
+struct unwrap_refwrapper
 {
-    typedef typename T::type type;
-};
-
-template <typename T> struct extract_type_helper<T, false>
-{
-    typedef T type;
+    using type = T;
 };
 
 template <typename T>
-class remove_reference_wrapper
+struct unwrap_refwrapper<std::reference_wrapper<T>>
 {
-private:
-    // Types "yes" and "no" are guaranteed to have different sizes
-    typedef char yes[1];
-    typedef char no[2];
-
-    template <typename C>
-    static yes& test(typename C::type*);
-
-    template <typename C>
-    static no& test(C *);
-
-    static const bool has_type_field = sizeof(test<T>(nullptr)) == sizeof(yes);
-    typedef typename extract_type_helper<T, has_type_field>::type extracted_type;
-    typedef std::is_same<std::reference_wrapper<extracted_type>, T> is_reference_wrapper;
-
-public:
-    typedef typename std::conditional<is_reference_wrapper::value, extracted_type, T>::type type;
+    using type = T&;
 };
+
+template <typename T>
+using special_decay_t = typename unwrap_refwrapper<typename std::decay<T>::type>::type;
 
 /***********************************************************************
  * ObjectContainer interface
@@ -122,7 +103,7 @@ struct ObjectContainerT : ObjectContainer
      */
     const std::type_info &type(void) const
     {
-        return typeid(typename remove_reference_wrapper<ValueType>::type);
+        return typeid(special_decay_t<ValueType>);
     }
 
     /*!
