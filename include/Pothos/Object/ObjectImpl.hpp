@@ -11,11 +11,10 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Object/Object.hpp>
-#include <type_traits> //std::conditional, std::decay
+#include <type_traits> //std::decay
 #include <functional> //std::reference_wrapper
 #include <utility> //std::forward
 #include <atomic>
-#include <iosfwd>
 
 namespace Pothos {
 namespace Detail {
