@@ -4,7 +4,7 @@
 /// Template implementation details for Callable.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -101,7 +101,9 @@ private:
     {
         checkArgs(args); //fixes warning for 0 args case
         return CallHelper<
-            decltype(_fcn), std::is_void<ReturnType>::value
+            decltype(_fcn), std::is_void<ReturnType>::value,
+            std::is_reference<ReturnType>::value and
+            not std::is_const<typename std::remove_reference<ReturnType>::type>::value
         >::call(_fcn, args[S].extract<ArgsType>()...);
     }
 
@@ -109,15 +111,22 @@ private:
     void checkArgs(const Object *){}
 
     //! templated call of function for optional return type
-    template <typename FcnType, bool Condition> struct CallHelper;
-    template <typename FcnType> struct CallHelper<FcnType, false>
+    template <typename FcnType, bool isVoid, bool isReference> struct CallHelper;
+    template <typename FcnType> struct CallHelper<FcnType, false, false>
     {
         static Object call(const FcnType &fcn, const ArgsType&... args)
         {
             return Object::make(fcn(args...));
         }
     };
-    template <typename FcnType> struct CallHelper<FcnType, true>
+    template <typename FcnType> struct CallHelper<FcnType, false, true>
+    {
+        static Object call(const FcnType &fcn, const ArgsType&... args)
+        {
+            return Object::make(std::ref(fcn(args...)));
+        }
+    };
+    template <typename FcnType> struct CallHelper<FcnType, true, false>
     {
         static Object call(const FcnType &fcn, const ArgsType&... args)
         {
