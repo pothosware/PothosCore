@@ -11,32 +11,13 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Object/Object.hpp>
+#include <Pothos/Util/Templates.hpp> //special_decay_t
 #include <type_traits> //std::decay
-#include <functional> //std::reference_wrapper
 #include <utility> //std::forward
 #include <atomic>
 
 namespace Pothos {
 namespace Detail {
-
-/***********************************************************************
- * special_decay_t = decay + unwrapping a reference wrapper
- * http://en.cppreference.com/w/cpp/utility/tuple/make_tuple
- **********************************************************************/
-template <typename T>
-struct unwrap_refwrapper
-{
-    using type = T;
-};
-
-template <typename T>
-struct unwrap_refwrapper<std::reference_wrapper<T>>
-{
-    using type = T&;
-};
-
-template <typename T>
-using special_decay_t = typename unwrap_refwrapper<typename std::decay<T>::type>::type;
 
 /***********************************************************************
  * ObjectContainer interface
@@ -121,7 +102,7 @@ ValueType &ObjectContainer::extract(const Object &obj)
 template <typename ValueType>
 ObjectContainer *makeObjectContainer(ValueType &&value)
 {
-    return new ObjectContainerT<special_decay_t<ValueType>>(std::forward<ValueType>(value));
+    return new ObjectContainerT<Pothos::Util::special_decay_t<ValueType>>(std::forward<ValueType>(value));
 }
 
 /*!
