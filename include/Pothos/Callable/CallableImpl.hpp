@@ -13,6 +13,7 @@
 #include <Pothos/Callable/Callable.hpp>
 #include <Pothos/Callable/CallInterfaceImpl.hpp>
 #include <Pothos/Object/ObjectImpl.hpp>
+#include <Pothos/Util/Templates.hpp> //integer_sequence
 #include <functional> //std::function
 #include <type_traits> //std::type_info, std::is_void
 #include <utility> //std::forward
@@ -65,7 +66,7 @@ public:
 
     Object call(const Object *args)
     {
-        return call(args, typename Gens<sizeof...(ArgsType)>::Type());
+        return call(args, Pothos::Util::index_sequence_for<ArgsType...>{});
     }
 
 private:
@@ -86,18 +87,9 @@ private:
         return typeR<T1, Ts...>(argNo-1);
     }
 
-    /*!
-     * sequence generator used to help index object arguments below
-     * \cond
-     */
-    template<int...> struct Seq {};
-    template<int N, int... S> struct Gens : Gens<N-1, N-1, S...> {};
-    template<int... S> struct Gens<0, S...>{ typedef Seq<S...> Type; };
-    //! \endcond
-
     //! implement call() using a generator sequence to handle array access
-    template<int ...S>
-    Object call(const Object *args, Seq<S...>)
+    template<std::size_t ...S>
+    Object call(const Object *args, Pothos::Util::index_sequence<S...>)
     {
         checkArgs(args); //fixes warning for 0 args case
         return CallHelper<
