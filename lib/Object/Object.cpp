@@ -23,7 +23,9 @@ Pothos::NullObject::~NullObject(void)
 /***********************************************************************
  * Object container
  **********************************************************************/
-Pothos::Detail::ObjectContainer::ObjectContainer(void):
+Pothos::Detail::ObjectContainer::ObjectContainer(const std::type_info &type):
+    internal(nullptr),
+    type(type),
     counter(1)
 {
    return;
@@ -126,7 +128,7 @@ bool Pothos::Object::unique(void) const
 const std::type_info &Pothos::Object::type(void) const
 {
     if (_impl == nullptr) return typeid(NullObject);
-    return _impl->type();
+    return _impl->type;
 }
 
 std::string Pothos::Object::getTypeString(void) const

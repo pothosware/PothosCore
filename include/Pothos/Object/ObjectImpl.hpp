@@ -24,20 +24,20 @@ namespace Detail {
  **********************************************************************/
 struct POTHOS_API ObjectContainer
 {
-    ObjectContainer(void);
+    ObjectContainer(const std::type_info &);
 
     virtual ~ObjectContainer(void);
 
-    virtual const std::type_info &type(void) const = 0;
+    void *internal; //!< Opaque pointer to internally held type
 
-    std::atomic<int> counter;
+    const std::type_info &type; //!< Type info for internal type
+
+    std::atomic<unsigned> counter; //! Atomic reference counter
 
     [[noreturn]] static void throwExtract(const Object &obj, const std::type_info &type);
 
     template <typename ValueType>
     static ValueType &extract(const Object &obj);
-
-    virtual void *get(void) const = 0; //opaque pointer to internal value
 };
 
 /***********************************************************************
@@ -46,17 +46,18 @@ struct POTHOS_API ObjectContainer
 template <typename ValueType>
 struct ObjectContainerT : ObjectContainer
 {
-
-    ObjectContainerT(void)
+    ObjectContainerT(void):
+        ObjectContainer(typeid(ValueType))
     {
-        return;
+        internal = (void*)std::addressof(this->value);
     }
 
     template <typename T>
     ObjectContainerT(T &&value):
+        ObjectContainer(typeid(ValueType)),
         value(std::forward<T>(value))
     {
-        return;
+        internal = (void*)std::addressof(this->value);
     }
 
     ~ObjectContainerT(void)
@@ -64,17 +65,7 @@ struct ObjectContainerT : ObjectContainer
         return;
     }
 
-    const std::type_info &type(void) const
-    {
-        return typeid(ValueType);
-    }
-
     ValueType value;
-
-    void *get(void) const
-    {
-        return (void *)std::addressof(this->value);
-    }
 };
 
 /***********************************************************************
@@ -93,7 +84,7 @@ ValueType &ObjectContainer::extract(const Object &obj)
 
     //Support for the special NullObject case when the _impl is nullptr.
     //Otherwise, check the type for a match and then extract the internal value
-    return *(reinterpret_cast<DecayValueType *>((obj._impl == nullptr)?0:obj._impl->get()));
+    return *(reinterpret_cast<DecayValueType *>((obj._impl == nullptr)?0:obj._impl->internal));
 }
 
 /***********************************************************************
@@ -149,6 +140,7 @@ const ValueType &Object::extract(void) const
 template <typename ValueType>
 ValueType Object::convert(void) const
 {
+    if (this->type() == typeid(ValueType)) return this->extract<ValueType>();
     Object newObj = this->convert(typeid(ValueType));
     return newObj.extract<ValueType>();
 }
