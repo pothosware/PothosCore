@@ -79,7 +79,7 @@ POTHOS_TEST_BLOCK("/object/tests", test_object_mutable_copy_assigns)
 POTHOS_TEST_BLOCK("/object/tests", test_object_reference)
 {
     Pothos::Object strObj("hello");
-    const auto &strRef0 = strObj.extract<std::string>();
+    const std::string &strRef0 = strObj;
     const std::string &strRef1 = strObj; //convert operator ref overload
     POTHOS_TEST_EQUAL(strRef0, strRef1);
     POTHOS_TEST_EQUAL(strRef0.c_str(), strRef1.c_str()); //exact same pointer

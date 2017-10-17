@@ -59,7 +59,7 @@ static void handleConvertPluginEvent(const Pothos::Plugin &plugin, const std::st
     {
         //validate the plugin -- if we want to handle it -- check the signature:
         if (plugin.getObject().type() != typeid(Pothos::Callable)) return;
-        const auto &call = plugin.getObject().extract<Pothos::Callable>();
+        const Pothos::Callable &call = plugin.getObject();
         if (call.type(-1) == typeid(void)) return;
         if (call.getNumArgs() != 1) return;
 
@@ -113,8 +113,8 @@ static Pothos::Object convertObject(const Pothos::Object &inputObj, const std::t
             auto it2 = getConvertMap().find(typesHashCombine(intermHash, outputType.hash_code()));
             if (it1 != getConvertMap().end() and it2 != getConvertMap().end())
             {
-                auto call1 = it1->second.getObject().extract<Pothos::Callable>();
-                auto call2 = it2->second.getObject().extract<Pothos::Callable>();
+                const Pothos::Callable &call1 = it1->second.getObject();
+                const Pothos::Callable &call2 = it2->second.getObject();
                 Pothos::Object intermediate = call1.opaqueCall(&inputObj, 1);
                 return call2.opaqueCall(&intermediate, 1);
             }
@@ -128,7 +128,7 @@ static Pothos::Object convertObject(const Pothos::Object &inputObj, const std::t
         inputObj.getTypeString(),
         Pothos::Util::typeInfoToString(outputType)));
 
-    auto call = it->second.getObject().extract<Pothos::Callable>();
+    const Pothos::Callable &call = it->second.getObject();
     return call.opaqueCall(&inputObj, 1);
 }
 

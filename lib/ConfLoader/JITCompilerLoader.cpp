@@ -138,7 +138,7 @@ static Pothos::Object opaqueJITCompilerFactory(
 
     //the actual function from the compiled module
     const auto plugin = Pothos::PluginRegistry::get(pluginPath);
-    const auto &call = plugin.getObject().extract<Pothos::Callable>();
+    const Pothos::Callable &call = plugin.getObject();
     return call.opaqueCall(args, numArgs);
 }
 

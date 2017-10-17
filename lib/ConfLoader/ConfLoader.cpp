@@ -61,7 +61,7 @@ static std::vector<Pothos::PluginPath> loadConfFile(const std::string &path)
 
         //call the loader
         const auto plugin = Pothos::PluginRegistry::get(loaderPath);
-        const auto &loaderFcn = plugin.getObject().extract<Pothos::Callable>();
+        const Pothos::Callable &loaderFcn = plugin.getObject();
         return loaderFcn.call(configMap);
     }
     POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
