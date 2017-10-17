@@ -76,6 +76,23 @@ POTHOS_TEST_BLOCK("/object/tests", test_object_mutable_copy_assigns)
     POTHOS_TEST_EQUAL(objM1Copy.extract<int>(), 1);
 }
 
+POTHOS_TEST_BLOCK("/object/tests", test_object_reference)
+{
+    Pothos::Object strObj("hello");
+    const auto &strRef0 = strObj.extract<std::string>();
+    const std::string &strRef1 = strObj; //convert operator ref overload
+    POTHOS_TEST_EQUAL(strRef0, strRef1);
+    POTHOS_TEST_EQUAL(strRef0.c_str(), strRef1.c_str()); //exact same pointer
+
+    //test non-const reference support
+    Pothos::ObjectM intObj(int(42));
+    int &intRef = intObj;
+    POTHOS_TEST_EQUAL(intRef, 42);
+
+    intRef = 123;
+    POTHOS_TEST_EQUAL(intObj.extract<int>(), 123);
+}
+
 POTHOS_TEST_BLOCK("/object/tests", test_convert_numbers)
 {
     Pothos::Object intObj(int(42));

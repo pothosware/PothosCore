@@ -175,6 +175,13 @@ public:
     operator ValueType(void) const;
 
     /*!
+     * Templated conversion operator to extract a const reference.
+     * \throws ObjectConvertError if object does not match the type
+     */
+    template <typename ValueType>
+    operator const ValueType &(void) const;
+
+    /*!
      * Convert to a new Object that will be of the type specified.
      * \throws ObjectConvertError if object cannot be safe casted
      * \param type the desired type held by the output Object

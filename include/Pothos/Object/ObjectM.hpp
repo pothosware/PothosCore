@@ -4,7 +4,7 @@
 /// ObjectM provides a mutable subclass of Object.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -75,6 +75,13 @@ public:
      */
     template <typename ValueType>
     ValueType &extract(void) const;
+
+    /*!
+     * Templated conversion operator to extract a non-const reference.
+     * \throws ObjectConvertError if object does not match the type
+     */
+    template <typename ValueType>
+    operator ValueType &(void) const;
 };
 
 } //namespace Pothos
