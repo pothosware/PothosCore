@@ -75,7 +75,7 @@ inline std::vector<Pothos::Proxy> getObjSetFromFlowList(const std::vector<Flow> 
  **********************************************************************/
 inline Pothos::Proxy getProxy(const Pothos::Object &o)
 {
-    if (o.type() == typeid(Pothos::Proxy)) return o.extract<Pothos::Proxy>();
+    if (o.type() == typeid(Pothos::Proxy)) return o;
     return Pothos::ProxyEnvironment::make("managed")->convertObjectToProxy(o);
 }
 

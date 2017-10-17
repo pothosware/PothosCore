@@ -80,5 +80,5 @@ size_t Pothos::Object::hashCode(void) const
     if (it == getHashFcnMap().end()) return size_t(_impl);
 
     const Pothos::Callable &call = it->second.getObject();
-    return call.opaqueCall(this, 1).extract<size_t>();
+    return call.opaqueCall(this, 1);
 }

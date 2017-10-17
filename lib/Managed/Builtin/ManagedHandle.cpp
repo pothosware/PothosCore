@@ -213,7 +213,7 @@ Pothos::Proxy ManagedProxyHandle::call(const std::string &name, const Pothos::Pr
         throw Pothos::ProxyExceptionMessage(ex.displayText());
     }
 
-    if (result.type() == typeid(Pothos::Proxy)) return result.extract<Pothos::Proxy>();
+    if (result.type() == typeid(Pothos::Proxy)) return result;
     return env->makeHandle(result);
 }
 

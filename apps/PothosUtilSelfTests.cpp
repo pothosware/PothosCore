@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -115,7 +115,7 @@ void PothosUtilBase::selfTestOne(const std::string &, const std::string &path)
     Pothos::ScopedInit init;
 
     auto plugin = Pothos::PluginRegistry::get(path);
-    auto test = plugin.getObject().extract<std::shared_ptr<Pothos::TestingBase>>();
+    const std::shared_ptr<Pothos::TestingBase> &test = plugin.getObject();
     std::cout << "Testing " << plugin.getPath().toString() << "..." << std::endl;
     try
     {

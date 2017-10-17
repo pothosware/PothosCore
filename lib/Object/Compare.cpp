@@ -105,5 +105,5 @@ int Pothos::Object::compareTo(const Pothos::Object &other) const
     args[0] = *this;
     args[1] = other;
     const Pothos::Callable &call = it->second.getObject();
-    return call.opaqueCall(args, 2).extract<int>();
+    return call.opaqueCall(args, 2);
 }

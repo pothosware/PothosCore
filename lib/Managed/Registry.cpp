@@ -84,5 +84,5 @@ Pothos::ManagedClass Pothos::ManagedClass::lookup(const std::type_info &type)
         "no registration found");
 
     //extract the managed class
-    return it->second.getObject().extract<Pothos::ManagedClass>();
+    return it->second.getObject();
 }
