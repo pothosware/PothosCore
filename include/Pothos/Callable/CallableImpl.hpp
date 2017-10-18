@@ -4,7 +4,7 @@
 /// Template implementation details for Callable.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -13,6 +13,7 @@
 #include <Pothos/Callable/Callable.hpp>
 #include <Pothos/Callable/CallInterfaceImpl.hpp>
 #include <Pothos/Object/ObjectImpl.hpp>
+#include <Pothos/Util/Templates.hpp> //integer_sequence
 #include <functional> //std::function
 #include <type_traits> //std::type_info, std::is_void
 #include <utility> //std::forward
@@ -65,7 +66,7 @@ public:
 
     Object call(const Object *args)
     {
-        return call(args, typename Gens<sizeof...(ArgsType)>::Type());
+        return call(args, Pothos::Util::index_sequence_for<ArgsType...>{});
     }
 
 private:
@@ -86,22 +87,15 @@ private:
         return typeR<T1, Ts...>(argNo-1);
     }
 
-    /*!
-     * sequence generator used to help index object arguments below
-     * \cond
-     */
-    template<int...> struct Seq {};
-    template<int N, int... S> struct Gens : Gens<N-1, N-1, S...> {};
-    template<int... S> struct Gens<0, S...>{ typedef Seq<S...> Type; };
-    //! \endcond
-
     //! implement call() using a generator sequence to handle array access
-    template<int ...S>
-    Object call(const Object *args, Seq<S...>)
+    template<std::size_t ...S>
+    Object call(const Object *args, Pothos::Util::index_sequence<S...>)
     {
         checkArgs(args); //fixes warning for 0 args case
         return CallHelper<
-            decltype(_fcn), std::is_void<ReturnType>::value
+            decltype(_fcn), std::is_void<ReturnType>::value,
+            std::is_reference<ReturnType>::value and
+            not std::is_const<typename std::remove_reference<ReturnType>::type>::value
         >::call(_fcn, args[S].extract<ArgsType>()...);
     }
 
@@ -109,15 +103,22 @@ private:
     void checkArgs(const Object *){}
 
     //! templated call of function for optional return type
-    template <typename FcnType, bool Condition> struct CallHelper;
-    template <typename FcnType> struct CallHelper<FcnType, false>
+    template <typename FcnType, bool isVoid, bool isReference> struct CallHelper;
+    template <typename FcnType> struct CallHelper<FcnType, false, false>
     {
         static Object call(const FcnType &fcn, const ArgsType&... args)
         {
             return Object::make(fcn(args...));
         }
     };
-    template <typename FcnType> struct CallHelper<FcnType, true>
+    template <typename FcnType> struct CallHelper<FcnType, false, true>
+    {
+        static Object call(const FcnType &fcn, const ArgsType&... args)
+        {
+            return Object::make(std::ref(fcn(args...)));
+        }
+    };
+    template <typename FcnType> struct CallHelper<FcnType, true, false>
     {
         static Object call(const FcnType &fcn, const ArgsType&... args)
         {

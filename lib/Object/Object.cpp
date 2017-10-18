@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/ObjectImpl.hpp>
@@ -6,14 +6,6 @@
 #include <Pothos/Util/TypeInfo.hpp>
 #include <Poco/Format.h>
 #include <cassert>
-
-/***********************************************************************
- * Checks for the template metafoo
- **********************************************************************/
-static_assert(std::is_same<
-    Pothos::Detail::remove_reference_wrapper<Pothos::Object>::type,
-    Pothos::Detail::remove_reference_wrapper<std::reference_wrapper<Pothos::Object>>::type
-    >::value, "remove_reference_wrapper broken");
 
 /***********************************************************************
  * NullObject impl
