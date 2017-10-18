@@ -11,7 +11,7 @@ the entire Pothos software suite in one build.
 
 ## Build Status
 
-- Travis: [![Travis Build Status](https://travis-ci.org/pothosware/pothos.svg?branch=master)](https://travis-ci.org/pothosware/PothosCore)
+- Travis: [![Travis Build Status](https://travis-ci.org/pothosware/PothosCore.svg?branch=master)](https://travis-ci.org/pothosware/PothosCore)
 - AppVeyor: [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/7owo8qb9oldw8iq8)](https://ci.appveyor.com/project/guruofquality/pothos)
 
 ## Dependencies
