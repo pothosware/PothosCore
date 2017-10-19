@@ -1,12 +1,11 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Remote.hpp>
+#include <Pothos/Util/SpinLockRW.hpp>
 #include <Poco/Net/StreamSocket.h>
 #include <Poco/Net/SocketStream.h>
 #include <Poco/URI.h>
-#include <Poco/SingletonHolder.h>
-#include <Poco/RWLock.h>
 #include <future>
 #include <mutex>
 #include <map>
@@ -15,21 +14,21 @@
 /***********************************************************************
  * lookupIpFromNodeId implementation
  **********************************************************************/
-static Poco::RWLock &getLookupMutex(void)
+static Pothos::Util::SpinLockRW &getLookupMutex(void)
 {
-    static Poco::SingletonHolder<Poco::RWLock> sh;
-    return *sh.get();
+    static Pothos::Util::SpinLockRW lock;
+    return lock;
 }
 
 static std::map<std::string, Poco::Net::IPAddress> &getNodeIdTable(void)
 {
-    static Poco::SingletonHolder<std::map<std::string, Poco::Net::IPAddress>> sh;
-    return *sh.get();
+    static std::map<std::string, Poco::Net::IPAddress> map;
+    return map;
 }
 
 std::string Pothos::RemoteClient::lookupIpFromNodeId(const std::string nodeId)
 {
-    Poco::RWLock::ScopedReadLock lock(getLookupMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getLookupMutex());
     auto it = getNodeIdTable().find(nodeId);
     if (it == getNodeIdTable().end()) return "";
     return it->second.toString();
@@ -37,7 +36,7 @@ std::string Pothos::RemoteClient::lookupIpFromNodeId(const std::string nodeId)
 
 static void updateNodeIdTable(const Pothos::ProxyEnvironment::Sptr &env, const Poco::Net::IPAddress &ipAddr)
 {
-    Poco::RWLock::ScopedWriteLock lock(getLookupMutex());
+    std::lock_guard<Pothos::Util::SpinLockRW> lock(getLookupMutex());
     getNodeIdTable()[env->getNodeId()] = ipAddr;
 }
 
@@ -46,14 +45,14 @@ static void updateNodeIdTable(const Pothos::ProxyEnvironment::Sptr &env, const P
  **********************************************************************/
 static std::mutex &getDNSLookupMutex(void)
 {
-    static Poco::SingletonHolder<std::mutex> sh;
-    return *sh.get();
+    static std::mutex mutex;
+    return mutex;
 }
 
 static std::map<std::string, std::shared_future<Poco::Net::IPAddress>> &getDNSFutures(void)
 {
-    static Poco::SingletonHolder<std::map<std::string, std::shared_future<Poco::Net::IPAddress>>> sh;
-    return *sh.get();
+    static std::map<std::string, std::shared_future<Poco::Net::IPAddress>> map;
+    return map;
 }
 
 //! The blocking DNS lookup routine -- perfomed by an async future

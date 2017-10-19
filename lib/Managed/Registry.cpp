@@ -1,31 +1,31 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Managed/Class.hpp>
 #include <Pothos/Managed/Exception.hpp>
+#include <Pothos/Util/SpinLockRW.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
 #include <Pothos/Callable.hpp>
 #include <Pothos/Plugin.hpp>
-#include <Poco/SingletonHolder.h>
-#include <Poco/RWLock.h>
 #include <Poco/Logger.h>
+#include <mutex>
 #include <map>
 
 /***********************************************************************
  * Global map structure for registry
  **********************************************************************/
-static Poco::RWLock &getMapMutex(void)
+static Pothos::Util::SpinLockRW &getMapMutex(void)
 {
-    static Poco::SingletonHolder<Poco::RWLock> sh;
-    return *sh.get();
+    static Pothos::Util::SpinLockRW lock;
+    return lock;
 }
 
 //singleton global map for all supported classes
 typedef std::map<size_t, Pothos::Plugin> ClassMapType;
 static ClassMapType &getClassMap(void)
 {
-    static Poco::SingletonHolder<ClassMapType> sh;
-    return *sh.get();
+    static ClassMapType map;
+    return map;
 }
 
 /***********************************************************************
@@ -40,7 +40,7 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
         if (plugin.getObject().type() != typeid(Pothos::ManagedClass)) return;
         const auto &reg = plugin.getObject().extract<Pothos::ManagedClass>();
 
-        Poco::RWLock::ScopedWriteLock lock(getMapMutex());
+        std::lock_guard<Pothos::Util::SpinLockRW> lock(getMapMutex());
         if (event == "add")
         {
             getClassMap()[reg.type().hash_code()] = plugin;
@@ -75,7 +75,7 @@ pothos_static_block(pothosManagedClassRegister)
 Pothos::ManagedClass Pothos::ManagedClass::lookup(const std::type_info &type)
 {
     //find the plugin in the map, it will be null if not found
-    Poco::RWLock::ScopedReadLock lock(getMapMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getMapMutex());
     auto it = getClassMap().find(type.hash_code());
 
     //thow an error when the entry is not found

@@ -1,22 +1,22 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin/Registry.hpp>
 #include <Pothos/Plugin/Exception.hpp>
+#include <Pothos/Util/SpinLockRW.hpp>
 #include <Pothos/Callable.hpp> //gets call implementation
-#include <Poco/RWLock.h>
 #include <Poco/Logger.h>
-#include <Poco/SingletonHolder.h>
 #include <cassert>
+#include <mutex>
 #include <map>
 
 /***********************************************************************
  * registry data structure
  **********************************************************************/
-static Poco::RWLock &getRegistryMutex(void)
+static Pothos::Util::SpinLockRW &getRegistryMutex(void)
 {
-    static Poco::SingletonHolder<Poco::RWLock> sh;
-    return *sh.get();
+    static Pothos::Util::SpinLockRW lock;
+    return lock;
 }
 
 struct RegistryEntry
@@ -43,8 +43,8 @@ struct RegistryEntry
 
 static RegistryEntry &getRegistryRoot(void)
 {
-    static Poco::SingletonHolder<RegistryEntry> sh;
-    return *sh.get();
+    static RegistryEntry regRoot;
+    return regRoot;
 }
 
 /***********************************************************************
@@ -85,7 +85,7 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
     //traverse the tree - store a list of parent plugins
     //we lock the mutex here for protection and make a plugin copy
     {
-        Poco::RWLock::ScopedReadLock lock(getRegistryMutex());
+        Pothos::Util::SpinLockRW::SharedLock lock(getRegistryMutex());
         const std::vector<std::string> pathNodes = path.listNodes();
         RegistryEntry *root = &getRegistryRoot();
 
@@ -128,8 +128,8 @@ static void handleMissedSubTreeEvents(const Pothos::Object &handler, const Potho
  **********************************************************************/
 static Pothos::PluginModule &getActiveModuleLoading(void)
 {
-    static Poco::SingletonHolder<Pothos::PluginModule> sh;
-    return *sh.get();
+    static Pothos::PluginModule module;
+    return module;
 }
 
 void registrySetActiveModuleLoading(const Pothos::PluginModule &module)
@@ -152,7 +152,7 @@ void Pothos::PluginRegistry::add(const Plugin &plugin_)
     poco_debug(Poco::Logger::get("Pothos.PluginRegistry.add"), plugin.toString());
 
     {
-        Poco::RWLock::ScopedWriteLock lock(getRegistryMutex());
+        std::lock_guard<Pothos::Util::SpinLockRW> lock(getRegistryMutex());
         const std::vector<std::string> pathNodes = path.listNodes();
         RegistryEntry *root = &getRegistryRoot();
 
@@ -187,7 +187,7 @@ void Pothos::PluginRegistry::add(const Plugin &plugin_)
 
 Pothos::Plugin Pothos::PluginRegistry::get(const PluginPath &path)
 {
-    Poco::RWLock::ScopedReadLock lock(getRegistryMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getRegistryMutex());
     const std::vector<std::string> pathNodes = path.listNodes();
     RegistryEntry *root = &getRegistryRoot();
 
@@ -212,7 +212,7 @@ Pothos::Plugin Pothos::PluginRegistry::remove(const PluginPath &path)
 
     Plugin plugin;
     {
-        Poco::RWLock::ScopedWriteLock lock(getRegistryMutex());
+        std::lock_guard<Pothos::Util::SpinLockRW> lock(getRegistryMutex());
         const std::vector<std::string> pathNodes = path.listNodes();
         RegistryEntry *root = &getRegistryRoot();
 
@@ -241,7 +241,7 @@ Pothos::Plugin Pothos::PluginRegistry::remove(const PluginPath &path)
 
 bool Pothos::PluginRegistry::empty(const PluginPath &path)
 {
-    Poco::RWLock::ScopedReadLock lock(getRegistryMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getRegistryMutex());
     const std::vector<std::string> pathNodes = path.listNodes();
     RegistryEntry *root = &getRegistryRoot();
 
@@ -256,7 +256,7 @@ bool Pothos::PluginRegistry::empty(const PluginPath &path)
 
 bool Pothos::PluginRegistry::exists(const PluginPath &path)
 {
-    Poco::RWLock::ScopedReadLock lock(getRegistryMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getRegistryMutex());
     const std::vector<std::string> pathNodes = path.listNodes();
     RegistryEntry *root = &getRegistryRoot();
 
@@ -271,7 +271,7 @@ bool Pothos::PluginRegistry::exists(const PluginPath &path)
 
 std::vector<std::string> Pothos::PluginRegistry::list(const PluginPath &path)
 {
-    Poco::RWLock::ScopedReadLock lock(getRegistryMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getRegistryMutex());
     const std::vector<std::string> pathNodes = path.listNodes();
     RegistryEntry *root = &getRegistryRoot();
 
@@ -313,7 +313,7 @@ static void loadInfoDump(const Pothos::PluginPath &path, const RegistryEntry &en
 
 Pothos::PluginRegistryInfoDump Pothos::PluginRegistry::dump(void)
 {
-    Poco::RWLock::ScopedReadLock lock(getRegistryMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getRegistryMutex());
     PluginRegistryInfoDump dump;
     loadInfoDump(PluginPath(), getRegistryRoot(), dump);
     return dump;
