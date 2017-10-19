@@ -4,7 +4,6 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
-#include <Poco/SingletonHolder.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/RegularExpression.h>
 #include <Poco/HashMap.h>
@@ -165,8 +164,8 @@ private:
 
 static ElementTypeSuperMap &getElementTypeSuperMap(void)
 {
-    static Poco::SingletonHolder<ElementTypeSuperMap> sh;
-    return *sh.get();
+    static ElementTypeSuperMap map;
+    return map;
 }
 
 /***********************************************************************

@@ -7,7 +7,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote/Handler.hpp>
 #include <Pothos/System/HostInfo.hpp>
-#include <Poco/SingletonHolder.h>
+#include <Poco/Exception.h>
 #include <Poco/Bugcheck.h>
 #include <iostream>
 #include <mutex>
@@ -18,15 +18,15 @@
  **********************************************************************/
 static std::mutex &getObjectsMutex(void)
 {
-    static Poco::SingletonHolder<std::mutex> sh;
-    return *sh.get();
+    static std::mutex mutex;
+    return mutex;
 }
 
 typedef std::map<size_t, Pothos::Object> ServerObjectsMapType;
 static ServerObjectsMapType &getObjectsMap(void)
 {
-    static Poco::SingletonHolder<ServerObjectsMapType> sh;
-    return *sh.get();
+    static ServerObjectsMapType map;
+    return map;
 }
 
 static Pothos::Object getNewObjectId(const Pothos::Object &obj)

@@ -1,14 +1,13 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferChunk.hpp>
-#include <Poco/SingletonHolder.h>
 #include <cstring> //memcpy
 
 const Pothos::BufferChunk &Pothos::BufferChunk::null(void)
 {
-    static Poco::SingletonHolder<BufferChunk> sh;
-    return *sh.get();
+    static BufferChunk nullChunk;
+    return nullChunk;
 }
 
 void Pothos::BufferChunk::append(const BufferChunk &other)

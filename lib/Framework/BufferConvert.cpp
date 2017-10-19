@@ -1,9 +1,8 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Framework/Exception.hpp>
-#include <Poco/SingletonHolder.h>
 #include <functional>
 #include <complex>
 #include <cstdint>
@@ -119,8 +118,8 @@ private:
 
 static BufferConvertImpl &getBufferConvertImpl(void)
 {
-    static Poco::SingletonHolder<BufferConvertImpl> sh;
-    return *sh.get();
+    static BufferConvertImpl impl;
+    return impl;
 }
 
 /***********************************************************************

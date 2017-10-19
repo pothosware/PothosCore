@@ -20,7 +20,6 @@
 #include <Poco/Net/RemoteSyslogChannel.h>
 #include <Poco/Net/RemoteSyslogListener.h>
 #include <Poco/Net/DatagramSocket.h>
-#include <Poco/SingletonHolder.h>
 #include <Poco/String.h>
 #include <Poco/AutoPtr.h>
 #include <Poco/URI.h>
@@ -34,8 +33,8 @@
  **********************************************************************/
 static std::mutex &getSetupLoggerMutex(void)
 {
-    static Poco::SingletonHolder<std::mutex> sh;
-    return *sh.get();
+    static std::mutex mutex;
+    return mutex;
 }
 
 /***********************************************************************
