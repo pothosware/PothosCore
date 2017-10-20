@@ -131,6 +131,11 @@ Object::Object(ValueType &&value):
     _impl = Detail::makeObjectContainer(std::forward<ValueType>(value));
 }
 
+inline const std::type_info &Pothos::Object::type(void) const
+{
+    return (_impl == nullptr)?typeid(NullObject): _impl->type;
+}
+
 template <typename ValueType>
 const ValueType &Object::extract(void) const
 {

@@ -125,12 +125,6 @@ bool Pothos::Object::unique(void) const
     return _impl->counter == 1;
 }
 
-const std::type_info &Pothos::Object::type(void) const
-{
-    if (_impl == nullptr) return typeid(NullObject);
-    return _impl->type;
-}
-
 std::string Pothos::Object::getTypeString(void) const
 {
     return Util::typeInfoToString(this->type());
