@@ -227,7 +227,7 @@ void Pothos::ManagedClass::unload(const std::string &classPath)
 {
     //extract the managed class from the plugin tree
     auto plugin = PluginRegistry::get(PluginPath("/managed").join(classPath));
-    auto &managedCls = plugin.getObject().extract<ManagedClass>();
+    const ManagedClass &managedCls = plugin.getObject();
 
     //unload conversion constructors
     for (const auto &constructor : managedCls.getConstructors())

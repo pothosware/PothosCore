@@ -53,7 +53,7 @@ static RegistryEntry &getRegistryRoot(void)
 static bool canObjectHandleEvent(const Pothos::Object &obj)
 {
     if (obj.type() != typeid(Pothos::Callable)) return false; //its not a call
-    const Pothos::Callable &call = obj.extract<Pothos::Callable>();
+    const Pothos::Callable &call = obj;
     if (not call) return false; //its null
     //check the signature
     if (call.type(-1) != typeid(void)) return false;

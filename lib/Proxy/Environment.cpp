@@ -13,7 +13,7 @@ Pothos::ProxyEnvironment::Sptr Pothos::ProxyEnvironment::make(const std::string 
     try
     {
         auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/proxy/environment").join(name));
-        auto callable = plugin.getObject().extract<Pothos::Callable>();
+        const Pothos::Callable &callable = plugin.getObject();
         environment = callable.call(args);
     }
     catch(const Exception &ex)

@@ -66,7 +66,7 @@ bool Pothos::RemoteHandler::runHandlerOnce(std::istream &is, std::ostream &os)
     replyArgs["tid"] = reqArgs.at("tid");
     POTHOS_EXCEPTION_TRY
     {
-        const auto &action = reqArgs.at("action").extract<std::string>();
+        const std::string &action = reqArgs.at("action");
         if (action == "RemoteProxyEnvironment")
         {
             Pothos::ProxyEnvironmentArgs envArgs;
@@ -75,7 +75,7 @@ bool Pothos::RemoteHandler::runHandlerOnce(std::istream &is, std::ostream &os)
                 if (entry.second.type() != typeid(std::string)) continue;
                 envArgs[entry.first] = entry.second.extract<std::string>();
             }
-            const auto &name = reqArgs.at("name").extract<std::string>();
+            const std::string &name = reqArgs.at("name");
             auto env = Pothos::ProxyEnvironment::make(name, envArgs);
             replyArgs["envID"] = getNewObjectId(Pothos::Object(env));
 
@@ -92,20 +92,20 @@ bool Pothos::RemoteHandler::runHandlerOnce(std::istream &is, std::ostream &os)
         }
         else if (action == "findProxy")
         {
-            auto env = getObjectAtId(reqArgs.at("envID")).extract<Pothos::ProxyEnvironment::Sptr>();
+            const Pothos::ProxyEnvironment::Sptr &env = getObjectAtId(reqArgs.at("envID"));
             auto proxy = env->findProxy(reqArgs.at("name").extract<std::string>());
             replyArgs["handleID"] = getNewObjectId(Pothos::Object(proxy));
         }
         else if (action == "convertObjectToProxy")
         {
-            auto env = getObjectAtId(reqArgs.at("envID")).extract<Pothos::ProxyEnvironment::Sptr>();
+            const Pothos::ProxyEnvironment::Sptr &env = getObjectAtId(reqArgs.at("envID"));
             auto proxy = env->convertObjectToProxy(reqArgs.at("local"));
             replyArgs["handleID"] = getNewObjectId(Pothos::Object(proxy));
         }
         else if (action == "convertProxyToObject")
         {
-            auto env = getObjectAtId(reqArgs.at("envID")).extract<Pothos::ProxyEnvironment::Sptr>();
-            auto proxy = getObjectAtId(reqArgs.at("handleID")).extract<Pothos::Proxy>();
+            const Pothos::ProxyEnvironment::Sptr &env = getObjectAtId(reqArgs.at("envID"));
+            const Pothos::Proxy &proxy = getObjectAtId(reqArgs.at("handleID"));
             auto local = env->convertProxyToObject(proxy);
             replyArgs["local"] = local;
         }
@@ -115,7 +115,7 @@ bool Pothos::RemoteHandler::runHandlerOnce(std::istream &is, std::ostream &os)
         }
         else if (action == "call")
         {
-            auto proxy = getObjectAtId(reqArgs.at("handleID")).extract<Pothos::Proxy>();
+            const Pothos::Proxy &proxy = getObjectAtId(reqArgs.at("handleID"));
 
             //load the args
             std::vector<Pothos::Proxy> args;
@@ -130,7 +130,7 @@ bool Pothos::RemoteHandler::runHandlerOnce(std::istream &is, std::ostream &os)
             //make the call
             try
             {
-                const auto &name = reqArgs.at("name").extract<std::string>();
+                const std::string &name = reqArgs.at("name");
                 auto result = proxy.getHandle()->call(name, args.data(), args.size());
                 replyArgs["handleID"] = getNewObjectId(Pothos::Object(result));
             }
@@ -141,23 +141,23 @@ bool Pothos::RemoteHandler::runHandlerOnce(std::istream &is, std::ostream &os)
         }
         else if (action == "compareTo")
         {
-            auto proxy = getObjectAtId(reqArgs.at("handleID")).extract<Pothos::Proxy>();
-            auto other = getObjectAtId(reqArgs.at("otherID")).extract<Pothos::Proxy>();
+            const Pothos::Proxy &proxy = getObjectAtId(reqArgs.at("handleID"));
+            const Pothos::Proxy &other = getObjectAtId(reqArgs.at("otherID"));
             replyArgs["result"] = Pothos::Object(proxy.compareTo(other));
         }
         else if (action == "hashCode")
         {
-            auto proxy = getObjectAtId(reqArgs.at("handleID")).extract<Pothos::Proxy>();
+            const Pothos::Proxy &proxy = getObjectAtId(reqArgs.at("handleID"));
             replyArgs["result"] = Pothos::Object(proxy.hashCode());
         }
         else if (action == "toString")
         {
-            auto proxy = getObjectAtId(reqArgs.at("handleID")).extract<Pothos::Proxy>();
+            const Pothos::Proxy &proxy = getObjectAtId(reqArgs.at("handleID"));
             replyArgs["result"] = Pothos::Object(proxy.toString());
         }
         else if (action == "getClassName")
         {
-            auto proxy = getObjectAtId(reqArgs.at("handleID")).extract<Pothos::Proxy>();
+            const Pothos::Proxy &proxy = getObjectAtId(reqArgs.at("handleID"));
             replyArgs["result"] = Pothos::Object(proxy.getClassName());
         }
         else

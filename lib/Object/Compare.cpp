@@ -46,7 +46,7 @@ static void handleComparePluginEvent(const Pothos::Plugin &plugin, const std::st
     {
         //validate the plugin -- if we want to handle it -- check the signature:
         if (plugin.getObject().type() != typeid(Pothos::Callable)) return;
-        const auto &call = plugin.getObject().extract<Pothos::Callable>();
+        const Pothos::Callable &call = plugin.getObject();
         if (call.type(-1) != typeid(int)) return;
         if (call.getNumArgs() != 2) return;
 
@@ -104,6 +104,6 @@ int Pothos::Object::compareTo(const Pothos::Object &other) const
     Object args[2];
     args[0] = *this;
     args[1] = other;
-    auto call = it->second.getObject().extract<Pothos::Callable>();
-    return call.opaqueCall(args, 2).extract<int>();
+    const Pothos::Callable &call = it->second.getObject();
+    return call.opaqueCall(args, 2);
 }

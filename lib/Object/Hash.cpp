@@ -38,7 +38,7 @@ static void handleHashFcnPluginEvent(const Pothos::Plugin &plugin, const std::st
     {
         //validate the plugin -- if we want to handle it -- check the signature:
         if (plugin.getObject().type() != typeid(Pothos::Callable)) return;
-        const auto &call = plugin.getObject().extract<Pothos::Callable>();
+        const Pothos::Callable &call = plugin.getObject();
         if (call.type(-1) != typeid(size_t)) return;
         if (call.getNumArgs() != 1) return;
 
@@ -79,6 +79,6 @@ size_t Pothos::Object::hashCode(void) const
     //return the address when no hash function found
     if (it == getHashFcnMap().end()) return size_t(_impl);
 
-    auto call = it->second.getObject().extract<Pothos::Callable>();
-    return call.opaqueCall(this, 1).extract<size_t>();
+    const Pothos::Callable &call = it->second.getObject();
+    return call.opaqueCall(this, 1);
 }

@@ -73,7 +73,7 @@ Pothos::Util::Compiler::Sptr Pothos::Util::Compiler::make(const std::string &nam
     try
     {
         auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/util/compiler").join(name));
-        auto callable = plugin.getObject().extract<Pothos::Callable>();
+        const Pothos::Callable &callable = plugin.getObject();
         compiler = callable.call();
     }
     catch(const Exception &ex)

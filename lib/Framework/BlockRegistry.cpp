@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Block.hpp>
@@ -76,7 +76,7 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
 {
     const auto pluginPath = Pothos::PluginPath("/blocks", path);
     const auto plugin = Pothos::PluginRegistry::get(pluginPath);
-    const auto factory = plugin.getObject().extract<Pothos::Callable>();
+    const Pothos::Callable &factory = plugin.getObject();
 
     //handle opaque factory case
     if (isOpaqueFactory(factory)) return factory.call<Pothos::Object>(args, numArgs);
@@ -90,7 +90,7 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     //handle factories that return Block pointer types
     if (factory.type(-1) == typeid(Pothos::Block*))
     {
-        auto element = factory.opaqueCall(args, numArgs).extract<Pothos::Block *>();
+        Pothos::Block *element = factory.opaqueCall(args, numArgs);
         if (element->getName().empty()) element->setName(path); //a better name
         element->holdRef(Pothos::Object(plugin.getModule()));
         return Pothos::Object(std::shared_ptr<Pothos::Block>(element));
@@ -99,7 +99,7 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     //handle factories that return Block shared pointer types
     if (factory.type(-1) == typeid(std::shared_ptr<Pothos::Block>))
     {
-        auto element = factory.opaqueCall(args, numArgs).extract<std::shared_ptr<Pothos::Block>>();
+        std::shared_ptr<Pothos::Block> element = factory.opaqueCall(args, numArgs);
         if (element->getName().empty()) element->setName(path); //a better name
         element->holdRef(Pothos::Object(plugin.getModule()));
         return Pothos::Object(element);
@@ -108,7 +108,7 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     //handle factories that return Topology pointer types
     if (factory.type(-1) == typeid(Pothos::Topology*))
     {
-        auto element = factory.opaqueCall(args, numArgs).extract<Pothos::Topology *>();
+        Pothos::Topology *element = factory.opaqueCall(args, numArgs);
         if (element->getName().empty()) element->setName(path); //a better name
         element->holdRef(Pothos::Object(plugin.getModule()));
         return Pothos::Object(std::shared_ptr<Pothos::Topology>(element));
@@ -117,7 +117,7 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     //handle factories that return Topology shared pointer types
     if (factory.type(-1) == typeid(std::shared_ptr<Pothos::Topology>))
     {
-        auto element = factory.opaqueCall(args, numArgs).extract<std::shared_ptr<Pothos::Topology>>();
+        std::shared_ptr<Pothos::Topology> element = factory.opaqueCall(args, numArgs);
         if (element->getName().empty()) element->setName(path); //a better name
         element->holdRef(Pothos::Object(plugin.getModule()));
         return Pothos::Object(element);

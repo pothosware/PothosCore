@@ -38,7 +38,7 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
     {
         //validate the plugin -- if we want to handle it -- check the signature:
         if (plugin.getObject().type() != typeid(Pothos::ManagedClass)) return;
-        const auto &reg = plugin.getObject().extract<Pothos::ManagedClass>();
+        const Pothos::ManagedClass &reg = plugin.getObject();
 
         std::lock_guard<Pothos::Util::SpinLockRW> lock(getMapMutex());
         if (event == "add")
@@ -84,5 +84,5 @@ Pothos::ManagedClass Pothos::ManagedClass::lookup(const std::type_info &type)
         "no registration found");
 
     //extract the managed class
-    return it->second.getObject().extract<Pothos::ManagedClass>();
+    return it->second.getObject();
 }

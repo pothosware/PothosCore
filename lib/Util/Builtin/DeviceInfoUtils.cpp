@@ -17,7 +17,7 @@ public:
             auto path = Pothos::PluginPath("/devices").join(deviceName).join("info");
             if (not Pothos::PluginRegistry::exists(path)) continue;
             auto plugin = Pothos::PluginRegistry::get(path);
-            auto call = plugin.getObject().extract<Pothos::Callable>();
+            const Pothos::Callable &call = plugin.getObject();
             deviceObj.push_back(json::parse(call.call<std::string>()));
         }
         return deviceObj.dump();

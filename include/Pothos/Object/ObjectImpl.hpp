@@ -159,4 +159,10 @@ Object::operator ValueType(void) const
     return this->convert<ValueType>();
 }
 
+template <typename ValueType>
+Object::operator const ValueType &(void) const
+{
+    return this->extract<ValueType>();
+}
+
 } //namespace Pothos

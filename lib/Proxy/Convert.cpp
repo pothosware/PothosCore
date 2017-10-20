@@ -63,7 +63,7 @@ static size_t hashIt(const std::string &name, const std::string &type)
 static bool isConvertToLocal(const Pothos::Plugin &plugin)
 {
     if (plugin.getObject().type() != typeid(Pothos::ProxyConvertPair)) return false;
-    const auto &pair = plugin.getObject().extract<Pothos::ProxyConvertPair>();
+    const Pothos::ProxyConvertPair &pair = plugin.getObject();
     const auto &callable = pair.second;
     if (callable.getNumArgs() != 1) return false;
     if (callable.type(0) != typeid(Pothos::Proxy)) return false;
@@ -73,7 +73,7 @@ static bool isConvertToLocal(const Pothos::Plugin &plugin)
 static bool isConvertToProxy(const Pothos::Plugin &plugin)
 {
     if (plugin.getObject().type() != typeid(Pothos::Callable)) return false;
-    const auto &callable = plugin.getObject().extract<Pothos::Callable>();
+    const Pothos::Callable &callable = plugin.getObject();
     if (callable.getNumArgs() != 2) return false;
     if (callable.type(-1) != typeid(Pothos::Proxy)) return false;
     if (callable.type(0) != typeid(Pothos::ProxyEnvironment::Sptr)) return false;
@@ -97,7 +97,7 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
     {
         if (isConvertToLocal(plugin))
         {
-            auto pair = plugin.getObject().extract<Pothos::ProxyConvertPair>();
+            const Pothos::ProxyConvertPair &pair = plugin.getObject();
             std::lock_guard<Pothos::Util::SpinLockRW> lock(getMapToLocalMutex());
             if (event == "add")
             {
@@ -110,7 +110,7 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
         }
         else if (isConvertToProxy(plugin))
         {
-            auto callable = plugin.getObject().extract<Pothos::Callable>();
+            const Pothos::Callable &callable = plugin.getObject();
             std::lock_guard<Pothos::Util::SpinLockRW> lock(getMapToProxyMutex());
             if (event == "add")
             {
@@ -157,11 +157,11 @@ Pothos::Proxy Pothos::ProxyEnvironment::convertObjectToProxy(const Pothos::Objec
         Poco::format("doesnt support Object of type %s to %s environment",
         local.getTypeString(), this->getName()));
 
-    const auto &callable = it->second.getObject().extract<Pothos::Callable>();
+    const Pothos::Callable &callable = it->second.getObject();
     Pothos::Object args[2];
     args[0] = Pothos::Object(this->shared_from_this());
     args[1] = local;
-    return callable.opaqueCall(args, 2).extract<Pothos::Proxy>();
+    return callable.opaqueCall(args, 2);
 }
 
 Pothos::Object Pothos::ProxyEnvironment::convertProxyToObject(const Pothos::Proxy &proxy_)

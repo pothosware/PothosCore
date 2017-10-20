@@ -34,7 +34,7 @@ void PothosUtilBase::printDeviceInfo(void)
     auto path = Pothos::PluginPath("/devices").join(deviceType).join("info");
     std::cout << ">>> Querying device info: " << path.toString() << std::endl;
     auto plugin = Pothos::PluginRegistry::get(path);
-    auto call = plugin.getObject().extract<Pothos::Callable>();
+    const Pothos::Callable &call = plugin.getObject();
     auto info = json::parse(call.call<std::string>());
 
     //dump the information to file
