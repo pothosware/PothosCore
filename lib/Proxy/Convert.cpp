@@ -1,47 +1,47 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Proxy/Environment.hpp>
 #include <Pothos/Proxy/Handle.hpp>
 #include <Pothos/Proxy/Exception.hpp>
+#include <Pothos/Util/SpinLockRW.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
 #include <Pothos/Callable.hpp>
 #include <Pothos/Plugin.hpp>
-#include <Poco/SingletonHolder.h>
-#include <Poco/RWLock.h>
 #include <Poco/Logger.h>
 #include <Poco/Hash.h>
 #include <iostream>
 #include <cassert>
+#include <mutex>
 #include <map>
 
 /***********************************************************************
  * Global map structure for conversions
  **********************************************************************/
-static Poco::RWLock &getMapToLocalMutex(void)
+static Pothos::Util::SpinLockRW &getMapToLocalMutex(void)
 {
-    static Poco::SingletonHolder<Poco::RWLock> sh;
-    return *sh.get();
+    static Pothos::Util::SpinLockRW lock;
+    return lock;
 }
 
-static Poco::RWLock &getMapToProxyMutex(void)
+static Pothos::Util::SpinLockRW &getMapToProxyMutex(void)
 {
-    static Poco::SingletonHolder<Poco::RWLock> sh;
-    return *sh.get();
+    static Pothos::Util::SpinLockRW lock;
+    return lock;
 }
 
 typedef std::map<size_t, Pothos::Plugin> ConvertMapType;
 
 static ConvertMapType &getConvertToLocalMap(void)
 {
-    static Poco::SingletonHolder<ConvertMapType> sh;
-    return *sh.get();
+    static ConvertMapType map;
+    return map;
 }
 
 static ConvertMapType &getConvertToProxyMap(void)
 {
-    static Poco::SingletonHolder<ConvertMapType> sh;
-    return *sh.get();
+    static ConvertMapType map;
+    return map;
 }
 
 /***********************************************************************
@@ -98,7 +98,7 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
         if (isConvertToLocal(plugin))
         {
             auto pair = plugin.getObject().extract<Pothos::ProxyConvertPair>();
-            Poco::RWLock::ScopedWriteLock lock(getMapToLocalMutex());
+            std::lock_guard<Pothos::Util::SpinLockRW> lock(getMapToLocalMutex());
             if (event == "add")
             {
                 getConvertToLocalMap()[hashIt(name, pair.first)] = plugin;
@@ -111,7 +111,7 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
         else if (isConvertToProxy(plugin))
         {
             auto callable = plugin.getObject().extract<Pothos::Callable>();
-            Poco::RWLock::ScopedWriteLock lock(getMapToProxyMutex());
+            std::lock_guard<Pothos::Util::SpinLockRW> lock(getMapToProxyMutex());
             if (event == "add")
             {
                 getConvertToProxyMap()[hashIt(name, callable.type(1))] = plugin;
@@ -147,7 +147,7 @@ pothos_static_block(pothosProxyConvertRegister)
 Pothos::Proxy Pothos::ProxyEnvironment::convertObjectToProxy(const Pothos::Object &local)
 {
     //find the plugin in the map, it will be null if not found
-    Poco::RWLock::ScopedReadLock lock(getMapToProxyMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getMapToProxyMutex());
     const size_t h = hashIt(this->getName(), local.type());
     auto it = getConvertToProxyMap().find(h);
 
@@ -174,7 +174,7 @@ Pothos::Object Pothos::ProxyEnvironment::convertProxyToObject(const Pothos::Prox
     }
 
     //find the plugin in the map, it will be null if not found
-    Poco::RWLock::ScopedReadLock lock(getMapToLocalMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getMapToLocalMutex());
     const size_t h = hashIt(this->getName(), proxy.getHandle()->getClassName());
     auto it = getConvertToLocalMap().find(h);
 

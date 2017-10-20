@@ -3,31 +3,31 @@
 
 #include <Pothos/Object/Object.hpp>
 #include <Pothos/Object/Exception.hpp>
+#include <Pothos/Util/SpinLockRW.hpp>
 #include <Pothos/Callable.hpp>
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Util/CompareTo.hpp>
-#include <Poco/SingletonHolder.h>
-#include <Poco/RWLock.h>
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
 #include <Poco/Hash.h>
+#include <mutex>
 #include <map>
 
 /***********************************************************************
  * Global map structure for comparisons
  **********************************************************************/
-static Poco::RWLock &getMapMutex(void)
+static Pothos::Util::SpinLockRW &getMapMutex(void)
 {
-    static Poco::SingletonHolder<Poco::RWLock> sh;
-    return *sh.get();
+    static Pothos::Util::SpinLockRW lock;
+    return lock;
 }
 
 //singleton global map for all supported comparisons
 typedef std::map<size_t, Pothos::Plugin> CompareMapType;
 static CompareMapType &getCompareMap(void)
 {
-    static Poco::SingletonHolder<CompareMapType> sh;
-    return *sh.get();
+    static CompareMapType map;
+    return map;
 }
 
 //! combine two type hashes to form a unique hash such that hash(a, b) != hash(b, a)
@@ -54,7 +54,7 @@ static void handleComparePluginEvent(const Pothos::Plugin &plugin, const std::st
         const std::type_info &t0 = call.type(0);
         const std::type_info &t1 = call.type(1);
 
-        Poco::RWLock::ScopedWriteLock lock(getMapMutex());
+        std::lock_guard<Pothos::Util::SpinLockRW> lock(getMapMutex());
         if (event == "add")
         {
             getCompareMap()[typesHashCombine(t0, t1)] = plugin;
@@ -85,7 +85,7 @@ pothos_static_block(pothosObjectCompareRegister)
 int Pothos::Object::compareTo(const Pothos::Object &other) const
 {
     //find the plugin in the map, it will be null if not found
-    Poco::RWLock::ScopedReadLock lock(getMapMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getMapMutex());
     auto it = getCompareMap().find(typesHashCombine(this->type(), other.type()));
 
     //try a number type just in the case that this is possible

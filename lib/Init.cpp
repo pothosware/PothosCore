@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Init.hpp>
@@ -8,7 +8,6 @@
 #include <Poco/Path.h>
 #include <Poco/File.h>
 #include <Poco/Format.h>
-#include <Poco/SingletonHolder.h>
 
 //from lib/Framework/ConfLoader.cpp
 std::vector<Pothos::PluginPath> Pothos_ConfLoader_loadConfFiles(void);
@@ -35,8 +34,8 @@ namespace Pothos {
 
 Pothos::InitSingleton &Pothos::InitSingleton::instance(void)
 {
-    static Poco::SingletonHolder<Pothos::InitSingleton> sh;
-    return *sh.get();
+    static Pothos::InitSingleton inst;
+    return inst;
 }
 
 void Pothos::InitSingleton::load(void)

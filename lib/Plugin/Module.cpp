@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Paths.hpp>
@@ -11,7 +11,6 @@
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
 #include <mutex>
-#include <Poco/SingletonHolder.h>
 
 /***********************************************************************
  * Disabler for windows error messages
@@ -52,8 +51,8 @@ std::vector<std::string> getPluginPaths(const Pothos::PluginModule &module);
 
 static std::mutex &getModuleMutex(void)
 {
-    static Poco::SingletonHolder<std::mutex> sh;
-    return *sh.get();
+    static std::mutex mutex;
+    return mutex;
 }
 
 /***********************************************************************

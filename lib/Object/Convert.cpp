@@ -1,41 +1,41 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/ObjectImpl.hpp>
 #include <Pothos/Object/Exception.hpp>
+#include <Pothos/Util/SpinLockRW.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
 #include <Pothos/Callable.hpp>
 #include <Pothos/Plugin.hpp>
-#include <Poco/SingletonHolder.h>
-#include <Poco/RWLock.h>
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
 #include <Poco/Hash.h>
+#include <mutex>
 #include <set>
 #include <map>
 
 /***********************************************************************
  * Global map structure for conversions
  **********************************************************************/
-static Poco::RWLock &getMapMutex(void)
+static Pothos::Util::SpinLockRW &getMapMutex(void)
 {
-    static Poco::SingletonHolder<Poco::RWLock> sh;
-    return *sh.get();
+    static Pothos::Util::SpinLockRW lock;
+    return lock;
 }
 
 //singleton global map for all supported conversions
 typedef std::map<size_t, Pothos::Plugin> ConvertMapType;
 static ConvertMapType &getConvertMap(void)
 {
-    static Poco::SingletonHolder<ConvertMapType> sh;
-    return *sh.get();
+    static ConvertMapType map;
+    return map;
 }
 
 //given an input type (hash), what types can it can convert to?
 static std::map<size_t, std::set<size_t>> &getConvertIoMap(void)
 {
-    static Poco::SingletonHolder<std::map<size_t, std::set<size_t>>> sh;
-    return *sh.get();
+    static std::map<size_t, std::set<size_t>> map;
+    return map;
 }
 
 //! combine two type hashes to form a unique hash such that hash(a, b) != hash(b, a)
@@ -67,7 +67,7 @@ static void handleConvertPluginEvent(const Pothos::Plugin &plugin, const std::st
         const std::type_info &inputType = call.type(0);
         const std::type_info &outputType = call.type(-1);
 
-        Poco::RWLock::ScopedWriteLock lock(getMapMutex());
+        std::lock_guard<Pothos::Util::SpinLockRW> lock(getMapMutex());
         if (event == "add")
         {
             getConvertMap()[typesHashCombine(inputType, outputType)] = plugin;
@@ -100,7 +100,7 @@ pothos_static_block(pothosObjectConvertRegister)
 static Pothos::Object convertObject(const Pothos::Object &inputObj, const std::type_info &outputType)
 {
     //find the plugin in the map, it will be null if not found
-    Poco::RWLock::ScopedReadLock lock(getMapMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getMapMutex());
     auto it = getConvertMap().find(typesHashCombine(inputObj.type(), outputType));
 
     //try an intermediate conversion
@@ -148,7 +148,7 @@ bool Pothos::Object::canConvert(const std::type_info &type) const
 bool Pothos::Object::canConvert(const std::type_info &srcType, const std::type_info &dstType)
 {
     if (srcType == dstType) return true;
-    Poco::RWLock::ScopedReadLock lock(getMapMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getMapMutex());
     auto it = getConvertMap().find(typesHashCombine(srcType, dstType));
 
     //try an intermediate conversion

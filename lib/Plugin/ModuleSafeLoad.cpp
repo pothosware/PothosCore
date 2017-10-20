@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Paths.hpp>
@@ -11,7 +11,6 @@
 #include <Poco/Path.h>
 #include <Poco/AutoPtr.h>
 #include <Poco/Util/PropertyFileConfiguration.h>
-#include <Poco/SingletonHolder.h>
 #include <mutex>
 #include <cctype>
 
@@ -35,14 +34,14 @@ struct LoaderCacheFileLock : public Pothos::Util::FileLock
 
 static Pothos::Util::FileLock &getLoaderFileLock(void)
 {
-    static Poco::SingletonHolder<LoaderCacheFileLock> sh;
-    return *sh.get();
+    static LoaderCacheFileLock lock;
+    return lock;
 }
 
 static std::mutex &getLoaderMutex(void)
 {
-    static Poco::SingletonHolder<std::mutex> sh;
-    return *sh.get();
+    static std::mutex mutex;
+    return mutex;
 }
 
 /***********************************************************************

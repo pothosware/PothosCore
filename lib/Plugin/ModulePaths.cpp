@@ -1,34 +1,34 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin/Module.hpp>
 #include <Pothos/Plugin/Plugin.hpp>
-#include <Poco/RWLock.h>
+#include <Pothos/Util/SpinLockRW.hpp>
 #include <Poco/HashMap.h>
-#include <Poco/SingletonHolder.h>
+#include <mutex>
 
-static Poco::RWLock &getModulePathsMutex(void)
+static Pothos::Util::SpinLockRW &getModulePathsMutex(void)
 {
-    static Poco::SingletonHolder<Poco::RWLock> sh;
-    return *sh.get();
+    static Pothos::Util::SpinLockRW lock;
+    return lock;
 }
 
 typedef Poco::HashMap<std::string, std::vector<std::string>> ModulePathsMap;
 static ModulePathsMap &getModulePathsMap(void)
 {
-    static Poco::SingletonHolder<ModulePathsMap> sh;
-    return *sh.get();
+    static ModulePathsMap map;
+    return map;
 }
 
 std::vector<std::string> getPluginPaths(const Pothos::PluginModule &module)
 {
-    Poco::RWLock::ScopedReadLock lock(getModulePathsMutex());
+    Pothos::Util::SpinLockRW::SharedLock lock(getModulePathsMutex());
     return getModulePathsMap()[module.getFilePath()];
 }
 
 void updatePluginAssociation(const std::string &action, const Pothos::Plugin &plugin)
 {
-    Poco::RWLock::ScopedWriteLock lock(getModulePathsMutex());
+    std::lock_guard<Pothos::Util::SpinLockRW> lock(getModulePathsMutex());
     auto &v = getModulePathsMap()[plugin.getModule().getFilePath()];
     const auto &path = plugin.getPath().toString();
     if (action == "add")

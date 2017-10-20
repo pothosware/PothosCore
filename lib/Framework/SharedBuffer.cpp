@@ -3,7 +3,6 @@
 
 #include <Pothos/Framework/SharedBuffer.hpp>
 #include <Pothos/Framework/Exception.hpp>
-#include <Poco/SingletonHolder.h>
 #include <algorithm> //min/max
 #include <mutex>
 
@@ -39,8 +38,8 @@ Pothos::SharedBuffer::SharedBuffer(const size_t address, const size_t length, co
  **********************************************************************/
 static std::mutex &getCircMutex(void)
 {
-    static Poco::SingletonHolder<std::mutex> sh;
-    return *sh.get();
+    static std::mutex mutex;
+    return mutex;
 }
 
 Pothos::SharedBuffer Pothos::SharedBuffer::makeCirc(const size_t numBytes, const long nodeAffinity)

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -6,14 +6,13 @@
 #include <Poco/Path.h>
 #include <Poco/Format.h>
 #include <mutex>
-#include <Poco/SingletonHolder.h>
 #include <vector>
 #include <cassert>
 
 static std::mutex &getTestMutex(void)
 {
-    static Poco::SingletonHolder<std::mutex> sh;
-    return *sh.get();
+    static std::mutex mutex;
+    return mutex;
 }
 
 Pothos::TestingBase::TestingBase(void)
