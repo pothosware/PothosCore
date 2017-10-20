@@ -4,7 +4,7 @@
 /// A simple C++11 spin lock implementation.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -28,22 +28,16 @@ class POTHOS_API SpinLock
 public:
 
     //! Create a new unlocked spin lock
-    SpinLock(void)
-    {
-        this->unlock();
-    }
+    SpinLock(void);
+
+    //! Try to lock, return true for lock
+    bool try_lock(void) noexcept;
 
     //! Lock the spin lock, block if already locked
-    void lock(void)
-    {
-        while (_lock.test_and_set(std::memory_order_acquire)){}
-    }
+    void lock(void) noexcept;
 
     //! Unlock the spin lock (should be already locked)
-    void unlock(void)
-    {
-        _lock.clear(std::memory_order_release);
-    }
+    void unlock(void) noexcept;
 
 private:
     std::atomic_flag _lock;
@@ -51,3 +45,23 @@ private:
 
 } //namespace Util
 } //namespace Pothos
+
+inline Pothos::Util::SpinLock::SpinLock(void)
+{
+    this->unlock();
+}
+
+inline bool Pothos::Util::SpinLock::try_lock(void) noexcept
+{
+    return not _lock.test_and_set(std::memory_order_acquire);
+}
+
+inline void Pothos::Util::SpinLock::lock(void) noexcept
+{
+    while (not this->try_lock()){}
+}
+
+inline void Pothos::Util::SpinLock::unlock(void) noexcept
+{
+    _lock.clear(std::memory_order_release);
+}
