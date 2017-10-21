@@ -35,9 +35,6 @@ struct POTHOS_API ObjectContainer
     std::atomic<unsigned> counter; //! Atomic reference counter
 
     [[noreturn]] static void throwExtract(const Object &obj, const std::type_info &type);
-
-    template <typename ValueType>
-    static ValueType &extract(const Object &obj);
 };
 
 /***********************************************************************
@@ -69,22 +66,25 @@ struct ObjectContainerT : ObjectContainer
 };
 
 /***********************************************************************
- * extract implementation with support for reference wrapper
+ * extract implementation: either null type or direct pointer cast
  **********************************************************************/
 template <typename ValueType>
-ValueType &ObjectContainer::extract(const Object &obj)
+ValueType &extractObject(const Object &obj)
 {
-    typedef typename std::decay<ValueType>::type DecayValueType;
-
-    //throw when the target type does not match the container type
-    if (obj.type() != typeid(ValueType))
-    {
-        Detail::ObjectContainer::throwExtract(obj, typeid(ValueType));
-    }
-
     //Support for the special NullObject case when the _impl is nullptr.
     //Otherwise, check the type for a match and then extract the internal value
+    typedef typename std::decay<ValueType>::type DecayValueType;
     return *(reinterpret_cast<DecayValueType *>((obj._impl == nullptr)?0:obj._impl->internal));
+}
+
+/***********************************************************************
+ * convertObject either converts a object to a desired type
+ * or returns a object if the requested type was a object
+ **********************************************************************/
+template <typename T>
+T convertObject(const Object &obj)
+{
+    return extractObject<T>((obj.type() == typeid(T))?obj:obj.convert(typeid(T)));
 }
 
 /***********************************************************************
@@ -133,21 +133,23 @@ Object::Object(ValueType &&value):
 
 inline const std::type_info &Pothos::Object::type(void) const
 {
-    return (_impl == nullptr)?typeid(NullObject): _impl->type;
+    return (_impl == nullptr)?typeid(NullObject):_impl->type;
 }
 
 template <typename ValueType>
 const ValueType &Object::extract(void) const
 {
-    return Detail::ObjectContainer::extract<ValueType>(*this);
+    if (this->type() == typeid(ValueType))
+    {
+        return Detail::extractObject<ValueType>(*this);
+    }
+    Detail::ObjectContainer::throwExtract(*this, typeid(ValueType));
 }
 
 template <typename ValueType>
 ValueType Object::convert(void) const
 {
-    if (this->type() == typeid(ValueType)) return this->extract<ValueType>();
-    Object newObj = this->convert(typeid(ValueType));
-    return newObj.extract<ValueType>();
+    return Detail::convertObject<ValueType>(*this);
 }
 
 template <typename ValueType>

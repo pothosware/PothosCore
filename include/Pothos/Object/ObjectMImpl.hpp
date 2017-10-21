@@ -4,7 +4,7 @@
 /// Template implementation details for ObjectM.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -26,7 +26,7 @@ ObjectM::ObjectM(ValueType &&value):
 template <typename ValueType>
 ValueType &ObjectM::extract(void) const
 {
-    return Detail::ObjectContainer::extract<ValueType>(*this);
+    return const_cast<ValueType &>(Object::extract<ValueType>());
 }
 
 } //namespace Pothos
