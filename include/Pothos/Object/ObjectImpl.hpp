@@ -82,9 +82,17 @@ ValueType &extractObject(const Object &obj)
  * or returns a object if the requested type was a object
  **********************************************************************/
 template <typename T>
-T convertObject(const Object &obj)
+typename std::enable_if<!std::is_same<T, Object>::value, T>::type
+convertObject(const Object &obj)
 {
-    return extractObject<T>((obj.type() == typeid(T))?obj:obj.convert(typeid(T)));
+    return extractObject<T>(obj.convert(typeid(T)));
+}
+
+template <typename T>
+typename std::enable_if<std::is_same<T, Object>::value, T>::type
+convertObject(const Object &obj)
+{
+    return obj;
 }
 
 /***********************************************************************
@@ -149,6 +157,10 @@ const ValueType &Object::extract(void) const
 template <typename ValueType>
 ValueType Object::convert(void) const
 {
+    if (this->type() == typeid(ValueType))
+    {
+        return Detail::extractObject<ValueType>(*this);
+    }
     return Detail::convertObject<ValueType>(*this);
 }
 
