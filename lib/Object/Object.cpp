@@ -48,7 +48,7 @@ static bool decr(Pothos::Detail::ObjectContainer *o)
     return o->counter.fetch_sub(1, std::memory_order_acq_rel) == 1;
 }
 
-void Pothos::Detail::ObjectContainer::throwExtract(const Pothos::Object &obj, const std::type_info &type)
+void Pothos::Detail::throwExtract(const Pothos::Object &obj, const std::type_info &type)
 {
     assert(obj.type() != type);
     throw ObjectConvertError("Pothos::Object::extract()",

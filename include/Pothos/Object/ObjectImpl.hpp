@@ -33,8 +33,6 @@ struct POTHOS_API ObjectContainer
     const std::type_info &type; //!< Type info for internal type
 
     std::atomic<unsigned> counter; //! Atomic reference counter
-
-    [[noreturn]] static void throwExtract(const Object &obj, const std::type_info &type);
 };
 
 /***********************************************************************
@@ -76,6 +74,8 @@ ValueType &extractObject(const Object &obj)
     typedef typename std::decay<ValueType>::type DecayValueType;
     return *(reinterpret_cast<DecayValueType *>((obj._impl == nullptr)?0:obj._impl->internal));
 }
+
+[[noreturn]] POTHOS_API void throwExtract(const Object &obj, const std::type_info &type);
 
 /***********************************************************************
  * convertObject either converts a object to a desired type
@@ -151,7 +151,7 @@ const ValueType &Object::extract(void) const
     {
         return Detail::extractObject<ValueType>(*this);
     }
-    Detail::ObjectContainer::throwExtract(*this, typeid(ValueType));
+    Detail::throwExtract(*this, typeid(ValueType));
 }
 
 template <typename ValueType>
