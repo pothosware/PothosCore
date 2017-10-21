@@ -39,13 +39,13 @@ Pothos::Detail::ObjectContainer::~ObjectContainer(void)
 static void incr(Pothos::Detail::ObjectContainer *o)
 {
     if (o == nullptr) return;
-    o->counter.fetch_add(1);
+    o->counter.fetch_add(1, std::memory_order_relaxed);
 }
 
 static bool decr(Pothos::Detail::ObjectContainer *o)
 {
     if (o == nullptr) return false;
-    return o->counter.fetch_sub(1) == 1;
+    return o->counter.fetch_sub(1, std::memory_order_acq_rel) == 1;
 }
 
 void Pothos::Detail::ObjectContainer::throwExtract(const Pothos::Object &obj, const std::type_info &type)
