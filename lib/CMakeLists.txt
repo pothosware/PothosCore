@@ -124,7 +124,6 @@ list(APPEND POTHOS_SOURCES
     System/Exception.cpp
 
     Object/Object.cpp
-    Object/ObjectM.cpp
     Object/Hash.cpp
     Object/Compare.cpp
     Object/Convert.cpp

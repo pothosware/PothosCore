@@ -24,7 +24,6 @@
 namespace Pothos {
 
 //messy forward declares
-class ObjectM;
 namespace Detail {
 struct ObjectContainer;
 } //namespace Detail
@@ -112,7 +111,7 @@ public:
      * If this Object holds the only copy of the internal data,
      * then the internal data will be deleted in the destructor.
      */
-    virtual ~Object(void);
+    ~Object(void);
 
     /*!
      * Object copy assignment.
@@ -149,7 +148,7 @@ public:
     const std::type_info &type(void) const;
 
     /*!
-     * Cast the internal data to an arbitrary type.
+     * Get a const reference to the internal data type.
      * The requested cast type must exactly match the type().
      * \throws ObjectConvertError if object type != ValueType
      * \return a const reference to the internal data
