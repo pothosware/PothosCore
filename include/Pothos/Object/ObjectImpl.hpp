@@ -155,6 +155,16 @@ const ValueType &Object::extract(void) const
 }
 
 template <typename ValueType>
+ValueType &&Object::move(void)
+{
+    if (this->unique() and this->type() == typeid(ValueType))
+    {
+        return std::move(Detail::extractObject<ValueType>(*this));
+    }
+    Detail::throwExtract(*this, typeid(ValueType));
+}
+
+template <typename ValueType>
 ValueType Object::convert(void) const
 {
     if (this->type() == typeid(ValueType))

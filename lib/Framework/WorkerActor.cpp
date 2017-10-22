@@ -257,7 +257,8 @@ void Pothos::WorkerActor::handleSlotCalls(InputPort &port)
     {
         POTHOS_EXCEPTION_TRY
         {
-            const auto args = port.slotCallsPop().extract<ObjectVector>();
+            const auto call = port.slotCallsPop();
+            const auto &args = call.extract<ObjectVector>();
             block->opaqueCallHandler(port.name(), args.data(), args.size());
             this->flagInternalChange();
             this->activityIndicator.fetch_add(1, std::memory_order_relaxed);

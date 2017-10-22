@@ -157,6 +157,17 @@ public:
     const ValueType &extract(void) const;
 
     /*!
+     * Move the internal data via rvalue reference.
+     * The requested cast type must exactly match the type().
+     * The Object must be unique and have only one reference.
+     * \throws ObjectConvertError if object type != ValueType
+     * \throws ObjectConvertError if multiple reference counts
+     * \return an rvalue reference the internal data
+     */
+    template <typename ValueType>
+    ValueType &&move(void);
+
+    /*!
      * Convert performs a safe conversion that respects the value
      * when an exact type conversion is not required or wanted.
      * For example, the object may contain an int, we want a long.

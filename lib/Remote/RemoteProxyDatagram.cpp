@@ -197,5 +197,5 @@ Pothos::ObjectKwargs recvDatagram(std::istream &is)
 {
     Pothos::Object reply;
     PRPCDatagramIbuf(is, reply);
-    return reply.extract<Pothos::ObjectKwargs>();
+    return reply.move<Pothos::ObjectKwargs>();
 }
