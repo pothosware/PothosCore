@@ -26,8 +26,8 @@ Pothos::BufferManager::Sptr Pothos::BufferManager::make(const std::string &name)
     Sptr manager;
     try
     {
-        auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/framework/buffer_manager").join(name));
-        auto callable = plugin.getObject().extract<Pothos::Callable>();
+        const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/framework/buffer_manager").join(name));
+        const auto &callable = plugin.getObject().extract<Pothos::Callable>();
         manager = callable.call();
     }
     catch(const Exception &ex)

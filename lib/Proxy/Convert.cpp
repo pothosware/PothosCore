@@ -97,7 +97,7 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
     {
         if (isConvertToLocal(plugin))
         {
-            auto pair = plugin.getObject().extract<Pothos::ProxyConvertPair>();
+            const auto &pair = plugin.getObject().extract<Pothos::ProxyConvertPair>();
             std::lock_guard<Pothos::Util::SpinLockRW> lock(getMapToLocalMutex());
             if (event == "add")
             {
@@ -110,7 +110,7 @@ static void handlePluginEvent(const Pothos::Plugin &plugin, const std::string &e
         }
         else if (isConvertToProxy(plugin))
         {
-            auto callable = plugin.getObject().extract<Pothos::Callable>();
+            const auto &callable = plugin.getObject().extract<Pothos::Callable>();
             std::lock_guard<Pothos::Util::SpinLockRW> lock(getMapToProxyMutex());
             if (event == "add")
             {

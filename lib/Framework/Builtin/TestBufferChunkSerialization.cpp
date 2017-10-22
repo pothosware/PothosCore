@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -22,7 +22,7 @@ POTHOS_TEST_BLOCK("/framework/tests", test_buffer_chunk_serialization)
     Pothos::Object out;
     out.deserialize(ss);
     POTHOS_TEST_TRUE(out.type() == typeid(Pothos::BufferChunk));
-    auto outputBuffer = out.extract<Pothos::BufferChunk>();
+    const auto &outputBuffer = out.extract<Pothos::BufferChunk>();
 
     POTHOS_TEST_EQUAL(inputBuffer.length, outputBuffer.length);
     for (size_t i = 0; i < numElems; i++)

@@ -12,8 +12,8 @@ Pothos::ProxyEnvironment::Sptr Pothos::ProxyEnvironment::make(const std::string 
     Sptr environment;
     try
     {
-        auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/proxy/environment").join(name));
-        auto callable = plugin.getObject().extract<Pothos::Callable>();
+        const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/proxy/environment").join(name));
+        const auto &callable = plugin.getObject().extract<Pothos::Callable>();
         environment = callable.call(args);
     }
     catch(const Exception &ex)

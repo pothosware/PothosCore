@@ -79,6 +79,6 @@ size_t Pothos::Object::hashCode(void) const
     //return the address when no hash function found
     if (it == getHashFcnMap().end()) return size_t(_impl);
 
-    auto call = it->second.getObject().extract<Pothos::Callable>();
+    const auto &call = it->second.getObject().extract<Pothos::Callable>();
     return call.opaqueCall(this, 1).extract<size_t>();
 }

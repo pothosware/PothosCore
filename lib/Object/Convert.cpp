@@ -113,8 +113,8 @@ static Pothos::Object convertObject(const Pothos::Object &inputObj, const std::t
             auto it2 = getConvertMap().find(typesHashCombine(intermHash, outputType.hash_code()));
             if (it1 != getConvertMap().end() and it2 != getConvertMap().end())
             {
-                auto call1 = it1->second.getObject().extract<Pothos::Callable>();
-                auto call2 = it2->second.getObject().extract<Pothos::Callable>();
+                const auto &call1 = it1->second.getObject().extract<Pothos::Callable>();
+                const auto &call2 = it2->second.getObject().extract<Pothos::Callable>();
                 Pothos::Object intermediate = call1.opaqueCall(&inputObj, 1);
                 return call2.opaqueCall(&intermediate, 1);
             }
@@ -128,7 +128,7 @@ static Pothos::Object convertObject(const Pothos::Object &inputObj, const std::t
         inputObj.getTypeString(),
         Pothos::Util::typeInfoToString(outputType)));
 
-    auto call = it->second.getObject().extract<Pothos::Callable>();
+    const auto &call = it->second.getObject().extract<Pothos::Callable>();
     return call.opaqueCall(&inputObj, 1);
 }
 
