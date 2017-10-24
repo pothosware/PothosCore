@@ -91,7 +91,6 @@ static Pothos::Proxy makeBlock(
     const json &blockObj)
 {
     const std::string id = blockObj["id"];
-    const std::string name = blockObj.value("name", "");
 
     if (blockObj.count("path") == 0) throw Pothos::DataFormatException(
         "Pothos::Topology::make()", "blocks["+id+"] missing 'path' field");
@@ -128,8 +127,8 @@ static Pothos::Proxy makeBlock(
         throw Pothos::RuntimeException(Poco::format("%s = %s(%s)", id, path, argsStr), ex);
     }
 
-    //set the name if supplied in the block object
-    if (not name.empty()) block.call("setName", name);
+    //set the name of the block as supplied by the ID field
+    block.call("setName", id);
 
     //make the calls
     const auto &callsArray = blockObj.value("calls", json::array());
