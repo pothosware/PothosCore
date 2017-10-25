@@ -128,7 +128,7 @@ inline Pothos::Object Pothos::InputPort::asyncMessagesPop(void)
 {
     std::lock_guard<Util::SpinLock> lock(_asyncMessagesLock);
     if (_asyncMessages.empty()) return Pothos::Object();
-    auto msg = _asyncMessages.front().first;
+    auto msg = std::move(_asyncMessages.front().first);
     _asyncMessages.pop_front();
     return msg;
 }
