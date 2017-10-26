@@ -251,6 +251,7 @@ list(APPEND POTHOS_SOURCES
     Util/Builtin/DocUtils.cpp
     Util/Builtin/TestDocUtils.cpp
     Util/Builtin/TestEvalExpression.cpp
+    Util/Builtin/TestRingDeque.cpp
 
     Archive/ArchiveEntry.cpp
     Archive/StreamArchiver.cpp
