@@ -148,7 +148,7 @@ public:
     const std::type_info &type(void) const;
 
     /*!
-     * Get a const reference to the internal data type.
+     * Get a const reference to the internal data.
      * The requested cast type must exactly match the type().
      * \throws ObjectConvertError if object type != ValueType
      * \return a const reference to the internal data
@@ -157,15 +157,22 @@ public:
     const ValueType &extract(void) const;
 
     /*!
-     * Move the internal data via rvalue reference.
+     * Get a non-const reference to the internal data.
      * The requested cast type must exactly match the type().
      * The Object must be unique and have only one reference.
+     *
+     * Note: The Object container class is usually immutable
+     * unless the caller has sole ownership of the object.
+     * Typical use cases for mutability might include
+     * object initialization, object de-serialization,
+     * and rvalue m when object is a return value.
+     *
      * \throws ObjectConvertError if object type != ValueType
      * \throws ObjectConvertError if multiple reference counts
-     * \return an rvalue reference the internal data
+     * \return a non-const reference the internal data
      */
     template <typename ValueType>
-    ValueType &&move(void);
+    ValueType &ref(void);
 
     /*!
      * Convert performs a safe conversion that respects the value

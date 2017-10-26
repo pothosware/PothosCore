@@ -43,6 +43,19 @@ POTHOS_TEST_BLOCK("/object/tests", test_object_throw)
     POTHOS_TEST_THROWS(intObj.extract<char>(), Pothos::ObjectConvertError);
 }
 
+POTHOS_TEST_BLOCK("/object/tests", test_object_mutable)
+{
+    Pothos::Object intObj(int(42));
+    POTHOS_TEST_EQUAL(intObj.ref<int>(), 42);
+
+    intObj.ref<int>() = 21;
+    POTHOS_TEST_EQUAL(intObj.ref<int>(), 21);
+
+    //too many references, non-const reference denied
+    Pothos::Object intObjCopy = intObj;
+    POTHOS_TEST_THROWS(intObj.ref<int>(), Pothos::ObjectConvertError);
+}
+
 Pothos::Object someFunctionTakesObject(const Pothos::Object &obj)
 {
     return obj;
