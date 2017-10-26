@@ -11,6 +11,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Object/Object.hpp>
+#include <Pothos/Object/Exception.hpp>
 #include <Pothos/Util/Templates.hpp> //special_decay_t
 #include <type_traits> //std::decay
 #include <utility> //std::forward
@@ -157,11 +158,9 @@ const ValueType &Object::extract(void) const
 template <typename ValueType>
 ValueType &Object::ref(void)
 {
-    if (this->unique() and this->type() == typeid(ValueType))
-    {
-        return Detail::extractObject<ValueType>(*this);
-    }
-    Detail::throwExtract(*this, typeid(ValueType));
+    if (not this->unique()) throw ObjectConvertError("Pothos::Object::ref()",
+        "Multiple object ownership, access denied to non-const reference");
+    return const_cast<ValueType &>(this->extract<ValueType>());
 }
 
 template <typename ValueType>

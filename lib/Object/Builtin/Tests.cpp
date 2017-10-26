@@ -52,7 +52,10 @@ POTHOS_TEST_BLOCK("/object/tests", test_object_mutable)
     POTHOS_TEST_EQUAL(intObj.ref<int>(), 21);
 
     //too many references, non-const reference denied
+    POTHOS_TEST_TRUE(intObj.unique());
     Pothos::Object intObjCopy = intObj;
+    POTHOS_TEST_TRUE(not intObj.unique());
+    POTHOS_TEST_TRUE(not intObjCopy.unique());
     POTHOS_TEST_THROWS(intObj.ref<int>(), Pothos::ObjectConvertError);
 }
 
