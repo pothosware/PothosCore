@@ -23,7 +23,9 @@ Pothos::NullObject::~NullObject(void)
 /***********************************************************************
  * Object container
  **********************************************************************/
-Pothos::Detail::ObjectContainer::ObjectContainer(void):
+Pothos::Detail::ObjectContainer::ObjectContainer(const std::type_info &type):
+    internal(nullptr),
+    type(type),
     counter(1)
 {
    return;
@@ -37,16 +39,16 @@ Pothos::Detail::ObjectContainer::~ObjectContainer(void)
 static void incr(Pothos::Detail::ObjectContainer *o)
 {
     if (o == nullptr) return;
-    o->counter.fetch_add(1);
+    o->counter.fetch_add(1, std::memory_order_relaxed);
 }
 
 static bool decr(Pothos::Detail::ObjectContainer *o)
 {
     if (o == nullptr) return false;
-    return o->counter.fetch_sub(1) == 1;
+    return o->counter.fetch_sub(1, std::memory_order_acq_rel) == 1;
 }
 
-void Pothos::Detail::ObjectContainer::throwExtract(const Pothos::Object &obj, const std::type_info &type)
+void Pothos::Detail::throwExtract(const Pothos::Object &obj, const std::type_info &type)
 {
     assert(obj.type() != type);
     throw ObjectConvertError("Pothos::Object::extract()",
@@ -121,12 +123,6 @@ Pothos::Object &Pothos::Object::operator=(Object &&rhs)
 bool Pothos::Object::unique(void) const
 {
     return _impl->counter == 1;
-}
-
-const std::type_info &Pothos::Object::type(void) const
-{
-    if (_impl == nullptr) return typeid(NullObject);
-    return _impl->type();
 }
 
 std::string Pothos::Object::getTypeString(void) const

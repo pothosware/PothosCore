@@ -161,7 +161,7 @@ Pothos::Proxy Pothos::ProxyEnvironment::convertObjectToProxy(const Pothos::Objec
     Pothos::Object args[2];
     args[0] = Pothos::Object(this->shared_from_this());
     args[1] = local;
-    return callable.opaqueCall(args, 2).extract<Pothos::Proxy>();
+    return std::move(callable.opaqueCall(args, 2).ref<Pothos::Proxy>());
 }
 
 Pothos::Object Pothos::ProxyEnvironment::convertProxyToObject(const Pothos::Proxy &proxy_)

@@ -11,6 +11,7 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Object/Object.hpp>
+#include <Pothos/Object/Exception.hpp>
 #include <Pothos/Util/Templates.hpp> //special_decay_t
 #include <type_traits> //std::decay
 #include <utility> //std::forward
@@ -24,20 +25,15 @@ namespace Detail {
  **********************************************************************/
 struct POTHOS_API ObjectContainer
 {
-    ObjectContainer(void);
+    ObjectContainer(const std::type_info &);
 
     virtual ~ObjectContainer(void);
 
-    virtual const std::type_info &type(void) const = 0;
+    void *internal; //!< Opaque pointer to internally held type
 
-    std::atomic<int> counter;
+    const std::type_info &type; //!< Type info for internal type
 
-    [[noreturn]] static void throwExtract(const Object &obj, const std::type_info &type);
-
-    template <typename ValueType>
-    static ValueType &extract(const Object &obj);
-
-    virtual void *get(void) const = 0; //opaque pointer to internal value
+    std::atomic<unsigned> counter; //! Atomic reference counter
 };
 
 /***********************************************************************
@@ -46,17 +42,18 @@ struct POTHOS_API ObjectContainer
 template <typename ValueType>
 struct ObjectContainerT : ObjectContainer
 {
-
-    ObjectContainerT(void)
+    ObjectContainerT(void):
+        ObjectContainer(typeid(ValueType))
     {
-        return;
+        internal = (void*)std::addressof(this->value);
     }
 
     template <typename T>
     ObjectContainerT(T &&value):
+        ObjectContainer(typeid(ValueType)),
         value(std::forward<T>(value))
     {
-        return;
+        internal = (void*)std::addressof(this->value);
     }
 
     ~ObjectContainerT(void)
@@ -64,36 +61,39 @@ struct ObjectContainerT : ObjectContainer
         return;
     }
 
-    const std::type_info &type(void) const
-    {
-        return typeid(ValueType);
-    }
-
     ValueType value;
-
-    void *get(void) const
-    {
-        return (void *)std::addressof(this->value);
-    }
 };
 
 /***********************************************************************
- * extract implementation with support for reference wrapper
+ * extract implementation: either null type or direct pointer cast
  **********************************************************************/
 template <typename ValueType>
-ValueType &ObjectContainer::extract(const Object &obj)
+ValueType &extractObject(const Object &obj)
 {
-    typedef typename std::decay<ValueType>::type DecayValueType;
-
-    //throw when the target type does not match the container type
-    if (obj.type() != typeid(ValueType))
-    {
-        Detail::ObjectContainer::throwExtract(obj, typeid(ValueType));
-    }
-
     //Support for the special NullObject case when the _impl is nullptr.
     //Otherwise, check the type for a match and then extract the internal value
-    return *(reinterpret_cast<DecayValueType *>((obj._impl == nullptr)?0:obj._impl->get()));
+    typedef typename std::decay<ValueType>::type DecayValueType;
+    return *(reinterpret_cast<DecayValueType *>((obj._impl == nullptr)?0:obj._impl->internal));
+}
+
+[[noreturn]] POTHOS_API void throwExtract(const Object &obj, const std::type_info &type);
+
+/***********************************************************************
+ * convertObject either converts a object to a desired type
+ * or returns a object if the requested type was a object
+ **********************************************************************/
+template <typename T>
+typename std::enable_if<!std::is_same<T, Object>::value, T>::type
+convertObject(const Object &obj)
+{
+    return extractObject<T>(obj.convert(typeid(T)));
+}
+
+template <typename T>
+typename std::enable_if<std::is_same<T, Object>::value, T>::type
+convertObject(const Object &obj)
+{
+    return obj;
 }
 
 /***********************************************************************
@@ -140,17 +140,37 @@ Object::Object(ValueType &&value):
     _impl = Detail::makeObjectContainer(std::forward<ValueType>(value));
 }
 
+inline const std::type_info &Pothos::Object::type(void) const
+{
+    return (_impl == nullptr)?typeid(NullObject):_impl->type;
+}
+
 template <typename ValueType>
 const ValueType &Object::extract(void) const
 {
-    return Detail::ObjectContainer::extract<ValueType>(*this);
+    if (this->type() == typeid(ValueType))
+    {
+        return Detail::extractObject<ValueType>(*this);
+    }
+    Detail::throwExtract(*this, typeid(ValueType));
+}
+
+template <typename ValueType>
+ValueType &Object::ref(void)
+{
+    if (not this->unique()) throw ObjectConvertError("Pothos::Object::ref()",
+        "Multiple object ownership, access denied to non-const reference");
+    return const_cast<ValueType &>(this->extract<ValueType>());
 }
 
 template <typename ValueType>
 ValueType Object::convert(void) const
 {
-    Object newObj = this->convert(typeid(ValueType));
-    return newObj.extract<ValueType>();
+    if (this->type() == typeid(ValueType))
+    {
+        return Detail::extractObject<ValueType>(*this);
+    }
+    return Detail::convertObject<ValueType>(*this);
 }
 
 template <typename ValueType>
