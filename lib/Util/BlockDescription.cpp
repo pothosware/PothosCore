@@ -314,7 +314,7 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
         {
             payload = bracketEscapeEncode(payload);
             std::smatch fields;
-            static const std::regex e("^\\s*(\\w+)\\s*(\\[(.*)\\])?\\s*(.*)$");
+            static const std::regex e("^\\s*(\\w+)\\s*(\\[\\s*(.*\\S)\\s*\\])?\\s*(.*)$");
             if (not std::regex_match(payload, fields, e)) throw Pothos::SyntaxException(
                 "Expected |param key[name] description",
                 codeLine.toString());
@@ -405,7 +405,7 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
         {
             payload = bracketEscapeEncode(payload);
             std::smatch fields;
-            static const std::regex e("^(\\s*\\[(.*)\\])?\\s*(.*)$");
+            static const std::regex e("^(\\s*\\[\\s*(.*\\S)\\s*\\])?\\s*(.*)$");
             if (not std::regex_match(payload, fields, e)) throw Pothos::SyntaxException(
                 "Expected |option [name] value",
                 codeLine.toString());
