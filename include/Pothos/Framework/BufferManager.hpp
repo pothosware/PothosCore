@@ -4,7 +4,7 @@
 /// BufferManager provides an output pool of buffers.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -58,6 +58,9 @@ class POTHOS_API BufferManager
 public:
 
     typedef std::shared_ptr<BufferManager> Sptr;
+
+    //! Virtual destructor for derived buffer managers
+    virtual ~BufferManager(void);
 
     /*!
      * The BufferManager factory -- makes a new BufferManager given the factory name.

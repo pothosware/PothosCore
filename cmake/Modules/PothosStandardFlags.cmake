@@ -37,6 +37,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     #common warnings to help encourage good coding practices
     add_compile_options(-Wall)
     add_compile_options(-Wextra)
+    add_compile_options(-Wnon-virtual-dtor)
 
     #symbols are only exported from libraries/modules explicitly
     add_compile_options(-fvisibility=hidden)

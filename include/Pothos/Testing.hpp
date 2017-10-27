@@ -136,7 +136,7 @@ namespace Pothos {
 struct POTHOS_API TestingBase
 {
     TestingBase(void);
-    ~TestingBase(void);
+    virtual ~TestingBase(void);
     static TestingBase &current(void);
     void runTests();
     virtual void runTestsImpl() = 0;

@@ -5,7 +5,7 @@
 /// Entries are used for polymorphic factories.
 ///
 /// \copyright
-/// Copyright (c) 2016 Josh Blum
+/// Copyright (c) 2016-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -30,6 +30,9 @@ public:
 
     //! Create and register an entry given the type and unique ID
     ArchiveEntry(const std::type_info &type, const std::string &id);
+
+    //! Virtual destructor for derived type classes
+    virtual ~ArchiveEntry(void);
 
     //! Save a pointer to the archive in a derived class
     virtual void save(OStreamArchiver &ar, const void *t) const = 0;

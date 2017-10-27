@@ -21,6 +21,11 @@ Pothos::BufferManager::BufferManager(void):
     return;
 }
 
+Pothos::BufferManager::~BufferManager(void)
+{
+    return;
+}
+
 Pothos::BufferManager::Sptr Pothos::BufferManager::make(const std::string &name)
 {
     Sptr manager;

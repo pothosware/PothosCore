@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Josh Blum
+// Copyright (c) 2016-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Archive/ArchiveEntry.hpp>
@@ -37,6 +37,11 @@ Pothos::Archive::ArchiveEntry::ArchiveEntry(const std::type_info &type, const st
 {
     getArchiveEntryMap()[type.hash_code()] = this;
     getArchiveEntryMap()[_hash] = this;
+}
+
+Pothos::Archive::ArchiveEntry::~ArchiveEntry(void)
+{
+    return;
 }
 
 const Pothos::Archive::ArchiveEntry &Pothos::Archive::ArchiveEntry::find(const std::type_info &type)
