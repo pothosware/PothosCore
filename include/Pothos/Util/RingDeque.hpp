@@ -115,32 +115,47 @@ public:
 
 private:
     Allocator _allocator;
+    size_t _mask;
+    size_t _capacity;
     size_t _frontIndex;
     size_t _backIndex;
     size_t _numElements;
-    size_t _capacity;
     T *_container;
 };
+
+namespace Detail {
+
+    template <typename T>
+    T nextPow2(const T &in)
+    {
+        T out(1);
+        while (out < in) out <<= 1;
+        return out;
+    }
+
+} //namespace Detail
 
 template <typename T, typename A>
 RingDeque<T, A>::RingDeque(const size_t capacity, const A &allocator):
     _allocator(allocator),
-    _frontIndex(0),
-    _backIndex(capacity-1),
-    _numElements(0),
+    _mask(Detail::nextPow2(capacity)-1),
     _capacity(capacity),
-    _container(_allocator.allocate(_capacity))
+    _frontIndex(0),
+    _backIndex(_mask),
+    _numElements(0),
+    _container(_allocator.allocate(_mask+1))
 {
     assert(capacity > 0);
 }
 
 template <typename T, typename A>
 RingDeque<T, A>::RingDeque(const RingDeque<T, A> &other):
+    _mask(other._mask),
+    _capacity(other._capacity),
     _frontIndex(0),
-    _backIndex(other.capacity()-1),
+    _backIndex(other._mask),
     _numElements(0),
-    _capacity(other.capacity()),
-    _container(_allocator.allocate(_capacity))
+    _container(_allocator.allocate(_mask+1))
 {
     for (size_t i = 0; i < other.size(); i++)
     {
@@ -151,10 +166,11 @@ RingDeque<T, A>::RingDeque(const RingDeque<T, A> &other):
 template <typename T, typename A>
 RingDeque<T, A>::RingDeque(RingDeque<T, A> &&other):
     _allocator(std::move(other._allocator)),
+    _mask(std::move(other._mask)),
+    _capacity(std::move(other._capacity)),
     _frontIndex(std::move(other._frontIndex)),
     _backIndex(std::move(other._backIndex)),
     _numElements(std::move(other._numElements)),
-    _capacity(std::move(other._capacity)),
     _container(std::move(other._container))
 {
     other._numElements = 0;
@@ -178,12 +194,13 @@ template <typename T, typename A>
 RingDeque<T, A> &RingDeque<T, A>::operator=(RingDeque<T, A> &&other)
 {
     this->clear();
-    _allocator.deallocate(_container, _capacity);
+    _allocator.deallocate(_container, _mask+1);
     _allocator = std::move(other._allocator);
+    _mask = std::move(other._mask);
+    _capacity = std::move(other._capacity);
     _frontIndex = std::move(other._frontIndex);
     _backIndex = std::move(other._backIndex);
     _numElements = std::move(other._numElements);
-    _capacity = std::move(other._capacity);
     _container = std::move(other._container);
     other._numElements = 0;
     other._capacity = 0;
@@ -196,19 +213,19 @@ RingDeque<T, A>::~RingDeque(void)
 {
     if (_container == nullptr) return;
     this->clear();
-    _allocator.deallocate(_container, _capacity);
+    _allocator.deallocate(_container, _mask+1);
 }
 
 template <typename T, typename A>
 const T &RingDeque<T, A>::operator[](const size_t offset) const
 {
-    return _container[(_frontIndex + offset) % _capacity];
+    return _container[(_frontIndex + offset) & _mask];
 }
 
 template <typename T, typename A>
 T &RingDeque<T, A>::operator[](const size_t offset)
 {
-    return _container[(_frontIndex + offset) % _capacity];
+    return _container[(_frontIndex + offset) & _mask];
 }
 
 template <typename T, typename A>
@@ -223,7 +240,7 @@ template <typename... Args>
 T &RingDeque<T, A>::emplace_front(Args&&... args)
 {
     assert(not this->full());
-    _frontIndex = size_t(_frontIndex + _capacity - 1) % _capacity;
+    _frontIndex = size_t(_frontIndex - 1) & _mask;
     new (_container + _frontIndex) T(std::forward<Args>(args)...);
     _numElements++;
     return _container[_frontIndex];
@@ -235,7 +252,7 @@ void RingDeque<T, A>::pop_front(void)
     assert(not this->empty());
     assert(_frontIndex < _capacity);
     _container[_frontIndex].~T();
-    _frontIndex = size_t(_frontIndex + 1) % _capacity;
+    _frontIndex = size_t(_frontIndex + 1) & _mask;
     _numElements--;
 }
 
@@ -267,7 +284,7 @@ template <typename... Args>
 T &RingDeque<T, A>::emplace_back(Args&&... args)
 {
     assert(not this->full());
-    _backIndex = size_t(_backIndex + 1) % _capacity;
+    _backIndex = size_t(_backIndex + 1) & _mask;
     new (_container + _backIndex) T(std::forward<Args>(args)...);
     _numElements++;
     return _container[_backIndex];
@@ -279,7 +296,7 @@ void RingDeque<T, A>::pop_back(void)
     assert(not this->empty());
     assert(_backIndex < _capacity);
     _container[_backIndex].~T();
-    _backIndex = size_t(_backIndex + _capacity - 1) % _capacity;
+    _backIndex = size_t(_backIndex - 1) & _mask;
     _numElements--;
 }
 
@@ -327,18 +344,13 @@ template <typename T, typename A>
 void RingDeque<T, A>::set_capacity(const size_t capacity)
 {
     if (_numElements > capacity) return;
-    T *newContainer = _allocator.allocate(capacity);
-    for (size_t i = 0; i < _numElements; i++)
+    RingDeque<T, A> newRing(capacity);
+    while (not this->empty())
     {
-        T &elem = _container[(_frontIndex+i) % _capacity];
-        new (newContainer+i) T(std::move(elem));
-        elem.~T();
+        newRing.push_back(std::move(this->front()));
+        this->pop_front();
     }
-    _allocator.deallocate(_container, _capacity);
-    _container = newContainer;
-    _capacity = capacity;
-    _frontIndex = 0;
-    _backIndex = (_numElements + capacity - 1) % capacity;
+    *this = std::move(newRing);
 }
 
 template <typename T, typename A>
