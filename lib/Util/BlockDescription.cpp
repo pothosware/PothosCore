@@ -16,7 +16,9 @@
 #include <vector>
 #include <string>
 #include <cassert>
+#include <cctype>
 #include <regex>
+#include <iostream>
 #include <json.hpp>
 
 using json = nlohmann::json;
@@ -34,6 +36,20 @@ struct CodeLine
 };
 
 typedef std::vector<CodeLine> CodeBlock;
+
+template <typename MatchType>
+bool trimCheck(const MatchType &m, const size_t ofs = 1)
+{
+    for (size_t i = ofs; i < m.size(); i++)
+    {
+        const std::string s(m[i]);
+        if (s.empty()) continue;
+        if (not std::isspace(s.front()) and not std::isspace(s.back())) continue;
+        std::cerr << Poco::format("Failed to trim m[%d]='%s'; m[0]='%s'", int(i), s, std::string(m[0])) << std::endl;
+        return false;
+    }
+    return true;
+}
 
 /***********************************************************************
  * misc utils
@@ -247,10 +263,10 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
             if (line.size() >= indent.size()) line = line.substr(indent.size());
             else line = "";
 
-            static const std::regex e("^\\|(\\w+)\\s+(.*)$");
+            static const std::regex e("^\\|(\\w+)\\s+(.*\\S)\\s*$");
             if (std::regex_match(line, matches, e))
             {
-                assert(cm.size() == 3);
+                assert(matches.size() == 3 && trimCheck(matches));
                 instruction = matches[1];
                 payload = matches[2];
             }
@@ -258,11 +274,11 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
 
         if (state.empty())
         {
-            static const std::regex e("^(.*)\\|PothosDoc\\s+(.*)$");
+            static const std::regex e("^(.*)\\|PothosDoc\\s+(.*\\S)\\s*$");
             if (not std::regex_match(line, matches, e)) continue;
-            assert(matches.size() == 3);
+            assert(matches.size() == 3 and trimCheck(matches, 2));
             indent = matches[1];
-            topObj["name"] = Poco::trim(std::string(matches[2]));
+            topObj["name"] = std::string(matches[2]);
             state = "DOC";
         }
         else if (matches.empty() and state == "DOC")
@@ -275,40 +291,39 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
         }
         else if (instruction == "category" and state == "DOC")
         {
-            topObj["categories"].push_back(Poco::trim(payload));
+            topObj["categories"].push_back(payload);
         }
         else if (instruction == "keywords" and state == "DOC")
         {
             for (const auto &keyword : Poco::StringTokenizer(
                 payload, " \t", Poco::StringTokenizer::TOK_TRIM | Poco::StringTokenizer::TOK_IGNORE_EMPTY))
             {
-                topObj["keywords"].push_back(Poco::trim(keyword));
+                topObj["keywords"].push_back(keyword);
             }
         }
         else if (instruction == "alias" and state == "DOC")
         {
-            const std::string alias(Poco::trim(payload));
-            try {Pothos::PluginPath(alias);}
+            try {Pothos::PluginPath(payload);}
             catch (const Pothos::PluginPathError &)
             {
                 throw Pothos::SyntaxException("Invalid alias path", codeLine.toString());
             }
-            topObj["aliases"].push_back(alias);
+            topObj["aliases"].push_back(payload);
         }
         else if (instruction == "param" and (state == "DOC" or state == "PARAM"))
         {
             payload = bracketEscapeEncode(payload);
             std::smatch fields;
-            static const std::regex e("^\\s*(\\w+)(\\s*\\[(.*)\\]\\s*)?(.*)$");
+            static const std::regex e("^\\s*(\\w+)\\s*(\\[(.*)\\])?\\s*(.*)$");
             if (not std::regex_match(payload, fields, e)) throw Pothos::SyntaxException(
                 "Expected |param key[name] description",
                 codeLine.toString());
 
-            assert(fields.size() == 5);
-            const std::string key = bracketEscapeDecode(Poco::trim(std::string(fields[1])));
-            auto name = bracketEscapeDecode(Poco::trim(std::string(fields[3])));
+            assert(fields.size() == 5 and trimCheck(fields));
+            const std::string key = bracketEscapeDecode(fields[1]);
+            auto name = bracketEscapeDecode(fields[3]);
             if (name.empty()) name = titleCase(key);
-            const std::string desc = bracketEscapeDecode(Poco::trim(std::string(fields[4])));
+            const std::string desc = bracketEscapeDecode(fields[4]);
 
             json param;
             param["key"] = key;
@@ -342,9 +357,9 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
                 "Expected |widget SpinBox(args...)",
                 codeLine.toString());
 
-            assert(fields.size() == 3);
-            const std::string widgetType = Poco::trim(std::string(fields[1]));
-            const std::string argsStr = Poco::trim(std::string(fields[2]));
+            assert(fields.size() == 3 and trimCheck(fields));
+            const std::string widgetType(fields[1]);
+            const std::string argsStr(fields[2]);
 
             params.back()["widgetType"] = widgetType;
             loadArgs(codeLine, params.back(), argsStr, "widgetArgs", "widgetKwargs");
@@ -367,8 +382,8 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
                 "Expected |preview previewType(args...)",
                 codeLine.toString());
 
-            assert(fields.size() == 2 or fields.size() == 4);
-            const std::string previewType = Poco::trim(std::string(fields[1]));
+            assert((fields.size() == 2 or fields.size() == 4) and trimCheck(fields));
+            const std::string previewType(fields[1]);
 
             if (previewType != "disable" and
                 previewType != "enable" and
@@ -382,7 +397,7 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
             params.back()["preview"] = previewType;
             if (fields.size() == 4)
             {
-                const std::string argsStr = Poco::trim(std::string(fields[3]));
+                const std::string argsStr(fields[3]);
                 loadArgs(codeLine, params.back(), argsStr, "previewArgs", "previewKwargs");
             }
         }
@@ -390,14 +405,14 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
         {
             payload = bracketEscapeEncode(payload);
             std::smatch fields;
-            static const std::regex e("^(\\s*\\[(.*)\\]\\s*)?(.*)$");
+            static const std::regex e("^(\\s*\\[(.*)\\])?\\s*(.*)$");
             if (not std::regex_match(payload, fields, e)) throw Pothos::SyntaxException(
                 "Expected |option [name] value",
                 codeLine.toString());
 
-            assert(fields.size() == 4);
-            const std::string value = bracketEscapeDecode(Poco::trim(std::string(fields[3])));
-            auto name = bracketEscapeDecode(Poco::trim(std::string(fields[2])));
+            assert(fields.size() == 4 and trimCheck(fields));
+            const std::string value = bracketEscapeDecode(fields[3]);
+            auto name = bracketEscapeDecode(fields[2]);
             if (name.empty()) name = titleCase(value);
 
             json option;
@@ -413,9 +428,9 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
                 "Expected |factory /registry/path(args...)",
                 codeLine.toString());
 
-            assert(fields.size() == 3);
-            const std::string path = Poco::trim(std::string(fields[1]));
-            const std::string argsStr = Poco::trim(std::string(fields[2]));
+            assert(fields.size() == 3 and trimCheck(fields));
+            const std::string path(fields[1]);
+            const std::string argsStr(fields[2]);
 
             //add the path
             try {Pothos::PluginPath(path);}
@@ -440,9 +455,9 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
                 "Expected |"+instruction+" setFooBar(args...)",
                 codeLine.toString());
 
-            assert(fields.size() == 3);
-            const std::string callName = Poco::trim(std::string(fields[1]));
-            const std::string argsStr = Poco::trim(std::string(fields[2]));
+            assert(fields.size() == 3 and trimCheck(fields));
+            const std::string callName(fields[1]);
+            const std::string argsStr(fields[2]);
 
             //add to calls
             json call;
