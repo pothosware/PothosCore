@@ -4,7 +4,7 @@
 /// Archive implementation on top of streaming interfaces.
 ///
 /// \copyright
-/// Copyright (c) 2016 Josh Blum
+/// Copyright (c) 2016-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -23,16 +23,32 @@ namespace Archive {
 class POTHOS_API OStreamArchiver
 {
 public:
+    /*!
+     * Create an output stream archiver
+     * \param os the stream to write to
+     */
     OStreamArchiver(std::ostream &os);
 
+    //! Tell the invoker that this archiver saves
     typedef std::true_type isSave;
 
+    /*!
+     * Serialize value with the & operator
+     * \param value the value to serialize
+     */
     template <typename T>
     void operator&(const T &value);
 
+    /*!
+     * Serialize value with the stream operator
+     * \param value the value to serialize
+     */
     template <typename T>
     void operator<<(const T &value);
 
+    /*!
+     * Directly write an array of bytes to the output stream
+     */
     void writeBytes(const void *buff, const size_t len);
 
 private:
@@ -47,16 +63,32 @@ private:
 class POTHOS_API IStreamArchiver
 {
 public:
+    /*!
+     * Create an input stream archiver
+     * \param is the stream to read from
+     */
     IStreamArchiver(std::istream &is);
 
+    //! Tell the invoker that this archiver loads
     typedef std::false_type isSave;
 
+    /*!
+     * Deserialize value with the & operator
+     * \param value the value to deserialize
+     */
     template <typename T>
     void operator&(T &value);
 
+    /*!
+     * Deserialize value with the stream operator
+     * \param value the value to deserialize
+     */
     template <typename T>
     void operator>>(T &value);
 
+    /*!
+     * Directly read an array of bytes from the input stream
+     */
     void readBytes(void *buff, const size_t len);
 
 private:
@@ -67,6 +99,8 @@ private:
 
 } //namespace Archive
 } //namespace Pothos
+
+//! \cond
 
 #include <Pothos/Archive/Invoke.hpp>
 
@@ -93,3 +127,5 @@ void Pothos::Archive::IStreamArchiver::operator>>(T &value)
 {
     *this & value;
 }
+
+//! \endcond

@@ -5,7 +5,7 @@
 /// https://github.com/pothosware/pothos/wiki/BlockDescriptionMarkup
 ///
 /// \copyright
-/// Copyright (c) 2016-2016 Josh Blum
+/// Copyright (c) 2016-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -60,6 +60,7 @@ public:
     /*!
      * Get a JSON object for a single block description.
      * \param factoryPath a discovered factory path
+     * \param indent indentation level for formatting
      * \return a string containing a JSON object
      */
     std::string getJSONObject(const std::string &factoryPath, const size_t indent = 0) const;
