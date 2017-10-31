@@ -116,5 +116,13 @@ template<typename... T>
 using index_sequence_for = make_index_sequence<sizeof...(T)>;
 //! \}
 
+/*!*********************************************************************
+ * Disable SFINAE type used with universal reference constructors
+ * \see http://ericniebler.com/2013/08/07/universal-references-and-the-copy-constructo/
+ **********************************************************************/
+template<typename BaseType, typename OtherType>
+using disable_if_same = typename std::enable_if<
+    not std::is_same<BaseType, typename std::decay<OtherType>::type>::value>::type;
+
 } //namespace Util
 } //namespace Pothos

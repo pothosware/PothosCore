@@ -9,17 +9,10 @@
 ///
 
 #pragma once
-//We need to declare lots of copy constructors so the templated version is only called explicitly.
-//However, the constructors cause the following warning on MSVC, which we disable below:
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning (disable:4521) // 'class' : multiple copy constructors specified
-#endif //_MSC_VER
-
 #include <Pothos/Config.hpp>
+#include <Pothos/Util/Templates.hpp>
 #include <typeinfo>
 #include <string>
-#include <iosfwd>
 
 namespace Pothos {
 
@@ -79,13 +72,6 @@ public:
     Object(const Object &obj);
 
     /*!
-     * Copy constructor for Object -- does not copy the internal data.
-     * Both obj and the resulting Object will point to the same data.
-     * \param obj another Object
-     */
-    Object(Object &obj);
-
-    /*!
      * Move constructor for Object.
      * The contents of obj will be moved to the new Object.
      * \param obj another Object
@@ -93,17 +79,10 @@ public:
     Object(Object &&obj);
 
     /*!
-     * Move constructor for Object.
-     * The contents of obj will be moved to the new Object.
-     * \param obj another Object
-     */
-    Object(const Object &&obj);
-
-    /*!
      * Create a new Object from an an arbitrary value.
      * \param value the data to store internally
      */
-    template <typename ValueType>
+    template <typename ValueType, typename = Pothos::Util::disable_if_same<Object, ValueType>>
     explicit Object(ValueType &&value);
 
     /*!
@@ -292,10 +271,6 @@ public:
 inline bool operator==(const Object &lhs, const Object &rhs);
 
 } //namespace Pothos
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif //_MSC_VER
 
 inline bool Pothos::operator==(const Object &lhs, const Object &rhs)
 {

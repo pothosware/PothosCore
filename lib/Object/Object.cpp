@@ -76,19 +76,7 @@ Pothos::Object::Object(const Object &obj):
     *this = obj;
 }
 
-Pothos::Object::Object(Object &obj):
-    _impl(nullptr)
-{
-    *this = obj;
-}
-
 Pothos::Object::Object(Object &&obj):
-    _impl(nullptr)
-{
-    *this = obj;
-}
-
-Pothos::Object::Object(const Object &&obj):
     _impl(nullptr)
 {
     *this = obj;
