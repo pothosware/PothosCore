@@ -4,7 +4,7 @@
 /// Serialization dispatch macros for separate save/load.
 ///
 /// \copyright
-/// Copyright (c) 2016 Josh Blum
+/// Copyright (c) 2016-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -33,12 +33,12 @@
  */
 #define POTHOS_SERIALIZATION_SPLIT_MEMBER() \
     template <typename Archive> \
-    typename std::enable_if<std::is_same<typename Archive::isSave, std::true_type>::value>::type \
+    typename std::enable_if<Archive::isSave::value>::type \
     serialize(Archive &ar, const unsigned int ver) { \
         this->save(ar, ver); \
     } \
     template <typename Archive> \
-    typename std::enable_if<std::is_same<typename Archive::isSave, std::false_type>::value>::type \
+    typename std::enable_if<!Archive::isSave::value>::type \
     serialize(Archive &ar, const unsigned int ver) { \
         this->load(ar, ver); \
     }

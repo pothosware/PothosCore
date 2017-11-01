@@ -5,7 +5,7 @@
 /// Relies-on and forces two-phase template resolution.
 ///
 /// \copyright
-/// Copyright (c) 2016 Josh Blum
+/// Copyright (c) 2016-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -65,7 +65,7 @@ namespace serialization {
      * Invoke a save operation given an output stream archiver
      */
     template <typename Archive, typename T>
-    typename std::enable_if<std::is_same<typename Archive::isSave, std::true_type>::value>::type
+    typename std::enable_if<Archive::isSave::value>::type
     invokeSplit(Archive &ar, T &value, const unsigned int ver)
     {
         const VersionType vt(ver);
@@ -76,7 +76,7 @@ namespace serialization {
      * Invoke a load operation given an input stream archiver
      */
     template <typename Archive, typename T>
-    typename std::enable_if<std::is_same<typename Archive::isSave, std::false_type>::value>::type
+    typename std::enable_if<!Archive::isSave::value>::type
     invokeSplit(Archive &ar, T &value, const unsigned int ver)
     {
         const VersionType vt(ver);
