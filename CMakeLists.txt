@@ -113,7 +113,6 @@ if (ENABLE_INTERNAL_POCO)
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Util/include
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/XML/include
         ${PROJECT_SOURCE_DIR}/${POCO_DIR}/Net/include
-        ${PROJECT_SOURCE_DIR}/${POCO_DIR}/JSON/include
     )
 
     set(Poco_LIBRARIES
@@ -121,7 +120,6 @@ if (ENABLE_INTERNAL_POCO)
         PocoUtil
         PocoXML
         PocoNet
-        PocoJSON
     )
 
     #ensure that local headers get precedent over installed headers
