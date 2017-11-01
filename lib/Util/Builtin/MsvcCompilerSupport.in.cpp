@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/Compiler.hpp>
@@ -24,8 +24,11 @@ public:
     MsvcCompilerSupport(void)
     {
         Poco::Path path("@MSVC_INSTALL_PATH@");
-        std::vector<std::string> files; Poco::File(path).list(files);
 
+        //MSVC 2017 and up:
+        //Look several directories up for the vcvarsall.bat script.
+        //This script gets invoked with the architecture name,
+        //which is assumed to match the name of the linker directory.
         #if _MSC_VER >= 1910 //2017 and up
         _vcvars_arch = path.getFileName();
         for (size_t i = 0; i < 8; i++)
@@ -38,12 +41,18 @@ public:
         path = path.append("Build");
         path = path.append("vcvarsall.bat");
         _vcvars_path = path.toString();
+
+        //MSVC 2015 and below:
+        //Look for the vcvarsxx.bat in the linker/tools executable directory.
+        //This script is invoked without arguments to source the compiler tools.
         #else
-        for (size_t i = 0; i < files.size(); i++)
+        std::vector<std::string> files; Poco::File(path).list(files);
+        for (const auto &file : files)
         {
-            if (files[i].find("vcvars") != 0) continue; //expecting vcvarsxx.bat
-            _vcvars_path = Poco::Path(path, files[i]).absolute().toString();
+            if (file.find("vcvars") != 0) continue; //expecting vcvarsxx.bat
+            _vcvars_path = Poco::Path(path, file).absolute().toString();
         }
+
         #endif
     }
 
