@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/Compiler.hpp>
@@ -24,12 +24,36 @@ public:
     MsvcCompilerSupport(void)
     {
         Poco::Path path("@MSVC_INSTALL_PATH@");
-        std::vector<std::string> files; Poco::File(path).list(files);
-        for (size_t i = 0; i < files.size(); i++)
+
+        //MSVC 2017 and up:
+        //Look several directories up for the vcvarsall.bat script.
+        //This script gets invoked with the architecture name,
+        //which is assumed to match the name of the linker directory.
+        #if _MSC_VER >= 1910 //2017 and up
+        _vcvars_arch = path.getFileName();
+        for (size_t i = 0; i < 8; i++)
         {
-            if (files[i].find("vcvars") != 0) continue; //expecting vcvarsxx.bat
-            _vcvars_path = Poco::Path(path, files[i]).absolute().toString();
+            if (path.getFileName() == "VC") break;
+            path = path.makeParent().makeFile();
         }
+        if (path.getFileName() != "VC") return;
+        path = path.append("Auxiliary");
+        path = path.append("Build");
+        path = path.append("vcvarsall.bat");
+        _vcvars_path = path.toString();
+
+        //MSVC 2015 and below:
+        //Look for the vcvarsxx.bat in the linker/tools executable directory.
+        //This script is invoked without arguments to source the compiler tools.
+        #else
+        std::vector<std::string> files; Poco::File(path).list(files);
+        for (const auto &file : files)
+        {
+            if (file.find("vcvars") != 0) continue; //expecting vcvarsxx.bat
+            _vcvars_path = Poco::Path(path, file).absolute().toString();
+        }
+
+        #endif
     }
 
     bool test(void)
@@ -41,6 +65,7 @@ public:
 
 private:
     std::string _vcvars_path;
+    std::string _vcvars_arch;
 };
 
 std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerArgs &compilerArgs)
@@ -48,7 +73,7 @@ std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerAr
     //create compiler bat script
     const auto clBatPath = this->createTempFile(".bat");
     std::ofstream clBatFile(clBatPath.c_str());
-    clBatFile << "call \"" << _vcvars_path << "\"" << std::endl;
+    clBatFile << "call \"" << _vcvars_path << "\"" << " " << _vcvars_arch << std::endl;
     clBatFile << "cl.exe %*" << std::endl;
     clBatFile << "exit /b %ERRORLEVEL%" << std::endl;
     clBatFile.close();
