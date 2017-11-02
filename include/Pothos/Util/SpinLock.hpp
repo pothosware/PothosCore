@@ -46,6 +46,10 @@ private:
 } //namespace Util
 } //namespace Pothos
 
+#if defined(_MSC_VER) and defined(_M_X64)
+#include <intrin.h>
+#endif
+
 inline Pothos::Util::SpinLock::SpinLock(void)
 {
     this->unlock();
@@ -58,7 +62,18 @@ inline bool Pothos::Util::SpinLock::try_lock(void) noexcept
 
 inline void Pothos::Util::SpinLock::lock(void) noexcept
 {
-    while (not this->try_lock()){}
+    while (not this->try_lock())
+    {
+        #if defined(_MSC_VER) and defined(_M_X64)
+            _mm_pause();
+        #elif defined(__GNUC__) || defined(__clang__)
+            #if defined(__i386__) || defined(__x86_64__)
+            __builtin_ia32_pause();
+            #elif defined(__GNUC__) and defined(__arm__)
+            __yield();
+            #endif
+        #endif
+    }
 }
 
 inline void Pothos::Util::SpinLock::unlock(void) noexcept
