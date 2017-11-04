@@ -196,9 +196,8 @@ void Pothos::InputPort::bufferLabelPush(
         if (_inputInlineMessages.capacity() < requiredLabelSize) _inputInlineMessages.set_capacity(requiredLabelSize);
 
         //insert labels (in order) and adjust for the current offset
-        for (const auto &byteOffsetLabel : postedLabels)
+        for (auto label : postedLabels)
         {
-            auto label = byteOffsetLabel;
             label.index += currentBytes; //increment by enqueued bytes
             _inputInlineMessages.push_back(std::move(label));
         }
