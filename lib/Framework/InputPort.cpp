@@ -133,7 +133,7 @@ Pothos::Object Pothos::InputPort::slotCallsPop(void)
 {
     std::lock_guard<Util::SpinLock> lock(_slotCallsLock);
     assert(not _slotCalls.empty());
-    auto args = _slotCalls.front().first;
+    auto args = std::move(_slotCalls.front().first);
     _slotCalls.pop_front();
     return args;
 }
@@ -200,7 +200,7 @@ void Pothos::InputPort::bufferLabelPush(
         {
             auto label = byteOffsetLabel;
             label.index += currentBytes; //increment by enqueued bytes
-            _inputInlineMessages.push_back(label);
+            _inputInlineMessages.push_back(std::move(label));
         }
 
         //push all buffers into the accumulator
