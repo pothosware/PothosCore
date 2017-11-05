@@ -4,7 +4,7 @@
 /// Inline member implementation for OutputPort class.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -132,8 +132,7 @@ inline bool Pothos::OutputPort::bufferManagerEmpty(void)
 inline void Pothos::OutputPort::bufferManagerFront(Pothos::BufferChunk &buff)
 {
     std::lock_guard<Util::SpinLock> lock(_bufferManagerLock);
-    if (not _bufferManager) buff = Pothos::BufferChunk();
-    buff = _bufferManager->front();
+    buff = _bufferManager?_bufferManager->front():Pothos::BufferChunk();
 }
 
 inline void Pothos::OutputPort::bufferManagerPop(const size_t numBytes)
