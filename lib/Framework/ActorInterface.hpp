@@ -1,13 +1,23 @@
-// Copyright (c) 2015-2015 Josh Blum
+// Copyright (c) 2015-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include <Pothos/Util/SpinLockRW.hpp>
+#include <Pothos/Util/SpinLock.hpp>
 #include <atomic>
 #include <mutex>
 #include <thread>
 #include <condition_variable>
+
+/*!
+ * Allow waiting when idle iterations surpasses this count.
+ * At present this is a small, non-zero number which helps
+ * to avoid waiting and locking for threads that are active.
+ * In the future, investigate hybrid between wait and non-wait
+ * by making this value configurable based on user setting
+ * or modifying it based on activity and work indicators.
+ */
+#define WAIT_ITERS 8
 
 /*!
  * The implementation of the exclusive access to the actor.
@@ -18,7 +28,7 @@ public:
 
     ActorInterface(void):
         _waitModeEnabled(true),
-        _numIdleIters(0)
+        _idleIters(0)
     {
         _changeFlagged.test_and_set();
     }
@@ -74,13 +84,14 @@ public:
     }
 
 private:
+    bool _workerThreadAcquireWait(const bool waitEnabled);
     bool _waitModeEnabled;
     std::atomic_flag _changeFlagged;
     std::mutex _contextMutex;
     std::mutex _acquireMutex;
-    std::atomic<unsigned> _numIdleIters;
-    Pothos::Util::SpinLockRW _spinRW;
-    std::condition_variable _cond;
+    std::atomic<unsigned> _idleIters;
+    Pothos::Util::SpinLock _extCallLock;
+    std::condition_variable _acquireCond;
 };
 
 /*!
@@ -106,61 +117,52 @@ private:
 inline void ActorInterface::externalCallAcquire(void)
 {
     _contextMutex.lock();
-    _spinRW.lock_shared();
+    _extCallLock.lock();
 }
 
 inline void ActorInterface::externalCallRelease(void)
 {
-    _contextMutex.unlock();
-    _spinRW.unlock_shared();
     this->flagExternalChange();
+    _contextMutex.unlock();
+    _extCallLock.unlock();
 }
 
 inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
 {
-    //lock fails when there are external calls
-    //lock the context mutex to wait nicely for the call to complete
-    if (not _spinRW.try_lock())
+    //Attempt to acquire the change notification:
+    //The wait enabled is only set after an iteration threshold has been passed,
+    //and we always clear the iteration count when the change has been acquired.
+    if (_workerThreadAcquireWait(waitEnabled and _idleIters.fetch_add(1, std::memory_order_acq_rel) > WAIT_ITERS))
     {
-        std::lock_guard<std::mutex> lock(_contextMutex);
-        _spinRW.lock();
+        _idleIters.store(0, std::memory_order_release); //clear
+        if (_extCallLock.try_lock()) return true; //lock out external calls
+        this->flagInternalChange(); //or busy in a call, re-flag the change
     }
+    return false;
+}
 
-    //fast-check for already flagged case
-    if (not _changeFlagged.test_and_set(std::memory_order_acquire))
-    {
-        _numIdleIters.store(0, std::memory_order_release);
-        return true;
-    }
-
+inline bool ActorInterface::_workerThreadAcquireWait(const bool waitEnabled)
+{
     //wait mode enabled -- lock and wait on condition variable
-    if (waitEnabled and _numIdleIters.fetch_add(1, std::memory_order_acq_rel) > 1)
+    if (waitEnabled)
     {
         std::unique_lock<std::mutex> lock(_acquireMutex);
-        if (not _changeFlagged.test_and_set(std::memory_order_acquire))
-        {
-            _numIdleIters.store(0, std::memory_order_release);
-            return true;
-        }
 
-        _spinRW.unlock();
-        _cond.wait(lock);
-        _numIdleIters.store(0, std::memory_order_release);
+        //check the condition while the mutex lock is held
+        //so its safe to wait on the cv without a race issue
+        if (not _changeFlagged.test_and_set(std::memory_order_acquire)) return true;
 
-        if (not _changeFlagged.test_and_set(std::memory_order_acquire))
-        {
-            _spinRW.lock();
-            return true;
-        }
+        //wait on the condition variable until notified
+        _acquireCond.wait(lock);
     }
 
-    _spinRW.unlock();
-    return false;
+    //atomically acquire the change notification without locking
+    return (not _changeFlagged.test_and_set(std::memory_order_acquire));
 }
 
 inline void ActorInterface::workerThreadRelease(void)
 {
-    _spinRW.unlock();
+    _extCallLock.unlock();
 }
 
 inline void ActorInterface::flagExternalChange(void)
@@ -171,19 +173,19 @@ inline void ActorInterface::flagExternalChange(void)
     //wake a blocked thread to process the change
     //lock the mutex and mark the changed flag again
     //so that the thread will see the change on wake
-    if (_numIdleIters.load(std::memory_order_acquire) >= 1)
+    if (_idleIters.load(std::memory_order_acquire) >= WAIT_ITERS)
     {
         std::lock_guard<std::mutex> lock(_acquireMutex);
         _changeFlagged.clear(std::memory_order_release);
-        _cond.notify_one();
+        _acquireCond.notify_one();
     }
 }
 
 inline void ActorInterface::wakeNoChange(void)
 {
-    if (_numIdleIters.load(std::memory_order_acquire) >= 1)
+    if (_idleIters.load(std::memory_order_acquire) >= WAIT_ITERS)
     {
-        _cond.notify_one();
+        _acquireCond.notify_one();
     }
 }
 
