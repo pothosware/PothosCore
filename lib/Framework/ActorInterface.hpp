@@ -3,6 +3,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Util/SpinLockRW.hpp>
 #include <atomic>
 #include <mutex>
 #include <thread>
@@ -17,7 +18,7 @@ public:
 
     ActorInterface(void):
         _waitModeEnabled(true),
-        _externalAcquired(0)
+        _numIdleIters(0)
     {
         _changeFlagged.test_and_set();
     }
@@ -75,9 +76,10 @@ public:
 private:
     bool _waitModeEnabled;
     std::atomic_flag _changeFlagged;
-    std::atomic<size_t> _externalAcquired;
     std::mutex _contextMutex;
     std::mutex _acquireMutex;
+    std::atomic<unsigned> _numIdleIters;
+    Pothos::Util::SpinLockRW _spinRW;
     std::condition_variable _cond;
 };
 
@@ -103,58 +105,62 @@ private:
 
 inline void ActorInterface::externalCallAcquire(void)
 {
-    _externalAcquired++;
     _contextMutex.lock();
+    _spinRW.lock_shared();
 }
 
 inline void ActorInterface::externalCallRelease(void)
 {
-    _externalAcquired--;
     _contextMutex.unlock();
+    _spinRW.unlock_shared();
     this->flagExternalChange();
 }
 
 inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
 {
-    //external context requested or in progress
-    //block in here on a mutex lock and bail out
-    if (_externalAcquired.load(std::memory_order_acquire) != 0)
+    //lock fails when there are external calls
+    //lock the context mutex to wait nicely for the call to complete
+    if (not _spinRW.try_lock())
     {
         std::lock_guard<std::mutex> lock(_contextMutex);
-        return false;
+        _spinRW.lock();
     }
 
     //fast-check for already flagged case
     if (not _changeFlagged.test_and_set(std::memory_order_acquire))
     {
-        _contextMutex.lock();
+        _numIdleIters.store(0, std::memory_order_release);
         return true;
     }
 
     //wait mode enabled -- lock and wait on condition variable
-    if (waitEnabled)
+    if (waitEnabled and _numIdleIters.fetch_add(1, std::memory_order_acq_rel) > 1)
     {
         std::unique_lock<std::mutex> lock(_acquireMutex);
         if (not _changeFlagged.test_and_set(std::memory_order_acquire))
         {
-           _contextMutex.lock();
+            _numIdleIters.store(0, std::memory_order_release);
             return true;
         }
+
+        _spinRW.unlock();
         _cond.wait(lock);
+        _numIdleIters.store(0, std::memory_order_release);
+
         if (not _changeFlagged.test_and_set(std::memory_order_acquire))
         {
-           _contextMutex.lock();
+            _spinRW.lock();
             return true;
         }
-        return false;
     }
 
+    _spinRW.unlock();
     return false;
 }
 
 inline void ActorInterface::workerThreadRelease(void)
 {
-    _contextMutex.unlock();
+    _spinRW.unlock();
 }
 
 inline void ActorInterface::flagExternalChange(void)
@@ -163,18 +169,22 @@ inline void ActorInterface::flagExternalChange(void)
     _changeFlagged.clear(std::memory_order_release);
 
     //wake a blocked thread to process the change
-    if (_waitModeEnabled) this->wakeNoChange();
+    //lock the mutex and mark the changed flag again
+    //so that the thread will see the change on wake
+    if (_numIdleIters.load(std::memory_order_acquire) >= 1)
+    {
+        std::lock_guard<std::mutex> lock(_acquireMutex);
+        _changeFlagged.clear(std::memory_order_release);
+        _cond.notify_one();
+    }
 }
 
 inline void ActorInterface::wakeNoChange(void)
 {
-    //if lock fails, the worker context is busy
-    if (not _contextMutex.try_lock()) return;
-    _contextMutex.unlock();
-
-    //otherwise we need to notify the waiting cv
-    std::lock_guard<std::mutex> lock(_acquireMutex);
-    _cond.notify_one();
+    if (_numIdleIters.load(std::memory_order_acquire) >= 1)
+    {
+        _cond.notify_one();
+    }
 }
 
 inline void ActorInterface::flagInternalChange(void)
