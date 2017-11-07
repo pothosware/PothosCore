@@ -133,7 +133,7 @@ Object Object::make(ValueType &&value)
     return o;
 }
 
-template <typename ValueType>
+template <typename ValueType, typename>
 Object::Object(ValueType &&value):
     _impl(nullptr)
 {

@@ -71,27 +71,15 @@ Pothos::Object::Object(void):
 }
 
 Pothos::Object::Object(const Object &obj):
-    _impl(nullptr)
+    _impl(obj._impl)
 {
-    *this = obj;
-}
-
-Pothos::Object::Object(Object &obj):
-    _impl(nullptr)
-{
-    *this = obj;
+    incr(_impl);
 }
 
 Pothos::Object::Object(Object &&obj):
-    _impl(nullptr)
+    _impl(obj._impl)
 {
-    *this = obj;
-}
-
-Pothos::Object::Object(const Object &&obj):
-    _impl(nullptr)
-{
-    *this = obj;
+    obj._impl = nullptr;
 }
 
 Pothos::Object::~Object(void)
