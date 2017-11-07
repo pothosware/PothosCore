@@ -28,6 +28,7 @@ public:
 
     ActorInterface(void):
         _waitModeEnabled(true),
+        _externalAcquired(0),
         _idleIters(0)
     {
         _changeFlagged.test_and_set();
@@ -87,7 +88,7 @@ private:
     bool _workerThreadAcquireWait(const bool waitEnabled);
     bool _waitModeEnabled;
     std::atomic_flag _changeFlagged;
-    std::mutex _contextMutex;
+    std::atomic<unsigned> _externalAcquired;
     std::mutex _acquireMutex;
     std::atomic<unsigned> _idleIters;
     Pothos::Util::SpinLock _extCallLock;
@@ -116,19 +117,32 @@ private:
 
 inline void ActorInterface::externalCallAcquire(void)
 {
-    _contextMutex.lock();
-    _extCallLock.lock();
+    _externalAcquired++;
+    while (not _extCallLock.try_lock())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
 }
 
 inline void ActorInterface::externalCallRelease(void)
 {
     this->flagExternalChange();
-    _contextMutex.unlock();
     _extCallLock.unlock();
+    _externalAcquired--;
 }
 
 inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
 {
+    //An external call may be active:
+    //External calls are given priority over active worker processing.
+    //Sleep a bit to mitigate spin overhead from the thread environment.
+    if (_externalAcquired.load(std::memory_order_relaxed) != 0)
+    {
+        if (waitEnabled and _idleIters.fetch_add(1, std::memory_order_acq_rel) > WAIT_ITERS)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        return false;
+    }
+
     //Attempt to acquire the change notification:
     //The wait enabled is only set after an iteration threshold has been passed,
     //and we always clear the iteration count when the change has been acquired.
@@ -138,6 +152,7 @@ inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
         if (_extCallLock.try_lock()) return true; //lock out external calls
         this->flagInternalChange(); //or busy in a call, re-flag the change
     }
+
     return false;
 }
 
@@ -153,7 +168,7 @@ inline bool ActorInterface::_workerThreadAcquireWait(const bool waitEnabled)
         if (not _changeFlagged.test_and_set(std::memory_order_acquire)) return true;
 
         //wait on the condition variable until notified
-        _acquireCond.wait(lock);
+        _acquireCond.wait_for(lock, std::chrono::milliseconds(1));
     }
 
     //atomically acquire the change notification without locking
