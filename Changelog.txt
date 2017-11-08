@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.6.0 (pending)
 ==========================
 
+- Re-implement RingDeque container to use std::allocator
 - Removed previously unused ObjectM class (mutable object)
 - Added Pothos::Util::SpinLockRW for single write, multi-read
 - API changes to Object, Proxy, and Callable interface types
