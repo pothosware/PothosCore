@@ -11,5 +11,6 @@ var searchData=
   ['ringdeque_3c_20pothos_3a_3abufferchunk_20_3e',['RingDeque&lt; Pothos::BufferChunk &gt;',['../classPothos_1_1Util_1_1RingDeque.html',1,'Pothos::Util']]],
   ['ringdeque_3c_20pothos_3a_3alabel_20_3e',['RingDeque&lt; Pothos::Label &gt;',['../classPothos_1_1Util_1_1RingDeque.html',1,'Pothos::Util']]],
   ['ringdeque_3c_20std_3a_3apair_3c_20pothos_3a_3aobject_2c_20pothos_3a_3abufferchunk_20_3e_20_3e',['RingDeque&lt; std::pair&lt; Pothos::Object, Pothos::BufferChunk &gt; &gt;',['../classPothos_1_1Util_1_1RingDeque.html',1,'Pothos::Util']]],
+  ['ringdeque_3c_20t_20_3e',['RingDeque&lt; T &gt;',['../classPothos_1_1Util_1_1RingDeque.html',1,'Pothos::Util']]],
   ['runtimeexception',['RuntimeException',['../classPothos_1_1RuntimeException.html',1,'Pothos']]]
 ];

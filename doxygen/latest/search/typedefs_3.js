@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['proxyconvertpair',['ProxyConvertPair',['../namespacePothos.html#a483d470b503078d435c90c1c7a3b644e',1,'Pothos']]],
-  ['proxyenvironmentargs',['ProxyEnvironmentArgs',['../namespacePothos.html#aab6f8e4397b12dd6bb40307b735bab94',1,'Pothos']]],
-  ['proxymap',['ProxyMap',['../namespacePothos.html#a28ef2f828d64c8bd54a9f5409db728bb',1,'Pothos']]],
-  ['proxyset',['ProxySet',['../namespacePothos.html#a00d1b5347fde46223bef23b24bf106e2',1,'Pothos']]],
-  ['proxyvector',['ProxyVector',['../namespacePothos.html#a8593219b9f4afd524cc3a10b9f003c73',1,'Pothos']]]
+  ['index_5fsequence',['index_sequence',['../group__intseq.html#ga260d7fac0ba9ee13d09a5cece32e0297',1,'Pothos::Util']]],
+  ['index_5fsequence_5ffor',['index_sequence_for',['../group__intseq.html#ga9bd04d6936b559ec5ab70cc3d1832a87',1,'Pothos::Util']]],
+  ['issave',['isSave',['../classPothos_1_1Archive_1_1OStreamArchiver.html#a9f1a75c900687fd0e84b195c44a8e8b6',1,'Pothos::Archive::OStreamArchiver::isSave()'],['../classPothos_1_1Archive_1_1IStreamArchiver.html#a8d096c0e36511d5bacda11c364bde006',1,'Pothos::Archive::IStreamArchiver::isSave()']]]
 ];

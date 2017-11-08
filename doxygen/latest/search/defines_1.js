@@ -7,6 +7,7 @@ var searchData=
   ['pothos_5fclass_5fexport_5fguid',['POTHOS_CLASS_EXPORT_GUID',['../Export_8hpp.html#a1be3c622883ade01a143292224887c6a',1,'Export.hpp']]],
   ['pothos_5fdeclare_5fexception',['POTHOS_DECLARE_EXCEPTION',['../Exception_8hpp.html#a30c0759d243779ab88b894ac4ed79fdb',1,'Exception.hpp']]],
   ['pothos_5fdeclare_5fexception_5fcode',['POTHOS_DECLARE_EXCEPTION_CODE',['../Exception_8hpp.html#a23629ab7758b67efaf4e9cca968860e3',1,'Exception.hpp']]],
+  ['pothos_5fdeprecated',['POTHOS_DEPRECATED',['../Config_8hpp.html#a8ce4f63e2b19d4db2d4678d7fc1116bc',1,'Config.hpp']]],
   ['pothos_5fdll',['POTHOS_DLL',['../Config_8hpp.html#a883b25e569216f7e1b2c63e54123a80a',1,'Config.hpp']]],
   ['pothos_5fexception_5fcatch',['POTHOS_EXCEPTION_CATCH',['../Exception_8hpp.html#a3f68aff8f9feb85ef81cb06e55c75c96',1,'Exception.hpp']]],
   ['pothos_5fexception_5ftry',['POTHOS_EXCEPTION_TRY',['../Exception_8hpp.html#a4414eb28298ce0220f16bf7736947211',1,'Exception.hpp']]],

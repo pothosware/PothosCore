@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['type',['type',['../structPothos_1_1serialization_1_1hasSerialize.html#a95e3e4b64c947a01374496ebcf8a919b',1,'Pothos::serialization::hasSerialize::type()'],['../structPothos_1_1Util_1_1Fundamental.html#a875c862084acbe14aca474441da59a2a',1,'Pothos::Util::Fundamental::Type()'],['../structPothos_1_1Util_1_1Fundamental_3_01std_1_1complex_3_01T_01_4_01_4.html#a854fbafd114d08f8b067152b27981225',1,'Pothos::Util::Fundamental&lt; std::complex&lt; T &gt; &gt;::Type()']]]
+  ['objectkwargs',['ObjectKwargs',['../namespacePothos.html#a147544051e98b83b4b58407b4add625c',1,'Pothos']]],
+  ['objectmap',['ObjectMap',['../namespacePothos.html#a5dbe652d77abb4d350538a9d87708aa2',1,'Pothos']]],
+  ['objectset',['ObjectSet',['../namespacePothos.html#a12bd8ca213d21a0876e241578de70290',1,'Pothos']]],
+  ['objectvector',['ObjectVector',['../namespacePothos.html#adb48c27db50205175d10190296313837',1,'Pothos']]]
 ];

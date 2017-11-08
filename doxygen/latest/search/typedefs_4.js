@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['sptr',['Sptr',['../classPothos_1_1BufferManager.html#a416a19df56db34331b3acd0b0367e44c',1,'Pothos::BufferManager::Sptr()'],['../classPothos_1_1ProxyEnvironment.html#a89988a1d095522e7dd597c5ac145e265',1,'Pothos::ProxyEnvironment::Sptr()'],['../classPothos_1_1Util_1_1Compiler.html#a31db0cca7e8a8097e60b5643dd88481a',1,'Pothos::Util::Compiler::Sptr()']]]
+  ['make_5findex_5fsequence',['make_index_sequence',['../group__intseq.html#gaf7d31b859760a5185a470268bd6cf62b',1,'Pothos::Util']]],
+  ['make_5finteger_5fsequence',['make_integer_sequence',['../group__intseq.html#ga4e82789f5f37cd47fba88ce157fcf72d',1,'Pothos::Util']]]
 ];
