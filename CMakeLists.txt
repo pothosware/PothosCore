@@ -96,16 +96,7 @@ if (ENABLE_INTERNAL_POCO)
         set(ENABLE_APACHECONNECTOR OFF CACHE INTERNAL "")
     endif()
 
-    #set top level dirs, go into submodule, and restore
-    set(POTHOS_MODULE_PATH ${CMAKE_MODULE_PATH})
-    set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${POCO_DIR})
-    set(CMAKE_BINARY_DIR ${PROJECT_BINARY_DIR}/${POCO_DIR})
-    unset(CMAKE_MODULE_PATH)
     add_subdirectory(${POCO_DIR})
-    set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR})
-    set(CMAKE_BINARY_DIR ${PROJECT_BINARY_DIR})
-    set(CMAKE_MODULE_PATH ${POTHOS_MODULE_PATH})
-
     set(Poco_FOUND 1)
 
     set(Poco_INCLUDE_DIRS
