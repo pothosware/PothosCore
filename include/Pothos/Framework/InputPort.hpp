@@ -249,15 +249,16 @@ private:
     /////// input buffer interface /////////
     void bufferAccumulatorFront(BufferChunk &);
     void bufferAccumulatorPush(const BufferChunk &buffer);
-    void bufferAccumulatorPushNoLock(const BufferChunk &buffer);
+    void bufferAccumulatorPushNoLock(BufferChunk &&buffer);
     void bufferAccumulatorPop(const size_t numBytes);
     void bufferAccumulatorRequire(const size_t numBytes);
     void bufferAccumulatorClear(void);
 
     /////// combined label association push /////////
     void bufferLabelPush(
-        const std::vector<Label> &postedLabels,
-        const Util::RingDeque<BufferChunk> &postedBuffers);
+        const bool enableMove,
+        std::vector<Label> &postedLabels,
+        Util::RingDeque<BufferChunk> &postedBuffers);
 
     InputPort(void);
     InputPort(const InputPort &){} // non construction-copyable

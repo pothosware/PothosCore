@@ -144,9 +144,8 @@ void Pothos::InputPort::slotCallsClear(void)
     _slotCalls.clear();
 }
 
-void Pothos::InputPort::bufferAccumulatorPushNoLock(const BufferChunk &buffer_)
+void Pothos::InputPort::bufferAccumulatorPushNoLock(BufferChunk &&buffer)
 {
-    auto buffer = buffer_;
     if (not buffer.dtype or not this->dtype() or //unspecified
         (this->dtype().size() == buffer.dtype.size())) //size match
     {
@@ -185,8 +184,9 @@ void Pothos::InputPort::bufferAccumulatorPop(const size_t numBytes)
 }
 
 void Pothos::InputPort::bufferLabelPush(
-    const std::vector<Pothos::Label> &postedLabels,
-    const Pothos::Util::RingDeque<Pothos::BufferChunk> &postedBuffers)
+    const bool enableMove,
+    std::vector<Pothos::Label> &postedLabels,
+    Pothos::Util::RingDeque<Pothos::BufferChunk> &postedBuffers)
 {
     {
         std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
@@ -195,17 +195,38 @@ void Pothos::InputPort::bufferLabelPush(
         const size_t requiredLabelSize = _inputInlineMessages.size() + postedLabels.size();
         if (_inputInlineMessages.capacity() < requiredLabelSize) _inputInlineMessages.set_capacity(requiredLabelSize);
 
-        //insert labels (in order) and adjust for the current offset
-        for (auto label : postedLabels)
+        if (enableMove)
         {
-            label.index += currentBytes; //increment by enqueued bytes
-            _inputInlineMessages.push_back(std::move(label));
-        }
+            //insert labels (in order) and adjust for the current offset
+            for (auto &label : postedLabels)
+            {
+                label.index += currentBytes; //increment by enqueued bytes
+                _inputInlineMessages.push_back(std::move(label));
+            }
+            postedLabels.clear();
 
-        //push all buffers into the accumulator
-        for (size_t i = 0; i < postedBuffers.size(); i++)
+            //push all buffers into the accumulator
+            while (not postedBuffers.empty())
+            {
+                this->bufferAccumulatorPushNoLock(std::move(postedBuffers.front()));
+                postedBuffers.pop_front();
+            }
+        }
+        else
         {
-            this->bufferAccumulatorPushNoLock(postedBuffers[i]);
+
+            //insert labels (in order) and adjust for the current offset
+            for (auto label : postedLabels)
+            {
+                label.index += currentBytes; //increment by enqueued bytes
+                _inputInlineMessages.push_back(std::move(label));
+            }
+
+            //push all buffers into the accumulator
+            for (size_t i = 0; i < postedBuffers.size(); i++)
+            {
+                this->bufferAccumulatorPushNoLock(BufferChunk(postedBuffers[i]));
+            }
         }
     }
 

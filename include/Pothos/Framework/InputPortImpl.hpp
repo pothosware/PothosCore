@@ -169,7 +169,7 @@ inline void Pothos::InputPort::bufferAccumulatorFront(Pothos::BufferChunk &buff)
 inline void Pothos::InputPort::bufferAccumulatorPush(const BufferChunk &buffer)
 {
     std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
-    this->bufferAccumulatorPushNoLock(buffer);
+    this->bufferAccumulatorPushNoLock(BufferChunk(buffer));
 }
 
 inline void Pothos::InputPort::bufferAccumulatorRequire(const size_t numBytes)

@@ -99,6 +99,7 @@ inline void Pothos::OutputPort::postBuffer(ValueType &&buffer)
     //unspecified buffer dtype? copy it from the port
     if (not r.dtype) r.dtype = this->dtype();
 
+    _totalElements += r.elements();
     _totalBuffers++;
     _workEvents++;
 }
