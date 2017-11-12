@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Label.hpp>
@@ -21,7 +21,8 @@ Pothos::LabelIteratorRange::LabelIteratorRange(void):
 static auto managedLabel = Pothos::ManagedClass()
     .registerConstructor<Pothos::Label>()
     .registerConstructor<Pothos::Label, const std::string &, const Pothos::Object &, const unsigned long long>()
-    .registerMethod("toAdjusted", Pothos::Callable::make(&Pothos::Label::toAdjusted<double, double>))
+    .registerMethod("toAdjusted", &Pothos::Label::toAdjusted<double, double>)
+    .registerMethod("adjust", &Pothos::Label::adjust<double, double>)
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, id))
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, data))
     .registerField(POTHOS_FCN_TUPLE(Pothos::Label, index))
