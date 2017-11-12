@@ -65,7 +65,9 @@ include(CMakeDependentOption)
 ########################################################################
 # POCO C++ utility libraries
 ########################################################################
+if(NOT ENABLE_INTERNAL_POCO)
 include(${PROJECT_SOURCE_DIR}/cmake/Modules/SetupPoco.cmake)
+endif()
 cmake_dependent_option(ENABLE_INTERNAL_POCO "Enable Poco C++ utility libraries" ON "NOT Poco_FOUND" OFF)
 add_feature_info(Poco ENABLE_INTERNAL_POCO "Build internal Poco C++ utility libraries")
 
@@ -81,6 +83,9 @@ if (ENABLE_INTERNAL_POCO)
     #mark that the in-tree poco build is used
     #used by uninstall target and PothosConfig
     set(POCO_IN_TREE TRUE)
+
+    #disable SetupPoco in PothosConfig module
+    set(INCLUDED_SETUP_POCO_CMAKE TRUE)
 
     #when in-tree poco is selected, default to a minimum build
     #users can specify -DPOCO_MIN_BUILD=TRUE to enable full poco
@@ -121,7 +126,9 @@ endif(ENABLE_INTERNAL_POCO)
 ########################################################################
 # Spuce filter design library
 ########################################################################
+if(NOT ENABLE_INTERNAL_SPUCE)
 find_package(Spuce CONFIG)
+endif()
 cmake_dependent_option(ENABLE_INTERNAL_SPUCE "Enable Spuce filter design library" ON "NOT Spuce_FOUND" OFF)
 add_feature_info(Spuce ENABLE_INTERNAL_SPUCE "Build internal Spuce filter design library")
 
@@ -144,7 +151,9 @@ endif(ENABLE_INTERNAL_SPUCE)
 ########################################################################
 # muparserx expression parser
 ########################################################################
+if(NOT ENABLE_INTERNAL_MUPARSERX)
 find_package(muparserx CONFIG)
+endif()
 cmake_dependent_option(ENABLE_INTERNAL_MUPARSERX "Enable MuparserX expression parser" ON "NOT muparserx_FOUND" OFF)
 add_feature_info(MuparserX ENABLE_INTERNAL_MUPARSERX "Build internal MuparserX expression parser")
 
