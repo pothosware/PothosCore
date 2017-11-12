@@ -5,7 +5,7 @@
 /// when elements are pushed into the queue with an index.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -69,9 +69,12 @@ public:
 
 private:
     size_t _indexToAck;
-    std::vector<T> _pushedElems;
-    std::vector<bool> _pushedElemsFlag;
+    std::vector<std::pair<T, bool>> _pushedElems;
     Pothos::Util::RingDeque<T> _readyElems;
+    inline void _wrapIndex(void)
+    {
+        if (++_indexToAck == _pushedElems.size()) _indexToAck = 0;
+    }
 };
 
 template <typename T>
@@ -84,8 +87,7 @@ OrderedQueue<T>::OrderedQueue(void):
 template <typename T>
 OrderedQueue<T>::OrderedQueue(const size_t capacity):
     _indexToAck(0),
-    _pushedElems(capacity),
-    _pushedElemsFlag(capacity, false),
+    _pushedElems(capacity, std::make_pair(T(), false)),
     _readyElems(capacity)
 {
     return;
@@ -101,22 +103,34 @@ template <typename T>
 template <typename U>
 void OrderedQueue<T>::push(U &&elem, const size_t index)
 {
+    //element was pushed in order, go directly to the queue
+    if (index == _indexToAck)
+    {
+        assert(not _readyElems.full());
+        _readyElems.push_back(std::forward<U>(elem));
+
+        //increment for the next pushed element
+        _wrapIndex();
+    }
+
     //store the element into its position
-    assert(index < _pushedElems.size());
-    _pushedElems[index] = std::forward<U>(elem);
-    _pushedElemsFlag[index] = true;
+    else
+    {
+        assert(index < _pushedElems.size());
+        _pushedElems[index].first = std::forward<U>(elem);
+        _pushedElems[index].second = true;
+    }
 
     //look for pushed elements -- but in order
-    while (_pushedElemsFlag[_indexToAck])
+    while (_pushedElems[_indexToAck].second)
     {
         //move the element into the queue
         assert(not _readyElems.full());
-        _readyElems.push_back(_pushedElems[_indexToAck]);
-        _pushedElems[_indexToAck] = T(); //clear reference
-        _pushedElemsFlag[_indexToAck] = false;
+        _readyElems.push_back(std::move(_pushedElems[_indexToAck].first));
+        _pushedElems[_indexToAck].second = false;
 
         //increment for the next pushed element
-        if (++_indexToAck == _pushedElems.size()) _indexToAck = 0;
+        _wrapIndex();
     }
 }
 
