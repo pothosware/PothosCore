@@ -159,8 +159,8 @@ inline void Pothos::InputPort::bufferAccumulatorFront(Pothos::BufferChunk &buff)
     std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
     while (not _inputInlineMessages.empty())
     {
-        const auto &front = _inputInlineMessages.front();
-        _inlineMessages.push_back(front.toAdjusted(1, this->dtype().size()));
+        _inlineMessages.push_back(std::move(_inputInlineMessages.front()));
+        _inlineMessages.back().adjust(1, this->dtype().size());
         _inputInlineMessages.pop_front();
     }
     buff = _bufferAccumulator.front();

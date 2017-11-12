@@ -4,7 +4,7 @@
 /// This file provides an interface for a worker's output port.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -131,7 +131,8 @@ public:
      * Post an output label to the subscribers on this port.
      * \param label the label to post
      */
-    void postLabel(const Label &label);
+    template <typename ValueType>
+    void postLabel(ValueType &&label);
 
     /*!
      * Post an output message to the subscribers on this port.
@@ -149,7 +150,8 @@ public:
      * Do not call produce() when using postBuffer().
      * \param buffer the buffer to post
      */
-    void postBuffer(const BufferChunk &buffer);
+    template <typename ValueType>
+    void postBuffer(ValueType &&buffer);
 
     /*!
      * Set a reserve requirement on this output port.
