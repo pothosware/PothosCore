@@ -44,16 +44,15 @@ Pothos::BufferChunk Pothos::OutputPort::getBuffer(const size_t numElements)
     const size_t numBytes = numElements*_dtype.size();
 
     //use the front buffer if possible
+    if (_buffer.length >= numBytes)
     {
-        std::lock_guard<Util::SpinLock> lock(_bufferManagerLock);
-        Pothos::BufferChunk out(_bufferManager->front());
-        if (out.length >= numBytes)
+        _buffer.length = numBytes;
+        if (_bufferFromManager)
         {
-            out.dtype = _dtype;
-            out.length = numBytes;
-            _bufferManager->pop(out.length);
-            return out;
+            std::lock_guard<Util::SpinLock> lock(_bufferManagerLock);
+            _bufferManager->pop(_buffer.length);
         }
+        return std::move(_buffer);
     }
 
     //otherwise use the internal pool
