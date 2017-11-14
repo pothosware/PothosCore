@@ -181,22 +181,30 @@ inline bool ActorInterface::workerThreadAcquire(const bool waitEnabled)
 
 inline bool ActorInterface::_workerThreadAcquireWait(const bool waitEnabled)
 {
+    //Ready to perform work when there are no external calls and change flagged:
+    //The calling routine will attempt to lock out external callers atomically.
+    //_inExternalCall() is a rough check to give external callers precedence.
+    //Its expected that an external caller may race to acquire the lock,
+    //since the calling routine can re-flag the change and try again.
+    auto isReady = [this]
+    {
+        if (_inExternalCall()) return false;
+        return not _changeFlagged.test_and_set(std::memory_order_acquire);
+    };
+
     //Lock and wait on external calls to complete or activity to be flagged.
     if (waitEnabled)
     {
+        if (isReady()) return true; //first check without locking
         _aquireWaiting.store(true, std::memory_order_relaxed);
         std::unique_lock<std::mutex> lock(_acquireMutex);
-        bool rdy = _acquireCond.wait_for(lock, std::chrono::milliseconds(1), [this]
-        {
-            if (_inExternalCall()) return false;
-            return not _changeFlagged.test_and_set(std::memory_order_acquire);
-        });
+        bool rdy = _acquireCond.wait_for(lock, std::chrono::milliseconds(1), isReady);
         _aquireWaiting.store(false, std::memory_order_relaxed);
         return rdy;
     }
 
     //atomically acquire the change notification without locking
-    return (not _changeFlagged.test_and_set(std::memory_order_acquire));
+    return isReady();
 }
 
 inline void ActorInterface::workerThreadRelease(void)
