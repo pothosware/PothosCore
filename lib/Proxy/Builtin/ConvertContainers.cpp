@@ -68,7 +68,7 @@ std::map<KeyType, ValType> convertProxyMapToNativeMap(const Pothos::ProxyMap &m)
     std::map<KeyType, ValType> out;
     for (const auto &pair : m)
     {
-        out[pair.first] = (const ValType &)pair.second;
+        out[pair.first] = pair.second.convert<ValType>();
     }
     return out;
 }
