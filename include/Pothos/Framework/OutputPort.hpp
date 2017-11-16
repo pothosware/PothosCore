@@ -122,6 +122,7 @@ public:
      * for use with postBuffer() and postMessage() calls.
      * The call will attempt to use the front buffer from
      * this output port and will fall-back to a reusable pool.
+     * \post buffer() has undefined behavior after this call.
      * \param numElements the minimum buffer size
      * \return a buffer chunk with at least numElements
      */
