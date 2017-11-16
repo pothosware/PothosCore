@@ -104,10 +104,10 @@ inline void Pothos::OutputPort::postBuffer(ValueType &&buffer)
     _workEvents++;
 }
 
-template <typename ValueType>
-inline void Pothos::OutputPort::postLabel(ValueType &&label)
+template <typename... ValueType>
+inline void Pothos::OutputPort::postLabel(ValueType&&... label)
 {
-    _postedLabels.push_back(std::forward<ValueType>(label));
+    _postedLabels.emplace_back(std::forward<ValueType>(label)...);
     _postedLabels.back().adjust(this->dtype().size(), 1);
     _totalLabels++;
     _workEvents++;

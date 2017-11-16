@@ -129,10 +129,16 @@ public:
 
     /*!
      * Post an output label to the subscribers on this port.
+     * postLabel also supports move and emplacement semantics.
+     * \code
+     * port->postLabel(label);
+     * port->postLabel(std::move(label));
+     * port->postLabel(id, data, index);
+     * \endcode
      * \param label the label to post
      */
-    template <typename ValueType>
-    void postLabel(ValueType &&label);
+    template <typename... ValueType>
+    void postLabel(ValueType&&... label);
 
     /*!
      * Post an output message to the subscribers on this port.
