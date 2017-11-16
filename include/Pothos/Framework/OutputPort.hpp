@@ -110,18 +110,6 @@ public:
      * without producing elements for downstream consumers.
      * This call allows the user to use the output buffer
      * for non-streaming purposes, such as an async message.
-     * The number of bytes should be less than or equal to
-     * the bytes available and a multiple of the element size.
-     * \deprecated replaced by popElements(numElements)
-     * \param numBytes the number of bytes to remove
-     */
-    void popBuffer(const size_t numBytes);
-
-    /*!
-     * Remove all or part of an output buffer from the port;
-     * without producing elements for downstream consumers.
-     * This call allows the user to use the output buffer
-     * for non-streaming purposes, such as an async message.
      * The number of elements specified should be less than or
      * equal to the available number elements on this port.
      * \param numElements the number of elements to remove
