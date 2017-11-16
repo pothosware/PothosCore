@@ -5,7 +5,7 @@
 /// a managed or shared buffer and address/length offsets.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -139,11 +139,27 @@ public:
     size_t getEnd(void) const;
 
     /*!
-     * Get a pointer to the front of the buffer
-     * casted to the desired data type.
+     * Get a pointer to the front of the buffer as the specified data type.
+     * \code
+     * auto ptr = buffer.as<const int *>();
+     * \endcode
+     * \tparam ElementType the desired pointer type
+     * \return the front of the buffer casted into the specified pointer type
      */
     template <typename ElementType>
     ElementType as(void) const;
+
+    /*!
+     * Get a pointer to the front of the buffer as the specified data type.
+     * This call overloads the conversion operator to provide implicit conversion.
+     * \code
+     * const int *ptr = buffer;
+     * \endcode
+     * \return the front of the buffer casted into the specified pointer type
+     * \tparam ElementType the desired pointer type
+     */
+    template <typename ElementType>
+    operator ElementType(void) const;
 
     /*!
      * Is the reference to the shared buffer unique?
@@ -392,6 +408,12 @@ inline size_t Pothos::BufferChunk::getEnd(void) const
 
 template <typename ElementType>
 ElementType Pothos::BufferChunk::as(void) const
+{
+    return reinterpret_cast<ElementType>(address);
+}
+
+template <typename ElementType>
+Pothos::BufferChunk::operator ElementType(void) const
 {
     return reinterpret_cast<ElementType>(address);
 }
