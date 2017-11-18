@@ -65,7 +65,9 @@ include(CMakeDependentOption)
 ########################################################################
 # POCO C++ utility libraries
 ########################################################################
+if(NOT ENABLE_INTERNAL_POCO)
 include(${PROJECT_SOURCE_DIR}/cmake/Modules/SetupPoco.cmake)
+endif()
 cmake_dependent_option(ENABLE_INTERNAL_POCO "Enable Poco C++ utility libraries" ON "NOT Poco_FOUND" OFF)
 add_feature_info(Poco ENABLE_INTERNAL_POCO "Build internal Poco C++ utility libraries")
 
@@ -82,6 +84,9 @@ if (ENABLE_INTERNAL_POCO)
     #used by uninstall target and PothosConfig
     set(POCO_IN_TREE TRUE)
 
+    #disable SetupPoco in PothosConfig module
+    set(INCLUDED_SETUP_POCO_CMAKE TRUE)
+
     #when in-tree poco is selected, default to a minimum build
     #users can specify -DPOCO_MIN_BUILD=TRUE to enable full poco
     option(POCO_MIN_BUILD "Minimum build for in-tree Poco" TRUE)
@@ -96,16 +101,7 @@ if (ENABLE_INTERNAL_POCO)
         set(ENABLE_APACHECONNECTOR OFF CACHE INTERNAL "")
     endif()
 
-    #set top level dirs, go into submodule, and restore
-    set(POTHOS_MODULE_PATH ${CMAKE_MODULE_PATH})
-    set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${POCO_DIR})
-    set(CMAKE_BINARY_DIR ${PROJECT_BINARY_DIR}/${POCO_DIR})
-    unset(CMAKE_MODULE_PATH)
     add_subdirectory(${POCO_DIR})
-    set(CMAKE_SOURCE_DIR ${PROJECT_SOURCE_DIR})
-    set(CMAKE_BINARY_DIR ${PROJECT_BINARY_DIR})
-    set(CMAKE_MODULE_PATH ${POTHOS_MODULE_PATH})
-
     set(Poco_FOUND 1)
 
     set(Poco_INCLUDE_DIRS
@@ -130,7 +126,9 @@ endif(ENABLE_INTERNAL_POCO)
 ########################################################################
 # Spuce filter design library
 ########################################################################
+if(NOT ENABLE_INTERNAL_SPUCE)
 find_package(Spuce CONFIG)
+endif()
 cmake_dependent_option(ENABLE_INTERNAL_SPUCE "Enable Spuce filter design library" ON "NOT Spuce_FOUND" OFF)
 add_feature_info(Spuce ENABLE_INTERNAL_SPUCE "Build internal Spuce filter design library")
 
@@ -153,7 +151,9 @@ endif(ENABLE_INTERNAL_SPUCE)
 ########################################################################
 # muparserx expression parser
 ########################################################################
+if(NOT ENABLE_INTERNAL_MUPARSERX)
 find_package(muparserx CONFIG)
+endif()
 cmake_dependent_option(ENABLE_INTERNAL_MUPARSERX "Enable MuparserX expression parser" ON "NOT muparserx_FOUND" OFF)
 add_feature_info(MuparserX ENABLE_INTERNAL_MUPARSERX "Build internal MuparserX expression parser")
 

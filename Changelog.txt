@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.6.0 (pending)
 ==========================
 
+- Updated internal poco submodule to poco-1.8.0.1-release
 - Removed deprecated API call OutputPort::popBuffer()
 - Re-implement RingDeque container to use std::allocator
 - Removed previously unused ObjectM class (mutable object)
