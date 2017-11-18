@@ -254,8 +254,8 @@ private:
     BufferPool _bufferPool;
 
     OutputPort(void);
-    OutputPort(const OutputPort &){} // non construction-copyable
-    OutputPort &operator=(const OutputPort &){return *this;} // non copyable
+    OutputPort(const OutputPort &) = delete; // non construction-copyable
+    OutputPort &operator=(const OutputPort &) = delete; // non copyable
     friend class WorkerActor;
     friend class InputPort;
     void _postMessage(const Object &message);

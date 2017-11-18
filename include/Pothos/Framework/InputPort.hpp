@@ -276,8 +276,8 @@ private:
         Util::RingDeque<BufferChunk> &postedBuffers);
 
     InputPort(void);
-    InputPort(const InputPort &){} // non construction-copyable
-    InputPort &operator=(const InputPort &){return *this;} // non copyable
+    InputPort(const InputPort &) = delete; // non construction-copyable
+    InputPort &operator=(const InputPort &) = delete; // non copyable
     friend class WorkerActor;
     friend class OutputPort;
 };
