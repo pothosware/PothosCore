@@ -4,7 +4,7 @@
 /// Inline member implementation for InputPort class.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -70,6 +70,11 @@ inline const Pothos::LabelIteratorRange &Pothos::InputPort::labels(void) const
 inline void Pothos::InputPort::consume(const size_t numElements)
 {
     _pendingElements += numElements;
+}
+
+inline Pothos::BufferChunk Pothos::InputPort::takeBuffer(void)
+{
+    return std::move(_buffer);
 }
 
 inline bool Pothos::InputPort::hasMessage(void)

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/InputPortImpl.hpp>
@@ -250,6 +250,7 @@ static auto managedInputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, labels))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, removeLabel))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, consume))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, takeBuffer))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, popMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, peekMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, setReserve))

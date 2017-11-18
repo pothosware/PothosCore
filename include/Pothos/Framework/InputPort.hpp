@@ -4,7 +4,7 @@
 /// This file provides an interface for a worker's input port.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -123,6 +123,21 @@ public:
      * \param numElements the number of elements to consume
      */
     void consume(const size_t numElements);
+
+    /*!
+     * Take buffer transfers ownership of the buffer to the caller.
+     * Use takeBuffer() to support perfect buffer forwarding
+     * with postBuffer() and postMessage() on an output port.
+     * \code
+     * auto buff = inPort->takeBuffer();
+     * outPort->postBuffer(std::move(buff));
+     * \endcode
+     * \note Note that takeBuffer() does not consume. The caller must also call
+     * consume() with the number of elements actually read from the buffer.
+     * \post buffer() has undefined behavior after this call.
+     * \return the buffer from this input port
+     */
+    BufferChunk takeBuffer(void);
 
     /*!
      * Remove and return an asynchronous message from the port.
