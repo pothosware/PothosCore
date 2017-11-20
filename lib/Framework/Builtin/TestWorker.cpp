@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -57,13 +57,13 @@ struct AddFloat32 : Pothos::Block
 
     void work(void)
     {
-        auto out = outputs()[0]->buffer().as<float *>();
-        auto in0 = inputs()[0]->buffer().as<const float *>();
+        float *out = outputs()[0]->buffer();
+        const float *in0 = inputs()[0]->buffer();
         const size_t elems = this->workInfo().minElements;
 
         for (size_t i = 1; i < inputs().size(); i++)
         {
-            auto in = inputs()[i]->buffer().as<const float *>();
+            const float *in = inputs()[i]->buffer();
             for (size_t n = 0; n < elems; n++)
             {
                 out[n] = in0[n] + in[n];
