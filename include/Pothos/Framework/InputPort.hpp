@@ -4,7 +4,7 @@
 /// This file provides an interface for a worker's input port.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -123,6 +123,21 @@ public:
      * \param numElements the number of elements to consume
      */
     void consume(const size_t numElements);
+
+    /*!
+     * Take buffer transfers ownership of the buffer to the caller.
+     * Use takeBuffer() to support perfect buffer forwarding
+     * with postBuffer() and postMessage() on an output port.
+     * \code
+     * auto buff = inPort->takeBuffer();
+     * outPort->postBuffer(std::move(buff));
+     * \endcode
+     * \note Note that takeBuffer() does not consume. The caller must also call
+     * consume() with the number of elements actually read from the buffer.
+     * \post buffer() has undefined behavior after this call.
+     * \return the buffer from this input port
+     */
+    BufferChunk takeBuffer(void);
 
     /*!
      * Remove and return an asynchronous message from the port.
@@ -249,19 +264,20 @@ private:
     /////// input buffer interface /////////
     void bufferAccumulatorFront(BufferChunk &);
     void bufferAccumulatorPush(const BufferChunk &buffer);
-    void bufferAccumulatorPushNoLock(const BufferChunk &buffer);
+    void bufferAccumulatorPushNoLock(BufferChunk &&buffer);
     void bufferAccumulatorPop(const size_t numBytes);
     void bufferAccumulatorRequire(const size_t numBytes);
     void bufferAccumulatorClear(void);
 
     /////// combined label association push /////////
     void bufferLabelPush(
-        const std::vector<Label> &postedLabels,
-        const Util::RingDeque<BufferChunk> &postedBuffers);
+        const bool enableMove,
+        std::vector<Label> &postedLabels,
+        Util::RingDeque<BufferChunk> &postedBuffers);
 
     InputPort(void);
-    InputPort(const InputPort &){} // non construction-copyable
-    InputPort &operator=(const InputPort &){return *this;} // non copyable
+    InputPort(const InputPort &) = delete; // non construction-copyable
+    InputPort &operator=(const InputPort &) = delete; // non copyable
     friend class WorkerActor;
     friend class OutputPort;
 };

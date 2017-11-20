@@ -89,22 +89,26 @@ inline void Pothos::OutputPort::popElements(const size_t numElements)
     _workEvents++;
 }
 
-inline void Pothos::OutputPort::postBuffer(const BufferChunk &buffer)
+template <typename ValueType>
+inline void Pothos::OutputPort::postBuffer(ValueType &&buffer)
 {
     auto &queue = _postedBuffers;
     if (queue.full()) queue.set_capacity(queue.size()*2);
-    queue.push_back(buffer);
+    auto &r = queue.emplace_back(std::forward<ValueType>(buffer));
 
     //unspecified buffer dtype? copy it from the port
-    if (not buffer.dtype) queue.back().dtype = this->dtype();
+    if (not r.dtype) r.dtype = this->dtype();
 
+    _totalElements += r.elements();
     _totalBuffers++;
     _workEvents++;
 }
 
-inline void Pothos::OutputPort::postLabel(const Label &label)
+template <typename... ValueType>
+inline void Pothos::OutputPort::postLabel(ValueType&&... label)
 {
-    _postedLabels.push_back(label.toAdjusted(this->dtype().size(), 1));
+    _postedLabels.emplace_back(std::forward<ValueType>(label)...);
+    _postedLabels.back().adjust(this->dtype().size(), 1);
     _totalLabels++;
     _workEvents++;
 }

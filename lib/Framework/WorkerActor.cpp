@@ -447,8 +447,6 @@ void Pothos::WorkerActor::postWorkTasks(void)
     for (const auto &entry : this->outputs)
     {
         auto &port = *entry.second;
-        size_t elemsDequeued = 0;
-        size_t bytesDequeued = 0;
 
         //set the buffer length, send it, pop from manager, clear reference
         const size_t pendingBytes = port._pendingElements*port.buffer().dtype.size();
@@ -476,7 +474,7 @@ void Pothos::WorkerActor::postWorkTasks(void)
 
                 else port.bufferManagerPop(buffer.length);
             }
-            port.postBuffer(buffer);
+            port.postBuffer(std::move(buffer));
         }
 
         //Outside of produce, the block may use popElements() or increase the reserve.
@@ -504,24 +502,16 @@ void Pothos::WorkerActor::postWorkTasks(void)
         {
             for (const auto &subscriber : port._subscribers)
             {
-                subscriber->bufferLabelPush(postedLabels, postedBuffers);
+                const bool last = (&subscriber == &port._subscribers.back());
+                subscriber->bufferLabelPush(last, postedLabels, postedBuffers);
             }
         }
 
-        //clear posted labels
+        //clear posted labels with buffers
         postedLabels.clear();
-
-        //clear posted buffers and save stats
-        while (not postedBuffers.empty())
-        {
-            auto &buffer = postedBuffers.front();
-            elemsDequeued += buffer.elements();
-            bytesDequeued += buffer.length;
-            postedBuffers.pop_front();
-        }
+        postedBuffers.clear();
 
         //add produced bytes into total
-        port._totalElements += elemsDequeued;
         outputWorkEvents += port._workEvents;
     }
 

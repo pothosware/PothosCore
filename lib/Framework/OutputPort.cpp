@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/OutputPortImpl.hpp>
@@ -43,17 +43,16 @@ Pothos::BufferChunk Pothos::OutputPort::getBuffer(const size_t numElements)
 {
     const size_t numBytes = numElements*_dtype.size();
 
-    //use the front buffer is possible
+    //use the front buffer if possible
+    if (_buffer.length >= numBytes)
     {
-        std::lock_guard<Util::SpinLock> lock(_bufferManagerLock);
-        Pothos::BufferChunk out(_bufferManager->front());
-        if (out.length >= numBytes)
+        _buffer.length = numBytes;
+        if (_bufferFromManager)
         {
-            out.dtype = _dtype;
-            out.length = numBytes;
-            _bufferManager->pop(out.length);
-            return out;
+            std::lock_guard<Util::SpinLock> lock(_bufferManagerLock);
+            _bufferManager->pop(_buffer.length);
         }
+        return std::move(_buffer);
     }
 
     //otherwise use the internal pool
@@ -123,9 +122,9 @@ static auto managedOutputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, produce))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, popElements))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, getBuffer))
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postLabel))
+    .registerMethod("postLabel", &Pothos::OutputPort::postLabel<const Pothos::Label &>)
     .registerMethod("postMessage", &Pothos::OutputPort::postMessage<const Pothos::Object &>)
-    .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, postBuffer))
+    .registerMethod("postBuffer", &Pothos::OutputPort::postBuffer<const Pothos::BufferChunk &>)
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, setReserve))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, isSignal))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, setReadBeforeWrite))

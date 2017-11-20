@@ -4,7 +4,7 @@
 /// This file provides an interface for a worker's output port.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -122,6 +122,7 @@ public:
      * for use with postBuffer() and postMessage() calls.
      * The call will attempt to use the front buffer from
      * this output port and will fall-back to a reusable pool.
+     * \post buffer() has undefined behavior after this call.
      * \param numElements the minimum buffer size
      * \return a buffer chunk with at least numElements
      */
@@ -129,9 +130,16 @@ public:
 
     /*!
      * Post an output label to the subscribers on this port.
+     * postLabel also supports move and emplacement semantics.
+     * \code
+     * port->postLabel(label);
+     * port->postLabel(std::move(label));
+     * port->postLabel(id, data, index);
+     * \endcode
      * \param label the label to post
      */
-    void postLabel(const Label &label);
+    template <typename... ValueType>
+    void postLabel(ValueType&&... label);
 
     /*!
      * Post an output message to the subscribers on this port.
@@ -149,7 +157,8 @@ public:
      * Do not call produce() when using postBuffer().
      * \param buffer the buffer to post
      */
-    void postBuffer(const BufferChunk &buffer);
+    template <typename ValueType>
+    void postBuffer(ValueType &&buffer);
 
     /*!
      * Set a reserve requirement on this output port.
@@ -245,8 +254,8 @@ private:
     BufferPool _bufferPool;
 
     OutputPort(void);
-    OutputPort(const OutputPort &){} // non construction-copyable
-    OutputPort &operator=(const OutputPort &){return *this;} // non copyable
+    OutputPort(const OutputPort &) = delete; // non construction-copyable
+    OutputPort &operator=(const OutputPort &) = delete; // non copyable
     friend class WorkerActor;
     friend class InputPort;
     void _postMessage(const Object &message);

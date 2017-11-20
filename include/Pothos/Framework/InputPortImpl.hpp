@@ -4,7 +4,7 @@
 /// Inline member implementation for InputPort class.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -70,6 +70,11 @@ inline const Pothos::LabelIteratorRange &Pothos::InputPort::labels(void) const
 inline void Pothos::InputPort::consume(const size_t numElements)
 {
     _pendingElements += numElements;
+}
+
+inline Pothos::BufferChunk Pothos::InputPort::takeBuffer(void)
+{
+    return std::move(_buffer);
 }
 
 inline bool Pothos::InputPort::hasMessage(void)
@@ -159,8 +164,8 @@ inline void Pothos::InputPort::bufferAccumulatorFront(Pothos::BufferChunk &buff)
     std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
     while (not _inputInlineMessages.empty())
     {
-        const auto &front = _inputInlineMessages.front();
-        _inlineMessages.push_back(front.toAdjusted(1, this->dtype().size()));
+        _inlineMessages.push_back(std::move(_inputInlineMessages.front()));
+        _inlineMessages.back().adjust(1, this->dtype().size());
         _inputInlineMessages.pop_front();
     }
     buff = _bufferAccumulator.front();
@@ -169,7 +174,7 @@ inline void Pothos::InputPort::bufferAccumulatorFront(Pothos::BufferChunk &buff)
 inline void Pothos::InputPort::bufferAccumulatorPush(const BufferChunk &buffer)
 {
     std::lock_guard<Util::SpinLock> lock(_bufferAccumulatorLock);
-    this->bufferAccumulatorPushNoLock(buffer);
+    this->bufferAccumulatorPushNoLock(BufferChunk(buffer));
 }
 
 inline void Pothos::InputPort::bufferAccumulatorRequire(const size_t numBytes)

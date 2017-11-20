@@ -42,6 +42,15 @@ public:
     Label toAdjusted(const MultType &mult, const DivType &div) const;
 
     /*!
+     * Adjust the index and width based on a multiplier/divider.
+     * \param mult a positive multiplier (default 1)
+     * \param div a positive divider (default 1)
+     * \return a reference to this label
+     */
+    template <typename MultType, typename DivType>
+    Label &adjust(const MultType &mult, const DivType &div);
+
+    /*!
      * The identifier describes the label's type, meaning, or purpose.
      * Identifiers only have meaning in the context of the blocks
      * that are producing and consuming them. So any given pair of blocks
@@ -127,12 +136,19 @@ Pothos::Label::Label(const std::string &id, ValueType &&data, const unsigned lon
 template <typename MultType, typename DivType>
 Pothos::Label Pothos::Label::toAdjusted(const MultType &mult, const DivType &div) const
 {
-    Pothos::Label newLabel = *this;
-    newLabel.index *= mult;
-    newLabel.width *= mult;
-    newLabel.index /= div;
-    newLabel.width /= div;
+    Pothos::Label newLabel(*this);
+    newLabel.adjust(mult, div);
     return newLabel;
+}
+
+template <typename MultType, typename DivType>
+Pothos::Label &Pothos::Label::adjust(const MultType &mult, const DivType &div)
+{
+    this->index *= mult;
+    this->width *= mult;
+    this->index /= div;
+    this->width /= div;
+    return *this;
 }
 
 inline bool Pothos::operator==(const Label &rhs, const Label &lhs)

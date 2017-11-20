@@ -349,8 +349,8 @@ private:
     std::multimap<std::string, Callable> _calls;
     std::map<std::string, std::pair<std::string, std::string>> _probes;
     ThreadPool _threadPool;
-    Block(const Block &){} // non construction-copyable
-    Block &operator=(const Block &){return *this;} // non copyable
+    Block(const Block &) = delete; // non construction-copyable
+    Block &operator=(const Block &) = delete; // non copyable
 public:
     std::shared_ptr<WorkerActor> _actor;
     friend class WorkerActor;
