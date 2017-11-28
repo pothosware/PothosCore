@@ -330,6 +330,8 @@ inline Pothos::BufferChunk::BufferChunk(BufferChunk &&other):
     _managedBuffer(std::move(other._managedBuffer)),
     _nextBuffers(std::move(other._nextBuffers))
 {
+    other.address = 0;
+    other.length = 0;
     other._nextBuffers = 0;
 }
 
@@ -359,6 +361,8 @@ inline Pothos::BufferChunk &Pothos::BufferChunk::operator=(BufferChunk &&other)
     _buffer = std::move(other._buffer);
     _managedBuffer = std::move(other._managedBuffer);
     _nextBuffers = std::move(other._nextBuffers);
+    other.address = 0;
+    other.length = 0;
     other._nextBuffers = 0;
     return *this;
 }
