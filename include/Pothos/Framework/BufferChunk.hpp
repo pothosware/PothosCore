@@ -75,7 +75,7 @@ public:
     BufferChunk(const BufferChunk &other);
 
     //! BufferChunk move constructor
-    BufferChunk(BufferChunk &&other);
+    BufferChunk(BufferChunk &&other) noexcept;
 
     //! BufferChunk destructor
     ~BufferChunk(void);
@@ -322,7 +322,7 @@ inline Pothos::BufferChunk::BufferChunk(const BufferChunk &other):
     _incrNextBuffers();
 }
 
-inline Pothos::BufferChunk::BufferChunk(BufferChunk &&other):
+inline Pothos::BufferChunk::BufferChunk(BufferChunk &&other) noexcept:
     address(std::move(other.address)),
     length(std::move(other.length)),
     dtype(std::move(other.dtype)),

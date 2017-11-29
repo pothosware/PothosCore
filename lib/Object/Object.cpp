@@ -76,12 +76,6 @@ Pothos::Object::Object(const Object &obj):
     incr(_impl);
 }
 
-Pothos::Object::Object(Object &&obj):
-    _impl(obj._impl)
-{
-    obj._impl = nullptr;
-}
-
 Pothos::Object::~Object(void)
 {
     if (decr(_impl)) delete _impl;

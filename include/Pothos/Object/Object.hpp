@@ -76,7 +76,7 @@ public:
      * The contents of obj will be moved to the new Object.
      * \param obj another Object
      */
-    Object(Object &&obj);
+    Object(Object &&obj) noexcept;
 
     /*!
      * Create a new Object from an an arbitrary value.
@@ -275,4 +275,10 @@ inline bool operator==(const Object &lhs, const Object &rhs);
 inline bool Pothos::operator==(const Object &lhs, const Object &rhs)
 {
     return lhs._impl == rhs._impl;
+}
+
+inline Pothos::Object::Object(Object &&obj) noexcept:
+    _impl(obj._impl)
+{
+    obj._impl = nullptr;
 }

@@ -4,7 +4,7 @@
 /// A ManagedBuffer is checked-out and automatically returned to a BufferManager.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -80,7 +80,7 @@ public:
     ManagedBuffer(const ManagedBuffer &obj);
 
     //! ManagedBuffer move constructor
-    ManagedBuffer(ManagedBuffer &&obj);
+    ManagedBuffer(ManagedBuffer &&obj) noexcept;
 
     //! ManagedBuffer copy assignment
     ManagedBuffer &operator=(const ManagedBuffer &obj);
@@ -196,7 +196,7 @@ inline Pothos::ManagedBuffer::ManagedBuffer(const ManagedBuffer &obj):
     if (_impl != nullptr) _impl->incr();
 }
 
-inline Pothos::ManagedBuffer::ManagedBuffer(ManagedBuffer &&obj):
+inline Pothos::ManagedBuffer::ManagedBuffer(ManagedBuffer &&obj) noexcept:
     _impl(obj._impl)
 {
     obj._impl = nullptr;
