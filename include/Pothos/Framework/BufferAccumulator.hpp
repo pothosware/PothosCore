@@ -4,7 +4,7 @@
 /// BufferAccumulator provides an input pool of buffers.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -48,7 +48,7 @@ public:
      * Push a buffer chunk into the accumulator.
      * \param buffer a buffer chunk
      */
-    void push(const BufferChunk &buffer);
+    void push(BufferChunk &&buffer);
 
     /*!
      * Get the front buffer.

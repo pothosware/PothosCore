@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferAccumulator.hpp>
@@ -36,7 +36,7 @@ void Pothos::BufferAccumulator::clear(void)
 /***********************************************************************
  * BufferAccumulator Push implementation
  **********************************************************************/
-void Pothos::BufferAccumulator::push(const BufferChunk &buffer)
+void Pothos::BufferAccumulator::push(BufferChunk &&buffer)
 {
     _bytesAvailable += buffer.length;
     auto &queue = _queue;
@@ -50,7 +50,7 @@ void Pothos::BufferAccumulator::push(const BufferChunk &buffer)
     if (queue.full()) queue.set_capacity(queue.size()*2);
 
     //push the buffer, then perform amalgamation if possible
-    queue.push_back(buffer);
+    queue.push_back(std::move(buffer));
     const size_t backIndex = queue.size() - 1;
     if (queue.size() < 2) goto restoreNextBuffers;
 
