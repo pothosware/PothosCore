@@ -43,7 +43,7 @@ void Pothos::BufferChunk::_incrNextBuffers(void)
     auto mb = _managedBuffer._impl;
     if (mb == nullptr) return;
 
-    int lengthRemain = this->getEnd() - _buffer.getEnd();
+    int lengthRemain = this->getEnd() - getBuffer().getEnd();
     while (lengthRemain > 0)
     {
         mb = mb->nextBuffer;

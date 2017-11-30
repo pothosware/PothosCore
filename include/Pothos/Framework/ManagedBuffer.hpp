@@ -39,6 +39,11 @@ public:
     ManagedBuffer(void);
 
     /*!
+     * Create from a shared buffer with no manager.
+     */
+    ManagedBuffer(const SharedBuffer &buff);
+
+    /*!
      * Is this managed buffer valid?
      * \return true if it holds an allocation.
      */
@@ -144,13 +149,13 @@ struct Pothos::ManagedBuffer::Impl
 
     void incr(void)
     {
-        counter++;
+        counter.fetch_add(1, std::memory_order_relaxed);
     }
 
     void decr(void)
     {
         //decrement the counter, and handle the last ref case
-        if (counter.fetch_sub(1) == 0) this->cleanup();
+        if (counter.fetch_sub(1, std::memory_order_acq_rel) == 1) this->cleanup();
     }
 
     void cleanup(void);
@@ -175,7 +180,7 @@ inline void Pothos::ManagedBuffer::reset(void)
 
 inline const Pothos::SharedBuffer &Pothos::ManagedBuffer::getBuffer(void) const
 {
-    assert(*this);
+    if (_impl == nullptr) return SharedBuffer::null();
     return _impl->buffer;
 }
 
@@ -231,13 +236,14 @@ inline bool Pothos::ManagedBuffer::operator<(const ManagedBuffer &rhs) const
 
 inline bool Pothos::ManagedBuffer::unique(void) const
 {
-    return _impl->counter == 0;
+    if (_impl == nullptr) return false;
+    return _impl->counter.load(std::memory_order_relaxed) == 1;
 }
 
 inline size_t Pothos::ManagedBuffer::useCount(void) const
 {
-    if (*this) return _impl->counter+1;
-    return 0;
+    if (_impl == nullptr) return 0;
+    return _impl->counter.load(std::memory_order_relaxed);
 }
 
 inline void Pothos::ManagedBuffer::setNextBuffer(const ManagedBuffer &next)

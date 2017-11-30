@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/SharedBuffer.hpp>
@@ -9,6 +9,12 @@
 /***********************************************************************
  * shared buffer implementation
  **********************************************************************/
+const Pothos::SharedBuffer &Pothos::SharedBuffer::null(void)
+{
+    static SharedBuffer nullBuff;
+    return nullBuff;
+}
+
 Pothos::SharedBuffer::SharedBuffer(void):
     _address(0), _length(0), _alias(0)
 {

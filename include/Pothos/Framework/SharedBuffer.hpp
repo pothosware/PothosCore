@@ -4,7 +4,7 @@
 /// The shared buffer is an RAII buffer that automatically deallocates.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -21,6 +21,9 @@ namespace Pothos {
 class POTHOS_API SharedBuffer
 {
 public:
+
+    //! Get a const reference to a null/empty SharedBuffer
+    static const SharedBuffer &null(void);
 
     //! Create a null SharedBuffer
     SharedBuffer(void);

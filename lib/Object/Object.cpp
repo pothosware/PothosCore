@@ -104,7 +104,7 @@ Pothos::Object &Pothos::Object::operator=(Object &&rhs)
 
 bool Pothos::Object::unique(void) const
 {
-    return _impl->counter == 1;
+    return _impl->counter.load(std::memory_order_relaxed) == 1;
 }
 
 std::string Pothos::Object::getTypeString(void) const

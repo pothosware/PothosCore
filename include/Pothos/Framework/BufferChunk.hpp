@@ -244,7 +244,6 @@ public:
 
 private:
     friend BufferAccumulator;
-    SharedBuffer _buffer;
     ManagedBuffer _managedBuffer;
     void _incrNextBuffers(void);
     void _decrNextBuffers(void);
@@ -258,8 +257,6 @@ private:
 inline bool operator==(const BufferChunk &lhs, const BufferChunk &rhs);
 
 } //namespace Pothos
-
-#include <cassert>
 
 inline bool Pothos::operator==(const Pothos::BufferChunk &lhs, const Pothos::BufferChunk &rhs)
 {
@@ -277,26 +274,26 @@ inline Pothos::BufferChunk::BufferChunk(void):
 inline Pothos::BufferChunk::BufferChunk(const size_t numBytes):
     address(0),
     length(numBytes),
-    _buffer(Pothos::SharedBuffer::make(numBytes)),
+    _managedBuffer(Pothos::SharedBuffer::make(numBytes)),
     _nextBuffers(0)
 {
-    address = _buffer.getAddress();
+    address = getBuffer().getAddress();
 }
 
 inline Pothos::BufferChunk::BufferChunk(const DType &dtype, const size_t numElems):
     address(0),
     length(dtype.size()*numElems),
     dtype(dtype),
-    _buffer(Pothos::SharedBuffer::make(length)),
+    _managedBuffer(Pothos::SharedBuffer::make(length)),
     _nextBuffers(0)
 {
-    address = _buffer.getAddress();
+    address = getBuffer().getAddress();
 }
 
 inline Pothos::BufferChunk::BufferChunk(const SharedBuffer &buffer):
     address(buffer.getAddress()),
     length(buffer.getLength()),
-    _buffer(buffer),
+    _managedBuffer(buffer),
     _nextBuffers(0)
 {
     return;
@@ -305,7 +302,6 @@ inline Pothos::BufferChunk::BufferChunk(const SharedBuffer &buffer):
 inline Pothos::BufferChunk::BufferChunk(const ManagedBuffer &buffer):
     address(buffer.getBuffer().getAddress()),
     length(buffer.getBuffer().getLength()),
-    _buffer(buffer.getBuffer()),
     _managedBuffer(buffer),
     _nextBuffers(0)
 {
@@ -316,7 +312,6 @@ inline Pothos::BufferChunk::BufferChunk(const BufferChunk &other):
     address(other.address),
     length(other.length),
     dtype(other.dtype),
-    _buffer(other._buffer),
     _managedBuffer(other._managedBuffer)
 {
     _incrNextBuffers();
@@ -326,7 +321,6 @@ inline Pothos::BufferChunk::BufferChunk(BufferChunk &&other) noexcept:
     address(std::move(other.address)),
     length(std::move(other.length)),
     dtype(std::move(other.dtype)),
-    _buffer(std::move(other._buffer)),
     _managedBuffer(std::move(other._managedBuffer)),
     _nextBuffers(std::move(other._nextBuffers))
 {
@@ -346,7 +340,6 @@ inline Pothos::BufferChunk &Pothos::BufferChunk::operator=(const BufferChunk &ot
     address = other.address;
     length = other.length;
     dtype = other.dtype;
-    _buffer = other._buffer;
     _managedBuffer = other._managedBuffer;
     _incrNextBuffers();
     return *this;
@@ -358,7 +351,6 @@ inline Pothos::BufferChunk &Pothos::BufferChunk::operator=(BufferChunk &&other)
     address = std::move(other.address);
     length = std::move(other.length);
     dtype = std::move(other.dtype);
-    _buffer = std::move(other._buffer);
     _managedBuffer = std::move(other._managedBuffer);
     _nextBuffers = std::move(other._nextBuffers);
     other.address = 0;
@@ -373,7 +365,6 @@ inline void Pothos::BufferChunk::clear(void)
     address = 0;
     length = 0;
     dtype = Pothos::DType();
-    _buffer = Pothos::SharedBuffer();
     _managedBuffer.reset();
     _nextBuffers = 0;
 }
@@ -390,7 +381,7 @@ inline void Pothos::BufferChunk::setElements(const size_t numElements)
 
 inline const Pothos::SharedBuffer &Pothos::BufferChunk::getBuffer(void) const
 {
-    return _buffer;
+    return _managedBuffer.getBuffer();
 }
 
 inline const Pothos::ManagedBuffer &Pothos::BufferChunk::getManagedBuffer(void) const
@@ -400,9 +391,10 @@ inline const Pothos::ManagedBuffer &Pothos::BufferChunk::getManagedBuffer(void) 
 
 inline size_t Pothos::BufferChunk::getAlias(void) const
 {
-    if (_buffer.getAlias() == 0) return 0;
-    if (address > _buffer.getAlias()) return address - _buffer.getLength();
-    else return address + _buffer.getLength();
+    const auto &buffer = getBuffer();
+    if (buffer.getAlias() == 0) return 0;
+    if (address > buffer.getAlias()) return address - buffer.getLength();
+    else return address + buffer.getLength();
 }
 
 inline size_t Pothos::BufferChunk::getEnd(void) const
@@ -424,16 +416,15 @@ Pothos::BufferChunk::operator ElementType(void) const
 
 inline Pothos::BufferChunk::operator bool(void) const
 {
-    return (address != 0) or bool(_buffer);
+    return bool(_managedBuffer);
 }
 
 inline bool Pothos::BufferChunk::unique(void) const
 {
-    return this->useCount() == 1;
+    return _managedBuffer.unique();
 }
 
 inline size_t Pothos::BufferChunk::useCount(void) const
 {
-    if (_managedBuffer) return _managedBuffer.useCount();
-    return _buffer.useCount();
+    return _managedBuffer.useCount();
 }
