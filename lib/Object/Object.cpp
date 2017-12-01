@@ -42,10 +42,14 @@ static void incr(Pothos::Detail::ObjectContainer *o)
     o->counter.fetch_add(1, std::memory_order_relaxed);
 }
 
-static bool decr(Pothos::Detail::ObjectContainer *o)
+static void decr(Pothos::Detail::ObjectContainer *o)
 {
-    if (o == nullptr) return false;
-    return o->counter.fetch_sub(1, std::memory_order_acq_rel) == 1;
+    if (o == nullptr) return;
+    if (o->counter.fetch_sub(1, std::memory_order_release) == 1)
+    {
+        std::atomic_thread_fence(std::memory_order_acquire);
+        delete o;
+    }
 }
 
 void Pothos::Detail::throwExtract(const Pothos::Object &obj, const std::type_info &type)
@@ -78,7 +82,7 @@ Pothos::Object::Object(const Object &obj):
 
 Pothos::Object::~Object(void)
 {
-    if (decr(_impl)) delete _impl;
+    decr(_impl);
 }
 
 Pothos::Object::operator bool(void) const
@@ -88,7 +92,7 @@ Pothos::Object::operator bool(void) const
 
 Pothos::Object &Pothos::Object::operator=(const Object &rhs)
 {
-    if (decr(_impl)) delete _impl;
+    decr(_impl);
     _impl = rhs._impl;
     incr(_impl);
     return *this;
@@ -96,7 +100,7 @@ Pothos::Object &Pothos::Object::operator=(const Object &rhs)
 
 Pothos::Object &Pothos::Object::operator=(Object &&rhs)
 {
-    if (decr(_impl)) delete _impl;
+    decr(_impl);
     _impl = rhs._impl;
     rhs._impl = nullptr;
     return *this;

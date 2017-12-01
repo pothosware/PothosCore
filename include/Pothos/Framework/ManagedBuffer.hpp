@@ -155,7 +155,11 @@ struct Pothos::ManagedBuffer::Impl
     void decr(void)
     {
         //decrement the counter, and handle the last ref case
-        if (counter.fetch_sub(1, std::memory_order_acq_rel) == 1) this->cleanup();
+        if (counter.fetch_sub(1, std::memory_order_release) == 1)
+        {
+            std::atomic_thread_fence(std::memory_order_acquire);
+            this->cleanup();
+        }
     }
 
     void cleanup(void);
