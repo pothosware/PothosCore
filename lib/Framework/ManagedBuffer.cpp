@@ -15,8 +15,7 @@ Pothos::ManagedBuffer::Impl::Impl(void):
 void Pothos::ManagedBuffer::Impl::cleanup(void)
 {
     //there is a manager to push to, otherwise delete
-    BufferManager::Sptr manager = weakManager.lock();
-    if (manager)
+    if (auto manager = weakManager.lock())
     {
         ManagedBuffer mb;
         mb._impl = this;
