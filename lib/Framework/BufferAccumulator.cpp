@@ -42,6 +42,12 @@ void Pothos::BufferAccumulator::push(BufferChunk &&buffer)
     auto &queue = _queue;
     assert(not queue.empty());
 
+    //prepare structures for restoreNextBuffers
+    //that will be lost when the buffer is moved
+    ManagedBuffer mb;
+    mb._impl = buffer.getManagedBuffer()._impl;
+    const auto nexts = buffer._nextBuffers;
+
     //remove possible dummy empty buffer from the front
     if (queue.front().length == 0) queue.pop_front();
 
@@ -91,9 +97,7 @@ void Pothos::BufferAccumulator::push(BufferChunk &&buffer)
     //restore its empty next buffers in the queue as well
     //mb is a temporary container that never changes references,
     //we must set it to nullptr before exit to ensure accounting.
-    ManagedBuffer mb;
-    mb._impl = buffer.getManagedBuffer()._impl;
-    for (size_t i = 0; i < buffer._nextBuffers; i++)
+    for (size_t i = 0; i < nexts; i++)
     {
         mb._impl = mb._impl->nextBuffer;
         BufferChunk bnext(mb);
