@@ -142,7 +142,7 @@ void Pothos::WorkerActor::autoDeletePort(const std::string &name, PortsType &por
     }
     while (not indexedPorts.empty() and indexedPorts.back() == nullptr)
     {
-        indexedPorts.resize(indexedPorts.size()-1);
+        indexedPorts.resize(int(indexedPorts.size())-1);
     }
 
     //named port removal
