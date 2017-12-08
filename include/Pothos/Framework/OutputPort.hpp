@@ -149,6 +149,18 @@ public:
     void postMessage(ValueType &&message);
 
     /*!
+     * Construct a message from arguments and
+     * post it to the subscribers on this port.
+     * \code
+     * port->emplaceMessage<std::string>(ptr, len);
+     * \endcode
+     * \tparam T the type of the new message object
+     * \param args the constructor arguments for type T
+     */
+    template <typename T, typename... Args>
+    void emplaceMessage(Args&&... args);
+
+    /*!
      * Post an output buffer to the subscribers on this port.
      * This call allows external user-provided buffers to be used
      * in place of the normal stream buffer provided by buffer().
