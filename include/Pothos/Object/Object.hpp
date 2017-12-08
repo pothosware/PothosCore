@@ -65,6 +65,18 @@ public:
     static Object make(ValueType &&value);
 
     /*!
+     * Create an object with emplacement construction.
+     * The make method allows users to pass an explicit type,
+     * and an arbitrary number of constructor arguments
+     * which will be forwarded to the type T constructor.
+     * \tparam T the internal type held by the new Object
+     * \param args the constructor arguments for type T
+     * \return a new Object of type T constructed from args
+     */
+    template <typename T, typename... Args>
+    static Object make(Args&&... args);
+
+    /*!
      * Copy constructor for Object -- does not copy the internal data.
      * Both obj and the resulting Object will point to the same data.
      * \param obj another Object

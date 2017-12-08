@@ -42,16 +42,10 @@ struct POTHOS_API ObjectContainer
 template <typename ValueType>
 struct ObjectContainerT : ObjectContainer
 {
-    ObjectContainerT(void):
-        ObjectContainer(typeid(ValueType))
-    {
-        internal = (void*)std::addressof(this->value);
-    }
-
-    template <typename T>
-    ObjectContainerT(T &&value):
+    template <typename... Args>
+    ObjectContainerT(Args&&... args):
         ObjectContainer(typeid(ValueType)),
-        value(std::forward<T>(value))
+        value(std::forward<Args>(args)...)
     {
         internal = (void*)std::addressof(this->value);
     }
@@ -130,6 +124,14 @@ Object Object::make(ValueType &&value)
 {
     Object o;
     o._impl = Detail::makeObjectContainer(std::forward<ValueType>(value));
+    return o;
+}
+
+template <typename T, typename... Args>
+Object Object::make(Args&&... args)
+{
+    Object o;
+    o._impl = new Detail::ObjectContainerT<T>(std::forward<Args>(args)...);
     return o;
 }
 

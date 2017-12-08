@@ -62,7 +62,7 @@ void Pothos::Detail::throwExtract(const Pothos::Object &obj, const std::type_inf
 
 Pothos::Detail::ObjectContainer *Pothos::Detail::makeObjectContainer(const char *s)
 {
-    return makeObjectContainer(std::string(s));
+    return new Detail::ObjectContainerT<std::string>(s);
 }
 
 /***********************************************************************
