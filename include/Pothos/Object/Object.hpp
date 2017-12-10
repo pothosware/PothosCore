@@ -47,6 +47,7 @@ public:
 class POTHOS_API Object
 {
 public:
+
     /*!
      * Create a null Object.
      */
@@ -69,11 +70,11 @@ public:
      * The make method allows users to pass an explicit type,
      * and an arbitrary number of constructor arguments
      * which will be forwarded to the type T constructor.
-     * \tparam T the internal type held by the new Object
-     * \param args the constructor arguments for type T
+     * \tparam ValueType the internal type held by the new Object
+     * \param args the constructor arguments for type ValueType
      * \return a new Object of type T constructed from args
      */
-    template <typename T, typename... Args>
+    template <typename ValueType, typename... Args>
     static Object make(Args&&... args);
 
     /*!
@@ -96,6 +97,25 @@ public:
      */
     template <typename ValueType, typename = Pothos::Util::disable_if_same<Object, ValueType>>
     explicit Object(ValueType &&value);
+
+    //! InPlace dummy type to pass type to Object emplacement constructor
+    template <typename T> struct InPlace
+    {
+        explicit InPlace() = default;
+    };
+
+    /*!
+     * Create a new Object given a type and constructor arguments.
+     * The first argument uses the InPlace dummy argument to specify the type.
+     * \param args the constructor arguments for type ValueType
+     */
+    template <typename ValueType, typename... Args>
+    explicit Object(InPlace<ValueType>, Args&&... args);
+
+    /*!
+     * Create an Object of type std::string from a C-style string.
+     */
+    explicit Object(const char *);
 
     /*!
      * Destructor for Object.

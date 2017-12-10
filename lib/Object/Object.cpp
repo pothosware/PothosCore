@@ -60,11 +60,6 @@ void Pothos::Detail::throwExtract(const Pothos::Object &obj, const std::type_inf
         obj.getTypeString(), Util::typeInfoToString(type)));
 }
 
-Pothos::Detail::ObjectContainer *Pothos::Detail::makeObjectContainer(const char *s)
-{
-    return new Detail::ObjectContainerT<std::string>(s);
-}
-
 /***********************************************************************
  * Object impl
  **********************************************************************/

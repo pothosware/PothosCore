@@ -58,6 +58,20 @@ struct ObjectContainerT : ObjectContainer
     ValueType value;
 };
 
+template <typename ValueType, typename... Args>
+typename std::enable_if<!std::is_same<NullObject, ValueType>::value, ObjectContainer *>::type
+makeObjectContainer(Args&&... args)
+{
+    return new ObjectContainerT<Pothos::Util::special_decay_t<ValueType>>(std::forward<Args>(args)...);
+}
+
+template <typename ValueType, typename... Args>
+typename std::enable_if<std::is_same<NullObject, ValueType>::value, ObjectContainer *>::type
+makeObjectContainer(Args&&...)
+{
+    return nullptr;
+}
+
 /***********************************************************************
  * extract implementation: either null type or direct pointer cast
  **********************************************************************/
@@ -90,56 +104,38 @@ convertObject(const Object &obj)
     return obj;
 }
 
-/***********************************************************************
- * template specialized factory for object containers
- **********************************************************************/
-template <typename ValueType>
-ObjectContainer *makeObjectContainer(ValueType &&value)
-{
-    return new ObjectContainerT<Pothos::Util::special_decay_t<ValueType>>(std::forward<ValueType>(value));
-}
-
-/*!
- * Create an Object from a NullObject type.
- * The implementation always returns null.
- * We do not allocate for type NullObject.
- */
-inline ObjectContainer *makeObjectContainer(NullObject &&)
-{
-    return nullptr;
-}
-
-/*!
- * Create an Object from a string char array.
- * This resulting object type will be std::string.
- * This is a convenience function to use null-terminated
- * char arrays without the explicit cast to std::string.
- */
-POTHOS_API ObjectContainer *makeObjectContainer(const char *s);
-
 } //namespace Detail
 
 template <typename ValueType>
 Object Object::make(ValueType &&value)
 {
-    Object o;
-    o._impl = Detail::makeObjectContainer(std::forward<ValueType>(value));
-    return o;
+    return Object(InPlace<ValueType>(), std::forward<ValueType>(value));
 }
 
-template <typename T, typename... Args>
+template <typename ValueType, typename... Args>
 Object Object::make(Args&&... args)
 {
-    Object o;
-    o._impl = new Detail::ObjectContainerT<T>(std::forward<Args>(args)...);
-    return o;
+    return Object(InPlace<ValueType>(), std::forward<Args>(args)...);
 }
 
 template <typename ValueType, typename>
 Object::Object(ValueType &&value):
-    _impl(nullptr)
+    _impl(Detail::makeObjectContainer<ValueType>(std::forward<ValueType>(value)))
 {
-    _impl = Detail::makeObjectContainer(std::forward<ValueType>(value));
+    return;
+}
+
+template <typename ValueType, typename... Args>
+Object::Object(InPlace<ValueType>, Args&&... args):
+    _impl(Detail::makeObjectContainer<ValueType>(std::forward<Args>(args)...))
+{
+    return;
+}
+
+inline Object::Object(const char *s):
+    _impl(Detail::makeObjectContainer<std::string>(s))
+{
+    return;
 }
 
 inline const std::type_info &Pothos::Object::type(void) const
