@@ -86,7 +86,7 @@ void Pothos::OutputPort::postMessage(ValueType &&message)
 template <typename T, typename... Args>
 void Pothos::OutputPort::emplaceMessage(Args&&... args)
 {
-    Pothos::OutputPort::_postMessage(Pothos::Object::make<T>(std::forward<Args>(args)...));
+    Pothos::OutputPort::_postMessage(Pothos::Object::emplace<T>(std::forward<Args>(args)...));
 }
 
 inline void Pothos::OutputPort::popElements(const size_t numElements)

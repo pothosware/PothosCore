@@ -109,13 +109,13 @@ convertObject(const Object &obj)
 template <typename ValueType>
 Object Object::make(ValueType &&value)
 {
-    return Object(InPlace<ValueType>(), std::forward<ValueType>(value));
+    return Object(Emplace<ValueType>(), std::forward<ValueType>(value));
 }
 
 template <typename ValueType, typename... Args>
-Object Object::make(Args&&... args)
+Object Object::emplace(Args&&... args)
 {
-    return Object(InPlace<ValueType>(), std::forward<Args>(args)...);
+    return Object(Emplace<ValueType>(), std::forward<Args>(args)...);
 }
 
 template <typename ValueType, typename>
@@ -126,7 +126,7 @@ Object::Object(ValueType &&value):
 }
 
 template <typename ValueType, typename... Args>
-Object::Object(InPlace<ValueType>, Args&&... args):
+Object::Object(Emplace<ValueType>, Args&&... args):
     _impl(Detail::makeObjectContainer<ValueType>(std::forward<Args>(args)...))
 {
     return;

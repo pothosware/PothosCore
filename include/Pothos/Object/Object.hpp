@@ -75,7 +75,7 @@ public:
      * \return a new Object of type T constructed from args
      */
     template <typename ValueType, typename... Args>
-    static Object make(Args&&... args);
+    static Object emplace(Args&&... args);
 
     /*!
      * Copy constructor for Object -- does not copy the internal data.
@@ -98,19 +98,19 @@ public:
     template <typename ValueType, typename = Pothos::Util::disable_if_same<Object, ValueType>>
     explicit Object(ValueType &&value);
 
-    //! InPlace dummy type to pass type to Object emplacement constructor
-    template <typename T> struct InPlace
+    //! Emplace dummy type to pass type to Object emplacement constructor
+    template <typename T> struct Emplace
     {
-        explicit InPlace() = default;
+        explicit Emplace() = default;
     };
 
     /*!
      * Create a new Object given a type and constructor arguments.
-     * The first argument uses the InPlace dummy argument to specify the type.
+     * The first argument uses the Emplace dummy to specify the type.
      * \param args the constructor arguments for type ValueType
      */
     template <typename ValueType, typename... Args>
-    explicit Object(InPlace<ValueType>, Args&&... args);
+    explicit Object(Emplace<ValueType>, Args&&... args);
 
     /*!
      * Create an Object of type std::string from a C-style string.
