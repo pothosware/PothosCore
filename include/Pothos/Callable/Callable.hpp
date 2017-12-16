@@ -4,7 +4,7 @@
 /// Callable provides an opaque proxy for function or method calls.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2017 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -175,6 +175,7 @@ public:
 private:
     std::vector<Object> _boundArgs;
     std::shared_ptr<Detail::CallableContainer> _impl;
+    Callable(Detail::CallableContainer *impl);
     POTHOS_API friend bool operator==(const Callable &lhs, const Callable &rhs);
 };
 

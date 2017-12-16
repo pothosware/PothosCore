@@ -23,7 +23,7 @@ POTHOS_TEST_BLOCK("/framework/tests", test_label_constructor)
     POTHOS_TEST_TRUE(label2.data.type() == typeid(std::string));
     POTHOS_TEST_EQUAL(label2.data.extract<std::string>(), "test2");
 
-    auto label3 = Pothos::Label("id3", Pothos::Object::make("test3"), 0);
+    auto label3 = Pothos::Label("id3", "test3", 0);
     POTHOS_TEST_TRUE(label3.data.type() == typeid(std::string));
     POTHOS_TEST_EQUAL(label3.data.extract<std::string>(), "test3");
 }

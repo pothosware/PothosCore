@@ -47,6 +47,7 @@ public:
 class POTHOS_API Object
 {
 public:
+
     /*!
      * Create a null Object.
      */
@@ -63,6 +64,18 @@ public:
      */
     template <typename ValueType>
     static Object make(ValueType &&value);
+
+    /*!
+     * Create an object with emplacement construction.
+     * The make method allows users to pass an explicit type,
+     * and an arbitrary number of constructor arguments
+     * which will be forwarded to the type T constructor.
+     * \tparam ValueType the internal type held by the new Object
+     * \param args the constructor arguments for type ValueType
+     * \return a new Object of type T constructed from args
+     */
+    template <typename ValueType, typename... Args>
+    static Object emplace(Args&&... args);
 
     /*!
      * Copy constructor for Object -- does not copy the internal data.
@@ -84,6 +97,25 @@ public:
      */
     template <typename ValueType, typename = Pothos::Util::disable_if_same<Object, ValueType>>
     explicit Object(ValueType &&value);
+
+    //! Emplace dummy type to pass type to Object emplacement constructor
+    template <typename T> struct Emplace
+    {
+        explicit Emplace() = default;
+    };
+
+    /*!
+     * Create a new Object given a type and constructor arguments.
+     * The first argument uses the Emplace dummy to specify the type.
+     * \param args the constructor arguments for type ValueType
+     */
+    template <typename ValueType, typename... Args>
+    explicit Object(Emplace<ValueType>, Args&&... args);
+
+    /*!
+     * Create an Object of type std::string from a C-style string.
+     */
+    explicit Object(const char *);
 
     /*!
      * Destructor for Object.

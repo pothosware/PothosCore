@@ -83,6 +83,12 @@ void Pothos::OutputPort::postMessage(ValueType &&message)
     Pothos::OutputPort::_postMessage(Pothos::Object(std::forward<ValueType>(message)));
 }
 
+template <typename T, typename... Args>
+void Pothos::OutputPort::emplaceMessage(Args&&... args)
+{
+    Pothos::OutputPort::_postMessage(Pothos::Object::emplace<T>(std::forward<Args>(args)...));
+}
+
 inline void Pothos::OutputPort::popElements(const size_t numElements)
 {
     this->bufferManagerPop(numElements*this->dtype().size());

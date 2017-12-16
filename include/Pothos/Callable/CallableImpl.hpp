@@ -43,7 +43,7 @@ namespace Detail {
 /***********************************************************************
  * Function specialization for return type with variable args
  **********************************************************************/
-template <typename ReturnType, typename... ArgsType>
+template <typename ReturnType, typename FcnRType, typename... ArgsType>
 class CallableFunctionContainer : public Detail::CallableContainer
 {
 public:
@@ -93,7 +93,9 @@ private:
     {
         checkArgs(args); //fixes warning for 0 args case
         return CallHelper<
-            decltype(_fcn), std::is_void<ReturnType>::value,
+            decltype(_fcn),
+            std::is_void<ReturnType>::value,
+            std::is_same<ReturnType, FcnRType>::value,
             std::is_reference<ReturnType>::value and
             not std::is_const<typename std::remove_reference<ReturnType>::type>::value
         >::call(_fcn, args[S].extract<ArgsType>()...);
@@ -103,22 +105,29 @@ private:
     void checkArgs(const Object *){}
 
     //! templated call of function for optional return type
-    template <typename FcnType, bool isVoid, bool isReference> struct CallHelper;
-    template <typename FcnType> struct CallHelper<FcnType, false, false>
+    template <typename FcnType, bool isVoid, bool isSameR, bool isReference> struct CallHelper;
+    template <typename FcnType> struct CallHelper<FcnType, false, true, false>
     {
         static Object call(const FcnType &fcn, const ArgsType&... args)
         {
             return Object::make(fcn(args...));
         }
     };
-    template <typename FcnType> struct CallHelper<FcnType, false, true>
+    template <typename FcnType> struct CallHelper<FcnType, false, false, false>
+    {
+        static Object call(const FcnType &fcn, const ArgsType&... args)
+        {
+            return fcn(args...);
+        }
+    };
+    template <typename FcnType> struct CallHelper<FcnType, false, true, true>
     {
         static Object call(const FcnType &fcn, const ArgsType&... args)
         {
             return Object::make(std::ref(fcn(args...)));
         }
     };
-    template <typename FcnType> struct CallHelper<FcnType, true, false>
+    template <typename FcnType> struct CallHelper<FcnType, true, true, false>
     {
         static Object call(const FcnType &fcn, const ArgsType&... args)
         {
@@ -126,25 +135,13 @@ private:
         }
     };
 
-    std::function<ReturnType(ArgsType...)> _fcn;
+    std::function<FcnRType(ArgsType...)> _fcn;
 };
 
 template <typename ClassType, typename... ArgsType>
-ClassType CallableFactoryWrapper(const ArgsType&... args)
+Object CallableFactoryNewWrapper(ArgsType&&... args)
 {
-    return ClassType(args...);
-}
-
-template <typename ClassType, typename... ArgsType>
-ClassType *CallableFactoryNewWrapper(const ArgsType&... args)
-{
-    return new ClassType(args...);
-}
-
-template <typename ClassType, typename... ArgsType>
-std::shared_ptr<ClassType> CallableFactorySharedWrapper(const ArgsType&... args)
-{
-    return std::shared_ptr<ClassType>(new ClassType(args...));
+    return Object(new ClassType(std::forward<ArgsType>(args)...));
 }
 
 } //namespace Detail
@@ -154,21 +151,21 @@ std::shared_ptr<ClassType> CallableFactorySharedWrapper(const ArgsType&... args)
  **********************************************************************/
 template <typename ReturnType, typename ClassType, typename... ArgsType>
 Callable::Callable(ReturnType(ClassType::*fcn)(ArgsType...)):
-    _impl(new Detail::CallableFunctionContainer<ReturnType, ClassType &, ArgsType...>(std::mem_fn(fcn)))
+    _impl(new Detail::CallableFunctionContainer<ReturnType, ReturnType, ClassType &, ArgsType...>(std::mem_fn(fcn)))
 {
     return;
 }
 
 template <typename ReturnType, typename ClassType, typename... ArgsType>
 Callable::Callable(ReturnType(ClassType::*fcn)(ArgsType...) const):
-    _impl(new Detail::CallableFunctionContainer<ReturnType, const ClassType &, ArgsType...>(std::mem_fn(fcn)))
+    _impl(new Detail::CallableFunctionContainer<ReturnType, ReturnType, const ClassType &, ArgsType...>(std::mem_fn(fcn)))
 {
     return;
 }
 
 template <typename ReturnType, typename... ArgsType>
 Callable::Callable(ReturnType(*fcn)(ArgsType...)):
-    _impl(new Detail::CallableFunctionContainer<ReturnType, ArgsType...>(fcn))
+    _impl(new Detail::CallableFunctionContainer<ReturnType, ReturnType, ArgsType...>(fcn))
 {
     return;
 }
@@ -194,19 +191,29 @@ Callable Callable::make(ReturnType(*fcn)(ArgsType...))
 template <typename ClassType, typename... ArgsType>
 Callable Callable::factory(void)
 {
-    return Callable(&Detail::CallableFactoryWrapper<ClassType, ArgsType...>);
+    return Callable(new Detail::CallableFunctionContainer<ClassType, Object, ArgsType...>(
+        &Object::emplace<ClassType, ArgsType...>));
 }
 
 template <typename ClassType, typename... ArgsType>
 Callable Callable::factoryNew(void)
 {
-    return Callable(&Detail::CallableFactoryNewWrapper<ClassType, ArgsType...>);
+    return Callable(new Detail::CallableFunctionContainer<ClassType *, Object, ArgsType...>(
+        &Detail::CallableFactoryNewWrapper<ClassType, ArgsType...>));
 }
 
 template <typename ClassType, typename... ArgsType>
 Callable Callable::factoryShared(void)
 {
-    return Callable(&Detail::CallableFactorySharedWrapper<ClassType, ArgsType...>);
+    using SharedType = std::shared_ptr<ClassType>;
+    return Callable(new Detail::CallableFunctionContainer<SharedType, SharedType, ArgsType...>(
+        &std::make_shared<ClassType, ArgsType...>));
+}
+
+inline Callable::Callable(Detail::CallableContainer *impl):
+    _impl(impl)
+{
+    return;
 }
 
 } //namespace Pothos
