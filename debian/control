@@ -14,7 +14,7 @@ Homepage: https://github.com/pothosware/PothosCore/wiki
 Vcs-Git: https://github.com/pothosware/PothosCore.git
 Vcs-Browser: https://github.com/pothosware/PothosCore
 
-Package: pothos
+Package: pothos-util
 Section: science
 Architecture: any
 Depends: libpothos0.6 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
@@ -27,16 +27,13 @@ Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Provides: pothos-util
-Conflicts: pothos-util
-Replaces: pothos-util
 Description: shared library
  The Pothos data-flow software suite.
 
 Package: libpothos-dev
 Section: libdevel
 Architecture: any
-Depends: libpothos0.6 (= ${binary:Version}), ${misc:Depends}, pothos
+Depends: libpothos0.6 (= ${binary:Version}), ${misc:Depends}, pothos-util
 Description: development files
  The Pothos data-flow software suite.
 
@@ -44,7 +41,7 @@ Package: pothos-all
 Section: libs
 Architecture: all
 Depends:
-    pothos,
+    pothos-util,
     pothos-flow,
     pothos-modules-audio,
     pothos-modules-blocks,
