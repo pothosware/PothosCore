@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.6.0 (pending)
+Release 0.6.0 (2017-12-25)
 ==========================
 
 - Updated internal poco submodule to poco-1.8.0.1-release
