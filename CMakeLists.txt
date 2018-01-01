@@ -182,10 +182,15 @@ find_path(JSON_HPP_INCLUDE_DIR NAMES json.hpp PATH_SUFFIXES nlohmann)
 #but don't do this for package builds (/usr) the package
 #maintainer should do this manually to avoid downloading
 if (NOT JSON_HPP_INCLUDE_DIR AND NOT "${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr")
-    file(DOWNLOAD "https://raw.githubusercontent.com/nlohmann/json/v2.1.1/src/json.hpp" "${PROJECT_BINARY_DIR}/json.hpp")
-    install(FILES "${PROJECT_BINARY_DIR}/json.hpp" DESTINATION include/nlohmann)
+    if (NOT EXISTS "${PROJECT_BINARY_DIR}/json.hpp")
+        file(DOWNLOAD "https://raw.githubusercontent.com/nlohmann/json/v2.1.1/src/json.hpp" "${PROJECT_BINARY_DIR}/json.hpp")
+    endif()
     set(JSON_HPP_INCLUDE_DIR "${PROJECT_BINARY_DIR}")
 endif ()
+
+if ("${JSON_HPP_INCLUDE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
+    install(FILES "${PROJECT_BINARY_DIR}/json.hpp" DESTINATION include/nlohmann)
+endif()
 
 ########################################################################
 # Build the framework library
