@@ -164,7 +164,7 @@ static std::vector<CodeBlock> extractContiguousBlocks(std::istream &is)
             //This strips the remaining carriage return
             //left when getline uses the unix newline locale,
             //and the file is using  windows style newlines.
-            if (line.back() == '\r') line.pop_back();
+            if (!line.empty() && (line.back() == '\r')) line.pop_back();
         }
         partial.clear();
         if (line.empty()) continue;
