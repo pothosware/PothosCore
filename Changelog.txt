@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.6.1 (pending)
+==========================
+
+- Fix for potential overrun in Block Description if the line is empty.
+
 Release 0.6.0 (2017-12-25)
 ==========================
 
