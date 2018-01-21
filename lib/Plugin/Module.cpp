@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Paths.hpp>
@@ -55,6 +55,9 @@ static std::mutex &getModuleMutex(void)
     return mutex;
 }
 
+//where to store the version during module load
+static thread_local std::string *currentModuleVersion(nullptr);
+
 /***********************************************************************
  * Shared implementation for module data
  **********************************************************************/
@@ -63,6 +66,7 @@ struct Pothos::PluginModule::Impl
     Poco::SharedLibrary sharedLibrary;
     std::string path;
     std::vector<std::string> pluginPaths;
+    std::string version;
 };
 
 /***********************************************************************
@@ -88,8 +92,10 @@ Pothos::PluginModule::PluginModule(const std::string &path):
     {
         std::lock_guard<std::mutex> lock(getModuleMutex());
         registrySetActiveModuleLoading(*this);
+        currentModuleVersion = &(_impl->version);
         ErrorMessageDisableGuard emdg;
         _impl->sharedLibrary.load(path);
+        currentModuleVersion = nullptr;
         registrySetActiveModuleLoading(PluginModule());
         _impl->pluginPaths = ::getPluginPaths(*this);
     }
@@ -127,6 +133,17 @@ const std::vector<std::string> &Pothos::PluginModule::getPluginPaths(void) const
 Pothos::PluginModule::operator bool(void) const
 {
     return bool(_impl);
+}
+
+std::string Pothos::PluginModule::getVersion(void) const
+{
+    if (not _impl) return "";
+    return _impl->version;
+}
+
+Pothos::ModuleVersion::ModuleVersion(const std::string &version)
+{
+    if (currentModuleVersion != nullptr) *currentModuleVersion = version;
 }
 
 #include <Pothos/Managed.hpp>
