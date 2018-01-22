@@ -45,11 +45,67 @@ set(INCLUDED_POTHOS_UTIL_CMAKE TRUE)
 ## The prefix modifies the destination with an absolute path
 ## to replace the typical CMAKE_INSTALL_PREFIX install rules.
 ##
+## VERSION - specify a version string to build into this module
+## When not specified, the util will fall-back to PROJECT_VERSION,
+## and scanning the in-tree Changelog.txt file (if available).
+## Packagers can pass PROJECT_VERSION_EXTRA for additional version info.
+##
 ########################################################################
 function(POTHOS_MODULE_UTIL)
 
     include(CMakeParseArguments)
-    CMAKE_PARSE_ARGUMENTS(POTHOS_MODULE_UTIL "ENABLE_DOCS" "TARGET;DESTINATION;PREFIX" "SOURCES;LIBRARIES;DOC_SOURCES" ${ARGN})
+    CMAKE_PARSE_ARGUMENTS(POTHOS_MODULE_UTIL "ENABLE_DOCS" "TARGET;DESTINATION;PREFIX;VERSION" "SOURCES;LIBRARIES;DOC_SOURCES" ${ARGN})
+
+    #version not specified, try to use project version
+    if (NOT POTHOS_MODULE_UTIL_VERSION AND PROJECT_VERSION)
+        set(POTHOS_MODULE_UTIL_VERSION "${PROJECT_VERSION}")
+    endif()
+
+    #version not specified, try to use changelog entry
+    if (NOT POTHOS_MODULE_UTIL_VERSION AND EXISTS "${PROJECT_SOURCE_DIR}/Changelog.txt")
+        file(READ "${PROJECT_SOURCE_DIR}/Changelog.txt" changelog_txt)
+        string(REGEX MATCH "Release ([-\\._0-9a-zA-Z]*) \\(" CHANGELOG_MATCH "${changelog_txt}")
+        if(CHANGELOG_MATCH)
+            set(POTHOS_MODULE_UTIL_VERSION "${CMAKE_MATCH_1}")
+        endif(CHANGELOG_MATCH)
+    endif()
+
+    #additional version information when specified
+    if (PROJECT_VERSION_EXTRA)
+        if (POTHOS_MODULE_UTIL_VERSION)
+            set(POTHOS_MODULE_UTIL_VERSION "${POTHOS_MODULE_UTIL_VERSION}-${PROJECT_VERSION_EXTRA}")
+        else()
+            set(POTHOS_MODULE_UTIL_VERSION "${PROJECT_VERSION_EXTRA}")
+        endif()
+    endif()
+
+    #add git hash when possible
+    if (EXISTS "${PROJECT_SOURCE_DIR}/.git")
+        find_package(Git)
+        if(GIT_FOUND)
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} -C "${PROJECT_SOURCE_DIR}" rev-parse --short HEAD
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                OUTPUT_VARIABLE GIT_HASH)
+            if (GIT_HASH)
+                if (POTHOS_MODULE_UTIL_VERSION)
+                    set(POTHOS_MODULE_UTIL_VERSION "${POTHOS_MODULE_UTIL_VERSION}-${GIT_HASH}")
+                else()
+                    set(POTHOS_MODULE_UTIL_VERSION "${GIT_HASH}")
+                endif()
+            endif()
+        endif(GIT_FOUND)
+    endif()
+
+    #version specified, build into source file
+    if (POTHOS_MODULE_UTIL_VERSION)
+        message(STATUS "Module ${POTHOS_MODULE_UTIL_TARGET} configured with version: ${POTHOS_MODULE_UTIL_VERSION}")
+        set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
+        file(WRITE "${version_file}" "#include <Pothos/Plugin/Module.hpp>
+            static const Pothos::ModuleVersion register${MODULE_TARGET}Version(\"${POTHOS_MODULE_UTIL_VERSION}\");
+        ")
+        list(APPEND POTHOS_MODULE_UTIL_SOURCES "${version_file}")
+    endif()
 
     #always enable docs if user specifies doc sources
     if (POTHOS_MODULE_UTIL_DOC_SOURCES)
