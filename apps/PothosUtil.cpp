@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -46,6 +46,11 @@ protected:
             .required(false)
             .repeatable(false)
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printSystemInfo)));
+
+        options.addOption(Poco::Util::Option("module-info", "", "display loaded modules")
+            .required(false)
+            .repeatable(false)
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printModuleInfo)));
 
         options.addOption(Poco::Util::Option("device-info", "", "display device information")
             .required(false)

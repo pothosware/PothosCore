@@ -19,6 +19,7 @@ include_directories(${JSON_HPP_INCLUDE_DIR})
 ########################################################################
 list(APPEND SOURCES
     PothosUtil.cpp
+    PothosUtilModuleInfo.cpp
     PothosUtilSelfTests.cpp
     PothosUtilPluginTree.cpp
     PothosUtilDeviceInfo.cpp
