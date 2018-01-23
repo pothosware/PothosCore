@@ -47,9 +47,14 @@ protected:
             .repeatable(false)
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printSystemInfo)));
 
-        options.addOption(Poco::Util::Option("module-info", "", "display loaded modules")
+        options.addOption(Poco::Util::Option("module-info", "",
+            "Display a summary of loaded modules.\n"
+            "Or specify an optional module path to print the list of associated plugins."
+            "Or specify the special value of 'builtin' to see Builtin library plugins.")
             .required(false)
             .repeatable(false)
+            .argument("modulePath", false/*optional*/)
+            .binding("modulePath")
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printModuleInfo)));
 
         options.addOption(Poco::Util::Option("device-info", "", "display device information")
