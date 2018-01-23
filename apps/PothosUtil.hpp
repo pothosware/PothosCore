@@ -12,6 +12,7 @@ class PothosUtilBase : public Poco::Util::ServerApplication
 {
 public:
     virtual ~PothosUtilBase(void){}
+    void printSystemInfo(const std::string &, const std::string &);
     void printModuleInfo(const std::string &, const std::string &);
     void printDeviceInfo(void);
     void printPluginTree(const std::string &, const std::string &);
