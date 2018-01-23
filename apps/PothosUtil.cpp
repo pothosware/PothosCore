@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -46,6 +46,16 @@ protected:
             .required(false)
             .repeatable(false)
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printSystemInfo)));
+
+        options.addOption(Poco::Util::Option("module-info", "",
+            "Display a summary of loaded modules.\n"
+            "Or specify an optional module path to print the list of associated plugins."
+            "Or specify the special value of 'builtin' to see Builtin library plugins.")
+            .required(false)
+            .repeatable(false)
+            .argument("modulePath", false/*optional*/)
+            .binding("modulePath")
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printModuleInfo)));
 
         options.addOption(Poco::Util::Option("device-info", "", "display device information")
             .required(false)
@@ -157,21 +167,6 @@ protected:
                 "Cannot parse --var="+value+", expected --var=name:value format");
             _vars.emplace_back(value.substr(0, pos), value.substr(pos+1));
         }
-    }
-
-    void printSystemInfo(const std::string &, const std::string &)
-    {
-        std::cout << "Lib Version: " << Pothos::System::getLibVersion() << std::endl;
-        std::cout << "API Version: " << Pothos::System::getApiVersion() << std::endl;
-        std::cout << "ABI Version: " << Pothos::System::getAbiVersion() << std::endl;
-        std::cout << "Root Path: " << Pothos::System::getRootPath() << std::endl;
-        std::cout << "Data Path: " << Pothos::System::getDataPath() << std::endl;
-        std::cout << "User Data: " << Pothos::System::getUserDataPath() << std::endl;
-        std::cout << "User Config: " << Pothos::System::getUserConfigPath() << std::endl;
-        std::cout << "Runtime Library: " << Pothos::System::getPothosRuntimeLibraryPath() << std::endl;
-        std::cout << "Util Executable: " << Pothos::System::getPothosUtilExecutablePath() << std::endl;
-        std::cout << "Dev Include Path: " << Pothos::System::getPothosDevIncludePath() << std::endl;
-        std::cout << "Dev Library Path: " << Pothos::System::getPothosDevLibraryPath() << std::endl;
     }
 
     void displayHelp(void)

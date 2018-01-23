@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -12,6 +12,8 @@ class PothosUtilBase : public Poco::Util::ServerApplication
 {
 public:
     virtual ~PothosUtilBase(void){}
+    void printSystemInfo(const std::string &, const std::string &);
+    void printModuleInfo(const std::string &, const std::string &);
     void printDeviceInfo(void);
     void printPluginTree(const std::string &, const std::string &);
     void selfTests(const std::string &, const std::string &);
