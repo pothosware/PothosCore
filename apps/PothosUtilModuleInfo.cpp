@@ -6,8 +6,10 @@
 #include <map>
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 
 static std::map<std::string, std::vector<std::string>> modMap;
+static std::map<std::string, std::string> modVers;
 
 static void traverseDump(const std::string &modulePath, const Pothos::PluginRegistryInfoDump &dump)
 {
@@ -16,6 +18,7 @@ static void traverseDump(const std::string &modulePath, const Pothos::PluginRegi
     if (not dump.objectType.empty() and (isBuiltin or filterPass))
     {
         modMap[dump.modulePath].push_back(dump.pluginPath);
+        modVers[dump.modulePath] = dump.moduleVersion;
     }
 
     for (const auto &subInfo : dump.subInfo)
@@ -44,7 +47,10 @@ void PothosUtilBase::printModuleInfo(const std::string &, const std::string &mod
     {
         const auto displayName = stringifyName(module.first);
         const auto paddedName = displayName + std::string(maxPathLength-displayName.size()+1, ' ');
-        std::cout << paddedName << "(" << module.second.size() << " plugins)" << std::endl;
+        std::cout << paddedName << "(" << std::setw(2) << module.second.size() << " plugins)";
+        const auto modVer = modVers.at(module.first);
+        if (not modVer.empty()) std::cout << " [" << modVer << "]";
+        std::cout << std::endl;
         if (not modulePath.empty())
         {
             for (const auto &pluginPath : module.second)
