@@ -4,7 +4,7 @@
 /// Version information for the library.
 ///
 /// \copyright
-/// Copyright (c) 2013-2017 Josh Blum
+/// Copyright (c) 2013-2018 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -26,7 +26,7 @@
  * #endif
  * \endcode
  */
-#define POTHOS_API_VERSION 0x00060000
+#define POTHOS_API_VERSION 0x00070000
 
 /*!
  * ABI Version Information - incremented when the ABI is changed.
@@ -35,7 +35,7 @@
  * and <i>bump</i> signifies a change to the ABI during library development.
  * The ABI should remain constant across patch releases of the library.
  */
-#define POTHOS_ABI_VERSION "0.6"
+#define POTHOS_ABI_VERSION "0.7"
 
 namespace Pothos {
 namespace System {

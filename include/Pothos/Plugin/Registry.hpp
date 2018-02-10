@@ -4,7 +4,7 @@
 /// PluginRegistry is a collection of plugins organized into a tree structure.
 ///
 /// \copyright
-/// Copyright (c) 2013-2014 Josh Blum
+/// Copyright (c) 2013-2018 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -26,6 +26,7 @@ struct POTHOS_API PluginRegistryInfoDump
     std::string pluginPath;
     std::string objectType;
     std::string modulePath;
+    std::string moduleVersion;
     std::vector<PluginRegistryInfoDump> subInfo;
 };
 

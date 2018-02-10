@@ -1,11 +1,11 @@
-// Copyright (c) 2016 Josh Blum
+// Copyright (c) 2016-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Archive/StreamArchiver.hpp>
 #include <Pothos/Archive/Numbers.hpp>
 #include <iostream>
 
-#define POTHOS_ARCHIVE_VERSION 1
+#define POTHOS_ARCHIVE_VERSION 2
 
 Pothos::Archive::OStreamArchiver::OStreamArchiver(std::ostream &os):
     os(os), ver(POTHOS_ARCHIVE_VERSION)

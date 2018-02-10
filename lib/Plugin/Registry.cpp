@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin/Registry.hpp>
@@ -303,6 +303,7 @@ static void loadInfoDump(const Pothos::PluginPath &path, const RegistryEntry &en
         const auto &obj = entry.plugin.getObject();
         if (obj) dump.objectType = obj.toString();
         dump.modulePath = entry.plugin.getModule().getFilePath();
+        dump.moduleVersion = entry.plugin.getModule().getVersion();
     }
     for (const auto &name : entry.nodeNamesOrdered)
     {
@@ -337,11 +338,12 @@ static auto managedPluginRegistry = Pothos::ManagedClass()
 
 namespace Pothos { namespace serialization {
 template <class Archive>
-void serialize(Archive &ar, Pothos::PluginRegistryInfoDump &t, const unsigned int)
+void serialize(Archive &ar, Pothos::PluginRegistryInfoDump &t, const unsigned int ver)
 {
     ar & t.pluginPath;
     ar & t.objectType;
     ar & t.modulePath;
+    if (ver > 1) ar & t.moduleVersion;
     ar & t.subInfo;
 }
 }}

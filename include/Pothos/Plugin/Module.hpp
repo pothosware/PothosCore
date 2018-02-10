@@ -4,7 +4,7 @@
 /// A PluginModule interacts with loadable library modules and the plugin registry.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2018 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -71,10 +71,26 @@ public:
      */
     explicit operator bool(void) const;
 
+    /*!
+     * Get a version string for the specified module.
+     * Modules may optionally provide version strings.
+     * \return a version string or empty if no version provided
+     */
+    std::string getVersion(void) const;
+
 private:
     struct Impl;
     std::shared_ptr<Impl> _impl;
     friend Plugin;
 };
+
+//! \cond
+//! Internal call to register version with a module during load
+class POTHOS_API ModuleVersion
+{
+public:
+    ModuleVersion(const std::string &version);
+};
+//! \endcond
 
 } //namespace Pothos
