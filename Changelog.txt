@@ -8,6 +8,7 @@ Release 0.7.0 (pending)
 Release 0.6.1 (pending)
 ==========================
 
+- Additional error handling when RemoteServer fails to launch process
 - Added support for PothosUtil to query information about loaded modules
 - Fix for potential overrun in Block Description if the line is empty.
 

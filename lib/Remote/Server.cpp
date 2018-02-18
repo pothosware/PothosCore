@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Remote.hpp>
@@ -115,12 +115,25 @@ Pothos::RemoteServer::RemoteServer(const std::string &uriStr, const bool closePi
     if (readPortError)
     {
         _impl.reset(); //kills process
+        std::string errMsg;
 
         //collect error message
-        Poco::PipeInputStream ies(errPipe);
-        const std::string errMsg = std::string(
-            std::istreambuf_iterator<char>(ies),
-            std::istreambuf_iterator<char>());
+        try
+        {
+            Poco::PipeInputStream ies(errPipe);
+            errMsg = std::string(
+                std::istreambuf_iterator<char>(ies),
+                std::istreambuf_iterator<char>());
+        }
+        //If the process failed to launch,
+        //poco throws an assertion exception.
+        //Produce a more useful error message:
+        catch (...)
+        {
+            errMsg = "Failed to launch server process: ";
+            errMsg += System::getPothosUtilExecutablePath();
+            for (const auto &arg : args) errMsg += " " + arg;
+        }
 
         throw Pothos::RemoteServerError("Pothos::RemoteServer("+uriStr+")", errMsg);
     }
