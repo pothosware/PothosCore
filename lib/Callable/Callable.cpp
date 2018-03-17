@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Callable/CallableImpl.hpp>
@@ -8,8 +8,6 @@
 #include <Poco/Format.h>
 #include <cassert>
 #include <algorithm> //min/max
-
-#define MAX_SUPPORTED_NUM_ARGS 13
 
 Pothos::Callable::Callable(void)
 {
@@ -23,16 +21,10 @@ Pothos::Object Pothos::Callable::opaqueCall(const Object *inputArgs, const size_
         throw Pothos::CallableNullError("Pothos::Callable::call()", "null Callable");
     }
 
-    const size_t numCallArgs = _impl->getNumArgs();
-    if (numCallArgs > MAX_SUPPORTED_NUM_ARGS)
-    {
-        throw Pothos::CallableNullError("Pothos::Callable::call()", "more args than supported");
-    }
-
     //Create callArgs which is a combination of inputArgs and boundArgs
-    Object callArgs[MAX_SUPPORTED_NUM_ARGS];
+    std::vector<Object> callArgs(_impl->getNumArgs());
     size_t inputArgsIndex = 0;
-    for (size_t i = 0; i < numCallArgs; i++)
+    for (size_t i = 0; i < callArgs.size(); i++)
     {
         //is there a binding? if so use it
         if (_boundArgs.size() > i and _boundArgs[i])
@@ -63,7 +55,7 @@ Pothos::Object Pothos::Callable::opaqueCall(const Object *inputArgs, const size_
         }
     }
 
-    return _impl->call(callArgs);
+    return _impl->call(callArgs.data());
 }
 
 size_t Pothos::Callable::getNumArgs(void) const
