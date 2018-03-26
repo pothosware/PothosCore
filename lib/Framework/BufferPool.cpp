@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferPool.hpp>
@@ -30,7 +30,7 @@ const Pothos::BufferChunk &Pothos::BufferPool::get(const size_t numBytes)
     //find the first buffer where we hold the only copy
     for (size_t i = 0; i < _buffs.size(); i++)
     {
-        if (_buffs[i].getBuffer().unique()) return _buffs[i];
+        if (_buffs[i].unique()) return _buffs[i];
     }
 
     //otherwise make a new buffer

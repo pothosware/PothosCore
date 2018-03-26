@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.6.1 (pending)
 ==========================
 
+- Fixed BufferPool::get() unique check from buffer refactor work
 - Remove arbitrary argument limit from Callable::opaqueCall()
 - Additional error handling when RemoteServer fails to launch process
 - Added support for PothosUtil to query information about loaded modules
