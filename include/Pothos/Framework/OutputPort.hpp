@@ -4,7 +4,7 @@
 /// This file provides an interface for a worker's output port.
 ///
 /// \copyright
-/// Copyright (c) 2014-2017 Josh Blum
+/// Copyright (c) 2014-2018 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -118,15 +118,26 @@ public:
 
     /*!
      * Get a buffer of a specified size in elements.
+     * The type of the buffer is specified by the port.
      * Some blocks may require buffers of arbitrary size
      * for use with postBuffer() and postMessage() calls.
      * The call will attempt to use the front buffer from
      * this output port and will fall-back to a reusable pool.
      * \post buffer() has undefined behavior after this call.
-     * \param numElements the minimum buffer size
-     * \return a buffer chunk with at least numElements
+     * \param numElements the number of elements given the port's type
+     * \return a buffer chunk with the port's type and the specified length
      */
     BufferChunk getBuffer(const size_t numElements);
+
+    /*!
+     * Get a buffer of a specified size and type.
+     * This variant provides a user specified data type.
+     * \post buffer() has undefined behavior after this call.
+     * \param dtype the buffer's type (independent of port type)
+     * \param numElements the number of elements of type dtype
+     * \return a buffer chunk with the specified type and length
+     */
+    BufferChunk getBuffer(const DType &dtype, const size_t numElements);
 
     /*!
      * Post an output label to the subscribers on this port.

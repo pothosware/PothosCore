@@ -3,6 +3,8 @@ This this the changelog file for the Pothos C++ library.
 Release 0.7.0 (pending)
 ==========================
 
+- OutputPort::getBuffer() returns the exact specified buffer length
+- Added OutputPort::getBuffer() with specified data type variant
 - Version reporting API and build support for loadable modules
 
 Release 0.6.1 (pending)

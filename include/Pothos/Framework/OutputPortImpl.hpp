@@ -4,7 +4,7 @@
 /// Inline member implementation for OutputPort class.
 ///
 /// \copyright
-/// Copyright (c) 2014-2017 Josh Blum
+/// Copyright (c) 2014-2018 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -65,6 +65,11 @@ inline unsigned long long Pothos::OutputPort::totalMessages(void) const
 inline void Pothos::OutputPort::produce(const size_t numElements)
 {
     _pendingElements += numElements;
+}
+
+inline Pothos::BufferChunk Pothos::OutputPort::getBuffer(const size_t numElements)
+{
+    return this->getBuffer(_dtype, numElements);
 }
 
 inline bool Pothos::OutputPort::isSignal(void) const
