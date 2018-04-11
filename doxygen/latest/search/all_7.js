@@ -7,7 +7,7 @@ var searchData=
   ['getalias',['getAlias',['../classPothos_1_1BufferChunk.html#a6c746535ec415619aaffa32969331005',1,'Pothos::BufferChunk::getAlias()'],['../classPothos_1_1SharedBuffer.html#ab80719bbb96b41c288ce0771b33e16e1',1,'Pothos::SharedBuffer::getAlias()']]],
   ['getapiversion',['getApiVersion',['../namespacePothos_1_1System.html#a3a9cdc4060b2787ed309c57d64919702',1,'Pothos::System']]],
   ['getbaseclassconverters',['getBaseClassConverters',['../classPothos_1_1ManagedClass.html#ac5ef51b2693f268537365a738cee8146',1,'Pothos::ManagedClass']]],
-  ['getbuffer',['getBuffer',['../classPothos_1_1BufferChunk.html#a665f43731e2a0d45addbf9684e5e5df4',1,'Pothos::BufferChunk::getBuffer()'],['../classPothos_1_1ManagedBuffer.html#adf891c642ea8cfcb0afff330054167f8',1,'Pothos::ManagedBuffer::getBuffer()'],['../classPothos_1_1OutputPort.html#a018db84dc424eea66b3fc54243e2f948',1,'Pothos::OutputPort::getBuffer()']]],
+  ['getbuffer',['getBuffer',['../classPothos_1_1BufferChunk.html#a665f43731e2a0d45addbf9684e5e5df4',1,'Pothos::BufferChunk::getBuffer()'],['../classPothos_1_1ManagedBuffer.html#adf891c642ea8cfcb0afff330054167f8',1,'Pothos::ManagedBuffer::getBuffer()'],['../classPothos_1_1OutputPort.html#ad10fdee6b970212ee48af68c45af323e',1,'Pothos::OutputPort::getBuffer(const size_t numElements)'],['../classPothos_1_1OutputPort.html#a0509cca42d51acbb10a9c90f5e0f81fb',1,'Pothos::OutputPort::getBuffer(const DType &amp;dtype, const size_t numElements)']]],
   ['getbuffermanager',['getBufferManager',['../classPothos_1_1ManagedBuffer.html#a9bbd46ebd98e2c6d9cb6370e2fb901b2',1,'Pothos::ManagedBuffer']]],
   ['getclassname',['getClassName',['../classPothos_1_1ProxyHandle.html#a2bca800f26fd46f7a208ac04e9b93e2d',1,'Pothos::ProxyHandle::getClassName()'],['../classPothos_1_1Proxy.html#a178ee32ab23e71d79afff83971640c9b',1,'Pothos::Proxy::getClassName()']]],
   ['getconstructors',['getConstructors',['../classPothos_1_1ManagedClass.html#a08825390871d2d0d50366ed002dad38c',1,'Pothos::ManagedClass']]],
@@ -61,6 +61,7 @@ var searchData=
   ['geturi',['getUri',['../classPothos_1_1RemoteClient.html#a00c5583e5d28c41eefe9d48d8e847a05',1,'Pothos::RemoteClient::getUri()'],['../classPothos_1_1RemoteServer.html#af260c8e8d399fd7ab8b1e4153ec5c123',1,'Pothos::RemoteServer::getUri()']]],
   ['getuserconfigpath',['getUserConfigPath',['../namespacePothos_1_1System.html#af79626c66fa20c1964d86f9372348062',1,'Pothos::System']]],
   ['getuserdatapath',['getUserDataPath',['../namespacePothos_1_1System.html#a1c3dc3ef75218b7ff7c9f8ba7e0aaaa1',1,'Pothos::System']]],
+  ['getversion',['getVersion',['../classPothos_1_1PluginModule.html#aba6dfb40890c66684a6edde46b2c7abe',1,'Pothos::PluginModule']]],
   ['getwildcardaddr',['getWildcardAddr',['../namespacePothos_1_1Util.html#af864764ae533d97eb9c540cfd99882c3',1,'Pothos::Util']]],
   ['getwildcardmethod',['getWildcardMethod',['../classPothos_1_1ManagedClass.html#a04f1b9217d03aae88345726f8e8f3245',1,'Pothos::ManagedClass']]],
   ['getwildcardstaticmethod',['getWildcardStaticMethod',['../classPothos_1_1ManagedClass.html#ac6c43b92920fc49f0729945b0c38efe1',1,'Pothos::ManagedClass']]]

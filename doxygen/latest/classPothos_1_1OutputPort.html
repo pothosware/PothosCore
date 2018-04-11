@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="PothosGui.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Pothos
-   &#160;<span id="projectnumber">0.6.0-g9da168ef</span>
+   &#160;<span id="projectnumber">0.7.0-gf7fbae99</span>
    </div>
    <div id="projectbrief">The Pothos dataflow programming software suite</div>
   </td>
@@ -114,8 +114,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:afab490e6d940e2265fdd73c7afbc73dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c5c95a166fd525b045c09041dfe9561"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a5c5c95a166fd525b045c09041dfe9561">popElements</a> (const size_t numElements)</td></tr>
 <tr class="separator:a5c5c95a166fd525b045c09041dfe9561"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a018db84dc424eea66b3fc54243e2f948"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a018db84dc424eea66b3fc54243e2f948">getBuffer</a> (const size_t numElements)</td></tr>
-<tr class="separator:a018db84dc424eea66b3fc54243e2f948"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad10fdee6b970212ee48af68c45af323e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#ad10fdee6b970212ee48af68c45af323e">getBuffer</a> (const size_t numElements)</td></tr>
+<tr class="separator:ad10fdee6b970212ee48af68c45af323e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0509cca42d51acbb10a9c90f5e0f81fb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a0509cca42d51acbb10a9c90f5e0f81fb">getBuffer</a> (const <a class="el" href="classPothos_1_1DType.html">DType</a> &amp;<a class="el" href="classPothos_1_1OutputPort.html#a8bc6f32f9435e11a79299e39830cac3a">dtype</a>, const size_t numElements)</td></tr>
+<tr class="separator:a0509cca42d51acbb10a9c90f5e0f81fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38542475d3725a864984294aaf7870a0"><td class="memTemplParams" colspan="2">template&lt;typename... ValueType&gt; </td></tr>
 <tr class="memitem:a38542475d3725a864984294aaf7870a0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classPothos_1_1OutputPort.html#a38542475d3725a864984294aaf7870a0">postLabel</a> (ValueType &amp;&amp;... label)</td></tr>
 <tr class="separator:a38542475d3725a864984294aaf7870a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -328,8 +330,42 @@ template&lt;typename T , typename... Args&gt; </div>
 
 </div>
 </div>
-<a id="a018db84dc424eea66b3fc54243e2f948"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a018db84dc424eea66b3fc54243e2f948">&#9670;&nbsp;</a></span>getBuffer()</h2>
+<a id="ad10fdee6b970212ee48af68c45af323e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad10fdee6b970212ee48af68c45af323e">&#9670;&nbsp;</a></span>getBuffer() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classPothos_1_1BufferChunk.html">Pothos::BufferChunk</a> Pothos::OutputPort::getBuffer </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>numElements</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get a buffer of a specified size in elements. The type of the buffer is specified by the port. Some blocks may require buffers of arbitrary size for use with <a class="el" href="classPothos_1_1OutputPort.html#aa471e51f4e3654828f16c74ada3d39bf">postBuffer()</a> and <a class="el" href="classPothos_1_1OutputPort.html#a6ebf13cae0a56328b0bdfc9f1769d954">postMessage()</a> calls. The call will attempt to use the front buffer from this output port and will fall-back to a reusable pool. </p><dl class="section post"><dt>Postcondition</dt><dd><a class="el" href="classPothos_1_1OutputPort.html#ae53b1f869014baa127d2bdb5bec31ddf">buffer()</a> has undefined behavior after this call. </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numElements</td><td>the number of elements given the port's type </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>a buffer chunk with the port's type and the specified length </dd></dl>
+
+</div>
+</div>
+<a id="a0509cca42d51acbb10a9c90f5e0f81fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0509cca42d51acbb10a9c90f5e0f81fb">&#9670;&nbsp;</a></span>getBuffer() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -337,20 +373,31 @@ template&lt;typename T , typename... Args&gt; </div>
         <tr>
           <td class="memname"><a class="el" href="classPothos_1_1BufferChunk.html">BufferChunk</a> Pothos::OutputPort::getBuffer </td>
           <td>(</td>
-          <td class="paramtype">const size_t&#160;</td>
-          <td class="paramname"><em>numElements</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classPothos_1_1DType.html">DType</a> &amp;&#160;</td>
+          <td class="paramname"><em>dtype</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>numElements</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get a buffer of a specified size in elements. Some blocks may require buffers of arbitrary size for use with <a class="el" href="classPothos_1_1OutputPort.html#aa471e51f4e3654828f16c74ada3d39bf">postBuffer()</a> and <a class="el" href="classPothos_1_1OutputPort.html#a6ebf13cae0a56328b0bdfc9f1769d954">postMessage()</a> calls. The call will attempt to use the front buffer from this output port and will fall-back to a reusable pool. </p><dl class="section post"><dt>Postcondition</dt><dd><a class="el" href="classPothos_1_1OutputPort.html#ae53b1f869014baa127d2bdb5bec31ddf">buffer()</a> has undefined behavior after this call. </dd></dl>
+<p>Get a buffer of a specified size and type. This variant provides a user specified data type. </p><dl class="section post"><dt>Postcondition</dt><dd><a class="el" href="classPothos_1_1OutputPort.html#ae53b1f869014baa127d2bdb5bec31ddf">buffer()</a> has undefined behavior after this call. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">numElements</td><td>the minimum buffer size </td></tr>
+    <tr><td class="paramname">dtype</td><td>the buffer's type (independent of port type) </td></tr>
+    <tr><td class="paramname">numElements</td><td>the number of elements of type dtype </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>a buffer chunk with at least numElements </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>a buffer chunk with the specified type and length </dd></dl>
 
 </div>
 </div>
@@ -841,7 +888,7 @@ template&lt;typename ValueType &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Dec 27 2017 10:27:42 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 10 2018 20:23:43 for Pothos by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

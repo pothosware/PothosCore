@@ -21,5 +21,6 @@ var searchData=
   ['mininelements',['minInElements',['../structPothos_1_1WorkInfo.html#a0b027529909cb9527fd3af3aff4c105e',1,'Pothos::WorkInfo']]],
   ['minoutelements',['minOutElements',['../structPothos_1_1WorkInfo.html#ac1c5222c817c0082b6a552d14ee432e2',1,'Pothos::WorkInfo']]],
   ['module_2ehpp',['Module.hpp',['../Module_8hpp.html',1,'']]],
-  ['modulepath',['modulePath',['../structPothos_1_1PluginRegistryInfoDump.html#a47da04559c4bb111eff4eb8aaa01ae46',1,'Pothos::PluginRegistryInfoDump']]]
+  ['modulepath',['modulePath',['../structPothos_1_1PluginRegistryInfoDump.html#a47da04559c4bb111eff4eb8aaa01ae46',1,'Pothos::PluginRegistryInfoDump']]],
+  ['moduleversion',['moduleVersion',['../structPothos_1_1PluginRegistryInfoDump.html#ae1868c0043e3b8b439645498ea825bc4',1,'Pothos::PluginRegistryInfoDump']]]
 ];
