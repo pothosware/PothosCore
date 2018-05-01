@@ -8,7 +8,7 @@ Release 0.7.0 (pending)
 - Added OutputPort::getBuffer() with specified data type variant
 - Version reporting API and build support for loadable modules
 
-Release 0.6.1 (pending)
+Release 0.6.1 (2018-04-30)
 ==========================
 
 - Fixed BufferPool::get() unique check from buffer refactor work
