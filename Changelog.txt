@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.6.1 (pending)
+Release 0.6.1 (2018-04-30)
 ==========================
 
 - Fixed BufferPool::get() unique check from buffer refactor work
