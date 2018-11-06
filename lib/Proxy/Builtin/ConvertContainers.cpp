@@ -71,7 +71,7 @@ std::map<KeyType, ValType> convertProxyMapToNativeMap(const Pothos::ProxyMap &m)
     std::map<KeyType, ValType> out;
     for (const auto &pair : m)
     {
-        out.emplace_hint(out.end(), pair.first, pair.second.convert<ValType>());
+        out.emplace_hint(out.end(), pair.first.convert<KeyType>(), pair.second.convert<ValType>());
     }
     return out;
 }
@@ -138,7 +138,7 @@ static Pothos::ObjectMap convertObjectKwargsToObjectMap(const Pothos::ObjectKwar
     Pothos::ObjectMap oMap;
     for (const auto &pair : kwargs)
     {
-        oMap.emplace_hint(oMap.end(), pair.first, pair.second);
+        oMap.emplace_hint(oMap.end(), Pothos::Object(pair.first), pair.second);
     }
     return oMap;
 }
