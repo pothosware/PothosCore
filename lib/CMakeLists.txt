@@ -79,6 +79,20 @@ else()
 endif()
 
 ########################################################################
+# Link libatomic
+########################################################################
+find_library(
+    ATOMIC_LIBRARIES
+    NAMES atomic atomic.so.1 libatomic.so.1
+    PATHS /usr/lib /usr/lib64
+)
+
+if (ATOMIC_LIBRARIES)
+    list(APPEND Pothos_LIBRARIES ${ATOMIC_LIBRARIES})
+    list(APPEND PC_LIBS_PRIVATE "-latomic")
+endif()
+
+########################################################################
 # Thread config support
 ########################################################################
 find_library(
