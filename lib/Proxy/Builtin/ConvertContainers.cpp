@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object/Containers.hpp>
@@ -12,6 +12,7 @@ template <typename OutType>
 std::vector<OutType> convertProxyVectorToNativeVector(const Pothos::ProxyVector &v)
 {
     std::vector<OutType> nativeVec;
+    nativeVec.reserve(v.size());
     for (const auto &elem : v)
     {
         nativeVec.push_back(elem);
@@ -24,10 +25,11 @@ Pothos::ProxyVector convertNativeVectorToProxyVector(const std::vector<InType> &
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     Pothos::ProxyVector pVec;
+    pVec.reserve(v.size());
     for (const auto &elem : v)
     {
         auto o = env->makeProxy(elem);
-        pVec.push_back(o);
+        pVec.push_back(std::move(o));
     }
     return pVec;
 }
@@ -35,6 +37,7 @@ Pothos::ProxyVector convertNativeVectorToProxyVector(const std::vector<InType> &
 static Pothos::ObjectVector convertProxyVectorToObjectVector(const Pothos::ProxyVector &v)
 {
     Pothos::ObjectVector objVec;
+    objVec.reserve(v.size());
     for (const auto &elem : v)
     {
         objVec.push_back(elem.toObject());
@@ -47,7 +50,7 @@ static Pothos::ObjectSet convertProxySetToObjectSet(const Pothos::ProxySet &s)
     Pothos::ObjectSet objSet;
     for (const auto &elem : s)
     {
-        objSet.insert(elem.toObject());
+        objSet.emplace_hint(objSet.end(), elem.toObject());
     }
     return objSet;
 }
@@ -57,7 +60,7 @@ static Pothos::ObjectMap convertProxyMapToObjectMap(const Pothos::ProxyMap &m)
     Pothos::ObjectMap objMap;
     for (const auto &elem : m)
     {
-        objMap[elem.first.toObject()] = elem.second.toObject();
+        objMap.emplace_hint(objMap.end(), elem.first.toObject(), elem.second.toObject());
     }
     return objMap;
 }
@@ -68,7 +71,7 @@ std::map<KeyType, ValType> convertProxyMapToNativeMap(const Pothos::ProxyMap &m)
     std::map<KeyType, ValType> out;
     for (const auto &pair : m)
     {
-        out[pair.first] = pair.second.convert<ValType>();
+        out.emplace_hint(out.end(), pair.first.convert<KeyType>(), pair.second.convert<ValType>());
     }
     return out;
 }
@@ -77,10 +80,11 @@ static Pothos::ProxyVector convertObjectVectorToProxyVector(const Pothos::Object
 {
     auto env = Pothos::ProxyEnvironment::make("managed");
     Pothos::ProxyVector pVec;
+    pVec.reserve(v.size());
     for (const auto &elem : v)
     {
         auto o = env->convertObjectToProxy(elem);
-        pVec.push_back(o);
+        pVec.push_back(std::move(o));
     }
     return pVec;
 }
@@ -92,7 +96,7 @@ static Pothos::ProxySet convertObjectSetToProxySet(const Pothos::ObjectSet &s)
     for (const auto &elem : s)
     {
         auto o = env->convertObjectToProxy(elem);
-        pSet.insert(o);
+        pSet.emplace_hint(pSet.end(), std::move(o));
     }
     return pSet;
 }
@@ -105,7 +109,7 @@ static Pothos::ProxyMap convertObjectMapToProxyMap(const Pothos::ObjectMap &m)
     {
         auto k = env->convertObjectToProxy(elem.first);
         auto v = env->convertObjectToProxy(elem.second);
-        pMap[k] = v;
+        pMap.emplace_hint(pMap.end(), std::move(k), std::move(v));
     }
     return pMap;
 }
@@ -124,7 +128,7 @@ static Pothos::ObjectKwargs convertObjectMapToObjectKwargs(const Pothos::ObjectM
     Pothos::ObjectKwargs kwargs;
     for (const auto &pair : oMap)
     {
-        kwargs[pair.first.toString()] = pair.second;
+        kwargs.emplace_hint(kwargs.end(), pair.first.toString(), pair.second);
     }
     return kwargs;
 }
@@ -134,7 +138,7 @@ static Pothos::ObjectMap convertObjectKwargsToObjectMap(const Pothos::ObjectKwar
     Pothos::ObjectMap oMap;
     for (const auto &pair : kwargs)
     {
-        oMap[Pothos::Object(pair.first)] = pair.second;
+        oMap.emplace_hint(oMap.end(), Pothos::Object(pair.first), pair.second);
     }
     return oMap;
 }
