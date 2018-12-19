@@ -303,7 +303,7 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
         }
         else if (instruction == "alias" and state == "DOC")
         {
-            try {Pothos::PluginPath(payload);}
+            try {Pothos::PluginPath{payload};}
             catch (const Pothos::PluginPathError &)
             {
                 throw Pothos::SyntaxException("Invalid alias path", codeLine.toString());
@@ -433,7 +433,7 @@ static json parseCommentBlockForMarkup(const CodeBlock &commentBlock)
             const std::string argsStr(fields[2]);
 
             //add the path
-            try {Pothos::PluginPath(path);}
+            try {Pothos::PluginPath{path};}
             catch (const Pothos::PluginPathError &)
             {
                 throw Pothos::SyntaxException("Invalid factory path", codeLine.toString());
