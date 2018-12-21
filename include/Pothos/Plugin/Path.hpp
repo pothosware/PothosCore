@@ -4,7 +4,7 @@
 /// Plugin path represents a UNIX-style path for the plugin hierarchy.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2018 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -27,7 +27,7 @@ public:
     /*!
      * Create a PluginPath at the root ("/")
      */
-    explicit PluginPath(void);
+    PluginPath(void);
 
     /*!
      * Create a PluginPath from a path string.

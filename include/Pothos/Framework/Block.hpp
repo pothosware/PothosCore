@@ -4,7 +4,7 @@
 /// This file contains the interface for creating custom Blocks.
 ///
 /// \copyright
-/// Copyright (c) 2014-2017 Josh Blum
+/// Copyright (c) 2014-2018 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -38,7 +38,7 @@ class POTHOS_API Block : public Connectable
 public:
 
     //! Default constructor
-    explicit Block(void);
+    Block(void);
 
     //! Virtual destructor
     virtual ~Block(void);
