@@ -15,6 +15,7 @@
 #include <Pothos/Util/Templates.hpp> //special_decay_t
 #include <type_traits> //std::decay
 #include <utility> //std::forward
+#include <Pothos/Util/TypeInfo.hpp>
 #include <atomic>
 
 namespace Pothos {
@@ -29,7 +30,10 @@ struct POTHOS_API ObjectContainer
 
     virtual ~ObjectContainer(void);
 
-    void *internal; //!< Opaque pointer to internally held type
+    virtual void *internal(void) const //!< Opaque pointer to internally held type
+    {
+        return nullptr;
+    }
 
     const std::type_info &type; //!< Type info for internal type
 
@@ -47,7 +51,7 @@ struct ObjectContainerT : ObjectContainer
         ObjectContainer(typeid(ValueType)),
         value(std::forward<Args>(args)...)
     {
-        internal = (void*)std::addressof(this->value);
+        return;
     }
 
     ~ObjectContainerT(void)
@@ -55,19 +59,35 @@ struct ObjectContainerT : ObjectContainer
         return;
     }
 
+    void *internal(void) const
+    {
+        return (void*)std::addressof(this->value);
+    }
+
     ValueType value;
 };
 
 template <typename ValueType, typename... Args>
-typename std::enable_if<!std::is_same<NullObject, ValueType>::value, ObjectContainer *>::type
-makeObjectContainer(Args&&... args)
+typename std::enable_if<not std::is_same<NullObject, ValueType>::value
+    and sizeof(ObjectContainerT<Pothos::Util::special_decay_t<ValueType>>) <= sizeof(Object::_storage)
+    and std::is_trivially_copyable<ValueType>::value, ObjectContainer *>::type
+makeObjectContainer(void *p, Args&&... args)
+{
+    return new(p) ObjectContainerT<Pothos::Util::special_decay_t<ValueType>>(std::forward<Args>(args)...);
+}
+
+template <typename ValueType, typename... Args>
+typename std::enable_if<not std::is_same<NullObject, ValueType>::value
+    and (sizeof(ObjectContainerT<Pothos::Util::special_decay_t<ValueType>>) > sizeof(Object::_storage)
+    or not std::is_trivially_copyable<ValueType>::value), ObjectContainer *>::type
+makeObjectContainer(void *, Args&&... args)
 {
     return new ObjectContainerT<Pothos::Util::special_decay_t<ValueType>>(std::forward<Args>(args)...);
 }
 
 template <typename ValueType, typename... Args>
 typename std::enable_if<std::is_same<NullObject, ValueType>::value, ObjectContainer *>::type
-makeObjectContainer(Args&&...)
+makeObjectContainer(void *, Args&&...)
 {
     return nullptr;
 }
@@ -81,7 +101,7 @@ ValueType &extractObject(const Object &obj)
     //Support for the special NullObject case when the _impl is nullptr.
     //Otherwise, check the type for a match and then extract the internal value
     typedef typename std::decay<ValueType>::type DecayValueType;
-    return *(reinterpret_cast<DecayValueType *>((obj._impl == nullptr)?0:obj._impl->internal));
+    return *(reinterpret_cast<DecayValueType *>((obj._impl == nullptr)?0:obj._impl->internal()));
 }
 
 [[noreturn]] POTHOS_API void throwExtract(const Object &obj, const std::type_info &type);
@@ -120,20 +140,23 @@ Object Object::emplace(Args&&... args)
 
 template <typename ValueType, typename>
 Object::Object(ValueType &&value):
-    _impl(Detail::makeObjectContainer<ValueType>(std::forward<ValueType>(value)))
+    _storage({}),
+    _impl(Detail::makeObjectContainer<ValueType>(&_storage, std::forward<ValueType>(value)))
 {
     return;
 }
 
 template <typename ValueType, typename... Args>
 Object::Object(Emplace<ValueType>, Args&&... args):
-    _impl(Detail::makeObjectContainer<ValueType>(std::forward<Args>(args)...))
+    _storage({}),
+    _impl(Detail::makeObjectContainer<ValueType>(&_storage, std::forward<Args>(args)...))
 {
     return;
 }
 
 inline Object::Object(const char *s):
-    _impl(Detail::makeObjectContainer<std::string>(s))
+    _storage({}),
+    _impl(Detail::makeObjectContainer<std::string>(&_storage, s))
 {
     return;
 }

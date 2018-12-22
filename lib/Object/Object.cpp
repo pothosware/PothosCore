@@ -24,7 +24,6 @@ Pothos::NullObject::~NullObject(void)
  * Object container
  **********************************************************************/
 Pothos::Detail::ObjectContainer::ObjectContainer(const std::type_info &type):
-    internal(nullptr),
     type(type),
     counter(1)
 {
@@ -36,19 +35,19 @@ Pothos::Detail::ObjectContainer::~ObjectContainer(void)
     return;
 }
 
-static void incr(Pothos::Detail::ObjectContainer *o)
+static void incr(Pothos::Object *o)
 {
-    if (o == nullptr) return;
-    o->counter.fetch_add(1, std::memory_order_relaxed);
+    if (o->_impl == nullptr or o->inplace()) return;
+    o->_impl->counter.fetch_add(1, std::memory_order_relaxed);
 }
 
-static void decr(Pothos::Detail::ObjectContainer *o)
+static void decr(Pothos::Object *o)
 {
-    if (o == nullptr) return;
-    if (o->counter.fetch_sub(1, std::memory_order_release) == 1)
+    if (o->_impl == nullptr or o->inplace()) return;
+    else if (o->_impl->counter.fetch_sub(1, std::memory_order_release) == 1)
     {
         std::atomic_thread_fence(std::memory_order_acquire);
-        delete o;
+        delete o->_impl;
     }
 }
 
@@ -72,12 +71,13 @@ Pothos::Object::Object(void):
 Pothos::Object::Object(const Object &obj):
     _impl(obj._impl)
 {
-    incr(_impl);
+    copyStorage(obj);
+    incr(this);
 }
 
 Pothos::Object::~Object(void)
 {
-    decr(_impl);
+    decr(this);
 }
 
 Pothos::Object::operator bool(void) const
@@ -87,22 +87,27 @@ Pothos::Object::operator bool(void) const
 
 Pothos::Object &Pothos::Object::operator=(const Object &rhs)
 {
-    decr(_impl);
+    decr(this);
+
     _impl = rhs._impl;
-    incr(_impl);
+    copyStorage(rhs);
+    incr(this);
     return *this;
 }
 
 Pothos::Object &Pothos::Object::operator=(Object &&rhs)
 {
-    decr(_impl);
+    decr(this);
+
     _impl = rhs._impl;
+    copyStorage(rhs);
     rhs._impl = nullptr;
     return *this;
 }
 
 bool Pothos::Object::unique(void) const
 {
+    if (this->inplace()) return true;
     return _impl->counter.load(std::memory_order_relaxed) == 1;
 }
 

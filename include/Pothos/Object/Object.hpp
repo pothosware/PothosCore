@@ -290,7 +290,15 @@ public:
     bool operator>(const Object &obj) const;
 
     //! Private implementation details
+    struct {size_t buff[4];} _storage;
     Detail::ObjectContainer *_impl;
+    bool inplace(void) const {return (void*)_impl == &_storage;}
+    void copyStorage(const Object &other)
+    {
+        if (not other.inplace()) return;
+        _impl = reinterpret_cast<Pothos::Detail::ObjectContainer*>(&_storage);
+        _storage = other._storage;
+    }
 };
 
 /*!
@@ -306,11 +314,18 @@ inline bool operator==(const Object &lhs, const Object &rhs);
 
 inline bool Pothos::operator==(const Object &lhs, const Object &rhs)
 {
+    if (lhs.inplace() and rhs.inplace())
+    {
+        for (size_t i = 0; i < 4; i++)
+            if (lhs._storage.buff[i] != rhs._storage.buff[i]) return false;
+        return true;
+    }
     return lhs._impl == rhs._impl;
 }
 
 inline Pothos::Object::Object(Object &&obj) noexcept:
     _impl(obj._impl)
 {
+    copyStorage(obj);
     obj._impl = nullptr;
 }
