@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2019 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
@@ -139,8 +139,11 @@ void Pothos::Topology::_connect(
         {
             if (info.name == dstName)
             {
-                _impl->inputPortInfo[srcName] = info;
-                _impl->inputPortInfo[srcName].name = srcName;
+                auto &newInfo = _impl->inputPortInfo[srcName];
+                newInfo.name = srcName;
+                newInfo.alias = srcName;
+                newInfo.isSigSlot = info.isSigSlot;
+                newInfo.dtype = info.dtype;
             }
         }
     }
@@ -151,8 +154,11 @@ void Pothos::Topology::_connect(
         {
             if (info.name == srcName)
             {
-                _impl->outputPortInfo[dstName] = info;
-                _impl->outputPortInfo[dstName].name = dstName;
+                auto &newInfo = _impl->outputPortInfo[dstName];
+                newInfo.name = dstName;
+                newInfo.alias = dstName;
+                newInfo.isSigSlot = info.isSigSlot;
+                newInfo.dtype = info.dtype;
             }
         }
     }
