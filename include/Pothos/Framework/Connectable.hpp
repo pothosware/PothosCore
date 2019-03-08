@@ -4,7 +4,7 @@
 /// This file contains the connnectable interface for topology elements.
 ///
 /// \copyright
-/// Copyright (c) 2014-2015 Josh Blum
+/// Copyright (c) 2014-2019 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -57,6 +57,16 @@ public:
      * \return the displayable name string
      */
     const std::string &getName(void) const;
+
+    /*!
+     * Set the displayable alias for the specified input port.
+     */
+    virtual void setInputAlias(const std::string &portName, const std::string &alias) = 0;
+
+    /*!
+     * Set the displayable alias for the specified output port.
+     */
+    virtual void setOutputAlias(const std::string &portName, const std::string &alias) = 0;
 
     /*!
      * Get a vector of info about all of the input ports available.

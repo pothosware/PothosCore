@@ -71,6 +71,20 @@ const Pothos::ThreadPool &Pothos::Topology::getThreadPool(void) const
     return _impl->threadPool;
 }
 
+void Pothos::Topology::setInputAlias(const std::string &portName, const std::string &alias)
+{
+    if (_impl->inputPortInfo.count(portName) == 0) throw PortAccessError(
+        "Pothos::Topology::setInputAlias("+portName+")", "unknown port");
+    _impl->inputPortInfo[portName].alias = alias;
+}
+
+void Pothos::Topology::setOutputAlias(const std::string &portName, const std::string &alias)
+{
+    if (_impl->outputPortInfo.count(portName) == 0) throw PortAccessError(
+        "Pothos::Topology::setOutputAlias("+portName+")", "unknown port");
+    _impl->outputPortInfo[portName].alias = alias;
+}
+
 std::vector<Pothos::PortInfo> Pothos::Topology::inputPortInfo(void)
 {
     std::vector<PortInfo> infos;

@@ -4,7 +4,7 @@
 /// This file contains the interface for creating a topology of blocks.
 ///
 /// \copyright
-/// Copyright (c) 2014-2016 Josh Blum
+/// Copyright (c) 2014-2019 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -159,6 +159,16 @@ public:
 
     //! Get the thread pool used by all blocks in this topology.
     const ThreadPool &getThreadPool(void) const;
+
+    /*!
+     * Set the displayable alias for the specified input port.
+     */
+    void setInputAlias(const std::string &portName, const std::string &alias);
+
+    /*!
+     * Set the displayable alias for the specified output port.
+     */
+    void setOutputAlias(const std::string &portName, const std::string &alias);
 
     /*!
      * Get a vector of info about all of the input ports available.

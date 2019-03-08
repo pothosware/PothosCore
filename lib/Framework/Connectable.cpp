@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2019 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Connectable.hpp>
@@ -55,6 +55,8 @@ static auto managedConnectable = Pothos::ManagedClass()
     .registerBaseClass<Pothos::Connectable, Pothos::Util::UID>()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, setName))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, getName))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, setInputAlias))
+    .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, setOutputAlias))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, inputPortInfo))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, outputPortInfo))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::Connectable, inputPortNames))

@@ -4,7 +4,7 @@
 /// This file contains the interface for creating custom Blocks.
 ///
 /// \copyright
-/// Copyright (c) 2014-2018 Josh Blum
+/// Copyright (c) 2014-2019 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -141,6 +141,16 @@ protected:
     virtual std::shared_ptr<BufferManager> getOutputBufferManager(const std::string &name, const std::string &domain);
 
 public:
+
+    /*!
+     * Set the displayable alias for the specified input port.
+     */
+    void setInputAlias(const std::string &portName, const std::string &alias);
+
+    /*!
+     * Set the displayable alias for the specified output port.
+     */
+    void setOutputAlias(const std::string &portName, const std::string &alias);
 
     /*!
      * Get a vector of info about all of the input ports available.

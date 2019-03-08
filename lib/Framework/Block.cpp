@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2019 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
@@ -247,6 +247,16 @@ std::shared_ptr<Pothos::BufferManager> Pothos::Block::getInputBufferManager(cons
 std::shared_ptr<Pothos::BufferManager> Pothos::Block::getOutputBufferManager(const std::string &, const std::string &)
 {
     return Pothos::BufferManager::Sptr(); //abdicate
+}
+
+void Pothos::Block::setInputAlias(const std::string &portName, const std::string &alias)
+{
+    this->input(portName)->setAlias(alias);
+}
+
+void Pothos::Block::setOutputAlias(const std::string &portName, const std::string &alias)
+{
+    this->output(portName)->setAlias(alias);
 }
 
 std::vector<Pothos::PortInfo> Pothos::Block::inputPortInfo(void)
