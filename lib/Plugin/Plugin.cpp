@@ -1,7 +1,10 @@
 // Copyright (c) 2013-2016 Josh Blum
+//                    2019 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin/Plugin.hpp>
+
+#include <Pothos/Util/TypeInfo.hpp>
 
 Pothos::Plugin::Plugin(void)
 {
@@ -38,7 +41,7 @@ std::string Pothos::Plugin::toString(void) const
     std::string output = this->getPath().toString();
     if (this->getObject())
     {
-        output += " {" + std::string(this->getObject().type().name()) + "}";
+        output += " {" + Util::typeInfoToString(this->getObject().type()) + "}";
     }
     if (not this->getModule().getFilePath().empty())
     {
