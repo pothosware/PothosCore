@@ -4,7 +4,7 @@
 /// Vector support for serialization.
 ///
 /// \copyright
-/// Copyright (c) 2016 Josh Blum
+/// Copyright (c) 2016-2019 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -59,12 +59,13 @@ void load(Archive &ar, std::vector<T, Allocator> &t, const unsigned int)
 {
     unsigned size(0);
     ar >> size;
-    t.resize(size);
+    t.clear();
+    t.reserve(size);
     for (size_t i = 0; i < size_t(size); i++)
     {
         T elem;
         ar >> elem;
-        t[i] = std::move(elem);
+        t.emplace_back(std::move(elem));
     }
 }
 

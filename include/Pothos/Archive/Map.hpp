@@ -4,7 +4,7 @@
 /// Map support for serialization.
 ///
 /// \copyright
-/// Copyright (c) 2016 Josh Blum
+/// Copyright (c) 2016-2019 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -39,7 +39,7 @@ void load(Archive &ar, std::map<K, T, Compare, Allocator> &t, const unsigned int
     {
         std::pair<K, T> pair;
         ar >> pair;
-        t.emplace(std::move(pair));
+        t.emplace_hint(t.end(), std::move(pair));
     }
 }
 
