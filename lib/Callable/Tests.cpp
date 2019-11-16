@@ -122,11 +122,20 @@ static int my_negate(const int x)
     return -x;
 }
 
+static int my_multiply(const int x, const int y)
+{
+    return x*y;
+}
+
 POTHOS_TEST_BLOCK("/callable/tests", test_callable_std_function)
 {
     std::function<int(int)> my_func(my_negate);
     Pothos::Callable my_callable(my_func);
     POTHOS_TEST_EQUAL(my_callable.call(42), -42);
+
+    std::function<int(int)> bound_func = std::bind(my_multiply, -1, std::placeholders::_1);
+    Pothos::Callable my_bound_callable(bound_func);
+    POTHOS_TEST_EQUAL(my_bound_callable.call(123), -123);
 }
 
 /***********************************************************************
