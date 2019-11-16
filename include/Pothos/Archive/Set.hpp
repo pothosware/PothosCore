@@ -4,7 +4,7 @@
 /// Set support for serialization.
 ///
 /// \copyright
-/// Copyright (c) 2016 Josh Blum
+/// Copyright (c) 2016-2019 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -38,7 +38,7 @@ void load(Archive &ar, std::set<T, Compare, Allocator> &t, const unsigned int)
     {
         T elem;
         ar >> elem;
-        t.insert(std::move(elem));
+        t.emplace_hint(t.end(), std::move(elem));
     }
 }
 
