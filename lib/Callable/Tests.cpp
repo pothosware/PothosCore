@@ -1,10 +1,11 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2019 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Callable.hpp>
 #include <Pothos/Testing.hpp>
 #include <string>
 #include <iostream>
+#include <functional>
 
 struct TestClass
 {
@@ -111,6 +112,21 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_meta)
     POTHOS_TEST_TRUE(ret2.type() == typeid(Pothos::Object));
     POTHOS_TEST_TRUE(ret2.extract<Pothos::Object>().type() == typeid(int));
     POTHOS_TEST_EQUAL(ret2.extract<Pothos::Object>().extract<int>(), 42);
+}
+
+/***********************************************************************
+ * Using std::function
+ **********************************************************************/
+static int my_negate(const int x)
+{
+    return -x;
+}
+
+POTHOS_TEST_BLOCK("/callable/tests", test_callable_std_function)
+{
+    std::function<int(int)> my_func(my_negate);
+    Pothos::Callable my_callable(my_func);
+    POTHOS_TEST_EQUAL(my_callable.call<int>(42), -42);
 }
 
 /***********************************************************************

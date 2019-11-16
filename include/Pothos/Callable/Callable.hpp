@@ -4,7 +4,7 @@
 /// Callable provides an opaque proxy for function or method calls.
 ///
 /// \copyright
-/// Copyright (c) 2013-2017 Josh Blum
+/// Copyright (c) 2013-2019 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -121,6 +121,10 @@ public:
     template <typename ReturnType, typename... ArgsType>
     Callable(ReturnType(*fcn)(ArgsType...));
 
+    //! Create a Callable for a std::function with variable args
+    template <typename ReturnType, typename... ArgsType>
+    Callable(const std::function<ReturnType(ArgsType...)> &fcn);
+
     /*!
      * Create a Callable for a class method with variable args.
      * Use make to specify explicit template arguments
@@ -147,6 +151,15 @@ public:
      */
     template <typename ReturnType, typename... ArgsType>
     static Callable make(ReturnType(*fcn)(ArgsType...));
+
+    /*!
+     * Create a Callable for a std::function with variable args
+     * Use make to specify explicit template arguments
+     * to differentiate overloads with the same name.
+     * In this case, the entire pack must be specified.
+     */
+    template <typename ReturnType, typename... ArgsType>
+    static Callable make(const std::function<ReturnType(ArgsType...)> &fcn);
 
     /*!
      * Create a Callable for a constructor with variable args.
