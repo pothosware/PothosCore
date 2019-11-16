@@ -4,7 +4,7 @@
 /// Template implementation details for Callable.
 ///
 /// \copyright
-/// Copyright (c) 2013-2017 Josh Blum
+/// Copyright (c) 2013-2019 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -170,6 +170,13 @@ Callable::Callable(ReturnType(*fcn)(ArgsType...)):
     return;
 }
 
+template <typename ReturnType, typename... ArgsType>
+Callable::Callable(const std::function<ReturnType(ArgsType...)> &fcn):
+    _impl(new Detail::CallableFunctionContainer<ReturnType, ReturnType, ArgsType...>(fcn))
+{
+    return;
+}
+
 template <typename ReturnType, typename ClassType, typename... ArgsType>
 Callable Callable::make(ReturnType(ClassType::*fcn)(ArgsType...))
 {
@@ -184,6 +191,12 @@ Callable Callable::make(ReturnType(ClassType::*fcn)(ArgsType...) const)
 
 template <typename ReturnType, typename... ArgsType>
 Callable Callable::make(ReturnType(*fcn)(ArgsType...))
+{
+    return Callable(fcn);
+}
+
+template <typename ReturnType, typename... ArgsType>
+Callable Callable::make(const std::function<ReturnType(ArgsType...)> &fcn)
 {
     return Callable(fcn);
 }
