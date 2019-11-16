@@ -126,7 +126,7 @@ POTHOS_TEST_BLOCK("/callable/tests", test_callable_std_function)
 {
     std::function<int(int)> my_func(my_negate);
     Pothos::Callable my_callable(my_func);
-    POTHOS_TEST_EQUAL(my_callable.call<int>(42), -42);
+    POTHOS_TEST_EQUAL(my_callable.call(42), -42);
 }
 
 /***********************************************************************
