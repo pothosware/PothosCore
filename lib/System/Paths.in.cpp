@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/System/Paths.hpp>
+#include <Pothos/System/Version.hpp>
 #include <Pothos/System/Exception.hpp>
 #include <Poco/Environment.h>
 #include <Poco/Path.h>
 #include <Poco/Foundation.h>
+#include <Poco/StringTokenizer.h>
+#include <algorithm>
 
 std::string Pothos::System::getRootPath(void)
 {
@@ -123,4 +126,49 @@ std::string Pothos::System::getPothosDevLibraryPath(void)
     Poco::Path libPath(Pothos::System::getRootPath());
     libPath.append("lib@LIB_SUFFIX@");
     return libPath.absolute().toString();
+}
+
+std::vector<std::string> Pothos::System::getPothosModuleSearchPaths()
+{
+    std::vector<Poco::Path> searchPaths;
+
+    //the default search path
+    Poco::Path devLibPath(Pothos::System::getPothosDevLibraryPath());
+    devLibPath.append("Pothos");
+    devLibPath.append("modules" + Pothos::System::getAbiVersion());
+    searchPaths.push_back(devLibPath);
+
+    //support /usr/local module installs when the install prefix is /usr
+    if (Pothos::System::getRootPath() == "/usr")
+    {
+        searchPaths.push_back("/usr/local/lib@LIB_SUFFIX@/Pothos/modules" + Pothos::System::getAbiVersion());
+        //when using a multi-arch directory, support single-arch path as well
+        static const std::string libsuffix("@LIB_SUFFIX@");
+        if (not libsuffix.empty() and libsuffix.at(0) == '/')
+            searchPaths.push_back("/usr/local/lib/Pothos/modules" + Pothos::System::getAbiVersion());
+
+    }
+
+    //separator for search paths
+    const std::string sep(1, Poco::Path::pathSeparator());
+
+    //check the environment's search path
+    const auto pluginPaths = Poco::Environment::get("POTHOS_PLUGIN_PATH", "");
+    for (const auto &pluginPath : Poco::StringTokenizer(pluginPaths, sep))
+    {
+        if (pluginPath.empty()) continue;
+        searchPaths.push_back(Poco::Path(pluginPath));
+    }
+
+    std::vector<std::string> searchPathStrings;
+    std::transform(
+        searchPaths.begin(),
+        searchPaths.end(),
+        std::back_inserter(searchPathStrings),
+        [](const Poco::Path& path)
+        {
+            return path.absolute().toString();
+        });
+
+    return searchPathStrings;
 }

@@ -5,12 +5,14 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2014 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <string>
+#include <vector>
 
 namespace Pothos {
 namespace System {
@@ -62,6 +64,12 @@ namespace System {
      * Get the full path to the development libraries directory.
      */
     POTHOS_API std::string getPothosDevLibraryPath(void);
+
+    /*!
+     * Get the list of paths Pothos searches to find modules for the current
+     * ABI.
+     */
+    POTHOS_API std::vector<std::string> getPothosModuleSearchPaths();
 
 } //namespace System
 } //namespace Pothos

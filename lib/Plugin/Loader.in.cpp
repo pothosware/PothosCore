@@ -39,41 +39,13 @@ static std::vector<Poco::Path> getModulePaths(const Poco::Path &path)
 
 std::vector<Pothos::PluginModule> Pothos::PluginLoader::loadModules(void)
 {
-    //the default search path
-    std::vector<Poco::Path> searchPaths;
-    Poco::Path libPath = Pothos::System::getRootPath();
-    libPath.append("lib@LIB_SUFFIX@");
-    libPath.append("Pothos");
-    libPath.append("modules" + Pothos::System::getAbiVersion());
-    searchPaths.push_back(libPath);
-
-    //support /usr/local module installs when the install prefix is /usr
-    if (Pothos::System::getRootPath() == "/usr")
-    {
-        searchPaths.push_back("/usr/local/lib@LIB_SUFFIX@/Pothos/modules" + Pothos::System::getAbiVersion());
-        //when using a multi-arch directory, support single-arch path as well
-        static const std::string libsuffix("@LIB_SUFFIX@");
-        if (not libsuffix.empty() and libsuffix.at(0) == '/')
-            searchPaths.push_back("/usr/local/lib/Pothos/modules" + Pothos::System::getAbiVersion());
-
-    }
-
-    //separator for search paths
-    const std::string sep(1, Poco::Path::pathSeparator());
-
-    //check the environment's search path
-    const auto pluginPaths = Poco::Environment::get("POTHOS_PLUGIN_PATH", "");
-    for (const auto &pluginPath : Poco::StringTokenizer(pluginPaths, sep))
-    {
-        if (pluginPath.empty()) continue;
-        searchPaths.push_back(Poco::Path(pluginPath));
-    }
+    const auto searchPaths = Pothos::System::getPothosModuleSearchPaths();
 
     //traverse the search paths and spawn futures
     std::vector<std::future<Pothos::PluginModule>> futures;
     for (const auto &searchPath : searchPaths)
     {
-        for (const auto &path : getModulePaths(searchPath.absolute()))
+        for (const auto &path : getModulePaths(searchPath))
         {
             futures.push_back(std::async(std::launch::async, &Pothos::PluginModule::safeLoad, path.toString()));
         }

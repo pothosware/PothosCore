@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2018 Josh Blum
+//                    2019 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -18,4 +19,9 @@ void PothosUtilBase::printSystemInfo(const std::string &, const std::string &)
     std::cout << "Util Executable: " << Pothos::System::getPothosUtilExecutablePath() << std::endl;
     std::cout << "Dev Include Path: " << Pothos::System::getPothosDevIncludePath() << std::endl;
     std::cout << "Dev Library Path: " << Pothos::System::getPothosDevLibraryPath() << std::endl;
+    std::cout << "Module Search Paths:" << std::endl;
+    for(const auto& searchPath: Pothos::System::getPothosModuleSearchPaths())
+    {
+        std::cout << " * " << searchPath << std::endl;
+    }
 }
