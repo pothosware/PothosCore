@@ -9,6 +9,7 @@
 #include <Poco/Foundation.h>
 #include <Poco/StringTokenizer.h>
 #include <algorithm>
+#include <iterator>
 
 std::string Pothos::System::getRootPath(void)
 {
