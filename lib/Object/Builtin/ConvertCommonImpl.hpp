@@ -102,12 +102,7 @@ OutType convertNum(const InType &in)
 /***********************************************************************
  * helper function registers a converter for specific types
  **********************************************************************/
-static void registerConvertNum(const std::string &inName, const std::string &outName, const Pothos::Callable &callable)
-{
-    const std::string name = inName + "_to_" + outName;
-    auto path = Pothos::PluginPath("/object/convert/numbers").join(name);
-    Pothos::PluginRegistry::add(path, callable);
-}
+void registerConvertNum(const std::string &inName, const std::string &outName, const Pothos::Callable &callable);
 
 /***********************************************************************
  * template comprehension to handle vectors of numbers
@@ -126,12 +121,7 @@ std::vector<OutType> convertVec(const std::vector<InType> &in)
 /***********************************************************************
  * helper function registers a converter for specific types
  **********************************************************************/
-static void registerConvertVec(const std::string &inName, const std::string &outName, const Pothos::Callable &callable)
-{
-    const std::string name = inName + "_to_" + outName;
-    auto path = Pothos::PluginPath("/object/convert/vectors").join(name);
-    Pothos::PluginRegistry::add(path, callable);
-}
+void registerConvertVec(const std::string &inName, const std::string &outName, const Pothos::Callable &callable);
 
 /***********************************************************************
  * macros to declare all conversion combinations

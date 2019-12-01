@@ -146,6 +146,7 @@ list(APPEND POTHOS_SOURCES
     Object/Exception.cpp
 
     Object/Builtin/Compare.cpp
+    Object/Builtin/ConvertCommonImpl.cpp
     Object/Builtin/ConvertIntermediate.cpp
     Object/Builtin/ConvertIntegers.cpp
     Object/Builtin/ConvertFloats.cpp

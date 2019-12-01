@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2017 Josh Blum
+//                    2019 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object.hpp>
@@ -6,6 +7,7 @@
 #include <vector>
 #include <complex>
 #include <sstream>
+#include <limits>
 
 class NeverHeardOfFooBar {};
 
@@ -179,4 +181,30 @@ POTHOS_TEST_BLOCK("/object/tests", test_compare_to)
     Pothos::Object num1(double(-21));
     POTHOS_TEST_TRUE(num0 > num1);
     POTHOS_TEST_TRUE(num1 < num0);
+}
+
+template <typename T>
+static void testIntegerStrings()
+{
+    POTHOS_TEST_EQUAL(
+        std::numeric_limits<T>::min(),
+        Pothos::Object(std::numeric_limits<T>::min()).convert(typeid(std::string)).convert<T>());
+    POTHOS_TEST_EQUAL(
+        std::numeric_limits<T>::max(),
+        Pothos::Object(std::numeric_limits<T>::max()).convert(typeid(std::string)).convert<T>());
+}
+
+POTHOS_TEST_BLOCK("/object/tests", test_integer_strings)
+{
+    testIntegerStrings<char>();
+    testIntegerStrings<short>();
+    testIntegerStrings<int>();
+    testIntegerStrings<long>();
+    testIntegerStrings<long long>();
+
+    testIntegerStrings<unsigned char>();
+    testIntegerStrings<unsigned short>();
+    testIntegerStrings<unsigned int>();
+    testIntegerStrings<unsigned long>();
+    testIntegerStrings<unsigned long long>();
 }
