@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2014-2017 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -92,7 +93,7 @@ public:
      * Example: int32, uint16, complex_float32, etc...
      */
     const std::string &name(void) const;
-    
+
     //! Get the element type descriptor
     unsigned char elemType(void) const;
 
@@ -163,6 +164,9 @@ private:
 //! Equality operator for DType (all attributes must match for equality)
 POTHOS_API bool operator==(const DType &lhs, const DType &rhs);
 
+//! Inequality operator for DType (all attributes must match for equality)
+POTHOS_API bool operator!=(const DType &lhs, const DType &rhs);
+
 } //namespace Pothos
 
 inline bool Pothos::operator==(const DType &lhs, const DType &rhs)
@@ -170,6 +174,11 @@ inline bool Pothos::operator==(const DType &lhs, const DType &rhs)
     return lhs.elemType() == rhs.elemType() and
         lhs.elemSize() == rhs.elemSize() and
         lhs.dimension() == rhs.dimension();
+}
+
+inline bool Pothos::operator!=(const DType &lhs, const DType &rhs)
+{
+    return !(lhs == rhs);
 }
 
 inline Pothos::DType::DType(void):

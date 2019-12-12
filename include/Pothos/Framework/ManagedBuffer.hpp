@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -127,6 +128,7 @@ private:
     struct Impl; Impl *_impl;
     ManagedBuffer(Impl *impl);
     POTHOS_API friend bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
+    POTHOS_API friend bool operator!=(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
 };
 
 /*!
@@ -134,6 +136,12 @@ private:
  * True when the containers are identical.
  */
 inline bool operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
+
+/*!
+ * Inquality operator for ManagedBuffer.
+ * True when the containers are not identical.
+ */
+inline bool operator!=(const ManagedBuffer &lhs, const ManagedBuffer &rhs);
 
 } //namespace Pothos
 
@@ -271,4 +279,9 @@ inline Pothos::ManagedBuffer::ManagedBuffer(Impl *impl):
 inline bool Pothos::operator==(const ManagedBuffer &lhs, const ManagedBuffer &rhs)
 {
     return lhs._impl == rhs._impl;
+}
+
+inline bool Pothos::operator!=(const ManagedBuffer &lhs, const ManagedBuffer &rhs)
+{
+    return !(lhs == rhs);
 }

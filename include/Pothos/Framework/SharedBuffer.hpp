@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -127,6 +128,12 @@ private:
  */
 inline bool operator==(const SharedBuffer &lhs, const SharedBuffer &rhs);
 
+/*!
+ * Inquality operator for SharedBuffer.
+ * True when the containers are not identical.
+ */
+inline bool operator!=(const SharedBuffer &lhs, const SharedBuffer &rhs);
+
 } //namespace Pothos
 
 inline size_t Pothos::SharedBuffer::getAddress(void) const
@@ -172,4 +179,9 @@ inline const std::shared_ptr<void> &Pothos::SharedBuffer::getContainer(void) con
 inline bool Pothos::operator==(const SharedBuffer &lhs, const SharedBuffer &rhs)
 {
     return lhs.getContainer() == rhs.getContainer();
+}
+
+inline bool Pothos::operator!=(const SharedBuffer &lhs, const SharedBuffer &rhs)
+{
+    return !(lhs == rhs);
 }

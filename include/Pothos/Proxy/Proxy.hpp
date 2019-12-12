@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -172,5 +173,17 @@ private:
  * \return true if the objects represent the same internal data
  */
 POTHOS_API bool operator==(const Proxy &lhs, const Proxy &rhs);
+
+/*!
+ * The not-equals operators checks if two Proxies represent different memory.
+ * Use myProxy.compareTo(other) != 0 for an equality comparison.
+ * \param lhs the left hand object of the comparison
+ * \param rhs the right hand object of the comparison
+ * \return true if the objects represent different internal data
+ */
+inline bool operator!=(const Proxy &lhs, const Proxy &rhs)
+{
+    return !(lhs == rhs);
+}
 
 } //namespace Pothos

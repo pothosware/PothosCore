@@ -6,6 +6,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -24,7 +25,7 @@ class BufferAccumulator;
 /*!
  * A BufferChunk holds a managed buffer, address, and length.
  * BufferChunk makes it easy to manipulate pieces of a managed buffer.
- * The caller manipulates a MangedBuffer into multiple BufferChunks;
+ * The caller manipulates a ManagedBuffer into multiple BufferChunks;
  * then a BufferAccumulator can piece BufferChunks back together.
  */
 class POTHOS_API BufferChunk
@@ -256,11 +257,22 @@ private:
  */
 inline bool operator==(const BufferChunk &lhs, const BufferChunk &rhs);
 
+/*!
+ * Inquality operator for BufferChunk objects.
+ * True when the address, length, or underlying buffer are different.
+ */
+inline bool operator!=(const BufferChunk &lhs, const BufferChunk &rhs);
+
 } //namespace Pothos
 
 inline bool Pothos::operator==(const Pothos::BufferChunk &lhs, const Pothos::BufferChunk &rhs)
 {
     return lhs.address == rhs.address and lhs.length == rhs.length and lhs.getBuffer() == rhs.getBuffer();
+}
+
+inline bool Pothos::operator!=(const Pothos::BufferChunk &lhs, const Pothos::BufferChunk &rhs)
+{
+    return !(lhs == rhs);
 }
 
 inline Pothos::BufferChunk::BufferChunk(void):

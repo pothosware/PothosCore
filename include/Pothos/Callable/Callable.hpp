@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2019 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -190,6 +191,7 @@ private:
     std::shared_ptr<Detail::CallableContainer> _impl;
     Callable(Detail::CallableContainer *impl);
     POTHOS_API friend bool operator==(const Callable &lhs, const Callable &rhs);
+    inline friend bool operator!=(const Callable &lhs, const Callable &rhs);
 };
 
 /*!
@@ -201,5 +203,19 @@ private:
  * \return true if the objects represent the same internal data
  */
 POTHOS_API bool operator==(const Callable &lhs, const Callable &rhs);
+
+/*!
+ * The not-equals operators checks if two Callable do not represent the same
+ * internal data. The actual bound functions/methods cannot be checked for
+ * inequality. Two callables are only equal if they originated from the same
+ * construction.
+ * \param lhs the left hand object of the comparison
+ * \param rhs the right hand object of the comparison
+ * \return true if the objects represent different internal data
+ */
+inline bool operator!=(const Callable &lhs, const Callable &rhs)
+{
+    return !(lhs == rhs);
+}
 
 } //namespace Pothos

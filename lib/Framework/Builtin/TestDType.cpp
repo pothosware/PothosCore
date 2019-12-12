@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2014 Josh Blum
+//                    2019 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -50,7 +51,7 @@ POTHOS_TEST_BLOCK("/framework/tests", test_dtype_equality)
     POTHOS_TEST_TRUE(Pothos::DType() == Pothos::DType());
 
     POTHOS_TEST_TRUE(Pothos::DType("int") == Pothos::DType(typeid(int)));
-    POTHOS_TEST_TRUE(not (Pothos::DType("int") == Pothos::DType(typeid(unsigned int))));
+    POTHOS_TEST_TRUE(Pothos::DType("int") != Pothos::DType(typeid(unsigned int)));
     POTHOS_TEST_TRUE(Pothos::DType("uint") == Pothos::DType(typeid(unsigned int)));
     POTHOS_TEST_TRUE(Pothos::DType("float64") == Pothos::DType(typeid(double)));
     POTHOS_TEST_TRUE(Pothos::DType("complex128") == Pothos::DType(typeid(std::complex<double>)));

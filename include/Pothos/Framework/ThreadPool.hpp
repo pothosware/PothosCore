@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2014-2016 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -145,5 +146,11 @@ private:
 
 //! Are these two thread pools the same?
 POTHOS_API bool operator==(const ThreadPool &lhs, const ThreadPool &rhs);
+
+//! Are these two thread pool different?
+inline bool operator!=(const ThreadPool &lhs, const ThreadPool &rhs)
+{
+    return !(lhs == rhs);
+}
 
 } //namespace Pothos

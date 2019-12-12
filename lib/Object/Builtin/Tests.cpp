@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2017 Josh Blum
+//                    2019 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object.hpp>
@@ -17,7 +18,7 @@ POTHOS_TEST_BLOCK("/object/tests", test_object_equals)
     POTHOS_TEST_TRUE(nullObj == Pothos::Object());
 
     Pothos::Object intObj(int(42));
-    POTHOS_TEST_TRUE(not (nullObj == intObj));
+    POTHOS_TEST_TRUE(nullObj != intObj);
 
     Pothos::Object intCopy = intObj;
     POTHOS_TEST_TRUE(intObj == intCopy);
