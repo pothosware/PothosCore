@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.7.0 (pending)
 ==========================
 
+- Added function to query Pothos module search paths
 - Added std::function support for Callable API
 - Added calls setOut/InputAlias() for Topology API
 - Update poco submodule to poco-1.9.0-release
