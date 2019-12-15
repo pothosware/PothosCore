@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -302,11 +303,25 @@ public:
  */
 inline bool operator==(const Object &lhs, const Object &rhs);
 
+/*!
+ * The not-equals operators checks if two Objects represent different memory.
+ * Use myObject.compareTo(other) != 0 for an inequality comparison.
+ * \param lhs the left hand object of the comparison
+ * \param rhs the right hand object of the comparison
+ * \return true if the objects represent different internal data
+ */
+inline bool operator!=(const Object &lhs, const Object &rhs);
+
 } //namespace Pothos
 
 inline bool Pothos::operator==(const Object &lhs, const Object &rhs)
 {
     return lhs._impl == rhs._impl;
+}
+
+inline bool Pothos::operator!=(const Object &lhs, const Object &rhs)
+{
+    return !(lhs == rhs);
 }
 
 inline Pothos::Object::Object(Object &&obj) noexcept:

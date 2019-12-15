@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2014-2015 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -88,6 +89,9 @@ public:
 //! Are these two labels equivalent? all fields must be equal
 inline bool operator==(const Label &rhs, const Label &lhs);
 
+//! Are these two labels not equivalent? at least one field must not be equal
+inline bool operator!=(const Label &rhs, const Label &lhs);
+
 /*!
  * LabelIteratorRange represents a sorted range of labels.
  * It has the standard iterator interface begin()/end().
@@ -158,6 +162,11 @@ inline bool Pothos::operator==(const Label &rhs, const Label &lhs)
         rhs.width == lhs.width and
         rhs.id == lhs.id and
         rhs.data == lhs.data;
+}
+
+inline bool Pothos::operator!=(const Label &rhs, const Label &lhs)
+{
+    return !(rhs == lhs);
 }
 
 inline bool Pothos::Label::operator<(const Label &other) const

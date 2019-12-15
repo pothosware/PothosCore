@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2018 Josh Blum
+///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -96,5 +97,14 @@ private:
  * \return true if the paths are identical
  */
 POTHOS_API bool operator==(const PluginPath &lhs, const PluginPath &rhs);
+
+/*!
+ * Compare two plugin paths for inequality.
+ * \return true if the paths are not identical
+ */
+inline bool operator!=(const PluginPath &lhs, const PluginPath &rhs)
+{
+    return !(lhs == rhs);
+}
 
 } //namespace Pothos
