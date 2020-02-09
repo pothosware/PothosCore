@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019 Josh Blum
+// Copyright (c) 2014-2020 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
@@ -172,18 +172,6 @@ void Pothos::Block::registerProbe(
 
 Pothos::Object Pothos::Block::opaqueCallHandler(const std::string &name, const Pothos::Object *inputArgs, const size_t numArgs)
 {
-    //check if this name is a probe slot
-    auto probesIt = _probes.find(name);
-    if (probesIt != _probes.end())
-    {
-        const auto &callName = probesIt->second.first;
-        const auto &signalName = probesIt->second.second;
-        auto result = this->opaqueCallHandler(callName, inputArgs, numArgs);
-        if (result) this->call(signalName, result);
-        else this->call(signalName);
-        return Pothos::Object();
-    }
-
     //check if the name is a registered call
     const size_t numMatches = _calls.count(name);
 

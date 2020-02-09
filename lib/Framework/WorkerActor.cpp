@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2020 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
@@ -259,6 +259,19 @@ void Pothos::WorkerActor::handleSlotCalls(InputPort &port)
         {
             const auto call = port.slotCallsPop();
             const auto &args = call.extract<ObjectVector>();
+
+            //check if this name is a probe slot
+            auto probesIt = block->_probes.find(port.name());
+            if (probesIt != block->_probes.end())
+            {
+                const auto &callName = probesIt->second.first;
+                const auto &signalName = probesIt->second.second;
+                auto result = block->opaqueCallHandler(callName, args.data(), args.size());
+                if (result) block->call(signalName, result);
+                else block->call(signalName);
+                continue;
+            }
+
             block->opaqueCallHandler(port.name(), args.data(), args.size());
             this->flagInternalChange();
             this->activityIndicator.fetch_add(1, std::memory_order_relaxed);
