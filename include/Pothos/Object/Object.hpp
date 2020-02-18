@@ -4,7 +4,7 @@
 /// Object is intended to facilitate API polymorphism similar to java.
 ///
 /// \copyright
-/// Copyright (c) 2013-2017 Josh Blum
+/// Copyright (c) 2013-2020 Josh Blum
 ///                    2019 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
@@ -322,6 +322,18 @@ inline bool Pothos::operator==(const Object &lhs, const Object &rhs)
 inline bool Pothos::operator!=(const Object &lhs, const Object &rhs)
 {
     return !(lhs == rhs);
+}
+
+template <typename T>
+inline bool operator==(const Pothos::Object &lhs, const T &rhs)
+{
+    return lhs.convert<T>() == rhs;
+}
+
+template <typename T>
+inline bool operator==(const T &lhs, const Pothos::Object &rhs)
+{
+    return lhs == rhs.convert<T>();
 }
 
 inline Pothos::Object::Object(Object &&obj) noexcept:
