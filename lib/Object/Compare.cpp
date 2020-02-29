@@ -1,6 +1,7 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2020 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "TypesHashCombine.hpp"
 #include <Pothos/Object/Object.hpp>
 #include <Pothos/Object/Exception.hpp>
 #include <Pothos/Util/SpinLockRW.hpp>
@@ -9,7 +10,6 @@
 #include <Pothos/Util/CompareTo.hpp>
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
-#include <Poco/Hash.h>
 #include <mutex>
 #include <map>
 
@@ -28,12 +28,6 @@ static CompareMapType &getCompareMap(void)
 {
     static CompareMapType map;
     return map;
-}
-
-//! combine two type hashes to form a unique hash such that hash(a, b) != hash(b, a)
-static inline size_t typesHashCombine(const std::type_info &t0, const std::type_info &t1)
-{
-    return t0.hash_code() ^ Poco::hash(t1.hash_code());
 }
 
 /***********************************************************************

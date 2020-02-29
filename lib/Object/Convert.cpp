@@ -1,6 +1,7 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2020 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "TypesHashCombine.hpp"
 #include <Pothos/Object/ObjectImpl.hpp>
 #include <Pothos/Object/Exception.hpp>
 #include <Pothos/Util/SpinLockRW.hpp>
@@ -9,7 +10,6 @@
 #include <Pothos/Plugin.hpp>
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
-#include <Poco/Hash.h>
 #include <mutex>
 #include <set>
 #include <map>
@@ -36,17 +36,6 @@ static std::map<size_t, std::set<size_t>> &getConvertIoMap(void)
 {
     static std::map<size_t, std::set<size_t>> map;
     return map;
-}
-
-//! combine two type hashes to form a unique hash such that hash(a, b) != hash(b, a)
-static inline size_t typesHashCombine(const size_t &inTypeHash, const size_t &outTypeHash)
-{
-    return inTypeHash ^ Poco::hash(outTypeHash);
-}
-
-static inline size_t typesHashCombine(const std::type_info &inType, const std::type_info &outType)
-{
-    return typesHashCombine(inType.hash_code(), outType.hash_code());
 }
 
 /***********************************************************************
