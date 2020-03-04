@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2013-2016 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 //
 // Copyright (c) 2004-2006, Applied Informatics Software Engineering GmbH.
@@ -30,6 +31,7 @@
 
 
 #include <Pothos/Exception.hpp>
+#include <Pothos/Util/TypeInfo.hpp>
 #include <Poco/String.h>
 #include <typeinfo>
 
@@ -37,17 +39,17 @@
 namespace Pothos {
 
 
-Exception::Exception(int code): _pNested(0), _code(code)
+Exception::Exception(int code): _pNested(0), _code(code), _className(Pothos::Util::typeInfoToString(typeid(*this)))
 {
 }
 
 
-Exception::Exception(const std::string& msg, int code): _msg(msg), _pNested(0), _code(code)
+Exception::Exception(const std::string& msg, int code): _msg(msg), _pNested(0), _code(code), _className(Pothos::Util::typeInfoToString(typeid(*this)))
 {
 }
 
 
-Exception::Exception(const std::string& msg, const std::string& arg, int code): _msg(msg), _pNested(0), _code(code)
+Exception::Exception(const std::string& msg, const std::string& arg, int code): _msg(msg), _pNested(0), _code(code), _className(Pothos::Util::typeInfoToString(typeid(*this)))
 {
 	if (!arg.empty())
 	{
@@ -57,7 +59,7 @@ Exception::Exception(const std::string& msg, const std::string& arg, int code): 
 }
 
 
-Exception::Exception(const std::string& msg, const Exception& nested, int code): _msg(msg), _pNested(nested.clone()), _code(code)
+Exception::Exception(const std::string& msg, const Exception& nested, int code): _msg(msg), _pNested(nested.clone()), _code(code), _className(Pothos::Util::typeInfoToString(typeid(*this)))
 {
 	_msg.append("\n -> {");
 	_msg.append(Poco::trim(Poco::replace(_pNested->_msg, "\n", "\n  ")));
@@ -68,7 +70,8 @@ Exception::Exception(const std::string& msg, const Exception& nested, int code):
 Exception::Exception(const Exception& exc):
 	std::exception(exc),
 	_msg(exc._msg),
-	_code(exc._code)
+	_code(exc._code),
+	_className(exc._className)
 {
 	_pNested = exc._pNested ? exc._pNested->clone() : 0;
 }
@@ -85,9 +88,10 @@ Exception& Exception::operator = (const Exception& exc)
 	if (&exc != this)
 	{
 		delete _pNested;
-		_msg     = exc._msg;
-		_pNested = exc._pNested ? exc._pNested->clone() : 0;
-		_code    = exc._code;
+		_msg       = exc._msg;
+		_pNested   = exc._pNested ? exc._pNested->clone() : 0;
+		_code      = exc._code;
+		_className = exc._className;
 	}
 	return *this;
 }
@@ -101,7 +105,7 @@ const char* Exception::name() const throw()
 
 const char* Exception::className() const throw()
 {
-	return typeid(*this).name();
+	return _className.c_str();
 }
 
 	

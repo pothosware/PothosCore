@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2016 Josh Blum
+///                    2020 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 /// \copyright
@@ -36,6 +37,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Util/TypeInfo.hpp>
 #include <stdexcept>
 #include <string>
 
@@ -133,6 +135,10 @@ protected:
 
 	void extendedMessage(const std::string& arg);
 		/// Sets the extended message for the exception.
+
+    std::string _className;
+		/// Store the class name so we don't have to call
+		/// .c_str() on a temporary std::string.
 		
 private:
 	std::string _msg;
@@ -197,18 +203,23 @@ inline int Exception::code() const
 #define POTHOS_IMPLEMENT_EXCEPTION(CLS, BASE, NAME)													\
 	CLS::CLS(int code): BASE(code)																	\
 	{																								\
+        _className = Pothos::Util::typeInfoToString(typeid(CLS));                                   \
 	}																								\
 	CLS::CLS(const std::string& msg, int code): BASE(msg, code)										\
 	{																								\
+        _className = Pothos::Util::typeInfoToString(typeid(CLS));                                   \
 	}																								\
 	CLS::CLS(const std::string& msg, const std::string& arg, int code): BASE(msg, arg, code)		\
 	{																								\
+        _className = Pothos::Util::typeInfoToString(typeid(CLS));                                   \
 	}																								\
 	CLS::CLS(const std::string& msg, const Pothos::Exception& exc, int code): BASE(msg, exc, code)	\
 	{																								\
+        _className = Pothos::Util::typeInfoToString(typeid(CLS));                                   \
 	}																								\
 	CLS::CLS(const CLS& exc): BASE(exc)																\
 	{																								\
+        _className = Pothos::Util::typeInfoToString(typeid(CLS));                                   \
 	}																								\
 	CLS::~CLS() throw()																				\
 	{																								\
@@ -224,7 +235,7 @@ inline int Exception::code() const
 	}																								\
 	const char* CLS::className() const throw()														\
 	{																								\
-		return typeid(*this).name();																\
+		return _className.c_str();	    															\
 	}																								\
 	Pothos::Exception* CLS::clone() const																\
 	{																								\
