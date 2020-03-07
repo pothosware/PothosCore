@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2020 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -9,6 +9,7 @@
 #include <Poco/Pipe.h>
 #include <Poco/PipeStream.h>
 #include <Poco/String.h>
+#include <Poco/Glob.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -84,10 +85,10 @@ static bool spawnSelfTestOneProcess(const std::string &path)
     return ok;
 }
 
-static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults &results)
+static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults &results, Poco::Glob &glob)
 {
     //run the test found at path
-    if (not Pothos::PluginRegistry::empty(path))
+    if (not Pothos::PluginRegistry::empty(path) and glob.match(path.toString()))
     {
         auto plugin = Pothos::PluginRegistry::get(path);
         if (plugin.getObject().type() == typeid(std::shared_ptr<Pothos::TestingBase>))
@@ -106,7 +107,7 @@ static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults 
     auto nodes = Pothos::PluginRegistry::list(path);
     for (auto it = nodes.begin(); it != nodes.end(); it++)
     {
-        runPluginSelfTestsR(path.join(*it), results);
+        runPluginSelfTestsR(path.join(*it), results, glob);
     }
 }
 
@@ -133,7 +134,16 @@ void PothosUtilBase::selfTests(const std::string &, const std::string &path)
     Pothos::ScopedInit init;
 
     SelfTestResults results;
-    runPluginSelfTestsR(path.empty()? "/" : path, results);
+    if (path.find('*') == std::string::npos)
+    {
+        Poco::Glob glob("*"); //not globing, match all
+        runPluginSelfTestsR(path.empty()? "/" : path, results, glob);
+    }
+    else
+    {
+        Poco::Glob glob(path); //path is a glob rule
+        runPluginSelfTestsR("/", results, glob);
+    }
     std::cout << std::endl;
 
     const size_t totalTests = results.testsPassed.size() + results.testsFailed.size();
