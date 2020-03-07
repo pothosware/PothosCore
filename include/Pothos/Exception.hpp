@@ -4,7 +4,7 @@
 /// Definition of various Pothos exception classes.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2020 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 /// \copyright
@@ -36,6 +36,7 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Util/TypeInfo.hpp>
 #include <stdexcept>
 #include <string>
 
@@ -224,7 +225,8 @@ inline int Exception::code() const
 	}																								\
 	const char* CLS::className() const throw()														\
 	{																								\
-		return typeid(*this).name();																\
+		const static auto name = Pothos::Util::typeInfoToString(typeid(*this));						\
+		return name.c_str();																		\
 	}																								\
 	Pothos::Exception* CLS::clone() const																\
 	{																								\
