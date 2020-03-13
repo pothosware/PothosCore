@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2020 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -55,10 +56,14 @@ static std::string collectVerbose(const Poco::Pipe &pipe)
     return ss.str();
 }
 
-static bool spawnSelfTestOneProcess(const std::string &path)
+static bool spawnSelfTestOneProcess(const std::string &path, size_t numTrials)
 {
-    std::cout << "Testing " << path << "... " << std::flush;
+    const bool multipleTrials = (numTrials > 1);
     const int success = 200;
+
+    std::cout << "Testing " << path << "... ";
+    if(multipleTrials) std::cout << std::endl;
+    else std::cout << std::flush;
 
     //create args
     Poco::Process::Args args;
@@ -66,26 +71,39 @@ static bool spawnSelfTestOneProcess(const std::string &path)
     args.push_back(path);
     args.push_back("--success-code");
     args.push_back(std::to_string(success));
+    args.push_back("--num-trials");
+    args.push_back(std::to_string(numTrials));
 
-    //launch
-    Poco::Process::Env env;
-    Poco::Pipe outPipe; //no fwd stdio
-    Poco::ProcessHandle ph(Poco::Process::launch(
-        Pothos::System::getPothosUtilExecutablePath(),
-        args, nullptr, &outPipe, &outPipe, env));
+    std::vector<bool> okVec;
 
-    std::future<std::string> verboseFuture(std::async(std::launch::async, &collectVerbose, outPipe));
-    const bool ok = (ph.wait() == success);
-    std::cout << ((ok)? "success!" : "FAIL!") << std::endl;
+    for(size_t trialNum = 0; trialNum < numTrials; ++trialNum)
+    {
+        //launch
+        Poco::Process::Env env;
+        Poco::Pipe outPipe; //no fwd stdio
+        Poco::ProcessHandle ph(Poco::Process::launch(
+            Pothos::System::getPothosUtilExecutablePath(),
+            args, nullptr, &outPipe, &outPipe, env));
 
-    outPipe.close();
-    verboseFuture.wait();
-    if (not ok) std::cout << verboseFuture.get();
+        std::future<std::string> verboseFuture(std::async(std::launch::async, &collectVerbose, outPipe));
+        const bool ok = (ph.wait() == success);
+        if(multipleTrials)
+        {
+            std::cout << " * Trial " << (trialNum+1) << ": " << std::flush;
+        }
+        std::cout << ((ok)? "success!" : "FAIL!") << std::endl;
 
-    return ok;
+        outPipe.close();
+        verboseFuture.wait();
+        if (not ok) std::cout << verboseFuture.get();
+
+        okVec.emplace_back(ok);
+    }
+
+    return std::any_of(okVec.begin(), okVec.end(), [](bool ok){return ok;});
 }
 
-static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults &results, Poco::Glob &glob)
+static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults &results, Poco::Glob &glob, size_t numTrials)
 {
     //run the test found at path
     if (not Pothos::PluginRegistry::empty(path) and glob.match(path.toString()))
@@ -93,7 +111,7 @@ static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults 
         auto plugin = Pothos::PluginRegistry::get(path);
         if (plugin.getObject().type() == typeid(std::shared_ptr<Pothos::TestingBase>))
         {
-            if (spawnSelfTestOneProcess(path.toString()))
+            if (spawnSelfTestOneProcess(path.toString(), numTrials))
             {
                 results.testsPassed.push_back(path.toString());
             }
@@ -107,7 +125,7 @@ static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults 
     auto nodes = Pothos::PluginRegistry::list(path);
     for (auto it = nodes.begin(); it != nodes.end(); it++)
     {
-        runPluginSelfTestsR(path.join(*it), results, glob);
+        runPluginSelfTestsR(path.join(*it), results, glob, numTrials);
     }
 }
 
@@ -115,13 +133,31 @@ void PothosUtilBase::selfTestOne(const std::string &, const std::string &path)
 {
     Pothos::ScopedInit init;
 
+    const auto numTrials = this->config().getUInt("numTrials", 1);
+    const bool multipleTrials = (numTrials > 1);
+
     auto plugin = Pothos::PluginRegistry::get(path);
     auto test = plugin.getObject().extract<std::shared_ptr<Pothos::TestingBase>>();
-    std::cout << "Testing " << plugin.getPath().toString() << "..." << std::endl;
+
+    if(!multipleTrials)
+    {
+        std::cout << "Testing " << plugin.getPath().toString() << "..." << std::endl;
+    }
+
     try
     {
-        test->runTests();
-        std::cout << "success!" << std::endl;
+        for(size_t trialNum = 0; trialNum < numTrials; ++trialNum)
+        {
+            if(multipleTrials)
+            {
+                std::cout << "--------------------------------------------" << std::endl
+                          <<  "Testing " << plugin.getPath().toString() << " (trial "
+                          << (trialNum+1) << ")..." << std::endl << std::endl;
+            }
+
+            test->runTests();
+            std::cout << "success!" << std::endl;
+        }
     }
     catch(...)
     {
@@ -133,16 +169,18 @@ void PothosUtilBase::selfTests(const std::string &, const std::string &path)
 {
     Pothos::ScopedInit init;
 
+    const auto numTrials = this->config().getUInt("numTrials", 1);
+
     SelfTestResults results;
     if (path.find('*') == std::string::npos)
     {
         Poco::Glob glob("*"); //not globing, match all
-        runPluginSelfTestsR(path.empty()? "/" : path, results, glob);
+        runPluginSelfTestsR(path.empty()? "/" : path, results, glob, numTrials);
     }
     else
     {
         Poco::Glob glob(path); //path is a glob rule
-        runPluginSelfTestsR("/", results, glob);
+        runPluginSelfTestsR("/", results, glob, numTrials);
     }
     std::cout << std::endl;
 
