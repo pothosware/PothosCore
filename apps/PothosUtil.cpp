@@ -125,6 +125,13 @@ protected:
             .argument("pluginPath")
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::selfTestOne)));
 
+        options.addOption(Poco::Util::Option("num-trials", "", "how many times to run each self test")
+            .required(false)
+            .repeatable(false)
+            .argument("numTrials")
+            .validator(new Poco::Util::IntValidator(1, 255))
+            .binding("numTrials"));
+
         options.addOption(Poco::Util::Option("success-code", "", "the success status return code (default 0)")
             .required(false)
             .repeatable(false)
