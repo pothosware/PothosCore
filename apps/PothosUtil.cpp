@@ -57,6 +57,11 @@ protected:
             .binding("modulePath")
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printModuleInfo)));
 
+        options.addOption(Poco::Util::Option("list-modules", "", "list all loaded modules")
+            .required(false)
+            .repeatable(false)
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::listModules)));
+
         options.addOption(Poco::Util::Option("device-info", "", "display device information")
             .required(false)
             .repeatable(false)

@@ -22,6 +22,7 @@ public:
     void loadModule(const std::string &, const std::string &);
     void runTopology(void);
     void docParse(const std::vector<std::string> &);
+    void listModules(const std::string &, const std::string &);
 
     //! Variables passed in via the --vars option
     std::vector<std::pair<std::string, std::string>> _vars;
