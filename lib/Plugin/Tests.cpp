@@ -32,7 +32,7 @@ POTHOS_TEST_BLOCK("/plugin/tests", test_plugin_registry)
     Pothos::PluginRegistry::add(Pothos::Plugin("/tests/t1"));
     POTHOS_TEST_TRUE(Pothos::PluginRegistry::exists(Pothos::PluginPath("/tests/t0")));
     POTHOS_TEST_TRUE(Pothos::PluginRegistry::exists(Pothos::PluginPath("/tests/t1")));
-    POTHOS_TEST_TRUE(not Pothos::PluginRegistry::exists(Pothos::PluginPath("/tests/t2")));
+    POTHOS_TEST_FALSE(Pothos::PluginRegistry::exists(Pothos::PluginPath("/tests/t2")));
 
     std::vector<std::string> expectedList, testsList;
     expectedList.push_back("t0");
@@ -41,7 +41,7 @@ POTHOS_TEST_BLOCK("/plugin/tests", test_plugin_registry)
     POTHOS_TEST_EQUALV(testsList, expectedList);
 
     Pothos::PluginRegistry::remove(Pothos::PluginPath("/tests/t1"));
-    POTHOS_TEST_TRUE(not Pothos::PluginRegistry::exists(Pothos::PluginPath("/tests/t1")));
+    POTHOS_TEST_FALSE(Pothos::PluginRegistry::exists(Pothos::PluginPath("/tests/t1")));
     expectedList.erase(std::find(expectedList.begin(), expectedList.end(), "t1"));
     testsList = Pothos::PluginRegistry::list(Pothos::PluginPath("/tests"));
     POTHOS_TEST_EQUALV(testsList, expectedList);

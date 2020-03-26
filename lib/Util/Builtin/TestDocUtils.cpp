@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -16,7 +17,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_doc_utils_dump_json)
     auto env = Pothos::ProxyEnvironment::make("managed");
     auto proxy = env->findProxy("Pothos/Util/DocUtils");
     const std::string jsonStr = proxy.call("dumpJson");
-    POTHOS_TEST_TRUE(not jsonStr.empty());
+    POTHOS_TEST_FALSE(jsonStr.empty());
     if (jsonStr.size() > 100)
     {
         std::cout << jsonStr.substr(0, 100) << "...\n..." << jsonStr.substr(jsonStr.size()-100) << std::endl;

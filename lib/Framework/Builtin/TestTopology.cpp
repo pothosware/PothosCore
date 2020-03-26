@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -125,7 +126,7 @@ POTHOS_TEST_BLOCK("/framework/tests/topology", test_unused_ports)
 
     //check that the message flowed
     POTHOS_TEST_TRUE(topology.waitInactive());
-    POTHOS_TEST_TRUE(passer->workCount != 0);
+    POTHOS_TEST_NOT_EQUAL(passer->workCount, 0);
     POTHOS_TEST_EQUAL(pong->triggered, 1);
 }
 

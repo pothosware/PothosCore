@@ -7,11 +7,13 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
+///                    2020 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Object.hpp>
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Callable.hpp>
 #include <Pothos/Exception.hpp>
@@ -75,18 +77,70 @@
     __POTHOS_TEST_STATEMENT(message, if (statement) {} else throw std::string("statement \"" #statement "\" evaluated false");); \
 }
 
+//! Private macro to assert on a statement's falsehood
+#define __POTHOS_TEST_ASSERT_FALSE(message, statement) \
+{ \
+    __POTHOS_TEST_STATEMENT(message, if (!(statement)) {} else throw std::string("statement \"" #statement "\" evaluated true");); \
+}
+
+//
+// Basic assertions
+//
+
 //! Test if statement is true
 #define POTHOS_TEST_TRUE(statement) \
 { \
     __POTHOS_TEST_ASSERT("assert true " #statement, statement); \
 }
 
-//! Test if an equality operation is true
+//! Test if statement is false
+#define POTHOS_TEST_FALSE(statement) \
+{ \
+    __POTHOS_TEST_ASSERT_FALSE("assert false " #statement, statement); \
+}
+
+//
+// Scalar comparisons
+//
+
+//! Test if two values are equal
 #define POTHOS_TEST_EQUAL(lhs, rhs) \
 { \
     __POTHOS_TEST_ASSERT( \
         "assert equal " + Pothos::TestingBase::current().toString(lhs) + \
         " == " + Pothos::TestingBase::current().toString(rhs), (lhs) == (rhs)); \
+}
+
+//! Test if lhs > rhs
+#define POTHOS_TEST_GT(lhs, rhs) \
+{ \
+    __POTHOS_TEST_ASSERT( \
+        "assert " + Pothos::TestingBase::current().toString(lhs) + \
+        " > " + Pothos::TestingBase::current().toString(rhs), (lhs) > (rhs)); \
+}
+
+//! Test if lhs >= rhs
+#define POTHOS_TEST_GE(lhs, rhs) \
+{ \
+    __POTHOS_TEST_ASSERT( \
+        "assert " + Pothos::TestingBase::current().toString(lhs) + \
+        " >= " + Pothos::TestingBase::current().toString(rhs), (lhs) >= (rhs)); \
+}
+
+//! Test if lhs < rhs
+#define POTHOS_TEST_LT(lhs, rhs) \
+{ \
+    __POTHOS_TEST_ASSERT( \
+        "assert " + Pothos::TestingBase::current().toString(lhs) + \
+        " < " + Pothos::TestingBase::current().toString(rhs), (lhs) < (rhs)); \
+}
+
+//! Test if lhs <= rhs
+#define POTHOS_TEST_LE(lhs, rhs) \
+{ \
+    __POTHOS_TEST_ASSERT( \
+        "assert " + Pothos::TestingBase::current().toString(lhs) + \
+        " <= " + Pothos::TestingBase::current().toString(rhs), (lhs) <= (rhs)); \
 }
 
 //! Test if two values are equal within tolerance
@@ -96,6 +150,26 @@
         "assert close " + Pothos::TestingBase::current().toString(lhs) + \
         " ~= " + Pothos::TestingBase::current().toString(rhs), (std::abs((lhs) - (rhs)) <= (tol))); \
 }
+
+//! Test if two values are not equal
+#define POTHOS_TEST_NOT_EQUAL(lhs, rhs) \
+{ \
+    __POTHOS_TEST_ASSERT( \
+        "assert not equal " + Pothos::TestingBase::current().toString(lhs) + \
+        " != " + Pothos::TestingBase::current().toString(rhs), (lhs) != (rhs)); \
+}
+
+//! Test if two values are not equal within tolerance
+#define POTHOS_TEST_NOT_CLOSE(lhs, rhs, tol) \
+{ \
+    __POTHOS_TEST_ASSERT( \
+        "assert close " + Pothos::TestingBase::current().toString(lhs) + \
+        " !~= " + Pothos::TestingBase::current().toString(rhs), (std::abs((lhs) - (rhs)) > (tol))); \
+}
+
+//
+// Vector comparisons
+//
 
 //! Test two vectors for equality
 #define POTHOS_TEST_EQUALV(lhs, rhs) \
@@ -110,6 +184,55 @@
     } \
 }
 
+//! Test two vectors for equality within tolerance
+#define POTHOS_TEST_CLOSEV(lhs, rhs, tol) \
+{ \
+    POTHOS_TEST_EQUAL((lhs).size(), (rhs).size()); \
+    for (size_t i = 0; i < (lhs).size(); i++) \
+    { \
+        __POTHOS_TEST_ASSERT( \
+            "index " + Pothos::TestingBase::current().toString(i) + \
+            " asserts " + Pothos::TestingBase::current().toString((lhs)[i]) + \
+            " ~= " + Pothos::TestingBase::current().toString((rhs)[i]), (std::abs((lhs)[i] - (rhs)[i]) <= (tol))); \
+    } \
+}
+
+//! Test two vectors for nonequality
+#define POTHOS_TEST_NOT_EQUALV(lhs, rhs) \
+{ \
+    if((lhs).size() == (rhs.size())) \
+    { \
+        bool anyNotEqual = false; \
+        for (size_t i = 0; (i < (lhs).size()) && !anyNotEqual; i++) \
+        { \
+            anyNotEqual = ((lhs)[i] != (rhs)[i]); \
+        } \
+        __POTHOS_TEST_ASSERT( \
+            "assert not equal " + Pothos::TestingBase::current().toString(lhs) + \
+            " != " + Pothos::TestingBase::current().toString(rhs), anyNotEqual); \
+    } \
+}
+
+//! Test two vectors for nonequality
+#define POTHOS_TEST_NOT_CLOSEV(lhs, rhs, tol) \
+{ \
+    if((lhs).size() == (rhs.size())) \
+    { \
+        bool anyNotEqual = false; \
+        for (size_t i = 0; (i < (lhs).size()) && !anyNotEqual; i++) \
+        { \
+            anyNotEqual = (std::abs((lhs)[i] - (rhs)[i]) <= (tol)); \
+        } \
+        __POTHOS_TEST_ASSERT( \
+            "assert not close " + Pothos::TestingBase::current().toString(lhs) + \
+            " !~= " + Pothos::TestingBase::current().toString(rhs), anyNotEqual); \
+    } \
+}
+
+//
+// Array comparisons
+//
+
 //! Test two arrays for equality
 #define POTHOS_TEST_EQUALA(lhs, rhs, size) \
 { \
@@ -121,6 +244,46 @@
             " == " + Pothos::TestingBase::current().toString((rhs)[i]), (lhs)[i] == (rhs)[i]); \
     } \
 }
+
+//! Test two arrays for equality within tolerance
+#define POTHOS_TEST_CLOSEA(lhs, rhs, tol, size) \
+{ \
+    for (size_t i = 0; i < (size); i++) \
+    { \
+        __POTHOS_TEST_ASSERT( \
+            "index " + Pothos::TestingBase::current().toString(i) + \
+            " asserts " + Pothos::TestingBase::current().toString((lhs)[i]) + \
+            " ~= " + Pothos::TestingBase::current().toString((rhs)[i]), (std::abs((lhs)[i] - (rhs)[i]) <= (tol))); \
+    } \
+}
+
+//! Test two arrays for nonequality
+#define POTHOS_TEST_NOT_EQUALA(lhs, rhs, size) \
+{ \
+    bool anyNotEqual = false; \
+    for (size_t i = 0; (i < (size)) && !anyNotEqual; i++) \
+    { \
+        anyNotEqual = ((lhs) != (rhs)); \
+    } \
+    __POTHOS_TEST_ASSERT( \
+        "assert arrays not equal ", anyNotEqual); \
+}
+
+//! Test two arrays for nonequality within tolerance
+#define POTHOS_TEST_NOT_CLOSEA(lhs, rhs, tol, size) \
+{ \
+    bool anyNotEqual = false; \
+    for (size_t i = 0; (i < (size)) && !anyNotEqual; i++) \
+    { \
+        anyNotEqual = (std::abs((lhs)[i] - (rhs)[i]) <= (tol)); \
+    } \
+    __POTHOS_TEST_ASSERT( \
+        "assert arrays not close ", anyNotEqual); \
+}
+
+//
+// Exception tests
+//
 
 //! Test that a statement throws a particular exception
 #define POTHOS_TEST_THROWS(statement, expectedException) \
