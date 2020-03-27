@@ -17,6 +17,7 @@
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Callable.hpp>
 #include <Pothos/Exception.hpp>
+#include <cmath>
 #include <memory>
 #include <string>
 
