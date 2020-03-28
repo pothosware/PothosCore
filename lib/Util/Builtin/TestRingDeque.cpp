@@ -1,4 +1,5 @@
 // Copyright (c) 2017-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -11,20 +12,20 @@ POTHOS_TEST_BLOCK("/util/tests", test_ring_deque)
     Pothos::Util::RingDeque<std::string> ring0;
     POTHOS_TEST_EQUAL(ring0.capacity(), 1);
     POTHOS_TEST_TRUE(ring0.empty());
-    POTHOS_TEST_TRUE(not ring0.full());
+    POTHOS_TEST_FALSE(ring0.full());
 
     ring0.set_capacity(10);
     POTHOS_TEST_EQUAL(ring0.capacity(), 10);
     POTHOS_TEST_TRUE(ring0.empty());
-    POTHOS_TEST_TRUE(not ring0.full());
+    POTHOS_TEST_FALSE(ring0.full());
 
     //fill with elements
     for (size_t i = 0; i < 10; i++)
     {
         POTHOS_TEST_EQUAL(ring0.size(), i);
-        POTHOS_TEST_TRUE(not ring0.full());
+        POTHOS_TEST_FALSE(ring0.full());
         ring0.push_back(std::to_string(i));
-        POTHOS_TEST_TRUE(not ring0.empty());
+        POTHOS_TEST_FALSE(ring0.empty());
     }
     POTHOS_TEST_TRUE(ring0.full());
     POTHOS_TEST_EQUAL(ring0.size(), 10);
@@ -39,10 +40,10 @@ POTHOS_TEST_BLOCK("/util/tests", test_ring_deque)
     for (size_t i = 0; i < 10; i++)
     {
         POTHOS_TEST_EQUAL(ring0.size(), 10-i);
-        POTHOS_TEST_TRUE(not ring0.empty());
+        POTHOS_TEST_FALSE(ring0.empty());
         POTHOS_TEST_EQUAL(ring0.front(), std::to_string(i));
         ring0.pop_front();
-        POTHOS_TEST_TRUE(not ring0.full());
+        POTHOS_TEST_FALSE(ring0.full());
     }
     POTHOS_TEST_TRUE(ring0.empty());
     POTHOS_TEST_EQUAL(ring0.size(), 0);
@@ -50,9 +51,9 @@ POTHOS_TEST_BLOCK("/util/tests", test_ring_deque)
     //fill with elements
     for (size_t i = 0; i < 10; i++)
     {
-        POTHOS_TEST_TRUE(not ring0.full());
+        POTHOS_TEST_FALSE(ring0.full());
         ring0.push_back(std::to_string(i));
-        POTHOS_TEST_TRUE(not ring0.empty());
+        POTHOS_TEST_FALSE(ring0.empty());
     }
     POTHOS_TEST_TRUE(ring0.full());
 
@@ -60,10 +61,10 @@ POTHOS_TEST_BLOCK("/util/tests", test_ring_deque)
     for (int i = 9; i >= 0; i--)
     {
         POTHOS_TEST_EQUAL(ring0.size(), size_t(i+1));
-        POTHOS_TEST_TRUE(not ring0.empty());
+        POTHOS_TEST_FALSE(ring0.empty());
         POTHOS_TEST_EQUAL(ring0.back(), std::to_string(i));
         ring0.pop_back();
-        POTHOS_TEST_TRUE(not ring0.full());
+        POTHOS_TEST_FALSE(ring0.full());
     }
     POTHOS_TEST_TRUE(ring0.empty());
     POTHOS_TEST_EQUAL(ring0.size(), 0);
@@ -72,9 +73,9 @@ POTHOS_TEST_BLOCK("/util/tests", test_ring_deque)
     for (size_t i = 0; i < 10; i++)
     {
         POTHOS_TEST_EQUAL(ring0.size(), i);
-        POTHOS_TEST_TRUE(not ring0.full());
+        POTHOS_TEST_FALSE(ring0.full());
         ring0.push_back(std::to_string(i));
-        POTHOS_TEST_TRUE(not ring0.empty());
+        POTHOS_TEST_FALSE(ring0.empty());
     }
     POTHOS_TEST_TRUE(ring0.full());
     POTHOS_TEST_EQUAL(ring0.size(), 10);
@@ -82,7 +83,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_ring_deque)
     //change capacity
     ring0.set_capacity(20);
     POTHOS_TEST_EQUAL(ring0.capacity(), 20);
-    POTHOS_TEST_TRUE(not ring0.full());
+    POTHOS_TEST_FALSE(ring0.full());
 
     //test indexing
     for (size_t i = 0; i < 10; i++)
@@ -93,7 +94,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_ring_deque)
     ring0.clear();
     POTHOS_TEST_EQUAL(ring0.size(), 0);
     POTHOS_TEST_TRUE(ring0.empty());
-    POTHOS_TEST_TRUE(not ring0.full());
+    POTHOS_TEST_FALSE(ring0.full());
 }
 
 POTHOS_TEST_BLOCK("/util/tests", test_ring_deque_copy)

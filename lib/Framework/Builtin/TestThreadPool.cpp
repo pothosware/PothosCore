@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -7,7 +8,7 @@
 POTHOS_TEST_BLOCK("/framework/tests", test_thread_pool)
 {
     Pothos::ThreadPool tp0;
-    POTHOS_TEST_TRUE(not tp0);
+    POTHOS_TEST_FALSE(tp0);
 
     Pothos::ThreadPool tp1(Pothos::ThreadPoolArgs(2/*threads*/));
     POTHOS_TEST_TRUE(tp1);

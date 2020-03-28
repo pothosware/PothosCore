@@ -1,5 +1,5 @@
 // Copyright (c) 2014-2014 Josh Blum
-//                    2019 Nicholas Corgan
+//               2019-2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -11,31 +11,31 @@
 
 POTHOS_TEST_BLOCK("/framework/tests", test_dtype_attrs)
 {
-    POTHOS_TEST_TRUE(not Pothos::DType());
-    POTHOS_TEST_TRUE(not Pothos::DType(""));
+    POTHOS_TEST_FALSE(Pothos::DType());
+    POTHOS_TEST_FALSE(Pothos::DType(""));
     POTHOS_TEST_TRUE(Pothos::DType("custom"));
     POTHOS_TEST_TRUE(Pothos::DType("int"));
 
-    POTHOS_TEST_TRUE(not Pothos::DType().isCustom());
-    POTHOS_TEST_TRUE(not Pothos::DType("").isCustom());
+    POTHOS_TEST_FALSE(Pothos::DType().isCustom());
+    POTHOS_TEST_FALSE(Pothos::DType("").isCustom());
     POTHOS_TEST_TRUE(Pothos::DType("custom").isCustom());
 
-    POTHOS_TEST_TRUE(not Pothos::DType("int").isCustom());
+    POTHOS_TEST_FALSE(Pothos::DType("int").isCustom());
     POTHOS_TEST_TRUE(Pothos::DType("int").isInteger());
     POTHOS_TEST_TRUE(Pothos::DType("int").isSigned());
-    POTHOS_TEST_TRUE(not Pothos::DType("int").isFloat());
-    POTHOS_TEST_TRUE(not Pothos::DType("int").isComplex());
+    POTHOS_TEST_FALSE(Pothos::DType("int").isFloat());
+    POTHOS_TEST_FALSE(Pothos::DType("int").isComplex());
 
-    POTHOS_TEST_TRUE(not Pothos::DType("float").isCustom());
-    POTHOS_TEST_TRUE(not Pothos::DType("float").isInteger());
-    POTHOS_TEST_TRUE(not Pothos::DType("float").isSigned());
+    POTHOS_TEST_FALSE(Pothos::DType("float").isCustom());
+    POTHOS_TEST_FALSE(Pothos::DType("float").isInteger());
+    POTHOS_TEST_FALSE(Pothos::DType("float").isSigned());
     POTHOS_TEST_TRUE(Pothos::DType("float").isFloat());
-    POTHOS_TEST_TRUE(not Pothos::DType("float").isComplex());
+    POTHOS_TEST_FALSE(Pothos::DType("float").isComplex());
 
-    POTHOS_TEST_TRUE(not Pothos::DType("complex_uint8").isCustom());
+    POTHOS_TEST_FALSE(Pothos::DType("complex_uint8").isCustom());
     POTHOS_TEST_TRUE(Pothos::DType("complex_uint8").isInteger());
-    POTHOS_TEST_TRUE(not Pothos::DType("complex_uint8").isSigned());
-    POTHOS_TEST_TRUE(not Pothos::DType("complex_uint8").isFloat());
+    POTHOS_TEST_FALSE(Pothos::DType("complex_uint8").isSigned());
+    POTHOS_TEST_FALSE(Pothos::DType("complex_uint8").isFloat());
     POTHOS_TEST_TRUE(Pothos::DType("complex_uint8").isComplex());
 }
 
@@ -51,7 +51,7 @@ POTHOS_TEST_BLOCK("/framework/tests", test_dtype_equality)
     POTHOS_TEST_TRUE(Pothos::DType() == Pothos::DType());
 
     POTHOS_TEST_TRUE(Pothos::DType("int") == Pothos::DType(typeid(int)));
-    POTHOS_TEST_TRUE(Pothos::DType("int") != Pothos::DType(typeid(unsigned int)));
+    POTHOS_TEST_NOT_EQUAL(Pothos::DType("int"), Pothos::DType(typeid(unsigned int)));
     POTHOS_TEST_TRUE(Pothos::DType("uint") == Pothos::DType(typeid(unsigned int)));
     POTHOS_TEST_TRUE(Pothos::DType("float64") == Pothos::DType(typeid(double)));
     POTHOS_TEST_TRUE(Pothos::DType("complex128") == Pothos::DType(typeid(std::complex<double>)));

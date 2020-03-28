@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2014 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -40,9 +41,9 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_containers)
 
     //check result
     auto findHiSet = resultSet.find(env->makeProxy("hi"));
-    POTHOS_TEST_TRUE(findHiSet != resultSet.end());
+    POTHOS_TEST_NOT_EQUAL(findHiSet, resultSet.end());
     auto find1Set = resultSet.find(env->makeProxy(1));
-    POTHOS_TEST_TRUE(find1Set != resultSet.end());
+    POTHOS_TEST_NOT_EQUAL(find1Set, resultSet.end());
 
     //make test dictionary
     Pothos::ProxyMap testDict;
@@ -55,9 +56,9 @@ POTHOS_TEST_BLOCK("/proxy/managed/tests", test_containers)
 
     //check result
     auto findHi = resultDict.find(env->makeProxy("hi"));
-    POTHOS_TEST_TRUE(findHi != resultDict.end());
+    POTHOS_TEST_NOT_EQUAL(findHi, resultDict.end());
     POTHOS_TEST_EQUAL(findHi->second.convert<std::string>(), "bye");
     auto find1 = resultDict.find(env->makeProxy(1));
-    POTHOS_TEST_TRUE(find1 != resultDict.end());
+    POTHOS_TEST_NOT_EQUAL(find1, resultDict.end());
     POTHOS_TEST_EQUAL(find1->second.convert<int>(), 2);
 }

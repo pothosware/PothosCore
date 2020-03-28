@@ -1,4 +1,5 @@
 // Copyright (c) 2016-2016 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object.hpp>
@@ -54,7 +55,7 @@ POTHOS_TEST_BLOCK("/archive/tests", test_polymorphic_type)
     Pothos::Archive::IStreamArchiver ai(si);
     ai >> y;
 
-    POTHOS_TEST_TRUE(dynamic_cast<PothosTesting::CustomPolyType<int> *>(y) != nullptr);
+    POTHOS_TEST_NOT_EQUAL(dynamic_cast<PothosTesting::CustomPolyType<int> *>(y), nullptr);
 
     auto xVal = dynamic_cast<PothosTesting::CustomPolyType<int> *>(x)->value;
     auto yVal = dynamic_cast<PothosTesting::CustomPolyType<int> *>(y)->value;
