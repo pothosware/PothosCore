@@ -8,8 +8,15 @@ set(INCLUDED_POTHOS_STANDARD_FLAGS_CMAKE TRUE)
 # or sensible to use because of the project's constraints.
 ########################################################################
 
-# C++14 is a required language feature for this project
-set(CMAKE_CXX_STANDARD 14)
+if(NOT CMAKE_CXX_STANDARD)
+    # C++14 is a required language feature for this project
+    set(CMAKE_CXX_STANDARD 14)
+else()
+    if(CMAKE_CXX_STANDARD LESS 14)
+        message(WARNING "Specified standard C++${CMAKE_CXX_STANDARD} is less than the official minimum standard C++14. Support is not guaranteed.")
+    endif()
+    message(STATUS "Overriding C++ standard to C++${CMAKE_CXX_STANDARD}.")
+endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     #force a compile-time error when symbols are missing
@@ -36,9 +43,15 @@ if(APPLE)
 endif()
 
 if(MSVC)
-    # C++14 is a required language feature for this project
-    if (${MSVC_VERSION} LESS 1910)
-        message(FATAL_ERROR "the build requires MSVC 2017 or newer for C++14 support")
+    if(CMAKE_CXX_STANDARD EQUAL 14)
+        # C++14 is a required language feature for this project
+        if (${MSVC_VERSION} LESS 1910)
+            message(FATAL_ERROR "the build requires VS 2017 15.0 or newer for C++14 support")
+        endif()
+    elseif(CMAKE_CXX_STANDARD EQUAL 17)
+        if (${MSVC_VERSION} LESS 1914)
+            message(FATAL_ERROR "the build requires VS 2017 15.7 or newer for C++17 support")
+        endif()
     endif()
 
     #we always want to use multiple cores for compilation

@@ -82,7 +82,7 @@ std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerAr
     }
 
     //add C++ standard
-    args.push_back("/std:c++14");
+    args.push_back("/std:"+std::string(_MSVC_LANG));
 
     //add include paths
     for (const auto &include : compilerArgs.includes)
