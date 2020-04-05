@@ -1,5 +1,5 @@
 // Copyright (c) 2013-2017 Josh Blum
-//                    2019 Nicholas Corgan
+//               2019-2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Object.hpp>
@@ -14,11 +14,11 @@ POTHOS_TEST_BLOCK("/object/tests", test_object_equals)
 {
     Pothos::Object nullObj;
     POTHOS_TEST_TRUE(nullObj == nullObj);
-    POTHOS_TEST_TRUE(not nullObj);
+    POTHOS_TEST_FALSE(nullObj);
     POTHOS_TEST_TRUE(nullObj == Pothos::Object());
 
     Pothos::Object intObj(int(42));
-    POTHOS_TEST_TRUE(nullObj != intObj);
+    POTHOS_TEST_NOT_EQUAL(nullObj, intObj);
 
     Pothos::Object intCopy = intObj;
     POTHOS_TEST_TRUE(intObj == intCopy);
@@ -55,8 +55,8 @@ POTHOS_TEST_BLOCK("/object/tests", test_object_mutable)
     //too many references, non-const reference denied
     POTHOS_TEST_TRUE(intObj.unique());
     Pothos::Object intObjCopy = intObj;
-    POTHOS_TEST_TRUE(not intObj.unique());
-    POTHOS_TEST_TRUE(not intObjCopy.unique());
+    POTHOS_TEST_FALSE(intObj.unique());
+    POTHOS_TEST_FALSE(intObjCopy.unique());
     POTHOS_TEST_THROWS(intObj.ref<int>(), Pothos::ObjectConvertError);
 }
 
@@ -75,7 +75,7 @@ POTHOS_TEST_BLOCK("/object/tests", test_convert_numbers)
     //tests for canConvert
     POTHOS_TEST_TRUE(intObj.canConvert(typeid(int)));
     POTHOS_TEST_TRUE(intObj.canConvert(typeid(long)));
-    POTHOS_TEST_TRUE(not intObj.canConvert(typeid(NeverHeardOfFooBar)));
+    POTHOS_TEST_FALSE(intObj.canConvert(typeid(NeverHeardOfFooBar)));
 
     //tests bool explicit and implicit
     Pothos::Object trueObj(true);
@@ -84,9 +84,9 @@ POTHOS_TEST_BLOCK("/object/tests", test_convert_numbers)
     POTHOS_TEST_TRUE(trueRes);
 
     Pothos::Object falseObj(false);
-    POTHOS_TEST_TRUE(not falseObj.convert<bool>());
+    POTHOS_TEST_FALSE(falseObj.convert<bool>());
     const bool falseRes = falseObj;
-    POTHOS_TEST_TRUE(not falseRes);
+    POTHOS_TEST_FALSE(falseRes);
 
     //test int to double
     POTHOS_TEST_EQUAL(double(Pothos::Object(+1)), +1.0);
@@ -128,7 +128,7 @@ POTHOS_TEST_BLOCK("/object/tests", test_serialize_null)
     Pothos::Object null1;
     null1.deserialize(ss);
 
-    POTHOS_TEST_TRUE(not null1);
+    POTHOS_TEST_FALSE(null1);
 }
 
 POTHOS_TEST_BLOCK("/object/tests", test_serialize_int)
@@ -178,6 +178,6 @@ POTHOS_TEST_BLOCK("/object/tests", test_compare_to)
 
     Pothos::Object num0(long(42));
     Pothos::Object num1(double(-21));
-    POTHOS_TEST_TRUE(num0 > num1);
+    POTHOS_TEST_GT(num0, num1);
     POTHOS_TEST_TRUE(num1 < num0);
 }

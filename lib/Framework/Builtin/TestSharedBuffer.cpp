@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2014 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
@@ -9,7 +10,7 @@
 POTHOS_TEST_BLOCK("/framework/tests", test_generic_shared_buffer)
 {
     auto b0 = Pothos::SharedBuffer::make(1024);
-    POTHOS_TEST_TRUE(b0.getAddress() != 0);
+    POTHOS_TEST_NOT_EQUAL(b0.getAddress(), 0);
     POTHOS_TEST_TRUE((b0.getAddress() & 0xf) == 0); //has alignment
     POTHOS_TEST_EQUAL(b0.getLength(), 1024);
     for (size_t i = 0; i < b0.getLength()/sizeof(int); i++)
@@ -21,7 +22,7 @@ POTHOS_TEST_BLOCK("/framework/tests", test_generic_shared_buffer)
     }
 
     auto b1 = Pothos::SharedBuffer::make(2048, 0/*node*/); //numa node 0 should always exist
-    POTHOS_TEST_TRUE(b1.getAddress() != 0);
+    POTHOS_TEST_NOT_EQUAL(b1.getAddress(), 0);
     POTHOS_TEST_TRUE((b1.getAddress() & 0xf) == 0); //has alignment
     POTHOS_TEST_EQUAL(b1.getLength(), 2048);
     for (size_t i = 0; i < b1.getLength()/sizeof(int); i++)
@@ -46,9 +47,9 @@ POTHOS_TEST_BLOCK("/framework/tests", test_generic_shared_buffer)
 POTHOS_TEST_BLOCK("/framework/tests", test_circular_shared_buffer)
 {
     auto b0 = Pothos::SharedBuffer::makeCirc(1024);
-    POTHOS_TEST_TRUE(b0.getAddress() != 0);
+    POTHOS_TEST_NOT_EQUAL(b0.getAddress(), 0);
     POTHOS_TEST_TRUE((b0.getAddress() & 0xf) == 0); //has alignment
-    POTHOS_TEST_TRUE(b0.getLength() >= 1024);
+    POTHOS_TEST_GE(b0.getLength(), 1024);
 
     const size_t alias = b0.getLength()/sizeof(int);
     for (size_t i = 0; i < b0.getLength()/sizeof(int); i++)
