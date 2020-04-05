@@ -4,29 +4,14 @@ endif()
 set(INCLUDED_POTHOS_STANDARD_FLAGS_CMAKE TRUE)
 
 ########################################################################
-# Provide add_compile_options() when not available
-########################################################################
-if(CMAKE_VERSION VERSION_LESS "2.8.12")
-    function(add_compile_options)
-        add_definitions(${ARGN})
-    endfunction(add_compile_options)
-endif()
-
-########################################################################
 # Compiler flags that are generally always a good idea to set
 # or sensible to use because of the project's constraints.
 ########################################################################
 
-#C++11 is a required language feature for this project
-set(CMAKE_CXX_STANDARD 11)
+# C++14 is a required language feature for this project
+set(CMAKE_CXX_STANDARD 14)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-
-    #enable C++11 on older versions of cmake
-    if (CMAKE_VERSION VERSION_LESS "3.1")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-    endif()
-
     #force a compile-time error when symbols are missing
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
     set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--no-undefined")
@@ -51,9 +36,9 @@ if(APPLE)
 endif()
 
 if(MSVC)
-    #C++11 is a required language feature for this project
-    if (${MSVC_VERSION} LESS 1700)
-        message(FATAL_ERROR "the build requires MSVC 2012 or newer for C++11 support")
+    # C++14 is a required language feature for this project
+    if (${MSVC_VERSION} LESS 1910)
+        message(FATAL_ERROR "the build requires MSVC 2017 or newer for C++14 support")
     endif()
 
     #we always want to use multiple cores for compilation

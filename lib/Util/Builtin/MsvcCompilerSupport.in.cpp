@@ -25,11 +25,6 @@ public:
     {
         Poco::Path path("@MSVC_INSTALL_PATH@");
 
-        //MSVC 2017 and up:
-        //Look several directories up for the vcvarsall.bat script.
-        //This script gets invoked with the architecture name,
-        //which is assumed to match the name of the linker directory.
-        #if _MSC_VER >= 1910 //2017 and up
         _vcvars_arch = path.getFileName();
         for (size_t i = 0; i < 8; i++)
         {
@@ -41,19 +36,6 @@ public:
         path = path.append("Build");
         path = path.append("vcvarsall.bat");
         _vcvars_path = path.toString();
-
-        //MSVC 2015 and below:
-        //Look for the vcvarsxx.bat in the linker/tools executable directory.
-        //This script is invoked without arguments to source the compiler tools.
-        #else
-        std::vector<std::string> files; Poco::File(path).list(files);
-        for (const auto &file : files)
-        {
-            if (file.find("vcvars") != 0) continue; //expecting vcvarsxx.bat
-            _vcvars_path = Poco::Path(path, file).absolute().toString();
-        }
-
-        #endif
     }
 
     bool test(void)
@@ -98,6 +80,9 @@ std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerAr
     {
         args.push_back(flag);
     }
+
+    //add C++ standard
+    args.push_back("/std:c++14");
 
     //add include paths
     for (const auto &include : compilerArgs.includes)

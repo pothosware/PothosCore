@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2016 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/Compiler.hpp>
@@ -49,7 +50,7 @@ std::string GccCompilerSupport::compileCppModule(const Pothos::Util::CompilerArg
     }
 
     //add compiler flags
-    args.push_back("-std=c++11");
+    args.push_back("-std=c++14");
     args.push_back("-shared");
     args.push_back("-fPIC");
     for (const auto &flag : compilerArgs.flags)
