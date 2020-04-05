@@ -49,8 +49,19 @@ std::string ClangCompilerSupport::compileCppModule(const Pothos::Util::CompilerA
         args.push_back(library);
     }
 
-    //add compiler flags
+    //add compiler flag for C++ standard used to compile Pothos
+#if __cplusplus >= 201704L
+    // DTODO: this may change down the line, so this may need to be smarter
+    args.push_back("-std=c++2a");
+#elif __cplusplus >= 201703L
+    args.push_back("-std=c++17");
+#elif __cplusplus >= 201702L
     args.push_back("-std=c++14");
+#else
+    args.push_back("-std=c++11");
+#endif
+
+    //add compiler flags
     args.push_back("-stdlib=libc++");
     args.push_back("-shared");
     args.push_back("-fPIC");
