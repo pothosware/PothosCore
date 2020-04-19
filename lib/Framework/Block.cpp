@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2020 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/WorkerActor.hpp"
@@ -6,6 +7,7 @@
 #include <Pothos/Object/Containers.hpp>
 #include <Pothos/Framework/InputPortImpl.hpp>
 #include <Pothos/Framework/OutputPortImpl.hpp>
+#include <Pothos/Plugin.hpp>
 #include <Poco/String.h>
 
 /***********************************************************************
@@ -383,3 +385,24 @@ static auto managedOutputPortMap = Pothos::ManagedClass()
     .registerMethod("at", &portMapAt<Pothos::OutputPort>)
     .registerMethod("keys", &portMapKeys<Pothos::OutputPort>)
     .commit("Pothos/OutputPortMap");
+
+/***********************************************************************
+ * Register toString() outputs
+ **********************************************************************/
+
+#include "Object/ToString.hpp"
+
+static std::string pothosBlockToString(const Pothos::Block& block)
+{
+    return "Pothos::Block (name: " + block.getName() + ")";
+}
+
+pothos_static_block(pothosRegisterBlockToString)
+{
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/Block",
+        Pothos::Callable(&pothosBlockToString));
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/BlockSPtr",
+        Pothos::Callable(&sptrObjectToString<Pothos::Block>));
+}

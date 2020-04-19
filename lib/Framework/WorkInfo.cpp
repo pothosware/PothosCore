@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2014 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/WorkInfo.hpp>
@@ -27,3 +28,28 @@ static auto managedWorkInfo = Pothos::ManagedClass()
     .registerField(POTHOS_FCN_TUPLE(Pothos::WorkInfo, minAllOutElements))
     .registerField(POTHOS_FCN_TUPLE(Pothos::WorkInfo, maxTimeoutNs))
     .commit("Pothos/WorkInfo");
+
+#include <Pothos/Plugin.hpp>
+#include <Poco/Format.h>
+#include <Poco/NumberFormatter.h>
+
+static std::string workInfoToString(const Pothos::WorkInfo& workInfo)
+{
+    return Poco::format(
+            "Pothos::WorkInfo (minElements: %s, minInElements: %s, minOutElements: %s, "
+            "minAllElements: %s, minAllInElements: %s, minAllOutElements: %s, maxTimeoutNs: %s)",
+            Poco::NumberFormatter::format(workInfo.minElements),
+            Poco::NumberFormatter::format(workInfo.minInElements),
+            Poco::NumberFormatter::format(workInfo.minOutElements),
+            Poco::NumberFormatter::format(workInfo.minAllElements),
+            Poco::NumberFormatter::format(workInfo.minAllInElements),
+            Poco::NumberFormatter::format(workInfo.minAllOutElements),
+            Poco::NumberFormatter::format(workInfo.maxTimeoutNs));
+}
+
+pothos_static_block(pothosRegisterPothosWorkInfoToString)
+{
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/WorkInfo",
+        Pothos::Callable(&workInfoToString));
+}

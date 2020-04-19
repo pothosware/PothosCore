@@ -1,10 +1,12 @@
 // Copyright (c) 2014-2019 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include "Framework/TopologyImpl.hpp"
 #include <Pothos/Framework/Block.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <Pothos/Object.hpp>
+#include <Pothos/Plugin.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Poco/Logger.h>
 #include <Poco/Format.h>
@@ -415,3 +417,24 @@ static auto managedFlowVector = Pothos::ManagedClass()
     .registerMethod("size", &flowVectorSize)
     .registerMethod("at", &flowVectorAt)
     .commit("Pothos/Topology/FlowVector");
+
+/***********************************************************************
+ * Register toString() outputs
+ **********************************************************************/
+
+#include "Object/ToString.hpp"
+
+static std::string pothosTopologyToString(const Pothos::Topology& topology)
+{
+    return "Pothos::Topology (name: " + topology.getName() + ")";
+}
+
+pothos_static_block(pothosRegisterTopologyToString)
+{
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/Topology",
+        Pothos::Callable(&pothosTopologyToString));
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/TopologySPtr",
+        Pothos::Callable(&sptrObjectToString<Pothos::Topology>));
+}

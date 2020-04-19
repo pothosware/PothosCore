@@ -80,3 +80,42 @@ template void Pothos::Label::serialize<Pothos::Archive::OStreamArchiver>(Pothos:
 
 POTHOS_OBJECT_SERIALIZE(Pothos::Label)
 POTHOS_OBJECT_SERIALIZE(std::vector<Pothos::Label>)
+
+//
+// Register toString functions
+//
+
+#include <Poco/Format.h>
+#include <Poco/NumberFormatter.h>
+
+static std::string labelToString(const Pothos::Label& label)
+{
+    return Poco::format("Pothos::Label (id: %s, data: %s, index: %s, width: %s)",
+                        label.id,
+                        label.data.toString(),
+                        Poco::NumberFormatter::format(label.index),
+                        Poco::NumberFormatter::format(label.width));
+}
+
+static std::string labelIteratorRangeToString(const Pothos::LabelIteratorRange& labelIteratorRange)
+{
+    std::string output = "Pothos::LabelIteratorRange [";
+    for(const auto& label: labelIteratorRange)
+    {
+        if(&label != labelIteratorRange.begin()) output += ", ";
+        output += labelToString(label);
+    }
+    output += "]";
+
+    return output;
+}
+
+pothos_static_block(pothosRegisterPothosLabelToString)
+{
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/Label",
+        Pothos::Callable(&labelToString));
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/LabelIteratorRange",
+        Pothos::Callable(&labelIteratorRangeToString));
+}

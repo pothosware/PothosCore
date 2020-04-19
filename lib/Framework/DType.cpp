@@ -1,8 +1,11 @@
 // Copyright (c) 2014-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Framework/Exception.hpp>
+#include <Pothos/Object.hpp>
+#include <Pothos/Plugin.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
 #include <Poco/StringTokenizer.h>
 #include <Poco/RegularExpression.h>
@@ -316,3 +319,16 @@ template void Pothos::DType::serialize<Pothos::Archive::IStreamArchiver>(Pothos:
 template void Pothos::DType::serialize<Pothos::Archive::OStreamArchiver>(Pothos::Archive::OStreamArchiver &, const unsigned int);
 
 POTHOS_OBJECT_SERIALIZE(Pothos::DType)
+
+static std::string dtypeObjectToString(const Pothos::DType& dtype)
+{
+    return "Pothos::DType (" + dtype.toString() + ")";
+}
+
+// Register Pothos::Object::toString output
+pothos_static_block(pothosRegisterDTypeToString)
+{
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/DType",
+        Pothos::Callable(&dtypeObjectToString));
+}

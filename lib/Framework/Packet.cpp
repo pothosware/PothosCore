@@ -30,3 +30,22 @@ void serialize(Archive & ar, Pothos::Packet &t, const unsigned int)
 }}
 
 POTHOS_OBJECT_SERIALIZE(Pothos::Packet)
+
+#include <Pothos/Object.hpp>
+#include <Pothos/Plugin.hpp>
+#include <Poco/Format.h>
+
+static std::string packetToString(const Pothos::Packet& packet)
+{
+    return Poco::format("Pothos::Packet (payload: %s, metadata: %s, labels: %s)",
+                        Pothos::Object(packet.payload).toString(),
+                        Pothos::Object(packet.metadata).toString(),
+                        Pothos::Object(packet.labels).toString());
+}
+
+pothos_static_block(pothosRegisterPothosPacketToString)
+{
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/Packet",
+        Pothos::Callable(&packetToString));
+}
