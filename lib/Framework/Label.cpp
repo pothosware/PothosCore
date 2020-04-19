@@ -93,7 +93,7 @@ static std::string labelToString(const Pothos::Label& label)
     return Poco::format("Pothos::Label (id: %s, data: %s, index: %s, width: %s)",
                         label.id,
                         label.data.toString(),
-                        Poco::NumberFormatter::format(label.index),
+                        Poco::NumberFormatter::format((unsigned long)label.index),
                         Poco::NumberFormatter::format(label.width));
 }
 
