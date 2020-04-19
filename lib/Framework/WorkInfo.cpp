@@ -44,7 +44,7 @@ static std::string workInfoToString(const Pothos::WorkInfo& workInfo)
             Poco::NumberFormatter::format(workInfo.minAllElements),
             Poco::NumberFormatter::format(workInfo.minAllInElements),
             Poco::NumberFormatter::format(workInfo.minAllOutElements),
-            Poco::NumberFormatter::format(workInfo.maxTimeoutNs));
+            Poco::NumberFormatter::format((long int)workInfo.maxTimeoutNs));
 }
 
 pothos_static_block(pothosRegisterPothosWorkInfoToString)
