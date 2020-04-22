@@ -426,7 +426,13 @@ static auto managedFlowVector = Pothos::ManagedClass()
 
 static std::string pothosTopologyToString(const Pothos::Topology& topology)
 {
-    return "Pothos::Topology (name: " + topology.getName() + ")";
+    std::string ret = "Pothos::Topology";
+    if(!topology.getName().empty())
+    {
+        ret += (" (name: " + topology.getName() + ")");
+    }
+
+    return ret;
 }
 
 pothos_static_block(pothosRegisterTopologyToString)

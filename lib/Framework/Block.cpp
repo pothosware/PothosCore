@@ -394,7 +394,13 @@ static auto managedOutputPortMap = Pothos::ManagedClass()
 
 static std::string pothosBlockToString(const Pothos::Block& block)
 {
-    return "Pothos::Block (name: " + block.getName() + ")";
+    std::string ret = "Pothos::Block";
+    if(!block.getName().empty())
+    {
+        ret += (" (name: " + block.getName() + ")");
+    }
+
+    return ret;
 }
 
 pothos_static_block(pothosRegisterBlockToString)
