@@ -320,15 +320,10 @@ template void Pothos::DType::serialize<Pothos::Archive::OStreamArchiver>(Pothos:
 
 POTHOS_OBJECT_SERIALIZE(Pothos::DType)
 
-static std::string dtypeObjectToString(const Pothos::DType& dtype)
-{
-    return "Pothos::DType (" + dtype.toString() + ")";
-}
-
 // Register Pothos::Object::toString output
 pothos_static_block(pothosRegisterDTypeToString)
 {
     Pothos::PluginRegistry::addCall(
         "/object/tostring/Pothos/DType",
-        Pothos::Callable(&dtypeObjectToString));
+        Pothos::Callable(&Pothos::DType::toString));
 }

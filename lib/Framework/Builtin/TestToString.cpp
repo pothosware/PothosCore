@@ -82,9 +82,8 @@ POTHOS_TEST_BLOCK("/framework/tests", test_bufferchunk_to_string)
     }
 }
 
-static inline void testDTypeToString(const std::string& expectedDTypeStr, const Pothos::DType& dtype)
+static inline void testDTypeToString(const std::string& expectedStr, const Pothos::DType& dtype)
 {
-    const std::string expectedStr = "Pothos::DType (" + expectedDTypeStr + ")";
     POTHOS_TEST_EQUAL(expectedStr, Pothos::Object(dtype).toString());
 }
 
