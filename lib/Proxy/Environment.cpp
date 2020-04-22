@@ -1,11 +1,16 @@
 // Copyright (c) 2013-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
+
+#include "Object/ToString.hpp"
 
 #include <Pothos/Proxy/Exception.hpp>
 #include <Pothos/Proxy/Environment.hpp>
 #include <Pothos/Callable.hpp>
 #include <Pothos/Plugin.hpp>
 #include <Pothos/System/HostInfo.hpp>
+
+#include <Poco/Format.h>
 
 Pothos::ProxyEnvironment::Sptr Pothos::ProxyEnvironment::make(const std::string &name, const ProxyEnvironmentArgs &args)
 {
@@ -62,3 +67,18 @@ static auto managedProxyEnvironment = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::ProxyEnvironment, getLocalUniquePid))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::ProxyEnvironment, getPeeringAddress))
     .commit("Pothos/ProxyEnvironment");
+
+static inline std::string proxyEnvironmentToString(const Pothos::ProxyEnvironment& env)
+{
+    return Poco::format("Pothos::ProxyEnvironment (%s, %s)", env.getName(), env.getNodeId());
+}
+
+pothos_static_block(registerPothosProxyEnvironmentToString)
+{
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/ProxyEnvironment",
+        Pothos::Callable(&proxyEnvironmentToString));
+    Pothos::PluginRegistry::addCall(
+        "/object/tostring/Pothos/ProxyEnvironmentSPtr",
+        Pothos::Callable(&sptrObjectToString<Pothos::ProxyEnvironment>));
+}
