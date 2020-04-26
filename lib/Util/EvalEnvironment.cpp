@@ -1,5 +1,15 @@
 // Copyright (c) 2014-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
+
+#include "Builtin/MupOctalValReader.hpp"
+
+#include "mpParser.h"
+#include "mpPackageUnit.h"
+#include "mpPackageStr.h"
+#include "mpPackageCmplx.h"
+#include "mpPackageCommon.h"
+#include "mpPackageMatrix.h"
 
 #include <Pothos/Util/EvalEnvironment.hpp>
 #include <Pothos/Object.hpp>
@@ -12,7 +22,6 @@
 #include <map>
 #include <iostream>
 #include <mutex>
-#include "mpParser.h"
 
 static const std::string mapTypeId("__map__");
 static const std::string tmpTypeId("__tmp__");
@@ -119,8 +128,22 @@ static mup::Value objectToMupValue(const Pothos::Object &obj)
 struct Pothos::Util::EvalEnvironment::Impl
 {
     Impl(void):
-        p(mup::pckALL_COMPLEX)
+        p(0)
     {
+        // Note: the parser object takes ownership of this pointer and will
+        // free it on destruction.
+        p.AddValueReader(new MupOctalValReader);
+
+        // These packages must be added *after* adding our custom octal reader
+        // because of how parsing works. Octal notation requires starting with
+        // 0, but if the octal and hex parsers do not come first, the 0 will
+        // have been parsed, and the octal reader will fail.
+        p.AddPackage(mup::PackageCommon::Instance());
+        p.AddPackage(mup::PackageCmplx::Instance());
+        p.AddPackage(mup::PackageStr::Instance());
+        p.AddPackage(mup::PackageUnit::Instance());
+        p.AddPackage(mup::PackageMatrix::Instance());
+
         p.DefineConst("True", true);
         p.DefineConst("False", false);
         p.DefineConst("j", std::complex<double>(0.0, 1.0));
