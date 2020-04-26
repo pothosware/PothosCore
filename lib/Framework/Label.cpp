@@ -85,6 +85,8 @@ POTHOS_OBJECT_SERIALIZE(std::vector<Pothos::Label>)
 // Register toString functions
 //
 
+#include <Pothos/Object.hpp>
+
 #include <Poco/Format.h>
 #include <Poco/NumberFormatter.h>
 
@@ -112,10 +114,13 @@ static std::string labelIteratorRangeToString(const Pothos::LabelIteratorRange& 
 
 pothos_static_block(pothosRegisterPothosLabelToString)
 {
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/Label",
-        Pothos::Callable(&labelToString));
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/LabelIteratorRange",
-        Pothos::Callable(&labelIteratorRangeToString));
+    Pothos::registerToStringFunc<Pothos::Label>(
+        "Pothos/Label",
+        &labelToString,
+        false /*registerPointerTypes*/);
+    Pothos::registerToStringFunc<Pothos::LabelIteratorRange>(
+        "Pothos/LabelIteratorRange",
+        &labelIteratorRangeToString,
+        false /*registerPointerTypes*/);
+
 }

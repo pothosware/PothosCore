@@ -2,8 +2,6 @@
 //                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Object/ToString.hpp"
-
 #include <Pothos/Proxy/Exception.hpp>
 #include <Pothos/Proxy/Environment.hpp>
 #include <Pothos/Callable.hpp>
@@ -73,12 +71,12 @@ static inline std::string proxyEnvironmentToString(const Pothos::ProxyEnvironmen
     return Poco::format("Pothos::ProxyEnvironment (%s, %s)", env.getName(), env.getNodeId());
 }
 
+#include <Pothos/Object.hpp>
+
 pothos_static_block(registerPothosProxyEnvironmentToString)
 {
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/ProxyEnvironment",
-        Pothos::Callable(&proxyEnvironmentToString));
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/ProxyEnvironmentSPtr",
-        Pothos::Callable(&sptrObjectToString<Pothos::ProxyEnvironment>));
+    Pothos::registerToStringFunc<Pothos::ProxyEnvironment>(
+        "Pothos/ProxyEnvironment",
+        &proxyEnvironmentToString,
+        true /*wrapPointerTypes*/);
 }

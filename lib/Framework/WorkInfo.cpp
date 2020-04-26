@@ -29,6 +29,7 @@ static auto managedWorkInfo = Pothos::ManagedClass()
     .registerField(POTHOS_FCN_TUPLE(Pothos::WorkInfo, maxTimeoutNs))
     .commit("Pothos/WorkInfo");
 
+#include <Pothos/Object.hpp>
 #include <Pothos/Plugin.hpp>
 #include <Poco/Format.h>
 #include <Poco/NumberFormatter.h>
@@ -49,7 +50,8 @@ static std::string workInfoToString(const Pothos::WorkInfo& workInfo)
 
 pothos_static_block(pothosRegisterPothosWorkInfoToString)
 {
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/WorkInfo",
-        Pothos::Callable(&workInfoToString));
+    Pothos::registerToStringFunc<Pothos::WorkInfo>(
+        "Pothos/WorkInfo",
+        &workInfoToString,
+        false /*registerPointerTypes*/);
 }

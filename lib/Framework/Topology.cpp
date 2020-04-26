@@ -422,8 +422,6 @@ static auto managedFlowVector = Pothos::ManagedClass()
  * Register toString() outputs
  **********************************************************************/
 
-#include "Object/ToString.hpp"
-
 static std::string pothosTopologyToString(const Pothos::Topology& topology)
 {
     std::string ret = "Pothos::Topology";
@@ -437,10 +435,8 @@ static std::string pothosTopologyToString(const Pothos::Topology& topology)
 
 pothos_static_block(pothosRegisterTopologyToString)
 {
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/Topology",
-        Pothos::Callable(&pothosTopologyToString));
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/TopologySPtr",
-        Pothos::Callable(&sptrObjectToString<Pothos::Topology>));
+    Pothos::registerToStringFunc<Pothos::Topology>(
+        "Pothos/Topology",
+        &pothosTopologyToString,
+        true /*registerPointerTypes*/);
 }

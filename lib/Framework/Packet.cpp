@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2014 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Packet.hpp>
@@ -45,7 +46,8 @@ static std::string packetToString(const Pothos::Packet& packet)
 
 pothos_static_block(pothosRegisterPothosPacketToString)
 {
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/Packet",
-        Pothos::Callable(&packetToString));
+    Pothos::registerToStringFunc<Pothos::Packet>(
+        "Pothos/Packet",
+        &packetToString,
+        false /*registerPointerTypes*/);
 }

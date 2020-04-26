@@ -266,7 +266,7 @@ static auto managedInputPort = Pothos::ManagedClass()
  * Register toString() outputs
  **********************************************************************/
 
-#include "Object/ToString.hpp"
+#include <Pothos/Object.hpp>
 #include <Pothos/Plugin.hpp>
 
 static std::string pothosInputPortToString(const Pothos::InputPort& inputPort)
@@ -276,10 +276,8 @@ static std::string pothosInputPortToString(const Pothos::InputPort& inputPort)
 
 pothos_static_block(pothosRegisterInputPortToString)
 {
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/InputPort",
-        Pothos::Callable(&pothosInputPortToString));
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/InputPortPtr",
-        Pothos::Callable(&ptrObjectToString<Pothos::InputPort>));
+    Pothos::registerToStringFunc<Pothos::InputPort>(
+        "Pothos/InputPort",
+        &pothosInputPortToString,
+        true /*registerPointerTypes*/);
 }

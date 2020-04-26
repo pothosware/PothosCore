@@ -323,7 +323,8 @@ POTHOS_OBJECT_SERIALIZE(Pothos::DType)
 // Register Pothos::Object::toString output
 pothos_static_block(pothosRegisterDTypeToString)
 {
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/DType",
-        Pothos::Callable(&Pothos::DType::toString));
+    Pothos::registerToStringFunc<Pothos::DType>(
+        "Pothos/DType",
+        &Pothos::DType::toString,
+        false /*registerPointerTypes*/);
 }

@@ -390,7 +390,7 @@ static auto managedOutputPortMap = Pothos::ManagedClass()
  * Register toString() outputs
  **********************************************************************/
 
-#include "Object/ToString.hpp"
+#include <Pothos/Object/RegisterToString.hpp>
 
 static std::string pothosBlockToString(const Pothos::Block& block)
 {
@@ -405,10 +405,8 @@ static std::string pothosBlockToString(const Pothos::Block& block)
 
 pothos_static_block(pothosRegisterBlockToString)
 {
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/Block",
-        Pothos::Callable(&pothosBlockToString));
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/BlockSPtr",
-        Pothos::Callable(&sptrObjectToString<Pothos::Block>));
+    Pothos::registerToStringFunc<Pothos::Block>(
+        "Pothos/Block",
+        &pothosBlockToString,
+        true /*registerPointerTypes*/);
 }

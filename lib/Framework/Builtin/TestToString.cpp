@@ -178,13 +178,13 @@ POTHOS_TEST_BLOCK("/framework/tests", test_topology_classes_to_string)
     // Note: the managed proxy handle calls into Pothos::Object::toString(), so
     // testing against Pothos::Proxy::toString() for topology types is equivalent.
     POTHOS_TEST_EQUAL(
-        std::string("Shared pointer to Pothos::Block (name: ") + blockPath + ")",
+        std::string("Shared pointer: Pothos::Block (name: ") + blockPath + ")",
         blockProxy.toString());
     POTHOS_TEST_EQUAL(
-        "Pointer to Pothos::InputPort (alias: 0, dtype: unspecified)",
+        "Pointer: Pothos::InputPort (alias: 0, dtype: unspecified)",
         blockProxy.call("input", 0).toString());
     POTHOS_TEST_EQUAL(
-        "Pointer to Pothos::OutputPort (alias: 0, dtype: unspecified)",
+        "Pointer: Pothos::OutputPort (alias: 0, dtype: unspecified)",
         blockProxy.call("output", 0).toString());
     testPortBufferToString(blockProxy, "input");
     testPortBufferToString(blockProxy, "output");

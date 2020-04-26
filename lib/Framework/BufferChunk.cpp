@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferChunk.hpp>
+#include <Pothos/Object.hpp>
 #include <Pothos/Plugin.hpp>
 
 #include <Poco/Format.h>
@@ -151,7 +152,8 @@ static std::string bufferChunkToString(const Pothos::BufferChunk& bufferChunk)
 
 pothos_static_block(pothosRegisterBufferChunkToString)
 {
-    Pothos::PluginRegistry::addCall(
-        "/object/tostring/Pothos/BufferChunk",
-        Pothos::Callable(&bufferChunkToString));
+    Pothos::registerToStringFunc<Pothos::BufferChunk>(
+        "Pothos/BufferChunk",
+        &bufferChunkToString,
+        false /*registerPointerTypes*/);
 }
