@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/InputPortImpl.hpp>
@@ -260,3 +261,23 @@ static auto managedInputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, pushMessage))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::InputPort, clear))
     .commit("Pothos/InputPort");
+
+/***********************************************************************
+ * Register toString() outputs
+ **********************************************************************/
+
+#include <Pothos/Object.hpp>
+#include <Pothos/Plugin.hpp>
+
+static std::string pothosInputPortToString(const Pothos::InputPort& inputPort)
+{
+    return "Pothos::InputPort (alias: " + inputPort.alias() +  ", dtype: " + inputPort.dtype().toString() + ")";
+}
+
+pothos_static_block(pothosRegisterInputPortToString)
+{
+    Pothos::registerToStringFunc<Pothos::InputPort>(
+        "Pothos/InputPort",
+        &pothosInputPortToString,
+        true /*registerPointerTypes*/);
+}

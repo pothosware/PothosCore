@@ -1,7 +1,14 @@
 // Copyright (c) 2013-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferChunk.hpp>
+#include <Pothos/Object.hpp>
+#include <Pothos/Plugin.hpp>
+
+#include <Poco/Format.h>
+#include <Poco/NumberFormatter.h>
+
 #include <cstring> //memcpy
 
 const Pothos::BufferChunk &Pothos::BufferChunk::null(void)
@@ -134,3 +141,19 @@ template void Pothos::BufferChunk::serialize<Pothos::Archive::IStreamArchiver>(P
 template void Pothos::BufferChunk::serialize<Pothos::Archive::OStreamArchiver>(Pothos::Archive::OStreamArchiver &, const unsigned int);
 
 POTHOS_OBJECT_SERIALIZE(Pothos::BufferChunk)
+
+static std::string bufferChunkToString(const Pothos::BufferChunk& bufferChunk)
+{
+    return Poco::format(
+               "Pothos::BufferChunk (dtype: %s, elements: %s)",
+               bufferChunk.dtype.toString(),
+               Poco::NumberFormatter::format(bufferChunk.elements()));
+}
+
+pothos_static_block(pothosRegisterBufferChunkToString)
+{
+    Pothos::registerToStringFunc<Pothos::BufferChunk>(
+        "Pothos/BufferChunk",
+        &bufferChunkToString,
+        false /*registerPointerTypes*/);
+}

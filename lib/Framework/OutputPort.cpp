@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2018 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/OutputPortImpl.hpp>
@@ -131,3 +132,23 @@ static auto managedOutputPort = Pothos::ManagedClass()
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, isSignal))
     .registerMethod(POTHOS_FCN_TUPLE(Pothos::OutputPort, setReadBeforeWrite))
     .commit("Pothos/OutputPort");
+
+/***********************************************************************
+ * Register toString() outputs
+ **********************************************************************/
+
+#include <Pothos/Object/RegisterToString.hpp>
+#include <Pothos/Plugin.hpp>
+
+static std::string pothosOutputPortToString(const Pothos::OutputPort& outputPort)
+{
+    return "Pothos::OutputPort (alias: " + outputPort.alias() +  ", dtype: " + outputPort.dtype().toString() + ")";
+}
+
+pothos_static_block(pothosRegisterOutputPortToString)
+{
+    Pothos::registerToStringFunc<Pothos::OutputPort>(
+        "Pothos/OutputPort",
+        &pothosOutputPortToString,
+        true /*registerPointerTypes*/);
+}
