@@ -256,3 +256,16 @@ POTHOS_TEST_BLOCK("/util/tests", test_eval_constant_obj)
         POTHOS_TEST_EQUAL(vec[2], 3);
     }
 }
+
+POTHOS_TEST_BLOCK("/util/tests", test_eval_octal_constant)
+{
+    const std::string octalStr = "0o315";
+    const int octalVal = 0315;
+
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto EvalEnvironment = env->findProxy("Pothos/Util/EvalEnvironment");
+    auto evalEnv = EvalEnvironment();
+
+    auto result = evalEnv.call<Pothos::Object>("eval", octalStr);
+    POTHOS_TEST_EQUAL(octalVal, result.convert<int>());
+}

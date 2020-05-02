@@ -263,6 +263,7 @@ list(APPEND POTHOS_SOURCES
     Util/Builtin/BlockEval.cpp
     Util/Builtin/DeviceInfoUtils.cpp
     Util/Builtin/DocUtils.cpp
+    Util/Builtin/MupOctalValReader.cpp
     Util/Builtin/TestDocUtils.cpp
     Util/Builtin/TestEvalExpression.cpp
     Util/Builtin/TestRingDeque.cpp
