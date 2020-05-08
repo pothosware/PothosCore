@@ -19,6 +19,7 @@ include(PothosUtil) #utility functions
 ########################################################################
 ## locate the Poco development libraries
 ########################################################################
+enable_language(C) #newer Poco config scrips require c to be enabled
 include(SetupPoco)
 
 if (Poco_FOUND)

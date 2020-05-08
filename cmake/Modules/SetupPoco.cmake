@@ -20,7 +20,6 @@ endif()
 ########################################################################
 message(STATUS "PocoConfig not found - trying with FindPoco")
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
-enable_language(C) #newer Poco config scrips require c to be enabled
 find_package(Poco)
 if (POCO_FOUND AND POCO_Util_FOUND AND POCO_Net_FOUND AND POCO_XML_FOUND)
     ########################################################################
