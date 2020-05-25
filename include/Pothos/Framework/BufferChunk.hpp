@@ -405,8 +405,8 @@ inline size_t Pothos::BufferChunk::getAlias(void) const
 {
     const auto &buffer = getBuffer();
     if (buffer.getAlias() == 0) return 0;
-    if (address > buffer.getAlias()) return address - buffer.getLength();
-    else return address + buffer.getLength();
+    if (address > buffer.getAlias()) return address - buffer.getAliasOffset();
+    else return address + buffer.getAliasOffset();
 }
 
 inline size_t Pothos::BufferChunk::getEnd(void) const
