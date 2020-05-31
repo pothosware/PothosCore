@@ -1,4 +1,5 @@
 // Copyright (c) 2015-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/TopologyImpl.hpp>
@@ -40,15 +41,15 @@ static std::vector<std::pair<std::string, std::string>> resolvePorts(
         {
             if (subConnObj["dstId"].get<std::string>() != blockId) continue;
             if (subConnObj["dstName"].get<std::string>() != portName) continue;
-            subId = subConnObj["srcId"];
-            subName = subConnObj["srcName"];
+            subId = subConnObj["srcId"].get<std::string>();
+            subName = subConnObj["srcName"].get<std::string>();
         }
         else
         {
             if (subConnObj["srcId"].get<std::string>() != blockId) continue;
             if (subConnObj["srcName"].get<std::string>() != portName) continue;
-            subId = subConnObj["dstId"];
-            subName = subConnObj["dstName"];
+            subId = subConnObj["dstId"].get<std::string>();
+            subName = subConnObj["dstName"].get<std::string>();
         }
 
         //ignore pass-through connections in this loop

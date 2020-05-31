@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/BlockDescription.hpp>
@@ -219,7 +220,7 @@ static void stripDocArray(json &in)
         //dont add empty lines if the last line is empty
         const std::string line = entry;
         std::string lastLine;
-        if (not out.empty()) lastLine = out.back();
+        if (not out.empty()) lastLine = out.back().get<std::string>();
         if (not lastLine.empty() or not line.empty()) out.push_back(line);
     }
 
