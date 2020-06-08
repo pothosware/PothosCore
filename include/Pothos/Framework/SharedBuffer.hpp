@@ -87,6 +87,18 @@ public:
     size_t getAlias(void) const;
 
     /*!
+     * Get the alias offset (non-zero for circular buffers).
+     * Address and alias will point to the same physical memory.
+     */
+    size_t getAliasOffset(void) const;
+
+    /*!
+     * Set the alias address (non-zero for circular buffers).
+     * Address and alias will point to the same physical memory.
+     */
+    void setAlias(const size_t alias);
+
+    /*!
      * Get the end address - front address + length.
      * The end address is non-inclusive.
      * \return the end address
@@ -149,6 +161,16 @@ inline size_t Pothos::SharedBuffer::getLength(void) const
 inline size_t Pothos::SharedBuffer::getAlias(void) const
 {
     return _alias;
+}
+
+inline size_t Pothos::SharedBuffer::getAliasOffset(void) const
+{
+    return _alias ? _alias - _address : 0;
+}
+
+inline void Pothos::SharedBuffer::setAlias(const size_t alias)
+{
+    _alias = alias;
 }
 
 inline size_t Pothos::SharedBuffer::getEnd(void) const
