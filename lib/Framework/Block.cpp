@@ -62,6 +62,11 @@ Pothos::Block::~Block(void)
     this->setThreadPool(ThreadPool());
 }
 
+bool Pothos::Block::prepare(void)
+{
+    return true;
+}
+
 void Pothos::Block::work(void)
 {
     return;
