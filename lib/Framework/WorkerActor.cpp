@@ -218,6 +218,7 @@ void Pothos::WorkerActor::setActiveStateOff(void)
 void Pothos::WorkerActor::workTask(void)
 {
     if (not activeState) return;
+    if (not block->prepare()) return;
     this->numTaskCalls++;
     TimeAccumulator taskTime(this->totalTimeTask);
 
