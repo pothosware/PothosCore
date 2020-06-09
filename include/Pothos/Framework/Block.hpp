@@ -51,22 +51,6 @@ public:
 
 protected:
     /*!
-     * The prepare() method allows the block to say whether it will be able to
-     * do any work, regardless of whether input or output is available. For
-     * example, resources unknown to the framework may be unavailable. This call
-     * happens before the framework determines whether it thinks there is work
-     * for the block.
-     *
-     * The block should not access framework-managed (e.g., ports, messages,
-     * signals/slots) in this call, though it is free to do other things.
-     *
-     * Returns true if the framework should proceed normally and determine
-     * whether work is available, false if the block would be unable to run and
-     * should be passed over.
-     */
-    virtual bool prepare(void);
-
-    /*!
      * The work() method, called when resources are available.
      * Subclasses must override this call when creating a worker.
      *
@@ -156,6 +140,22 @@ protected:
     virtual std::shared_ptr<BufferManager> getOutputBufferManager(const std::string &name, const std::string &domain);
 
 public:
+
+    /*!
+     * The prepare() method allows the block to say whether it will be able to
+     * do any work, regardless of whether input or output is available. For
+     * example, resources unknown to the framework may be unavailable. This call
+     * happens before the framework determines whether it thinks there is work
+     * for the block.
+     *
+     * The block should not access framework-managed (e.g., ports, messages,
+     * signals/slots) in this call, though it is free to do other things.
+     *
+     * Returns true if the framework should proceed normally and determine
+     * whether work is available, false if the block would be unable to run and
+     * should be passed over.
+     */
+    virtual bool prepare(void);
 
     /*!
      * Set the displayable alias for the specified input port.
