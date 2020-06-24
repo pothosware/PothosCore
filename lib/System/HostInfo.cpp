@@ -1,5 +1,8 @@
 // Copyright (c) 2013-2014 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
+
+#include "Builtin/DetectAvailableSIMDArchitectures.hpp"
 
 #include <Poco/Process.h>
 #include <Pothos/System/HostInfo.hpp>
@@ -22,6 +25,7 @@ Pothos::System::HostInfo Pothos::System::HostInfo::get(void)
     info.nodeId = Poco::Environment::nodeId();
     info.processorCount = Poco::Environment::processorCount();
     info.pid = std::to_string(Poco::Process::id());
+    info.availableSIMDArchitectures = Pothos::System::detectAvailableSIMDArchitectures();
     return info;
 }
 
@@ -44,6 +48,7 @@ void serialize(Archive &ar, Pothos::System::HostInfo &t, const unsigned int)
     ar & t.nodeId;
     ar & t.processorCount;
     ar & t.pid;
+    ar & t.availableSIMDArchitectures;
 }
 }}
 

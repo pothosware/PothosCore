@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2016 Josh Blum
+///                    2020 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -12,6 +13,7 @@
 #include <Pothos/Config.hpp>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 namespace Pothos {
 namespace System {
@@ -43,6 +45,8 @@ public:
 
     //! The process id of the caller
     std::string pid;
+
+    std::vector<std::string> availableSIMDArchitectures;
 };
 
 } //namespace System
