@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2018 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -160,6 +161,13 @@ protected:
         options.addOption(Poco::Util::Option("doc-parse", "", "parse specified files for documentation markup")
             .required(false)
             .repeatable(false));
+
+        options.addOption(Poco::Util::Option("proxy-environment-info", "", "display information for a given proxy environment")
+            .required(false)
+            .repeatable(false)
+            .argument("proxyEnvName", false/*optional*/)
+            .binding("proxyEnvName")
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printProxyEnvironmentInfo)));
     }
 
     void handleOption(const std::string &name, const std::string &value)

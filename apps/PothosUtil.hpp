@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2018 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -23,6 +24,7 @@ public:
     void runTopology(void);
     void docParse(const std::vector<std::string> &);
     void listModules(const std::string &, const std::string &);
+    void printProxyEnvironmentInfo(const std::string &, const std::string &);
 
     //! Variables passed in via the --vars option
     std::vector<std::pair<std::string, std::string>> _vars;

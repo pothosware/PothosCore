@@ -29,6 +29,7 @@ list(APPEND SOURCES
     PothosUtilDocParse.cpp
     PothosUtilRunTopology.cpp
     PothosUtilListModules.cpp
+    PothosUtilProxyEnvironmentInfo.cpp
 )
 add_executable(PothosUtil ${SOURCES})
 target_link_libraries(PothosUtil Pothos ${Pothos_LIBRARIES})
