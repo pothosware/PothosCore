@@ -17,11 +17,11 @@ Vcs-Browser: https://github.com/pothosware/PothosCore
 Package: pothos-util
 Section: science
 Architecture: any
-Depends: libpothos0.6 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: libpothos0.7 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: runtime application
  The Pothos data-flow software suite.
 
-Package: libpothos0.6
+Package: libpothos0.7
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -33,7 +33,7 @@ Description: shared library
 Package: libpothos-dev
 Section: libdevel
 Architecture: any
-Depends: libpothos0.6 (= ${binary:Version}), ${misc:Depends}, pothos-util
+Depends: libpothos0.7 (= ${binary:Version}), ${misc:Depends}, pothos-util
 Description: development files
  The Pothos data-flow software suite.
 
