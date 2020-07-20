@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.7.0 (pending)
+Release 0.7.0 (2020-07-19)
 ==========================
 
 Additions:
