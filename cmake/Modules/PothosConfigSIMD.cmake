@@ -1,4 +1,5 @@
 #   Copyright (C) 2012-2013  Povilas Kanapickas <povilas@radix.lt>
+#                      2020  Nicholas Corgan <n.corgan@gmail.com>
 #
 #   Distributed under the Boost Software License, Version 1.0.
 #       (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,26 +10,26 @@ include(CheckCXXSourceCompiles)
 
 # ------------------------------------------------------------------------------
 # Compiler checks (internal)
-set(SIMDPP_GCC 0)
-set(SIMDPP_CLANG 0)
-set(SIMDPP_MSVC 0)
-set(SIMDPP_INTEL 0)
-set(SIMDPP_MSVC_INTEL 0)
+set(POTHOS_GCC 0)
+set(POTHOS_CLANG 0)
+set(POTHOS_MSVC 0)
+set(POTHOS_INTEL 0)
+set(POTHOS_MSVC_INTEL 0)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(SIMDPP_CLANG 1)
+    set(POTHOS_CLANG 1)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Apple")
-    set(SIMDPP_CLANG 1)
+    set(POTHOS_CLANG 1)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(SIMDPP_GCC 1)
+    set(POTHOS_GCC 1)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
     if(MSVC)
-        set(SIMDPP_MSVC_INTEL 1)
+        set(POTHOS_MSVC_INTEL 1)
     else()
-        set(SIMDPP_INTEL 1)
+        set(POTHOS_INTEL 1)
     endif()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(SIMDPP_MSVC 1)
+    set(POTHOS_MSVC 1)
 else()
     message(FATAL_ERROR "Compiler '${CMAKE_CXX_COMPILER_ID}' not recognized")
 endif()
@@ -37,36 +38,36 @@ endif()
 # Architecture descriptions (internal)
 #
 # Each architecture has the following information specific to it:
-#  - SIMDPP_${ARCH}_TEST_CODE: source code snippet that uses functionality
+#  - POTHOS_${ARCH}_TEST_CODE: source code snippet that uses functionality
 #       from that arch. Used for @c check_cxx_source_runs macro.
 #       We are taking extra care to confuse the compiler so that it does not
 #       optimize things out. Nowadays compilers have good sense of when things
 #       don't have side effects and will see through simple obfuscation
 #       patterns.
-#  - SIMDPP_${ARCH}_CXX_FLAGS: compiler flags that are needed for compilation.
-#  - SIMDPP_${ARCH}_DEFINE: defines the macro that is needed to enable the
+#  - POTHOS_${ARCH}_CXX_FLAGS: compiler flags that are needed for compilation.
+#  - POTHOS_${ARCH}_DEFINE: defines the macro that is needed to enable the
 #       specific instruction set within the library.
-#  - SIMDPP_${ARCH}_SUFFIX: defines a suffix to append to the filename of the
+#  - POTHOS_${ARCH}_SUFFIX: defines a suffix to append to the filename of the
 #       source file specific to this architecture.
 #
 # Three lists are created:
 #
-#  - SIMDPP_ARCHS_PRI - primary architectures.
-#  - SIMDPP_ARCHS_SEC - secondary architectures. Effectively equivalent to one
+#  - POTHOS_ARCHS_PRI - primary architectures.
+#  - POTHOS_ARCHS_SEC - secondary architectures. Effectively equivalent to one
 #       of the primary architectures, just different instructions are generated
 #       in specific scenarios.
-#  - SIMDPP_ARCHS - all architectures
+#  - POTHOS_ARCHS - all architectures
 #
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_SSE2")
-if(SIMDPP_CLANG OR SIMDPP_GCC OR SIMDPP_INTEL)
-    set(SIMDPP_X86_SSE2_CXX_FLAGS "-msse2")
-elseif(SIMDPP_MSVC OR SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_SSE2_CXX_FLAGS "/arch:SSE2")
+list(APPEND POTHOS_ARCHS_PRI "X86_SSE2")
+if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
+    set(POTHOS_X86_SSE2_CXX_FLAGS "-msse2")
+elseif(POTHOS_MSVC OR POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_SSE2_CXX_FLAGS "/arch:SSE2")
 endif()
-set(SIMDPP_X86_SSE2_DEFINE "SIMDPP_ARCH_X86_SSE2")
-set(SIMDPP_X86_SSE2_SUFFIX "-x86_sse2")
-set(SIMDPP_X86_SSE2_TEST_CODE
+set(POTHOS_X86_SSE2_DEFINE "POTHOS_ARCH_X86_SSE2")
+set(POTHOS_X86_SSE2_SUFFIX "-x86_sse2")
+set(POTHOS_X86_SSE2_TEST_CODE
     "#include <emmintrin.h>
     #include <iostream>
 
@@ -99,17 +100,17 @@ set(SIMDPP_X86_SSE2_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_SSE3")
-if(SIMDPP_CLANG OR SIMDPP_GCC OR SIMDPP_INTEL)
-    set(SIMDPP_X86_SSE3_CXX_FLAGS "-msse3")
-elseif(SIMDPP_MSVC)
-    set(SIMDPP_X86_SSE3_CXX_FLAGS "/arch:SSE2")
-elseif(SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_SSE3_CXX_FLAGS "/arch:SSE3")
+list(APPEND POTHOS_ARCHS_PRI "X86_SSE3")
+if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
+    set(POTHOS_X86_SSE3_CXX_FLAGS "-msse3")
+elseif(POTHOS_MSVC)
+    set(POTHOS_X86_SSE3_CXX_FLAGS "/arch:SSE2")
+elseif(POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_SSE3_CXX_FLAGS "/arch:SSE3")
 endif()
-set(SIMDPP_X86_SSE3_DEFINE "SIMDPP_ARCH_X86_SSE3")
-set(SIMDPP_X86_SSE3_SUFFIX "-x86_sse3")
-set(SIMDPP_X86_SSE3_TEST_CODE
+set(POTHOS_X86_SSE3_DEFINE "POTHOS_ARCH_X86_SSE3")
+set(POTHOS_X86_SSE3_SUFFIX "-x86_sse3")
+set(POTHOS_X86_SSE3_TEST_CODE
     "#include <pmmintrin.h>
     #include <iostream>
 
@@ -142,17 +143,17 @@ set(SIMDPP_X86_SSE3_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_SSSE3")
-if(SIMDPP_CLANG OR SIMDPP_GCC OR SIMDPP_INTEL)
-    set(SIMDPP_X86_SSSE3_CXX_FLAGS "-mssse3")
-elseif(SIMDPP_MSVC)
-    set(SIMDPP_X86_SSSE3_CXX_FLAGS "/arch:SSE2")
-elseif(SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_SSSE3_CXX_FLAGS "/arch:SSSE3")
+list(APPEND POTHOS_ARCHS_PRI "X86_SSSE3")
+if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
+    set(POTHOS_X86_SSSE3_CXX_FLAGS "-mssse3")
+elseif(POTHOS_MSVC)
+    set(POTHOS_X86_SSSE3_CXX_FLAGS "/arch:SSE2")
+elseif(POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_SSSE3_CXX_FLAGS "/arch:SSSE3")
 endif()
-set(SIMDPP_X86_SSSE3_DEFINE "SIMDPP_ARCH_X86_SSSE3")
-set(SIMDPP_X86_SSSE3_SUFFIX "-x86_ssse3")
-set(SIMDPP_X86_SSSE3_TEST_CODE
+set(POTHOS_X86_SSSE3_DEFINE "POTHOS_ARCH_X86_SSSE3")
+set(POTHOS_X86_SSSE3_SUFFIX "-x86_ssse3")
+set(POTHOS_X86_SSSE3_TEST_CODE
     "#include <tmmintrin.h>
     #include <iostream>
 
@@ -185,17 +186,17 @@ set(SIMDPP_X86_SSSE3_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_SSE4_1")
-if(SIMDPP_CLANG OR SIMDPP_GCC OR SIMDPP_INTEL)
-    set(SIMDPP_X86_SSE4_1_CXX_FLAGS "-msse4.1")
-elseif(SIMDPP_MSVC)
-    set(SIMDPP_X86_SSE4_1_CXX_FLAGS "/arch:SSE2")
-elseif(SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_SSE4_1_CXX_FLAGS "/arch:SSE4.1")
+list(APPEND POTHOS_ARCHS_PRI "X86_SSE4_1")
+if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
+    set(POTHOS_X86_SSE4_1_CXX_FLAGS "-msse4.1")
+elseif(POTHOS_MSVC)
+    set(POTHOS_X86_SSE4_1_CXX_FLAGS "/arch:SSE2")
+elseif(POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_SSE4_1_CXX_FLAGS "/arch:SSE4.1")
 endif()
-set(SIMDPP_X86_SSE4_1_DEFINE "SIMDPP_ARCH_X86_SSE4_1")
-set(SIMDPP_X86_SSE4_1_SUFFIX "-x86_sse4_1")
-set(SIMDPP_X86_SSE4_1_TEST_CODE
+set(POTHOS_X86_SSE4_1_DEFINE "POTHOS_ARCH_X86_SSE4_1")
+set(POTHOS_X86_SSE4_1_SUFFIX "-x86_sse4_1")
+set(POTHOS_X86_SSE4_1_TEST_CODE
     "#include <smmintrin.h>
     #include <iostream>
 
@@ -228,17 +229,17 @@ set(SIMDPP_X86_SSE4_1_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_POPCNT_INSN")
-if(SIMDPP_CLANG OR SIMDPP_GCC OR SIMDPP_INTEL)
-    set(SIMDPP_X86_POPCNT_INSN_CXX_FLAGS "-mssse3 -mpopcnt")
-elseif(SIMDPP_MSVC)
-    set(SIMDPP_X86_POPCNT_INSN_CXX_FLAGS "/arch:SSE4.2")
-elseif(SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_POPCNT_INSN_CXX_FLAGS "/arch:SSE4.2")
+list(APPEND POTHOS_ARCHS_PRI "X86_POPCNT_INSN")
+if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
+    set(POTHOS_X86_POPCNT_INSN_CXX_FLAGS "-mssse3 -mpopcnt")
+elseif(POTHOS_MSVC)
+    set(POTHOS_X86_POPCNT_INSN_CXX_FLAGS "/arch:SSE4.2")
+elseif(POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_POPCNT_INSN_CXX_FLAGS "/arch:SSE4.2")
 endif()
-set(SIMDPP_X86_POPCNT_INSN_DEFINE "SIMDPP_ARCH_X86_POPCNT_INSN")
-set(SIMDPP_X86_POPCNT_INSN_SUFFIX "-x86_popcnt")
-set(SIMDPP_X86_POPCNT_INSN_TEST_CODE
+set(POTHOS_X86_POPCNT_INSN_DEFINE "POTHOS_ARCH_X86_POPCNT_INSN")
+set(POTHOS_X86_POPCNT_INSN_SUFFIX "-x86_popcnt")
+set(POTHOS_X86_POPCNT_INSN_TEST_CODE
     "#include <nmmintrin.h>
     #include <iostream>
 
@@ -267,23 +268,23 @@ set(SIMDPP_X86_POPCNT_INSN_TEST_CODE
 )
 ###
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_AVX")
-if(SIMDPP_CLANG OR SIMDPP_GCC OR SIMDPP_INTEL)
-    set(SIMDPP_X86_AVX_CXX_FLAGS "-mavx")
-elseif(SIMDPP_MSVC OR SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_AVX_CXX_FLAGS "/arch:AVX")
+list(APPEND POTHOS_ARCHS_PRI "X86_AVX")
+if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
+    set(POTHOS_X86_AVX_CXX_FLAGS "-mavx")
+elseif(POTHOS_MSVC OR POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_AVX_CXX_FLAGS "/arch:AVX")
 endif()
-set(SIMDPP_X86_AVX_DEFINE "SIMDPP_ARCH_X86_AVX")
-set(SIMDPP_X86_AVX_SUFFIX "-x86_avx")
-set(SIMDPP_X86_AVX_TEST_CODE
+set(POTHOS_X86_AVX_DEFINE "POTHOS_ARCH_X86_AVX")
+set(POTHOS_X86_AVX_SUFFIX "-x86_avx")
+set(POTHOS_X86_AVX_TEST_CODE
     "#include <immintrin.h>
     #include <iostream>
 
     #if (__clang_major__ == 3) && (__clang_minor__ == 6)
-    #error Not supported. See simdpp/detail/workarounds.h
+    #error Not supported.
     #endif
     #if (__GNUC__ == 4) && (__GNUC_MINOR__ == 4) && !defined(__INTEL_COMPILER) && !defined(__clang__)
-    #error Not supported. See simdpp/detail/workarounds.h
+    #error Not supported.
     #endif
 
     char* prevent_optimization(char* ptr)
@@ -315,24 +316,24 @@ set(SIMDPP_X86_AVX_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_AVX2")
-if(SIMDPP_CLANG OR SIMDPP_GCC)
-    set(SIMDPP_X86_AVX2_CXX_FLAGS "-mavx2")
-elseif(SIMDPP_INTEL)
-    set(SIMDPP_X86_AVX2_CXX_FLAGS "-xCORE-AVX2")
-elseif(SIMDPP_MSVC)
-    set(SIMDPP_X86_AVX2_CXX_FLAGS "/arch:AVX")
-elseif(SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_AVX2_CXX_FLAGS "/arch:CORE-AVX2")
+list(APPEND POTHOS_ARCHS_PRI "X86_AVX2")
+if(POTHOS_CLANG OR POTHOS_GCC)
+    set(POTHOS_X86_AVX2_CXX_FLAGS "-mavx2")
+elseif(POTHOS_INTEL)
+    set(POTHOS_X86_AVX2_CXX_FLAGS "-xCORE-AVX2")
+elseif(POTHOS_MSVC)
+    set(POTHOS_X86_AVX2_CXX_FLAGS "/arch:AVX")
+elseif(POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_AVX2_CXX_FLAGS "/arch:CORE-AVX2")
 endif()
-set(SIMDPP_X86_AVX2_DEFINE "SIMDPP_ARCH_X86_AVX2")
-set(SIMDPP_X86_AVX2_SUFFIX "-x86_avx2")
-set(SIMDPP_X86_AVX2_TEST_CODE
+set(POTHOS_X86_AVX2_DEFINE "POTHOS_ARCH_X86_AVX2")
+set(POTHOS_X86_AVX2_SUFFIX "-x86_avx2")
+set(POTHOS_X86_AVX2_TEST_CODE
     "#include <immintrin.h>
     #include <iostream>
 
     #if (__clang_major__ == 3) && (__clang_minor__ == 6)
-    #error Not supported. See simdpp/detail/workarounds.h
+    #error Not supported.
     #endif
 
     char* prevent_optimization(char* ptr)
@@ -364,19 +365,19 @@ set(SIMDPP_X86_AVX2_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_FMA3")
-if(SIMDPP_CLANG OR SIMDPP_GCC)
-    set(SIMDPP_X86_FMA3_CXX_FLAGS "-mfma")
-elseif(SIMDPP_INTEL)
-    set(SIMDPP_X86_FMA3_CXX_FLAGS "-xCORE-AVX2")
-elseif(SIMDPP_MSVC)
-    set(SIMDPP_X86_FMA3_CXX_FLAGS "/arch:AVX")
-elseif(SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_FMA3_CXX_FLAGS "/arch:CORE-AVX2")
+list(APPEND POTHOS_ARCHS_PRI "X86_FMA3")
+if(POTHOS_CLANG OR POTHOS_GCC)
+    set(POTHOS_X86_FMA3_CXX_FLAGS "-mfma")
+elseif(POTHOS_INTEL)
+    set(POTHOS_X86_FMA3_CXX_FLAGS "-xCORE-AVX2")
+elseif(POTHOS_MSVC)
+    set(POTHOS_X86_FMA3_CXX_FLAGS "/arch:AVX")
+elseif(POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_FMA3_CXX_FLAGS "/arch:CORE-AVX2")
 endif()
-set(SIMDPP_X86_FMA3_DEFINE "SIMDPP_ARCH_X86_FMA3")
-set(SIMDPP_X86_FMA3_SUFFIX "-x86_fma3")
-set(SIMDPP_X86_FMA3_TEST_CODE
+set(POTHOS_X86_FMA3_DEFINE "POTHOS_ARCH_X86_FMA3")
+set(POTHOS_X86_FMA3_SUFFIX "-x86_fma3")
+set(POTHOS_X86_FMA3_TEST_CODE
     "#include <immintrin.h>
     #include <iostream>
 
@@ -409,16 +410,16 @@ set(SIMDPP_X86_FMA3_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_FMA4")
-if(SIMDPP_CLANG OR SIMDPP_GCC)
+list(APPEND POTHOS_ARCHS_PRI "X86_FMA4")
+if(POTHOS_CLANG OR POTHOS_GCC)
     # intel does not support FMA4
-    set(SIMDPP_X86_FMA4_CXX_FLAGS "-mfma4")
-elseif(SIMDPP_MSVC OR SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_FMA4_CXX_FLAGS "/arch:AVX")
+    set(POTHOS_X86_FMA4_CXX_FLAGS "-mfma4")
+elseif(POTHOS_MSVC OR POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_FMA4_CXX_FLAGS "/arch:AVX")
 endif()
-set(SIMDPP_X86_FMA4_DEFINE "SIMDPP_ARCH_X86_FMA4")
-set(SIMDPP_X86_FMA4_SUFFIX "-x86_fma4")
-set(SIMDPP_X86_FMA4_TEST_CODE
+set(POTHOS_X86_FMA4_DEFINE "POTHOS_ARCH_X86_FMA4")
+set(POTHOS_X86_FMA4_SUFFIX "-x86_fma4")
+set(POTHOS_X86_FMA4_TEST_CODE
     "#include <x86intrin.h>
     #include <iostream>
 
@@ -451,13 +452,13 @@ set(SIMDPP_X86_FMA4_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_XOP")
-if(SIMDPP_CLANG OR SIMDPP_GCC)
-    set(SIMDPP_X86_XOP_CXX_FLAGS "-mxop")
+list(APPEND POTHOS_ARCHS_PRI "X86_XOP")
+if(POTHOS_CLANG OR POTHOS_GCC)
+    set(POTHOS_X86_XOP_CXX_FLAGS "-mxop")
 endif()
-set(SIMDPP_X86_XOP_DEFINE "SIMDPP_ARCH_X86_XOP")
-set(SIMDPP_X86_XOP_SUFFIX "-x86_xop")
-set(SIMDPP_X86_XOP_TEST_CODE
+set(POTHOS_X86_XOP_DEFINE "POTHOS_ARCH_X86_XOP")
+set(POTHOS_X86_XOP_SUFFIX "-x86_xop")
+set(POTHOS_X86_XOP_TEST_CODE
     "#include <x86intrin.h>
     #include <iostream>
 
@@ -491,24 +492,24 @@ set(SIMDPP_X86_XOP_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_AVX512F")
-if(SIMDPP_CLANG OR SIMDPP_GCC)
-    set(SIMDPP_X86_AVX512F_CXX_FLAGS "-mavx512f -O1")
-elseif(SIMDPP_INTEL)
-    set(SIMDPP_X86_AVX512F_CXX_FLAGS "-xCOMMON-AVX512")
-elseif(SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_AVX512F_CXX_FLAGS "/arch:COMMON-AVX512")
+list(APPEND POTHOS_ARCHS_PRI "X86_AVX512F")
+if(POTHOS_CLANG OR POTHOS_GCC)
+    set(POTHOS_X86_AVX512F_CXX_FLAGS "-mavx512f -O1")
+elseif(POTHOS_INTEL)
+    set(POTHOS_X86_AVX512F_CXX_FLAGS "-xCOMMON-AVX512")
+elseif(POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_AVX512F_CXX_FLAGS "/arch:COMMON-AVX512")
 else()
     #unsupported on MSVC
 endif()
-set(SIMDPP_X86_AVX512F_DEFINE "SIMDPP_ARCH_X86_AVX512F")
-set(SIMDPP_X86_AVX512F_SUFFIX "-x86_avx512f")
-set(SIMDPP_X86_AVX512F_TEST_CODE
+set(POTHOS_X86_AVX512F_DEFINE "POTHOS_ARCH_X86_AVX512F")
+set(POTHOS_X86_AVX512F_SUFFIX "-x86_avx512f")
+set(POTHOS_X86_AVX512F_TEST_CODE
     "#include <immintrin.h>
     #include <iostream>
 
     #if defined(__GNUC__) && (__GNUC__ < 6) && !defined(__INTEL_COMPILER) && !defined(__clang__)
-    #error GCC 5.x and older are not supported on AVX512F. See simdpp/detail/workarounds.h
+    #error GCC 5.x and older are not supported on AVX512F.
     #endif
 
     char* prevent_optimization(char* ptr)
@@ -555,18 +556,18 @@ set(SIMDPP_X86_AVX512F_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_AVX512BW")
-if(SIMDPP_CLANG OR SIMDPP_GCC)
-    set(SIMDPP_X86_AVX512BW_CXX_FLAGS "-mavx512bw")
+list(APPEND POTHOS_ARCHS_PRI "X86_AVX512BW")
+if(POTHOS_CLANG OR POTHOS_GCC)
+    set(POTHOS_X86_AVX512BW_CXX_FLAGS "-mavx512bw")
     #unsupported on MSVC
-elseif(SIMDPP_INTEL)
-    set(SIMDPP_X86_AVX512BW_CXX_FLAGS "-xCORE-AVX512")
-elseif(SIMDPP_MSVC_INTEL)
-    set(SIMDPP_X86_AVX512BW_CXX_FLAGS "/arch:CORE-AVX512")
+elseif(POTHOS_INTEL)
+    set(POTHOS_X86_AVX512BW_CXX_FLAGS "-xCORE-AVX512")
+elseif(POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_AVX512BW_CXX_FLAGS "/arch:CORE-AVX512")
 endif()
-set(SIMDPP_X86_AVX512BW_DEFINE "SIMDPP_ARCH_X86_AVX512BW")
-set(SIMDPP_X86_AVX512BW_SUFFIX "-x86_avx512bw")
-set(SIMDPP_X86_AVX512BW_TEST_CODE
+set(POTHOS_X86_AVX512BW_DEFINE "POTHOS_ARCH_X86_AVX512BW")
+set(POTHOS_X86_AVX512BW_SUFFIX "-x86_avx512bw")
+set(POTHOS_X86_AVX512BW_TEST_CODE
     "#include <immintrin.h>
     #include <iostream>
 
@@ -599,14 +600,14 @@ set(SIMDPP_X86_AVX512BW_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_AVX512DQ")
-if(SIMDPP_CLANG OR SIMDPP_GCC OR SIMDPP_INTEL)
-    set(SIMDPP_X86_AVX512DQ_CXX_FLAGS "-mavx512dq")
+list(APPEND POTHOS_ARCHS_PRI "X86_AVX512DQ")
+if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
+    set(POTHOS_X86_AVX512DQ_CXX_FLAGS "-mavx512dq")
     #unsupported on MSVC
 endif()
-set(SIMDPP_X86_AVX512DQ_DEFINE "SIMDPP_ARCH_X86_AVX512DQ")
-set(SIMDPP_X86_AVX512DQ_SUFFIX "-x86_avx512dq")
-set(SIMDPP_X86_AVX512DQ_TEST_CODE
+set(POTHOS_X86_AVX512DQ_DEFINE "POTHOS_ARCH_X86_AVX512DQ")
+set(POTHOS_X86_AVX512DQ_SUFFIX "-x86_avx512dq")
+set(POTHOS_X86_AVX512DQ_TEST_CODE
     "#include <immintrin.h>
     #include <iostream>
 
@@ -639,14 +640,14 @@ set(SIMDPP_X86_AVX512DQ_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "X86_AVX512VL")
-if(SIMDPP_CLANG OR SIMDPP_GCC OR SIMDPP_INTEL)
-    set(SIMDPP_X86_AVX512VL_CXX_FLAGS "-mavx512vl")
+list(APPEND POTHOS_ARCHS_PRI "X86_AVX512VL")
+if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
+    set(POTHOS_X86_AVX512VL_CXX_FLAGS "-mavx512vl")
     #unsupported on MSVC
 endif()
-set(SIMDPP_X86_AVX512VL_DEFINE "SIMDPP_ARCH_X86_AVX512VL")
-set(SIMDPP_X86_AVX512VL_SUFFIX "-x86_avx512vl")
-set(SIMDPP_X86_AVX512VL_TEST_CODE
+set(POTHOS_X86_AVX512VL_DEFINE "POTHOS_ARCH_X86_AVX512VL")
+set(POTHOS_X86_AVX512VL_SUFFIX "-x86_avx512vl")
+set(POTHOS_X86_AVX512VL_TEST_CODE
     "#if !defined(__APPLE__) && (__clang_major__ == 3)
     #error AVX512VL is not supported on clang 3.9 and earlier.
     #endif
@@ -683,13 +684,13 @@ set(SIMDPP_X86_AVX512VL_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "ARM_NEON")
-if(SIMDPP_CLANG OR SIMDPP_GCC)
-    set(SIMDPP_ARM_NEON_CXX_FLAGS "-mfpu=neon")
+list(APPEND POTHOS_ARCHS_PRI "ARM_NEON")
+if(POTHOS_CLANG OR POTHOS_GCC)
+    set(POTHOS_ARM_NEON_CXX_FLAGS "-mfpu=neon")
 endif()
-set(SIMDPP_ARM_NEON_DEFINE "SIMDPP_ARCH_ARM_NEON")
-set(SIMDPP_ARM_NEON_SUFFIX "-arm_neon")
-set(SIMDPP_ARM_NEON_TEST_CODE
+set(POTHOS_ARM_NEON_DEFINE "POTHOS_ARCH_ARM_NEON")
+set(POTHOS_ARM_NEON_SUFFIX "-arm_neon")
+set(POTHOS_ARM_NEON_TEST_CODE
     "#if defined(__clang_major__)
     #if (__clang_major__ < 3) || ((__clang_major__ == 3) && (__clang_minor__ <= 3))
     #error NEON is not supported on clang 3.3 and earlier.
@@ -728,22 +729,22 @@ set(SIMDPP_ARM_NEON_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_SEC "ARM_NEON_FLT_SP")
-if(SIMDPP_CLANG OR SIMDPP_GCC)
-    set(SIMDPP_ARM_NEON_FLT_SP_CXX_FLAGS "-mfpu=neon")
+list(APPEND POTHOS_ARCHS_SEC "ARM_NEON_FLT_SP")
+if(POTHOS_CLANG OR POTHOS_GCC)
+    set(POTHOS_ARM_NEON_FLT_SP_CXX_FLAGS "-mfpu=neon")
 endif()
-set(SIMDPP_ARM_NEON_FLT_SP_DEFINE "SIMDPP_ARCH_ARM_NEON_FLT_SP")
-set(SIMDPP_ARM_NEON_FLT_SP_SUFFIX "-arm_neon_flt_sp")
+set(POTHOS_ARM_NEON_FLT_SP_DEFINE "POTHOS_ARCH_ARM_NEON_FLT_SP")
+set(POTHOS_ARM_NEON_FLT_SP_SUFFIX "-arm_neon_flt_sp")
 
-list(APPEND SIMDPP_ARCHS_PRI "ARM64_NEON")
-if(SIMDPP_CLANG)
-    set(SIMDPP_ARM64_NEON_CXX_FLAGS "-arch arm64")
-elseif(SIMDPP_GCC)
-    set(SIMDPP_ARM64_NEON_CXX_FLAGS "-mcpu=generic+simd")
+list(APPEND POTHOS_ARCHS_PRI "ARM64_NEON")
+if(POTHOS_CLANG)
+    set(POTHOS_ARM64_NEON_CXX_FLAGS "-arch arm64")
+elseif(POTHOS_GCC)
+    set(POTHOS_ARM64_NEON_CXX_FLAGS "-mcpu=generic+simd")
 endif()
-set(SIMDPP_ARM64_NEON_DEFINE "SIMDPP_ARCH_ARM_NEON")
-set(SIMDPP_ARM64_NEON_SUFFIX "-arm64_neon")
-set(SIMDPP_ARM64_NEON_TEST_CODE
+set(POTHOS_ARM64_NEON_DEFINE "POTHOS_ARCH_ARM_NEON")
+set(POTHOS_ARM64_NEON_SUFFIX "-arm64_neon")
+set(POTHOS_ARM64_NEON_TEST_CODE
     "#include <arm_neon.h>
     #include <iostream>
 
@@ -779,11 +780,11 @@ set(SIMDPP_ARM64_NEON_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "MIPS_MSA")
-set(SIMDPP_MIPS_MSA_CXX_FLAGS "-mips64r5 -mmsa -mhard-float -mfp64 -mnan=legacy")
-set(SIMDPP_MIPS_MSA_DEFINE "SIMDPP_ARCH_MIPS_MSA")
-set(SIMDPP_MIPS_MSA_SUFFIX "-mips_msa")
-set(SIMDPP_MIPS_MSA_TEST_CODE
+list(APPEND POTHOS_ARCHS_PRI "MIPS_MSA")
+set(POTHOS_MIPS_MSA_CXX_FLAGS "-mips64r5 -mmsa -mhard-float -mfp64 -mnan=legacy")
+set(POTHOS_MIPS_MSA_DEFINE "POTHOS_ARCH_MIPS_MSA")
+set(POTHOS_MIPS_MSA_SUFFIX "-mips_msa")
+set(POTHOS_MIPS_MSA_TEST_CODE
     "#include <msa.h>
     #include <iostream>
 
@@ -816,17 +817,17 @@ set(SIMDPP_MIPS_MSA_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "POWER_ALTIVEC")
-set(SIMDPP_POWER_ALTIVEC_CXX_FLAGS "-maltivec")
-set(SIMDPP_POWER_ALTIVEC_DEFINE "SIMDPP_ARCH_POWER_ALTIVEC")
-set(SIMDPP_POWER_ALTIVEC_SUFFIX "-power_altivec")
-set(SIMDPP_POWER_ALTIVEC_TEST_CODE
+list(APPEND POTHOS_ARCHS_PRI "POWER_ALTIVEC")
+set(POTHOS_POWER_ALTIVEC_CXX_FLAGS "-maltivec")
+set(POTHOS_POWER_ALTIVEC_DEFINE "POTHOS_ARCH_POWER_ALTIVEC")
+set(POTHOS_POWER_ALTIVEC_SUFFIX "-power_altivec")
+set(POTHOS_POWER_ALTIVEC_TEST_CODE
     "#include <altivec.h>
     #include <iostream>
 
     #if defined(__GNUC__) && (__GNUC__ < 6) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
     #if !defined(__INTEL_COMPILER) && !defined(__clang__)
-    #error GCC 5.0 and older are not supported on PPC little-endian. See simdpp/detail/workarounds.h
+    #error GCC 5.0 and older are not supported on PPC little-endian.
     #endif
     #endif
 
@@ -859,24 +860,24 @@ set(SIMDPP_POWER_ALTIVEC_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "POWER_VSX_206")
-set(SIMDPP_POWER_VSX_206_CXX_FLAGS "-mvsx")
-set(SIMDPP_POWER_VSX_206_DEFINE "SIMDPP_ARCH_POWER_VSX_206")
-set(SIMDPP_POWER_VSX_206_SUFFIX "-power_vsx_2.06")
-set(SIMDPP_POWER_VSX_206_TEST_CODE
+list(APPEND POTHOS_ARCHS_PRI "POWER_VSX_206")
+set(POTHOS_POWER_VSX_206_CXX_FLAGS "-mvsx")
+set(POTHOS_POWER_VSX_206_DEFINE "POTHOS_ARCH_POWER_VSX_206")
+set(POTHOS_POWER_VSX_206_SUFFIX "-power_vsx_2.06")
+set(POTHOS_POWER_VSX_206_TEST_CODE
     "#include <altivec.h>
     #include <iostream>
 
     #if defined(__GNUC__) && (__GNUC__ < 6) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     #if !defined(__INTEL_COMPILER) && !defined(__clang__)
-    #error GCC 5.0 and older are not supported on PPC little-endian. See simdpp/detail/workarounds.h
+    #error GCC 5.0 and older are not supported on PPC little-endian.
     #endif
     #endif
 
     #if defined(__GNUC__) && (__GNUC__ < 6) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     #if !defined(__INTEL_COMPILER) && !defined(__clang__)
     // Internal compiler errors or wrong behaviour on various SIMD memory operations
-    #error GCC 5.x and older not supported on VSX big-endian. See simdpp/detail/workarounds.h
+    #error GCC 5.x and older not supported on VSX big-endian.
     #endif
     #endif
 
@@ -909,23 +910,23 @@ set(SIMDPP_POWER_VSX_206_TEST_CODE
     }"
 )
 
-list(APPEND SIMDPP_ARCHS_PRI "POWER_VSX_207")
-set(SIMDPP_POWER_VSX_207_CXX_FLAGS "-mvsx -mcpu=power8")
-set(SIMDPP_POWER_VSX_207_DEFINE "SIMDPP_ARCH_POWER_VSX_207")
-set(SIMDPP_POWER_VSX_207_SUFFIX "-power_vsx_2.07")
-set(SIMDPP_POWER_VSX_207_TEST_CODE
+list(APPEND POTHOS_ARCHS_PRI "POWER_VSX_207")
+set(POTHOS_POWER_VSX_207_CXX_FLAGS "-mvsx -mcpu=power8")
+set(POTHOS_POWER_VSX_207_DEFINE "POTHOS_ARCH_POWER_VSX_207")
+set(POTHOS_POWER_VSX_207_SUFFIX "-power_vsx_2.07")
+set(POTHOS_POWER_VSX_207_TEST_CODE
     "#include <altivec.h>
     #include <iostream>
 
     #if defined(__GNUC__) && (__GNUC__ < 6) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     #if !defined(__INTEL_COMPILER) && !defined(__clang__)
-    #error GCC 5.0 and older are not supported on PPC little-endian. See simdpp/detail/workarounds.h
+    #error GCC 5.0 and older are not supported on PPC little-endian.
     #endif
     #endif
 
     #if defined(__GNUC__) && (__GNUC__ < 6) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     #if !defined(__INTEL_COMPILER) && !defined(__clang__)
-    #error GCC 5.x and older not supported on VSX big-endian. See simdpp/detail/workarounds.h
+    #error GCC 5.x and older not supported on VSX big-endian.
     #endif
     #endif
 
@@ -958,7 +959,7 @@ set(SIMDPP_POWER_VSX_207_TEST_CODE
     }"
 )
 
-set(SIMDPP_ARCHS "${SIMDPP_ARCHS_PRI};${SIMDPP_ARCHS_SEC}")
+set(POTHOS_ARCHS "${POTHOS_ARCHS_PRI};${POTHOS_ARCHS_SEC}")
 
 # ------------------------------------------------------------------------------
 # Given one arch, returns compilation flags and an unique identifier (internal)
@@ -975,7 +976,7 @@ set(SIMDPP_ARCHS "${SIMDPP_ARCHS_PRI};${SIMDPP_ARCHS_SEC}")
 #
 # - ARCH: an architecture
 #
-function(simdpp_get_arch_info CXX_FLAGS_VAR DEFINES_LIST_VAR UNIQUE_ID_VAR ARCH)
+function(pothos_get_arch_info CXX_FLAGS_VAR DEFINES_LIST_VAR UNIQUE_ID_VAR ARCH)
     set(UNIQUE_ID "")
     set(CXX_FLAGS "")
     set(DISPATCH_FLAGS "")
@@ -987,11 +988,11 @@ function(simdpp_get_arch_info CXX_FLAGS_VAR DEFINES_LIST_VAR UNIQUE_ID_VAR ARCH)
         if(${ID} STREQUAL "NONE_NULL")
             set(UNIQUE_ID "${UNIQUE_ID}-null")
         else()
-            list(FIND SIMDPP_ARCHS "${ID}" FOUND)
+            list(FIND POTHOS_ARCHS "${ID}" FOUND)
             if(NOT ${FOUND} EQUAL -1)
-                list(APPEND DEFINES_LIST "${SIMDPP_${ID}_DEFINE}")
-                set(CXX_FLAGS "${CXX_FLAGS} ${SIMDPP_${ID}_CXX_FLAGS} -D${SIMDPP_${ID}_DEFINE}")
-                set(UNIQUE_ID "${UNIQUE_ID}${SIMDPP_${ID}_SUFFIX}")
+                list(APPEND DEFINES_LIST "${POTHOS_${ID}_DEFINE}")
+                set(CXX_FLAGS "${CXX_FLAGS} ${POTHOS_${ID}_CXX_FLAGS} -D${POTHOS_${ID}_DEFINE}")
+                set(UNIQUE_ID "${UNIQUE_ID}${POTHOS_${ID}_SUFFIX}")
             endif()
         endif()
     endforeach()
@@ -1005,9 +1006,9 @@ endfunction()
 
 # ------------------------------------------------------------------------------
 #
-# simdpp_multiarch(FILE_LIST_VAR SRC_FILE [ARCH...])
+# pothos_multiarch(FILE_LIST_VAR SRC_FILE [ARCH...])
 #
-# A function that encapsulates the generation of build rules for libsimdpp
+# A function that encapsulates the generation of build rules for libpothos
 # multi-architecture source files. The function creates a copy of @a SRC_FILE
 # for each supplied architecture definition. Each of these files is configured
 # with appropriate compile flags for the given architecture. The list of copied
@@ -1038,7 +1039,7 @@ endfunction()
 #   ARM_NEON, ARM_NEON_FLT_SP, ARM64_NEON,
 #   MIPS_MSA, POWER_ALTIVEC, POWER_VSX_206, POWER_VSX_207
 #
-function(simdpp_multiarch FILE_LIST_VAR SRC_FILE)
+function(pothos_multiarch FILE_LIST_VAR SRC_FILE)
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}")
         message(FATAL_ERROR "File \"${SRC_FILE}\" does not exist")
     endif()
@@ -1048,18 +1049,18 @@ function(simdpp_multiarch FILE_LIST_VAR SRC_FILE)
 
     set(FILE_LIST "")
     set(DISPATCHER_FILE "")
-    set(DISPATCHER_CXX_FLAGS "-DSIMDPP_EMIT_DISPATCHER=1")
+    set(DISPATCHER_CXX_FLAGS "-DPOTHOS_EMIT_DISPATCHER=1")
     set(DISPATCH_ARCH_IDX "1")
 
     list(APPEND ARCHS ${ARGV})
     list(REMOVE_AT ARCHS 0 1) # strip FILE_LIST_VAR and SRC_FILE args
     foreach(ARCH ${ARCHS})
-        simdpp_get_arch_info(CXX_FLAGS DEFINES_LIST SUFFIX ${ARCH})
+        pothos_get_arch_info(CXX_FLAGS DEFINES_LIST SUFFIX ${ARCH})
 
         set(CXX_FLAGS "-I\"${CMAKE_CURRENT_SOURCE_DIR}/${SRC_PATH}\" ${CXX_FLAGS}")
         if(NOT "${SUFFIX}" STREQUAL "")
             # Copy the source file and add the required flags
-            set(DST_ABS_FILE "${CMAKE_CURRENT_BINARY_DIR}/${SRC_PATH}/${SRC_NAME}_simdpp_${SUFFIX}${SRC_EXT}")
+            set(DST_ABS_FILE "${CMAKE_CURRENT_BINARY_DIR}/${SRC_PATH}/${SRC_NAME}_pothos_${SUFFIX}${SRC_EXT}")
             set(SRC_ABS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}")
 
             # CMake does not support adding per-source-file include directories.
@@ -1083,7 +1084,7 @@ function(simdpp_multiarch FILE_LIST_VAR SRC_FILE)
             endif()
 
             # Add required dispatcher predefined macros for this architecture
-            set(DISPATCHER_CXX_FLAGS "${DISPATCHER_CXX_FLAGS} -DSIMDPP_DISPATCH_ARCH${DISPATCH_ARCH_IDX}=${DEFINES_LIST}")
+            set(DISPATCHER_CXX_FLAGS "${DISPATCHER_CXX_FLAGS} -DPOTHOS_DISPATCH_ARCH${DISPATCH_ARCH_IDX}=${DEFINES_LIST}")
             math(EXPR DISPATCH_ARCH_IDX "${DISPATCH_ARCH_IDX}+1")
         endif()
     endforeach()
@@ -1108,7 +1109,7 @@ endfunction()
 # - ALL_ARCHS_VAL: the name of the variable to store the permutation to
 #
 # - ARCH...: a list of supported architectures
-function(simdpp_get_arch_perm ALL_ARCHS_VAR)
+function(pothos_get_arch_perm ALL_ARCHS_VAR)
     list(APPEND ARCHS ${ARGV})
     list(REMOVE_AT ARCHS 0)
 
@@ -1222,53 +1223,53 @@ endfunction()
 
 # ------------------------------------------------------------------------------
 #
-# simdpp_get_compilable_archs(ARCH_LIST_VAR)
+# pothos_get_compilable_archs(ARCH_LIST_VAR)
 #
 # Returns a list of architectures that are supported by the current build
-# system. The generated list may be used as an argument to simdpp_multiarch.
+# system. The generated list may be used as an argument to pothos_multiarch.
 #
 # Arguments:
 #
 # * ARCH_LIST_VAR: the name of the variable to put the architecture list to
 #
-function(simdpp_get_compilable_archs ARCH_LIST_VAR)
+function(pothos_get_compilable_archs ARCH_LIST_VAR)
 
-    foreach(ARCH ${SIMDPP_ARCHS_PRI})
-        set(CMAKE_REQUIRED_FLAGS "${SIMDPP_${ARCH}_CXX_FLAGS}")
-        check_cxx_source_compiles("${SIMDPP_${ARCH}_TEST_CODE}" CAN_COMPILE_${ARCH})
+    foreach(ARCH ${POTHOS_ARCHS_PRI})
+        set(CMAKE_REQUIRED_FLAGS "${POTHOS_${ARCH}_CXX_FLAGS}")
+        check_cxx_source_compiles("${POTHOS_${ARCH}_TEST_CODE}" CAN_COMPILE_${ARCH})
         if(CAN_COMPILE_${ARCH})
             list(APPEND ARCHS ${ARCH})
         endif()
     endforeach()
 
-    simdpp_get_arch_perm(ALL_ARCHS "${ARCHS}")
+    pothos_get_arch_perm(ALL_ARCHS "${ARCHS}")
     set(${ARCH_LIST_VAR} "${ALL_ARCHS}" PARENT_SCOPE)
 
 endfunction()
 
 # ------------------------------------------------------------------------------
 #
-# simdpp_get_runnable_archs(ARCH_LIST_VAR)
+# pothos_get_runnable_archs(ARCH_LIST_VAR)
 #
 # Returns a list of architectures that are supported by the current build
 # system and the processor. The generated list may be used as an argument to
-# simdpp_multiarch.
+# pothos_multiarch.
 #
 # Arguments:
 #
 # * ARCH_LIST_VAR: the name of the variable to put the architecture list to
 #
-function(simdpp_get_runnable_archs ARCH_LIST_VAR)
+function(pothos_get_runnable_archs ARCH_LIST_VAR)
 
-    foreach(ARCH ${SIMDPP_ARCHS_PRI})
-        set(CMAKE_REQUIRED_FLAGS "${SIMDPP_${ARCH}_CXX_FLAGS}")
-        check_cxx_source_runs("${SIMDPP_${ARCH}_TEST_CODE}" CAN_RUN_${ARCH})
+    foreach(ARCH ${POTHOS_ARCHS_PRI})
+        set(CMAKE_REQUIRED_FLAGS "${POTHOS_${ARCH}_CXX_FLAGS}")
+        check_cxx_source_runs("${POTHOS_${ARCH}_TEST_CODE}" CAN_RUN_${ARCH})
         if(CAN_RUN_${ARCH})
             list(APPEND ARCHS ${ARCH})
         endif()
     endforeach()
 
-    simdpp_get_arch_perm(ALL_ARCHS "${ARCHS}")
+    pothos_get_arch_perm(ALL_ARCHS "${ARCHS}")
     set(${ARCH_LIST_VAR} "${ALL_ARCHS}" PARENT_SCOPE)
 
 endfunction()

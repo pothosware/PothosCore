@@ -18,6 +18,7 @@ configure_file(
 install(
     FILES
         PothosConfig.cmake
+        PothosConfigSIMD.cmake
         PothosStandardFlags.cmake
         PothosLibraryConfig.cmake
         PothosUtil.cmake
