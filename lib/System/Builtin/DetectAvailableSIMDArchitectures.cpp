@@ -23,7 +23,7 @@
 #endif
 
 //
-// Cannibalized from simdpp/get_arch_string_list internals.h
+// Cannibalized from simdpp/get_arch_string_list internals
 //
 using simdpp::Arch;
 
@@ -90,7 +90,7 @@ static std::vector<ArchDesc> getAllPotentialArches()
     return features;
 }
 
-std::vector<std::string> Pothos::System::detectAvailableSIMDArchitectures()
+static std::vector<std::string> _detectAvailableSIMDArchitectures()
 {
     const auto simdppArchInfo = SIMDPP_USER_ARCH_INFO;
     const auto arches = getAllPotentialArches();
@@ -102,4 +102,12 @@ std::vector<std::string> Pothos::System::detectAvailableSIMDArchitectures()
     }
 
     return simdArchitectures;
+}
+
+std::vector<std::string> Pothos::System::detectAvailableSIMDArchitectures()
+{
+    // Only do this once
+    static const auto availableSIMDArchitectures = _detectAvailableSIMDArchitectures();
+
+    return availableSIMDArchitectures;
 }
