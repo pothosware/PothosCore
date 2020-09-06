@@ -1057,10 +1057,20 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE)
     foreach(ARCH ${ARCHS})
         pothos_get_arch_info(CXX_FLAGS DEFINES_LIST SUFFIX ${ARCH})
 
-        set(CXX_FLAGS "-I\"${CMAKE_CURRENT_SOURCE_DIR}/${SRC_PATH}\" ${CXX_FLAGS}")
+        # Shorter way of removing first character
+        string(REGEX REPLACE "^-" "" SUFFIX ${SUFFIX})
+
+    # Hash and truncate the string to shorten the output filepath. In theory,
+    # this can collide, but the chances are small.
+    string(REPLACE "-" "_" namespace ${SUFFIX})
+    string(MD5 suffixhash ${SUFFIX})
+    string(SUBSTRING ${suffixhash} 0 6 suffixhash)
+
+    # The space is necessary, or for some reason, the flag will be prepended to the next.
+    set(CXX_FLAGS "-I\"${CMAKE_CURRENT_SOURCE_DIR}/${SRC_PATH}\" ${CXX_FLAGS} -DPOTHOS_SIMD_ARCH=${namespace} ")
         if(NOT "${SUFFIX}" STREQUAL "")
             # Copy the source file and add the required flags
-            set(DST_ABS_FILE "${CMAKE_CURRENT_BINARY_DIR}/${SRC_PATH}/${SRC_NAME}_pothos_${SUFFIX}${SRC_EXT}")
+            set(DST_ABS_FILE "${CMAKE_CURRENT_BINARY_DIR}/${SRC_PATH}/${SRC_NAME}-${suffixhash}${SRC_EXT}")
             set(SRC_ABS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}")
 
             # CMake does not support adding per-source-file include directories.
@@ -1071,6 +1081,7 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE)
             # option which only works on make-based systems
             add_custom_command(OUTPUT "${DST_ABS_FILE}"
                                COMMAND ${CMAKE_COMMAND} -E copy "${SRC_ABS_FILE}" "${DST_ABS_FILE}"
+                               COMMENT "Generating ${SRC_FILE} ${SUFFIX} implementation"
                                IMPLICIT_DEPENDS CXX "${SRC_ABS_FILE}")
 
             list(APPEND FILE_LIST "${DST_ABS_FILE}")
