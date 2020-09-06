@@ -1,8 +1,21 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.7.0 (pending)
+Release 0.7.0 (2020-07-19)
 ==========================
 
+Additions:
+
+- Added PothosUtil --num-trials option for tests
+- Added PothosUtil --list-modules
+- Octal support for muparserx expressions
+
+API Changes:
+
+- Added ExceptionForErrorCode exception class with error code
+- New test assert macros for comparisons
+- Added equality operator for Object class to other type
+- Added Block::prepare() API call to be called before work()
+- Callable API support for std::function
 - Added function to query Pothos module search paths
 - Added std::function support for Callable API
 - Added calls setOut/InputAlias() for Topology API
@@ -10,6 +23,11 @@ Release 0.7.0 (pending)
 - OutputPort::getBuffer() returns the exact specified buffer length
 - Added OutputPort::getBuffer() with specified data type variant
 - Version reporting API and build support for loadable modules
+
+Fixes:
+
+- Move probe handlers into worker actor - fixes python overload
+- Fixes for circular buffer alias calculation
 
 Release 0.6.1 (2018-04-30)
 ==========================

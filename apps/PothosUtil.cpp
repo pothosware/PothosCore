@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2018 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
@@ -162,6 +163,12 @@ protected:
             .required(false)
             .repeatable(false));
 
+        options.addOption(Poco::Util::Option("proxy-environment-info", "", "display information for a given proxy environment")
+            .required(false)
+            .repeatable(false)
+            .argument("proxyEnvName", false/*optional*/)
+            .binding("proxyEnvName")
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printProxyEnvironmentInfo)));
 
         options.addOption(Poco::Util::Option("simd-architectures", "", "print available SIMD architectures")
             .required(false)
