@@ -8,6 +8,8 @@
 #include <simdpp/dispatch/get_arch_linux_cpuinfo.h>
 #include <simdpp/dispatch/get_arch_raw_cpuid.h>
 
+#include <algorithm>
+
 //
 // Implementation
 //
@@ -23,7 +25,7 @@
 #endif
 
 //
-// Cannibalized from simdpp/get_arch_string_list internals
+// Cannibalized from simdpp::get_arch_string_list internals
 //
 using simdpp::Arch;
 
@@ -86,6 +88,16 @@ static std::vector<ArchDesc> getAllPotentialArches()
 #elif SIMDPP_MIPS
     features.emplace_back("msa", Arch::MIPS_MSA);
 #endif
+
+    // Per the simdpp::Arch documentation, the higher the arch enum,
+    // the faster the instruction set is likely to be.
+    std::sort(
+        features.begin(),
+        features.end(),
+        [](const ArchDesc& archDesc0, const ArchDesc& archDesc1)
+        {
+            return (archDesc0.arch > archDesc1.arch);
+        });
 
     return features;
 }

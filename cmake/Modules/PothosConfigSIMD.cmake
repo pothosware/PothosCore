@@ -1049,7 +1049,7 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE)
 
     set(FILE_LIST "")
     set(DISPATCHER_FILE "")
-    set(DISPATCHER_CXX_FLAGS "-DPOTHOS_EMIT_DISPATCHER=1")
+    set(DISPATCHER_CXX_FLAGS "-DPOTHOS_EMIT_DISPATCHER=0")
     set(DISPATCH_ARCH_IDX "1")
 
     list(APPEND ARCHS ${ARGV})
@@ -1067,7 +1067,7 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE)
     string(SUBSTRING ${suffixhash} 0 6 suffixhash)
 
     # The space is necessary, or for some reason, the flag will be prepended to the next.
-    set(CXX_FLAGS "-I\"${CMAKE_CURRENT_SOURCE_DIR}/${SRC_PATH}\" ${CXX_FLAGS} -DPOTHOS_SIMD_ARCH=${namespace} ")
+    set(CXX_FLAGS "-I\"${CMAKE_CURRENT_SOURCE_DIR}/${SRC_PATH}\" ${CXX_FLAGS} -DPOTHOS_SIMD_NAMESPACE=${namespace} ")
         if(NOT "${SUFFIX}" STREQUAL "")
             # Copy the source file and add the required flags
             set(DST_ABS_FILE "${CMAKE_CURRENT_BINARY_DIR}/${SRC_PATH}/${SRC_NAME}-${suffixhash}${SRC_EXT}")
@@ -1095,8 +1095,8 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE)
             endif()
 
             # Add required dispatcher predefined macros for this architecture
-            set(DISPATCHER_CXX_FLAGS "${DISPATCHER_CXX_FLAGS} -DPOTHOS_DISPATCH_ARCH${DISPATCH_ARCH_IDX}=${DEFINES_LIST}")
-            math(EXPR DISPATCH_ARCH_IDX "${DISPATCH_ARCH_IDX}+1")
+            #set(DISPATCHER_CXX_FLAGS "${DISPATCHER_CXX_FLAGS} -DPOTHOS_DISPATCH_ARCH${DISPATCH_ARCH_IDX}=${DEFINES_LIST}")
+            #math(EXPR DISPATCH_ARCH_IDX "${DISPATCH_ARCH_IDX}+1")
         endif()
     endforeach()
 
