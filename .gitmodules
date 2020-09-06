@@ -42,3 +42,6 @@
 	path = comms
 	url = https://github.com/pothosware/PothosComms.git
 	branch = master
+[submodule "libsimdpp"]
+	path = libsimdpp
+	url = https://github.com/p12tic/libsimdpp
