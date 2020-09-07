@@ -2,10 +2,9 @@
 //                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
-#include "Builtin/DetectAvailableSIMDArchitectures.hpp"
-
 #include <Poco/Process.h>
 #include <Pothos/System/HostInfo.hpp>
+#include <Pothos/System/SIMD.hpp>
 #include <Pothos/Managed.hpp>
 #include <Pothos/Object/Serialize.hpp>
 #include <Poco/Environment.h>
@@ -25,7 +24,7 @@ Pothos::System::HostInfo Pothos::System::HostInfo::get(void)
     info.nodeId = Poco::Environment::nodeId();
     info.processorCount = Poco::Environment::processorCount();
     info.pid = std::to_string(Poco::Process::id());
-    info.availableSIMDArchitectures = Pothos::System::detectAvailableSIMDArchitectures();
+    info.availableSIMDFeatures = Pothos::System::getSupportedSIMDFeatureSets();
     return info;
 }
 
@@ -48,7 +47,7 @@ void serialize(Archive &ar, Pothos::System::HostInfo &t, const unsigned int)
     ar & t.nodeId;
     ar & t.processorCount;
     ar & t.pid;
-    ar & t.availableSIMDArchitectures;
+    ar & t.availableSIMDFeatures;
 }
 }}
 

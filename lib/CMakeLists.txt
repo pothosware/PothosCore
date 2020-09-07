@@ -141,8 +141,7 @@ list(APPEND POTHOS_SOURCES
     System/HostInfo.cpp
     System/NumaInfo.cpp
     System/Exception.cpp
-
-    System/Builtin/DetectAvailableSIMDArchitectures.cpp
+    System/SIMD.cpp
 
     Object/Object.cpp
     Object/Hash.cpp

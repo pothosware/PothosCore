@@ -7,9 +7,10 @@
 
 #include <iostream>
 
+// TODO: change to supported feature sets
 void PothosUtilBase::printSIMDArchitectures(void)
 {
-    for(const auto& arch: Pothos::System::HostInfo::get().availableSIMDArchitectures)
+    for(const auto& arch: Pothos::System::getSupportedSIMDFeatureSets())
     {
         std::cout << arch << std::endl;
     }

@@ -1,17 +1,21 @@
 // Copyright (c) 2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
-#include "DetectAvailableSIMDArchitectures.hpp"
+#include <Pothos/System/SIMD.hpp>
 
 #include <simdpp/simd.h>
 #include <simdpp/dispatch/get_arch_gcc_builtin_cpu_supports.h>
 #include <simdpp/dispatch/get_arch_linux_cpuinfo.h>
 #include <simdpp/dispatch/get_arch_raw_cpuid.h>
 
+#include <Poco/String.h>
+#include <Poco/StringTokenizer.h>
+
 #include <algorithm>
+#include <sstream>
 
 //
-// Implementation
+// Internal libsimdpp code
 //
 
 #if SIMDPP_HAS_GET_ARCH_RAW_CPUID
@@ -37,7 +41,7 @@ struct ArchDesc
     ArchDesc(const std::string& i, Arch a) : id(i), arch(a) {}
 };
 
-static std::vector<ArchDesc> getAllPotentialArches()
+static std::vector<ArchDesc> getAllPotentialSIMDFeatures()
 {
     std::vector<ArchDesc> features;
 
@@ -102,10 +106,14 @@ static std::vector<ArchDesc> getAllPotentialArches()
     return features;
 }
 
-static std::vector<std::string> _detectAvailableSIMDArchitectures()
+//
+// Pothos-level utility code
+//
+
+static std::vector<std::string> _getSupportedSIMDFeatureSets()
 {
     const auto simdppArchInfo = SIMDPP_USER_ARCH_INFO;
-    const auto arches = getAllPotentialArches();
+    const auto arches = getAllPotentialSIMDFeatures();
 
     std::vector<std::string> simdArchitectures;
     for(const auto& arch: arches)
@@ -116,10 +124,49 @@ static std::vector<std::string> _detectAvailableSIMDArchitectures()
     return simdArchitectures;
 }
 
-std::vector<std::string> Pothos::System::detectAvailableSIMDArchitectures()
+static const std::string SEPARATOR = "__";
+
+//
+// Exported functions
+//
+
+std::vector<std::string> Pothos::System::getSupportedSIMDFeatureSets()
 {
     // Only do this once
-    static const auto availableSIMDArchitectures = _detectAvailableSIMDArchitectures();
+    static const auto supportedSIMDFeatureSets = _getSupportedSIMDFeatureSets();
 
-    return availableSIMDArchitectures;
+    return supportedSIMDFeatureSets;
+}
+
+std::string Pothos::System::getSIMDFeatureSetKey(const std::vector<std::string>& featureSets)
+{
+    // {"x86_sse2","x86_sse3","x86_ssse3"} -> "x86_sse2__x86_sse3__x86_ssse3"
+    std::string featureSetKey;
+    Poco::cat(SEPARATOR, featureSets.begin(), featureSets.end());
+
+    return featureSetKey;
+}
+
+bool Pothos::System::isSIMDFeatureSetSupported(const std::string& featureSetKey)
+{
+    static const auto supportedSIMDFeatureSets = getSupportedSIMDFeatureSets();
+
+    // "x86_sse2__x86_sse3__x86_ssse3" -> {"x86_sse2","x86_sse3","x86_ssse3"}
+    Poco::StringTokenizer featureSetTokenizer(featureSetKey, SEPARATOR);
+
+    auto unsupportedFeatureIter = std::find_if(
+                                      featureSetTokenizer.begin(),
+                                      featureSetTokenizer.end(),
+                                      [&](const std::string& feature)
+                                      {
+                                          auto supportedFeatureIter =
+                                                   std::find(
+                                                       supportedSIMDFeatureSets.begin(),
+                                                       supportedSIMDFeatureSets.end(),
+                                                       feature);
+
+                                          return (supportedFeatureIter == supportedSIMDFeatureSets.end());
+                                      });
+
+    return (unsupportedFeatureIter == featureSetTokenizer.end());
 }

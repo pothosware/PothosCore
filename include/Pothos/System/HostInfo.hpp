@@ -46,7 +46,7 @@ public:
     //! The process id of the caller
     std::string pid;
 
-    std::vector<std::string> availableSIMDArchitectures;
+    std::vector<std::string> availableSIMDFeatures;
 };
 
 } //namespace System
