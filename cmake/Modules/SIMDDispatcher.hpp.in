@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Pothos/System/HostInfo.hpp>
+#include <Pothos/System/SIMD.hpp>
 
 #include <algorithm>
 #include <cstdlib>
@@ -31,36 +32,15 @@ static @SHORT_NAME@Fcn<T> @SHORT_NAME@Dispatch()
 
         ARCH_MAP_ENTRY(fallback)
     };
+    static const std::vector<std::string> Keys = {@ALL_ARCHS@};
 
-    using MapPair = typename std::unordered_map<std::string, @SHORT_NAME@Fcn<T>>::value_type;
+    auto arch = Pothos::System::getOptimalSIMDFeatureSetKey(Keys);
 
-    const auto arches = Pothos::System::HostInfo::get().availableSIMDArchitectures;
-    for(const auto& arch: arches)
-    {
-        auto count = std::count_if(
-                           Impls.begin(),
-                           Impls.end(),
-                           [&arch](const MapPair& mapPair)
-                           {
-                               std::cout << "Searching " << mapPair.first << " for " << arch << std::endl;
-                               return (mapPair.first.find(arch) != std::string::npos);
-                           });
-        std::cout << "arch: found in " << count << std::endl;
-
-        auto mapIter = std::find_if(
-                           Impls.begin(),
-                           Impls.end(),
-                           [&arch](const MapPair& mapPair)
-                           {
-                               std::cout << "Searching " << mapPair.first << " for " << arch << std::endl;
-                               return (mapPair.first.find(arch) != std::string::npos);
-                           });
-        if(mapIter != Impls.end()) return mapIter->second;
-    }
-
-    // We couldn't find an applicable one, so go with the fallback function,
-    // which should be roughly as performant as the default Pothos implementation.
-    return Impls.at("fallback");
+    // In theory, the function should return the callback function in this case,
+    // but account for it here to be safe.
+    auto implIter = Impls.find(arch);
+    if(implIter != Impls.end()) return implIter->second;
+    else                        return Impls.at("fallback");
 }
 
 }

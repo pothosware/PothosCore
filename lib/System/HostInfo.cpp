@@ -24,7 +24,7 @@ Pothos::System::HostInfo Pothos::System::HostInfo::get(void)
     info.nodeId = Poco::Environment::nodeId();
     info.processorCount = Poco::Environment::processorCount();
     info.pid = std::to_string(Poco::Process::id());
-    info.availableSIMDFeatures = Pothos::System::getSupportedSIMDFeatureSets();
+    info.availableSIMDFeatures = Pothos::System::getSupportedSIMDFeatureSet();
     return info;
 }
 

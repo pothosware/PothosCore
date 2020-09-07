@@ -1056,6 +1056,7 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE NAMESPACE_DECL FUNCTION_DECL SH
     set(DISPATCHER_CXX_FLAGS "-DPOTHOS_EMIT_DISPATCHER=0")
     set(DISPATCH_ARCH_IDX "1")
 
+    set(ALL_ARCHS "")
     set(ALL_ARCH_DECLS "")
     set(ALL_ARCH_MAP_ENTRIES "")
 
@@ -1069,9 +1070,15 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE NAMESPACE_DECL FUNCTION_DECL SH
 
         # Hash and truncate the string to shorten the output filepath. In theory,
         # this can collide, but the chances are small.
-        string(REPLACE "-" "_" namespace ${SUFFIX})
+        string(REPLACE "-" "__" namespace ${SUFFIX})
         string(MD5 suffixhash ${SUFFIX})
         string(SUBSTRING ${suffixhash} 0 6 suffixhash)
+
+        if(ALL_ARCHS)
+            string(CONCAT ALL_ARCHS "${ALL_ARCHS},\"${namespace}\"")
+        else()
+            string(CONCAT ALL_ARCHS "\"${namespace}\"")
+        endif()
 
         string(CONCAT ALL_ARCH_DECLS "\
 ${ALL_ARCH_DECLS}

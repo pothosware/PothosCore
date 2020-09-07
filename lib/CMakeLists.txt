@@ -142,6 +142,7 @@ list(APPEND POTHOS_SOURCES
     System/NumaInfo.cpp
     System/Exception.cpp
     System/SIMD.cpp
+    System/Builtin/SIMDSupportTests.cpp
 
     Object/Object.cpp
     Object/Hash.cpp

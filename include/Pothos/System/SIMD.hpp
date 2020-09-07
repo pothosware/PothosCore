@@ -18,9 +18,15 @@
 namespace Pothos {
 namespace System {
 
-POTHOS_API std::vector<std::string> getSupportedSIMDFeatureSets();
+POTHOS_API std::vector<std::string> getSupportedSIMDFeatureSet();
 
-POTHOS_API std::string getSIMDFeatureSetKey(const std::vector<std::string>& featureSets);
+POTHOS_API std::string getOptimalSIMDFeatureSetKey(const std::vector<std::string>& featureSetKeys);
+
+POTHOS_API std::string getSIMDFeatureSetKey(const std::vector<std::string>& featureSet);
+
+POTHOS_API std::vector<std::string> separateSIMDFeatureSetKey(const std::string& featureSetKey);
+
+POTHOS_API bool isSIMDFeatureSetSupported(const std::vector<std::string>& featureSet);
 
 POTHOS_API bool isSIMDFeatureSetSupported(const std::string& featureSetKey);
 

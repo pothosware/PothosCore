@@ -1,6 +1,7 @@
 // Copyright (c) 2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
+#include <Pothos/Object.hpp>
 #include <Pothos/System/SIMD.hpp>
 
 #include <simdpp/simd.h>
@@ -8,10 +9,8 @@
 #include <simdpp/dispatch/get_arch_linux_cpuinfo.h>
 #include <simdpp/dispatch/get_arch_raw_cpuid.h>
 
-#include <Poco/String.h>
-#include <Poco/StringTokenizer.h>
-
 #include <algorithm>
+#include <iostream>
 #include <sstream>
 
 //
@@ -67,30 +66,30 @@ static std::vector<ArchDesc> getAllPotentialSIMDFeatures()
     Arch a_avx512dq = a_avx512f | Arch::X86_AVX512DQ;
     Arch a_avx512vl = a_avx512f | Arch::X86_AVX512VL;
 
-    features.emplace_back("sse2", a_sse2);
-    features.emplace_back("sse3", a_sse3);
-    features.emplace_back("ssse3", a_ssse3);
-    features.emplace_back("sse4_1", a_sse4_1);
-    features.emplace_back("popcnt", a_popcnt);
-    features.emplace_back("avx", a_avx);
-    features.emplace_back("avx2", a_avx2);
-    features.emplace_back("fma3", a_fma3);
-    features.emplace_back("fma4", a_fma4);
-    features.emplace_back("xop", a_xop);
-    features.emplace_back("avx512f", a_avx512f);
-    features.emplace_back("avx512bw", a_avx512bw);
-    features.emplace_back("avx512dq", a_avx512dq);
-    features.emplace_back("avx512vl", a_avx512vl);
+    features.emplace_back("x86_sse2", a_sse2);
+    features.emplace_back("x86_sse3", a_sse3);
+    features.emplace_back("x86_ssse3", a_ssse3);
+    features.emplace_back("x86_sse4_1", a_sse4_1);
+    features.emplace_back("x86_popcnt", a_popcnt);
+    features.emplace_back("x86_avx", a_avx);
+    features.emplace_back("x86_avx2", a_avx2);
+    features.emplace_back("x86_fma3", a_fma3);
+    features.emplace_back("x86_fma4", a_fma4);
+    features.emplace_back("x86_xop", a_xop);
+    features.emplace_back("x86_avx512f", a_avx512f);
+    features.emplace_back("x86_avx512bw", a_avx512bw);
+    features.emplace_back("x86_avx512dq", a_avx512dq);
+    features.emplace_back("x86_avx512vl", a_avx512vl);
 #elif SIMDPP_PPC
     Arch a_altivec = Arch::POWER_ALTIVEC;
     Arch a_vsx_206 = a_altivec | Arch::POWER_VSX_206;
     Arch a_vsx_207 = a_vsx_206 | Arch::POWER_VSX_207;
 
-    features.emplace_back("altivec", a_altivec);
-    features.emplace_back("vsx_206", a_vsx_206);
-    features.emplace_back("vsx_207", a_vsx_207);
+    features.emplace_back("power_altivec", a_altivec);
+    features.emplace_back("power_vsx_206", a_vsx_206);
+    features.emplace_back("power_vsx_207", a_vsx_207);
 #elif SIMDPP_MIPS
-    features.emplace_back("msa", Arch::MIPS_MSA);
+    features.emplace_back("mips_msa", Arch::MIPS_MSA);
 #endif
 
     // Per the simdpp::Arch documentation, the higher the arch enum,
@@ -110,7 +109,7 @@ static std::vector<ArchDesc> getAllPotentialSIMDFeatures()
 // Pothos-level utility code
 //
 
-static std::vector<std::string> _getSupportedSIMDFeatureSets()
+static std::vector<std::string> _getSupportedSIMDFeatureSet()
 {
     const auto simdppArchInfo = SIMDPP_USER_ARCH_INFO;
     const auto arches = getAllPotentialSIMDFeatures();
@@ -130,43 +129,87 @@ static const std::string SEPARATOR = "__";
 // Exported functions
 //
 
-std::vector<std::string> Pothos::System::getSupportedSIMDFeatureSets()
+std::vector<std::string> Pothos::System::getSupportedSIMDFeatureSet()
 {
     // Only do this once
-    static const auto supportedSIMDFeatureSets = _getSupportedSIMDFeatureSets();
+    static const auto supportedSIMDFeatureSet = _getSupportedSIMDFeatureSet();
 
-    return supportedSIMDFeatureSets;
+    return supportedSIMDFeatureSet;
 }
 
-std::string Pothos::System::getSIMDFeatureSetKey(const std::vector<std::string>& featureSets)
+POTHOS_API std::string Pothos::System::getOptimalSIMDFeatureSetKey(const std::vector<std::string>& featureSetKeys)
+{
+    std::vector<std::string> keys;
+    std::copy_if(
+        featureSetKeys.begin(),
+        featureSetKeys.end(),
+        std::back_inserter(keys),
+        [](const std::string& key)
+        {
+            return isSIMDFeatureSetSupported(key);
+        });
+    std::cout << Pothos::Object(keys).toString() << std::endl;
+    if(keys.empty()) return "fallback";
+    else             return *(keys.end()-1); // Sorted in ascending order of performance
+}
+
+std::string Pothos::System::getSIMDFeatureSetKey(const std::vector<std::string>& featureSet)
 {
     // {"x86_sse2","x86_sse3","x86_ssse3"} -> "x86_sse2__x86_sse3__x86_ssse3"
-    std::string featureSetKey;
-    Poco::cat(SEPARATOR, featureSets.begin(), featureSets.end());
+    std::stringstream featureSetStream;
+    std::copy(
+        featureSet.begin(),
+        featureSet.end(),
+        std::ostream_iterator<std::string>(featureSetStream, SEPARATOR.c_str()));
+
+    // std::ostream_iterator appends the separator to the end
+    auto featureSetKey = featureSetStream.str();
+    featureSetKey = featureSetKey.substr(0, (featureSetKey.size() - SEPARATOR.size()));
 
     return featureSetKey;
 }
 
+std::vector<std::string> Pothos::System::separateSIMDFeatureSetKey(const std::string& featureSetKey)
+{
+    // "x86_sse2__x86_sse3__x86_ssse3" -> {"x86_sse2","x86_sse3","x86_ssse3"}
+    std::string keyCopy(featureSetKey);
+    std::vector<std::string> separatedKey;
+
+    size_t pos = 0;
+    std::string token;
+    while ((pos = keyCopy.find(SEPARATOR)) != std::string::npos)
+    {
+        token = keyCopy.substr(0, pos);
+        separatedKey.emplace_back(token);
+        keyCopy.erase(0, pos + SEPARATOR.length());
+    }
+    separatedKey.emplace_back(keyCopy); // last entry
+
+    return separatedKey;
+}
+
 bool Pothos::System::isSIMDFeatureSetSupported(const std::string& featureSetKey)
 {
-    static const auto supportedSIMDFeatureSets = getSupportedSIMDFeatureSets();
+    return isSIMDFeatureSetSupported(separateSIMDFeatureSetKey(featureSetKey));
+}
 
-    // "x86_sse2__x86_sse3__x86_ssse3" -> {"x86_sse2","x86_sse3","x86_ssse3"}
-    Poco::StringTokenizer featureSetTokenizer(featureSetKey, SEPARATOR);
+bool Pothos::System::isSIMDFeatureSetSupported(const std::vector<std::string>& featureSet)
+{
+    static const auto supportedSIMDFeatureSet = getSupportedSIMDFeatureSet();
 
     auto unsupportedFeatureIter = std::find_if(
-                                      featureSetTokenizer.begin(),
-                                      featureSetTokenizer.end(),
+                                      featureSet.begin(),
+                                      featureSet.end(),
                                       [&](const std::string& feature)
                                       {
                                           auto supportedFeatureIter =
                                                    std::find(
-                                                       supportedSIMDFeatureSets.begin(),
-                                                       supportedSIMDFeatureSets.end(),
+                                                       supportedSIMDFeatureSet.begin(),
+                                                       supportedSIMDFeatureSet.end(),
                                                        feature);
 
-                                          return (supportedFeatureIter == supportedSIMDFeatureSets.end());
+                                          return (supportedFeatureIter == supportedSIMDFeatureSet.end());
                                       });
 
-    return (unsupportedFeatureIter == featureSetTokenizer.end());
+    return (unsupportedFeatureIter == featureSet.end());
 }
