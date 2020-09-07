@@ -1,0 +1,49 @@
+// Copyright (c) 2020 Nicholas Corgan
+// SPDX-License-Identifier: BSL-1.0
+
+#pragma once
+
+#include <Pothos/System/HostInfo.hpp>
+
+#include <algorithm>
+#include <cstdlib>
+#include <string>
+#include <unordered_map>
+
+#define ARCH_FUNCTION_DECL(SIMDArch) namespace @NAMESPACE_DECL@ { namespace SIMDArch { @FUNCTION_DECL@ } }
+#define ARCH_MAP_ENTRY(SIMDArch) {#SIMDArch, &@NAMESPACE_DECL@::SIMDArch::@SHORT_NAME@<T>},
+
+@ALL_ARCH_DECLS@
+
+namespace @NAMESPACE_DECL@
+{
+
+template <typename T>
+using @SHORT_NAME@Fcn = decltype(&@NAMESPACE_DECL@::fallback::@SHORT_NAME@<T>);
+
+template <typename T>
+static @SHORT_NAME@Fcn<T> @SHORT_NAME@Dispatch()
+{
+    static const std::unordered_map<std::string, @SHORT_NAME@Fcn<T>> Impls =
+    {
+        @ALL_ARCH_MAP_ENTRIES@
+
+        ARCH_MAP_ENTRY(fallback)
+    };
+
+    const auto arches = Pothos::System::HostInfo().availableSIMDArchitectures;
+    auto archIter = std::find_if(
+                        arches.begin(),
+                        arches.end(),
+                        [&](const std::string& arch)
+                        {
+                            return (Impls.find(arch) != Impls.end());
+                        });
+    if(archIter != arches.end()) return Impls.at(*archIter);
+
+    // We couldn't find an applicable one, so go with the fallback function,
+    // which should be roughly as performant as the default Pothos implementation.
+    return Impls.at("fallback");
+}
+
+}

@@ -8,6 +8,10 @@
 include(CheckCXXSourceRuns)
 include(CheckCXXSourceCompiles)
 
+# We need this because calling CMAKE_CURRENT_LIST_DIR returns the directory
+# of the caller, and CMake doesn't provide a solution until 3.17.
+set(POTHOS_CONFIG_SIMD_LIST_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "")
+
 # ------------------------------------------------------------------------------
 # Compiler checks (internal)
 set(POTHOS_GCC 0)
@@ -1039,7 +1043,7 @@ endfunction()
 #   ARM_NEON, ARM_NEON_FLT_SP, ARM64_NEON,
 #   MIPS_MSA, POWER_ALTIVEC, POWER_VSX_206, POWER_VSX_207
 #
-function(pothos_multiarch FILE_LIST_VAR SRC_FILE)
+function(pothos_multiarch FILE_LIST_VAR SRC_FILE NAMESPACE_DECL FUNCTION_DECL SHORT_NAME)
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}")
         message(FATAL_ERROR "File \"${SRC_FILE}\" does not exist")
     endif()
@@ -1052,22 +1056,34 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE)
     set(DISPATCHER_CXX_FLAGS "-DPOTHOS_EMIT_DISPATCHER=0")
     set(DISPATCH_ARCH_IDX "1")
 
+    set(ALL_ARCH_DECLS "")
+    set(ALL_ARCH_MAP_ENTRIES "")
+
     list(APPEND ARCHS ${ARGV})
-    list(REMOVE_AT ARCHS 0 1) # strip FILE_LIST_VAR and SRC_FILE args
+    list(REMOVE_AT ARCHS 0 1 2 3 4) # strip non-arch parameters
     foreach(ARCH ${ARCHS})
         pothos_get_arch_info(CXX_FLAGS DEFINES_LIST SUFFIX ${ARCH})
 
         # Shorter way of removing first character
         string(REGEX REPLACE "^-" "" SUFFIX ${SUFFIX})
 
-    # Hash and truncate the string to shorten the output filepath. In theory,
-    # this can collide, but the chances are small.
-    string(REPLACE "-" "_" namespace ${SUFFIX})
-    string(MD5 suffixhash ${SUFFIX})
-    string(SUBSTRING ${suffixhash} 0 6 suffixhash)
+        # Hash and truncate the string to shorten the output filepath. In theory,
+        # this can collide, but the chances are small.
+        string(REPLACE "-" "_" namespace ${SUFFIX})
+        string(MD5 suffixhash ${SUFFIX})
+        string(SUBSTRING ${suffixhash} 0 6 suffixhash)
 
-    # The space is necessary, or for some reason, the flag will be prepended to the next.
-    set(CXX_FLAGS "-I\"${CMAKE_CURRENT_SOURCE_DIR}/${SRC_PATH}\" ${CXX_FLAGS} -DPOTHOS_SIMD_NAMESPACE=${namespace} ")
+        string(CONCAT ALL_ARCH_DECLS "\
+${ALL_ARCH_DECLS}
+ARCH_FUNCTION_DECL(${namespace})\
+")
+        string(CONCAT ALL_ARCH_MAP_ENTRIES "\
+${ALL_ARCH_MAP_ENTRIES}
+ARCH_MAP_ENTRY(${namespace})\
+")
+
+        # The space is necessary, or for some reason, the flag will be prepended to the next.
+        set(CXX_FLAGS "-I\"${CMAKE_CURRENT_SOURCE_DIR}/${SRC_PATH}\" ${CXX_FLAGS} -DPOTHOS_SIMD_NAMESPACE=${namespace} ")
         if(NOT "${SUFFIX}" STREQUAL "")
             # Copy the source file and add the required flags
             set(DST_ABS_FILE "${CMAKE_CURRENT_BINARY_DIR}/${SRC_PATH}/${SRC_NAME}-${suffixhash}${SRC_EXT}")
@@ -1110,6 +1126,11 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE)
     set(RECV_FILE_LIST ${${FILE_LIST_VAR}})
     list(APPEND RECV_FILE_LIST ${FILE_LIST})
     set(${FILE_LIST_VAR} ${RECV_FILE_LIST} PARENT_SCOPE)
+
+    # Generate dispatch header file
+    configure_file(
+        ${POTHOS_CONFIG_SIMD_LIST_DIR}/SIMDDispatcher.hpp.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${SRC_PATH}/${SRC_NAME}_SIMDDispatcher.hpp)
 endfunction()
 
 # ------------------------------------------------------------------------------

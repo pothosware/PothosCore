@@ -18,7 +18,6 @@ configure_file(
 install(
     FILES
         PothosConfig.cmake
-        PothosConfigSIMD.cmake
         PothosStandardFlags.cmake
         PothosLibraryConfig.cmake
         PothosUtil.cmake
@@ -27,6 +26,9 @@ install(
         FindPkgMacros.cmake
         FindPoco.cmake
         SetupPoco.cmake
+        #SIMD
+        PothosConfigSIMD.cmake
+        SIMDDispatcher.hpp.in
     DESTINATION ${POTHOS_CMAKE_DIRECTORY}
     COMPONENT pothos_devel
 )
