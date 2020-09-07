@@ -66,7 +66,7 @@ static std::vector<ArchDesc> getAllPotentialArches()
     features.emplace_back("sse2", a_sse2);
     features.emplace_back("sse3", a_sse3);
     features.emplace_back("ssse3", a_ssse3);
-    features.emplace_back("sse4p1", a_sse4_1);
+    features.emplace_back("sse4_1", a_sse4_1);
     features.emplace_back("popcnt", a_popcnt);
     features.emplace_back("avx", a_avx);
     features.emplace_back("avx2", a_avx2);
