@@ -110,7 +110,7 @@ static std::vector<std::string> _detectAvailableSIMDArchitectures()
     std::vector<std::string> simdArchitectures;
     for(const auto& arch: arches)
     {
-        if(bool(simdppArchInfo & arch.arch)) simdArchitectures.emplace_back(arch.id);
+        if(simdpp::test_arch_subset(simdppArchInfo, arch.arch)) simdArchitectures.emplace_back(arch.id);
     }
 
     return simdArchitectures;
