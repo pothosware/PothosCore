@@ -21,7 +21,7 @@ public:
         _docParseRequested(false),
         _deviceInfoRequested(false),
         _runTopologyRequested(false),
-        _simdArchitecturesRequested(false)
+        _simdFeaturesRequested(false)
     {
         this->setUnixOptions(true); //always unix style --option
 
@@ -170,7 +170,7 @@ protected:
             .binding("proxyEnvName")
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printProxyEnvironmentInfo)));
 
-        options.addOption(Poco::Util::Option("simd-architectures", "", "print available SIMD architectures")
+        options.addOption(Poco::Util::Option("simd-features", "", "print available SIMD features")
             .required(false)
             .repeatable(false));
     }
@@ -182,7 +182,7 @@ protected:
         if (name == "doc-parse") _docParseRequested = true;
         if (name == "device-info") _deviceInfoRequested = true;
         if (name == "run-topology") _runTopologyRequested = true;
-        if (name == "simd-architectures") _simdArchitecturesRequested = true;
+        if (name == "simd-features") _simdFeaturesRequested = true;
         if (name == "help") this->stopOptionsProcessing();
 
         //store --var options into the ordered vars map
@@ -217,7 +217,7 @@ protected:
             else if (_docParseRequested) this->docParse(args);
             else if (_deviceInfoRequested) this->printDeviceInfo();
             else if (_runTopologyRequested) this->runTopology();
-            else if (_simdArchitecturesRequested) this->printSIMDArchitectures();
+            else if (_simdFeaturesRequested) this->printSIMDFeatures();
         }
         catch(const Pothos::Exception &ex)
         {
@@ -233,7 +233,7 @@ private:
     bool _docParseRequested;
     bool _deviceInfoRequested;
     bool _runTopologyRequested;
-    bool _simdArchitecturesRequested;
+    bool _simdFeaturesRequested;
 };
 
 int main(int argc, char *argv[])

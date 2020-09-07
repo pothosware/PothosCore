@@ -10,7 +10,6 @@
 #include <simdpp/dispatch/get_arch_raw_cpuid.h>
 
 #include <algorithm>
-#include <iostream>
 #include <sstream>
 
 //
@@ -109,6 +108,8 @@ static std::vector<ArchDesc> getAllPotentialSIMDFeatures()
 // Pothos-level utility code
 //
 
+static const std::string SEPARATOR = "__";
+
 static std::vector<std::string> _getSupportedSIMDFeatureSet()
 {
     const auto simdppArchInfo = SIMDPP_USER_ARCH_INFO;
@@ -123,7 +124,50 @@ static std::vector<std::string> _getSupportedSIMDFeatureSet()
     return simdArchitectures;
 }
 
-static const std::string SEPARATOR = "__";
+static std::vector<std::string> _separateSIMDFeatureSetKey(const std::string& featureSetKey)
+{
+    // "x86_sse2__x86_sse3__x86_ssse3" -> {"x86_sse2","x86_sse3","x86_ssse3"}
+    std::string keyCopy(featureSetKey);
+    std::vector<std::string> separatedKey;
+
+    size_t pos = 0;
+    std::string token;
+    while ((pos = keyCopy.find(SEPARATOR)) != std::string::npos)
+    {
+        token = keyCopy.substr(0, pos);
+        separatedKey.emplace_back(token);
+        keyCopy.erase(0, pos + SEPARATOR.length());
+    }
+    separatedKey.emplace_back(keyCopy); // last entry
+
+    return separatedKey;
+}
+
+static bool _isSIMDFeatureSetSupported(const std::vector<std::string>& featureSet)
+{
+    const auto supportedSIMDFeatureSet = Pothos::System::getSupportedSIMDFeatureSet();
+
+    auto unsupportedFeatureIter = std::find_if(
+                                      featureSet.begin(),
+                                      featureSet.end(),
+                                      [&](const std::string& feature)
+                                      {
+                                          auto supportedFeatureIter =
+                                                   std::find(
+                                                       supportedSIMDFeatureSet.begin(),
+                                                       supportedSIMDFeatureSet.end(),
+                                                       feature);
+
+                                          return (supportedFeatureIter == supportedSIMDFeatureSet.end());
+                                      });
+
+    return (unsupportedFeatureIter == featureSet.end());
+}
+
+static bool _isSIMDFeatureSetSupported(const std::string& featureSetKey)
+{
+    return _isSIMDFeatureSetSupported(_separateSIMDFeatureSetKey(featureSetKey));
+}
 
 //
 // Exported functions
@@ -146,70 +190,8 @@ POTHOS_API std::string Pothos::System::getOptimalSIMDFeatureSetKey(const std::ve
         std::back_inserter(keys),
         [](const std::string& key)
         {
-            return isSIMDFeatureSetSupported(key);
+            return _isSIMDFeatureSetSupported(key);
         });
-    std::cout << Pothos::Object(keys).toString() << std::endl;
     if(keys.empty()) return "fallback";
     else             return *(keys.end()-1); // Sorted in ascending order of performance
-}
-
-std::string Pothos::System::getSIMDFeatureSetKey(const std::vector<std::string>& featureSet)
-{
-    // {"x86_sse2","x86_sse3","x86_ssse3"} -> "x86_sse2__x86_sse3__x86_ssse3"
-    std::stringstream featureSetStream;
-    std::copy(
-        featureSet.begin(),
-        featureSet.end(),
-        std::ostream_iterator<std::string>(featureSetStream, SEPARATOR.c_str()));
-
-    // std::ostream_iterator appends the separator to the end
-    auto featureSetKey = featureSetStream.str();
-    featureSetKey = featureSetKey.substr(0, (featureSetKey.size() - SEPARATOR.size()));
-
-    return featureSetKey;
-}
-
-std::vector<std::string> Pothos::System::separateSIMDFeatureSetKey(const std::string& featureSetKey)
-{
-    // "x86_sse2__x86_sse3__x86_ssse3" -> {"x86_sse2","x86_sse3","x86_ssse3"}
-    std::string keyCopy(featureSetKey);
-    std::vector<std::string> separatedKey;
-
-    size_t pos = 0;
-    std::string token;
-    while ((pos = keyCopy.find(SEPARATOR)) != std::string::npos)
-    {
-        token = keyCopy.substr(0, pos);
-        separatedKey.emplace_back(token);
-        keyCopy.erase(0, pos + SEPARATOR.length());
-    }
-    separatedKey.emplace_back(keyCopy); // last entry
-
-    return separatedKey;
-}
-
-bool Pothos::System::isSIMDFeatureSetSupported(const std::string& featureSetKey)
-{
-    return isSIMDFeatureSetSupported(separateSIMDFeatureSetKey(featureSetKey));
-}
-
-bool Pothos::System::isSIMDFeatureSetSupported(const std::vector<std::string>& featureSet)
-{
-    static const auto supportedSIMDFeatureSet = getSupportedSIMDFeatureSet();
-
-    auto unsupportedFeatureIter = std::find_if(
-                                      featureSet.begin(),
-                                      featureSet.end(),
-                                      [&](const std::string& feature)
-                                      {
-                                          auto supportedFeatureIter =
-                                                   std::find(
-                                                       supportedSIMDFeatureSet.begin(),
-                                                       supportedSIMDFeatureSet.end(),
-                                                       feature);
-
-                                          return (supportedFeatureIter == supportedSIMDFeatureSet.end());
-                                      });
-
-    return (unsupportedFeatureIter == featureSet.end());
 }

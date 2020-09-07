@@ -7,11 +7,11 @@
 
 #include <iostream>
 
-// TODO: change to supported feature sets
-void PothosUtilBase::printSIMDArchitectures(void)
+void PothosUtilBase::printSIMDFeatures(void)
 {
+    std::cout << "SIMD features supported on this processor:" << std::endl;
     for(const auto& arch: Pothos::System::getSupportedSIMDFeatureSet())
     {
-        std::cout << arch << std::endl;
+        std::cout << " * " << arch << std::endl;
     }
 }

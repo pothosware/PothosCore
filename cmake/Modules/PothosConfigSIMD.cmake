@@ -1030,6 +1030,12 @@ endfunction()
 # * SRC_FILE: the name of the source file relative to the @a
 #   CMAKE_CURRENT_SOURCE_DIR
 #
+# * NAMESPACE_DECL: the namespace in which the arch-specific functions are found
+#
+# * FUNCTION_DECL: the templated function declaration
+#
+# * SHORT_NAME: the function name, minus any templatizing and function info
+#
 # * ARCH...: a list of architecture definitions. Each architecture definition
 #   consist of comma separated list of identifiers directly corresponding to
 #   macros defined in simdpp/simd.h, which ultimately identify instruction set

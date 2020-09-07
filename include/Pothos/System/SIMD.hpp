@@ -18,17 +18,11 @@
 namespace Pothos {
 namespace System {
 
+//! Returns the list of features supported by this machine's processor.
 POTHOS_API std::vector<std::string> getSupportedSIMDFeatureSet();
 
+//! Used by Pothos's dynamic SIMD dispatchers to choose the most optimal runnable SIMD function.
 POTHOS_API std::string getOptimalSIMDFeatureSetKey(const std::vector<std::string>& featureSetKeys);
-
-POTHOS_API std::string getSIMDFeatureSetKey(const std::vector<std::string>& featureSet);
-
-POTHOS_API std::vector<std::string> separateSIMDFeatureSetKey(const std::string& featureSetKey);
-
-POTHOS_API bool isSIMDFeatureSetSupported(const std::vector<std::string>& featureSet);
-
-POTHOS_API bool isSIMDFeatureSetSupported(const std::string& featureSetKey);
 
 } //namespace System
 } //namespace Pothos
