@@ -1080,6 +1080,7 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE NAMESPACE_DECL FUNCTION_DECL SH
         string(MD5 suffixhash ${SUFFIX})
         string(SUBSTRING ${suffixhash} 0 6 suffixhash)
 
+        # TODO: CMake 2.8 version
         if(ALL_ARCHS)
             string(CONCAT ALL_ARCHS "${ALL_ARCHS},\"${namespace}\"")
         else()
