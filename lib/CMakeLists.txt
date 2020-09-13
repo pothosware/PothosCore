@@ -331,7 +331,7 @@ endif(MSVC)
 # If XSIMD found, add SIMD implementations
 ########################################################################
 if(xsimd_FOUND)
-    # /blocks/clamp
+
     pothos_multiarch(
         BufferConvertSIMDSources
         SIMD/BufferConvert.cpp
@@ -339,8 +339,19 @@ if(xsimd_FOUND)
         "template <typename InType, typename OutType> void bufferConvert(const void*, void*, size_t);"
         "bufferConvert"
         ${SIMDBuildArchs})
+
+    pothos_multiarch(
+        VectorConvertSIMDSources
+        SIMD/VectorConvert.cpp
+        PothosSIMD
+        "template <typename InType, typename OutType> std::vector<OutType> vectorConvert(const std::vector<InType>&);"
+        "vectorConvert"
+        ${SIMDBuildArchs})
         
-    set(SIMDSources ${BufferConvertSIMDSources})
+    set(SIMDSources
+        ${BufferConvertSIMDSources}
+        ${VectorConvertSIMDSources})
+
     foreach(AbsPath ${SIMDSources})
         file(RELATIVE_PATH RelPath ${CMAKE_CURRENT_SOURCE_DIR} ${AbsPath})
         list(APPEND POTHOS_SOURCES ${RelPath})

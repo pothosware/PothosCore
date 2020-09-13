@@ -5,6 +5,7 @@
 
 #include <complex>
 #include <type_traits>
+#include <vector>
 
 #if !defined POTHOS_SIMD_NAMESPACE
 #error Must define POTHOS_SIMD_NAMESPACE to build this file
@@ -65,7 +66,7 @@ namespace PothosSIMD { namespace POTHOS_SIMD_NAMESPACE {
         _bufferConvert<InType, OutType>((const InType*)in, (OutType*)out, len);
     }
 
-#define DECLARE_FUNCS(InType) \
+#define DECLARE_BUFFERCONVERT_FUNCS(InType) \
     template void bufferConvert<InType, std::int8_t>(const void*, void*, size_t); \
     template void bufferConvert<InType, std::int16_t>(const void*, void*, size_t); \
     template void bufferConvert<InType, std::int32_t>(const void*, void*, size_t); \
@@ -87,15 +88,15 @@ namespace PothosSIMD { namespace POTHOS_SIMD_NAMESPACE {
     template void bufferConvert<std::complex<InType>, std::complex<float>>(const void*, void*, size_t); \
     template void bufferConvert<std::complex<InType>, std::complex<double>>(const void*, void*, size_t); \
 
-    DECLARE_FUNCS(std::int8_t)
-    DECLARE_FUNCS(std::int16_t)
-    DECLARE_FUNCS(std::int32_t)
-    DECLARE_FUNCS(std::int64_t)
-    DECLARE_FUNCS(std::uint8_t)
-    DECLARE_FUNCS(std::uint16_t)
-    DECLARE_FUNCS(std::uint32_t)
-    DECLARE_FUNCS(std::uint64_t)
-    DECLARE_FUNCS(float)
-    DECLARE_FUNCS(double)
+    DECLARE_BUFFERCONVERT_FUNCS(std::int8_t)
+    DECLARE_BUFFERCONVERT_FUNCS(std::int16_t)
+    DECLARE_BUFFERCONVERT_FUNCS(std::int32_t)
+    DECLARE_BUFFERCONVERT_FUNCS(std::int64_t)
+    DECLARE_BUFFERCONVERT_FUNCS(std::uint8_t)
+    DECLARE_BUFFERCONVERT_FUNCS(std::uint16_t)
+    DECLARE_BUFFERCONVERT_FUNCS(std::uint32_t)
+    DECLARE_BUFFERCONVERT_FUNCS(std::uint64_t)
+    DECLARE_BUFFERCONVERT_FUNCS(float)
+    DECLARE_BUFFERCONVERT_FUNCS(double)
 
 }}
