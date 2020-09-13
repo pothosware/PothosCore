@@ -128,6 +128,20 @@ if (APPLE)
 endif()
 
 ########################################################################
+# SIMD support
+########################################################################
+find_package(xsimd)
+if(xsimd_FOUND)
+    include(PothosConfigSIMD)
+    add_definitions(-DPOTHOS_XSIMD)
+    
+    include_directories(${CMAKE_CURRENT_BINARY_DIR})
+    list(APPEND Pothos_LIBRARIES xsimd)
+    
+    pothos_get_compilable_archs(SIMDBuildArchs)
+endif()
+
+########################################################################
 # Library sources
 ########################################################################
 list(APPEND POTHOS_SOURCES
@@ -312,6 +326,26 @@ if(MSVC)
     string(REPLACE "\\" "\\\\" MSVC_INSTALL_PATH ${MSVC_INSTALL_PATH})
     list(APPEND POTHOS_SOURCES Util/Builtin/MsvcCompilerSupport.in.cpp)
 endif(MSVC)
+
+########################################################################
+# If XSIMD found, add SIMD implementations
+########################################################################
+if(xsimd_FOUND)
+    # /blocks/clamp
+    pothos_multiarch(
+        BufferConvertSIMDSources
+        SIMD/BufferConvert.cpp
+        PothosSIMD
+        "template <typename InType, typename OutType> void bufferConvert(const void*, void*, size_t);"
+        "bufferConvert"
+        ${SIMDBuildArchs})
+        
+    set(SIMDSources ${BufferConvertSIMDSources})
+    foreach(AbsPath ${SIMDSources})
+        file(RELATIVE_PATH RelPath ${CMAKE_CURRENT_SOURCE_DIR} ${AbsPath})
+        list(APPEND POTHOS_SOURCES ${RelPath})
+    endforeach()
+endif()
 
 ########################################################################
 # Deal with *.in files in the sources list
