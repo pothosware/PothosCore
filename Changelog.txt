@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.7.1 (pending)
+==========================
+
+- Fix std::vector<bool> emplace_back missing
+
 Release 0.7.0 (2020-07-19)
 ==========================
 
