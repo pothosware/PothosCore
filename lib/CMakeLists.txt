@@ -275,6 +275,7 @@ list(APPEND POTHOS_SOURCES
     Util/Builtin/TestErrorCodeHandling.cpp
     Util/Builtin/TestEvalExpression.cpp
     Util/Builtin/TestRingDeque.cpp
+    Util/Builtin/TestSIMDDispatcherUtils.cpp
 
     Archive/ArchiveEntry.cpp
     Archive/StreamArchiver.cpp
