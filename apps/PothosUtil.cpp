@@ -173,6 +173,13 @@ protected:
         options.addOption(Poco::Util::Option("simd-features", "", "print available SIMD features")
             .required(false)
             .repeatable(false));
+
+        options.addOption(Poco::Util::Option("generate-simd-dispatchers", "", "Generate SIMD dispatchers based on a given JSON file")
+            .required(false)
+            .repeatable(false)
+            .argument("inputFile")
+            .binding("inputFile")
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::generateSIMDDispatchers)));
     }
 
     void handleOption(const std::string &name, const std::string &value)

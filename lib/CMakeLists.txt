@@ -270,6 +270,7 @@ list(APPEND POTHOS_SOURCES
     Util/Builtin/DeviceInfoUtils.cpp
     Util/Builtin/DocUtils.cpp
     Util/Builtin/MupOctalValReader.cpp
+    Util/Builtin/SIMDDispatcherUtils.cpp
     Util/Builtin/TestDocUtils.cpp
     Util/Builtin/TestErrorCodeHandling.cpp
     Util/Builtin/TestEvalExpression.cpp
