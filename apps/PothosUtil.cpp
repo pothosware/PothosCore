@@ -180,6 +180,12 @@ protected:
             .argument("inputFile")
             .binding("inputFile")
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::generateSIMDDispatchers)));
+
+        options.addOption(Poco::Util::Option("simd-arches", "", "A comma-delimited list of SIMD arches, as generated at CMake-time")
+            .required(false)
+            .repeatable(false)
+            .argument("simdArches")
+            .binding("simdArches"));
     }
 
     void handleOption(const std::string &name, const std::string &value)

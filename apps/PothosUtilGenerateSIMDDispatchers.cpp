@@ -1,77 +1,42 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosUtil.hpp"
-#include <Pothos/Util/BlockDescription.hpp>
+
 #include <Pothos/Plugin.hpp>
-#include <Poco/Format.h>
-#include <Poco/NumberFormatter.h>
-#include <iostream>
+#include <Pothos/Proxy.hpp>
+
+#include <Poco/File.h>
+#include <Poco/StringTokenizer.h>
+
 #include <fstream>
-#include <vector>
+#include <iostream>
 #include <string>
-
-void PothosUtilBase::generateSIMDDispatchers(const std::string&, const std::string& jsonPath)
-{
-
-}
+#include <vector>
 
 /***********************************************************************
- * generate a cpp source that adds the json string to the registry
+ * Generate a C++ header with SIMD dispatchers for a given Pothos module
  **********************************************************************/
-/*
-static void jsonArrayToCppStaticBlock(const Pothos::Util::BlockDescriptionParser &parser, std::ostream &os, const std::string &target)
+void PothosUtilBase::generateSIMDDispatchers(const std::string&, const std::string& jsonPath)
 {
-    os << "#include <Pothos/Framework.hpp>\n";
-    os << "#include <Pothos/Plugin.hpp>\n";
-    os << Poco::format("pothos_static_block(registerPothosBlockDocs%s)\n", target);
-    os << "{\n";
-    for (const auto &factory : parser.listFactories())
-    {
-        //create escaped string of json
-        std::string escaped;
-        for (const auto &ch : parser.getJSONObject(factory))
-        {
-            escaped += "\\x" + Poco::NumberFormatter::formatHex(int(ch), 2width, falseno 0x);
-        }
+    auto env = Pothos::ProxyEnvironment::make("managed");
+    auto simdDispatcher = env->findProxy("Pothos/Util/SIMDDispatcher");
 
-        //register the block description at the specified path
-        const auto pluginPath = Pothos::PluginPath("/blocks/docs", factory);
-        os << Poco::format("    Pothos::PluginRegistry::add(\"%s\", std::string(\"%s\"));\n", pluginPath.toString(), escaped);
-    }
-    os << "}\n";
+    const auto simdArchesStr = this->config().getString("simdArches");
+    const auto outputFilePath = this->config().getString("outputFile");
+
+    Poco::StringTokenizer simdArchesTokenizer(simdArchesStr, ",", Poco::StringTokenizer::TOK_TRIM);
+    std::vector<std::string> simdArches(simdArchesTokenizer.begin(), simdArchesTokenizer.end());
+
+    const auto fileSize = Poco::File(jsonPath).getSize();
+
+    std::ifstream ifile(jsonPath.c_str(), std::ios::in);
+    std::string jsonInput;
+    jsonInput.resize(fileSize);
+    ifile.read((char*)jsonInput.data(), fileSize);
+
+    const auto outputHeaderString = simdDispatcher.call<std::string>("generateAndDumpHeader", jsonInput, simdArches);
+
+    std::ofstream ofile(outputFilePath.c_str(), std::ios::out);
+    ofile << outputHeaderString;
 }
-
-void PothosUtilBase::docParse(const std::vector<std::string> &inputFilePaths)
-{
-    Pothos::Util::BlockDescriptionParser parser;
-
-    //feed all input files into the parser
-    for (const auto &inputFilePath : inputFilePaths)
-    {
-        parser.feedFilePath(inputFilePath);
-    }
-
-    //write to output (file if specified, otherwise stdout)
-    const auto outputFilePath = this->config().getString("outputFile", "");
-    const size_t indentSpaces = 4;
-    if (outputFilePath.empty())
-    {
-        std::cout << std::endl;
-        std::cout << parser.getJSONArray(indentSpaces);
-        std::cout << std::endl;
-    }
-    else
-    {
-        const auto outputFileName = Poco::Path(outputFilePath).getBaseName();
-        const auto outputFileExt = Poco::Path(outputFilePath).getExtension();
-
-        std::ofstream outputFile(outputFilePath.c_str());
-        if (outputFileExt == "json") outputFile << parser.getJSONArray(indentSpaces);
-        else if (outputFileExt == "cpp") jsonArrayToCppStaticBlock(parser, outputFile, outputFileName);
-        else throw Pothos::Exception("PothosUtilBase::docParse()", "unsupported file extension: " + outputFilePath);
-        outputFile << std::endl;
-        outputFile.close();
-    }
-}
-*/
