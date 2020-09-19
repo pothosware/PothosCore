@@ -221,7 +221,7 @@ static std::string getFeatureSetKeyString(const SIMDInfo& simdInfo)
             return "\"" + arch + "\"";
         });
 
-    return Poco::format("Pothos::System::getOptionalSIMDFeatureSetKey(std::vector<std::string>{%s})", join(archesWithQuotes, ","));
+    return Poco::format("Pothos::System::getOptimalSIMDFeatureSetKey(std::vector<std::string>{%s})", join(archesWithQuotes, ","));
 }
 
 static std::string getFullFuncString(const SIMDInfo& simdInfo)
@@ -241,7 +241,7 @@ static std::string getFullFuncString(const SIMDInfo& simdInfo)
         "    {\n"
         "%s\n"
         "        auto implIter = Impls.find(%s);\n"
-        "        if (implIter != implIter.end()) return implIter->second;\n"
+        "        if (implIter != Impls.end()) return implIter->second;\n"
         "        else return Impls.at(\"fallback\");\n"
         "    }\n"
         "}";

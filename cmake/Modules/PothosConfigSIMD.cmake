@@ -1035,14 +1035,11 @@ endfunction()
 # * FILE_LIST_VAR: the name of the variable to append the list of generated
 #   files to
 #
+# * ARCHSTRING_VAR: the name of the variable to set the list of arches to for
+#   PothosUtil
+#
 # * SRC_FILE: the name of the source file relative to the @a
 #   CMAKE_CURRENT_SOURCE_DIR
-#
-# * NAMESPACE_DECL: the namespace in which the arch-specific functions are found
-#
-# * FUNCTION_DECL: the templated function declaration
-#
-# * SHORT_NAME: the function name, minus any templatizing and function info
 #
 # * ARCH...: a list of architecture definitions. Each architecture definition
 #   consist of comma separated list of identifiers directly corresponding to
@@ -1057,7 +1054,7 @@ endfunction()
 #   ARM_NEON, ARM_NEON_FLT_SP, ARM64_NEON,
 #   MIPS_MSA, POWER_ALTIVEC, POWER_VSX_206, POWER_VSX_207
 #
-function(pothos_multiarch FILE_LIST_VAR SRC_FILE NAMESPACE_DECL FUNCTION_DECL SHORT_NAME)
+function(pothos_multiarch FILE_LIST_VAR ARCHSTRING_VAR SRC_FILE)
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}")
         message(FATAL_ERROR "File \"${SRC_FILE}\" does not exist")
     endif()
@@ -1066,16 +1063,10 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE NAMESPACE_DECL FUNCTION_DECL SH
     get_filename_component(SRC_EXT "${SRC_FILE}" EXT)
 
     set(FILE_LIST "")
-    set(DISPATCHER_FILE "")
-    set(DISPATCHER_CXX_FLAGS "-DPOTHOS_EMIT_DISPATCHER=0")
-    set(DISPATCH_ARCH_IDX "1")
-
-    set(ALL_ARCHS "")
-    set(ALL_ARCH_DECLS "")
-    set(ALL_ARCH_MAP_ENTRIES "")
-
+    set(SUFFIXES "")
+    
     list(APPEND ARCHS ${ARGV})
-    list(REMOVE_AT ARCHS 0 1 2 3 4) # strip non-arch parameters
+    list(REMOVE_AT ARCHS 0 1 2) # strip non-arch parameters
     foreach(ARCH ${ARCHS})
         pothos_get_arch_info(CXX_FLAGS DEFINES_LIST SUFFIX ${ARCH})
 
@@ -1085,24 +1076,9 @@ function(pothos_multiarch FILE_LIST_VAR SRC_FILE NAMESPACE_DECL FUNCTION_DECL SH
         # Hash and truncate the string to shorten the output filepath. In theory,
         # this can collide, but the chances are small.
         string(REPLACE "-" "__" namespace ${SUFFIX})
+        list(APPEND SUFFIXES ${SUFFIX})
         string(MD5 suffixhash ${SUFFIX})
         string(SUBSTRING ${suffixhash} 0 6 suffixhash)
-
-        # TODO: CMake 2.8 version
-        if(ALL_ARCHS)
-            string(CONCAT ALL_ARCHS "${ALL_ARCHS},\"${namespace}\"")
-        else()
-            string(CONCAT ALL_ARCHS "\"${namespace}\"")
-        endif()
-
-        string(CONCAT ALL_ARCH_DECLS "\
-${ALL_ARCH_DECLS}
-ARCH_FUNCTION_DECL(${namespace})\
-")
-        string(CONCAT ALL_ARCH_MAP_ENTRIES "\
-${ALL_ARCH_MAP_ENTRIES}
-ARCH_MAP_ENTRY(${namespace})\
-")
 
         # The space is necessary, or for some reason, the flag will be prepended to the next.
         set(CXX_FLAGS "-I\"${CMAKE_CURRENT_SOURCE_DIR}/${SRC_PATH}\" ${CXX_FLAGS} -DPOTHOS_SIMD_NAMESPACE=${namespace} ")
@@ -1125,34 +1101,49 @@ ARCH_MAP_ENTRY(${namespace})\
             list(APPEND FILE_LIST "${DST_ABS_FILE}")
             set_source_files_properties("${DST_ABS_FILE}" PROPERTIES COMPILE_FLAGS ${CXX_FLAGS}
                                                                      GENERATED TRUE)
-
-            # For the first file that is being processed, set it to emit
-            # dispatcher code. The required flags will be added later
-            if("${DISPATCHER_FILE}" STREQUAL "")
-                set(DISPATCHER_FILE "${DST_ABS_FILE}")
-            endif()
-
-            # Add required dispatcher predefined macros for this architecture
-            #set(DISPATCHER_CXX_FLAGS "${DISPATCHER_CXX_FLAGS} -DPOTHOS_DISPATCH_ARCH${DISPATCH_ARCH_IDX}=${DEFINES_LIST}")
-            #math(EXPR DISPATCH_ARCH_IDX "${DISPATCH_ARCH_IDX}+1")
         endif()
     endforeach()
-
-    # Emit dispatcher code in the first valid generated file.
-    if(NOT "${DISPATCHER_FILE}" STREQUAL "")
-        set_property(SOURCE "${DISPATCHER_FILE}" APPEND_STRING PROPERTY COMPILE_FLAGS
-                     "${DISPATCHER_CXX_FLAGS}")
-        set(DISPATCHER_FILE "${DST_ABS_FILE}")
-    endif()
+    
+    string(JOIN "," ARCHSTRING ${SUFFIXES})
+    string(REPLACE "-" "__" ARCHSTRING ${ARCHSTRING})
+    set(${ARCHSTRING_VAR} ${ARCHSTRING} PARENT_SCOPE)
 
     set(RECV_FILE_LIST ${${FILE_LIST_VAR}})
     list(APPEND RECV_FILE_LIST ${FILE_LIST})
     set(${FILE_LIST_VAR} ${RECV_FILE_LIST} PARENT_SCOPE)
+endfunction()
 
-    # Generate dispatch header file
-    configure_file(
-        ${POTHOS_CONFIG_SIMD_LIST_DIR}/SIMDDispatcher.hpp.in
-        ${CMAKE_CURRENT_BINARY_DIR}/${SRC_PATH}/${SRC_NAME}_SIMDDispatcher.hpp)
+function(PothosGenerateSIMDSources FileListVariable JSONInputFile)
+    set(SIMDSourceFiles ${ARGV})
+    list(REMOVE_AT SIMDSourceFiles 0 1) # Remove non-source parameters
+    
+    pothos_get_compilable_archs(SIMDBuildArchs)
+    
+    foreach(SrcFile ${SIMDSourceFiles})
+        set(SingleFileSIMDSources "")
+        pothos_multiarch(SingleFileSIMDSources ArchString ${SrcFile} ${SIMDBuildArchs})
+        list(APPEND TempFileList ${SingleFileSIMDSources})
+    endforeach()
+
+    # Convert to relative path so PothosUtil will accept the path
+    foreach(AbsPath ${TempFileList})
+        file(RELATIVE_PATH RelPath ${CMAKE_CURRENT_SOURCE_DIR} ${AbsPath})
+        list(APPEND FileList ${RelPath})
+    endforeach()
+    
+    get_filename_component(JSONInputFilename ${JSONInputFile} NAME_WE)
+    get_filename_component(JSONInputFileAbsolute ${JSONInputFile} ABSOLUTE)
+    set(outputHeaderPath ${CMAKE_CURRENT_BINARY_DIR}/${JSONInputFilename}_SIMD.hpp)
+    
+    add_custom_command(
+        OUTPUT ${outputHeaderPath}
+        COMMENT "Generating ${JSONInputFilename} SIMD dynamic dispatchers"
+        COMMAND ${POTHOS_UTIL_EXE} --simd-arches=${ArchString} --output=${outputHeaderPath} --generate-simd-dispatchers=${JSONInputFileAbsolute}
+        DEPENDS PothosUtil
+        DEPENDS ${JSONInputFileAbsolute})
+    add_custom_target(${JSONInputFilename}_SIMD DEPENDS ${outputHeaderPath})
+    
+    set(${FileListVariable} ${FileList} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
