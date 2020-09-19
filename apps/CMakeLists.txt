@@ -34,5 +34,5 @@ list(APPEND SOURCES
 add_executable(PothosUtil ${SOURCES})
 target_link_libraries(PothosUtil Pothos ${Pothos_LIBRARIES})
 install(TARGETS PothosUtil
-    RUNTIME DESTINATION bin COMPONENT pothos_runtime
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT pothos_runtime
 )

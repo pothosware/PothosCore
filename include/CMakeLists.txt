@@ -12,6 +12,6 @@ endif()
 ########################################################################
 install(
     DIRECTORY Pothos
-    DESTINATION include
+    DESTINATION ${POTHOS_INCLUDE_DIR}
     COMPONENT pothos_devel
 )
