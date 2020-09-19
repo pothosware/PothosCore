@@ -348,9 +348,9 @@ set_target_properties(Pothos PROPERTIES VERSION ${POTHOS_LIBVER})
 set_target_properties(Pothos PROPERTIES DEFINE_SYMBOL "POTHOS_DLL_EXPORTS")
 
 install(TARGETS Pothos
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} pothos_runtime # .so file
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} pothos_devel   # .lib file
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} pothos_runtime # .dll file
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT pothos_runtime # .so file
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT pothos_devel   # .lib file
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT pothos_runtime # .dll file
 )
 
 #get the library name into Paths.cpp for getPothosRuntimeLibraryPath()
