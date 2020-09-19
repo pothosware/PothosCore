@@ -236,7 +236,7 @@ static std::string getFullFuncString(const SIMDInfo& simdInfo)
 
         "    %s\n\n"
 
-        "    %s"
+        "    %s\n"
         "    %sFcn<%s> %sDispatch()\n"
         "    {\n"
         "%s\n"
@@ -329,6 +329,8 @@ static inline std::string getSIMDDispatcherString(
 {
     static const std::string formatStr =
         "// Machine-generated code\n\n"
+
+        "#pragma once\n\n"
 
         "#include <Pothos/System/SIMD.hpp>\n"
         "#include <string>\n"
