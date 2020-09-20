@@ -28,7 +28,6 @@ install(
         SetupPoco.cmake
         #SIMD
         PothosConfigSIMD.cmake
-        SIMDDispatcher.hpp.in
     DESTINATION ${POTHOS_CMAKE_DIRECTORY}
     COMPONENT pothos_devel
 )
