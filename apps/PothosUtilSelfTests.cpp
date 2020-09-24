@@ -74,7 +74,7 @@ static bool spawnSelfTestOneProcess(const std::string &path, size_t numTrials)
     args.push_back("--num-trials");
     args.push_back(std::to_string(numTrials));
 
-    std::vector<bool> okVec;
+    size_t numOk = 0;
 
     for(size_t trialNum = 0; trialNum < numTrials; ++trialNum)
     {
@@ -96,11 +96,10 @@ static bool spawnSelfTestOneProcess(const std::string &path, size_t numTrials)
         outPipe.close();
         verboseFuture.wait();
         if (not ok) std::cout << verboseFuture.get();
-
-        okVec.emplace_back(ok);
+        else numOk++;
     }
 
-    return std::any_of(okVec.begin(), okVec.end(), [](bool ok){return ok;});
+    return numOk != 0;
 }
 
 static void runPluginSelfTestsR(const Pothos::PluginPath &path, SelfTestResults &results, Poco::Glob &glob, size_t numTrials)
