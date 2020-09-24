@@ -134,9 +134,10 @@ find_package(xsimd)
 if(xsimd_FOUND)
     include(PothosConfigSIMD)
     add_definitions(-DPOTHOS_XSIMD)
-    
-    include_directories(${CMAKE_CURRENT_BINARY_DIR})
-    list(APPEND Pothos_LIBRARIES xsimd)
+
+    add_subdirectory(SIMD)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+    list(APPEND Pothos_LIBRARIES PothosSIMD)
 endif()
 
 ########################################################################
