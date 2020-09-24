@@ -137,8 +137,6 @@ if(xsimd_FOUND)
     
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
     list(APPEND Pothos_LIBRARIES xsimd)
-    
-    pothos_get_compilable_archs(SIMDBuildArchs)
 endif()
 
 ########################################################################
@@ -333,31 +331,16 @@ endif(MSVC)
 # If XSIMD found, add SIMD implementations
 ########################################################################
 if(xsimd_FOUND)
-
-    pothos_multiarch(
-        BufferConvertSIMDSources
-        SIMD/BufferConvert.cpp
-        PothosSIMD
-        "template <typename InType, typename OutType> void bufferConvert(const void*, void*, size_t);"
-        "bufferConvert"
-        ${SIMDBuildArchs})
-
-    pothos_multiarch(
-        VectorConvertSIMDSources
-        SIMD/VectorConvert.cpp
-        PothosSIMD
-        "template <typename InType, typename OutType> std::vector<OutType> vectorConvert(const std::vector<InType>&);"
-        "vectorConvert"
-        ${SIMDBuildArchs})
+    #set(SIMDInputs
+    #    SIMD/BufferConvert.cpp
+    #    SIMD/VectorConvert.cpp)
         
-    set(SIMDSources
-        ${BufferConvertSIMDSources}
-        ${VectorConvertSIMDSources})
-
-    foreach(AbsPath ${SIMDSources})
-        file(RELATIVE_PATH RelPath ${CMAKE_CURRENT_SOURCE_DIR} ${AbsPath})
-        list(APPEND POTHOS_SOURCES ${RelPath})
-    endforeach()
+    #PothosGenerateSIMDSources(
+    #    SIMDSources
+    #    SIMD/PothosCore.json
+    #    ${SIMDInputs})
+        
+    #list(APPEND POTHOS_SOURCES ${SIMSources})
 endif()
 
 ########################################################################

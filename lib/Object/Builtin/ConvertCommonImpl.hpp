@@ -3,10 +3,6 @@
 
 #pragma once
 
-#ifdef POTHOS_XSIMD
-#include "SIMD/VectorConvert_SIMDDispatcher.hpp"
-#endif
-
 #include <Pothos/Config.hpp>
 #include <Pothos/Exception.hpp>
 #include <Pothos/Util/TypeInfo.hpp>

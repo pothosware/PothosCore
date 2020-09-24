@@ -2,10 +2,6 @@
 //                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
-#ifdef POTHOS_XSIMD
-#include "SIMD/BufferConvert_SIMDDispatcher.hpp"
-#endif
-
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <functional>
