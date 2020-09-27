@@ -1064,7 +1064,7 @@ function(pothos_multiarch FILE_LIST_VAR ARCHSTRING_VAR SRC_FILE)
 
     set(FILE_LIST "")
     set(SUFFIXES "")
-    
+
     list(APPEND ARCHS ${ARGV})
     list(REMOVE_AT ARCHS 0 1 2) # strip non-arch parameters
     foreach(ARCH ${ARCHS})
@@ -1073,8 +1073,7 @@ function(pothos_multiarch FILE_LIST_VAR ARCHSTRING_VAR SRC_FILE)
         # Shorter way of removing first character
         string(REGEX REPLACE "^-" "" SUFFIX ${SUFFIX})
 
-        # Hash and truncate the string to shorten the output filepath. In theory,
-        # this can collide, but the chances are small.
+        # Hash and truncate the string to shorten the output filepath
         string(REPLACE "-" "__" namespace ${SUFFIX})
         list(APPEND SUFFIXES ${SUFFIX})
         string(MD5 suffixhash ${SUFFIX})
@@ -1103,9 +1102,13 @@ function(pothos_multiarch FILE_LIST_VAR ARCHSTRING_VAR SRC_FILE)
                                                                      GENERATED TRUE)
         endif()
     endforeach()
-    
-    string(JOIN "," ARCHSTRING ${SUFFIXES})
+
+    # Equivalent of string(JOIN ...), which is too recent for us
+    foreach(suffix ${SUFFIXES})
+        set(ARCHSTRING "${ARCHSTRING},${suffix}")
+    endforeach()
     string(REPLACE "-" "__" ARCHSTRING ${ARCHSTRING})
+    string(SUBSTRING ${ARCHSTRING} 1 -1 ARCHSTRING)
     set(${ARCHSTRING_VAR} ${ARCHSTRING} PARENT_SCOPE)
 
     set(RECV_FILE_LIST ${${FILE_LIST_VAR}})
@@ -1295,9 +1298,9 @@ endfunction()
 function(PothosGenerateSIMDSources FileListVariable JSONInputFile)
     set(SIMDSourceFiles ${ARGV})
     list(REMOVE_AT SIMDSourceFiles 0 1) # Remove non-source parameters
-    
+
     pothos_get_compilable_archs(SIMDBuildArchs)
-    
+
     foreach(SrcFile ${SIMDSourceFiles})
         set(SingleFileSIMDSources "")
         pothos_multiarch(SingleFileSIMDSources ArchString ${SrcFile} ${SIMDBuildArchs})
@@ -1309,17 +1312,17 @@ function(PothosGenerateSIMDSources FileListVariable JSONInputFile)
         file(RELATIVE_PATH RelPath ${CMAKE_CURRENT_SOURCE_DIR} ${AbsPath})
         list(APPEND FileList ${RelPath})
     endforeach()
-    
+
     get_filename_component(JSONInputFilename ${JSONInputFile} NAME_WE)
     get_filename_component(JSONInputFileAbsolute ${JSONInputFile} ABSOLUTE)
     set(outputHeaderPath ${CMAKE_CURRENT_BINARY_DIR}/${JSONInputFilename}_SIMD.hpp)
-    
+
     add_custom_command(
         OUTPUT ${outputHeaderPath}
         COMMENT "Generating ${JSONInputFilename} SIMD dynamic dispatchers"
         COMMAND ${POTHOS_UTIL_EXE} --simd-arches=${ArchString} --output=${outputHeaderPath} --generate-simd-dispatchers=${JSONInputFileAbsolute}
         DEPENDS ${JSONInputFileAbsolute})
     add_custom_target(${JSONInputFilename}_SIMDDispatcher DEPENDS ${outputHeaderPath})
-    
+
     set(${FileListVariable} ${FileList} PARENT_SCOPE)
 endfunction()
