@@ -1,6 +1,10 @@
 // Copyright (c) 2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
+#include "BufferConversions.hpp"
+
+#include <Pothos/Plugin.hpp>
+
 #include <xsimd/xsimd.hpp>
 
 #include <complex>
@@ -9,6 +13,9 @@
 #if !defined POTHOS_SIMD_NAMESPACE
 #error Must define POTHOS_SIMD_NAMESPACE to build this file
 #endif
+
+#define _str(s) #s
+#define str(s) _str(s)
 
 namespace PothosSIMD { namespace POTHOS_SIMD_NAMESPACE {
 
@@ -24,7 +31,7 @@ namespace PothosSIMD { namespace POTHOS_SIMD_NAMESPACE {
         using EnableIfNeitherComplex = typename std::enable_if<!IsComplex<InType>::value && !IsComplex<OutType>::value>::type;
 
         template <typename InType, typename OutType>
-        using EnableIfBothComplex = typename std::enable_if<IsComplex<InType>::value&& IsComplex<OutType>::value>::type;
+        using EnableIfBothComplex = typename std::enable_if<IsComplex<InType>::value && IsComplex<OutType>::value>::type;
 
         template <typename InType, typename OutType>
         static EnableIfNeitherComplex<InType, OutType> bufferConvert(const InType* in, OutType* out, size_t len)
@@ -101,4 +108,57 @@ namespace PothosSIMD { namespace POTHOS_SIMD_NAMESPACE {
     DECLARE_BUFFERCONVERT_FUNCS(float)
     DECLARE_BUFFERCONVERT_FUNCS(double)
 
+    template <typename InType, typename OutType>
+    static void addBufferConverterToMap(BufferConvertFcnMap* pFcnMap)
+    {
+        assert(pFcnMap);
+
+        auto inDType = Pothos::DType(typeid(InType));
+        auto inComplexDType = Pothos::DType(typeid(std::complex<InType>));
+        auto outDType = Pothos::DType(typeid(OutType));
+        auto outComplexDType = Pothos::DType(typeid(std::complex<OutType>));
+
+        auto hash = dtypeIOToHash(inDType, outDType);
+        auto complexHash = dtypeIOToHash(inComplexDType, outComplexDType);
+
+        pFcnMap->emplace(hash, &bufferConvert<InType, OutType>);
+        pFcnMap->emplace(complexHash, &bufferConvert<std::complex<InType>, std::complex<OutType>>);
+    }
+
+    template <typename InType>
+    static void addBufferConverterToMap(BufferConvertFcnMap* pFcnMap)
+    {
+        addBufferConverterToMap<InType, std::int8_t>(pFcnMap);
+        addBufferConverterToMap<InType, std::int16_t>(pFcnMap);
+        addBufferConverterToMap<InType, std::int32_t>(pFcnMap);
+        addBufferConverterToMap<InType, std::int64_t>(pFcnMap);
+        addBufferConverterToMap<InType, std::uint8_t>(pFcnMap);
+        addBufferConverterToMap<InType, std::uint16_t>(pFcnMap);
+        addBufferConverterToMap<InType, std::uint32_t>(pFcnMap);
+        addBufferConverterToMap<InType, std::uint64_t>(pFcnMap);
+        addBufferConverterToMap<InType, float>(pFcnMap);
+        addBufferConverterToMap<InType, double>(pFcnMap);
+    }
+
+    // Note: putting the static block inside the arch-specific namespace
+    // will remove symbol collision.
+    pothos_static_block(registerPothosSIMDConverters)
+    {
+        BufferConvertFcnMap fcnMap;
+
+        addBufferConverterToMap<std::int8_t>(&fcnMap);
+        addBufferConverterToMap<std::int16_t>(&fcnMap);
+        addBufferConverterToMap<std::int32_t>(&fcnMap);
+        addBufferConverterToMap<std::int64_t>(&fcnMap);
+        addBufferConverterToMap<std::uint8_t>(&fcnMap);
+        addBufferConverterToMap<std::uint16_t>(&fcnMap);
+        addBufferConverterToMap<std::uint32_t>(&fcnMap);
+        addBufferConverterToMap<std::uint64_t>(&fcnMap);
+        addBufferConverterToMap<float>(&fcnMap);
+        addBufferConverterToMap<double>(&fcnMap);
+
+        const auto pluginPath = std::string("/simd/buffer_converter_maps/") + str(POTHOS_SIMD_NAMESPACE);
+
+        Pothos::PluginRegistry::add(pluginPath, std::move(fcnMap));
+    }
 }}

@@ -130,15 +130,6 @@ endif()
 ########################################################################
 # SIMD support
 ########################################################################
-find_package(xsimd)
-if(xsimd_FOUND)
-    include(PothosConfigSIMD)
-    add_definitions(-DPOTHOS_XSIMD)
-
-    add_subdirectory(SIMD)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-    list(APPEND Pothos_LIBRARIES PothosSIMD)
-endif()
 
 ########################################################################
 # Library sources
@@ -331,17 +322,19 @@ endif(MSVC)
 ########################################################################
 # If XSIMD found, add SIMD implementations
 ########################################################################
+find_package(xsimd)
 if(xsimd_FOUND)
-    #set(SIMDInputs
-    #    SIMD/BufferConvert.cpp
-    #    SIMD/VectorConvert.cpp)
-        
-    #PothosGenerateSIMDSources(
-    #    SIMDSources
-    #    SIMD/PothosCore.json
-    #    ${SIMDInputs})
-        
-    #list(APPEND POTHOS_SOURCES ${SIMSources})
+    include(PothosConfigSIMD)
+    add_definitions(-DPOTHOS_XSIMD)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+    
+    PothosGenerateSIMDSourcesOnly(PothosSIMDSources
+        SIMD/BufferConvert.cpp
+        SIMD/VectorConvert.cpp)
+    
+    list(APPEND POTHOS_SOURCES
+        SIMD/BufferConversions.cpp
+        ${PothosSIMDSources})
 endif()
 
 ########################################################################

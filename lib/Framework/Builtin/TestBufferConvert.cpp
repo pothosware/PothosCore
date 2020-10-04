@@ -57,7 +57,7 @@ void randType(std::complex<Type> &val)
 template <typename InType, typename OutType>
 void testBufferConvert(const size_t inVlen, const size_t outVlen)
 {
-    const size_t numElems = 100 + (std::rand() % 100);
+    const size_t numElems = 500 + (std::rand() % 100);
     Pothos::BufferChunk b0(Pothos::DType(typeid(InType), inVlen), numElems);
     const auto primElems = b0.length/b0.dtype.elemSize();
 
@@ -85,7 +85,7 @@ void testBufferConvert(const size_t inVlen, const size_t outVlen)
 template <typename InType, typename OutType>
 void testBufferConvertComplexComponents(const size_t inVlen, const size_t outVlen)
 {
-    const size_t numElems = 100 + (std::rand() % 100);
+    const size_t numElems = 500 + (std::rand() % 100);
     Pothos::BufferChunk b0(Pothos::DType(typeid(InType), inVlen), numElems);
     const auto primElems = b0.length/b0.dtype.elemSize();
 

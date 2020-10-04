@@ -2,6 +2,10 @@
 //                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
+#ifdef POTHOS_XSIMD
+#include "SIMD/BufferConversions.hpp"
+#endif
+
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <functional>
@@ -12,7 +16,7 @@
 /***********************************************************************
  * templated conversions
  **********************************************************************/
-#if !defined(POTHOS_XSIMD) || 1
+#if !defined(POTHOS_XSIMD)
 template <typename InType, typename OutType>
 void rawConvert(const void *in, void *out, const size_t num)
 {
@@ -30,6 +34,7 @@ void rawConvertComplex(const void* in, void* out, const size_t num)
 }
 #endif
 
+// TODO: SIMD with mask
 template <typename InType, typename OutType>
 void rawConvertRealToComplex(const void *in, void *out, const size_t num)
 {
@@ -105,7 +110,7 @@ private:
     {
         int h = 0;
 
-#if defined(POTHOS_XSIMD) && 0
+#if defined(POTHOS_XSIMD)
         h = dtypeIOToHash(Pothos::DType(typeid(InType)), Pothos::DType(typeid(OutType)));
         convertMap[h] = std::bind(PothosSIMD::bufferConvertDispatch<InType, OutType>(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
