@@ -508,7 +508,7 @@ set(POTHOS_X86_XOP_TEST_CODE
 # No flag for MSVC
 list(APPEND POTHOS_ARCHS_PRI "X86_AVX512F")
 if(POTHOS_CLANG OR POTHOS_GCC)
-    set(POTHOS_X86_AVX512F_CXX_FLAGS "-mavx512f -O1")
+    set(POTHOS_X86_AVX512F_CXX_FLAGS "-mavx512f -mavx512dq")
 elseif(POTHOS_INTEL)
     set(POTHOS_X86_AVX512F_CXX_FLAGS "-xCOMMON-AVX512")
 elseif(POTHOS_MSVC_INTEL)
@@ -1196,16 +1196,17 @@ function(pothos_get_arch_perm ALL_ARCHS_VAR)
         # Since Knights Landing, Skylake-X
         # All Intel CPUs that support AVX512F also support FMA3 and POPCNT,
         # thus separate X86_512F config is not needed.
-        list(APPEND ALL_ARCHS "X86_AVX512F,X86_FMA3,X86_POPCNT_INSN")
 
         if(DEFINED ARCH_SUPPORTED_X86_AVX512BW)
             if(DEFINED ARCH_SUPPORTED_X86_AVX512DQ)
                 if(DEFINED ARCH_SUPPORTED_X86_AVX512VL)
                     # All Intel processors that support AVX512BW also support
                     # AVX512DQ and AVX512VL
-                    list(APPEND ALL_ARCHS "X86_AVX512F,X86_FMA3,X86_POPCNT_INSN,X86_AVX512BW,X86_AVX512DQ,X86_AVX512VL")
+                    list(APPEND ALL_ARCHS "X86_AVX512BW,X86_AVX512DQ,X86_AVX512VL")
                 endif()
             endif()
+        else()
+            list(APPEND ALL_ARCHS "X86_AVX512F,X86_FMA3,X86_POPCNT_INSN")
         endif()
     endif()
     if(DEFINED ARCH_SUPPORTED_X86_XOP)
