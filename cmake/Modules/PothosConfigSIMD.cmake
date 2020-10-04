@@ -1290,15 +1290,9 @@ function(pothos_get_runnable_archs ARCH_LIST_VAR)
 
 endfunction()
 
-# ------------------------------------------------------------------------------
-# Entry point (TODO: more explanation)
-#
-#
-#
-#
-function(PothosGenerateSIMDSources FileListVariable JSONInputFile)
+function(PothosGenerateSIMDSourcesOnly FileListVariable)
     set(SIMDSourceFiles ${ARGV})
-    list(REMOVE_AT SIMDSourceFiles 0 1) # Remove non-source parameters
+    list(REMOVE_AT SIMDSourceFiles 0) # Remove non-source parameters
 
     pothos_get_compilable_archs(SIMDBuildArchs)
 
@@ -1314,6 +1308,18 @@ function(PothosGenerateSIMDSources FileListVariable JSONInputFile)
         list(APPEND FileList ${RelPath})
     endforeach()
 
+    set(${FileListVariable} ${FileList} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Entry point (TODO: more explanation)
+#
+#
+#
+#
+function(PothosGenerateSIMDSources FileListVariable JSONInputFile)
+    PothosGenerateSIMDSourcesOnly(FileListVariable ${ARGV})
+
     get_filename_component(JSONInputFilename ${JSONInputFile} NAME_WE)
     get_filename_component(JSONInputFileAbsolute ${JSONInputFile} ABSOLUTE)
     set(outputHeaderPath ${CMAKE_CURRENT_BINARY_DIR}/${JSONInputFilename}_SIMD.hpp)
@@ -1324,6 +1330,4 @@ function(PothosGenerateSIMDSources FileListVariable JSONInputFile)
         COMMAND ${POTHOS_UTIL_EXE} --simd-arches=${ArchString} --output=${outputHeaderPath} --generate-simd-dispatchers=${JSONInputFileAbsolute}
         DEPENDS ${JSONInputFileAbsolute})
     add_custom_target(${JSONInputFilename}_SIMDDispatcher DEPENDS ${outputHeaderPath})
-
-    set(${FileListVariable} ${FileList} PARENT_SCOPE)
 endfunction()
