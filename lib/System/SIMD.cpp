@@ -12,24 +12,33 @@
 #include <algorithm>
 #include <sstream>
 
-//
-// Internal libsimdpp code
-//
-
-#if SIMDPP_HAS_GET_ARCH_RAW_CPUID
-#define SIMDPP_USER_ARCH_INFO simdpp::get_arch_raw_cpuid()
-#elif SIMDPP_HAS_GET_ARCH_GCC_BUILTIN_CPU_SUPPORTS
-#define SIMDPP_USER_ARCH_INFO simdpp::get_arch_gcc_builtin_cpu_supports()
-#elif SIMDPP_HAS_GET_ARCH_LINUX_CPUINFO
-#define SIMDPP_USER_ARCH_INFO simdpp::get_arch_linux_cpuinfo()
-#else
-#define SIMDPP_USER_ARCH_INFO simdpp::Arch::NONE_NULL
-#endif
-
-//
-// Cannibalized from simdpp::get_arch_string_list internals
-//
 using simdpp::Arch;
+
+//
+// This call returns an arch enum corrseponding to the arches supported by the
+// current processor. This is the code underlying everything below.
+//
+
+static inline Arch getSupportedSIMDPPArches()
+{
+#if SIMDPP_HAS_GET_ARCH_RAW_CPUID
+    return simdpp::get_arch_raw_cpuid();
+#elif SIMDPP_HAS_GET_ARCH_GCC_BUILTIN_CPU_SUPPORTS
+    return simdpp::get_arch_gcc_builtin_cpu_supports();
+#elif SIMDPP_HAS_GET_ARCH_LINUX_CPUINFO
+    return simdpp::get_arch_linux_cpuinfo();
+#else
+    return simdpp::Arch::NONE_NULL;
+#endif
+}
+
+//
+// SIMDPP has no function to go from arch enum to string, so the code below cannibalizes
+// simdpp::get_arch_string_list to expose the strings alongside the arch enums used to
+// track support.
+//
+// See: https://github.com/p12tic/libsimdpp/blob/master/simdpp/dispatch/get_arch_string_list.h
+//
 
 struct ArchDesc
 {
@@ -112,7 +121,7 @@ static const std::string SEPARATOR = "__";
 
 static std::vector<std::string> _getSupportedSIMDFeatureSet()
 {
-    const auto simdppArchInfo = SIMDPP_USER_ARCH_INFO;
+    const auto simdppArchInfo = getSupportedSIMDPPArches();
     const auto arches = getAllPotentialSIMDFeatures();
 
     std::vector<std::string> simdArchitectures;
@@ -123,6 +132,13 @@ static std::vector<std::string> _getSupportedSIMDFeatureSet()
 
     return simdArchitectures;
 }
+
+//
+// For a given file, PothosConfigSIMD generates copies of it that compile with different sets of SIMD
+// flags. Each file exports a copy of the function with a namespace reflecting the supported feature
+// sets that correspond to that file. This function separates that namespace into the feature sets
+// to be checked against the feature sets supported by the current processor.
+//
 
 static std::vector<std::string> _separateSIMDFeatureSetKey(const std::string& featureSetKey)
 {
