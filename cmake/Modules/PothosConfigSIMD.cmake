@@ -505,196 +505,196 @@ set(POTHOS_X86_XOP_TEST_CODE
     }"
 )
 
-# # No flag for MSVC
-# list(APPEND POTHOS_ARCHS_PRI "X86_AVX512F")
-# if(POTHOS_CLANG OR POTHOS_GCC)
-#     set(POTHOS_X86_AVX512F_CXX_FLAGS "-mavx512f -O1")
-# elseif(POTHOS_INTEL)
-#     set(POTHOS_X86_AVX512F_CXX_FLAGS "-xCOMMON-AVX512")
-# elseif(POTHOS_MSVC_INTEL)
-#     set(POTHOS_X86_AVX512F_CXX_FLAGS "/arch:COMMON-AVX512")
-# endif()
-# set(POTHOS_X86_AVX512F_DEFINE "POTHOS_ARCH_X86_AVX512F")
-# set(POTHOS_X86_AVX512F_SUFFIX "-x86_avx512f")
-# set(POTHOS_X86_AVX512F_TEST_CODE
-#     "#include <immintrin.h>
-#     #include <iostream>
-# 
-#     #if defined(__GNUC__) && (__GNUC__ < 6) && !defined(__INTEL_COMPILER) && !defined(__clang__)
-#     #error GCC 5.x and older are not supported on AVX512F.
-#     #endif
-# 
-#     char* prevent_optimization(char* ptr)
-#     {
-#         volatile bool never = false;
-#         if (never) {
-#             while (*ptr++)
-#                 std::cout << *ptr;
-#         }
-#         char* volatile* volatile opaque;
-#         opaque = &ptr;
-#         return *opaque;
-#     }
-# 
-#     int main()
-#     {
-#         union {
-#             char data[64];
-#             __m512 align;
-#         };
-#         char* p = data;
-#         p = prevent_optimization(p);
-#         __m512 f = _mm512_load_ps((float*)p);
-#         p = prevent_optimization(p);
-#         __m512i i = _mm512_load_epi32((__m512i*)p);
-#         p = prevent_optimization(p);
-# 
-#         f = _mm512_add_ps(f, f);
-# 
-#         // MSVC 2017 miss this
-#         i = _mm512_or_epi32(i, i);
-#         f = _mm512_ceil_ps(f);
-# 
-#         // ICE on various versions of Clang trying to select palignr
-#         __m512i i2 = _mm512_load_epi32((__m512i*)p);
-#         __m512i ap = _mm512_alignr_epi32(i, i, 2);
-#         i = _mm512_mask_alignr_epi32(ap, 0xcccc, i2, i2, 14);
-# 
-#         p = prevent_optimization(p);
-#         _mm512_store_ps((float*)p, f);
-#         p = prevent_optimization(p);
-#         _mm512_store_epi32((void*)p, i);
-#         p = prevent_optimization(p);
-#     }"
-# )
-# 
-# # No flag for MSVC
-# list(APPEND POTHOS_ARCHS_PRI "X86_AVX512BW")
-# if(POTHOS_CLANG OR POTHOS_GCC)
-#     set(POTHOS_X86_AVX512BW_CXX_FLAGS "-mavx512bw")
-# elseif(POTHOS_INTEL)
-#     set(POTHOS_X86_AVX512BW_CXX_FLAGS "-xCORE-AVX512")
-# elseif(POTHOS_MSVC_INTEL)
-#     set(POTHOS_X86_AVX512BW_CXX_FLAGS "/arch:CORE-AVX512")
-# endif()
-# set(POTHOS_X86_AVX512BW_DEFINE "POTHOS_ARCH_X86_AVX512BW")
-# set(POTHOS_X86_AVX512BW_SUFFIX "-x86_avx512bw")
-# set(POTHOS_X86_AVX512BW_TEST_CODE
-#     "#include <immintrin.h>
-#     #include <iostream>
-# 
-#     char* prevent_optimization(char* ptr)
-#     {
-#         volatile bool never = false;
-#         if (never) {
-#             while (*ptr++)
-#                 std::cout << *ptr;
-#         }
-#         char* volatile* volatile opaque;
-#         opaque = &ptr;
-#         return *opaque;
-#     }
-# 
-#     int main()
-#     {
-#         union {
-#             char data[64];
-#             __m512i align;
-#         };
-#         char* p = data;
-#         p = prevent_optimization(p);
-# 
-#         __m512i i = _mm512_load_si512((void*)p);
-#         i = _mm512_add_epi16(i, i); // only in AVX-512BW
-#         _mm512_store_si512((void*)p, i);
-# 
-#         p = prevent_optimization(p);
-#     }"
-# )
-# 
-# # No flag for MSVC
-# list(APPEND POTHOS_ARCHS_PRI "X86_AVX512DQ")
-# if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
-#     set(POTHOS_X86_AVX512DQ_CXX_FLAGS "-mavx512dq")
-# endif()
-# set(POTHOS_X86_AVX512DQ_DEFINE "POTHOS_ARCH_X86_AVX512DQ")
-# set(POTHOS_X86_AVX512DQ_SUFFIX "-x86_avx512dq")
-# set(POTHOS_X86_AVX512DQ_TEST_CODE
-#     "#include <immintrin.h>
-#     #include <iostream>
-# 
-#     char* prevent_optimization(char* ptr)
-#     {
-#         volatile bool never = false;
-#         if (never) {
-#             while (*ptr++)
-#                 std::cout << *ptr;
-#         }
-#         char* volatile* volatile opaque;
-#         opaque = &ptr;
-#         return *opaque;
-#     }
-# 
-#     int main()
-#     {
-#         union {
-#             char data[64];
-#             __m512 align;
-#         };
-#         char* p = data;
-#         p = prevent_optimization(p);
-# 
-#         __m512 f = _mm512_load_ps((float*)p);
-#         f = _mm512_and_ps(f, f); // only in AVX512-DQ
-#         _mm512_store_ps((float*)p, f);
-# 
-#         p = prevent_optimization(p);
-#     }"
-# )
-# 
-# # No flag for MSVC
-# list(APPEND POTHOS_ARCHS_PRI "X86_AVX512VL")
-# if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
-#     set(POTHOS_X86_AVX512VL_CXX_FLAGS "-mavx512vl")
-# endif()
-# set(POTHOS_X86_AVX512VL_DEFINE "POTHOS_ARCH_X86_AVX512VL")
-# set(POTHOS_X86_AVX512VL_SUFFIX "-x86_avx512vl")
-# set(POTHOS_X86_AVX512VL_TEST_CODE
-#     "#if !defined(__APPLE__) && (__clang_major__ == 3)
-#     #error AVX512VL is not supported on clang 3.9 and earlier.
-#     #endif
-# 
-#     #include <immintrin.h>
-#     #include <iostream>
-# 
-#     char* prevent_optimization(char* ptr)
-#     {
-#         volatile bool never = false;
-#         if (never) {
-#             while (*ptr++)
-#                 std::cout << *ptr;
-#         }
-#         char* volatile* volatile opaque;
-#         opaque = &ptr;
-#         return *opaque;
-#     }
-# 
-#     int main()
-#     {
-#         union {
-#             char data[16];
-#             __m128 align;
-#         };
-#         char* p = data;
-#         p = prevent_optimization(p);
-# 
-#         __m128 f = _mm_load_ps((float*)p);
-#         f = _mm_rcp14_ps(f); // only in AVX512-VL
-#         _mm_store_ps((float*)p, f);
-# 
-#         p = prevent_optimization(p);
-#     }"
-# )
+# No flag for MSVC
+list(APPEND POTHOS_ARCHS_PRI "X86_AVX512F")
+if(POTHOS_CLANG OR POTHOS_GCC)
+    set(POTHOS_X86_AVX512F_CXX_FLAGS "-mavx512f -mavx512dq")
+elseif(POTHOS_INTEL)
+    set(POTHOS_X86_AVX512F_CXX_FLAGS "-xCOMMON-AVX512")
+elseif(POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_AVX512F_CXX_FLAGS "/arch:COMMON-AVX512")
+endif()
+set(POTHOS_X86_AVX512F_DEFINE "POTHOS_ARCH_X86_AVX512F")
+set(POTHOS_X86_AVX512F_SUFFIX "-x86_avx512f")
+set(POTHOS_X86_AVX512F_TEST_CODE
+    "#include <immintrin.h>
+    #include <iostream>
+
+    #if defined(__GNUC__) && (__GNUC__ < 6) && !defined(__INTEL_COMPILER) && !defined(__clang__)
+    #error GCC 5.x and older are not supported on AVX512F.
+    #endif
+
+    char* prevent_optimization(char* ptr)
+    {
+        volatile bool never = false;
+        if (never) {
+            while (*ptr++)
+                std::cout << *ptr;
+        }
+        char* volatile* volatile opaque;
+        opaque = &ptr;
+        return *opaque;
+    }
+
+    int main()
+    {
+        union {
+            char data[64];
+            __m512 align;
+        };
+        char* p = data;
+        p = prevent_optimization(p);
+        __m512 f = _mm512_load_ps((float*)p);
+        p = prevent_optimization(p);
+        __m512i i = _mm512_load_epi32((__m512i*)p);
+        p = prevent_optimization(p);
+
+        f = _mm512_add_ps(f, f);
+
+        // MSVC 2017 miss this
+        i = _mm512_or_epi32(i, i);
+        f = _mm512_ceil_ps(f);
+
+        // ICE on various versions of Clang trying to select palignr
+        __m512i i2 = _mm512_load_epi32((__m512i*)p);
+        __m512i ap = _mm512_alignr_epi32(i, i, 2);
+        i = _mm512_mask_alignr_epi32(ap, 0xcccc, i2, i2, 14);
+
+        p = prevent_optimization(p);
+        _mm512_store_ps((float*)p, f);
+        p = prevent_optimization(p);
+        _mm512_store_epi32((void*)p, i);
+        p = prevent_optimization(p);
+    }"
+)
+
+# No flag for MSVC
+list(APPEND POTHOS_ARCHS_PRI "X86_AVX512BW")
+if(POTHOS_CLANG OR POTHOS_GCC)
+    set(POTHOS_X86_AVX512BW_CXX_FLAGS "-mavx512bw")
+elseif(POTHOS_INTEL)
+    set(POTHOS_X86_AVX512BW_CXX_FLAGS "-xCORE-AVX512")
+elseif(POTHOS_MSVC_INTEL)
+    set(POTHOS_X86_AVX512BW_CXX_FLAGS "/arch:CORE-AVX512")
+endif()
+set(POTHOS_X86_AVX512BW_DEFINE "POTHOS_ARCH_X86_AVX512BW")
+set(POTHOS_X86_AVX512BW_SUFFIX "-x86_avx512bw")
+set(POTHOS_X86_AVX512BW_TEST_CODE
+    "#include <immintrin.h>
+    #include <iostream>
+
+    char* prevent_optimization(char* ptr)
+    {
+        volatile bool never = false;
+        if (never) {
+            while (*ptr++)
+                std::cout << *ptr;
+        }
+        char* volatile* volatile opaque;
+        opaque = &ptr;
+        return *opaque;
+    }
+
+    int main()
+    {
+        union {
+            char data[64];
+            __m512i align;
+        };
+        char* p = data;
+        p = prevent_optimization(p);
+
+        __m512i i = _mm512_load_si512((void*)p);
+        i = _mm512_add_epi16(i, i); // only in AVX-512BW
+        _mm512_store_si512((void*)p, i);
+
+        p = prevent_optimization(p);
+    }"
+)
+
+# No flag for MSVC
+list(APPEND POTHOS_ARCHS_PRI "X86_AVX512DQ")
+if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
+    set(POTHOS_X86_AVX512DQ_CXX_FLAGS "-mavx512dq")
+endif()
+set(POTHOS_X86_AVX512DQ_DEFINE "POTHOS_ARCH_X86_AVX512DQ")
+set(POTHOS_X86_AVX512DQ_SUFFIX "-x86_avx512dq")
+set(POTHOS_X86_AVX512DQ_TEST_CODE
+    "#include <immintrin.h>
+    #include <iostream>
+
+    char* prevent_optimization(char* ptr)
+    {
+        volatile bool never = false;
+        if (never) {
+            while (*ptr++)
+                std::cout << *ptr;
+        }
+        char* volatile* volatile opaque;
+        opaque = &ptr;
+        return *opaque;
+    }
+
+    int main()
+    {
+        union {
+            char data[64];
+            __m512 align;
+        };
+        char* p = data;
+        p = prevent_optimization(p);
+
+        __m512 f = _mm512_load_ps((float*)p);
+        f = _mm512_and_ps(f, f); // only in AVX512-DQ
+        _mm512_store_ps((float*)p, f);
+
+        p = prevent_optimization(p);
+    }"
+)
+
+# No flag for MSVC
+list(APPEND POTHOS_ARCHS_PRI "X86_AVX512VL")
+if(POTHOS_CLANG OR POTHOS_GCC OR POTHOS_INTEL)
+    set(POTHOS_X86_AVX512VL_CXX_FLAGS "-mavx512vl")
+endif()
+set(POTHOS_X86_AVX512VL_DEFINE "POTHOS_ARCH_X86_AVX512VL")
+set(POTHOS_X86_AVX512VL_SUFFIX "-x86_avx512vl")
+set(POTHOS_X86_AVX512VL_TEST_CODE
+    "#if !defined(__APPLE__) && (__clang_major__ == 3)
+    #error AVX512VL is not supported on clang 3.9 and earlier.
+    #endif
+
+    #include <immintrin.h>
+    #include <iostream>
+
+    char* prevent_optimization(char* ptr)
+    {
+        volatile bool never = false;
+        if (never) {
+            while (*ptr++)
+                std::cout << *ptr;
+        }
+        char* volatile* volatile opaque;
+        opaque = &ptr;
+        return *opaque;
+    }
+
+    int main()
+    {
+        union {
+            char data[16];
+            __m128 align;
+        };
+        char* p = data;
+        p = prevent_optimization(p);
+
+        __m128 f = _mm_load_ps((float*)p);
+        f = _mm_rcp14_ps(f); // only in AVX512-VL
+        _mm_store_ps((float*)p, f);
+
+        p = prevent_optimization(p);
+    }"
+)
 
 list(APPEND POTHOS_ARCHS_PRI "ARM_NEON")
 if(POTHOS_CLANG OR POTHOS_GCC)
@@ -1196,16 +1196,17 @@ function(pothos_get_arch_perm ALL_ARCHS_VAR)
         # Since Knights Landing, Skylake-X
         # All Intel CPUs that support AVX512F also support FMA3 and POPCNT,
         # thus separate X86_512F config is not needed.
-        list(APPEND ALL_ARCHS "X86_AVX512F,X86_FMA3,X86_POPCNT_INSN")
 
         if(DEFINED ARCH_SUPPORTED_X86_AVX512BW)
             if(DEFINED ARCH_SUPPORTED_X86_AVX512DQ)
                 if(DEFINED ARCH_SUPPORTED_X86_AVX512VL)
                     # All Intel processors that support AVX512BW also support
                     # AVX512DQ and AVX512VL
-                    list(APPEND ALL_ARCHS "X86_AVX512F,X86_FMA3,X86_POPCNT_INSN,X86_AVX512BW,X86_AVX512DQ,X86_AVX512VL")
+                    list(APPEND ALL_ARCHS "X86_AVX512BW,X86_AVX512DQ,X86_AVX512VL")
                 endif()
             endif()
+        else()
+            list(APPEND ALL_ARCHS "X86_AVX512F,X86_FMA3,X86_POPCNT_INSN")
         endif()
     endif()
     if(DEFINED ARCH_SUPPORTED_X86_XOP)
@@ -1295,12 +1296,12 @@ endfunction()
 #
 #
 #
-function(PothosGenerateSIMDSourcesOnly FileListVariable)
+function(PothosGenerateSIMDSources FileListVariable JSONInputFile)
     set(SIMDSourceFiles ${ARGV})
-    list(REMOVE_AT SIMDSourceFiles 0) # Remove non-source parameters
-    
+    list(REMOVE_AT SIMDSourceFiles 0 1) # Remove non-source parameters
+
     pothos_get_compilable_archs(SIMDBuildArchs)
-    
+
     foreach(SrcFile ${SIMDSourceFiles})
         set(SingleFileSIMDSources "")
         pothos_multiarch(SingleFileSIMDSources ArchString ${SrcFile} ${SIMDBuildArchs})
@@ -1312,24 +1313,17 @@ function(PothosGenerateSIMDSourcesOnly FileListVariable)
         file(RELATIVE_PATH RelPath ${CMAKE_CURRENT_SOURCE_DIR} ${AbsPath})
         list(APPEND FileList ${RelPath})
     endforeach()
-    
-    set(${FileListVariable} ${FileList} PARENT_SCOPE)
-endfunction()
 
-function(PothosGenerateSIMDSources FileListVariable JSONInputFile)
-    PothosGenerateSIMDSourcesOnly(FileListVariable ${ARGV})
-    
     get_filename_component(JSONInputFilename ${JSONInputFile} NAME_WE)
     get_filename_component(JSONInputFileAbsolute ${JSONInputFile} ABSOLUTE)
     set(outputHeaderPath ${CMAKE_CURRENT_BINARY_DIR}/${JSONInputFilename}_SIMD.hpp)
-    
+
     add_custom_command(
         OUTPUT ${outputHeaderPath}
         COMMENT "Generating ${JSONInputFilename} SIMD dynamic dispatchers"
         COMMAND ${POTHOS_UTIL_EXE} --simd-arches=${ArchString} --output=${outputHeaderPath} --generate-simd-dispatchers=${JSONInputFileAbsolute}
-        DEPENDS PothosUtil
         DEPENDS ${JSONInputFileAbsolute})
-    add_custom_target(${JSONInputFilename}_SIMD DEPENDS ${outputHeaderPath})
-endfunction()
+    add_custom_target(${JSONInputFilename}_SIMDDispatcher DEPENDS ${outputHeaderPath})
 
-# TODO: don't support PPC, XSIMD doesn't but libsimdpp does
+    set(${FileListVariable} ${FileList} PARENT_SCOPE)
+endfunction()
