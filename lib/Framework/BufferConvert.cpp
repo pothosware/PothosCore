@@ -34,7 +34,6 @@ void rawConvertComplex(const void* in, void* out, const size_t num)
 }
 #endif
 
-// TODO: SIMD with mask
 template <typename InType, typename OutType>
 void rawConvertRealToComplex(const void *in, void *out, const size_t num)
 {
