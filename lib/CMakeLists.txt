@@ -329,8 +329,7 @@ if(xsimd_FOUND)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
     
     PothosGenerateSIMDSourcesOnly(PothosSIMDSources
-        SIMD/BufferConvert.cpp
-        SIMD/VectorConvert.cpp)
+        SIMD/BufferConvert.cpp)
     
     list(APPEND POTHOS_SOURCES
         SIMD/BufferConversions.cpp

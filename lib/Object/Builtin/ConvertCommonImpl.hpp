@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-
 #include <Pothos/Config.hpp>
 #include <Pothos/Exception.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
@@ -12,7 +11,6 @@
 #include <limits>
 #include <complex>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 /***********************************************************************
@@ -115,9 +113,6 @@ static void registerConvertNum(const std::string &inName, const std::string &out
  * template comprehension to handle vectors of numbers
  **********************************************************************/
 template <typename InType, typename OutType>
-using ConvertVectorFcn = std::vector<OutType>(*)(const std::vector<InType>&);
-
-template <typename InType, typename OutType>
 std::vector<OutType> convertVec(const std::vector<InType> &in)
 {
     std::vector<OutType> out(in.size());
@@ -126,45 +121,6 @@ std::vector<OutType> convertVec(const std::vector<InType> &in)
         out[i] = convertNum<InType, OutType>(in[i]);
     }
     return out;
-}
-
-#if defined(POTHOS_XSIMD) && 0
-template <typename T>
-struct IsComplex : std::false_type {};
-
-template <typename T>
-struct IsComplex<std::complex<T>> : std::true_type {};
-
-template <typename InType, typename OutType>
-struct ConvertVectorWithSIMD : public std::integral_constant<bool,
-    (!IsComplex<InType>::value && !IsComplex<OutType>::value) &&
-    ((!std::is_integral<InType>::value&& std::is_floating_point<OutType>::value) ||
-        ((std::is_signed<InType>::value == std::is_signed<OutType>::value) && (sizeof(InType) <= sizeof(OutType))) ||
-        ((!std::is_signed<InType>::value && std::is_signed<OutType>::value) && (sizeof(InType) < sizeof(OutType))))
-        >
-{};
-
-template <typename InType, typename OutType, typename RetType = void>
-using EnableIfSIMDConvert = typename std::enable_if<ConvertVectorWithSIMD<InType, OutType>::value, RetType>::type;
-
-template <typename InType, typename OutType, typename RetType = void>
-using EnableIfNormalConvert = typename std::enable_if<!ConvertVectorWithSIMD<InType, OutType>::value, RetType>::type;
-
-template <typename InType, typename OutType>
-static inline EnableIfSIMDConvert<InType, OutType, ConvertVectorFcn<InType, OutType>> getConvertVectorFcn()
-{
-    return PothosSIMD::convertVecFcnDispatch<InType, OutType>()
-}
-
-template <typename InType, typename OutType>
-EnableIfNormalConvert<InType, OutType, ConvertVectorFcn<InType, OutType>>
-#else
-template <typename InType, typename OutType>
-inline ConvertVectorFcn<InType, OutType>
-#endif
-getVectorConvertFcn()
-{
-    return &convertVec<InType, OutType>;
 }
 
 /***********************************************************************
@@ -182,7 +138,7 @@ static void registerConvertVec(const std::string &inName, const std::string &out
  **********************************************************************/
 #define declare_number_conversion2(inType, outType) \
     registerConvertNum(#inType, #outType, Pothos::Callable(&convertNum<inType, outType>)); \
-    registerConvertVec(#inType, #outType, Pothos::Callable(getVectorConvertFcn<inType, outType>()));
+    registerConvertVec(#inType, #outType, Pothos::Callable(&convertVec<inType, outType>));
 
 #define declare_number_conversion1(inType) \
     declare_number_conversion2(inType, char) \
