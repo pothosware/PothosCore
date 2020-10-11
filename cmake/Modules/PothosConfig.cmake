@@ -42,7 +42,7 @@ endif (Poco_FOUND)
 # install directory for cmake files
 ########################################################################
 if (UNIX)
-    set(POTHOS_CMAKE_DIRECTORY share/cmake/Pothos)
+    set(POTHOS_CMAKE_DIRECTORY ${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME})
 elseif (WIN32)
     set(POTHOS_CMAKE_DIRECTORY cmake)
 endif ()
@@ -166,7 +166,7 @@ if(MSVC)
 endif()
 
 if(UNIX)
-    file(TO_NATIVE_PATH "${POTHOS_ROOT}/lib${LIB_SUFFIX}" lib_path)
+    file(TO_NATIVE_PATH "${POTHOS_ROOT}/${CMAKE_INSTALL_LIBDIR}" lib_path)
     file(TO_NATIVE_PATH "${POTHOS_UTIL_EXE}" POTHOS_UTIL_EXE)
     find_program(SH_EXE sh)
     find_program(CHMOD_EXE chmod)
@@ -194,12 +194,12 @@ endif()
 ########################################################################
 find_library(
     POTHOS_LIBRARY Pothos Pothosd
-    PATHS ${POTHOS_ROOT}/lib${LIB_SUFFIX}
+    PATHS ${POTHOS_ROOT}/${CMAKE_INSTALL_LIBDIR}
     PATH_SUFFIXES ${CMAKE_LIBRARY_ARCHITECTURE}
     NO_DEFAULT_PATH
 )
 if(NOT POTHOS_LIBRARY)
-    message(FATAL_ERROR "cannot find Pothos library in ${POTHOS_ROOT}/lib${LIB_SUFFIX}")
+    message(FATAL_ERROR "cannot find Pothos library in ${POTHOS_ROOT}/${CMAKE_INSTALL_LIBDIR}")
 endif()
 list(INSERT Pothos_LIBRARIES 0 ${POTHOS_LIBRARY})
 
@@ -208,11 +208,11 @@ list(INSERT Pothos_LIBRARIES 0 ${POTHOS_LIBRARY})
 ########################################################################
 find_path(
     POTHOS_INCLUDE_DIR Pothos/Config.hpp
-    PATHS ${POTHOS_ROOT}/include
+    PATHS ${POTHOS_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
     NO_DEFAULT_PATH
 )
 if(NOT POTHOS_INCLUDE_DIR)
-    message(FATAL_ERROR "cannot find Pothos includes in ${POTHOS_ROOT}/include")
+    message(FATAL_ERROR "cannot find Pothos includes in ${POTHOS_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
 list(INSERT Pothos_INCLUDE_DIRS 0 ${POTHOS_INCLUDE_DIR})
 _POTHOS_GET_ABI_VERSION(POTHOS_ABI_VERSION ${POTHOS_INCLUDE_DIR})

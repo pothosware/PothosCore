@@ -12,6 +12,6 @@ endif()
 ########################################################################
 install(
     DIRECTORY Pothos
-    DESTINATION include
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     COMPONENT pothos_devel
 )

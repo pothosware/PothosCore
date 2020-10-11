@@ -44,7 +44,7 @@ std::string Pothos::System::getRootPath(void)
 std::string Pothos::System::getDataPath(void)
 {
     Poco::Path dataPath(getRootPath());
-    dataPath.append("share");
+    dataPath.append("@CMAKE_INSTALL_DATADIR@");
     dataPath.append("Pothos");
     return dataPath.absolute().toString();
 }
@@ -64,7 +64,7 @@ std::string Pothos::System::getUserDataPath(void)
     {
         dataPath = Poco::Path::home();
         dataPath.append(".local");
-        dataPath.append("share");
+        dataPath.append("@CMAKE_INSTALL_DATADIR@");
     }
     dataPath.append("Pothos");
     return dataPath.absolute().toString();
@@ -93,7 +93,7 @@ std::string Pothos::System::getUserConfigPath(void)
 std::string Pothos::System::getPothosUtilExecutablePath(void)
 {
     Poco::Path utilPath(Pothos::System::getRootPath());
-    utilPath.append("bin");
+    utilPath.append("@CMAKE_INSTALL_BINDIR@");
     utilPath.append("PothosUtil");
     #if defined(POCO_OS_FAMILY_WINDOWS)
     utilPath.setExtension("exe");
@@ -106,9 +106,9 @@ std::string Pothos::System::getPothosRuntimeLibraryPath(void)
 {
     Poco::Path dllPath(Pothos::System::getRootPath());
     #if defined(POCO_OS_FAMILY_WINDOWS)
-    dllPath.append("bin");
+    dllPath.append("@CMAKE_INSTALL_BINDIR@");
     #elif defined(POCO_OS_FAMILY_UNIX)
-    dllPath.append("lib@LIB_SUFFIX@");
+    dllPath.append("@CMAKE_INSTALL_LIBDIR@");
     #endif
     dllPath.append(POTHOS_LIBRARY_NAME);
 
@@ -118,14 +118,14 @@ std::string Pothos::System::getPothosRuntimeLibraryPath(void)
 std::string Pothos::System::getPothosDevIncludePath(void)
 {
     Poco::Path incPath(Pothos::System::getRootPath());
-    incPath.append("include");
+    incPath.append("@CMAKE_INSTALL_INCLUDEDIR@");
     return incPath.absolute().toString();
 }
 
 std::string Pothos::System::getPothosDevLibraryPath(void)
 {
     Poco::Path libPath(Pothos::System::getRootPath());
-    libPath.append("lib@LIB_SUFFIX@");
+    libPath.append("@CMAKE_INSTALL_LIBDIR@");
     return libPath.absolute().toString();
 }
 
@@ -142,10 +142,10 @@ std::vector<std::string> Pothos::System::getPothosModuleSearchPaths()
     //support /usr/local module installs when the install prefix is /usr
     if (Pothos::System::getRootPath() == "/usr")
     {
-        searchPaths.push_back("/usr/local/lib@LIB_SUFFIX@/Pothos/modules" + Pothos::System::getAbiVersion());
+        searchPaths.push_back("/usr/local/@CMAKE_INSTALL_LIBDIR@/Pothos/modules" + Pothos::System::getAbiVersion());
         //when using a multi-arch directory, support single-arch path as well
-        static const std::string libsuffix("@LIB_SUFFIX@");
-        if (not libsuffix.empty() and libsuffix.at(0) == '/')
+        static const std::string libdir("@CMAKE_INSTALL_LIBDIR@");
+        if (libdir.find("lib/") == 0) //startswith lib/ indicating multi-arch
             searchPaths.push_back("/usr/local/lib/Pothos/modules" + Pothos::System::getAbiVersion());
 
     }

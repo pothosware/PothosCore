@@ -141,7 +141,7 @@ function(POTHOS_MODULE_UTIL)
         list(APPEND POTHOS_MODULE_UTIL_SOURCES ${cpp_doc_file})
     endif()
 
-    set(MODULE_DESTINATION lib${LIB_SUFFIX}/Pothos/modules${POTHOS_ABI_VERSION}/${POTHOS_MODULE_UTIL_DESTINATION})
+    set(MODULE_DESTINATION ${CMAKE_INSTALL_LIBDIR}/Pothos/modules${POTHOS_ABI_VERSION}/${POTHOS_MODULE_UTIL_DESTINATION})
 
     #determine user-specified or automatic install prefix
     if (POTHOS_MODULE_UTIL_PREFIX)

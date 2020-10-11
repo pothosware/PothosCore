@@ -1,7 +1,7 @@
 prefix=@CMAKE_INSTALL_PREFIX@
 exec_prefix=${prefix}
-libdir=${exec_prefix}/lib@LIB_SUFFIX@
-includedir=${prefix}/include
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 
 Name: Pothos
 Description: The Pothos data-flow framework
@@ -11,5 +11,5 @@ Requires:
 Requires.private:
 Conflicts:
 Cflags: -I${includedir}
-Libs: -L${libdir} -lPothos -lPothosSerialization
+Libs: -L${libdir} -lPothos
 Libs.private: @PC_LIBS_PRIVATE@
