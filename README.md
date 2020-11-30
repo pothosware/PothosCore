@@ -65,7 +65,7 @@ This repository is a meta-project for developing, building, and installing
 the main Pothos framework, core dependency libraries, and official toolkits.
 License files and source code are available in each project sub-directory.
 
-The core Pothos library, Poco C++ libraries,
+The core Pothos library, Poco and libsimdpp C++ libraries,
 and official toolkits found in this repository
 are available under the Boost Software License - Version 1.0.
 

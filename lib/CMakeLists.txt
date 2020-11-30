@@ -31,6 +31,11 @@ if (NOT JSON_HPP_INCLUDE_DIR)
 endif (NOT JSON_HPP_INCLUDE_DIR)
 
 ########################################################################
+# libsimdpp
+########################################################################
+list(APPEND Pothos_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/libsimdpp)
+
+########################################################################
 ## Feature registration
 ########################################################################
 cmake_dependent_option(ENABLE_LIBRARY_LIB "Enable Pothos Library.Lib component" ON "ENABLE_LIBRARY;muparserx_FOUND;JSON_HPP_INCLUDE_DIR" OFF)
@@ -136,6 +141,7 @@ list(APPEND POTHOS_SOURCES
     System/HostInfo.cpp
     System/NumaInfo.cpp
     System/Exception.cpp
+    System/SIMD.cpp
 
     Object/Object.cpp
     Object/Hash.cpp
@@ -264,10 +270,12 @@ list(APPEND POTHOS_SOURCES
     Util/Builtin/DeviceInfoUtils.cpp
     Util/Builtin/DocUtils.cpp
     Util/Builtin/MupOctalValReader.cpp
+    Util/Builtin/SIMDDispatcherUtils.cpp
     Util/Builtin/TestDocUtils.cpp
     Util/Builtin/TestErrorCodeHandling.cpp
     Util/Builtin/TestEvalExpression.cpp
     Util/Builtin/TestRingDeque.cpp
+    Util/Builtin/TestSIMDDispatcherUtils.cpp
 
     Archive/ArchiveEntry.cpp
     Archive/StreamArchiver.cpp
