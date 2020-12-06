@@ -50,6 +50,14 @@ Pothos::BufferManager::Sptr Pothos::BufferManager::make(const std::string &name,
     return manager;
 }
 
+Pothos::BufferManager::Sptr Pothos::BufferManager::make(const std::string &name, const BufferManagerArgs &args, const AllocateFcn &allocateFcn)
+{
+    auto manager = make(name);
+    manager->setAllocateFunction(allocateFcn);
+    manager->init(args);
+    return manager;
+}
+
 void Pothos::BufferManager::init(const BufferManagerArgs &)
 {
     if(_initialized) throw BufferManagerFactoryError("Pothos::BufferManager::init()", "already initialized");
