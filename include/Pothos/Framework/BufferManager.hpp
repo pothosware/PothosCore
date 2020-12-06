@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
+///                    2020 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -47,6 +48,8 @@ struct POTHOS_API BufferManagerArgs
      */
     long nodeAffinity;
 };
+
+using AllocateFcn = std::function<SharedBuffer(const BufferManagerArgs& args)>;
 
 /*!
  * A BufferManager has a queue-like interface to manage buffers.
@@ -135,6 +138,8 @@ public:
      */
     void pushExternal(const ManagedBuffer &buff);
 
+    void setAllocateFunction(const AllocateFcn &allocateFcn);
+
     /*!
      * Set the callback for use with the pushExternal API call.
      */
@@ -149,6 +154,8 @@ protected:
 
     //! Called by derived classes to set the buffer for front()
     void setFrontBuffer(const BufferChunk &buff);
+
+    AllocateFcn _allocateFcn;
 
 private:
     bool _initialized;
