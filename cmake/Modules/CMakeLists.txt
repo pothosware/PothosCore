@@ -26,6 +26,8 @@ install(
         FindPkgMacros.cmake
         FindPoco.cmake
         SetupPoco.cmake
+        #SIMD
+        PothosConfigSIMD.cmake
     DESTINATION ${POTHOS_CMAKE_DIRECTORY}
     COMPONENT pothos_devel
 )

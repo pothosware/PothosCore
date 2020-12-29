@@ -25,6 +25,8 @@ public:
     void docParse(const std::vector<std::string> &);
     void listModules(const std::string &, const std::string &);
     void printProxyEnvironmentInfo(const std::string &, const std::string &);
+    void printSIMDFeatures(void);
+    void generateSIMDDispatchers(const std::string &, const std::string &);
 
     //! Variables passed in via the --vars option
     std::vector<std::pair<std::string, std::string>> _vars;

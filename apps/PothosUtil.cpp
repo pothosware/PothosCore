@@ -20,7 +20,8 @@ public:
         _helpRequested(argc <= 1),
         _docParseRequested(false),
         _deviceInfoRequested(false),
-        _runTopologyRequested(false)
+        _runTopologyRequested(false),
+        _simdFeaturesRequested(false)
     {
         this->setUnixOptions(true); //always unix style --option
 
@@ -168,6 +169,23 @@ protected:
             .argument("proxyEnvName", false/*optional*/)
             .binding("proxyEnvName")
             .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printProxyEnvironmentInfo)));
+
+        options.addOption(Poco::Util::Option("simd-features", "", "print available SIMD features")
+            .required(false)
+            .repeatable(false));
+
+        options.addOption(Poco::Util::Option("generate-simd-dispatchers", "", "Generate SIMD dispatchers based on a given JSON file")
+            .required(false)
+            .repeatable(false)
+            .argument("inputFile")
+            .binding("inputFile")
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::generateSIMDDispatchers)));
+
+        options.addOption(Poco::Util::Option("simd-arches", "", "A comma-delimited list of SIMD arches, as generated at CMake-time")
+            .required(false)
+            .repeatable(false)
+            .argument("simdArches")
+            .binding("simdArches"));
     }
 
     void handleOption(const std::string &name, const std::string &value)
@@ -177,6 +195,7 @@ protected:
         if (name == "doc-parse") _docParseRequested = true;
         if (name == "device-info") _deviceInfoRequested = true;
         if (name == "run-topology") _runTopologyRequested = true;
+        if (name == "simd-features") _simdFeaturesRequested = true;
         if (name == "help") this->stopOptionsProcessing();
 
         //store --var options into the ordered vars map
@@ -211,6 +230,7 @@ protected:
             else if (_docParseRequested) this->docParse(args);
             else if (_deviceInfoRequested) this->printDeviceInfo();
             else if (_runTopologyRequested) this->runTopology();
+            else if (_simdFeaturesRequested) this->printSIMDFeatures();
         }
         catch(const Pothos::Exception &ex)
         {
@@ -226,6 +246,7 @@ private:
     bool _docParseRequested;
     bool _deviceInfoRequested;
     bool _runTopologyRequested;
+    bool _simdFeaturesRequested;
 };
 
 int main(int argc, char *argv[])
