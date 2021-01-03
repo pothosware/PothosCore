@@ -25,8 +25,7 @@ Example (all fields required except addedIncludes):
         {
             "name": "clamp",
             "returnType": "void",
-            "paramTypes": ["T"],
-            "params": ["const T*", "const T*", "const T&", "const T&", "size_t"]
+            "params": ["const float*", "float*", "float", "float", "size_t"]
         },
         {
             "name": "minmax",
@@ -101,8 +100,36 @@ static inline std::string getParamTypeString(const SIMDInfo& simdInfo)
     return join(simdInfo.paramTypes, ", ");
 }
 
+// Accounts for whether function is templated or not
+static std::string getFunctionString(const SIMDInfo& simdInfo)
+{
+    if(!simdInfo.paramTypes.empty())
+    {
+        return Poco::format(
+                   "%s<%s>",
+                   simdInfo.name,
+                   getParamTypeString(simdInfo));
+    }
+    else return simdInfo.name;
+}
+
+// Accounts for whether type is templated or not
+static std::string getFunctionTypeString(const SIMDInfo& simdInfo)
+{
+    if(!simdInfo.paramTypes.empty())
+    {
+        return Poco::format(
+                   "%sFcn<%s>",
+                   simdInfo.name,
+                   getParamTypeString(simdInfo));
+    }
+    else return simdInfo.name+"Fcn";
+}
+
 static std::string getTemplateTypenameString(const SIMDInfo& simdInfo)
 {
+    if(simdInfo.paramTypes.empty()) return "";
+
     std::vector<std::string> typenameStrings;
     typenameStrings.reserve(simdInfo.paramTypes.size());
 
@@ -127,10 +154,9 @@ static inline std::string getParamString(const SIMDInfo& simdInfo)
 
 static inline std::string getDeclTypeString(const SIMDInfo& simdInfo)
 {
-    return Poco::format("decltype(&%s::fallback::%s<%s>)",
+    return Poco::format("decltype(&%s::fallback::%s)",
                simdInfo.simdNamespace,
-               simdInfo.name,
-               getParamTypeString(simdInfo));
+               getFunctionString(simdInfo));
 }
 
 static inline std::string getUsingFunctionTypeString(const SIMDInfo& simdInfo)
@@ -178,7 +204,7 @@ static std::string getMapEntry(
                arch,
                simdInfo.simdNamespace,
                arch,
-               simdInfo.name);
+               getFunctionString(simdInfo));
 }
 
 static std::string getMapEntries(const SIMDInfo& simdInfo)
@@ -201,9 +227,8 @@ static std::string getMapEntries(const SIMDInfo& simdInfo)
 static std::string getMapString(const SIMDInfo& simdInfo)
 {
     return Poco::format(
-               "static const std::unordered_map<std::string, %sFcn<%s>> Impls = \n{\n%s\n};",
-               simdInfo.name,
-               getParamTypeString(simdInfo),
+               "static const std::unordered_map<std::string, %s> Impls = \n{\n%s\n};",
+               getFunctionTypeString(simdInfo),
                getMapEntries(simdInfo));
 }
 
@@ -237,7 +262,7 @@ static std::string getFullFuncString(const SIMDInfo& simdInfo)
         "    %s\n\n"
 
         "    %s\n"
-        "    %sFcn<%s> %sDispatch()\n"
+        "    %s %sDispatch()\n"
         "    {\n"
         "%s\n"
         "        auto implIter = Impls.find(%s);\n"
@@ -254,8 +279,7 @@ static std::string getFullFuncString(const SIMDInfo& simdInfo)
                getFuncDeclString(simdInfo),
                getUsingFunctionTypeString(simdInfo),
                getTemplateTypenameString(simdInfo),
-               simdInfo.name,
-               getParamTypeString(simdInfo),
+               getFunctionTypeString(simdInfo),
                simdInfo.name,
                getMapString(simdInfo),
                getFeatureSetKeyString(simdInfo));
@@ -290,8 +314,10 @@ static SIMDInfo jsonToSIMDInfo(
     simdInfo.arches = arches;
     simdInfo.name = json["name"].get<std::string>();
     simdInfo.returnType = json["returnType"].get<std::string>();
-    simdInfo.paramTypes = json["paramTypes"].get<std::vector<std::string>>();
     simdInfo.params = json["params"].get<std::vector<std::string>>();
+
+    auto paramTypesIter = json.find("paramTypes");
+    if (paramTypesIter != json.end()) simdInfo.paramTypes = paramTypesIter->get<std::vector<std::string>>();
 
     auto addedIncludesIter = json.find("addedIncludes");
     if (addedIncludesIter != json.end()) simdInfo.addedIncludes = addedIncludesIter->get<std::vector<std::string>>();
@@ -320,7 +346,7 @@ static std::vector<SIMDInfo> importSIMDFromJSON(
 }
 
 //
-//
+// Caller-facing
 //
 
 static inline std::string getSIMDDispatcherString(
