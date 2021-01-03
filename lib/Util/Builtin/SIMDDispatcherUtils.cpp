@@ -174,11 +174,12 @@ static std::string getMapEntry(
     const std::string& arch)
 {
     return Poco::format(
-               "{\"%s\", &%s::%s::%s}",
+               "{\"%s\", &%s::%s::%s<%s>}",
                arch,
                simdInfo.simdNamespace,
                arch,
-               simdInfo.name);
+               simdInfo.name,
+               getParamTypeString(simdInfo));
 }
 
 static std::string getMapEntries(const SIMDInfo& simdInfo)
@@ -320,7 +321,7 @@ static std::vector<SIMDInfo> importSIMDFromJSON(
 }
 
 //
-//
+// Caller-facing
 //
 
 static inline std::string getSIMDDispatcherString(
