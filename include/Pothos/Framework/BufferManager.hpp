@@ -87,7 +87,6 @@ public:
      */
     static Sptr make(const std::string &name, const BufferManagerArgs &args);
 
-    // TODO: test for custom allocate function
     static Sptr make(
         const std::string &name,
         const BufferManagerArgs &args,
