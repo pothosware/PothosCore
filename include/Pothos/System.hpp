@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2014 Josh Blum
+///                    2020 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -16,3 +17,4 @@
 #include <Pothos/System/HostInfo.hpp>
 #include <Pothos/System/NumaInfo.hpp>
 #include <Pothos/System/Exception.hpp>
+#include <Pothos/System/SIMD.hpp>
