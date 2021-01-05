@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2016 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -6,6 +7,14 @@
 #include <Pothos/Framework/BufferManager.hpp>
 #include <cassert>
 #include <iostream>
+
+// Default allocator
+static Pothos::SharedBuffer defaultGenericBufferAllocator(const Pothos::BufferManagerArgs &args)
+{
+    return Pothos::SharedBuffer::make(
+               args.bufferSize*args.numBuffers,
+               args.nodeAffinity);
+}
 
 /***********************************************************************
  * generic buffer implementation
@@ -19,7 +28,7 @@ public:
         _bufferSize(0),
         _bytesPopped(0)
     {
-        return;
+        this->_allocateFcn = defaultGenericBufferAllocator;
     }
 
     void init(const Pothos::BufferManagerArgs &args)
@@ -29,8 +38,8 @@ public:
         _readyBuffs = Pothos::Util::OrderedQueue<Pothos::ManagedBuffer>(args.numBuffers);
 
         //allocate one large continuous slab
-        auto commonSlab = Pothos::SharedBuffer::make(
-            args.bufferSize*args.numBuffers, args.nodeAffinity);
+        assert(this->_allocateFcn);
+        auto commonSlab = this->_allocateFcn(args);
 
         //create managed buffers based on chunks from the slab
         std::vector<Pothos::ManagedBuffer> managedBuffers(args.numBuffers);
