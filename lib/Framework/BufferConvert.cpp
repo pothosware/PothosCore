@@ -1,5 +1,8 @@
 // Copyright (c) 2013-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
+
+#include "SIMD/SIMDConvert.hpp"
 
 #include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Framework/Exception.hpp>
@@ -7,32 +10,17 @@
 #include <complex>
 #include <cstdint>
 #include <map>
+#include <iostream>
 
 /***********************************************************************
  * templated conversions
  **********************************************************************/
-template <typename InType, typename OutType>
-void rawConvert(const void *in, void *out, const size_t num)
-{
-    auto inElems = reinterpret_cast<const InType *>(in);
-    auto outElems = reinterpret_cast<OutType *>(out);
-    for (size_t i = 0; i < num; i++) outElems[i] = OutType(inElems[i]);
-}
-
 template <typename InType, typename OutType>
 void rawConvertRealToComplex(const void *in, void *out, const size_t num)
 {
     auto inElems = reinterpret_cast<const InType *>(in);
     auto outElems = reinterpret_cast<std::complex<OutType> *>(out);
     for (size_t i = 0; i < num; i++) outElems[i] = std::complex<OutType>(OutType(inElems[i]));
-}
-
-template <typename InType, typename OutType>
-void rawConvertComplex(const void *in, void *out, const size_t num)
-{
-    auto inElems = reinterpret_cast<const std::complex<InType> *>(in);
-    auto outElems = reinterpret_cast<std::complex<OutType> *>(out);
-    for (size_t i = 0; i < num; i++) outElems[i] = std::complex<OutType>(OutType(inElems[i].real()), OutType(inElems[i].imag()));
 }
 
 template <typename InType, typename OutType>
@@ -103,13 +91,13 @@ private:
         int h = 0;
 
         h = dtypeIOToHash(Pothos::DType(typeid(InType)), Pothos::DType(typeid(OutType)));
-        convertMap[h] = std::bind(&rawConvert<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        convertMap[h] = std::bind(&simdConvertBuffer<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
         h = dtypeIOToHash(Pothos::DType(typeid(InType)), Pothos::DType(typeid(std::complex<OutType>)));
         convertMap[h] = std::bind(&rawConvertRealToComplex<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
         h = dtypeIOToHash(Pothos::DType(typeid(std::complex<InType>)), Pothos::DType(typeid(std::complex<OutType>)));
-        convertMap[h] = std::bind(&rawConvertComplex<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        convertMap[h] = std::bind(&simdConvertBuffer<std::complex<InType>, std::complex<OutType>>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
         h = dtypeIOToHash(Pothos::DType(typeid(std::complex<InType>)), Pothos::DType(typeid(OutType)));
         convertComplexMap[h] = std::bind(&rawConvertComponents<InType, OutType>, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);

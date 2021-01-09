@@ -1,9 +1,12 @@
 // Copyright (c) 2014-2016 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
+#include "SIMD/SIMDConvert.hpp"
 #include <Pothos/Config.hpp>
 #include <Pothos/Exception.hpp>
+#include <Pothos/Util/Templates.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Callable.hpp>
@@ -12,6 +15,7 @@
 #include <complex>
 #include <string>
 #include <vector>
+#include <type_traits>
 
 /***********************************************************************
  * typedefs that make nice clean registry names since we use #name
@@ -112,15 +116,101 @@ static void registerConvertNum(const std::string &inName, const std::string &out
 /***********************************************************************
  * template comprehension to handle vectors of numbers
  **********************************************************************/
-template <typename InType, typename OutType>
-std::vector<OutType> convertVec(const std::vector<InType> &in)
+namespace detail
 {
-    std::vector<OutType> out(in.size());
-    for (size_t i = 0; i < out.size(); i++)
+    template <typename InType, typename OutType>
+    struct NeitherComplex: std::integral_constant<bool,
+        !Pothos::Util::is_complex<InType>::value &&
+        !Pothos::Util::is_complex<OutType>::value
+    > {};
+
+    template <typename InType, typename OutType>
+    struct BothComplex: std::integral_constant<bool,
+        Pothos::Util::is_complex<InType>::value &&
+        Pothos::Util::is_complex<OutType>::value
+    > {};
+
+    template <typename InType, typename OutType>
+    std::vector<OutType> simdConvertVec(const std::vector<InType>& in)
     {
-        out[i] = convertNum<InType, OutType>(in[i]);
+        std::vector<OutType> out(in.size());
+        simdConvertBuffer<InType, OutType>(in.data(), out.data(), in.size());
+
+        return out;
     }
-    return out;
+
+    template <typename InType, typename OutType>
+    std::vector<OutType> manualConvertVec(const std::vector<InType>& in)
+    {
+        std::vector<OutType> out(in.size());
+        for (size_t i = 0; i < out.size(); i++)
+        {
+            out[i] = convertNum<InType, OutType>(in[i]);
+        }
+        return out;
+    }
+
+    /*
+     * Policy: for vector conversions, check each input element to make sure it
+     * fits in the output type, and throw an exception otherwise. For the cases
+     * where this condition is guaranteed, skip this altogether and go with the
+     * optimized SIMD implementation.
+     */
+    template <typename InType, typename OutType>
+    struct CanConvertWithoutValidation: std::integral_constant<bool,
+        !Pothos::Util::is_complex<InType>::value &&
+        !Pothos::Util::is_complex<OutType>::value &&
+        !std::is_same<InType, OutType>::value &&
+        (sizeof(InType) < sizeof(OutType)) &&
+        ((std::is_unsigned<InType>::value && std::is_signed<OutType>::value) || (std::is_signed<InType>::value == std::is_signed<OutType>::value)) &&
+        !(std::is_floating_point<InType>::value && std::is_integral<OutType>::value)>
+    {};
+
+    template <typename InType, typename OutType>
+    inline typename std::enable_if<std::is_same<InType, OutType>::value, std::vector<OutType>>::type
+    convertVec(const std::vector<InType> &in)
+    {
+        return in;
+    }
+
+    template <typename InType, typename OutType>
+    inline typename std::enable_if<
+        CanConvertWithoutValidation<InType, OutType>::value,
+        std::vector<OutType>
+    >::type
+    convertVec(const std::vector<InType> &in)
+    {
+        return simdConvertVec<InType, OutType>(in);
+    }
+
+    /*
+     * Cases:
+     *  * One type is scalar, one type is complex
+     *  * The input type is larger than the output type
+     */
+    template <typename InType, typename OutType>
+    inline typename std::enable_if<
+        !CanConvertWithoutValidation<InType, OutType>::value && !BothComplex<InType, OutType>::value && !std::is_same<InType, OutType>::value,
+        std::vector<OutType>
+    >::type
+    convertVec(const std::vector<InType> &in)
+    {
+        return manualConvertVec<InType, OutType>(in);
+    }
+
+    // Let the scalar implementation dictate what to do
+    template <typename InType, typename OutType>
+    inline typename std::enable_if<BothComplex<InType, OutType>::value && !std::is_same<InType, OutType>::value, std::vector<OutType>>::type
+    convertVec(const std::vector<InType> &in)
+    {
+        return simdConvertVec<InType, OutType>(in);
+    }
+}
+
+template <typename InType, typename OutType>
+inline std::vector<OutType> convertVec(const std::vector<InType> &in)
+{
+    return detail::convertVec<InType, OutType>(in);
 }
 
 /***********************************************************************

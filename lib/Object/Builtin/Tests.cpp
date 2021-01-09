@@ -106,19 +106,6 @@ POTHOS_TEST_BLOCK("/object/tests", test_convert_complex)
     POTHOS_TEST_THROWS(complexObj.convert<int>(), Pothos::RangeException);
 }
 
-POTHOS_TEST_BLOCK("/object/tests", test_convert_vectors)
-{
-    std::vector<unsigned int> inputVec;
-    inputVec.push_back(1);
-    inputVec.push_back(2);
-    inputVec.push_back(3);
-    Pothos::Object inputVecObj(inputVec);
-
-    std::vector<unsigned long> outputVec = inputVecObj;
-
-    POTHOS_TEST_EQUALV(inputVec, outputVec);
-}
-
 POTHOS_TEST_BLOCK("/object/tests", test_serialize_null)
 {
     Pothos::Object null0;
