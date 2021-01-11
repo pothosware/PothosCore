@@ -159,6 +159,7 @@ list(APPEND POTHOS_SOURCES
     Object/Builtin/Hash.cpp
     Object/Builtin/Serialize.cpp
     Object/Builtin/Tests.cpp
+    Object/Builtin/TestConvertVectors.cpp
 
     Callable/Callable.cpp
     Callable/CallInterface.cpp
@@ -340,6 +341,21 @@ foreach(source ${POTHOS_SOURCES})
 endforeach(source)
 
 set(POTHOS_SOURCES ${__POTHOS_SOURCES})
+
+########################################################################
+# Generate dynamic dispatch files for SIMD code
+########################################################################
+include(${CMAKE_CURRENT_SOURCE_DIR}/../libsimdpp/cmake/SimdppMultiarch.cmake)
+
+set(simd_sources
+    SIMD/SIMDConvert.cpp)
+
+simdpp_get_runnable_archs(simdpp_runnable_archs)
+simdpp_multiarch(
+    GeneratedSIMDFiles
+    ${simd_sources}
+    ${simdpp_runnable_archs})
+list(APPEND POTHOS_SOURCES ${GeneratedSIMDFiles})
 
 ########################################################################
 # Build library

@@ -5,11 +5,13 @@
 ///
 /// \copyright
 /// Copyright (c) 2017-2017 Josh Blum
+///                    2020 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <complex> // std::complex
 #include <type_traits> //std::decay
 #include <functional> //std::reference_wrapper
 
@@ -123,6 +125,30 @@ using index_sequence_for = make_index_sequence<sizeof...(T)>;
 template<typename BaseType, typename OtherType>
 using disable_if_same = typename std::enable_if<
     not std::is_same<BaseType, typename std::decay<OtherType>::type>::value>::type;
+
+/*!*********************************************************************
+ * \defgroup complexsfinae Use when functions require different behaviors
+ * for scalar vs. complex types.
+ * \{
+ **********************************************************************/
+
+template <typename T>
+struct is_complex: std::false_type {};
+
+template <typename T>
+struct is_complex<std::complex<T>>: std::true_type {};
+
+template <typename T, typename ReturnType>
+using disable_if_complex = typename std::enable_if<
+    not is_complex<typename std::decay<T>::type>::value,
+    ReturnType>::type;
+
+template <typename T, typename ReturnType>
+using enable_if_complex = typename std::enable_if<
+    is_complex<typename std::decay<T>::type>::value,
+    ReturnType>::type;
+
+//! \}
 
 } //namespace Util
 } //namespace Pothos

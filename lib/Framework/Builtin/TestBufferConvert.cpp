@@ -1,13 +1,23 @@
 // Copyright (c) 2014-2016 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
 #include <Pothos/Framework.hpp>
+#include <Pothos/Util/Templates.hpp>
+#include <Pothos/Util/TypeInfo.hpp>
 #include <Poco/Format.h>
+#include <Poco/Random.h>
 #include <random>
 #include <cstdint>
 #include <complex>
 #include <iostream>
+#include <type_traits>
+
+namespace
+{
+
+static Poco::Random rng;
 
 /***********************************************************************
  * templated equality check
@@ -37,18 +47,69 @@ bool checkEqual(const std::complex<InType> in, const OutType outRe, const OutTyp
 }
 
 /***********************************************************************
- * templated random numbers
+ * Templated random numbers
+ *
+ * Use both types to determine the random number so we can properly
+ * test float <-> double and floatXX <-> intXX.
  **********************************************************************/
-template <typename Type>
-void randType(Type &val)
+template <typename InType, typename OutType>
+typename std::enable_if<
+    !Pothos::Util::is_complex<InType>::value &&
+    !Pothos::Util::is_complex<OutType>::value &&
+    (std::is_integral<InType>::value || std::is_integral<OutType>::value), void>::type
+randType(InType &val)
 {
-    val = Type(std::rand());
+    val = InType(rng.next(100));
 }
 
-template <typename Type>
-void randType(std::complex<Type> &val)
+template <typename InType, typename OutType>
+typename std::enable_if<
+    std::is_floating_point<InType>::value &&
+    std::is_floating_point<OutType>::value, void>::type
+randType(InType &val)
 {
-    val = std::complex<Type>(Type(std::rand()), Type(std::rand()));
+    val = InType(rng.nextFloat());
+}
+
+template <typename InType, typename OutType>
+typename std::enable_if<
+    Pothos::Util::is_complex<InType>::value &&
+    !Pothos::Util::is_complex<OutType>::value, void>::type
+randType(InType &val)
+{
+    using ScalarInType = typename InType::value_type;
+
+    ScalarInType real, imag;
+    randType<ScalarInType, OutType>(real);
+    randType<ScalarInType, OutType>(imag);
+
+    val = InType(real, imag);
+}
+
+template <typename InType, typename OutType>
+typename std::enable_if<
+    !Pothos::Util::is_complex<InType>::value &&
+    Pothos::Util::is_complex<OutType>::value, void>::type
+randType(InType &val)
+{
+    using ScalarOutType = typename OutType::value_type;
+    randType<InType, ScalarOutType>(val);
+}
+
+template <typename InType, typename OutType>
+typename std::enable_if<
+    Pothos::Util::is_complex<InType>::value &&
+    Pothos::Util::is_complex<OutType>::value, void>::type
+randType(InType &val)
+{
+    using ScalarInType = typename InType::value_type;
+    using ScalarOutType = typename OutType::value_type;
+
+    ScalarInType real, imag;
+    randType<ScalarInType, ScalarOutType>(real);
+    randType<ScalarInType, ScalarOutType>(imag);
+
+    val = InType(real, imag);
 }
 
 /***********************************************************************
@@ -57,12 +118,12 @@ void randType(std::complex<Type> &val)
 template <typename InType, typename OutType>
 void testBufferConvert(const size_t inVlen, const size_t outVlen)
 {
-    const size_t numElems = 100 + (std::rand() % 100);
+    const size_t numElems = rng.next(1024);
     Pothos::BufferChunk b0(Pothos::DType(typeid(InType), inVlen), numElems);
     const auto primElems = b0.length/b0.dtype.elemSize();
 
     //random fill primitive elements
-    for (size_t i = 0; i < primElems; i++) randType(b0.as<InType *>()[i]);
+    for (size_t i = 0; i < primElems; i++) randType<InType, OutType>(b0.as<InType *>()[i]);
 
     //convert
     const auto b1 = b0.convert(Pothos::DType(typeid(OutType), outVlen), numElems);
@@ -75,7 +136,7 @@ void testBufferConvert(const size_t inVlen, const size_t outVlen)
         const auto out = b1.as<const OutType *>()[i];
         if (not checkEqual(in, out))
         {
-            std::cerr << "elem " << i << ": " << in << " != " << out << std::endl;
+            std::cerr << "elem " << i << ": " << Pothos::Object(in).toString() << " != " << Pothos::Object(out).toString() << std::endl;
             POTHOS_TEST_TRUE(checkEqual(in, out));
         }
     }
@@ -85,12 +146,12 @@ void testBufferConvert(const size_t inVlen, const size_t outVlen)
 template <typename InType, typename OutType>
 void testBufferConvertComplexComponents(const size_t inVlen, const size_t outVlen)
 {
-    const size_t numElems = 100 + (std::rand() % 100);
+    const size_t numElems = rng.next(1024);
     Pothos::BufferChunk b0(Pothos::DType(typeid(InType), inVlen), numElems);
     const auto primElems = b0.length/b0.dtype.elemSize();
 
     //random fill primitive elements
-    for (size_t i = 0; i < primElems; i++) randType(b0.as<InType *>()[i]);
+    for (size_t i = 0; i < primElems; i++) randType<InType, std::complex<OutType>>(b0.as<InType *>()[i]);
 
     //convert
     const auto b1 = b0.convertComplex(Pothos::DType(typeid(OutType), outVlen), numElems);
@@ -104,7 +165,8 @@ void testBufferConvertComplexComponents(const size_t inVlen, const size_t outVle
         const auto outIm = b1.second.as<const OutType *>()[i];
         if (not checkEqual(in.real(), outRe) or not checkEqual(in.imag(), outIm))
         {
-            std::cerr << "elem " << i << ": " << in << " != " << outRe << ", " << outIm << std::endl;
+            std::cerr << "elem " << i << ": " << Pothos::Object(in).toString() << " != "
+                      << Pothos::Object(outRe).toString() << ", " << Pothos::Object(outIm).toString() << std::endl;
             POTHOS_TEST_TRUE(checkEqual(in.real(), outRe) and checkEqual(in.imag(), outIm));
         }
     }
@@ -138,25 +200,38 @@ void dispatchTests(void)
     testBufferConvertComplexComponents<std::complex<InType>, OutType>(1, 2);
 }
 
+template <typename InType>
+void dispatchTestsForType(void)
+{
+    dispatchTests<InType, std::int8_t>();
+    dispatchTests<InType, std::int16_t>();
+    dispatchTests<InType, std::int32_t>();
+    dispatchTests<InType, std::int64_t>();
+
+    dispatchTests<InType, std::uint8_t>();
+    dispatchTests<InType, std::uint16_t>();
+    dispatchTests<InType, std::uint32_t>();
+    dispatchTests<InType, std::uint64_t>();
+
+    dispatchTests<InType, float>();
+    dispatchTests<InType, double>();
+}
+
+}
+
 /***********************************************************************
  * conversion test cases
  **********************************************************************/
 POTHOS_TEST_BLOCK("/framework/tests", test_buffer_convert)
 {
-    //same types
-    dispatchTests<int, int>();
-    dispatchTests<long long, long long>();
-    dispatchTests<double, double>();
-
-    //double <-> integer
-    dispatchTests<double, int>();
-    dispatchTests<int, double>();
-
-    //switch signedness
-    dispatchTests<signed int, unsigned int>();
-    dispatchTests<unsigned int, signed int>();
-    dispatchTests<unsigned int, double>();
-    dispatchTests<double, unsigned int>();
-    dispatchTests<long long, unsigned int>();
-    dispatchTests<unsigned int, long long>();
+    dispatchTestsForType<std::int8_t>();
+    dispatchTestsForType<std::int16_t>();
+    dispatchTestsForType<std::int32_t>();
+    dispatchTestsForType<std::int64_t>();
+    dispatchTestsForType<std::uint8_t>();
+    dispatchTestsForType<std::uint16_t>();
+    dispatchTestsForType<std::uint32_t>();
+    dispatchTestsForType<std::uint64_t>();
+    dispatchTestsForType<float>();
+    dispatchTestsForType<double>();
 }
