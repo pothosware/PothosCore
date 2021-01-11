@@ -214,6 +214,7 @@ list(APPEND POTHOS_SOURCES
     Framework/Builtin/GenericBufferManager.cpp
     Framework/Builtin/TestCircularBufferManager.cpp
     Framework/Builtin/TestGenericBufferManager.cpp
+    Framework/Builtin/TestBufferManagerWithCustomAllocation.cpp
     Framework/Builtin/TestWorker.cpp
     Framework/Builtin/TestLabel.cpp
     Framework/Builtin/TestThreadPool.cpp

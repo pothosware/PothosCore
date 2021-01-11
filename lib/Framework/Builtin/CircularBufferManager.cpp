@@ -1,10 +1,19 @@
 // Copyright (c) 2013-2016 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
 #include <Pothos/Util/OrderedQueue.hpp>
 #include <Pothos/Framework/BufferManager.hpp>
 #include <cassert>
+
+// Default allocator
+static Pothos::SharedBuffer defaultCircularBufferAllocator(const Pothos::BufferManagerArgs &args)
+{
+    return Pothos::SharedBuffer::makeCirc(
+               args.bufferSize*args.numBuffers,
+               args.nodeAffinity);
+}
 
 /***********************************************************************
  * circular buffer implementation
@@ -19,7 +28,7 @@ public:
         _bufferSize(0),
         _bytesToPop(0)
     {
-        return;
+        this->_allocateFcn = defaultCircularBufferAllocator;
     }
 
     void init(const Pothos::BufferManagerArgs &args)
@@ -27,8 +36,8 @@ public:
         Pothos::BufferManager::init(args);
 
         //create the circular buffer
-        _circBuff = Pothos::SharedBuffer::makeCirc(
-            args.bufferSize*args.numBuffers, args.nodeAffinity);
+        assert(this->_allocateFcn);
+        _circBuff = this->_allocateFcn(args);
 
         //init the state variables
         _frontAddress = _circBuff.getAddress();

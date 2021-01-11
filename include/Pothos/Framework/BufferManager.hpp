@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
+///                    2020 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -59,6 +60,8 @@ public:
 
     typedef std::shared_ptr<BufferManager> Sptr;
 
+    using AllocateFcn = std::function<SharedBuffer(const BufferManagerArgs& args)>;
+
     //! Virtual destructor for derived buffer managers
     virtual ~BufferManager(void);
 
@@ -83,6 +86,18 @@ public:
      * \return a new shared pointer to a buffer manager
      */
     static Sptr make(const std::string &name, const BufferManagerArgs &args);
+
+    /*!
+     * The BufferManager factory -- makes a new BufferManager given the factory name.
+     * Plugins for custom BufferManagers should be located in
+     * the plugin registry: /framework/buffer_manager/[name]
+     * \throws BufferManagerFactoryError if the factory function fails.
+     * \param name the name of a BufferManager factory in the plugin tree
+     * \param args the buffer manager init arguments
+     * \param allocateFcn a custom function allocate memory
+     * \return a new shared pointer to a buffer manager
+     */
+    static Sptr make(const std::string &name, const BufferManagerArgs &args, const AllocateFcn &allocateFcn);
 
     /*!
      * Init is called once at factory time to initialize the buffers.
@@ -136,6 +151,12 @@ public:
     void pushExternal(const ManagedBuffer &buff);
 
     /*!
+     * Specify a custom function that takes in a BufferManagerArgs instance
+     * and returns a SharedBuffer to be managed.
+     */
+    void setAllocateFunction(const AllocateFcn &allocateFcn);
+
+    /*!
      * Set the callback for use with the pushExternal API call.
      */
     void setCallback(const std::function<void(const ManagedBuffer &)> &callback);
@@ -149,6 +170,8 @@ protected:
 
     //! Called by derived classes to set the buffer for front()
     void setFrontBuffer(const BufferChunk &buff);
+
+    AllocateFcn _allocateFcn;
 
 private:
     bool _initialized;

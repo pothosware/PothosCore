@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/BufferManager.hpp>
@@ -49,10 +50,24 @@ Pothos::BufferManager::Sptr Pothos::BufferManager::make(const std::string &name,
     return manager;
 }
 
+Pothos::BufferManager::Sptr Pothos::BufferManager::make(const std::string &name, const BufferManagerArgs &args, const AllocateFcn &allocateFcn)
+{
+    auto manager = make(name);
+    manager->setAllocateFunction(allocateFcn);
+    manager->init(args);
+    return manager;
+}
+
 void Pothos::BufferManager::init(const BufferManagerArgs &)
 {
     if(_initialized) throw BufferManagerFactoryError("Pothos::BufferManager::init()", "already initialized");
     _initialized = true;
+}
+
+void Pothos::BufferManager::setAllocateFunction(const AllocateFcn& allocateFcn)
+{
+    if(_initialized) throw BufferManagerFactoryError("Pothos::BufferManager::init()", "already initialized");
+    _allocateFcn = allocateFcn;
 }
 
 void Pothos::BufferManager::setCallback(const std::function<void(const ManagedBuffer &)> &callback)
