@@ -181,13 +181,10 @@ void Pothos::BufferAccumulator::require(const size_t numBytes)
     //dont do anything if the buffer is large enough
     if (queue.front().length >= numBytes) return;
 
-    //or if the accumulator is empty
-    if (queue.size() == 1 and _bytesAvailable == 0) return;
-
     //or the accumulator itself doesnt have enough bytes -- but can eventually have enough
     //we deduce this by checking if the requirement is larger than the actual buffer size
     //check the queue size because this optimization requires a single contiguous buffer
-    if (_bytesAvailable < numBytes and queue.front().length == _bytesAvailable and
+    if (_bytesAvailable < numBytes and queue.size() == 1 and
         numBytes <= queue.front().getBuffer().getLength()) return;
 
     //Actually this is ok: assert(not _inPoolBuffer);
