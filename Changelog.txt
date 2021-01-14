@@ -4,6 +4,7 @@ Release 0.7.1 (pending)
 ==========================
 
 - Fix std::vector<bool> emplace_back missing
+- Revert BufferAccumulator.cpp from #205
 
 Release 0.7.0 (2020-07-19)
 ==========================
