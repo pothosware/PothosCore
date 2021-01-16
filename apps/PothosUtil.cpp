@@ -186,6 +186,13 @@ protected:
             .repeatable(false)
             .argument("simdArches")
             .binding("simdArches"));
+
+        options.addOption(Poco::Util::Option("type-conversions", "", "Print types convertible to and from a given type")
+            .required(false)
+            .repeatable(false)
+            .argument("type", false /*optional*/)
+            .binding("type")
+            .callback(Poco::Util::OptionCallback<PothosUtil>(this, &PothosUtil::printTypeConversions)));
     }
 
     void handleOption(const std::string &name, const std::string &value)

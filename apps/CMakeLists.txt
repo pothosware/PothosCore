@@ -32,6 +32,7 @@ list(APPEND SOURCES
     PothosUtilProxyEnvironmentInfo.cpp
     PothosUtilSIMDFeatures.cpp
     PothosUtilGenerateSIMDDispatchers.cpp
+    PothosUtilListTypeConversions.cpp
 )
 add_executable(PothosUtil ${SOURCES})
 target_link_libraries(PothosUtil Pothos ${Pothos_LIBRARIES})
