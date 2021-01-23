@@ -27,6 +27,7 @@ public:
     void printProxyEnvironmentInfo(const std::string &, const std::string &);
     void printSIMDFeatures(void);
     void generateSIMDDispatchers(const std::string &, const std::string &);
+    void printTypeConversions(const std::string &, const std::string &);
 
     //! Variables passed in via the --vars option
     std::vector<std::pair<std::string, std::string>> _vars;
