@@ -39,6 +39,7 @@ std::string Pothos::Util::typeInfoToString(const std::type_info &type)
     static const std::unordered_map<size_t, std::string> CustomTypeNames =
     {
         TypeNameEntry(std::string),
+        ContainerTypeNameEntries(std::string),
         TypeNameEntry(Pothos::ObjectKwargs),
         TypeNameEntry(Pothos::ObjectMap),
         TypeNameEntry(Pothos::ObjectSet),
