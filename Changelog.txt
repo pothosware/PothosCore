@@ -1,5 +1,31 @@
 This this the changelog file for the Pothos C++ library.
 
+Release 0.8.0 (pending)
+==========================
+
+API changes:
+
+- BufferManager: added functionality to specify custom memory allocation
+
+Additions:
+
+- Added Pothos::ProxyVector <-> std::vector<Pothos::Label> conversions
+
+PothosUtil:
+
+- Added --proxy-environment-info option
+- Added option to print type conversions for a given type
+
+SIMD support:
+
+- Added SIMDDispatcherUtils
+- Buffer and vector conversions use SIMD conversion
+- Added utility header that adds SFINAE structs for XSIMD type support
+
+Build changes:
+
+- cmake: switch to GNUInstallDirs, LIB_SUFFIX is deprecated
+
 Release 0.7.1 (2021-01-24)
 ==========================
 
