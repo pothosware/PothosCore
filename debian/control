@@ -9,7 +9,7 @@ Build-Depends:
     libmuparserx-dev,
     nlohmann-json-dev,
     libnuma-dev [amd64 i386]
-Standards-Version: 4.1.4
+Standards-Version: 4.5.0
 Homepage: https://github.com/pothosware/PothosCore/wiki
 Vcs-Git: https://github.com/pothosware/PothosCore.git
 Vcs-Browser: https://github.com/pothosware/PothosCore
