@@ -3,6 +3,7 @@ This this the changelog file for the Pothos C++ library.
 Release 0.7.1 (pending)
 ==========================
 
+- TestDocUtils: fix GCC "unused result" warning
 - Fix std::vector<bool> emplace_back missing
 - Revert BufferAccumulator.cpp from #205
 
