@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos C++ library.
 
-Release 0.7.1 (pending)
+Release 0.7.1 (2021-01-24)
 ==========================
 
 - TestDocUtils: fix GCC "unused result" warning

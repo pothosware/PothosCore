@@ -1,3 +1,9 @@
+pothos (0.7.1-1) unstable; urgency=low
+
+  * Release 0.7.1 (2021-01-24)
+
+ -- Josh Blum <josh@pothosware.com>  Sun, 24 Jan 2021 21:32:09 -0000
+
 pothos (0.7.0-1) unstable; urgency=low
 
   * Release 0.7.0 (2020-07-19)
