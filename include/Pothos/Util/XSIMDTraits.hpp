@@ -4,7 +4,11 @@
 #pragma once
 
 #ifndef XSIMD_TRAITS_HPP
+#ifdef _MSC_VER
+#pragma message("Warning: Included without <xsimd/types/xsimd_traits.hpp>")
+#else
 #warning Included without <xsimd/types/xsimd_traits.hpp>
+#endif
 #endif
 
 #include <complex>
