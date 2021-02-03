@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Nicholas Corgan
+// Copyright (c) 2020-2021 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Proxy.hpp>
@@ -8,6 +8,8 @@
 #include <Pothos/Util/Compiler.hpp>
 
 #include "json.hpp"
+
+#include <Poco/Format.h>
 
 #include <fstream>
 #include <iostream>
@@ -37,7 +39,7 @@ POTHOS_TEST_BLOCK("/util/tests", test_simd_dispatcher_utils_dump_header)
         "        {"
         "            \"name\": \"clamp\","
         "            \"returnType\": \"void\","
-        "            \"params\": [\"const float*\", \"const float*\", \"float\", \"float\", \"size_t\"]"
+        "            \"params\": [\"const float*\", \"float*\", \"float\", \"float\", \"size_t\"]"
         "        },"
         "        {"
         "            \"name\": \"minmax\","
@@ -77,16 +79,22 @@ POTHOS_TEST_BLOCK("/util/tests", test_simd_dispatcher_utils_dump_header)
     std::cout << "Input: " << std::endl << std::endl
               << nlohmann::json::parse(jsonInputString) << std::endl << std::endl;
 
-    const auto generatedHeaderString = proxy.call<std::string>(
-                                           "generateAndDumpHeader",
-                                           jsonInputString,
-                                           testFeatureSet);
+    auto generatedHeaderString = proxy.call<std::string>(
+                                     "generateAndDumpHeader",
+                                     jsonInputString,
+                                     testFeatureSet);
+
+    // Create stubs for the non-templated function to avoid a linker error.
+    for (const auto& arch : testFeatureSet)
+    {
+        generatedHeaderString += Poco::format("\nvoid TestNamespace::%s::clamp(const float*, float*, float, float, size_t){};", arch);
+    }
+    generatedHeaderString += "\nvoid TestNamespace::fallback::clamp(const float*, float*, float, float, size_t){};";
+
     std::cout << "Output: " << std::endl << std::endl << generatedHeaderString
               << std::endl << std::endl;
 
-    // Make sure the generated header is proper C++ syntax. Since we're
-    // not actually calling these functions, we don't need to worry about a
-    // linker error.
+    // Make sure the generated header is proper C++ syntax.
     const auto compiler = Pothos::Util::Compiler::make();
     POTHOS_TEST_TRUE(compiler->test());
 
