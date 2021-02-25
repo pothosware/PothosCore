@@ -2,6 +2,7 @@
 //                    2021 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
+#include <Pothos/Framework.hpp>
 #include <Pothos/Object.hpp>
 #include <Pothos/Object/Containers.hpp>
 #include <Pothos/Proxy.hpp>
@@ -64,6 +65,7 @@ std::string Pothos::Util::typeInfoToString(const std::type_info &type)
         NumericTypeNameEntries(unsigned long long),
         NumericTypeNameEntries(float),
         NumericTypeNameEntries(double),
+        TypeNameEntry(std::vector<Pothos::Label>)
     };
 
     auto typeNameIter = CustomTypeNames.find(type.hash_code());
