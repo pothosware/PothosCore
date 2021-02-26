@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2018 Josh Blum
+///               2020-2021 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -35,7 +36,7 @@
  * and <i>bump</i> signifies a change to the ABI during library development.
  * The ABI should remain constant across patch releases of the library.
  */
-#define POTHOS_ABI_VERSION "0.7-2"
+#define POTHOS_ABI_VERSION "0.7-3"
 
 namespace Pothos {
 namespace System {
