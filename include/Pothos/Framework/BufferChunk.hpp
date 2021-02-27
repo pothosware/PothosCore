@@ -6,7 +6,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
-///                    2019 Nicholas Corgan
+///               2019-2021 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -64,13 +64,13 @@ public:
      * Create a BufferChunk from a SharedBuffer.
      * The fields will be initialized to that of the shared buffer.
      */
-    BufferChunk(const SharedBuffer &buffer);
+    BufferChunk(const SharedBuffer &buffer, const DType &dtype = DType());
 
     /*!
      * Create a BufferChunk from a ManagedBuffer.
      * The fields will be initialized to that of the managed buffer.
      */
-    BufferChunk(const ManagedBuffer &buffer);
+    BufferChunk(const ManagedBuffer &buffer, const DType &dtype = DType());
 
     //! BufferChunk copy constructor
     BufferChunk(const BufferChunk &other);
@@ -302,18 +302,20 @@ inline Pothos::BufferChunk::BufferChunk(const DType &dtype, const size_t numElem
     address = getBuffer().getAddress();
 }
 
-inline Pothos::BufferChunk::BufferChunk(const SharedBuffer &buffer):
+inline Pothos::BufferChunk::BufferChunk(const SharedBuffer &buffer, const Pothos::DType &dtype):
     address(buffer.getAddress()),
     length(buffer.getLength()),
+    dtype(dtype),
     _managedBuffer(buffer),
     _nextBuffers(0)
 {
     return;
 }
 
-inline Pothos::BufferChunk::BufferChunk(const ManagedBuffer &buffer):
+inline Pothos::BufferChunk::BufferChunk(const ManagedBuffer &buffer, const Pothos::DType &dtype):
     address(buffer.getBuffer().getAddress()),
     length(buffer.getBuffer().getLength()),
+    dtype(dtype),
     _managedBuffer(buffer),
     _nextBuffers(0)
 {
