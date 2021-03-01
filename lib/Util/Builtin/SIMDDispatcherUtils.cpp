@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Nicholas Corgan
+// Copyright (c) 2020-2021 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Exception.hpp>
@@ -140,11 +140,6 @@ static std::string getTemplateTypenameString(const SIMDInfo& simdInfo)
         [](const std::string& paramType) {return Poco::format("typename %s", paramType); });
 
     return Poco::format("template <%s>", join(typenameStrings, ", "));
-}
-
-static inline std::string getTemplateString(const SIMDInfo& simdInfo)
-{
-    return Poco::format("template <%s>", getParamTypeString(simdInfo));
 }
 
 static inline std::string getParamString(const SIMDInfo& simdInfo)
