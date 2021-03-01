@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
+///                    2021 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -62,7 +63,10 @@ template <typename T>
 typename std::enable_if<std::is_same<typename std::decay<T>::type, Proxy>::value, Proxy>::type
 makeProxy(const ProxyEnvironment::Sptr &, T &&value)
 {
-    return value;
+    // Explicitly copy the input proxy. This removes a Clang warning that says
+    // that this happens anyway. Since the proxy class only stores a shared_ptr
+    // to the implementation, this operation is cheap.
+    return T(value);
 }
 
 } //namespace Detail
