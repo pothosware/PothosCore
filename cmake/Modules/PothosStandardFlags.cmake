@@ -20,7 +20,7 @@ endif()
 #C++11 is a required language feature for this project
 set(CMAKE_CXX_STANDARD 11)
 
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
 
     #enable C++11 on older versions of cmake
     if (CMAKE_VERSION VERSION_LESS "3.1")
