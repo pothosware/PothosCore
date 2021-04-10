@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2017 Josh Blum
+//                    2021 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/Block.hpp>
@@ -126,9 +127,16 @@ static Pothos::Object blockRegistryMake(const std::string &path, const Pothos::O
     throw Pothos::IllegalStateException("Pothos::BlockRegistry::make("+path+")", factory.toString());
 }
 
+bool Pothos::BlockRegistry::doesBlockExist(const std::string &path)
+{
+    const auto blockPluginPath = "/blocks" + path;
+    return Pothos::PluginRegistry::exists(blockPluginPath);
+}
+
 #include <Pothos/Managed.hpp>
 
 static auto managedBlockRegistry = Pothos::ManagedClass()
     .registerClass<Pothos::BlockRegistry>()
     .registerWildcardStaticMethod(&blockRegistryMake)
+    .registerStaticMethod(POTHOS_FCN_TUPLE(Pothos::BlockRegistry, doesBlockExist))
     .commit("Pothos/BlockRegistry");
