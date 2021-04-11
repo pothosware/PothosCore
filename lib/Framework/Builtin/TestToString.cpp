@@ -1,5 +1,7 @@
-// Copyright (c) 2020 Nicholas Corgan
+// Copyright (c) 2020-2021 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
+
+#include "Testing/ScopedBlockInRegistry.hpp"
 
 #include <Pothos/Testing.hpp>
 #include <Pothos/Object.hpp>
@@ -161,6 +163,21 @@ static void testPortBufferToString(
         portProxy.call("buffer").toString());
 }
 
+class TestBlock: public Pothos::Block
+{
+public:
+    static Pothos::Block* make()
+    {
+        return new TestBlock();
+    }
+
+    TestBlock()
+    {
+        this->setupInput(0);
+        this->setupOutput(0);
+    }
+};
+
 POTHOS_TEST_BLOCK("/framework/tests", test_topology_classes_to_string)
 {
     auto topologyObj = Pothos::Object::emplace<Pothos::Topology>();
@@ -172,7 +189,10 @@ POTHOS_TEST_BLOCK("/framework/tests", test_topology_classes_to_string)
         topologyObj.toString());
 
     // A block that has both an input port and output port
-    const auto blockPath = "/blocks/sporadic_labeler";
+    const auto blockPath = "/tests/topology_classes_to_string/test_path";
+    ScopedBlockInRegistry blockInRegistry(blockPath, &TestBlock::make);
+    POTHOS_TEST_TRUE(Pothos::BlockRegistry::doesBlockExist(blockPath));
+
     auto blockProxy = Pothos::BlockRegistry::make(blockPath);
 
     // Note: the managed proxy handle calls into Pothos::Object::toString(), so

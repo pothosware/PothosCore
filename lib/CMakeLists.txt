@@ -132,8 +132,9 @@ endif()
 ########################################################################
 list(APPEND POTHOS_SOURCES
     Init.cpp
-    Testing.cpp
     Exception.cpp
+
+    Testing/Testing.cpp
 
     System/Logger.cpp
     System/Version.in.cpp
@@ -208,6 +209,7 @@ list(APPEND POTHOS_SOURCES
     Framework/Builtin/TestBufferChunkSerialization.cpp
     Framework/Builtin/TestToString.cpp
     Framework/Builtin/TestBufferConvert.cpp
+    Framework/Builtin/TestDoesBlockExist.cpp
     Framework/Builtin/TestDType.cpp
     Framework/Builtin/TestAutomaticPorts.cpp
     Framework/Builtin/TestSharedBuffer.cpp

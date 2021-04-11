@@ -5,6 +5,7 @@
 ///
 /// \copyright
 /// Copyright (c) 2014-2016 Josh Blum
+///                    2021 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -52,6 +53,13 @@ public:
      */
     template <typename... ArgsType>
     static Proxy make(const std::string &path, ArgsType&&... args);
+
+    /*!
+     * Checks if block is registered at a given path.
+     * \param path the factory path beginning with a slash ("/")
+     * \return whether a block is registered at the given path
+     */
+    static bool doesBlockExist(const std::string &path);
 };
 
 } //namespace Pothos
