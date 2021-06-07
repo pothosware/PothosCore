@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Util/Compiler.hpp>
@@ -84,14 +84,15 @@ std::string ClangCompilerSupport::compileCppModule(const Pothos::Util::CompilerA
     Poco::ProcessHandle ph(Poco::Process::launch(
         "clang++", args, &inPipe, &outPipe, &outPipe, env));
 
+    //read into output buffer until pipe is closed
+    Poco::PipeInputStream is(outPipe);
+    std::string outBuff;
+    for (std::string line; std::getline(is, line);) outBuff += line;
+
     //handle error case
-    if (ph.wait() != 0)
+    if (ph.wait() != 0 or not Poco::File(outPath.c_str()).exists())
     {
-        Poco::PipeInputStream errStream(outPipe);
-        const std::string errMsgBuff = std::string(
-            std::istreambuf_iterator<char>(errStream),
-            std::istreambuf_iterator<char>());
-        throw Pothos::Exception("ClangCompilerSupport::compileCppModule", errMsgBuff);
+        throw Pothos::Exception("ClangCompilerSupport::compileCppModule", outBuff);
     }
 
     //return output file path
