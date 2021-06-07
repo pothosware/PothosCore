@@ -136,7 +136,7 @@ std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerAr
     //read into output buffer until pipe is closed
     Poco::PipeInputStream is(outPipe);
     std::string outBuff;
-    for (std::string line; std::getline(is, line);) outBuff += line;
+    for (std::string line; std::getline(is, line);) outBuff += line+'\n';
 
     //handle error case
     if (ph.wait() != 0 or not Poco::File(outPath.c_str()).exists())
