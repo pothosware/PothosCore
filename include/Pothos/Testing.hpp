@@ -264,7 +264,7 @@
     bool anyNotEqual = false; \
     for (size_t i = 0; (i < (size)) && !anyNotEqual; i++) \
     { \
-        anyNotEqual = ((lhs) != (rhs)); \
+        anyNotEqual = ((lhs)[i] != (rhs)[i]); \
     } \
     __POTHOS_TEST_ASSERT( \
         "assert arrays not equal ", anyNotEqual); \
