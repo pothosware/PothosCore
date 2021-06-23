@@ -19,7 +19,7 @@ namespace Pothos {
 /*!
  * A Label decorates a stream of information with meta-data.
  * The label's data is an Object with arbitrary contents.
- * The label's index indentifies an element in a stream.
+ * The label's index identifies an element in a stream.
  */
 class POTHOS_API Label
 {
@@ -114,7 +114,7 @@ public:
     template <typename RangeType>
     LabelIteratorRange(const RangeType &range);
 
-    //! Get the begining of the iterator range (inclusive)
+    //! Get the beginning of the iterator range (inclusive)
     const_iterator begin(void) const;
 
     //! Get the end of the iterator range (exclusive)

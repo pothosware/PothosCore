@@ -99,7 +99,7 @@ public:
     static PluginRegistryInfoDump dump(void);
 
 private:
-    //! private constructor: we dont make PluginRegistry instances
+    //! private constructor: we don't make PluginRegistry instances
     PluginRegistry(void){}
 };
 

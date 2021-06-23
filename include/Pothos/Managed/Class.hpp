@@ -260,7 +260,7 @@ public:
 
     /*!
      * Get the opaque constructor.
-     * The opaque contructor takes (Object *args, size_t num).
+     * The opaque constructor takes (Object *args, size_t num).
      * \return a callable object for a constructor
      */
     const Callable &getOpaqueConstructor(void) const;

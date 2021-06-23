@@ -15,7 +15,7 @@
 namespace Pothos {
 
 /*!
- * A SharedBufferError is thrown when the SharedBuffer cant allocate.
+ * A SharedBufferError is thrown when the SharedBuffer can't allocate.
  */
 POTHOS_DECLARE_EXCEPTION(POTHOS_API, SharedBufferError, RuntimeException)
 

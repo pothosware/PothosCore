@@ -40,14 +40,14 @@ public:
      *
      * The return type of the call must be Block* or Topology*.
      *
-     * \param path the factory path begining with a slash ("/")
+     * \param path the factory path beginning with a slash ("/")
      * \param factory the Callable factory function
      */
     BlockRegistry(const std::string &path, const Callable &factory);
 
     /*!
      * Instantiate a block given the factory path and arguments.
-     * \param path the factory path begining with a slash ("/")
+     * \param path the factory path beginning with a slash ("/")
      * \param args a variable number of factory arguments
      * \return the newly created block instance as a Proxy
      */

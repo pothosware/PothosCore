@@ -217,7 +217,7 @@ static void stripDocArray(json &in)
 
     for (const auto &entry : in)
     {
-        //dont add empty lines if the last line is empty
+        //don't add empty lines if the last line is empty
         const std::string line = entry;
         std::string lastLine;
         if (not out.empty()) lastLine = out.back().get<std::string>();

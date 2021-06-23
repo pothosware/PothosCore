@@ -74,7 +74,7 @@ Pothos::PluginPath &Pothos::PluginPath::operator=(const PluginPath &path)
 
 Pothos::PluginPath Pothos::PluginPath::join(const std::string &subPath) const
 {
-    const std::string joiner = (_path == "/")? "": "/"; //dont join with only root /
+    const std::string joiner = (_path == "/")? "": "/"; //don't join with only root /
     return PluginPath(this->toString() + joiner + subPath);
 }
 

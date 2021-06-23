@@ -44,7 +44,7 @@ public:
     ~PluginModule(void);
 
     /*!
-     * Test load this libray module within a separate process
+     * Test load this library module within a separate process
      * to avoid loading something destructive within this process.
      * If the test load succeeds, the module will be loaded locally.
      * \throw PluginPluginModuleError if the load fails

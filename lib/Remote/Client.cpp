@@ -55,7 +55,7 @@ static std::map<std::string, std::shared_future<Poco::Net::IPAddress>> &getDNSFu
     return map;
 }
 
-//! The blocking DNS lookup routine -- perfomed by an async future
+//! The blocking DNS lookup routine -- performed by an async future
 static Poco::Net::IPAddress dnsLookupBlocking(const std::string &host)
 {
     return Poco::Net::SocketAddress(host, 0).host();

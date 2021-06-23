@@ -178,7 +178,7 @@ void Pothos::BufferAccumulator::require(const size_t numBytes)
     auto &queue = _queue;
     assert(not queue.empty());
 
-    //dont do anything if the buffer is large enough
+    //don't do anything if the buffer is large enough
     if (queue.front().length >= numBytes) return;
 
     //or the accumulator itself doesnt have enough bytes -- but can eventually have enough

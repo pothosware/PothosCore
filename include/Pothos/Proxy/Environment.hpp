@@ -125,7 +125,7 @@ public:
 
     /*!
      * Serialize the contents of the proxy into a stream.
-     * \throws ProxySerializeError is the operation cant complete
+     * \throws ProxySerializeError is the operation can't complete
      * \param proxy the input proxy object to serialize
      * \param os the output stream for the serialized data
      */
@@ -133,7 +133,7 @@ public:
 
     /*!
      * Deserialize the stream into the contents of a Proxy.
-     * \throws ProxySerializeError is the operation cant complete
+     * \throws ProxySerializeError is the operation can't complete
      * \param is the input stream holding serialized data
      * \return a new proxy from the serialized data
      */

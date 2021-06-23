@@ -336,7 +336,7 @@ public:
         const std::string &slotName="");
 
     /*!
-     * Notify the scheduler that the work() method will yeild the thread context.
+     * Notify the scheduler that the work() method will yield the thread context.
      * Call this method when the work() function will not produce or consume,
      * so that the scheduler will call work() again without an external stimulus.
      * Only call this method from within a call to the work() function.

@@ -69,7 +69,7 @@ Pothos::BufferManager::Sptr Pothos::WorkerActor::getBufferManager(const std::str
 
 Pothos::BufferManager::Sptr Pothos::WorkerActor::getBufferManagerNoLock(const std::string &name, const std::string &domain, const bool isInput)
 {
-    //check the cache for a manager thats still in use
+    //check the cache for a manager that's still in use
     auto &weakMgr = bufferManagerCache[isInput][name][domain];
     auto m = weakMgr.lock();
 

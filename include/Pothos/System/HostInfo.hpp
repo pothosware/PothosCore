@@ -17,7 +17,7 @@ namespace Pothos {
 namespace System {
 
 /*!
- * HostInfo contains various OS and network node indentification.
+ * HostInfo contains various OS and network node identification.
  */
 class POTHOS_API HostInfo
 {
@@ -28,7 +28,7 @@ public:
     HostInfo(void);
 
     /*!
-     * Query the node infomation.
+     * Query the node information.
      */
     static HostInfo get(void);
 

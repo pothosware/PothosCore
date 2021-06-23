@@ -188,7 +188,7 @@ static ElementTypes parseMarkupName(const std::string &markup, size_t &dimension
     }
     catch (const std::exception &ex)
     {
-        throw Pothos::DTypeUnknownError("Pothos::DType("+markup+")", "cant parse markup: " + std::string(ex.what()));
+        throw Pothos::DTypeUnknownError("Pothos::DType("+markup+")", "can't parse markup: " + std::string(ex.what()));
     }
     return getElementTypeSuperMap().lookupAlias(alias);
 }
