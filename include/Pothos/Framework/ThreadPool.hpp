@@ -71,7 +71,7 @@ public:
      * The affinity mode for this thread pool.
      * The affinityMode string can have the following values:
      *
-     *  - "ALL" - affinitize to all avilable CPUs
+     *  - "ALL" - affinitize to all available CPUs
      *  - "CPU" - affinity list specifies CPUs
      *  - "NUMA" - affinity list specifies NUMA nodes
      *

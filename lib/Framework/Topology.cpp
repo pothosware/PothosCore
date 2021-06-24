@@ -58,7 +58,7 @@ Port Pothos::Topology::Impl::makePort(const Pothos::Proxy &obj, const std::strin
     p.name = name;
     p.uid = obj.call<std::string>("uid");
     p.objName = obj.call<std::string>("getName");
-    //dont store copies of self
+    //don't store copies of self
     if (p.uid != self->uid()) p.obj = obj;
     return p;
 }
@@ -147,7 +147,7 @@ void Pothos::Topology::_connect(
             throw Pothos::TopologyConnectError("Pothos::Topology::connect()", flow.dst.toString() + " has no input port named " + dstName);
     }
 
-    //store port info for connections to the hierachy
+    //store port info for connections to the hierarchy
     if (not flow.src.obj and flow.dst.obj)
     {
         _impl->inputPortNames.push_back(srcName);
@@ -216,7 +216,7 @@ void Pothos::Topology::_disconnect(
     if (std::find(ins.begin(), ins.end(), dstName) == ins.end())
         throw Pothos::TopologyConnectError("Pothos::Topology::disconnect()", flow.dst.toString() + " has no input port named " + dstName);
 
-    //clear port info for disconnections from the hierachy
+    //clear port info for disconnections from the hierarchy
     if (not flow.src.obj) _impl->outputPortNames.erase(std::find(_impl->outputPortNames.begin(), _impl->outputPortNames.end(), srcName));
     if (not flow.dst.obj) _impl->inputPortNames.erase(std::find(_impl->inputPortNames.begin(), _impl->inputPortNames.end(), dstName));
 

@@ -59,7 +59,7 @@ public:
      * Plugins for custom Compilers should be located in
      * the plugin registry: /util/compiler/[name]
      * \throws Exception if the factory function fails.
-     * \param name the name of a compilier factory in the plugin tree
+     * \param name the name of a compiler factory in the plugin tree
      * \return a new shared pointer to a compiler interface
      */
     static Sptr make(const std::string &name = "");

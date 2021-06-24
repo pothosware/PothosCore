@@ -28,7 +28,7 @@ public:
     static std::vector<PluginModule> loadModules(void);
 
 private:
-    //! private constructor: we dont make PluginLoader instances
+    //! private constructor: we don't make PluginLoader instances
     PluginLoader(void){}
 };
 

@@ -20,7 +20,7 @@ namespace Pothos {
 POTHOS_DECLARE_EXCEPTION(POTHOS_API, CallableArgumentError, InvalidArgumentException)
 
 /*!
- * A CallableReturnError is thrown when return cant be converted.
+ * A CallableReturnError is thrown when return can't be converted.
  */
 POTHOS_DECLARE_EXCEPTION(POTHOS_API, CallableReturnError, NotImplementedException)
 

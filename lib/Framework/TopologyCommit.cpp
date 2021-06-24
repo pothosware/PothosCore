@@ -331,7 +331,7 @@ void Pothos::Topology::commit(void)
     _impl->activeFlatFlows = flatFlows;
 
     //Remove disconnections from the cache if present
-    //by only saving in the curretly in-use flows.
+    //by only saving in the currently in-use flows.
     std::unordered_map<Port, std::pair<Pothos::Proxy, Pothos::Proxy>> newNetgressCache;
     for (const auto &flow : completeFlows)
     {

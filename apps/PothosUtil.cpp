@@ -222,7 +222,7 @@ protected:
         helpFormatter.setCommand(commandName());
         helpFormatter.setUsage("OPTIONS");
         helpFormatter.setHeader("\n"
-            "PothosUtil is a helper exectuable for the Pothos Library; "
+            "PothosUtil is a helper executable for the Pothos Library; "
             "used both internally by the library, and externally by the user. "
             "The util provides a command-line interface for the self-tests, "
             "and can spawn servers and daemons for remote interfaces. ");

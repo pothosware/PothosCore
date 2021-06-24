@@ -23,7 +23,7 @@ std::pair<Pothos::Proxy, Pothos::Proxy> createNetworkFlow(const Flow &flow)
     auto netConnPath = "/blocks/network_source";
 
     //If the bind environment is local, swap them to bind on the remote host.
-    //The reason for this swap, is that we dont know the local's external IP
+    //The reason for this swap, is that we don't know the local's external IP
     //to which the remote host can connect to, so we just do the reverse.
     if (Pothos::System::HostInfo::get().nodeId == bindEnv->getNodeId())
     {

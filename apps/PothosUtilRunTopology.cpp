@@ -25,7 +25,7 @@ void PothosUtilBase::runTopology(void)
             "Please export the design to the JSON topology format.");
     }
     std::ifstream ifs(Poco::Path::expand(path));
-    if (not ifs) throw Pothos::FileException("Cant open "+path+" for reading!");
+    if (not ifs) throw Pothos::FileException("Can't open "+path+" for reading!");
 
     //parse the json formatted string into a JSON object
     json topObj;

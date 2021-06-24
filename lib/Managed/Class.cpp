@@ -41,7 +41,7 @@ const std::type_info &Pothos::ManagedClass::type(void) const
 {
     if (not _impl->referenceToWrapper)
     {
-        throw ManagedClassTypeError("Pothos::ManagedClass::type()", "cant access without constructors");
+        throw ManagedClassTypeError("Pothos::ManagedClass::type()", "can't access without constructors");
     }
     return _impl->referenceToWrapper.type(0);
 }
@@ -50,7 +50,7 @@ const std::type_info &Pothos::ManagedClass::pointerType(void) const
 {
     if (not _impl->pointerToWrapper)
     {
-        throw ManagedClassTypeError("Pothos::ManagedClass::pointerType()", "cant access without init");
+        throw ManagedClassTypeError("Pothos::ManagedClass::pointerType()", "can't access without init");
     }
     return _impl->pointerToWrapper.type(0);
 }
@@ -59,7 +59,7 @@ const std::type_info &Pothos::ManagedClass::sharedType(void) const
 {
     if (not _impl->sharedToWrapper)
     {
-        throw ManagedClassTypeError("Pothos::ManagedClass::pointerType()", "cant access without init");
+        throw ManagedClassTypeError("Pothos::ManagedClass::pointerType()", "can't access without init");
     }
     return _impl->sharedToWrapper.type(0);
 }

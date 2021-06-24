@@ -45,7 +45,7 @@ static bool isDomainCrossingAcceptable(
         if (subMode != "ABDICATE") allOthersAbdicate = false;
     }
 
-    //cant handle multiple domains
+    //can't handle multiple domains
     if (subDomains.size() > 1) return false;
 
     assert(subDomains.size() == 1);
@@ -61,7 +61,7 @@ static bool isDomainCrossingAcceptable(
     //otherwise the mode should be custom
     assert(mainMode == "CUSTOM");
 
-    //cant handle custom with multiple upstream
+    //can't handle custom with multiple upstream
     if (isInput and mainMode == "CUSTOM" and subPorts.size() > 1) return false;
 
     //if custom, the sub ports must abdicate

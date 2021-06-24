@@ -4,12 +4,12 @@
 /// Numeric support for serialization.
 ///
 /// Integers are serialized into a portable byte ordering
-/// to work across big and little platform endianess.
+/// to work across big and little platform endianness.
 /// In addition, all long types get serialized as 8 bytes
 /// because the size of long may vary from 4 to 8 bytes.
 ///
 /// Floats are cast to an integer type of identical size
-/// and serialized as an integer; also for platform endianess.
+/// and serialized as an integer; also for platform endianness.
 /// The implementation assumes the IEEE-754 format for floats,
 /// but could easily be expanded for soft packing of IEEE-754.
 ///

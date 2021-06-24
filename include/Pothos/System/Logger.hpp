@@ -66,7 +66,7 @@ public:
     static void setupDefaultLogging(void);
 
 private:
-    //! private constructor: we dont make Logger instances
+    //! private constructor: we don't make Logger instances
     Logger(void){}
 };
 

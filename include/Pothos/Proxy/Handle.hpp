@@ -58,7 +58,7 @@ public:
     /*!
      * Returns a negative integer, zero, or a positive integer as this object is
      * less than, equal to, or greater than the specified object.
-     * \throws ProxyCompareError when the compare isnt possible
+     * \throws ProxyCompareError when the compare isn't possible
      * \param other the other proxy object to compare against
      * \return an int representing less than, equal to, or greater than
      */

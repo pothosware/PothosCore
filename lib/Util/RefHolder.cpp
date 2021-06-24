@@ -11,7 +11,7 @@ Pothos::Util::RefHolder::~RefHolder(void)
 
 void Pothos::Util::RefHolder::holdRef(const Object &container)
 {
-    this->dropRef(container); //dont want multiple copies
+    this->dropRef(container); //don't want multiple copies
     _refs.push_back(container);
 }
 

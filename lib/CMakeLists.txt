@@ -368,7 +368,7 @@ if(MSVC)
 endif(MSVC)
 
 add_library(Pothos SHARED ${POTHOS_SOURCES})
-list(REMOVE_ITEM Pothos_LIBRARIES Pothos) #cant link to self
+list(REMOVE_ITEM Pothos_LIBRARIES Pothos) #can't link to self
 target_link_libraries(Pothos ${Pothos_LIBRARIES})
 set_target_properties(Pothos PROPERTIES SOVERSION ${POTHOS_ABI_VERSION})
 set_target_properties(Pothos PROPERTIES VERSION ${POTHOS_LIBVER})

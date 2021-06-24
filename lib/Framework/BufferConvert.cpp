@@ -134,7 +134,7 @@ Pothos::BufferChunk Pothos::BufferChunk::convert(const DType &outDType, const si
 
     auto it = getBufferConvertImpl().convertMap.find(dtypeIOToHash(this->dtype, outDType));
     if (it == getBufferConvertImpl().convertMap.end()) throw Pothos::BufferConvertError(
-        "Pothos::BufferChunk::convert("+dtype.toString()+")", "cant convert from " + this->dtype.toString());
+        "Pothos::BufferChunk::convert("+dtype.toString()+")", "can't convert from " + this->dtype.toString());
     Pothos::BufferChunk out(outDType, outElems);
 
     it->second(this->as<const void *>(), out.as<void *>(), primElems);
@@ -149,7 +149,7 @@ std::pair<Pothos::BufferChunk, Pothos::BufferChunk> Pothos::BufferChunk::convert
 
     auto it = getBufferConvertImpl().convertComplexMap.find(dtypeIOToHash(this->dtype, outDType));
     if (it == getBufferConvertImpl().convertComplexMap.end()) throw Pothos::BufferConvertError(
-        "Pothos::BufferChunk::convertComplex("+dtype.toString()+")", "cant convert from " + this->dtype.toString());
+        "Pothos::BufferChunk::convertComplex("+dtype.toString()+")", "can't convert from " + this->dtype.toString());
     Pothos::BufferChunk outRe(outDType, outElems);
     Pothos::BufferChunk outIm(outDType, outElems);
 
@@ -168,7 +168,7 @@ size_t Pothos::BufferChunk::convert(const BufferChunk &out, const size_t numElem
 
     auto it = getBufferConvertImpl().convertMap.find(dtypeIOToHash(this->dtype, out.dtype));
     if (it == getBufferConvertImpl().convertMap.end()) throw Pothos::BufferConvertError(
-        "Pothos::BufferChunk::convert("+dtype.toString()+")", "cant convert from " + this->dtype.toString());
+        "Pothos::BufferChunk::convert("+dtype.toString()+")", "can't convert from " + this->dtype.toString());
 
     it->second(this->as<const void *>(), out.as<void *>(), primElems);
     return outElems;
@@ -189,7 +189,7 @@ size_t Pothos::BufferChunk::convertComplex(const BufferChunk &outRe, const Buffe
 
     auto it = getBufferConvertImpl().convertComplexMap.find(dtypeIOToHash(this->dtype, outRe.dtype));
     if (it == getBufferConvertImpl().convertComplexMap.end()) throw Pothos::BufferConvertError(
-        "Pothos::BufferChunk::convertComplex("+dtype.toString()+")", "cant convert from " + this->dtype.toString());
+        "Pothos::BufferChunk::convertComplex("+dtype.toString()+")", "can't convert from " + this->dtype.toString());
 
     it->second(this->as<const void *>(), outRe.as<void *>(), outIm.as<void *>(), primElems);
     return outElems;

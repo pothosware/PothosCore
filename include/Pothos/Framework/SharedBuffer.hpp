@@ -36,7 +36,7 @@ public:
      * The node affinity is used to allocate physical memory on a NUMA node.
      *
      * \param numBytes the number of bytes to allocate in this buffer
-     * \param nodeAffinity which NUMA node to allocate on (-1 for dont care)
+     * \param nodeAffinity which NUMA node to allocate on (-1 for don't care)
      * \return a new shared buffer object
      */
     static SharedBuffer make(const size_t numBytes, const long nodeAffinity = -1);
@@ -51,7 +51,7 @@ public:
      * The node affinity is used to allocate physical memory on a NUMA node.
      *
      * \param numBytes the number of bytes to allocate in this buffer
-     * \param nodeAffinity which NUMA node to allocate on (-1 for dont care)
+     * \param nodeAffinity which NUMA node to allocate on (-1 for don't care)
      * \return a new circular shared buffer object
      */
     static SharedBuffer makeCirc(const size_t numBytes, const long nodeAffinity = -1);
