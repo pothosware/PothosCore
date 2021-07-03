@@ -151,7 +151,7 @@ function(POTHOS_MODULE_UTIL)
     #setup module build and install rules
     include_directories(${Pothos_INCLUDE_DIRS})
     add_library(${POTHOS_MODULE_UTIL_TARGET} MODULE ${POTHOS_MODULE_UTIL_SOURCES})
-    target_link_libraries(${POTHOS_MODULE_UTIL_TARGET} ${Pothos_LIBRARIES} ${POTHOS_MODULE_UTIL_LIBRARIES})
+    target_link_libraries(${POTHOS_MODULE_UTIL_TARGET} PRIVATE ${Pothos_LIBRARIES} ${POTHOS_MODULE_UTIL_LIBRARIES})
     set_target_properties(${POTHOS_MODULE_UTIL_TARGET} PROPERTIES DEBUG_POSTFIX "") #same name in debug mode
 
     if(CMAKE_COMPILER_IS_GNUCXX)
