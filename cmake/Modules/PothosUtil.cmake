@@ -153,6 +153,13 @@ function(POTHOS_MODULE_UTIL)
     add_library(${POTHOS_MODULE_UTIL_TARGET} MODULE ${POTHOS_MODULE_UTIL_SOURCES})
     target_link_libraries(${POTHOS_MODULE_UTIL_TARGET} ${Pothos_LIBRARIES} ${POTHOS_MODULE_UTIL_LIBRARIES})
     set_target_properties(${POTHOS_MODULE_UTIL_TARGET} PROPERTIES DEBUG_POSTFIX "") #same name in debug mode
+
+    if(CMAKE_COMPILER_IS_GNUCXX)
+        #force a compile-time error when symbols are missing
+        #otherwise modules will cause a runtime error on load
+        target_link_libraries(${POTHOS_MODULE_UTIL_TARGET} PRIVATE "-Wl,--no-undefined")
+    endif()
+
     install(
         TARGETS ${POTHOS_MODULE_UTIL_TARGET}
         DESTINATION ${MODULE_DESTINATION}
