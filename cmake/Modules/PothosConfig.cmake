@@ -42,7 +42,7 @@ endif (Poco_FOUND)
 # install directory for cmake files
 ########################################################################
 if (UNIX)
-    set(POTHOS_CMAKE_DIRECTORY ${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME})
+    set(POTHOS_CMAKE_DIRECTORY ${CMAKE_INSTALL_DATADIR}/cmake/Pothos)
 elseif (WIN32)
     set(POTHOS_CMAKE_DIRECTORY cmake)
 endif ()
