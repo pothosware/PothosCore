@@ -26,6 +26,11 @@ Build changes:
 
 - cmake: switch to GNUInstallDirs, LIB_SUFFIX is deprecated
 
+Release 0.7.2 (pending)
+==========================
+
+- undefined linker flags are only used on module builds
+
 Release 0.7.1 (2021-01-24)
 ==========================
 
