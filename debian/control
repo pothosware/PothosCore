@@ -7,7 +7,7 @@ Build-Depends:
     cmake (>= 2.8.9),
     libpoco-dev (>= 1.6),
     libmuparserx-dev,
-    nlohmann-json-dev,
+    nlohmann-json3-dev,
     libnuma-dev [amd64 i386]
 Standards-Version: 4.5.0
 Homepage: https://github.com/pothosware/PothosCore/wiki
