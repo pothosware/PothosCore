@@ -8,16 +8,9 @@ if (NOT ENABLE_LIBRARY_APPS)
 endif()
 
 ########################################################################
-# Local includes
+# build PothosUtil
 ########################################################################
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${Pothos_INCLUDE_DIRS})
-include_directories(${JSON_HPP_INCLUDE_DIR})
-
-########################################################################
-# apps
-########################################################################
-list(APPEND SOURCES
+add_executable(PothosUtil
     PothosUtil.cpp
     PothosUtilSystemInfo.cpp
     PothosUtilModuleInfo.cpp
@@ -34,8 +27,8 @@ list(APPEND SOURCES
     PothosUtilGenerateSIMDDispatchers.cpp
     PothosUtilListTypeConversions.cpp
 )
-add_executable(PothosUtil ${SOURCES})
-target_link_libraries(PothosUtil Pothos ${Pothos_LIBRARIES})
+target_include_directories(PothosUtil PRIVATE ${JSON_HPP_INCLUDE_DIR})
+target_link_libraries(PothosUtil PRIVATE Pothos)
 install(TARGETS PothosUtil
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT pothos_runtime
 )

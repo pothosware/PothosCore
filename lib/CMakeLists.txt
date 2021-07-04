@@ -281,11 +281,6 @@ if(MSVC)
     target_compile_options(Pothos PUBLIC /wd4251) #disable 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     target_compile_options(Pothos PUBLIC /wd4275) #disable non – DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'
     target_compile_options(Pothos PUBLIC /wd4503) #'identifier' : decorated name length exceeded, name was truncated
-
-else(MSVC)
-    #define _DEBUG for debug mode flags (used by some macros)
-    target_compile_definitions(Pothos PRIVATE -D_DEBUG)
-
 endif(MSVC)
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")

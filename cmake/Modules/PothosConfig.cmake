@@ -120,11 +120,8 @@ endif ()
 ########################################################################
 ## Determine root installation path
 ########################################################################
-if (UNIX)
-    get_filename_component(POTHOS_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
-elseif (WIN32)
-    get_filename_component(POTHOS_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
-endif ()
+file(RELATIVE_PATH POTHOS_ROOT_RELDIR "/${POTHOS_CMAKE_DIRECTORY}" "/")
+get_filename_component(POTHOS_ROOT "${CMAKE_CURRENT_LIST_DIR}/${POTHOS_ROOT_RELDIR}" ABSOLUTE)
 
 ########################################################################
 ## locate the PothosUtil application
@@ -175,8 +172,10 @@ endif()
 ########################################################################
 ## create import library target
 ########################################################################
+enable_language(C) #newer Poco config scrips require c to be enabled
+include(SetupPoco) #Poco is a Pothos library public dependency
+
 include(PothosExport)
-include(SetupPoco)
 
 #set old-style variables
 get_target_property(POTHOS_INCLUDE_DIR Pothos INTERFACE_INCLUDE_DIRECTORIES)
