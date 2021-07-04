@@ -10,24 +10,23 @@ endif()
 ########################################################################
 # Install cmake helper modules
 ########################################################################
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/PothosConfigVersion.in.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/PothosConfigVersion.cmake
-@ONLY)
+include(CMakePackageConfigHelpers)
 
-install(
-    FILES
-        PothosConfig.cmake
-        PothosStandardFlags.cmake
-        PothosLibraryConfig.cmake
-        PothosUtil.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/PothosConfigVersion.cmake
-        #poco support
-        FindPkgMacros.cmake
-        FindPoco.cmake
-        SetupPoco.cmake
-        #SIMD
-        PothosConfigSIMD.cmake
+write_basic_package_version_file(
+    ${PROJECT_BINARY_DIR}/PothosConfigVersion.cmake
+    VERSION ${POTHOS_VERSION}
+    COMPATIBILITY AnyNewerVersion)
+
+install(FILES
+    ${PROJECT_SOURCE_DIR}/cmake/Modules/PothosConfig.cmake
+    ${PROJECT_SOURCE_DIR}/cmake/Modules/PothosUtil.cmake
+    ${PROJECT_BINARY_DIR}/PothosConfigVersion.cmake
+    #poco support
+    ${PROJECT_SOURCE_DIR}/cmake/Modules/FindPkgMacros.cmake
+    ${PROJECT_SOURCE_DIR}/cmake/Modules/FindPoco.cmake
+    ${PROJECT_SOURCE_DIR}/cmake/Modules/SetupPoco.cmake
+    #SIMD
+    ${PROJECT_SOURCE_DIR}/cmake/Modules/PothosConfigSIMD.cmake
+
     DESTINATION ${POTHOS_CMAKE_DIRECTORY}
-    COMPONENT pothos_devel
-)
+    COMPONENT pothos_devel)

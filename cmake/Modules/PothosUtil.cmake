@@ -97,6 +97,11 @@ function(POTHOS_MODULE_UTIL)
         endif(GIT_FOUND)
     endif()
 
+    #setup module build and install rules
+    add_library(${POTHOS_MODULE_UTIL_TARGET} MODULE ${POTHOS_MODULE_UTIL_SOURCES})
+    target_link_libraries(${POTHOS_MODULE_UTIL_TARGET} PRIVATE Pothos ${POTHOS_MODULE_UTIL_LIBRARIES})
+    set_target_properties(${POTHOS_MODULE_UTIL_TARGET} PROPERTIES DEBUG_POSTFIX "") #same name in debug mode
+
     #version specified, build into source file
     if (POTHOS_MODULE_UTIL_VERSION)
         message(STATUS "Module ${POTHOS_MODULE_UTIL_TARGET} configured with version: ${POTHOS_MODULE_UTIL_VERSION}")
@@ -104,15 +109,12 @@ function(POTHOS_MODULE_UTIL)
         file(WRITE "${version_file}" "#include <Pothos/Plugin/Module.hpp>
             static const Pothos::ModuleVersion register${MODULE_TARGET}Version(\"${POTHOS_MODULE_UTIL_VERSION}\");
         ")
-        list(APPEND POTHOS_MODULE_UTIL_SOURCES "${version_file}")
+        target_sources(${POTHOS_MODULE_UTIL_TARGET} PRIVATE "${version_file}")
     endif()
 
     #always enable docs if user specifies doc sources
     if (POTHOS_MODULE_UTIL_DOC_SOURCES)
         set(POTHOS_MODULE_UTIL_ENABLE_DOCS TRUE)
-    #otherwise doc sources come from the regular sources
-    else()
-        set(POTHOS_MODULE_UTIL_DOC_SOURCES ${POTHOS_MODULE_UTIL_SOURCES})
     endif()
 
     #setup json doc file generation and install
@@ -138,7 +140,8 @@ function(POTHOS_MODULE_UTIL)
             DEPENDS ${POTHOS_MODULE_UTIL_DOC_SOURCES}
             DEPENDS ${__POTHOS_UTIL_TARGET_NAME}
         )
-        list(APPEND POTHOS_MODULE_UTIL_SOURCES ${cpp_doc_file})
+        target_sources(${POTHOS_MODULE_UTIL_TARGET} PRIVATE ${cpp_doc_file})
+        set_property(SOURCE ${cpp_doc_file} PROPERTY SKIP_AUTOMOC ON)
     endif()
 
     set(MODULE_DESTINATION ${CMAKE_INSTALL_LIBDIR}/Pothos/modules${POTHOS_ABI_VERSION}/${POTHOS_MODULE_UTIL_DESTINATION})
@@ -147,12 +150,6 @@ function(POTHOS_MODULE_UTIL)
     if (POTHOS_MODULE_UTIL_PREFIX)
         set(MODULE_DESTINATION ${POTHOS_MODULE_UTIL_PREFIX}/${MODULE_DESTINATION})
     endif()
-
-    #setup module build and install rules
-    include_directories(${Pothos_INCLUDE_DIRS})
-    add_library(${POTHOS_MODULE_UTIL_TARGET} MODULE ${POTHOS_MODULE_UTIL_SOURCES})
-    target_link_libraries(${POTHOS_MODULE_UTIL_TARGET} PRIVATE ${Pothos_LIBRARIES} ${POTHOS_MODULE_UTIL_LIBRARIES})
-    set_target_properties(${POTHOS_MODULE_UTIL_TARGET} PROPERTIES DEBUG_POSTFIX "") #same name in debug mode
 
     if(CMAKE_COMPILER_IS_GNUCXX)
         #force a compile-time error when symbols are missing
