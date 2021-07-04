@@ -151,6 +151,12 @@ function(POTHOS_MODULE_UTIL)
         set(MODULE_DESTINATION ${POTHOS_MODULE_UTIL_PREFIX}/${MODULE_DESTINATION})
     endif()
 
+    if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+        #symbols are only exported from the module explicitly
+        target_compile_options(${POTHOS_MODULE_UTIL_TARGET} PRIVATE -fvisibility=hidden)
+        target_compile_options(${POTHOS_MODULE_UTIL_TARGET} PRIVATE -fvisibility-inlines-hidden)
+    endif()
+
     if(CMAKE_COMPILER_IS_GNUCXX)
         #force a compile-time error when symbols are missing
         #otherwise modules will cause a runtime error on load

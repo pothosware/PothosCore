@@ -260,7 +260,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     target_compile_options(Pothos PUBLIC -Wextra)
     target_compile_options(Pothos PUBLIC -Wnon-virtual-dtor)
 
-    #symbols are only exported from libraries/modules explicitly
+    #symbols are only exported from the library explicitly
     target_compile_options(Pothos PRIVATE -fvisibility=hidden)
     target_compile_options(Pothos PRIVATE -fvisibility-inlines-hidden)
 endif()
