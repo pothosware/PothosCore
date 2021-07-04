@@ -115,6 +115,9 @@ function(POTHOS_MODULE_UTIL)
     #always enable docs if user specifies doc sources
     if (POTHOS_MODULE_UTIL_DOC_SOURCES)
         set(POTHOS_MODULE_UTIL_ENABLE_DOCS TRUE)
+    #otherwise doc sources come from the regular sources
+    else()
+        set(POTHOS_MODULE_UTIL_DOC_SOURCES ${POTHOS_MODULE_UTIL_SOURCES})
     endif()
 
     #setup json doc file generation and install
