@@ -227,6 +227,11 @@ set_target_properties(Pothos PROPERTIES SOVERSION ${POTHOS_ABI_VERSION})
 set_target_properties(Pothos PROPERTIES VERSION ${POTHOS_LIBVER})
 set_target_properties(Pothos PROPERTIES DEFINE_SYMBOL "POTHOS_DLL_EXPORTS")
 
+#symbols are only exported from the library explicitly
+set_property(TARGET Pothos PROPERTY C_VISIBILITY_PRESET hidden)
+set_property(TARGET Pothos PROPERTY CXX_VISIBILITY_PRESET hidden)
+set_property(TARGET Pothos PROPERTY VISIBILITY_INLINES_HIDDEN ON)
+
 if(MSVC)
     target_compile_options(Pothos PRIVATE /bigobj) #builtin convert.cpp too large in debug mode
 endif(MSVC)
@@ -251,7 +256,6 @@ target_include_directories(Pothos PRIVATE ${JSON_HPP_INCLUDE_DIR})
 ########################################################################
 
 if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
-
     #these warnings are caused by static warnings used throughout the code
     target_compile_options(Pothos PRIVATE -Wno-unused-local-typedefs)
 
@@ -259,10 +263,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     target_compile_options(Pothos PUBLIC -Wall)
     target_compile_options(Pothos PUBLIC -Wextra)
     target_compile_options(Pothos PUBLIC -Wnon-virtual-dtor)
-
-    #symbols are only exported from the library explicitly
-    target_compile_options(Pothos PRIVATE -fvisibility=hidden)
-    target_compile_options(Pothos PRIVATE -fvisibility-inlines-hidden)
 endif()
 
 if(APPLE)

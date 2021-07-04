@@ -102,6 +102,11 @@ function(POTHOS_MODULE_UTIL)
     target_link_libraries(${POTHOS_MODULE_UTIL_TARGET} PRIVATE Pothos ${POTHOS_MODULE_UTIL_LIBRARIES})
     set_target_properties(${POTHOS_MODULE_UTIL_TARGET} PROPERTIES DEBUG_POSTFIX "") #same name in debug mode
 
+    #symbols are only exported from the module explicitly
+    set_property(TARGET ${POTHOS_MODULE_UTIL_TARGET} PROPERTY C_VISIBILITY_PRESET hidden)
+    set_property(TARGET ${POTHOS_MODULE_UTIL_TARGET} PROPERTY CXX_VISIBILITY_PRESET hidden)
+    set_property(TARGET ${POTHOS_MODULE_UTIL_TARGET} PROPERTY VISIBILITY_INLINES_HIDDEN ON)
+
     #version specified, build into source file
     if (POTHOS_MODULE_UTIL_VERSION)
         message(STATUS "Module ${POTHOS_MODULE_UTIL_TARGET} configured with version: ${POTHOS_MODULE_UTIL_VERSION}")
@@ -152,12 +157,6 @@ function(POTHOS_MODULE_UTIL)
     #determine user-specified or automatic install prefix
     if (POTHOS_MODULE_UTIL_PREFIX)
         set(MODULE_DESTINATION ${POTHOS_MODULE_UTIL_PREFIX}/${MODULE_DESTINATION})
-    endif()
-
-    if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
-        #symbols are only exported from the module explicitly
-        target_compile_options(${POTHOS_MODULE_UTIL_TARGET} PRIVATE -fvisibility=hidden)
-        target_compile_options(${POTHOS_MODULE_UTIL_TARGET} PRIVATE -fvisibility-inlines-hidden)
     endif()
 
     if(CMAKE_COMPILER_IS_GNUCXX)
