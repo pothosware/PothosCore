@@ -12,40 +12,7 @@ set(INCLUDED_POTHOS_CONFIG_CMAKE TRUE)
 # POTHOS_CMAKE_DIRECTORY - where to install CMake files
 ########################################################################
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
-include(PothosStandardFlags) #compiler settings
-include(PothosLibraryConfig) #library settings
 include(PothosUtil) #utility functions
-
-########################################################################
-## locate the Poco development libraries
-########################################################################
-enable_language(C) #newer Poco config scrips require c to be enabled
-include(SetupPoco)
-
-if (Poco_FOUND)
-
-    message(STATUS "Poco_VERSION: ${Poco_VERSION}")
-    message(STATUS "Poco_INCLUDE_DIRS: ${Poco_INCLUDE_DIRS}")
-    message(STATUS "Poco_LIBRARIES: ${Poco_LIBRARIES}")
-
-    list(APPEND Pothos_LIBRARIES ${Poco_LIBRARIES})
-
-    if (Poco_INCLUDE_DIRS)
-        list(APPEND Pothos_INCLUDE_DIRS ${Poco_INCLUDE_DIRS})
-    endif (Poco_INCLUDE_DIRS)
-
-else (Poco_FOUND)
-    message(WARNING "Pothos projects require Poco libraries...")
-endif (Poco_FOUND)
-
-########################################################################
-# install directory for cmake files
-########################################################################
-if (UNIX)
-    set(POTHOS_CMAKE_DIRECTORY ${CMAKE_INSTALL_DATADIR}/cmake/Pothos)
-elseif (WIN32)
-    set(POTHOS_CMAKE_DIRECTORY cmake)
-endif ()
 
 ########################################################################
 # select the release build type by default to get optimization flags
@@ -55,6 +22,14 @@ if(NOT CMAKE_BUILD_TYPE)
    message(STATUS "Build type not specified: defaulting to release.")
 endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
+
+########################################################################
+# Use GNU Install Dirs, but support LIB_SUFFIX if specified
+########################################################################
+include(GNUInstallDirs)
+if(LIB_SUFFIX)
+    set(CMAKE_INSTALL_LIBDIR "lib${LIB_SUFFIX}") #support old lib suffix
+endif(LIB_SUFFIX)
 
 ########################################################################
 # extract the ABI version string from the Version.hpp header
@@ -69,6 +44,16 @@ function(_POTHOS_GET_ABI_VERSION VERSION INCLUDE_DIR)
 endfunction(_POTHOS_GET_ABI_VERSION)
 
 ########################################################################
+# install directory for cmake files
+# used publicly in PothosPython
+########################################################################
+if (UNIX)
+    set(POTHOS_CMAKE_DIRECTORY ${CMAKE_INSTALL_DATADIR}/cmake/Pothos)
+elseif (WIN32)
+    set(POTHOS_CMAKE_DIRECTORY cmake)
+endif ()
+
+########################################################################
 ## in-tree build support
 ########################################################################
 if (POTHOS_IN_TREE_SOURCE_DIR)
@@ -77,8 +62,6 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
         set(POTHOS_ROOT ${CMAKE_INSTALL_PREFIX})
     endif(NOT POTHOS_ROOT)
 
-    list(INSERT Pothos_LIBRARIES 0 Pothos)
-    list(INSERT Pothos_INCLUDE_DIRS 0 ${POTHOS_IN_TREE_SOURCE_DIR}/include)
     _POTHOS_GET_ABI_VERSION(POTHOS_ABI_VERSION ${POTHOS_IN_TREE_SOURCE_DIR}/include)
 
     #a list of in-tree built libraries to generate a library path script
@@ -128,20 +111,17 @@ if (POTHOS_IN_TREE_SOURCE_DIR)
     set(__POTHOS_UTIL_TARGET_NAME ${PROJECT_NAME}PothosUtil)
     add_custom_target(${__POTHOS_UTIL_TARGET_NAME} DEPENDS ${POTHOS_UTIL_EXE})
 
-    #ensure that local headers get precedent over installed headers
-    include_directories(${POTHOS_IN_TREE_SOURCE_DIR}/include)
-
+    #set old-style variables
+    unset(Pothos_INCLUDE_DIRS)
+    set(Pothos_LIBRARIES Pothos)
     return()
 endif ()
 
 ########################################################################
 ## Determine root installation path
 ########################################################################
-if (UNIX)
-    get_filename_component(POTHOS_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
-elseif (WIN32)
-    get_filename_component(POTHOS_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
-endif ()
+file(RELATIVE_PATH POTHOS_ROOT_RELDIR "/${POTHOS_CMAKE_DIRECTORY}" "/")
+get_filename_component(POTHOS_ROOT "${CMAKE_CURRENT_LIST_DIR}/${POTHOS_ROOT_RELDIR}" ABSOLUTE)
 
 ########################################################################
 ## locate the PothosUtil application
@@ -190,29 +170,15 @@ if(NOT __result_code STREQUAL __success_code)
 endif()
 
 ########################################################################
-## locate the Pothos library
+## create import library target
 ########################################################################
-find_library(
-    POTHOS_LIBRARY Pothos Pothosd
-    PATHS ${POTHOS_ROOT}/${CMAKE_INSTALL_LIBDIR}
-    PATH_SUFFIXES ${CMAKE_LIBRARY_ARCHITECTURE}
-    NO_DEFAULT_PATH
-)
-if(NOT POTHOS_LIBRARY)
-    message(FATAL_ERROR "cannot find Pothos library in ${POTHOS_ROOT}/${CMAKE_INSTALL_LIBDIR}")
-endif()
-list(INSERT Pothos_LIBRARIES 0 ${POTHOS_LIBRARY})
+enable_language(C) #newer Poco config scrips require c to be enabled
+include(SetupPoco) #Poco is a Pothos library public dependency
 
-########################################################################
-## locate the Pothos includes
-########################################################################
-find_path(
-    POTHOS_INCLUDE_DIR Pothos/Config.hpp
-    PATHS ${POTHOS_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
-    NO_DEFAULT_PATH
-)
-if(NOT POTHOS_INCLUDE_DIR)
-    message(FATAL_ERROR "cannot find Pothos includes in ${POTHOS_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}")
-endif()
-list(INSERT Pothos_INCLUDE_DIRS 0 ${POTHOS_INCLUDE_DIR})
+include(PothosExport)
+
+#set old-style variables
+get_target_property(POTHOS_INCLUDE_DIR Pothos INTERFACE_INCLUDE_DIRECTORIES)
+set(Pothos_INCLUDE_DIRS ${POTHOS_INCLUDE_DIR})
+set(Pothos_LIBRARIES Pothos)
 _POTHOS_GET_ABI_VERSION(POTHOS_ABI_VERSION ${POTHOS_INCLUDE_DIR})

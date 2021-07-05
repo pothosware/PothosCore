@@ -24,7 +24,8 @@ SIMD support:
 
 Build changes:
 
-- cmake: switch to GNUInstallDirs, LIB_SUFFIX is deprecated
+- Update to CMake 3.0 style and project config generation
+- Increase the CMake build requirement to version 3.1.0
 
 Release 0.7.2 (pending)
 ==========================

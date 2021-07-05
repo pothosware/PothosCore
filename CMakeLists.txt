@@ -1,7 +1,7 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 3.1.0)
 project(Pothos)
 enable_language(CXX)
 enable_testing()
@@ -55,12 +55,35 @@ set(POTHOS_ROOT_ENV "POTHOS_ROOT" CACHE STRING
 set(APPDATA_ENV "APPDATA" CACHE STRING
     "Environment variable for Pothos::System::getUserDataPath()")
 
-# Include the Pothos library config into the top level.
-# This brings in LIB_SUFFIX and RPATH settings for submodules.
-include(${PROJECT_SOURCE_DIR}/cmake/Modules/PothosLibraryConfig.cmake)
-
 include(FeatureSummary)
 include(CMakeDependentOption)
+
+########################################################################
+# rpath setup - http://www.cmake.org/Wiki/CMake_RPATH_handling
+########################################################################
+# use, i.e. don't skip the full RPATH for the build tree
+option(CMAKE_SKIP_BUILD_RPATH "skip rpath build" FALSE)
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+option(CMAKE_BUILD_WITH_INSTALL_RPATH "build with install rpath" FALSE)
+
+# the RPATH to be used when installing, but only if it's not a system directory
+option(CMAKE_AUTOSET_INSTALL_RPATH TRUE)
+if(CMAKE_AUTOSET_INSTALL_RPATH)
+LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
+IF("${isSystemDir}" STREQUAL "-1")
+    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+ENDIF("${isSystemDir}" STREQUAL "-1")
+endif(CMAKE_AUTOSET_INSTALL_RPATH)
+
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+option(CMAKE_INSTALL_RPATH_USE_LINK_PATH "build with automatic rpath" TRUE)
+
+if(APPLE)
+    set(CMAKE_MACOSX_RPATH ON)
+endif()
 
 ########################################################################
 # POCO C++ utility libraries
@@ -197,6 +220,9 @@ endif()
 ########################################################################
 cmake_dependent_option(ENABLE_LIBRARY "Enable Pothos Library component" ON "TRUE" OFF)
 add_feature_info(Library ENABLE_LIBRARY "The main library for all Pothos projects")
+
+#C++11 is a required language feature for this project
+set(CMAKE_CXX_STANDARD 11)
 
 if(ENABLE_LIBRARY)
     find_package(Pothos CONFIG REQUIRED)
