@@ -1,5 +1,8 @@
 // Copyright (c) 2014-2021 Josh Blum
+//                    2021 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
+
+#include "Util/Builtin/CompilerStdFlags.hpp"
 
 #include <Pothos/Util/Compiler.hpp>
 #include <Pothos/Plugin.hpp>
@@ -49,8 +52,10 @@ std::string ClangCompilerSupport::compileCppModule(const Pothos::Util::CompilerA
     }
 
     //add compiler flags
-    args.push_back("-std=c++11");
+    args.push_back(CPP_STD_FLAG);
+#ifndef __GLIBCXX__
     args.push_back("-stdlib=libc++");
+#endif
     args.push_back("-shared");
     args.push_back("-fPIC");
     for (const auto &flag : compilerArgs.flags)
