@@ -26,6 +26,11 @@ public:
         return;
     }
 
+    std::string compiler_executable(void) const
+    {
+        return "@CMAKE_CXX_COMPILER@";
+    }
+
     bool test(void)
     {
         Poco::Process::Args args;
@@ -33,7 +38,7 @@ public:
         Poco::Process::Env env;
         Poco::Pipe outPipe;
         Poco::ProcessHandle ph(Poco::Process::launch(
-            "g++", args, nullptr, &outPipe, &outPipe, env));
+            compiler_executable(), args, nullptr, &outPipe, &outPipe, env));
         return ph.wait() == 0;
     }
 
@@ -53,6 +58,9 @@ std::string GccCompilerSupport::compileCppModule(const Pothos::Util::CompilerArg
 
     //add compiler flags
     args.push_back(CPP_STD_FLAG);
+#ifndef __GLIBCXX__
+    args.push_back("-stdlib=libc++");
+#endif
     args.push_back("-shared");
     args.push_back("-fPIC");
     for (const auto &flag : compilerArgs.flags)
@@ -84,7 +92,7 @@ std::string GccCompilerSupport::compileCppModule(const Pothos::Util::CompilerArg
     Poco::Pipe inPipe, outPipe;
     Poco::Process::Env env;
     Poco::ProcessHandle ph(Poco::Process::launch(
-        "g++", args, &inPipe, &outPipe, &outPipe, env));
+        compiler_executable(), args, &inPipe, &outPipe, &outPipe, env));
 
     //read into output buffer until pipe is closed
     Poco::PipeInputStream is(outPipe);
