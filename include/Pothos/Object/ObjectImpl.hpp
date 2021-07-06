@@ -4,7 +4,7 @@
 /// Template implementation details for Object.
 ///
 /// \copyright
-/// Copyright (c) 2013-2017 Josh Blum
+/// Copyright (c) 2013-2021 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -40,7 +40,7 @@ struct POTHOS_API ObjectContainer
  * ObjectContainer templated subclass
  **********************************************************************/
 template <typename ValueType>
-struct ObjectContainerT : ObjectContainer
+struct POTHOS_API ObjectContainerT : ObjectContainer
 {
     template <typename... Args>
     ObjectContainerT(Args&&... args):
