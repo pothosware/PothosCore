@@ -21,17 +21,11 @@
     #define CPP20_COMPILER_FLAG ""
 #endif
 
-#ifdef POCO_COMPILER_MSVC
-#define CPP_STD _MSVC_LANG
-#else
-#define CPP_STD __cplusplus
-#endif
-
-#if CPP_STD >= 202002L
+#if __cplusplus >= 202002L
 #define CPP_STD_FLAG CPP20_COMPILER_FLAG
-#elif CPP_STD >= 201703L
+#elif __cplusplus >= 201703L
 #define CPP_STD_FLAG CPP17_COMPILER_FLAG
-#elif CPP_STD >= 201402L
+#elif __cplusplus >= 201402L
 #define CPP_STD_FLAG CPP14_COMPILER_FLAG
 #else
 #define CPP_STD_FLAG CPP11_COMPILER_FLAG

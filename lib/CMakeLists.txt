@@ -234,6 +234,7 @@ set_property(TARGET Pothos PROPERTY VISIBILITY_INLINES_HIDDEN ON)
 
 if(MSVC)
     target_compile_options(Pothos PRIVATE /bigobj) #builtin convert.cpp too large in debug mode
+    target_compile_options(Pothos PRIVATE /Zc:__cplusplus) #report __cplusplus correctly
 endif(MSVC)
 
 ########################################################################
