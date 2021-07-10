@@ -15,13 +15,13 @@
 #include <iostream>
 
 /***********************************************************************
- * gcc compiler wrapper
+ * gcc/clang compiler wrapper
  **********************************************************************/
-class GccCompilerSupport : public Pothos::Util::Compiler
+class GccClangCompilerSupport : public Pothos::Util::Compiler
 {
 public:
 
-    GccCompilerSupport(void)
+    GccClangCompilerSupport(void)
     {
         return;
     }
@@ -45,7 +45,7 @@ public:
     std::string compileCppModule(const Pothos::Util::CompilerArgs &args);
 };
 
-std::string GccCompilerSupport::compileCppModule(const Pothos::Util::CompilerArgs &compilerArgs)
+std::string GccClangCompilerSupport::compileCppModule(const Pothos::Util::CompilerArgs &compilerArgs)
 {
     //create args
     Poco::Process::Args args;
@@ -102,7 +102,7 @@ std::string GccCompilerSupport::compileCppModule(const Pothos::Util::CompilerArg
     //handle error case
     if (ph.wait() != 0 or not Poco::File(outPath.c_str()).exists())
     {
-        throw Pothos::Exception("GccCompilerSupport::compileCppModule", outBuff);
+        throw Pothos::Exception("GccClangCompilerSupport::compileCppModule", outBuff);
     }
 
     //return output file path
@@ -112,12 +112,12 @@ std::string GccCompilerSupport::compileCppModule(const Pothos::Util::CompilerArg
 /***********************************************************************
  * factory and registration
  **********************************************************************/
-Pothos::Util::Compiler::Sptr makeGccCompilerSupport(void)
+Pothos::Util::Compiler::Sptr makeGccClangCompilerSupport(void)
 {
-    return Pothos::Util::Compiler::Sptr(new GccCompilerSupport());
+    return Pothos::Util::Compiler::Sptr(new GccClangCompilerSupport());
 }
 
-pothos_static_block(pothosUtilRegisterGccCompilerSupport)
+pothos_static_block(pothosUtilRegisterGccClangCompilerSupport)
 {
-    Pothos::PluginRegistry::addCall("/util/compiler/gcc", &makeGccCompilerSupport);
+    Pothos::PluginRegistry::addCall("/util/compiler/gcc_clang", &makeGccClangCompilerSupport);
 }

@@ -394,9 +394,9 @@ target_sources(Pothos PRIVATE Util/Builtin/TestCompilerSupport.cpp)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/Util/Builtin/GccCompilerSupport.in.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/GccCompilerSupport.cpp @ONLY)
-    target_sources(Pothos PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/GccCompilerSupport.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/Util/Builtin/GccClangCompilerSupport.in.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/GccClangCompilerSupport.cpp @ONLY)
+    target_sources(Pothos PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/GccClangCompilerSupport.cpp)
 endif()
 
 if(MSVC)
