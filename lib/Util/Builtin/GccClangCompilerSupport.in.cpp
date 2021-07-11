@@ -11,6 +11,7 @@
 #include <Poco/Process.h>
 #include <Poco/TemporaryFile.h>
 #include <Poco/SharedLibrary.h>
+#include <Poco/Logger.h>
 #include <fstream>
 #include <iostream>
 
@@ -75,6 +76,15 @@ std::string GccClangCompilerSupport::compileCppModule(const Pothos::Util::Compil
         args.push_back(include);
     }
 
+    //specify OSX sysroot when available
+    #ifdef __APPLE__
+    #cmakedefine CMAKE_OSX_SYSROOT
+    #ifdef CMAKE_OSX_SYSROOT
+        args.push_back("-isysroot");
+        args.push_back("@CMAKE_OSX_SYSROOT@");
+    #endif //CMAKE_OSX_SYSROOT
+    #endif //__APPLE__
+
     //add compiler sources
     args.push_back("-x");
     args.push_back("c++");
@@ -102,6 +112,9 @@ std::string GccClangCompilerSupport::compileCppModule(const Pothos::Util::Compil
     //handle error case
     if (ph.wait() != 0 or not Poco::File(outPath.c_str()).exists())
     {
+        std::string cmdStr(compiler_executable());
+        for (const auto &arg : args) cmdStr += " " + arg;
+        poco_error_f2(Poco::Logger::get("Pothos.GccClangCompilerSupport.compileCppModule"), "\nCommand: %s\nMessage: %s", cmdStr, outBuff);
         throw Pothos::Exception("GccClangCompilerSupport::compileCppModule", outBuff);
     }
 
