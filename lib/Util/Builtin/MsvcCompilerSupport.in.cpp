@@ -1,5 +1,8 @@
 // Copyright (c) 2014-2021 Josh Blum
+//                    2021 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
+
+#include "Util/Builtin/CompilerStdFlags.hpp"
 
 #include <Pothos/Util/Compiler.hpp>
 #include <Pothos/Plugin.hpp>
@@ -86,6 +89,8 @@ std::string MsvcCompilerSupport::compileCppModule(const Pothos::Util::CompilerAr
     #else
     args.push_back("/MD"); //Creates a multithreaded DLL
     #endif
+
+    args.push_back(CPP_STD_FLAG);
 
     //add libraries
     for (const auto &library : compilerArgs.libraries)

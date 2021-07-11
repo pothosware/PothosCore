@@ -1,5 +1,8 @@
 // Copyright (c) 2014-2021 Josh Blum
+//                    2021 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
+
+#include "Util/Builtin/CompilerStdFlags.hpp"
 
 #include <Pothos/Util/Compiler.hpp>
 #include <Pothos/Plugin.hpp>
@@ -12,15 +15,20 @@
 #include <iostream>
 
 /***********************************************************************
- * clang compiler wrapper
+ * gcc/clang compiler wrapper
  **********************************************************************/
-class ClangCompilerSupport : public Pothos::Util::Compiler
+class GccClangCompilerSupport : public Pothos::Util::Compiler
 {
 public:
 
-    ClangCompilerSupport(void)
+    GccClangCompilerSupport(void)
     {
         return;
+    }
+
+    std::string compiler_executable(void) const
+    {
+        return "@CMAKE_CXX_COMPILER@";
     }
 
     bool test(void)
@@ -30,14 +38,14 @@ public:
         Poco::Process::Env env;
         Poco::Pipe outPipe;
         Poco::ProcessHandle ph(Poco::Process::launch(
-            "clang++", args, nullptr, &outPipe, &outPipe, env));
+            compiler_executable(), args, nullptr, &outPipe, &outPipe, env));
         return ph.wait() == 0;
     }
 
     std::string compileCppModule(const Pothos::Util::CompilerArgs &args);
 };
 
-std::string ClangCompilerSupport::compileCppModule(const Pothos::Util::CompilerArgs &compilerArgs)
+std::string GccClangCompilerSupport::compileCppModule(const Pothos::Util::CompilerArgs &compilerArgs)
 {
     //create args
     Poco::Process::Args args;
@@ -49,8 +57,10 @@ std::string ClangCompilerSupport::compileCppModule(const Pothos::Util::CompilerA
     }
 
     //add compiler flags
-    args.push_back("-std=c++11");
+    args.push_back(CPP_STD_FLAG);
+#ifndef __GLIBCXX__
     args.push_back("-stdlib=libc++");
+#endif
     args.push_back("-shared");
     args.push_back("-fPIC");
     for (const auto &flag : compilerArgs.flags)
@@ -82,7 +92,7 @@ std::string ClangCompilerSupport::compileCppModule(const Pothos::Util::CompilerA
     Poco::Pipe inPipe, outPipe;
     Poco::Process::Env env;
     Poco::ProcessHandle ph(Poco::Process::launch(
-        "clang++", args, &inPipe, &outPipe, &outPipe, env));
+        compiler_executable(), args, &inPipe, &outPipe, &outPipe, env));
 
     //read into output buffer until pipe is closed
     Poco::PipeInputStream is(outPipe);
@@ -92,7 +102,7 @@ std::string ClangCompilerSupport::compileCppModule(const Pothos::Util::CompilerA
     //handle error case
     if (ph.wait() != 0 or not Poco::File(outPath.c_str()).exists())
     {
-        throw Pothos::Exception("ClangCompilerSupport::compileCppModule", outBuff);
+        throw Pothos::Exception("GccClangCompilerSupport::compileCppModule", outBuff);
     }
 
     //return output file path
@@ -102,12 +112,12 @@ std::string ClangCompilerSupport::compileCppModule(const Pothos::Util::CompilerA
 /***********************************************************************
  * factory and registration
  **********************************************************************/
-Pothos::Util::Compiler::Sptr makeClangCompilerSupport(void)
+Pothos::Util::Compiler::Sptr makeGccClangCompilerSupport(void)
 {
-    return Pothos::Util::Compiler::Sptr(new ClangCompilerSupport());
+    return Pothos::Util::Compiler::Sptr(new GccClangCompilerSupport());
 }
 
-pothos_static_block(pothosUtilRegisterClangCompilerSupport)
+pothos_static_block(pothosUtilRegisterGccClangCompilerSupport)
 {
-    Pothos::PluginRegistry::addCall("/util/compiler/clang", &makeClangCompilerSupport);
+    Pothos::PluginRegistry::addCall("/util/compiler/gcc_clang", &makeGccClangCompilerSupport);
 }

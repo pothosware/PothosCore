@@ -234,6 +234,7 @@ set_property(TARGET Pothos PROPERTY VISIBILITY_INLINES_HIDDEN ON)
 
 if(MSVC)
     target_compile_options(Pothos PRIVATE /bigobj) #builtin convert.cpp too large in debug mode
+    target_compile_options(Pothos PRIVATE /Zc:__cplusplus) #report __cplusplus correctly
 endif(MSVC)
 
 ########################################################################
@@ -391,12 +392,11 @@ endif()
 ########################################################################
 target_sources(Pothos PRIVATE Util/Builtin/TestCompilerSupport.cpp)
 
-if(CMAKE_COMPILER_IS_GNUCXX)
-    target_sources(Pothos PRIVATE Util/Builtin/GccCompilerSupport.cpp)
-endif()
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    target_sources(Pothos PRIVATE Util/Builtin/ClangCompilerSupport.cpp)
+if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/Util/Builtin/GccClangCompilerSupport.in.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/GccClangCompilerSupport.cpp @ONLY)
+    target_sources(Pothos PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/GccClangCompilerSupport.cpp)
 endif()
 
 if(MSVC)
