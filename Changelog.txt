@@ -3,7 +3,10 @@ This this the changelog file for the Pothos C++ library.
 Release 0.7.2 (pending)
 ==========================
 
+Build Changes:
+
 - undefined linker flags are only used on module builds
+- create interface library to support modern cmake targets
 
 Release 0.7.1 (2021-01-24)
 ==========================
