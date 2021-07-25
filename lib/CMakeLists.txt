@@ -292,6 +292,12 @@ endif()
 # Configure sources
 ########################################################################
 
+#force the following CMAKE_INSTALL_*DIR to be relative for the System/Paths.cpp
+file(RELATIVE_PATH CMAKE_INSTALL_LIBDIR     "${CMAKE_INSTALL_PREFIX}" "${CMAKE_INSTALL_FULL_LIBDIR}")
+file(RELATIVE_PATH CMAKE_INSTALL_BINDIR     "${CMAKE_INSTALL_PREFIX}" "${CMAKE_INSTALL_FULL_BINDIR}")
+file(RELATIVE_PATH CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_PREFIX}" "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
+file(RELATIVE_PATH CMAKE_INSTALL_DATADIR    "${CMAKE_INSTALL_PREFIX}" "${CMAKE_INSTALL_FULL_DATADIR}")
+
 #get the library name into Paths.cpp for getPothosRuntimeLibraryPath()
 target_compile_definitions(Pothos PRIVATE "-DPOTHOS_LIBRARY_NAME=\"$<TARGET_FILE_NAME:Pothos>\"")
 
