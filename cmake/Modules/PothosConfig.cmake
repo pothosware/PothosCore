@@ -120,7 +120,7 @@ endif ()
 ########################################################################
 ## Determine root installation path
 ########################################################################
-file(RELATIVE_PATH POTHOS_ROOT_RELDIR "/${POTHOS_CMAKE_DIRECTORY}" "/")
+file(RELATIVE_PATH POTHOS_ROOT_RELDIR "${CMAKE_INSTALL_PREFIX}/${POTHOS_CMAKE_DIRECTORY}" "${CMAKE_INSTALL_PREFIX}")
 get_filename_component(POTHOS_ROOT "${CMAKE_CURRENT_LIST_DIR}/${POTHOS_ROOT_RELDIR}" ABSOLUTE)
 
 ########################################################################
