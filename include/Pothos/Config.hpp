@@ -4,7 +4,7 @@
 /// Common macro definitions for library API export.
 ///
 /// \copyright
-/// Copyright (c) 2013-2016 Josh Blum
+/// Copyright (c) 2013-2021 Josh Blum
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
@@ -47,6 +47,16 @@
   #define POTHOS_LOCAL
   #define POTHOS_EXTERN
 #endif // POTHOS_DLL
+
+// Explicit template specialization can be exported on gnu platforms
+// Required on apple clang for consistent type ids in archive system
+#if defined _WIN32 || defined __CYGWIN__
+  #define POTHOS_TEMPLATE_API
+#elif __GNUC__ >= 4
+  #define POTHOS_TEMPLATE_API POTHOS_API
+#else
+  #define POTHOS_TEMPLATE_API
+#endif
 
 #ifdef _MSC_VER
   #ifndef _USE_MATH_DEFINES

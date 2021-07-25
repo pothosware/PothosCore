@@ -40,7 +40,7 @@ struct POTHOS_API ObjectContainer
  * ObjectContainer templated subclass
  **********************************************************************/
 template <typename ValueType>
-struct POTHOS_API ObjectContainerT : ObjectContainer
+struct POTHOS_TEMPLATE_API ObjectContainerT : ObjectContainer
 {
     template <typename... Args>
     ObjectContainerT(Args&&... args):
