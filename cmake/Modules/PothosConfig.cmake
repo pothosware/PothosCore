@@ -182,8 +182,3 @@ get_target_property(POTHOS_INCLUDE_DIR Pothos INTERFACE_INCLUDE_DIRECTORIES)
 set(Pothos_INCLUDE_DIRS ${POTHOS_INCLUDE_DIR})
 set(Pothos_LIBRARIES Pothos)
 _POTHOS_GET_ABI_VERSION(POTHOS_ABI_VERSION ${POTHOS_INCLUDE_DIR})
-
-#create interface library to support modern cmake target linking
-add_library(Pothos INTERFACE)
-target_link_libraries(Pothos INTERFACE "${Pothos_LIBRARIES}")
-target_include_directories(Pothos INTERFACE "${Pothos_INCLUDE_DIRS}")
