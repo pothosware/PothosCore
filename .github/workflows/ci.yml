@@ -85,27 +85,6 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - cc: gcc-9
-                      cxx: g++-9
-                      build_type: Release
-                    - cc: gcc-9
-                      cxx: g++-9
-                      build_type: Debug
-
-                    - cc: gcc-10
-                      cxx: g++-10
-                      build_type: Release
-                    - cc: gcc-10
-                      cxx: g++-10
-                      build_type: Debug
-
-                    - cc: gcc-11
-                      cxx: g++-11
-                      build_type: Release
-                    - cc: gcc-11
-                      cxx: g++-11
-                      build_type: Debug
-
                     - cc: clang
                       cxx: clang++
                       build_type: Release
