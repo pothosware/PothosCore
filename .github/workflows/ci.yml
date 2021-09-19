@@ -60,7 +60,7 @@ jobs:
                 git clone https://github.com/pothosware/SoapySDR -b soapy-sdr-0.6.0
                 mkdir SoapySDR/build
                 cd SoapySDR/build
-                cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} ..
+                cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DENABLE_PYTHON=OFF -DENABLE_PYTHON3=OFF ..
                 make
                 sudo make install
                 sudo ldconfig
