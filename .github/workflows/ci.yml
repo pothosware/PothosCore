@@ -56,8 +56,7 @@ jobs:
                 sudo apt install -y libpython3-dev python3-numpy doxygen
                 cd ${{runner.workspace}}
 
-                # Earliest supported SoapySDR version
-                git clone https://github.com/pothosware/SoapySDR -b soapy-sdr-0.7.0
+                git clone https://github.com/pothosware/SoapySDR -b soapy-sdr-0.8.0
                 mkdir SoapySDR/build
                 cd SoapySDR/build
                 cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DENABLE_PYTHON=OFF -DENABLE_PYTHON3=OFF ..
