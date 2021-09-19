@@ -105,6 +105,7 @@ jobs:
                 brew install doxygen
                 pip3 install numpy
 
+                cd ${{runner.workspace}}
                 git clone https://github.com/pothosware/SoapySDR -b soapy-sdr-0.8.0
                 mkdir SoapySDR/build
                 cd SoapySDR/build
@@ -123,5 +124,73 @@ jobs:
                 sudo make install
           - name: Run self tests
             run: |
+                cd ${{github.workspace}}/build
+                PothosUtil --self-tests
+    windows-ci:
+        name: Windows
+        runs-on: windows-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                # Note: keeping cmake_config general enough for non-MSVC later
+                include:
+                    - cmake_config: -G "Visual Studio 14 2015" -A "Win32"
+                      arch: win32
+                      build_type: Release
+                    - cmake_config: -G "Visual Studio 14 2015" -A "Win32"
+                      arch: win32
+                      build_type: Debug
+
+                    - cmake_config: -G "Visual Studio 14 2015" -A "x64"
+                      arch: x64
+                      build_type: Release
+                    - cmake_config: -G "Visual Studio 14 2015" -A "x64"
+                      arch: x64
+                      build_type: Debug
+
+                      # Note: skipping VS2017, possible bugginess in parallel installs
+
+                    - cmake_config: -G "Visual Studio 16 2019" -A "Win32"
+                      arch: win32
+                      build_type: Release
+                    - cmake_config: -G "Visual Studio 16 2019" -A "Win32"
+                      arch: win32
+                      build_type: Debug
+
+                    - cmake_config: -G "Visual Studio 16 2019" -A "x64"
+                      arch: x64
+                      build_type: Release
+                    - cmake_config: -G "Visual Studio 16 2019" -A "x64"
+                      arch: x64
+                      build_type: Release
+        env:
+            INSTALL_PREFIX: 'C:\Program Files\PothosSDR'
+        steps:
+          - uses: actions/checkout@v2
+          - uses: ilammy/msvc-dev-cmd@v1
+            with:
+                arch: ${{matrix.arch}}
+          - name: Install dependencies
+            run: |
+                cd ${{runner.workspace}}
+                git clone https://github.com/pothosware/SoapySDR -b soapy-sdr-0.8.0
+                mkdir SoapySDR/build
+                cd SoapySDR/build
+                cmake -DCMAKE_INSTALL_PREFIX="$Env:INSTALL_PREFIX" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DENABLE_PYTHON=OFF -DENABLE_PYTHON3=OFF ..
+                cmake --build . --config ${{matrix.build_type}}
+                cmake --install . --config ${{matrix.build_type}}
+          - name: Build Pothos and submodules
+            run: |
+                mkdir -p ${{github.workspace}}/build
+                cd ${{github.workspace}}/build
+                cmake -DCMAKE_PREFIX_PATH="$Env:INSTALL_PREFIX" -DCMAKE_INSTALL_PREFIX="$Env:INSTALL_PREFIX" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DENABLE_PYTHON=OFF ${{github.workspace}}
+                cmake --build . --config ${{matrix.build_type}}
+          - name: Install
+            run: |
+                cd ${{github.workspace}}/build
+                cmake --install . --config ${{matrix.build_type}}
+          - name: Run self tests
+            run: |
+                $Env:PATH += ";$Env:INSTALL_PREFIX\bin"
                 cd ${{github.workspace}}/build
                 PothosUtil --self-tests
