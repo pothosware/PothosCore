@@ -170,6 +170,9 @@ jobs:
           - uses: ilammy/msvc-dev-cmd@v1
             with:
                 arch: ${{matrix.arch}}
+          - name: Initialize submodules
+            run: |
+                git submodule update --init --recursive
           - name: Install dependencies
             run: |
                 cd ${{runner.workspace}}
