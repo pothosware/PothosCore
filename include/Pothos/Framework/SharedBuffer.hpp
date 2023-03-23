@@ -5,13 +5,14 @@
 ///
 /// \copyright
 /// Copyright (c) 2013-2017 Josh Blum
-///                    2019 Nicholas Corgan
+///               2019,2023 Nicholas Corgan
 /// SPDX-License-Identifier: BSL-1.0
 ///
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <memory> //shared_ptr
+#include <string>
 
 namespace Pothos {
 
@@ -55,6 +56,15 @@ public:
      * \return a new circular shared buffer object
      */
     static SharedBuffer makeCirc(const size_t numBytes, const long nodeAffinity = -1);
+
+    /*!
+     * Create a SharedBuffer backed by a memory-mapped file.
+     *
+     * \param filepath The name of the file to map
+     * \param readable Should the underlying memory be readable (usually true).
+     * \param writable Should the underlying memory be writable?
+     */
+    static SharedBuffer makeFromFileMMap(const std::string &filepath, const bool readable, const bool writable);
 
     /*!
      * Create a SharedBuffer from address, length, and the container.

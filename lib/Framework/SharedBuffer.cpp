@@ -1,9 +1,13 @@
 // Copyright (c) 2013-2017 Josh Blum
+//                    2023 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
+
+#include "MemoryMappedBufferContainer.hpp"
 
 #include <Pothos/Framework/SharedBuffer.hpp>
 #include <Pothos/Framework/Exception.hpp>
 #include <algorithm> //min/max
+#include <cassert>
 #include <mutex>
 
 /***********************************************************************
@@ -68,4 +72,17 @@ Pothos::SharedBuffer Pothos::SharedBuffer::makeCirc(const size_t numBytes, const
         }
     }
     throw SharedBufferError("Pothos::SharedBuffer::makeCirc()", "invalid code path");
+}
+
+Pothos::SharedBuffer Pothos::SharedBuffer::makeFromFileMMap(const std::string &filepath, const bool readable, const bool writable)
+{
+    auto mmapContainer = MemoryMappedBufferContainer::make(filepath, readable, writable);
+    assert(mmapContainer);
+    assert(mmapContainer->buffer());
+    assert(mmapContainer->length() > 0);
+
+    return SharedBuffer(
+        reinterpret_cast<size_t>(mmapContainer->buffer()),
+        mmapContainer->length(),
+        mmapContainer);
 }

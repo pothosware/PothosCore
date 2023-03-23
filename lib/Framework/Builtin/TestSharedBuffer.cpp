@@ -1,11 +1,16 @@
 // Copyright (c) 2013-2014 Josh Blum
-//                    2020 Nicholas Corgan
+//               2020,2023 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Testing.hpp>
+#include <Pothos/Framework/BufferChunk.hpp>
 #include <Pothos/Framework/SharedBuffer.hpp>
 #include <Pothos/Framework/Exception.hpp>
+#include <Poco/File.h>
+#include <Poco/RandomStream.h>
+#include <Poco/TemporaryFile.h>
 #include <cstdlib> //rand
+#include <fstream>
 
 POTHOS_TEST_BLOCK("/framework/tests", test_generic_shared_buffer)
 {
@@ -60,4 +65,48 @@ POTHOS_TEST_BLOCK("/framework/tests", test_circular_shared_buffer)
         POTHOS_TEST_EQUAL(p[i], randNum);
         POTHOS_TEST_EQUAL(p[i+alias], randNum);
     }
+}
+
+POTHOS_TEST_BLOCK("/framework/tests", test_mmap_shared_buffer)
+{
+    static constexpr size_t numElems = 1024;
+    Pothos::BufferChunk input("int", numElems);
+
+    Poco::RandomBuf randomBuf;
+    randomBuf.readFromDevice(
+        reinterpret_cast<char*>(input.address),
+        input.length);
+
+    auto tempFile = Poco::TemporaryFile();
+    POTHOS_TEST_TRUE(tempFile.createFile());
+
+    std::ofstream ofile(tempFile.path(), std::ios::binary);
+    ofile.write(reinterpret_cast<const char*>(input.address), input.length);
+    POTHOS_TEST_TRUE(ofile.good());
+    POTHOS_TEST_EQUAL(input.length, tempFile.getSize());
+
+    int newValue = 0;
+
+    {
+        auto mmapSharedBuffer = Pothos::SharedBuffer::makeFromFileMMap(
+            tempFile.path(),
+            true,
+            true);
+        POTHOS_TEST_NOT_EQUAL(0, mmapSharedBuffer.getAddress());
+        POTHOS_TEST_EQUAL(input.length, mmapSharedBuffer.getLength());
+
+        // Make sure the shared buffer's contents match the input.
+        auto *mmapIntBuff = reinterpret_cast<int*>(mmapSharedBuffer.getAddress());
+        POTHOS_TEST_EQUALA(input.as<int*>(), mmapIntBuff, numElems);
+
+        // This should write to the file.
+        newValue = ++mmapIntBuff[0];
+    }
+
+    POTHOS_TEST_NOT_EQUAL(input.as<int*>()[0], newValue);
+
+    std::ifstream ifile(tempFile.path(), std::ios::binary);
+    Pothos::BufferChunk output("int", numElems);
+    ifile.read(output.as<char*>(), output.length);
+    POTHOS_TEST_EQUAL(newValue, output.as<int*>()[0]);
 }
