@@ -118,6 +118,7 @@ add_library(Pothos SHARED
     Framework/BufferAccumulator.cpp
     Framework/BlockRegistry.cpp
     Framework/Exception.cpp
+    Framework/MemoryMappedBufferContainer.cpp
 
     ConfLoader/ConfLoader.cpp
     ConfLoader/FileRealPath.cpp
